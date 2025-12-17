@@ -1,0 +1,81 @@
+name: itun
+description: Olitun - Premium Ol Chiki (Santali Script) Learning App
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.0
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+  riverpod_annotation: ^2.6.1
+
+  # Navigation
+  go_router: ^14.8.1
+
+  # Firebase
+  firebase_core: 3.6.0
+  firebase_auth: 5.3.1
+  cloud_firestore: 5.4.3
+  firebase_storage: 12.3.2
+
+  # Local Storage
+  shared_preferences: 2.5.3
+
+  # UI & Animations
+  google_fonts: ^6.2.1
+  flutter_animate: ^4.5.2
+  shimmer: ^3.0.0
+  cached_network_image: ^3.4.1
+  flutter_svg: ^2.0.17
+
+  # Audio
+  audioplayers: ^6.4.0
+
+  # Utils
+  uuid: ^4.5.1
+  intl: ^0.20.2
+  image_picker: ^1.1.2
+  file_picker: ^8.3.7
+  path: ^1.9.1
+
+  # Icons
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+  riverpod_generator: ^2.6.3
+  build_runner: ^2.4.15
+  json_serializable: ^6.9.4
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/fonts/
+    - assets/animations/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Light.ttf
+          weight: 300
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+    - family: OlChiki
+      fonts:
+        - asset: assets/fonts/OlChiki.ttf

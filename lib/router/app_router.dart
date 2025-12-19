@@ -23,6 +23,7 @@ import '../features/admin/presentation/admin_banners_screen.dart';
 import '../features/admin/presentation/admin_letters_screen.dart';
 import '../features/admin/presentation/admin_lessons_screen.dart';
 import '../features/admin/presentation/admin_quizzes_screen.dart';
+import '../features/admin/presentation/admin_media_screen.dart';
 
 // Route names
 class AppRoutes {
@@ -86,18 +87,38 @@ CustomTransitionPage<T> _slideTransition<T>(
 // Router provider
 final routerProvider = Provider<GoRouter>((ref) {
   final authState = ref.watch(authStateProvider);
+  final isGuestMode = ref.watch(guestModeProvider);
   
   return GoRouter(
     initialLocation: '/welcome',
     debugLogDiagnostics: true,
     redirect: (context, state) {
       final isAuthenticated = authState.valueOrNull != null;
+      final canAccessContent = isAuthenticated || isGuestMode;
+      
       final isAuthRoute = state.matchedLocation == '/welcome' ||
           state.matchedLocation == '/sign-in' ||
           state.matchedLocation == '/sign-up';
+      
+      // Admin routes - TEMPORARILY OPEN FOR PREVIEW (no auth required)
+      final isAdminRoute = state.matchedLocation.startsWith('/admin');
+      
+      // Allow admin routes without any auth for preview
+      if (isAdminRoute) {
+        return null;  // No redirect, allow access
+      }
+      
+      // Protected routes that require authentication (not guest)
+      final isProtectedRoute = state.matchedLocation == '/settings' ||
+          state.matchedLocation == '/profile';
 
-      // If not authenticated and not on auth route, redirect to welcome
-      if (!isAuthenticated && !isAuthRoute) {
+      // If trying to access protected route without auth, redirect to sign-in
+      if (isProtectedRoute && !isAuthenticated) {
+        return '/sign-in';
+      }
+
+      // If not authenticated/guest and not on auth route, redirect to welcome
+      if (!canAccessContent && !isAuthRoute) {
         return '/welcome';
       }
 
@@ -283,6 +304,33 @@ final routerProvider = Provider<GoRouter>((ref) {
                   context,
                   state,
                   const AdminQuizzesScreen(),
+                ),
+              ),
+              GoRoute(
+                path: 'media',
+                name: 'adminMedia',
+                pageBuilder: (context, state) => _slideTransition(
+                  context,
+                  state,
+                  const AdminMediaScreen(),
+                ),
+              ),
+              GoRoute(
+                path: 'audio',
+                name: 'adminAudio',
+                pageBuilder: (context, state) => _slideTransition(
+                  context,
+                  state,
+                  const AdminMediaScreen(),  // Same screen, filtered
+                ),
+              ),
+              GoRoute(
+                path: 'video',
+                name: 'adminVideo',
+                pageBuilder: (context, state) => _slideTransition(
+                  context,
+                  state,
+                  const AdminMediaScreen(),  // Same screen, filtered
                 ),
               ),
             ],

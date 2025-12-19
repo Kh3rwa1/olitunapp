@@ -116,3 +116,14 @@ final onboardingCompleteProvider = FutureProvider<bool>((ref) async {
   final userRepo = ref.read(userRepositoryProvider);
   return userRepo.isOnboardingComplete();
 });
+
+// ============== GUEST MODE ==============
+/// Tracks if user is in guest/exploration mode (can access limited features without login)
+final guestModeProvider = StateProvider<bool>((ref) => false);
+
+/// Check if user can access content (either authenticated or guest mode)
+final canAccessContentProvider = Provider<bool>((ref) {
+  final isAuthenticated = ref.watch(isAuthenticatedProvider);
+  final isGuest = ref.watch(guestModeProvider);
+  return isAuthenticated || isGuest;
+});

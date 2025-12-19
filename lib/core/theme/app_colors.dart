@@ -1,120 +1,159 @@
 import 'package:flutter/material.dart';
 
-/// Olitun App Colors - $20B Startup Premium Design System
-/// Inspired by Duolingo's playfulness + Stripe's sophistication
+/// Olitun App Colors - Premium Green/White/Black Design System
+/// Derived from the Olitun logo: Vibrant Mint Green (#1EE088)
+/// Inspired by Spotify's boldness + Apple's elegance + Duolingo's playfulness
 class AppColors {
   AppColors._();
 
   // ============== PRIMARY BRAND COLORS ==============
-  // Electric Cyan - The signature Olitun color
-  static const Color primary = Color(0xFF00D4AA);
-  static const Color primaryLight = Color(0xFF5EFCE8);
-  static const Color primaryDark = Color(0xFF00A385);
+  // Signature Olitun Green (extracted from logo)
+  static const Color primary = Color(0xFF1EE088);  // Exact logo green
+  static const Color primaryLight = Color(0xFF5DFFA8);  // Lighter tint
+  static const Color primaryDark = Color(0xFF00C767);  // Deeper green
+  static const Color primaryMuted = Color(0xFF1EE088);
   
-  // Deep Ocean - Premium depth
-  static const Color secondary = Color(0xFF0A2463);
-  static const Color secondaryLight = Color(0xFF1E3A8A);
-  static const Color secondaryDark = Color(0xFF050F2C);
+  // Pure Black & White
+  static const Color pureBlack = Color(0xFF000000);
+  static const Color pureWhite = Color(0xFFFFFFFF);
+  static const Color richBlack = Color(0xFF0D0D0D);
+  static const Color softBlack = Color(0xFF1A1A1A);
+  static const Color charcoal = Color(0xFF2D2D2D);
 
   // ============== ACCENT COLORS ==============
-  // Vibrant accents for gamification & celebrations
-  static const Color accentPurple = Color(0xFF8B5CF6);
-  static const Color accentPink = Color(0xFFEC4899);
-  static const Color accentOrange = Color(0xFFF97316);
-  static const Color accentYellow = Color(0xFFFBBF24);
-  static const Color accentCoral = Color(0xFFFF6B6B);
-  static const Color accentMint = Color(0xFF34D399);
+  // Complementary accents for variety
+  static const Color accentPurple = Color(0xFF7C4DFF);
+  static const Color accentPink = Color(0xFFFF4081);
+  static const Color accentOrange = Color(0xFFFF9100);
+  static const Color accentYellow = Color(0xFFFFEA00);
+  static const Color accentCoral = Color(0xFFFF6E6E);
+  static const Color accentMint = Color(0xFF1DE9B6);
+  static const Color accentCyan = Color(0xFF00E5FF);
 
   // ============== SEMANTIC COLORS ==============
-  static const Color success = Color(0xFF10B981);
-  static const Color successSoft = Color(0xFFD1FAE5);
-  static const Color error = Color(0xFFEF4444);
-  static const Color errorSoft = Color(0xFFFEE2E2);
-  static const Color warning = Color(0xFFF59E0B);
-  static const Color warningSoft = Color(0xFFFEF3C7);
-  static const Color info = Color(0xFF3B82F6);
-  static const Color infoSoft = Color(0xFFDBEAFE);
+  static const Color success = Color(0xFF00E676);
+  static const Color successSoft = Color(0xFF1B5E20);
+  static const Color error = Color(0xFFFF5252);
+  static const Color errorSoft = Color(0xFF421C1C);
+  static const Color warning = Color(0xFFFFD600);
+  static const Color warningSoft = Color(0xFF4A4000);
+  static const Color info = Color(0xFF448AFF);
+  static const Color infoSoft = Color(0xFF1A237E);
 
   // ============== LIGHT MODE ==============
-  static const Color lightBackground = Color(0xFFFAFBFC);
+  static const Color lightBackground = Color(0xFFF8F9FA);
   static const Color lightSurface = Color(0xFFFFFFFF);
   static const Color lightSurfaceElevated = Color(0xFFFFFFFF);
-  static const Color lightSurfaceVariant = Color(0xFFF3F4F6);
-  static const Color lightBorder = Color(0xFFE5E7EB);
-  static const Color lightBorderSubtle = Color(0xFFF3F4F6);
+  static const Color lightSurfaceVariant = Color(0xFFF1F3F5);
+  static const Color lightBorder = Color(0xFFE0E0E0);
+  static const Color lightBorderSubtle = Color(0xFFF0F0F0);
 
-  // ============== DARK MODE ==============
-  static const Color darkBackground = Color(0xFF0B1120);
-  static const Color darkSurface = Color(0xFF111827);
-  static const Color darkSurfaceElevated = Color(0xFF1F2937);
-  static const Color darkSurfaceVariant = Color(0xFF1F2937);
-  static const Color darkBorder = Color(0xFF374151);
-  static const Color darkBorderSubtle = Color(0xFF1F2937);
+  // ============== DARK MODE (Premium Black) ==============
+  static const Color darkBackground = Color(0xFF000000);
+  static const Color darkSurface = Color(0xFF121212);
+  static const Color darkSurfaceElevated = Color(0xFF1E1E1E);
+  static const Color darkSurfaceVariant = Color(0xFF2A2A2A);
+  static const Color darkBorder = Color(0xFF3D3D3D);
+  static const Color darkBorderSubtle = Color(0xFF252525);
 
   // ============== TEXT COLORS ==============
   // Light mode text
-  static const Color textPrimaryLight = Color(0xFF111827);
-  static const Color textSecondaryLight = Color(0xFF4B5563);
-  static const Color textTertiaryLight = Color(0xFF9CA3AF);
-  static const Color textDisabledLight = Color(0xFFD1D5DB);
+  static const Color textPrimaryLight = Color(0xFF000000);
+  static const Color textSecondaryLight = Color(0xFF424242);
+  static const Color textTertiaryLight = Color(0xFF757575);
+  static const Color textDisabledLight = Color(0xFFBDBDBD);
 
   // Dark mode text
-  static const Color textPrimaryDark = Color(0xFFF9FAFB);
-  static const Color textSecondaryDark = Color(0xFFD1D5DB);
-  static const Color textTertiaryDark = Color(0xFF9CA3AF);
-  static const Color textDisabledDark = Color(0xFF6B7280);
+  static const Color textPrimaryDark = Color(0xFFFFFFFF);
+  static const Color textSecondaryDark = Color(0xFFE0E0E0);
+  static const Color textTertiaryDark = Color(0xFF9E9E9E);
+  static const Color textDisabledDark = Color(0xFF616161);
 
   // ============== PREMIUM GRADIENTS ==============
   
-  // Hero gradients - Show-stopping, magazine-cover quality
+  // Hero gradient - Signature green (logo colors)
   static const LinearGradient heroGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF00D4AA), Color(0xFF00A385), Color(0xFF0A2463)],
-    stops: [0.0, 0.5, 1.0],
+    colors: [Color(0xFF1EE088), Color(0xFF00C767)],
   );
 
   static const LinearGradient heroGradientAlt = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [Color(0xFF5EFCE8), Color(0xFF00D4AA)],
+    colors: [Color(0xFF5DFFA8), Color(0xFF1EE088)],
   );
 
-  // Premium card gradients
-  static const LinearGradient premiumCyan = LinearGradient(
+  // Premium logo-derived gradient (for hero sections)
+  static const LinearGradient logoGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF00F5D4), Color(0xFF00BBF9)],
+    colors: [
+      Color(0xFF1EE088),  // Logo primary
+      Color(0xFF00C767),  // Deeper
+      Color(0xFF00A855),  // Darkest
+    ],
   );
 
-  static const LinearGradient premiumPurple = LinearGradient(
+  // Dark premium gradient
+  static const LinearGradient darkPremiumGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFA78BFA), Color(0xFF8B5CF6)],
+    colors: [Color(0xFF1A1A1A), Color(0xFF000000)],
   );
 
-  static const LinearGradient premiumPink = LinearGradient(
-    begin: Alignment.topLeft,
-    end: Alignment.bottomRight,
-    colors: [Color(0xFFF472B6), Color(0xFFEC4899)],
+  // Green glow gradient (updated with logo colors)
+  static const LinearGradient greenGlowGradient = LinearGradient(
+    begin: Alignment.topCenter,
+    end: Alignment.bottomCenter,
+    colors: [
+      Color(0xFF1EE088),
+      Color(0xFF00C767),
+      Color(0xFF009650),
+    ],
   );
 
-  static const LinearGradient premiumOrange = LinearGradient(
+  // Premium card gradients (logo-derived)
+  static const LinearGradient premiumGreen = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFBBF24), Color(0xFFF97316)],
+    colors: [Color(0xFF1EE088), Color(0xFF00C767)],
   );
 
   static const LinearGradient premiumMint = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF6EE7B7), Color(0xFF34D399)],
+    colors: [Color(0xFF1DE9B6), Color(0xFF00BFA5)],
+  );
+
+  static const LinearGradient premiumPurple = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF7C4DFF), Color(0xFF651FFF)],
+  );
+
+  static const LinearGradient premiumPink = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFF4081), Color(0xFFF50057)],
+  );
+
+  static const LinearGradient premiumOrange = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFFFFAB40), Color(0xFFFF9100)],
+  );
+
+  static const LinearGradient premiumCyan = LinearGradient(
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+    colors: [Color(0xFF18FFFF), Color(0xFF00E5FF)],
   );
 
   static const LinearGradient premiumCoral = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFCA5A5), Color(0xFFEF4444)],
+    colors: [Color(0xFFFF8A80), Color(0xFFFF5252)],
   );
 
   // Mesh gradients for backgrounds
@@ -122,9 +161,9 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFFF0FDFA),
-      Color(0xFFFAFBFC),
-      Color(0xFFFDF4FF),
+      Color(0xFFF8F9FA),
+      Color(0xFFFFFFFF),
+      Color(0xFFF0FFF4),
     ],
   );
 
@@ -132,9 +171,9 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF0B1120),
-      Color(0xFF111827),
-      Color(0xFF1A1033),
+      Color(0xFF000000),
+      Color(0xFF0D0D0D),
+      Color(0xFF001A0D),
     ],
   );
 
@@ -142,72 +181,76 @@ class AppColors {
   static const LinearGradient darkCardGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF1F2937), Color(0xFF111827)],
+    colors: [Color(0xFF1E1E1E), Color(0xFF121212)],
   );
 
   // Banner/Feature gradients
   static const LinearGradient skyBlueGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF7DD3FC), Color(0xFF38BDF8), Color(0xFF0EA5E9)],
+    colors: [Color(0xFF40C4FF), Color(0xFF00B0FF)],
   );
 
   static const LinearGradient peachGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFED7AA), Color(0xFFFB923C), Color(0xFFF97316)],
+    colors: [Color(0xFFFFAB91), Color(0xFFFF8A65)],
   );
 
   static const LinearGradient sunsetGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFDE68A), Color(0xFFFBBF24), Color(0xFFF59E0B)],
+    colors: [Color(0xFFFFD54F), Color(0xFFFFB300)],
   );
 
   static const LinearGradient coralGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFFECACA), Color(0xFFF87171), Color(0xFFEF4444)],
+    colors: [Color(0xFFFF8A80), Color(0xFFFF5252)],
   );
 
   static const LinearGradient mintGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFA7F3D0), Color(0xFF6EE7B7), Color(0xFF34D399)],
+    colors: [Color(0xFF64FFDA), Color(0xFF1DE9B6)],
   );
 
   static const LinearGradient purpleGradient = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFDDD6FE), Color(0xFFA78BFA), Color(0xFF8B5CF6)],
+    colors: [Color(0xFFB388FF), Color(0xFF7C4DFF)],
   );
 
   // Category gradients - Vibrant and distinct
   static const List<LinearGradient> categoryGradients = [
-    premiumCyan,
+    premiumGreen,
     premiumPurple,
     premiumMint,
     premiumOrange,
     premiumPink,
-    premiumCoral,
+    premiumCyan,
   ];
 
   // ============== GLASS MORPHISM ==============
-  static Color glassWhite = Colors.white.withValues(alpha: 0.12);
-  static Color glassBorder = Colors.white.withValues(alpha: 0.18);
-  static Color glassWhiteDark = Colors.white.withValues(alpha: 0.06);
+  static Color glassWhite = Colors.white.withValues(alpha: 0.1);
+  static Color glassBorder = Colors.white.withValues(alpha: 0.15);
+  static Color glassWhiteDark = Colors.white.withValues(alpha: 0.05);
   static Color glassBorderDark = Colors.white.withValues(alpha: 0.08);
   
   // Premium glass effect
-  static Color glassPremium = Colors.white.withValues(alpha: 0.85);
-  static Color glassPremiumDark = const Color(0xFF1F2937).withValues(alpha: 0.90);
+  static Color glassPremium = Colors.white.withValues(alpha: 0.9);
+  static Color glassPremiumDark = const Color(0xFF1E1E1E).withValues(alpha: 0.95);
+
+  // Green tinted glass
+  static Color glassGreen = primary.withValues(alpha: 0.1);
+  static Color glassGreenBorder = primary.withValues(alpha: 0.2);
 
   // ============== SHADOWS ==============
   // Subtle - for base cards
   static List<BoxShadow> subtleShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.03),
-      blurRadius: 8,
+      color: Colors.black.withValues(alpha: 0.05),
+      blurRadius: 10,
       offset: const Offset(0, 2),
     ),
   ];
@@ -215,49 +258,34 @@ class AppColors {
   // Soft - for elevated cards
   static List<BoxShadow> softShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.04),
-      blurRadius: 16,
+      color: Colors.black.withValues(alpha: 0.08),
+      blurRadius: 20,
       offset: const Offset(0, 4),
       spreadRadius: 0,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.02),
-      blurRadius: 6,
-      offset: const Offset(0, 2),
     ),
   ];
 
   // Medium - for floating elements
   static List<BoxShadow> mediumShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
-      blurRadius: 24,
+      color: Colors.black.withValues(alpha: 0.12),
+      blurRadius: 30,
       offset: const Offset(0, 8),
-      spreadRadius: -2,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.04),
-      blurRadius: 12,
-      offset: const Offset(0, 4),
+      spreadRadius: -4,
     ),
   ];
 
   // Large - for modals and overlays
   static List<BoxShadow> largeShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.12),
-      blurRadius: 48,
-      offset: const Offset(0, 24),
+      color: Colors.black.withValues(alpha: 0.2),
+      blurRadius: 50,
+      offset: const Offset(0, 20),
       spreadRadius: -8,
-    ),
-    BoxShadow(
-      color: Colors.black.withValues(alpha: 0.06),
-      blurRadius: 24,
-      offset: const Offset(0, 12),
     ),
   ];
 
-  // Colored glow shadows
+  // Green glow shadows
   static List<BoxShadow> glowShadow(Color color) => [
     BoxShadow(
       color: color.withValues(alpha: 0.4),
@@ -272,23 +300,37 @@ class AppColors {
     ),
   ];
 
-  // Premium button shadow
+  // Premium green button shadow
   static List<BoxShadow> buttonShadow = [
     BoxShadow(
-      color: primary.withValues(alpha: 0.35),
+      color: primary.withValues(alpha: 0.4),
       blurRadius: 20,
       offset: const Offset(0, 8),
       spreadRadius: -4,
     ),
   ];
 
+  // Neon glow effect
+  static List<BoxShadow> neonGlow = [
+    BoxShadow(
+      color: primary.withValues(alpha: 0.6),
+      blurRadius: 30,
+      spreadRadius: 2,
+    ),
+    BoxShadow(
+      color: primary.withValues(alpha: 0.3),
+      blurRadius: 60,
+      spreadRadius: 10,
+    ),
+  ];
+
   // For backward compatibility
   static const Color primaryCyan = primary;
   static const Color primaryTeal = primaryDark;
-  static const Color primaryDeep = secondary;
+  static const Color primaryDeep = richBlack;
   static const Color accentGold = accentYellow;
-  static const Color accentPeach = Color(0xFFFFB4A2);
-  static LinearGradient primaryGradient = heroGradientAlt;
+  static const Color accentPeach = Color(0xFFFFAB91);
+  static LinearGradient primaryGradient = heroGradient;
 
   static List<BoxShadow> coloredShadow(Color color) => glowShadow(color);
 }

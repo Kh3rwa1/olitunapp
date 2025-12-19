@@ -149,7 +149,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildHeader(BuildContext context, AsyncValue user, bool isDark) {
-    final userName = user.valueOrNull?.displayName ?? 'Learner';
+    final isGuest = ref.watch(guestModeProvider);
+    final userName = isGuest ? 'Explorer' : (user.valueOrNull?.displayName ?? 'Learner');
     final greeting = _getGreeting();
 
     return Padding(
@@ -189,12 +190,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
               ),
             ),
 
-            // Settings button
-            _buildIconButton(
-              icon: Icons.settings_rounded,
-              onTap: () => context.pushNamed('settings'),
-              isDark: isDark,
-            ),
+            // Settings button (or Sign In for guests)
+            isGuest
+                ? _buildSignInPrompt(context, isDark)
+                : _buildIconButton(
+                    icon: Icons.settings_rounded,
+                    onTap: () => context.pushNamed('settings'),
+                    isDark: isDark,
+                  ),
           ],
         ),
       ),
@@ -202,6 +205,43 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
         .animate()
         .fadeIn(duration: 500.ms)
         .slideY(begin: -0.2, curve: Curves.easeOut);
+  }
+
+  Widget _buildSignInPrompt(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        ref.read(guestModeProvider.notifier).state = false;
+        context.go('/sign-in');
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(12),
+          gradient: AppColors.heroGradient,
+          boxShadow: AppColors.glowShadow(AppColors.primary),
+        ),
+        child: const Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.person_add_rounded,
+              size: 18,
+              color: Colors.white,
+            ),
+            SizedBox(width: 8),
+            Text(
+              'Sign In',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _buildIconButton({
@@ -238,6 +278,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
   }
 
   Widget _buildStatsSection(BuildContext context, AsyncValue user, bool isDark) {
+    final isGuest = ref.watch(guestModeProvider);
+    
+    // Show guest prompt instead of stats for guests
+    if (isGuest) {
+      return _buildGuestPromptBanner(context, isDark);
+    }
+    
     final streak = user.valueOrNull?.stats.streak ?? 0;
     final stars = user.valueOrNull?.stats.stars ?? 0;
     final lessonsCompleted = user.valueOrNull?.stats.lessonsCompleted ?? 0;
@@ -276,6 +323,96 @@ class _HomeScreenState extends ConsumerState<HomeScreen>
             ),
           ),
         ],
+      ),
+    )
+        .animate()
+        .fadeIn(delay: 100.ms, duration: 500.ms)
+        .slideY(begin: 0.1, curve: Curves.easeOut);
+  }
+
+  Widget _buildGuestPromptBanner(BuildContext context, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 16, 20, 8),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          ref.read(guestModeProvider.notifier).state = false;
+          context.go('/sign-up');
+        },
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(20),
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [
+                    AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.1),
+                    AppColors.primaryDark.withValues(alpha: isDark ? 0.1 : 0.05),
+                  ],
+                ),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.2),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(14),
+                      gradient: AppColors.heroGradient,
+                    ),
+                    child: const Icon(
+                      Icons.rocket_launch_rounded,
+                      color: Colors.white,
+                      size: 24,
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Create account to save progress',
+                          style: TextStyle(
+                            fontSize: 15,
+                            fontWeight: FontWeight.w700,
+                            color: isDark
+                                ? AppColors.textPrimaryDark
+                                : AppColors.textPrimaryLight,
+                          ),
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Track your learning & earn rewards',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                            color: isDark
+                                ? AppColors.textTertiaryDark
+                                : AppColors.textTertiaryLight,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Icon(
+                    Icons.arrow_forward_rounded,
+                    size: 20,
+                    color: AppColors.primary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
       ),
     )
         .animate()

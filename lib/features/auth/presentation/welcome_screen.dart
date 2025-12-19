@@ -4,16 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/providers.dart';
 
-class WelcomeScreen extends StatefulWidget {
+class WelcomeScreen extends ConsumerStatefulWidget {
   const WelcomeScreen({super.key});
 
   @override
-  State<WelcomeScreen> createState() => _WelcomeScreenState();
+  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
 }
 
-class _WelcomeScreenState extends State<WelcomeScreen>
+class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
     with TickerProviderStateMixin {
   late AnimationController _floatController;
   late AnimationController _pulseController;
@@ -46,6 +48,13 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     super.dispose();
   }
 
+  void _skipToExplore() {
+    HapticFeedback.lightImpact();
+    // Enable guest mode
+    ref.read(guestModeProvider.notifier).state = true;
+    context.go('/home');
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -68,9 +77,15 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 padding: const EdgeInsets.symmetric(horizontal: 24),
                 child: Column(
                   children: [
-                    const SizedBox(height: 48),
+                    // Skip button at top right
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: _buildSkipButton(context, isDark),
+                    ).animate().fadeIn(delay: 1200.ms, duration: 400.ms),
 
-                    // Animated Logo
+                    const SizedBox(height: 24),
+
+                    // Animated Logo with actual image
                     _buildHeroLogo()
                         .animate()
                         .fadeIn(duration: 800.ms, curve: Curves.easeOut)
@@ -80,7 +95,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                           curve: Curves.easeOutBack,
                         ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
 
                     // App name with premium typography
                     _buildAppTitle(context)
@@ -88,7 +103,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                         .fadeIn(delay: 200.ms, duration: 600.ms)
                         .slideY(begin: 0.3, curve: Curves.easeOut),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
                     // Tagline
                     _buildTagline(context, isDark)
@@ -101,18 +116,61 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                     // Feature cards
                     _buildFeatureCards(context, isDark),
 
-                    const SizedBox(height: 48),
+                    const SizedBox(height: 40),
 
                     // CTA Buttons
-                    _buildCTAButtons(context)
+                    _buildCTAButtons(context, isDark)
                         .animate()
                         .fadeIn(delay: 800.ms, duration: 600.ms)
                         .slideY(begin: 0.2, curve: Curves.easeOut),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 28),
                   ],
                 ),
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSkipButton(BuildContext context, bool isDark) {
+    return GestureDetector(
+      onTap: _skipToExplore,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.12)
+                : Colors.black.withValues(alpha: 0.08),
+          ),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Skip for now',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark
+                    ? AppColors.textSecondaryDark
+                    : AppColors.textSecondaryLight,
+              ),
+            ),
+            const SizedBox(width: 4),
+            Icon(
+              Icons.arrow_forward_rounded,
+              size: 16,
+              color: isDark
+                  ? AppColors.textSecondaryDark
+                  : AppColors.textSecondaryLight,
             ),
           ],
         ),
@@ -137,14 +195,14 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               ),
               colors: isDark
                   ? [
-                      const Color(0xFF0B1120),
-                      const Color(0xFF0F172A),
-                      const Color(0xFF1E1B4B).withValues(alpha: 0.5),
+                      const Color(0xFF0A0F0D),  // Near black with green tint
+                      const Color(0xFF0D1410),  // Dark green-black
+                      const Color(0xFF0F1A14).withValues(alpha: 0.8),
                     ]
                   : [
-                      const Color(0xFFF0FDFA),
-                      const Color(0xFFFAFBFC),
-                      const Color(0xFFEFF6FF),
+                      const Color(0xFFF0FDF6),  // Mint tinted white
+                      const Color(0xFFFAFCFA),  // Pure white hint
+                      const Color(0xFFE8F8EE),  // Light green tint
                     ],
             ),
           ),
@@ -156,7 +214,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   Widget _buildFloatingElements(Size size) {
     return Stack(
       children: [
-        // Top right blob
+        // Top right blob (green)
         Positioned(
           top: -100,
           right: -80,
@@ -175,7 +233,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.primary.withValues(alpha: 0.15),
+                    AppColors.primary.withValues(alpha: 0.18),
                     AppColors.primary.withValues(alpha: 0),
                   ],
                 ),
@@ -184,7 +242,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ),
         ),
 
-        // Bottom left blob
+        // Bottom left blob (subtle green)
         Positioned(
           bottom: -120,
           left: -100,
@@ -203,8 +261,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                 shape: BoxShape.circle,
                 gradient: RadialGradient(
                   colors: [
-                    AppColors.accentPurple.withValues(alpha: 0.12),
-                    AppColors.accentPurple.withValues(alpha: 0),
+                    AppColors.primaryDark.withValues(alpha: 0.12),
+                    AppColors.primaryDark.withValues(alpha: 0),
                   ],
                 ),
               ),
@@ -212,7 +270,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           ),
         ),
 
-        // Scattered small orbs
+        // Scattered small orbs (green-themed)
         ...List.generate(6, (index) {
           final random = math.Random(index);
           return Positioned(
@@ -236,8 +294,8 @@ class _WelcomeScreenState extends State<WelcomeScreen>
                   shape: BoxShape.circle,
                   color: [
                     AppColors.primary,
-                    AppColors.accentPurple,
-                    AppColors.accentPink,
+                    AppColors.primaryLight,
+                    AppColors.primaryDark,
                   ][index % 3]
                       .withValues(alpha: 0.6),
                 ),
@@ -262,61 +320,29 @@ class _WelcomeScreenState extends State<WelcomeScreen>
         animation: _pulseController,
         builder: (context, child) {
           return Container(
-            width: 140,
-            height: 140,
+            width: 150,
+            height: 150,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(40),
-              gradient: AppColors.heroGradient,
+              borderRadius: BorderRadius.circular(42),
               boxShadow: [
                 BoxShadow(
                   color: AppColors.primary.withValues(
-                    alpha: 0.3 + (_pulseController.value * 0.15),
+                    alpha: 0.35 + (_pulseController.value * 0.15),
                   ),
-                  blurRadius: 40 + (_pulseController.value * 20),
-                  offset: const Offset(0, 16),
-                  spreadRadius: -8,
+                  blurRadius: 50 + (_pulseController.value * 25),
+                  offset: const Offset(0, 20),
+                  spreadRadius: -10,
                 ),
               ],
             ),
-            child: Stack(
-              children: [
-                // Inner glow
-                Positioned.fill(
-                  child: Container(
-                    margin: const EdgeInsets.all(2),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(38),
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.white.withValues(alpha: 0.2),
-                          Colors.white.withValues(alpha: 0),
-                        ],
-                      ),
-                    ),
-                  ),
-                ),
-                // Logo character
-                const Center(
-                  child: Text(
-                    'ᱚ',
-                    style: TextStyle(
-                      fontFamily: 'OlChiki',
-                      fontSize: 72,
-                      color: Colors.white,
-                      height: 1,
-                      shadows: [
-                        Shadow(
-                          color: Colors.black26,
-                          blurRadius: 8,
-                          offset: Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(42),
+              child: Image.asset(
+                'assets/icons/olitun_logo.png',
+                width: 150,
+                height: 150,
+                fit: BoxFit.cover,
+              ),
             ),
           );
         },
@@ -325,19 +351,19 @@ class _WelcomeScreenState extends State<WelcomeScreen>
   }
 
   Widget _buildAppTitle(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return ShaderMask(
-      shaderCallback: (bounds) => const LinearGradient(
-        colors: [
-          Color(0xFF111827),
-          Color(0xFF374151),
-        ],
+      shaderCallback: (bounds) => LinearGradient(
+        colors: isDark
+            ? [Colors.white, Colors.white.withValues(alpha: 0.9)]
+            : [const Color(0xFF0D1F12), const Color(0xFF1A3D22)],
       ).createShader(bounds),
       child: const Text(
         'Olitun',
         style: TextStyle(
-          fontSize: 48,
+          fontSize: 52,
           fontWeight: FontWeight.w800,
-          letterSpacing: -2,
+          letterSpacing: -2.5,
           height: 1,
           color: Colors.white,
         ),
@@ -361,21 +387,21 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     final features = [
       _FeatureData(
         icon: Icons.auto_awesome_rounded,
-        title: 'AI-Powered',
-        subtitle: 'Personalized learning path',
-        gradient: AppColors.premiumCyan,
+        title: 'Smart Learning',
+        subtitle: 'AI-powered personalized path',
+        gradient: AppColors.premiumGreen,
       ),
       _FeatureData(
         icon: Icons.psychology_rounded,
-        title: 'Smart Practice',
-        subtitle: 'Adaptive quizzes',
-        gradient: AppColors.premiumPurple,
+        title: 'Interactive Practice',
+        subtitle: 'Engaging quizzes & exercises',
+        gradient: AppColors.premiumMint,
       ),
       _FeatureData(
         icon: Icons.emoji_events_rounded,
-        title: 'Gamified',
-        subtitle: 'Earn rewards & streak',
-        gradient: AppColors.premiumOrange,
+        title: 'Track Progress',
+        subtitle: 'Earn rewards & maintain streaks',
+        gradient: AppColors.premiumPurple,
       ),
     ];
 
@@ -404,13 +430,20 @@ class _WelcomeScreenState extends State<WelcomeScreen>
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(20),
               color: isDark
-                  ? Colors.white.withValues(alpha: 0.05)
-                  : Colors.white.withValues(alpha: 0.7),
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.white.withValues(alpha: 0.75),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.white.withValues(alpha: 0.8),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.white.withValues(alpha: 0.9),
               ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  blurRadius: 20,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
             child: Row(
               children: [
@@ -476,12 +509,12 @@ class _WelcomeScreenState extends State<WelcomeScreen>
     );
   }
 
-  Widget _buildCTAButtons(BuildContext context) {
+  Widget _buildCTAButtons(BuildContext context, bool isDark) {
     return Column(
       children: [
-        // Primary CTA
+        // Primary CTA - Get Started
         _PremiumButton(
-          text: 'Start Learning Free',
+          text: 'Get Started',
           onPressed: () {
             HapticFeedback.mediumImpact();
             context.pushNamed('signUp');
@@ -491,7 +524,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
 
         const SizedBox(height: 12),
 
-        // Secondary CTA
+        // Secondary CTA - Sign In
         _PremiumButton(
           text: 'I have an account',
           onPressed: () {
@@ -501,7 +534,33 @@ class _WelcomeScreenState extends State<WelcomeScreen>
           isPrimary: false,
         ),
 
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+
+        // Explore as guest option
+        GestureDetector(
+          onTap: _skipToExplore,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.explore_outlined,
+                size: 18,
+                color: AppColors.primary,
+              ),
+              const SizedBox(width: 8),
+              Text(
+                'Explore without account',
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: AppColors.primary,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
 
         // Trust indicator
         Row(
@@ -518,7 +577,7 @@ class _WelcomeScreenState extends State<WelcomeScreen>
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textTertiaryLight,
+                color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
               ),
             ),
           ],

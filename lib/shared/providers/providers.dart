@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -189,28 +190,36 @@ final categoriesProvider =
 
 class CategoriesNotifier
     extends StateNotifier<AsyncValue<List<CategoryModel>>> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
   CategoriesNotifier() : super(const AsyncValue.loading()) {
-    fetch();
+    _subscribe();
   }
 
-  Future<void> fetch() async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('categories')
-          .select()
-          .order('order');
-      final list = (response as List)
-          .map((e) => CategoryModel.fromJson(e))
-          .toList();
-      state = AsyncValue.data(list);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  void _subscribe() {
+    _subscription = SupabaseConfig.client
+        .from('categories')
+        .stream(primaryKey: ['id'])
+        .order('order')
+        .listen(
+          (data) {
+            final list = data.map((e) => CategoryModel.fromJson(e)).toList();
+            state = AsyncValue.data(list);
+          },
+          onError: (error, stack) {
+            state = AsyncValue.error(error, stack);
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> addCategory(CategoryModel item) async {
     await SupabaseConfig.client.from('categories').insert(item.toJson());
-    fetch();
   }
 
   Future<void> updateCategory(CategoryModel item) async {
@@ -218,12 +227,10 @@ class CategoriesNotifier
         .from('categories')
         .update(item.toJson())
         .eq('id', item.id);
-    fetch();
   }
 
   Future<void> deleteCategory(String id) async {
     await SupabaseConfig.client.from('categories').delete().eq('id', id);
-    fetch();
   }
 
   // Reorder is complex, simplifying for now
@@ -243,28 +250,38 @@ final featuredBannersProvider =
 
 class BannersNotifier
     extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
   BannersNotifier() : super(const AsyncValue.loading()) {
-    fetch();
+    _subscribe();
   }
 
-  Future<void> fetch() async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('banners')
-          .select()
-          .order('order');
-      final list = (response as List)
-          .map((e) => FeaturedBannerModel.fromJson(e))
-          .toList();
-      state = AsyncValue.data(list);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  void _subscribe() {
+    _subscription = SupabaseConfig.client
+        .from('banners')
+        .stream(primaryKey: ['id'])
+        .order('order')
+        .listen(
+          (data) {
+            final list = data
+                .map((e) => FeaturedBannerModel.fromJson(e))
+                .toList();
+            state = AsyncValue.data(list);
+          },
+          onError: (error, stack) {
+            state = AsyncValue.error(error, stack);
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> addBanner(FeaturedBannerModel item) async {
     await SupabaseConfig.client.from('banners').insert(item.toJson());
-    fetch();
   }
 
   Future<void> updateBanner(FeaturedBannerModel item) async {
@@ -272,12 +289,10 @@ class BannersNotifier
         .from('banners')
         .update(item.toJson())
         .eq('id', item.id);
-    fetch();
   }
 
   Future<void> deleteBanner(String id) async {
     await SupabaseConfig.client.from('banners').delete().eq('id', id);
-    fetch();
   }
 }
 
@@ -290,28 +305,36 @@ final lettersProvider =
     });
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
   LettersNotifier() : super(const AsyncValue.loading()) {
-    fetch();
+    _subscribe();
   }
 
-  Future<void> fetch() async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('letters')
-          .select()
-          .order('order');
-      final list = (response as List)
-          .map((e) => LetterModel.fromJson(e))
-          .toList();
-      state = AsyncValue.data(list);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  void _subscribe() {
+    _subscription = SupabaseConfig.client
+        .from('letters')
+        .stream(primaryKey: ['id'])
+        .order('order')
+        .listen(
+          (data) {
+            final list = data.map((e) => LetterModel.fromJson(e)).toList();
+            state = AsyncValue.data(list);
+          },
+          onError: (error, stack) {
+            state = AsyncValue.error(error, stack);
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> addLetter(LetterModel item) async {
     await SupabaseConfig.client.from('letters').insert(item.toJson());
-    fetch();
   }
 
   Future<void> updateLetter(LetterModel item) async {
@@ -319,12 +342,10 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         .from('letters')
         .update(item.toJson())
         .eq('id', item.id);
-    fetch();
   }
 
   Future<void> deleteLetter(String id) async {
     await SupabaseConfig.client.from('letters').delete().eq('id', id);
-    fetch();
   }
 }
 
@@ -337,28 +358,36 @@ final lessonsProvider =
     });
 
 class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
   LessonsNotifier() : super(const AsyncValue.loading()) {
-    fetch();
+    _subscribe();
   }
 
-  Future<void> fetch() async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('lessons')
-          .select()
-          .order('order');
-      final list = (response as List)
-          .map((e) => LessonModel.fromJson(e))
-          .toList();
-      state = AsyncValue.data(list);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  void _subscribe() {
+    _subscription = SupabaseConfig.client
+        .from('lessons')
+        .stream(primaryKey: ['id'])
+        .order('order')
+        .listen(
+          (data) {
+            final list = data.map((e) => LessonModel.fromJson(e)).toList();
+            state = AsyncValue.data(list);
+          },
+          onError: (error, stack) {
+            state = AsyncValue.error(error, stack);
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> addLesson(LessonModel item) async {
     await SupabaseConfig.client.from('lessons').insert(item.toJson());
-    fetch();
   }
 
   Future<void> updateLesson(LessonModel item) async {
@@ -366,12 +395,10 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
         .from('lessons')
         .update(item.toJson())
         .eq('id', item.id);
-    fetch();
   }
 
   Future<void> deleteLesson(String id) async {
     await SupabaseConfig.client.from('lessons').delete().eq('id', id);
-    fetch();
   }
 }
 
@@ -390,28 +417,36 @@ final quizzesProvider =
     });
 
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
+  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+
   QuizzesNotifier() : super(const AsyncValue.loading()) {
-    fetch();
+    _subscribe();
   }
 
-  Future<void> fetch() async {
-    try {
-      final response = await SupabaseConfig.client
-          .from('quizzes')
-          .select()
-          .order('order');
-      final list = (response as List)
-          .map((e) => QuizModel.fromJson(e))
-          .toList();
-      state = AsyncValue.data(list);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
+  void _subscribe() {
+    _subscription = SupabaseConfig.client
+        .from('quizzes')
+        .stream(primaryKey: ['id'])
+        .order('order')
+        .listen(
+          (data) {
+            final list = data.map((e) => QuizModel.fromJson(e)).toList();
+            state = AsyncValue.data(list);
+          },
+          onError: (error, stack) {
+            state = AsyncValue.error(error, stack);
+          },
+        );
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
   }
 
   Future<void> addQuiz(QuizModel item) async {
     await SupabaseConfig.client.from('quizzes').insert(item.toJson());
-    fetch();
   }
 
   Future<void> updateQuiz(QuizModel item) async {
@@ -419,12 +454,10 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         .from('quizzes')
         .update(item.toJson())
         .eq('id', item.id);
-    fetch();
   }
 
   Future<void> deleteQuiz(String id) async {
     await SupabaseConfig.client.from('quizzes').delete().eq('id', id);
-    fetch();
   }
 }
 

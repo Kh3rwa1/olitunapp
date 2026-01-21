@@ -3,14 +3,21 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'router/app_router.dart';
 import 'shared/providers/providers.dart';
+
+import 'core/config/supabase_config.dart';
 
 // Global SharedPreferences instance
 late SharedPreferences prefs;
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Supabase
+  await SupabaseConfig.initialize();
 
   // Initialize SharedPreferences for local storage
   prefs = await SharedPreferences.getInstance();
@@ -31,11 +38,7 @@ void main() async {
     DeviceOrientation.portraitDown,
   ]);
 
-  runApp(
-    const ProviderScope(
-      child: OlitunApp(),
-    ),
-  );
+  runApp(const ProviderScope(child: OlitunApp()));
 }
 
 class OlitunApp extends ConsumerWidget {
@@ -53,6 +56,13 @@ class OlitunApp extends ConsumerWidget {
       darkTheme: AppTheme.darkTheme,
       themeMode: _getThemeMode(themeMode),
       routerConfig: router,
+      localizationsDelegates: const [
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
+      supportedLocales: AppLocalizations.supportedLocales,
     );
   }
 

@@ -21,12 +21,18 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : Colors.black),
+          icon: Icon(
+            Icons.arrow_back_rounded,
+            color: isDark ? Colors.white : Colors.black,
+          ),
           onPressed: () => context.go('/home'),
         ),
         title: Text(
           'Settings',
-          style: TextStyle(fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+          style: TextStyle(
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : Colors.black,
+          ),
         ),
       ),
       body: ListView(
@@ -42,9 +48,9 @@ class SettingsScreen extends ConsumerWidget {
             isDark: isDark,
             onTap: () => _showThemeDialog(context, ref, themeMode),
           ),
-          
+
           const SizedBox(height: 28),
-          
+
           // Script Section
           _SectionHeader('Script Display', isDark),
           const SizedBox(height: 16),
@@ -55,9 +61,9 @@ class SettingsScreen extends ConsumerWidget {
             isDark: isDark,
             onTap: () => _showScriptDialog(context, ref, scriptMode),
           ),
-          
+
           const SizedBox(height: 28),
-          
+
           // Sound Section
           _SectionHeader('Sound', isDark),
           const SizedBox(height: 16),
@@ -69,9 +75,9 @@ class SettingsScreen extends ConsumerWidget {
             isDark: isDark,
             onChanged: (value) => toggleSound(ref),
           ),
-          
+
           const SizedBox(height: 28),
-          
+
           // Data Section
           _SectionHeader('Data', isDark),
           const SizedBox(height: 16),
@@ -90,17 +96,23 @@ class SettingsScreen extends ConsumerWidget {
 
   String _getThemeLabel(String mode) {
     switch (mode) {
-      case 'light': return 'Light';
-      case 'dark': return 'Dark';
-      default: return 'System default';
+      case 'light':
+        return 'Light';
+      case 'dark':
+        return 'Dark';
+      default:
+        return 'System default';
     }
   }
 
   String _getScriptLabel(String mode) {
     switch (mode) {
-      case 'olchiki': return 'Ol Chiki only';
-      case 'latin': return 'Latin only';
-      default: return 'Both scripts';
+      case 'olchiki':
+        return 'Ol Chiki only';
+      case 'latin':
+        return 'Latin only';
+      default:
+        return 'Both scripts';
     }
   }
 
@@ -208,7 +220,9 @@ class SettingsScreen extends ConsumerWidget {
             const Text('Reset Progress'),
           ],
         ),
-        content: const Text('This will clear all your progress, stars, and streaks. This action cannot be undone.'),
+        content: const Text(
+          'This will clear all your progress, stars, and streaks. This action cannot be undone.',
+        ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -283,7 +297,9 @@ class _SettingTile extends StatelessWidget {
           color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            color: isDark
+                ? Colors.white10
+                : Colors.black.withValues(alpha: 0.05),
           ),
         ),
         child: Row(
@@ -292,10 +308,14 @@ class _SettingTile extends StatelessWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: (isDestructive ? AppColors.error : AppColors.primary).withValues(alpha: 0.1),
+                color: (isDestructive ? AppColors.error : AppColors.primary)
+                    .withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(icon, color: isDestructive ? AppColors.error : AppColors.primary),
+              child: Icon(
+                icon,
+                color: isDestructive ? AppColors.error : AppColors.primary,
+              ),
             ),
             const SizedBox(width: 16),
             Expanded(
@@ -307,7 +327,9 @@ class _SettingTile extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: isDestructive ? AppColors.error : (isDark ? Colors.white : Colors.black),
+                      color: isDestructive
+                          ? AppColors.error
+                          : (isDark ? Colors.white : Colors.black),
                     ),
                   ),
                   const SizedBox(height: 2),
@@ -321,7 +343,10 @@ class _SettingTile extends StatelessWidget {
                 ],
               ),
             ),
-            Icon(Icons.chevron_right_rounded, color: isDark ? Colors.white38 : Colors.black38),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
           ],
         ),
       ),
@@ -410,7 +435,13 @@ class _ThemeOption extends StatelessWidget {
   final WidgetRef ref;
   final bool isDark;
 
-  const _ThemeOption(this.label, this.value, this.current, this.ref, this.isDark);
+  const _ThemeOption(
+    this.label,
+    this.value,
+    this.current,
+    this.ref,
+    this.isDark,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -441,7 +472,13 @@ class _ScriptOption extends StatelessWidget {
   final WidgetRef ref;
   final bool isDark;
 
-  const _ScriptOption(this.label, this.value, this.current, this.ref, this.isDark);
+  const _ScriptOption(
+    this.label,
+    this.value,
+    this.current,
+    this.ref,
+    this.isDark,
+  );
 
   @override
   Widget build(BuildContext context) {

@@ -1,4 +1,4 @@
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,7 @@ class AdminLettersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final letters = ref.watch(lettersProvider);
+    final lettersAsync = ref.watch(lettersProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -32,9 +32,25 @@ class AdminLettersScreen extends ConsumerWidget {
                   child: _buildHeader(context, isDark, isWideScreen),
                 ),
                 Expanded(
-                  child: letters.isEmpty
-                      ? _buildEmptyState(context, ref, isDark)
-                      : _buildLettersGrid(context, ref, letters, isDark, isWideScreen),
+                  child: lettersAsync.when(
+                    data: (letters) => letters.isEmpty
+                        ? _buildEmptyState(context, ref, isDark)
+                        : _buildLettersGrid(
+                            context,
+                            ref,
+                            letters,
+                            isDark,
+                            isWideScreen,
+                          ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: SelectableText(
+                        'Error loading letters: $error',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -45,7 +61,10 @@ class AdminLettersScreen extends ConsumerWidget {
         onPressed: () => _showLetterDialog(context, ref, null),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Add Letter', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        label: const Text(
+          'Add Letter',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
@@ -74,10 +93,15 @@ class AdminLettersScreen extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : Colors.black),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
           ),
         if (!isWideScreen) const SizedBox(height: 20),
@@ -101,7 +125,9 @@ class AdminLettersScreen extends ConsumerWidget {
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1.5,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -110,7 +136,9 @@ class AdminLettersScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                    color: isDark
+                        ? AppColors.textTertiaryDark
+                        : AppColors.textTertiaryLight,
                   ),
                 ),
               ],
@@ -141,7 +169,14 @@ class AdminLettersScreen extends ConsumerWidget {
               ],
             ),
             child: const Center(
-              child: Text('ᱚ', style: TextStyle(fontSize: 48, fontWeight: FontWeight.w900, color: Colors.white)),
+              child: Text(
+                'ᱚ',
+                style: TextStyle(
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
+                  color: Colors.white,
+                ),
+              ),
             ),
           ),
           const SizedBox(height: 28),
@@ -150,7 +185,9 @@ class AdminLettersScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 10),
@@ -158,7 +195,9 @@ class AdminLettersScreen extends ConsumerWidget {
             'Add Ol Chiki alphabet letters',
             style: TextStyle(
               fontSize: 15,
-              color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+              color: isDark
+                  ? AppColors.textTertiaryDark
+                  : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 28),
@@ -182,7 +221,14 @@ class AdminLettersScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.add_rounded, color: Colors.white),
                   SizedBox(width: 10),
-                  Text('Add Letter', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  Text(
+                    'Add Letter',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -192,9 +238,20 @@ class AdminLettersScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 
-  Widget _buildLettersGrid(BuildContext context, WidgetRef ref, List<LetterModel> letters, bool isDark, bool isWideScreen) {
+  Widget _buildLettersGrid(
+    BuildContext context,
+    WidgetRef ref,
+    List<LetterModel> letters,
+    bool isDark,
+    bool isWideScreen,
+  ) {
     return GridView.builder(
-      padding: EdgeInsets.fromLTRB(isWideScreen ? 32 : 20, 0, isWideScreen ? 32 : 20, 100),
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isWideScreen ? 6 : 3,
         crossAxisSpacing: 14,
@@ -215,11 +272,21 @@ class AdminLettersScreen extends ConsumerWidget {
     );
   }
 
-  void _showLetterDialog(BuildContext context, WidgetRef ref, LetterModel? letter) {
+  void _showLetterDialog(
+    BuildContext context,
+    WidgetRef ref,
+    LetterModel? letter,
+  ) {
     final isEditing = letter != null;
-    final charController = TextEditingController(text: letter?.charOlChiki ?? '');
-    final romanController = TextEditingController(text: letter?.transliterationLatin ?? '');
-    final pronunciationController = TextEditingController(text: letter?.pronunciation ?? '');
+    final charController = TextEditingController(
+      text: letter?.charOlChiki ?? '',
+    );
+    final romanController = TextEditingController(
+      text: letter?.transliterationLatin ?? '',
+    );
+    final pronunciationController = TextEditingController(
+      text: letter?.pronunciation ?? '',
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showModalBottomSheet(
@@ -254,33 +321,62 @@ class AdminLettersScreen extends ConsumerWidget {
                       gradient: AppColors.premiumMint,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Icon(isEditing ? Icons.edit_rounded : Icons.add_rounded, color: Colors.white),
+                    child: Icon(
+                      isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                      color: Colors.white,
+                    ),
                   ),
                   const SizedBox(width: 16),
                   Text(
                     isEditing ? 'Edit Letter' : 'New Letter',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+                    style: TextStyle(
+                      fontSize: 22,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
                   const Spacer(),
                   IconButton(
                     onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close_rounded, color: isDark ? Colors.white54 : Colors.black45),
+                    icon: Icon(
+                      Icons.close_rounded,
+                      color: isDark ? Colors.white54 : Colors.black45,
+                    ),
                   ),
                 ],
               ),
             ),
-            Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+            Divider(
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.06),
+            ),
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.all(24),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    _buildTextField(controller: charController, label: 'Ol Chiki Character', hint: 'e.g., ᱚ', isDark: isDark),
+                    _buildTextField(
+                      controller: charController,
+                      label: 'Ol Chiki Character',
+                      hint: 'e.g., ᱚ',
+                      isDark: isDark,
+                    ),
                     const SizedBox(height: 20),
-                    _buildTextField(controller: romanController, label: 'Romanization', hint: 'e.g., a', isDark: isDark),
+                    _buildTextField(
+                      controller: romanController,
+                      label: 'Romanization',
+                      hint: 'e.g., a',
+                      isDark: isDark,
+                    ),
                     const SizedBox(height: 20),
-                    _buildTextField(controller: pronunciationController, label: 'Pronunciation (optional)', hint: 'e.g., like "a" in "about"', isDark: isDark),
+                    _buildTextField(
+                      controller: pronunciationController,
+                      label: 'Pronunciation (optional)',
+                      hint: 'e.g., like "a" in "about"',
+                      isDark: isDark,
+                    ),
                   ],
                 ),
               ),
@@ -288,8 +384,16 @@ class AdminLettersScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(24),
               decoration: BoxDecoration(
-                color: isDark ? const Color(0xFF0D1117) : const Color(0xFFF8FAFC),
-                border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06))),
+                color: isDark
+                    ? const Color(0xFF0D1117)
+                    : const Color(0xFFF8FAFC),
+                border: Border(
+                  top: BorderSide(
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.06),
+                  ),
+                ),
               ),
               child: Row(
                 children: [
@@ -299,11 +403,20 @@ class AdminLettersScreen extends ConsumerWidget {
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         decoration: BoxDecoration(
-                          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.black.withValues(alpha: 0.05),
                           borderRadius: BorderRadius.circular(14),
                         ),
                         child: Center(
-                          child: Text('Cancel', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black54)),
+                          child: Text(
+                            'Cancel',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -318,14 +431,20 @@ class AdminLettersScreen extends ConsumerWidget {
                           id: letter?.id ?? const Uuid().v4(),
                           charOlChiki: charController.text,
                           transliterationLatin: romanController.text,
-                          pronunciation: pronunciationController.text.isNotEmpty ? pronunciationController.text : null,
+                          pronunciation: pronunciationController.text.isNotEmpty
+                              ? pronunciationController.text
+                              : null,
                           order: letter?.order ?? 0,
                           isActive: true,
                         );
                         if (isEditing) {
-                          ref.read(lettersProvider.notifier).updateLetter(newLetter);
+                          ref
+                              .read(lettersProvider.notifier)
+                              .updateLetter(newLetter);
                         } else {
-                          ref.read(lettersProvider.notifier).addLetter(newLetter);
+                          ref
+                              .read(lettersProvider.notifier)
+                              .addLetter(newLetter);
                         }
                         Navigator.pop(context);
                       },
@@ -334,10 +453,25 @@ class AdminLettersScreen extends ConsumerWidget {
                         decoration: BoxDecoration(
                           gradient: AppColors.premiumMint,
                           borderRadius: BorderRadius.circular(14),
-                          boxShadow: [BoxShadow(color: AppColors.accentMint.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))],
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppColors.accentMint.withValues(
+                                alpha: 0.4,
+                              ),
+                              blurRadius: 15,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
                         ),
                         child: Center(
-                          child: Text(isEditing ? 'Save Changes' : 'Add Letter', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                          child: Text(
+                            isEditing ? 'Save Changes' : 'Add Letter',
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
                         ),
                       ),
                     ),
@@ -351,30 +485,63 @@ class AdminLettersScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String label, required String hint, required bool isDark}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isDark,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
         const SizedBox(height: 10),
         TextField(
           controller: controller,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w500, fontSize: 18),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontWeight: FontWeight.w500,
+            fontSize: 18,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+            hintStyle: TextStyle(
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
             filled: true,
-            fillColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.accentMint, width: 2)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: AppColors.accentMint, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, LetterModel letter) {
+  void _showDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    LetterModel letter,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
@@ -386,23 +553,40 @@ class AdminLettersScreen extends ConsumerWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(width: 14),
             const Text('Delete Letter'),
           ],
         ),
-        content: Text('Are you sure you want to delete "${letter.charOlChiki}"?'),
+        content: Text(
+          'Are you sure you want to delete "${letter.charOlChiki}"?',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
               ref.read(lettersProvider.notifier).deleteLetter(letter.id);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -429,51 +613,57 @@ class _LetterCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onEdit,
-      onLongPress: onDelete,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: AppColors.premiumMint,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.accentMint.withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 6),
-            ),
-          ],
-        ),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Text(
-              letter.charOlChiki,
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.w900,
-                fontFamily: 'OlChiki',
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(8),
-              ),
-              child: Text(
-                letter.transliterationLatin,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+          onTap: onEdit,
+          onLongPress: onDelete,
+          child: Container(
+            decoration: BoxDecoration(
+              gradient: AppColors.premiumMint,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.accentMint.withValues(alpha: 0.3),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
-      ),
-    ).animate().fadeIn(delay: (index * 50).ms, duration: 300.ms).scale(begin: const Offset(0.9, 0.9));
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  letter.charOlChiki,
+                  style: const TextStyle(
+                    fontSize: 40,
+                    fontWeight: FontWeight.w900,
+                    fontFamily: 'OlChiki',
+                    color: Colors.white,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.2),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    letter.transliterationLatin,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+        .animate()
+        .fadeIn(delay: (index * 50).ms, duration: 300.ms)
+        .scale(begin: const Offset(0.9, 0.9));
   }
 }

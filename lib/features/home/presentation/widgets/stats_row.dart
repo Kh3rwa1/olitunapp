@@ -1,39 +1,54 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
-import '../../../../shared/widgets/glass_card.dart';
 
 class StatsRow extends StatelessWidget {
   final int streak;
   final int stars;
+  final int lessons;
 
   const StatsRow({
     super.key,
     required this.streak,
     required this.stars,
+    required this.lessons,
   });
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       children: [
-        Expanded(
-          child: _StatCard(
-            icon: Icons.local_fire_department_rounded,
-            iconColor: AppColors.accentOrange,
-            value: streak.toString(),
-            label: 'Day Streak',
-          ),
-        ),
-        const SizedBox(width: AppConstants.spacingM),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.star_rounded,
-            iconColor: AppColors.accentYellow,
-            value: stars.toString(),
-            label: 'Stars',
-          ),
-        ),
+        _StatCard(
+              icon: Icons.local_fire_department_rounded,
+              value: '$streak',
+              label: l10n.dayStreak,
+              gradient: AppColors.premiumOrange,
+            )
+            .animate()
+            .fadeIn(delay: 100.ms, duration: 600.ms)
+            .slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack),
+        const SizedBox(width: 12),
+        _StatCard(
+              icon: Icons.star_rounded,
+              value: '$stars',
+              label: l10n.stars,
+              gradient: AppColors.premiumGreen,
+            )
+            .animate()
+            .fadeIn(delay: 200.ms, duration: 600.ms)
+            .slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack),
+        const SizedBox(width: 12),
+        _StatCard(
+              icon: Icons.school_rounded,
+              value: '$lessons',
+              label: l10n.lessons,
+              gradient: AppColors.premiumPurple,
+            )
+            .animate()
+            .fadeIn(delay: 300.ms, duration: 600.ms)
+            .slideY(begin: 0.2, end: 0, curve: Curves.easeOutBack),
       ],
     );
   }
@@ -41,60 +56,57 @@ class StatsRow extends StatelessWidget {
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
   final String value;
   final String label;
+  final Gradient gradient;
 
   const _StatCard({
     required this.icon,
-    required this.iconColor,
     required this.value,
     required this.label,
+    required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return SoftCard(
-      padding: const EdgeInsets.symmetric(
-        horizontal: AppConstants.spacingM,
-        vertical: AppConstants.spacingS,
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            decoration: BoxDecoration(
-              color: iconColor.withValues(alpha: 0.15),
-              borderRadius: BorderRadius.circular(12),
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: gradient,
+          borderRadius: BorderRadius.circular(18),
+          boxShadow: [
+            BoxShadow(
+              color: (gradient as LinearGradient).colors.first.withValues(
+                alpha: 0.3,
+              ),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
             ),
-            child: Icon(icon, color: iconColor, size: 22),
-          ),
-          const SizedBox(width: AppConstants.spacingS),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-                Text(
-                  label,
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: isDark
-                        ? AppColors.textTertiaryDark
-                        : AppColors.textTertiaryLight,
-                  ),
-                ),
-              ],
+          ],
+        ),
+        child: Column(
+          children: [
+            Icon(icon, color: Colors.white, size: 24),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
             ),
-          ),
-        ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
+                color: Colors.white.withValues(alpha: 0.85),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

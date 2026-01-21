@@ -1,0 +1,37 @@
+{
+    "@@locale": "sat",
+    "helloUser": "Johar, {userName}! 👋",
+    "@helloUser": {
+        "placeholders": {
+            "userName": {
+                "type": "String"
+            }
+        }
+    },
+    "readyToLearn": "Tehin chet lagid em saprao-a?",
+    "dayStreak": "Din Streak",
+    "stars": "Stars",
+    "lessons": "Path",
+    "continueLearning": "Chet' idime",
+    "pickUpWhereLeftOff": "Jahan khon em bagiat-a",
+    "percentComplete": "{percent}% Chao",
+    "@percentComplete": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyQuiz": "Din-am Quiz",
+    "practice": "Abhyas",
+    "explore": "Sandhay me",
+    "chooseCategory": "Thok bachao me",
+    "lessonsCount": "{count} path",
+    "@lessonsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    }
+}

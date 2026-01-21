@@ -1,5 +1,3 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 class UserModel {
   final String uid;
   final String email;
@@ -23,34 +21,35 @@ class UserModel {
     this.lastActiveAt,
   });
 
-  factory UserModel.fromFirestore(Map<String, dynamic> data, String docId) {
+  factory UserModel.fromJson(Map<String, dynamic> data) {
     return UserModel(
-      uid: docId,
+      uid: data['id'] as String,
       email: data['email'] as String? ?? '',
-      displayName: data['displayName'] as String? ?? 'Learner',
-      photoUrl: data['photoUrl'] as String?,
+      displayName: data['display_name'] as String? ?? 'Learner',
+      photoUrl: data['photo_url'] as String?,
       role: data['role'] as String? ?? 'user',
-      preferences: UserPreferences.fromMap(
+      preferences: UserPreferences.fromJson(
         data['preferences'] as Map<String, dynamic>? ?? {},
       ),
-      stats: UserStats.fromMap(
-        data['stats'] as Map<String, dynamic>? ?? {},
-      ),
-      createdAt: (data['createdAt'] as Timestamp?)?.toDate() ?? DateTime.now(),
-      lastActiveAt: (data['lastActiveAt'] as Timestamp?)?.toDate(),
+      stats: UserStats.fromJson(data['stats'] as Map<String, dynamic>? ?? {}),
+      createdAt: DateTime.parse(data['created_at'] as String),
+      lastActiveAt: data['last_active_at'] != null
+          ? DateTime.parse(data['last_active_at'] as String)
+          : null,
     );
   }
 
-  Map<String, dynamic> toFirestore() {
+  Map<String, dynamic> toJson() {
     return {
+      'id': uid,
       'email': email,
-      'displayName': displayName,
-      'photoUrl': photoUrl,
+      'display_name': displayName,
+      'photo_url': photoUrl,
       'role': role,
-      'preferences': preferences.toMap(),
-      'stats': stats.toMap(),
-      'createdAt': Timestamp.fromDate(createdAt),
-      'lastActiveAt': lastActiveAt != null ? Timestamp.fromDate(lastActiveAt!) : null,
+      'preferences': preferences.toJson(),
+      'stats': stats.toJson(),
+      'created_at': createdAt.toIso8601String(),
+      'last_active_at': lastActiveAt?.toIso8601String(),
     };
   }
 
@@ -93,40 +92,24 @@ class UserPreferences {
     this.level = 'beginner',
   });
 
-  factory UserPreferences.fromMap(Map<String, dynamic> data) {
+  factory UserPreferences.fromJson(Map<String, dynamic> data) {
     return UserPreferences(
-      themeMode: data['themeMode'] as String? ?? 'system',
-      scriptMode: data['scriptMode'] as String? ?? 'both',
-      soundEnabled: data['soundEnabled'] as bool? ?? true,
-      notificationsEnabled: data['notificationsEnabled'] as bool? ?? true,
+      themeMode: data['theme_mode'] as String? ?? 'system',
+      scriptMode: data['script_mode'] as String? ?? 'both',
+      soundEnabled: data['sound_enabled'] as bool? ?? true,
+      notificationsEnabled: data['notifications_enabled'] as bool? ?? true,
       level: data['level'] as String? ?? 'beginner',
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
-      'themeMode': themeMode,
-      'scriptMode': scriptMode,
-      'soundEnabled': soundEnabled,
-      'notificationsEnabled': notificationsEnabled,
+      'theme_mode': themeMode,
+      'script_mode': scriptMode,
+      'sound_enabled': soundEnabled,
+      'notifications_enabled': notificationsEnabled,
       'level': level,
     };
-  }
-
-  UserPreferences copyWith({
-    String? themeMode,
-    String? scriptMode,
-    bool? soundEnabled,
-    bool? notificationsEnabled,
-    String? level,
-  }) {
-    return UserPreferences(
-      themeMode: themeMode ?? this.themeMode,
-      scriptMode: scriptMode ?? this.scriptMode,
-      soundEnabled: soundEnabled ?? this.soundEnabled,
-      notificationsEnabled: notificationsEnabled ?? this.notificationsEnabled,
-      level: level ?? this.level,
-    );
   }
 }
 
@@ -149,31 +132,34 @@ class UserStats {
     this.totalAnswers = 0,
   });
 
-  factory UserStats.fromMap(Map<String, dynamic> data) {
+  factory UserStats.fromJson(Map<String, dynamic> data) {
     return UserStats(
       stars: data['stars'] as int? ?? 0,
       streak: data['streak'] as int? ?? 0,
-      lastActiveDate: (data['lastActiveDate'] as Timestamp?)?.toDate(),
-      totalLessonsCompleted: data['totalLessonsCompleted'] as int? ?? 0,
-      totalQuizzesCompleted: data['totalQuizzesCompleted'] as int? ?? 0,
-      correctAnswers: data['correctAnswers'] as int? ?? 0,
-      totalAnswers: data['totalAnswers'] as int? ?? 0,
+      lastActiveDate: data['last_active_date'] != null
+          ? DateTime.parse(data['last_active_date'] as String)
+          : null,
+      totalLessonsCompleted: data['lessons_completed'] as int? ?? 0,
+      totalQuizzesCompleted: data['quizzes_completed'] as int? ?? 0,
+      correctAnswers: data['correct_answers'] as int? ?? 0,
+      totalAnswers: data['total_answers'] as int? ?? 0,
     );
   }
 
-  Map<String, dynamic> toMap() {
+  Map<String, dynamic> toJson() {
     return {
       'stars': stars,
       'streak': streak,
-      'lastActiveDate': lastActiveDate != null ? Timestamp.fromDate(lastActiveDate!) : null,
-      'totalLessonsCompleted': totalLessonsCompleted,
-      'totalQuizzesCompleted': totalQuizzesCompleted,
-      'correctAnswers': correctAnswers,
-      'totalAnswers': totalAnswers,
+      'last_active_date': lastActiveDate?.toIso8601String(),
+      'lessons_completed': totalLessonsCompleted,
+      'quizzes_completed': totalQuizzesCompleted,
+      'correct_answers': correctAnswers,
+      'total_answers': totalAnswers,
     };
   }
 
-  double get accuracy => totalAnswers > 0 ? (correctAnswers / totalAnswers) * 100 : 0;
+  double get accuracy =>
+      totalAnswers > 0 ? (correctAnswers / totalAnswers) * 100 : 0;
 
   UserStats copyWith({
     int? stars,
@@ -188,8 +174,10 @@ class UserStats {
       stars: stars ?? this.stars,
       streak: streak ?? this.streak,
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
-      totalLessonsCompleted: totalLessonsCompleted ?? this.totalLessonsCompleted,
-      totalQuizzesCompleted: totalQuizzesCompleted ?? this.totalQuizzesCompleted,
+      totalLessonsCompleted:
+          totalLessonsCompleted ?? this.totalLessonsCompleted,
+      totalQuizzesCompleted:
+          totalQuizzesCompleted ?? this.totalQuizzesCompleted,
       correctAnswers: correctAnswers ?? this.correctAnswers,
       totalAnswers: totalAnswers ?? this.totalAnswers,
     );

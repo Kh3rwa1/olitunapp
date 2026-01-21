@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../../../shared/widgets/progress_ring.dart';
 import '../../../../shared/models/content_models.dart';
+import '../../../../shared/widgets/scale_button.dart';
 
 class CategoryCard extends StatelessWidget {
   final CategoryModel category;
@@ -23,116 +25,115 @@ class CategoryCard extends StatelessWidget {
     final gradient = _getGradient(category.gradientPreset);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return SoftCard(
-      onTap: onTap,
-      padding: const EdgeInsets.all(AppConstants.spacingM),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Icon and Progress
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Category Icon
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(14),
+    return ScaleButton(
+      onTap: onTap ?? () {},
+      child: SoftCard(
+        onTap: null, // Handled by ScaleButton now
+        padding: const EdgeInsets.all(AppConstants.spacingM),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Icon and Progress
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                // Category Icon
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: category.iconUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: CachedNetworkImage(
+                            imageUrl: category.iconUrl!,
+                            fit: BoxFit.cover,
+                            errorWidget: (_, __, ___) => _buildDefaultIcon(),
+                          ),
+                        )
+                      : _buildDefaultIcon(),
                 ),
-                child: category.iconUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(14),
-                        child: CachedNetworkImage(
-                          imageUrl: category.iconUrl!,
-                          fit: BoxFit.cover,
-                          errorWidget: (_, __, ___) => _buildDefaultIcon(),
-                        ),
-                      )
-                    : _buildDefaultIcon(),
-              ),
 
-              // Progress Ring
-              ProgressRing(
-                progress: progress / 100,
-                size: 44,
-                strokeWidth: 4,
-                progressGradient: gradient,
-                child: Text(
-                  '${progress.toInt()}%',
-                  style: const TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                // Progress Ring
+                ProgressRing(
+                  progress: progress / 100,
+                  size: 44,
+                  strokeWidth: 4,
+                  progressGradient: gradient,
+                  child: Text(
+                    '${progress.toInt()}%',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
-          const Spacer(),
-
-          // Title
-          Text(
-            category.titleLatin,
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w600,
+              ],
             ),
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2),
+            const Spacer(),
 
-          // Ol Chiki Title
-          if (category.titleOlChiki.isNotEmpty)
+            // Title
             Text(
-              category.titleOlChiki,
-              style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                fontFamily: 'OlChiki',
-                color: isDark
-                    ? AppColors.textTertiaryDark
-                    : AppColors.textTertiaryLight,
-              ),
+              category.titleLatin,
+              style: Theme.of(
+                context,
+              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-          const SizedBox(height: AppConstants.spacingS),
+            const SizedBox(height: 2),
 
-          // Lessons count
-          Row(
-            children: [
-              Icon(
-                Icons.menu_book_rounded,
-                size: 14,
-                color: isDark
-                    ? AppColors.textTertiaryDark
-                    : AppColors.textTertiaryLight,
-              ),
-              const SizedBox(width: 4),
+            // Ol Chiki Title
+            if (category.titleOlChiki.isNotEmpty)
               Text(
-                '${category.totalLessons} lessons',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                category.titleOlChiki,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  fontFamily: 'OlChiki',
                   color: isDark
                       ? AppColors.textTertiaryDark
                       : AppColors.textTertiaryLight,
                 ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ],
-          ),
-        ],
+            const SizedBox(height: AppConstants.spacingS),
+
+            // Lessons count
+            Row(
+              children: [
+                Icon(
+                  Icons.menu_book_rounded,
+                  size: 14,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
+                ),
+                const SizedBox(width: 4),
+                Text(
+                  AppLocalizations.of(
+                    context,
+                  )!.lessonsCount(category.totalLessons),
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: isDark
+                        ? AppColors.textTertiaryDark
+                        : AppColors.textTertiaryLight,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
   Widget _buildDefaultIcon() {
     final iconData = _getIconFromName(category.iconName);
-    return Center(
-      child: Icon(
-        iconData,
-        color: Colors.white,
-        size: 24,
-      ),
-    );
+    return Center(child: Icon(iconData, color: Colors.white, size: 24));
   }
 
   IconData _getIconFromName(String? name) {

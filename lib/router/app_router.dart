@@ -24,16 +24,6 @@ import '../features/quiz/presentation/quiz_screen.dart';
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
 
-// Admin
-import '../features/admin/presentation/admin_shell.dart';
-import '../features/admin/presentation/admin_dashboard_screen.dart';
-import '../features/admin/presentation/admin_categories_screen.dart';
-import '../features/admin/presentation/admin_banners_screen.dart';
-import '../features/admin/presentation/admin_letters_screen.dart';
-import '../features/admin/presentation/admin_lessons_screen.dart';
-import '../features/admin/presentation/admin_quizzes_screen.dart';
-import '../features/admin/presentation/admin_media_screen.dart';
-
 // Route names
 class AppRoutes {
   static const String welcome = '/welcome';
@@ -47,13 +37,6 @@ class AppRoutes {
   static const String quiz = '/quiz/:quizId';
   static const String profile = '/profile';
   static const String settings = '/settings';
-  static const String admin = '/admin';
-  static const String adminCategories = '/admin/categories';
-  static const String adminBanners = '/admin/banners';
-  static const String adminLetters = '/admin/letters';
-  static const String adminLessons = '/admin/lessons';
-  static const String adminQuizzes = '/admin/quizzes';
-  static const String adminMedia = '/admin/media';
 }
 
 // Custom transition
@@ -96,7 +79,7 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     initialLocation: '/welcome',
     debugLogDiagnostics: false,
-    
+
     // No authentication required - open access
     redirect: (context, state) {
       // Allow all routes - no auth required
@@ -125,31 +108,23 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Welcome / Auth routes (simplified - no auth required)
       GoRoute(
         path: '/welcome',
-        pageBuilder: (context, state) => _fadeTransition(
-          child: const WelcomeScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _fadeTransition(child: const WelcomeScreen(), state: state),
       ),
       GoRoute(
         path: '/sign-in',
-        pageBuilder: (context, state) => _fadeTransition(
-          child: const SignInScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _fadeTransition(child: const SignInScreen(), state: state),
       ),
       GoRoute(
         path: '/sign-up',
-        pageBuilder: (context, state) => _fadeTransition(
-          child: const SignUpScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _fadeTransition(child: const SignUpScreen(), state: state),
       ),
       GoRoute(
         path: '/onboarding',
-        pageBuilder: (context, state) => _fadeTransition(
-          child: const OnboardingScreen(),
-          state: state,
-        ),
+        pageBuilder: (context, state) =>
+            _fadeTransition(child: const OnboardingScreen(), state: state),
       ),
 
       // Main app shell with bottom navigation
@@ -158,17 +133,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/home',
-            pageBuilder: (context, state) => _fadeTransition(
-              child: const HomeScreen(),
-              state: state,
-            ),
+            pageBuilder: (context, state) =>
+                _fadeTransition(child: const HomeScreen(), state: state),
           ),
           GoRoute(
             path: '/lessons',
-            pageBuilder: (context, state) => _fadeTransition(
-              child: const LessonsScreen(),
-              state: state,
-            ),
+            pageBuilder: (context, state) =>
+                _fadeTransition(child: const LessonsScreen(), state: state),
             routes: [
               GoRoute(
                 path: 'category/:categoryId',
@@ -183,17 +154,13 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           GoRoute(
             path: '/profile',
-            pageBuilder: (context, state) => _fadeTransition(
-              child: const ProfileScreen(),
-              state: state,
-            ),
+            pageBuilder: (context, state) =>
+                _fadeTransition(child: const ProfileScreen(), state: state),
           ),
           GoRoute(
             path: '/settings',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const SettingsScreen(),
-              state: state,
-            ),
+            pageBuilder: (context, state) =>
+                _slideTransition(child: const SettingsScreen(), state: state),
           ),
         ],
       ),
@@ -211,67 +178,9 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/quiz/:quizId',
         pageBuilder: (context, state) => _slideTransition(
-          child: QuizScreen(
-            quizId: state.pathParameters['quizId']!,
-          ),
+          child: QuizScreen(quizId: state.pathParameters['quizId']!),
           state: state,
         ),
-      ),
-
-      // Admin routes
-      ShellRoute(
-        builder: (context, state, child) => AdminShell(child: child),
-        routes: [
-          GoRoute(
-            path: '/admin',
-            pageBuilder: (context, state) => _fadeTransition(
-              child: const AdminDashboardScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/categories',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminCategoriesScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/banners',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminBannersScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/letters',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminLettersScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/lessons',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminLessonsScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/quizzes',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminQuizzesScreen(),
-              state: state,
-            ),
-          ),
-          GoRoute(
-            path: '/admin/media',
-            pageBuilder: (context, state) => _slideTransition(
-              child: const AdminMediaScreen(),
-              state: state,
-            ),
-          ),
-        ],
       ),
     ],
   );

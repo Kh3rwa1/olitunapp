@@ -14,174 +14,197 @@ class LessonDetailScreen extends ConsumerWidget {
     final lessons = ref.watch(lessonsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final lesson = lessons.firstWhere(
-      (l) => l.id == lessonId,
-      orElse: () => lessons.first,
-    );
+    return lessons.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (e, s) => Scaffold(body: Center(child: Text('Error: $e'))),
+      data: (data) {
+        final lesson = data.firstWhere(
+          (l) => l.id == lessonId,
+          orElse: () => data.first,
+        );
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : Colors.black),
-          onPressed: () => context.pop(),
-        ),
-        title: Text(
-          lesson.titleLatin,
-          style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black),
-        ),
-      ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Lesson header
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(20),
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: Icon(
+                Icons.arrow_back_rounded,
+                color: isDark ? Colors.white : Colors.black,
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    lesson.titleLatin,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                  ),
-                  if (lesson.titleOlChiki.isNotEmpty)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 4),
-                      child: Text(
-                        lesson.titleOlChiki,
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontFamily: 'OlChiki',
-                          color: Colors.white.withValues(alpha: 0.9),
-                        ),
-                      ),
-                    ),
-                  const SizedBox(height: 16),
-                  Row(
-                    children: [
-                      _InfoChip(Icons.timer_rounded, '${lesson.estimatedMinutes} min'),
-                      const SizedBox(width: 12),
-                      _InfoChip(Icons.signal_cellular_alt_rounded, lesson.level),
-                    ],
-                  ),
-                ],
+              onPressed: () => context.pop(),
+            ),
+            title: Text(
+              lesson.titleLatin,
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
               ),
             ),
-            const SizedBox(height: 28),
-            
-            // Description
-            if (lesson.description != null) ...[
-              Text(
-                'About this lesson',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                lesson.description!,
-                style: TextStyle(
-                  fontSize: 15,
-                  height: 1.6,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 28),
-            ],
-            
-            // Content placeholder
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(28),
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF8FAFC),
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
-                  color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                ),
-              ),
-              child: Column(
-                children: [
-                  Icon(
-                    Icons.article_outlined,
-                    size: 48,
-                    color: AppColors.primary.withValues(alpha: 0.5),
+          ),
+          body: SingleChildScrollView(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Lesson header
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(24),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                    borderRadius: BorderRadius.circular(20),
                   ),
-                  const SizedBox(height: 16),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        lesson.titleLatin,
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                        ),
+                      ),
+                      if (lesson.titleOlChiki.isNotEmpty)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            lesson.titleOlChiki,
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontFamily: 'OlChiki',
+                              color: Colors.white.withValues(alpha: 0.9),
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 16),
+                      Row(
+                        children: [
+                          _InfoChip(
+                            Icons.timer_rounded,
+                            '${lesson.estimatedMinutes} min',
+                          ),
+                          const SizedBox(width: 12),
+                          _InfoChip(
+                            Icons.signal_cellular_alt_rounded,
+                            lesson.level,
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 28),
+
+                // Description
+                if (lesson.description != null) ...[
                   Text(
-                    'Lesson Content',
+                    'About this lesson',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 12),
                   Text(
-                    'Content will be added via Admin CMS',
+                    lesson.description!,
                     style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.white54 : Colors.black45,
+                      fontSize: 15,
+                      height: 1.6,
+                      color: isDark ? Colors.white70 : Colors.black87,
                     ),
                   ),
+                  const SizedBox(height: 28),
                 ],
-              ),
-            ),
-            const SizedBox(height: 40),
-          ],
-        ),
-      ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: GestureDetector(
-            onTap: () {
-              incrementLessonsCompleted(ref);
-              addStars(ref, 10);
-              context.pop();
-            },
-            child: Container(
-              padding: const EdgeInsets.symmetric(vertical: 18),
-              decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
+
+                // Content placeholder
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(28),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : const Color(0xFFF8FAFC),
+                    borderRadius: BorderRadius.circular(18),
+                    border: Border.all(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.05),
+                    ),
                   ),
-                ],
-              ),
-              child: const Center(
-                child: Text(
-                  'Complete Lesson',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
+                  child: Column(
+                    children: [
+                      Icon(
+                        Icons.article_outlined,
+                        size: 48,
+                        color: AppColors.primary.withValues(alpha: 0.5),
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Lesson Content',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Content will be added via Admin CMS',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+          bottomNavigationBar: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: GestureDetector(
+                onTap: () {
+                  incrementLessonsCompleted(ref);
+                  addStars(ref, 10);
+                  context.pop();
+                },
+                child: Container(
+                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Complete Lesson',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: Colors.white,
+                      ),
+                    ),
                   ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }

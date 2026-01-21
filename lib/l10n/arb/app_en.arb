@@ -1,0 +1,37 @@
+{
+    "@@locale": "en",
+    "helloUser": "Hello, {userName}! 👋",
+    "@helloUser": {
+        "placeholders": {
+            "userName": {
+                "type": "String"
+            }
+        }
+    },
+    "readyToLearn": "Ready to learn today?",
+    "dayStreak": "Day Streak",
+    "stars": "Stars",
+    "lessons": "Lessons",
+    "continueLearning": "Continue Learning",
+    "pickUpWhereLeftOff": "Pick up where you left off",
+    "percentComplete": "{percent}% Complete",
+    "@percentComplete": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "dailyQuiz": "Daily Quiz",
+    "practice": "Practice",
+    "explore": "Explore",
+    "chooseCategory": "Choose a category",
+    "lessonsCount": "{count} lessons",
+    "@lessonsCount": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    }
+}

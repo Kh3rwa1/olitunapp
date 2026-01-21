@@ -1,4 +1,4 @@
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -14,7 +14,7 @@ class AdminBannersScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final banners = ref.watch(featuredBannersProvider);
+    final bannersAsync = ref.watch(featuredBannersProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -32,9 +32,25 @@ class AdminBannersScreen extends ConsumerWidget {
                   child: _buildHeader(context, isDark, isWideScreen),
                 ),
                 Expanded(
-                  child: banners.isEmpty
-                      ? _buildEmptyState(context, ref, isDark)
-                      : _buildBannersList(context, ref, banners, isDark, isWideScreen),
+                  child: bannersAsync.when(
+                    data: (banners) => banners.isEmpty
+                        ? _buildEmptyState(context, ref, isDark)
+                        : _buildBannersList(
+                            context,
+                            ref,
+                            banners,
+                            isDark,
+                            isWideScreen,
+                          ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: SelectableText(
+                        'Error loading banners: $error',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -44,8 +60,14 @@ class AdminBannersScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showBannerDialog(context, ref, null),
         backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text('Add Banner', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
+        icon: const Icon(
+          Icons.add_photo_alternate_rounded,
+          color: Colors.white,
+        ),
+        label: const Text(
+          'Add Banner',
+          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+        ),
       ),
     );
   }
@@ -74,10 +96,15 @@ class AdminBannersScreen extends ConsumerWidget {
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : Colors.black),
+              child: Icon(
+                Icons.arrow_back_rounded,
+                color: isDark ? Colors.white : Colors.black,
+              ),
             ),
           ),
         if (!isWideScreen) const SizedBox(height: 20),
@@ -101,7 +128,9 @@ class AdminBannersScreen extends ConsumerWidget {
                     fontSize: 32,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -1.5,
-                    color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                    color: isDark
+                        ? AppColors.textPrimaryDark
+                        : AppColors.textPrimaryLight,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -110,7 +139,9 @@ class AdminBannersScreen extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                    color: isDark
+                        ? AppColors.textTertiaryDark
+                        : AppColors.textTertiaryLight,
                   ),
                 ),
               ],
@@ -140,7 +171,11 @@ class AdminBannersScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.featured_play_list_outlined, size: 50, color: Colors.white),
+            child: const Icon(
+              Icons.featured_play_list_outlined,
+              size: 50,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 28),
           Text(
@@ -148,7 +183,9 @@ class AdminBannersScreen extends ConsumerWidget {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+              color: isDark
+                  ? AppColors.textPrimaryDark
+                  : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 10),
@@ -156,7 +193,9 @@ class AdminBannersScreen extends ConsumerWidget {
             'Create your first promotional banner',
             style: TextStyle(
               fontSize: 15,
-              color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+              color: isDark
+                  ? AppColors.textTertiaryDark
+                  : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 28),
@@ -180,7 +219,14 @@ class AdminBannersScreen extends ConsumerWidget {
                 children: [
                   Icon(Icons.add_rounded, color: Colors.white),
                   SizedBox(width: 10),
-                  Text('Create Banner', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                  Text(
+                    'Create Banner',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -190,9 +236,20 @@ class AdminBannersScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 
-  Widget _buildBannersList(BuildContext context, WidgetRef ref, List<FeaturedBannerModel> banners, bool isDark, bool isWideScreen) {
+  Widget _buildBannersList(
+    BuildContext context,
+    WidgetRef ref,
+    List<FeaturedBannerModel> banners,
+    bool isDark,
+    bool isWideScreen,
+  ) {
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(isWideScreen ? 32 : 20, 0, isWideScreen ? 32 : 20, 100),
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
       itemCount: banners.length,
       itemBuilder: (context, index) {
         final banner = banners[index];
@@ -207,11 +264,19 @@ class AdminBannersScreen extends ConsumerWidget {
     );
   }
 
-  void _showBannerDialog(BuildContext context, WidgetRef ref, FeaturedBannerModel? banner) {
+  void _showBannerDialog(
+    BuildContext context,
+    WidgetRef ref,
+    FeaturedBannerModel? banner,
+  ) {
     final isEditing = banner != null;
     final titleController = TextEditingController(text: banner?.title ?? '');
-    final subtitleController = TextEditingController(text: banner?.subtitle ?? '');
-    final targetRouteController = TextEditingController(text: banner?.targetRoute ?? '');
+    final subtitleController = TextEditingController(
+      text: banner?.subtitle ?? '',
+    );
+    final targetRouteController = TextEditingController(
+      text: banner?.targetRoute ?? '',
+    );
     String selectedGradient = banner?.gradientPreset ?? 'skyBlue';
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -248,45 +313,110 @@ class AdminBannersScreen extends ConsumerWidget {
                         gradient: AppColors.premiumPurple,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: Icon(isEditing ? Icons.edit_rounded : Icons.add_rounded, color: Colors.white),
+                      child: Icon(
+                        isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                        color: Colors.white,
+                      ),
                     ),
                     const SizedBox(width: 16),
                     Text(
                       isEditing ? 'Edit Banner' : 'New Banner',
-                      style: TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: isDark ? Colors.white : Colors.black),
+                      style: TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(Icons.close_rounded, color: isDark ? Colors.white54 : Colors.black45),
+                      icon: Icon(
+                        Icons.close_rounded,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
                     ),
                   ],
                 ),
               ),
-              Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
+              Divider(
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.06),
+              ),
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      _buildTextField(controller: titleController, label: 'Title', hint: 'e.g., Start Learning Today', isDark: isDark),
+                      _buildTextField(
+                        controller: titleController,
+                        label: 'Title',
+                        hint: 'e.g., Start Learning Today',
+                        isDark: isDark,
+                      ),
                       const SizedBox(height: 20),
-                      _buildTextField(controller: subtitleController, label: 'Subtitle', hint: 'e.g., Begin your Ol Chiki journey', isDark: isDark),
+                      _buildTextField(
+                        controller: subtitleController,
+                        label: 'Subtitle',
+                        hint: 'e.g., Begin your Ol Chiki journey',
+                        isDark: isDark,
+                      ),
                       const SizedBox(height: 20),
-                      _buildTextField(controller: targetRouteController, label: 'Target Route (optional)', hint: 'e.g., /lessons/alphabets', isDark: isDark),
+                      _buildTextField(
+                        controller: targetRouteController,
+                        label: 'Target Route (optional)',
+                        hint: 'e.g., /lessons/alphabets',
+                        isDark: isDark,
+                      ),
                       const SizedBox(height: 28),
-                      Text('Color Theme', style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black)),
+                      Text(
+                        'Color Theme',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
                       const SizedBox(height: 14),
                       Wrap(
                         spacing: 12,
                         runSpacing: 12,
                         children: [
-                          _GradientOption(gradient: AppColors.skyBlueGradient, isSelected: selectedGradient == 'skyBlue', onTap: () => setDialogState(() => selectedGradient = 'skyBlue')),
-                          _GradientOption(gradient: AppColors.peachGradient, isSelected: selectedGradient == 'peach', onTap: () => setDialogState(() => selectedGradient = 'peach')),
-                          _GradientOption(gradient: AppColors.mintGradient, isSelected: selectedGradient == 'mint', onTap: () => setDialogState(() => selectedGradient = 'mint')),
-                          _GradientOption(gradient: AppColors.sunsetGradient, isSelected: selectedGradient == 'sunset', onTap: () => setDialogState(() => selectedGradient = 'sunset')),
-                          _GradientOption(gradient: AppColors.purpleGradient, isSelected: selectedGradient == 'purple', onTap: () => setDialogState(() => selectedGradient = 'purple')),
+                          _GradientOption(
+                            gradient: AppColors.skyBlueGradient,
+                            isSelected: selectedGradient == 'skyBlue',
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'skyBlue',
+                            ),
+                          ),
+                          _GradientOption(
+                            gradient: AppColors.peachGradient,
+                            isSelected: selectedGradient == 'peach',
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'peach',
+                            ),
+                          ),
+                          _GradientOption(
+                            gradient: AppColors.mintGradient,
+                            isSelected: selectedGradient == 'mint',
+                            onTap: () =>
+                                setDialogState(() => selectedGradient = 'mint'),
+                          ),
+                          _GradientOption(
+                            gradient: AppColors.sunsetGradient,
+                            isSelected: selectedGradient == 'sunset',
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'sunset',
+                            ),
+                          ),
+                          _GradientOption(
+                            gradient: AppColors.purpleGradient,
+                            isSelected: selectedGradient == 'purple',
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'purple',
+                            ),
+                          ),
                         ],
                       ),
                     ],
@@ -296,8 +426,16 @@ class AdminBannersScreen extends ConsumerWidget {
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0D1117) : const Color(0xFFF8FAFC),
-                  border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06))),
+                  color: isDark
+                      ? const Color(0xFF0D1117)
+                      : const Color(0xFFF8FAFC),
+                  border: Border(
+                    top: BorderSide(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.06),
+                    ),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -307,11 +445,20 @@ class AdminBannersScreen extends ConsumerWidget {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Center(
-                            child: Text('Cancel', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: isDark ? Colors.white70 : Colors.black54)),
+                            child: Text(
+                              'Cancel',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -325,16 +472,24 @@ class AdminBannersScreen extends ConsumerWidget {
                           final newBanner = FeaturedBannerModel(
                             id: banner?.id ?? const Uuid().v4(),
                             title: titleController.text,
-                            subtitle: subtitleController.text.isNotEmpty ? subtitleController.text : null,
+                            subtitle: subtitleController.text.isNotEmpty
+                                ? subtitleController.text
+                                : null,
                             gradientPreset: selectedGradient,
-                            targetRoute: targetRouteController.text.isNotEmpty ? targetRouteController.text : null,
+                            targetRoute: targetRouteController.text.isNotEmpty
+                                ? targetRouteController.text
+                                : null,
                             order: banner?.order ?? 0,
                             isActive: true,
                           );
                           if (isEditing) {
-                            ref.read(featuredBannersProvider.notifier).updateBanner(newBanner);
+                            ref
+                                .read(featuredBannersProvider.notifier)
+                                .updateBanner(newBanner);
                           } else {
-                            ref.read(featuredBannersProvider.notifier).addBanner(newBanner);
+                            ref
+                                .read(featuredBannersProvider.notifier)
+                                .addBanner(newBanner);
                           }
                           Navigator.pop(context);
                         },
@@ -343,10 +498,25 @@ class AdminBannersScreen extends ConsumerWidget {
                           decoration: BoxDecoration(
                             gradient: AppColors.premiumPurple,
                             borderRadius: BorderRadius.circular(14),
-                            boxShadow: [BoxShadow(color: AppColors.accentPurple.withValues(alpha: 0.4), blurRadius: 15, offset: const Offset(0, 6))],
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.accentPurple.withValues(
+                                  alpha: 0.4,
+                                ),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                           ),
                           child: Center(
-                            child: Text(isEditing ? 'Save Changes' : 'Create Banner', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Colors.white)),
+                            child: Text(
+                              isEditing ? 'Save Changes' : 'Create Banner',
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
                       ),
@@ -361,30 +531,62 @@ class AdminBannersScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildTextField({required TextEditingController controller, required String label, required String hint, required bool isDark}) {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isDark,
+  }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black)),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
         const SizedBox(height: 10),
         TextField(
           controller: controller,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black, fontWeight: FontWeight.w500),
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontWeight: FontWeight.w500,
+          ),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+            hintStyle: TextStyle(
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
             filled: true,
-            fillColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide.none),
-            focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(14), borderSide: BorderSide(color: AppColors.accentPurple, width: 2)),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: AppColors.accentPurple, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _showDeleteDialog(BuildContext context, WidgetRef ref, FeaturedBannerModel banner) {
+  void _showDeleteDialog(
+    BuildContext context,
+    WidgetRef ref,
+    FeaturedBannerModel banner,
+  ) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
@@ -396,23 +598,42 @@ class AdminBannersScreen extends ConsumerWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: BoxDecoration(color: AppColors.error.withValues(alpha: 0.15), borderRadius: BorderRadius.circular(12)),
-              child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(width: 14),
             const Text('Delete Banner'),
           ],
         ),
-        content: Text('Are you sure you want to delete "${banner.title}"? This action cannot be undone.'),
+        content: Text(
+          'Are you sure you want to delete "${banner.title}"? This action cannot be undone.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancel')),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
           ElevatedButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
-              ref.read(featuredBannersProvider.notifier).deleteBanner(banner.id);
+              ref
+                  .read(featuredBannersProvider.notifier)
+                  .deleteBanner(banner.id);
               Navigator.pop(context);
             },
-            style: ElevatedButton.styleFrom(backgroundColor: AppColors.error, foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: const Text('Delete'),
           ),
         ],
@@ -428,7 +649,13 @@ class _BannerCard extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
-  const _BannerCard({required this.banner, required this.isDark, required this.index, required this.onEdit, required this.onDelete});
+  const _BannerCard({
+    required this.banner,
+    required this.isDark,
+    required this.index,
+    required this.onEdit,
+    required this.onDelete,
+  });
 
   @override
   State<_BannerCard> createState() => _BannerCardState();
@@ -439,12 +666,18 @@ class _BannerCardState extends State<_BannerCard> {
 
   LinearGradient _getGradient(String preset) {
     switch (preset) {
-      case 'skyBlue': return AppColors.skyBlueGradient;
-      case 'peach': return AppColors.peachGradient;
-      case 'mint': return AppColors.mintGradient;
-      case 'sunset': return AppColors.sunsetGradient;
-      case 'purple': return AppColors.purpleGradient;
-      default: return AppColors.skyBlueGradient;
+      case 'skyBlue':
+        return AppColors.skyBlueGradient;
+      case 'peach':
+        return AppColors.peachGradient;
+      case 'mint':
+        return AppColors.mintGradient;
+      case 'sunset':
+        return AppColors.sunsetGradient;
+      case 'purple':
+        return AppColors.purpleGradient;
+      default:
+        return AppColors.skyBlueGradient;
     }
   }
 
@@ -452,77 +685,141 @@ class _BannerCardState extends State<_BannerCard> {
   Widget build(BuildContext context) {
     final gradient = _getGradient(widget.banner.gradientPreset);
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: _isHovered ? (Matrix4.identity()..scale(1.02)) : Matrix4.identity(),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                height: 140,
-                decoration: BoxDecoration(
-                  gradient: gradient,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: _isHovered
-                      ? [BoxShadow(color: gradient.colors.first.withValues(alpha: 0.4), blurRadius: 25, offset: const Offset(0, 10))]
-                      : [BoxShadow(color: gradient.colors.first.withValues(alpha: 0.2), blurRadius: 15, offset: const Offset(0, 6))],
-                ),
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(widget.banner.title, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w800, color: Colors.white)),
-                          if (widget.banner.subtitle != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Text(widget.banner.subtitle!, style: TextStyle(fontSize: 14, color: Colors.white.withValues(alpha: 0.9))),
-                            ),
-                        ],
-                      ),
+          padding: const EdgeInsets.only(bottom: 16),
+          child: MouseRegion(
+            onEnter: (_) => setState(() => _isHovered = true),
+            onExit: (_) => setState(() => _isHovered = false),
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              transform: _isHovered
+                  ? (Matrix4.identity()..scale(1.02))
+                  : Matrix4.identity(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    height: 140,
+                    decoration: BoxDecoration(
+                      gradient: gradient,
+                      borderRadius: BorderRadius.circular(20),
+                      boxShadow: _isHovered
+                          ? [
+                              BoxShadow(
+                                color: gradient.colors.first.withValues(
+                                  alpha: 0.4,
+                                ),
+                                blurRadius: 25,
+                                offset: const Offset(0, 10),
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: gradient.colors.first.withValues(
+                                  alpha: 0.2,
+                                ),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                              ),
+                            ],
                     ),
-                    Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
                       children: [
-                        IconButton(
-                          onPressed: widget.onEdit,
-                          icon: const Icon(Icons.edit_rounded, color: Colors.white),
-                          style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.2)),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                widget.banner.title,
+                                style: const TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.w800,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              if (widget.banner.subtitle != null)
+                                Padding(
+                                  padding: const EdgeInsets.only(top: 6),
+                                  child: Text(
+                                    widget.banner.subtitle!,
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 8),
-                        IconButton(
-                          onPressed: widget.onDelete,
-                          icon: const Icon(Icons.delete_outline_rounded, color: Colors.white),
-                          style: IconButton.styleFrom(backgroundColor: Colors.white.withValues(alpha: 0.2)),
+                        Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            IconButton(
+                              onPressed: widget.onEdit,
+                              icon: const Icon(
+                                Icons.edit_rounded,
+                                color: Colors.white,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            IconButton(
+                              onPressed: widget.onDelete,
+                              icon: const Icon(
+                                Icons.delete_outline_rounded,
+                                color: Colors.white,
+                              ),
+                              style: IconButton.styleFrom(
+                                backgroundColor: Colors.white.withValues(
+                                  alpha: 0.2,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
-                  ],
-                ),
-              ),
-              if (widget.banner.targetRoute != null)
-                Padding(
-                  padding: const EdgeInsets.only(top: 8, left: 4),
-                  child: Row(
-                    children: [
-                      Icon(Icons.link_rounded, size: 14, color: widget.isDark ? Colors.white38 : Colors.black38),
-                      const SizedBox(width: 6),
-                      Text(widget.banner.targetRoute!, style: TextStyle(fontSize: 12, color: widget.isDark ? Colors.white38 : Colors.black38)),
-                    ],
                   ),
-                ),
-            ],
+                  if (widget.banner.targetRoute != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8, left: 4),
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.link_rounded,
+                            size: 14,
+                            color: widget.isDark
+                                ? Colors.white38
+                                : Colors.black38,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            widget.banner.targetRoute!,
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: widget.isDark
+                                  ? Colors.white38
+                                  : Colors.black38,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-    ).animate().fadeIn(delay: (widget.index * 60).ms, duration: 400.ms).slideX(begin: -0.1);
+        )
+        .animate()
+        .fadeIn(delay: (widget.index * 60).ms, duration: 400.ms)
+        .slideX(begin: -0.1);
   }
 }
 
@@ -531,7 +828,11 @@ class _GradientOption extends StatelessWidget {
   final bool isSelected;
   final VoidCallback onTap;
 
-  const _GradientOption({required this.gradient, required this.isSelected, required this.onTap});
+  const _GradientOption({
+    required this.gradient,
+    required this.isSelected,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -548,9 +849,19 @@ class _GradientOption extends StatelessWidget {
           gradient: gradient,
           borderRadius: BorderRadius.circular(16),
           border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
-          boxShadow: isSelected ? [BoxShadow(color: gradient.colors.first.withValues(alpha: 0.5), blurRadius: 15, spreadRadius: 2)] : null,
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: gradient.colors.first.withValues(alpha: 0.5),
+                    blurRadius: 15,
+                    spreadRadius: 2,
+                  ),
+                ]
+              : null,
         ),
-        child: isSelected ? const Icon(Icons.check_rounded, color: Colors.white, size: 28) : null,
+        child: isSelected
+            ? const Icon(Icons.check_rounded, color: Colors.white, size: 28)
+            : null,
       ),
     );
   }

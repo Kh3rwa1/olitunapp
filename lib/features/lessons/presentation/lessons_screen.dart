@@ -26,18 +26,22 @@ class LessonsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.all(20),
-        itemCount: categories.length,
-        itemBuilder: (context, index) {
-          final category = categories[index];
-          return _CategoryLessonCard(
-            category: category,
-            isDark: isDark,
-            index: index,
-            onTap: () => context.go('/lessons/category/${category.id}'),
-          );
-        },
+      body: categories.when(
+        data: (data) => ListView.builder(
+          padding: const EdgeInsets.all(20),
+          itemCount: data.length,
+          itemBuilder: (context, index) {
+            final category = data[index];
+            return _CategoryLessonCard(
+              category: category,
+              isDark: isDark,
+              index: index,
+              onTap: () => context.go('/lessons/category/${category.id}'),
+            );
+          },
+        ),
+        loading: () => const Center(child: CircularProgressIndicator()),
+        error: (e, s) => Center(child: Text('Error: $e')),
       ),
     );
   }
@@ -58,86 +62,98 @@ class _CategoryLessonCard extends StatelessWidget {
 
   LinearGradient _getGradient(String preset) {
     switch (preset) {
-      case 'skyBlue': return AppColors.skyBlueGradient;
-      case 'peach': return AppColors.peachGradient;
-      case 'mint': return AppColors.mintGradient;
-      case 'sunset': return AppColors.sunsetGradient;
-      case 'purple': return AppColors.purpleGradient;
-      default: return AppColors.skyBlueGradient;
+      case 'skyBlue':
+        return AppColors.skyBlueGradient;
+      case 'peach':
+        return AppColors.peachGradient;
+      case 'mint':
+        return AppColors.mintGradient;
+      case 'sunset':
+        return AppColors.sunsetGradient;
+      case 'purple':
+        return AppColors.purpleGradient;
+      default:
+        return AppColors.skyBlueGradient;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final gradient = _getGradient(category.gradientPreset);
-    
+
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: GestureDetector(
-        onTap: onTap,
-        child: Container(
-          padding: const EdgeInsets.all(20),
-          decoration: BoxDecoration(
-            gradient: gradient,
-            borderRadius: BorderRadius.circular(20),
-            boxShadow: [
-              BoxShadow(
-                color: gradient.colors.first.withValues(alpha: 0.3),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
+          padding: const EdgeInsets.only(bottom: 16),
+          child: GestureDetector(
+            onTap: onTap,
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: [
+                  BoxShadow(
+                    color: gradient.colors.first.withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
               ),
-            ],
-          ),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      category.titleLatin,
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        color: Colors.white,
-                      ),
-                    ),
-                    if (category.titleOlChiki.isNotEmpty)
-                      Text(
-                        category.titleOlChiki,
-                        style: TextStyle(
-                          fontSize: 14,
-                          fontFamily: 'OlChiki',
-                          color: Colors.white.withValues(alpha: 0.85),
-                        ),
-                      ),
-                    if (category.description != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: Text(
-                          category.description!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.white.withValues(alpha: 0.8),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          category.titleLatin,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
                           ),
                         ),
-                      ),
-                  ],
-                ),
+                        if (category.titleOlChiki.isNotEmpty)
+                          Text(
+                            category.titleOlChiki,
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontFamily: 'OlChiki',
+                              color: Colors.white.withValues(alpha: 0.85),
+                            ),
+                          ),
+                        if (category.description != null)
+                          Padding(
+                            padding: const EdgeInsets.only(top: 8),
+                            child: Text(
+                              category.description!,
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: Colors.white.withValues(alpha: 0.8),
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    width: 48,
+                    height: 48,
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_rounded,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
               ),
-              Container(
-                width: 48,
-                height: 48,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: const Icon(Icons.arrow_forward_rounded, color: Colors.white),
-              ),
-            ],
+            ),
           ),
-        ),
-      ),
-    ).animate().fadeIn(delay: (index * 100).ms, duration: 400.ms).slideX(begin: -0.1);
+        )
+        .animate()
+        .fadeIn(delay: (index * 100).ms, duration: 400.ms)
+        .slideX(begin: -0.1);
   }
 }

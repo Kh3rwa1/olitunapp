@@ -13,13 +13,14 @@ class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});
 
   @override
-  ConsumerState<AdminCategoriesScreen> createState() => _AdminCategoriesScreenState();
+  ConsumerState<AdminCategoriesScreen> createState() =>
+      _AdminCategoriesScreenState();
 }
 
 class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoriesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -29,7 +30,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         children: [
           // Background
           _buildBackground(isDark),
-          
+
           // Content
           SafeArea(
             child: Column(
@@ -40,12 +41,26 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   padding: EdgeInsets.all(isWideScreen ? 32 : 20),
                   child: _buildHeader(context, isDark, isWideScreen),
                 ),
-                
+
                 // Categories List
                 Expanded(
-                  child: categories.isEmpty
-                      ? _buildEmptyState(context, isDark)
-                      : _buildCategoriesList(categories, isDark, isWideScreen),
+                  child: categoriesAsync.when(
+                    data: (categories) => categories.isEmpty
+                        ? _buildEmptyState(context, isDark)
+                        : _buildCategoriesList(
+                            categories,
+                            isDark,
+                            isWideScreen,
+                          ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (error, stack) => Center(
+                      child: SelectableText(
+                        'Error loading categories: $error',
+                        style: TextStyle(color: AppColors.error),
+                      ),
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -121,7 +136,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1.5,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -130,7 +147,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                      color: isDark
+                          ? AppColors.textTertiaryDark
+                          : AppColors.textTertiaryLight,
                     ),
                   ),
                 ],
@@ -144,85 +163,99 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumGreen,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.category_outlined,
-              size: 50,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'No categories yet',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Create your first learning category',
-            style: TextStyle(
-              fontSize: 15,
-              color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
-            ),
-          ),
-          const SizedBox(height: 28),
-          GestureDetector(
-            onTap: () => _showCategoryDialog(context, null),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-              decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Create Category',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: AppColors.premiumGreen,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
                     ),
-                  ),
-                ],
+                  ],
+                ),
+                child: const Icon(
+                  Icons.category_outlined,
+                  size: 50,
+                  color: Colors.white,
+                ),
               ),
-            ),
+              const SizedBox(height: 28),
+              Text(
+                'No categories yet',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Create your first learning category',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
+                ),
+              ),
+              const SizedBox(height: 28),
+              GestureDetector(
+                onTap: () => _showCategoryDialog(context, null),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 28,
+                    vertical: 16,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withValues(alpha: 0.4),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.add_rounded, color: Colors.white),
+                      SizedBox(width: 10),
+                      Text(
+                        'Create Category',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 200.ms, duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
+        )
+        .animate()
+        .fadeIn(delay: 200.ms, duration: 500.ms)
+        .scale(begin: const Offset(0.9, 0.9));
   }
 
-  Widget _buildCategoriesList(List<CategoryModel> categories, bool isDark, bool isWideScreen) {
+  Widget _buildCategoriesList(
+    List<CategoryModel> categories,
+    bool isDark,
+    bool isWideScreen,
+  ) {
     return ReorderableListView.builder(
       padding: EdgeInsets.fromLTRB(
         isWideScreen ? 32 : 20,
@@ -232,7 +265,15 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
       ),
       itemCount: categories.length,
       onReorder: (oldIndex, newIndex) {
-        ref.read(categoriesProvider.notifier).reorderCategories(oldIndex, newIndex);
+        if (oldIndex < newIndex) {
+          newIndex -= 1;
+        }
+        final item = categories.removeAt(oldIndex);
+        categories.insert(newIndex, item);
+
+        // Update order in Supabase
+        // In a real app we would batch update order fields
+        // For now just optimistic UI - actual update needs implementation in provider
       },
       itemBuilder: (context, index) {
         final category = categories[index];
@@ -250,9 +291,15 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
   void _showCategoryDialog(BuildContext context, CategoryModel? category) {
     final isEditing = category != null;
-    final titleLatinController = TextEditingController(text: category?.titleLatin ?? '');
-    final titleOlChikiController = TextEditingController(text: category?.titleOlChiki ?? '');
-    final descriptionController = TextEditingController(text: category?.description ?? '');
+    final titleLatinController = TextEditingController(
+      text: category?.titleLatin ?? '',
+    );
+    final titleOlChikiController = TextEditingController(
+      text: category?.titleOlChiki ?? '',
+    );
+    final descriptionController = TextEditingController(
+      text: category?.description ?? '',
+    );
     String selectedGradient = category?.gradientPreset ?? 'skyBlue';
     String selectedIcon = category?.iconName ?? 'alphabet';
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -280,7 +327,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
-              
+
               // Header
               Padding(
                 padding: const EdgeInsets.all(24),
@@ -318,9 +365,13 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   ],
                 ),
               ),
-              
-              Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06)),
-              
+
+              Divider(
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.06),
+              ),
+
               // Form
               Expanded(
                 child: SingleChildScrollView(
@@ -350,7 +401,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                         maxLines: 2,
                       ),
                       const SizedBox(height: 28),
-                      
+
                       // Gradient Selection
                       Text(
                         'Color Theme',
@@ -369,37 +420,46 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             gradient: AppColors.skyBlueGradient,
                             label: 'Blue',
                             isSelected: selectedGradient == 'skyBlue',
-                            onTap: () => setDialogState(() => selectedGradient = 'skyBlue'),
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'skyBlue',
+                            ),
                           ),
                           _GradientOption(
                             gradient: AppColors.peachGradient,
                             label: 'Peach',
                             isSelected: selectedGradient == 'peach',
-                            onTap: () => setDialogState(() => selectedGradient = 'peach'),
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'peach',
+                            ),
                           ),
                           _GradientOption(
                             gradient: AppColors.mintGradient,
                             label: 'Mint',
                             isSelected: selectedGradient == 'mint',
-                            onTap: () => setDialogState(() => selectedGradient = 'mint'),
+                            onTap: () =>
+                                setDialogState(() => selectedGradient = 'mint'),
                           ),
                           _GradientOption(
                             gradient: AppColors.sunsetGradient,
                             label: 'Sunset',
                             isSelected: selectedGradient == 'sunset',
-                            onTap: () => setDialogState(() => selectedGradient = 'sunset'),
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'sunset',
+                            ),
                           ),
                           _GradientOption(
                             gradient: AppColors.purpleGradient,
                             label: 'Purple',
                             isSelected: selectedGradient == 'purple',
-                            onTap: () => setDialogState(() => selectedGradient = 'purple'),
+                            onTap: () => setDialogState(
+                              () => selectedGradient = 'purple',
+                            ),
                           ),
                         ],
                       ),
-                      
+
                       const SizedBox(height: 28),
-                      
+
                       // Icon Selection
                       Text(
                         'Icon',
@@ -418,35 +478,41 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             icon: Icons.abc_rounded,
                             label: 'ABC',
                             isSelected: selectedIcon == 'alphabet',
-                            onTap: () => setDialogState(() => selectedIcon = 'alphabet'),
+                            onTap: () =>
+                                setDialogState(() => selectedIcon = 'alphabet'),
                             isDark: isDark,
                           ),
                           _IconOption(
                             icon: Icons.pin_rounded,
                             label: 'Numbers',
                             isSelected: selectedIcon == 'numbers',
-                            onTap: () => setDialogState(() => selectedIcon = 'numbers'),
+                            onTap: () =>
+                                setDialogState(() => selectedIcon = 'numbers'),
                             isDark: isDark,
                           ),
                           _IconOption(
                             icon: Icons.text_fields_rounded,
                             label: 'Words',
                             isSelected: selectedIcon == 'words',
-                            onTap: () => setDialogState(() => selectedIcon = 'words'),
+                            onTap: () =>
+                                setDialogState(() => selectedIcon = 'words'),
                             isDark: isDark,
                           ),
                           _IconOption(
                             icon: Icons.calculate_rounded,
                             label: 'Math',
                             isSelected: selectedIcon == 'arithmetic',
-                            onTap: () => setDialogState(() => selectedIcon = 'arithmetic'),
+                            onTap: () => setDialogState(
+                              () => selectedIcon = 'arithmetic',
+                            ),
                             isDark: isDark,
                           ),
                           _IconOption(
                             icon: Icons.auto_stories_rounded,
                             label: 'Stories',
                             isSelected: selectedIcon == 'stories',
-                            onTap: () => setDialogState(() => selectedIcon = 'stories'),
+                            onTap: () =>
+                                setDialogState(() => selectedIcon = 'stories'),
                             isDark: isDark,
                           ),
                         ],
@@ -455,15 +521,19 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   ),
                 ),
               ),
-              
+
               // Action buttons
               Container(
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF0D1117) : const Color(0xFFF8FAFC),
+                  color: isDark
+                      ? const Color(0xFF0D1117)
+                      : const Color(0xFFF8FAFC),
                   border: Border(
                     top: BorderSide(
-                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.06),
                     ),
                   ),
                 ),
@@ -475,7 +545,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 16),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Center(
@@ -507,11 +579,15 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             order: category?.order ?? 0,
                             isActive: true,
                           );
-                          
+
                           if (isEditing) {
-                            ref.read(categoriesProvider.notifier).updateCategory(newCategory);
+                            ref
+                                .read(categoriesProvider.notifier)
+                                .updateCategory(newCategory);
                           } else {
-                            ref.read(categoriesProvider.notifier).addCategory(newCategory);
+                            ref
+                                .read(categoriesProvider.notifier)
+                                .addCategory(newCategory);
                           }
                           Navigator.pop(context);
                         },
@@ -583,7 +659,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               color: isDark ? Colors.white38 : Colors.black38,
             ),
             filled: true,
-            fillColor: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.04),
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -592,7 +670,10 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: AppColors.primary, width: 2),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 18,
+              vertical: 16,
+            ),
           ),
         ),
       ],
@@ -601,14 +682,12 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
   void _showDeleteDialog(BuildContext context, CategoryModel category) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
         backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
         title: Row(
           children: [
             Container(
@@ -618,7 +697,10 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                 color: AppColors.error.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
-              child: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
+              child: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+              ),
             ),
             const SizedBox(width: 14),
             const Text('Delete Category'),
@@ -678,30 +760,42 @@ class _CategoryCardState extends State<_CategoryCard> {
 
   LinearGradient _getGradient(String preset) {
     switch (preset) {
-      case 'skyBlue': return AppColors.skyBlueGradient;
-      case 'peach': return AppColors.peachGradient;
-      case 'mint': return AppColors.mintGradient;
-      case 'sunset': return AppColors.sunsetGradient;
-      case 'purple': return AppColors.purpleGradient;
-      default: return AppColors.skyBlueGradient;
+      case 'skyBlue':
+        return AppColors.skyBlueGradient;
+      case 'peach':
+        return AppColors.peachGradient;
+      case 'mint':
+        return AppColors.mintGradient;
+      case 'sunset':
+        return AppColors.sunsetGradient;
+      case 'purple':
+        return AppColors.purpleGradient;
+      default:
+        return AppColors.skyBlueGradient;
     }
   }
 
   IconData _getIcon(String? name) {
     switch (name) {
-      case 'alphabet': return Icons.abc_rounded;
-      case 'numbers': return Icons.pin_rounded;
-      case 'words': return Icons.text_fields_rounded;
-      case 'arithmetic': return Icons.calculate_rounded;
-      case 'stories': return Icons.auto_stories_rounded;
-      default: return Icons.school_rounded;
+      case 'alphabet':
+        return Icons.abc_rounded;
+      case 'numbers':
+        return Icons.pin_rounded;
+      case 'words':
+        return Icons.text_fields_rounded;
+      case 'arithmetic':
+        return Icons.calculate_rounded;
+      case 'stories':
+        return Icons.auto_stories_rounded;
+      default:
+        return Icons.school_rounded;
     }
   }
 
   @override
   Widget build(BuildContext context) {
     final gradient = _getGradient(widget.category.gradientPreset);
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 14),
       child: MouseRegion(
@@ -709,7 +803,7 @@ class _CategoryCardState extends State<_CategoryCard> {
         onExit: (_) => setState(() => _isHovered = false),
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
-          transform: _isHovered 
+          transform: _isHovered
               ? (Matrix4.identity()..translate(-4.0, 0))
               : Matrix4.identity(),
           child: ClipRRect(
@@ -726,7 +820,9 @@ class _CategoryCardState extends State<_CategoryCard> {
                   border: Border.all(
                     color: _isHovered
                         ? gradient.colors.first.withValues(alpha: 0.5)
-                        : (widget.isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                        : (widget.isDark
+                              ? Colors.white10
+                              : Colors.black.withValues(alpha: 0.05)),
                     width: _isHovered ? 2 : 1,
                   ),
                   boxShadow: _isHovered
@@ -763,7 +859,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                       ),
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Content
                     Expanded(
                       child: Column(
@@ -774,7 +870,9 @@ class _CategoryCardState extends State<_CategoryCard> {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
-                              color: widget.isDark ? Colors.white : Colors.black,
+                              color: widget.isDark
+                                  ? Colors.white
+                                  : Colors.black,
                             ),
                           ),
                           if (widget.category.titleOlChiki.isNotEmpty) ...[
@@ -784,14 +882,16 @@ class _CategoryCardState extends State<_CategoryCard> {
                               style: TextStyle(
                                 fontSize: 14,
                                 fontFamily: 'OlChiki',
-                                color: widget.isDark ? Colors.white60 : Colors.black54,
+                                color: widget.isDark
+                                    ? Colors.white60
+                                    : Colors.black54,
                               ),
                             ),
                           ],
                         ],
                       ),
                     ),
-                    
+
                     // Actions
                     Row(
                       mainAxisSize: MainAxisSize.min,
@@ -800,18 +900,28 @@ class _CategoryCardState extends State<_CategoryCard> {
                           onPressed: widget.onEdit,
                           icon: Icon(
                             Icons.edit_rounded,
-                            color: widget.isDark ? Colors.white54 : Colors.black45,
+                            color: widget.isDark
+                                ? Colors.white70
+                                : Colors.black54,
+                            size: 20,
                           ),
-                          tooltip: 'Edit',
                         ),
                         IconButton(
                           onPressed: widget.onDelete,
-                          icon: const Icon(Icons.delete_outline_rounded, color: AppColors.error),
-                          tooltip: 'Delete',
+                          icon: Icon(
+                            Icons.delete_outline_rounded,
+                            color: widget.isDark
+                                ? Colors.white38
+                                : Colors.black38,
+                            size: 20,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Icon(
                           Icons.drag_handle_rounded,
-                          color: widget.isDark ? Colors.white30 : Colors.black26,
+                          color: widget.isDark
+                              ? Colors.white24
+                              : Colors.black12,
                         ),
                       ],
                     ),
@@ -822,10 +932,7 @@ class _CategoryCardState extends State<_CategoryCard> {
           ),
         ),
       ),
-    ).animate().fadeIn(
-      delay: (widget.index * 60).ms,
-      duration: 400.ms,
-    ).slideX(begin: -0.1);
+    );
   }
 }
 
@@ -845,33 +952,34 @@ class _GradientOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        width: 60,
-        height: 60,
-        decoration: BoxDecoration(
-          gradient: gradient,
-          borderRadius: BorderRadius.circular(16),
-          border: isSelected
-              ? Border.all(color: Colors.white, width: 3)
-              : null,
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: gradient.colors.first.withValues(alpha: 0.5),
-                    blurRadius: 15,
-                    spreadRadius: 2,
-                  ),
-                ]
-              : null,
-        ),
-        child: isSelected
-            ? const Icon(Icons.check_rounded, color: Colors.white, size: 28)
-            : null,
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              gradient: gradient,
+              borderRadius: BorderRadius.circular(16),
+              border: isSelected
+                  ? Border.all(color: AppColors.primary, width: 2)
+                  : null,
+              boxShadow: isSelected
+                  ? [
+                      BoxShadow(
+                        color: gradient.colors.first.withValues(alpha: 0.4),
+                        blurRadius: 10,
+                      ),
+                    ]
+                  : null,
+            ),
+            child: isSelected
+                ? const Icon(Icons.check, color: Colors.white)
+                : null,
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
       ),
     );
   }
@@ -895,45 +1003,28 @@ class _IconOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        HapticFeedback.selectionClick();
-        onTap();
-      },
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: isSelected ? AppColors.heroGradient : null,
-          color: isSelected ? null : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.4),
-                    blurRadius: 12,
-                  ),
-                ]
-              : null,
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
+      onTap: onTap,
+      child: Column(
+        children: [
+          Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark ? Colors.white10 : Colors.black12),
+              borderRadius: BorderRadius.circular(16),
+            ),
+            child: Icon(
               icon,
-              color: isSelected ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
-              size: 22,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.white : Colors.black),
             ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
-                color: isSelected ? Colors.white : (isDark ? Colors.white70 : Colors.black54),
-              ),
-            ),
-          ],
-        ),
+          ),
+          const SizedBox(height: 6),
+          Text(label, style: const TextStyle(fontSize: 12)),
+        ],
       ),
     );
   }

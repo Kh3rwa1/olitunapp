@@ -1,21 +1,30 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../shared/providers/providers.dart';
+import 'package:go_router/go_router.dart';
 
-// Screens
+// Auth screens
 import '../features/auth/presentation/welcome_screen.dart';
 import '../features/auth/presentation/sign_in_screen.dart';
 import '../features/auth/presentation/sign_up_screen.dart';
 import '../features/auth/presentation/onboarding_screen.dart';
+
+// Home
 import '../features/home/presentation/home_screen.dart';
 import '../features/home/presentation/main_shell.dart';
+
+// Lessons
 import '../features/lessons/presentation/lessons_screen.dart';
 import '../features/lessons/presentation/lesson_detail_screen.dart';
 import '../features/lessons/presentation/category_lessons_screen.dart';
+
+// Quiz
 import '../features/quiz/presentation/quiz_screen.dart';
+
+// Profile
 import '../features/profile/presentation/profile_screen.dart';
 import '../features/profile/presentation/settings_screen.dart';
+
+// Admin
 import '../features/admin/presentation/admin_shell.dart';
 import '../features/admin/presentation/admin_dashboard_screen.dart';
 import '../features/admin/presentation/admin_categories_screen.dart';
@@ -27,32 +36,32 @@ import '../features/admin/presentation/admin_media_screen.dart';
 
 // Route names
 class AppRoutes {
-  static const welcome = 'welcome';
-  static const signIn = 'signIn';
-  static const signUp = 'signUp';
-  static const onboarding = 'onboarding';
-  static const home = 'home';
-  static const lessons = 'lessons';
-  static const lessonDetail = 'lessonDetail';
-  static const categoryLessons = 'categoryLessons';
-  static const quiz = 'quiz';
-  static const profile = 'profile';
-  static const settings = 'settings';
-  static const admin = 'admin';
-  static const adminCategories = 'adminCategories';
-  static const adminBanners = 'adminBanners';
-  static const adminLetters = 'adminLetters';
-  static const adminLessons = 'adminLessons';
-  static const adminQuizzes = 'adminQuizzes';
+  static const String welcome = '/welcome';
+  static const String signIn = '/sign-in';
+  static const String signUp = '/sign-up';
+  static const String onboarding = '/onboarding';
+  static const String home = '/home';
+  static const String lessons = '/lessons';
+  static const String lessonDetail = '/lesson/:lessonId';
+  static const String categoryLessons = '/lessons/category/:categoryId';
+  static const String quiz = '/quiz/:quizId';
+  static const String profile = '/profile';
+  static const String settings = '/settings';
+  static const String admin = '/admin';
+  static const String adminCategories = '/admin/categories';
+  static const String adminBanners = '/admin/banners';
+  static const String adminLetters = '/admin/letters';
+  static const String adminLessons = '/admin/lessons';
+  static const String adminQuizzes = '/admin/quizzes';
+  static const String adminMedia = '/admin/media';
 }
 
-// Custom page transitions
-CustomTransitionPage<T> _fadeTransition<T>(
-  BuildContext context,
-  GoRouterState state,
-  Widget child,
-) {
-  return CustomTransitionPage<T>(
+// Custom transition
+CustomTransitionPage _fadeTransition({
+  required Widget child,
+  required GoRouterState state,
+}) {
+  return CustomTransitionPage(
     key: state.pageKey,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -64,12 +73,11 @@ CustomTransitionPage<T> _fadeTransition<T>(
   );
 }
 
-CustomTransitionPage<T> _slideTransition<T>(
-  BuildContext context,
-  GoRouterState state,
-  Widget child,
-) {
-  return CustomTransitionPage<T>(
+CustomTransitionPage _slideTransition({
+  required Widget child,
+  required GoRouterState state,
+}) {
+  return CustomTransitionPage(
     key: state.pageKey,
     child: child,
     transitionsBuilder: (context, animation, secondaryAnimation, child) {
@@ -77,94 +85,70 @@ CustomTransitionPage<T> _slideTransition<T>(
         position: Tween<Offset>(
           begin: const Offset(1.0, 0.0),
           end: Offset.zero,
-        ).animate(CurveTween(curve: Curves.easeInOut).animate(animation)),
+        ).animate(CurveTween(curve: Curves.easeInOutCubic).animate(animation)),
         child: child,
       );
     },
   );
 }
 
-// Router provider
 final routerProvider = Provider<GoRouter>((ref) {
-  final authState = ref.watch(authStateProvider);
-  final isGuestMode = ref.watch(guestModeProvider);
-  
   return GoRouter(
     initialLocation: '/welcome',
-    debugLogDiagnostics: true,
+    debugLogDiagnostics: false,
+    
+    // No authentication required - open access
     redirect: (context, state) {
-      final isAuthenticated = authState.valueOrNull != null;
-      final canAccessContent = isAuthenticated || isGuestMode;
-      
-      final isAuthRoute = state.matchedLocation == '/welcome' ||
-          state.matchedLocation == '/sign-in' ||
-          state.matchedLocation == '/sign-up';
-      
-      // Admin routes - TEMPORARILY OPEN FOR PREVIEW (no auth required)
-      final isAdminRoute = state.matchedLocation.startsWith('/admin');
-      
-      // Allow admin routes without any auth for preview
-      if (isAdminRoute) {
-        return null;  // No redirect, allow access
-      }
-      
-      // Protected routes that require authentication (not guest)
-      final isProtectedRoute = state.matchedLocation == '/settings' ||
-          state.matchedLocation == '/profile';
-
-      // If trying to access protected route without auth, redirect to sign-in
-      if (isProtectedRoute && !isAuthenticated) {
-        return '/sign-in';
-      }
-
-      // If not authenticated/guest and not on auth route, redirect to welcome
-      if (!canAccessContent && !isAuthRoute) {
-        return '/welcome';
-      }
-
-      // If authenticated and on auth route, redirect to home
-      if (isAuthenticated && isAuthRoute) {
-        return '/home';
-      }
-
+      // Allow all routes - no auth required
       return null;
     },
+
+    errorBuilder: (context, state) => Scaffold(
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.error_outline, size: 64, color: Colors.red),
+            const SizedBox(height: 16),
+            Text('Page not found: ${state.matchedLocation}'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => context.go('/home'),
+              child: const Text('Go Home'),
+            ),
+          ],
+        ),
+      ),
+    ),
+
     routes: [
-      // Auth routes
+      // Welcome / Auth routes (simplified - no auth required)
       GoRoute(
         path: '/welcome',
-        name: AppRoutes.welcome,
         pageBuilder: (context, state) => _fadeTransition(
-          context,
-          state,
-          const WelcomeScreen(),
+          child: const WelcomeScreen(),
+          state: state,
         ),
       ),
       GoRoute(
         path: '/sign-in',
-        name: AppRoutes.signIn,
-        pageBuilder: (context, state) => _slideTransition(
-          context,
-          state,
-          const SignInScreen(),
+        pageBuilder: (context, state) => _fadeTransition(
+          child: const SignInScreen(),
+          state: state,
         ),
       ),
       GoRoute(
         path: '/sign-up',
-        name: AppRoutes.signUp,
-        pageBuilder: (context, state) => _slideTransition(
-          context,
-          state,
-          const SignUpScreen(),
+        pageBuilder: (context, state) => _fadeTransition(
+          child: const SignUpScreen(),
+          state: state,
         ),
       ),
       GoRoute(
         path: '/onboarding',
-        name: AppRoutes.onboarding,
         pageBuilder: (context, state) => _fadeTransition(
-          context,
-          state,
-          const OnboardingScreen(),
+          child: const OnboardingScreen(),
+          state: state,
         ),
       ),
 
@@ -174,77 +158,63 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/home',
-            name: AppRoutes.home,
             pageBuilder: (context, state) => _fadeTransition(
-              context,
-              state,
-              const HomeScreen(),
+              child: const HomeScreen(),
+              state: state,
             ),
           ),
           GoRoute(
             path: '/lessons',
-            name: AppRoutes.lessons,
             pageBuilder: (context, state) => _fadeTransition(
-              context,
-              state,
-              const LessonsScreen(),
+              child: const LessonsScreen(),
+              state: state,
             ),
             routes: [
               GoRoute(
                 path: 'category/:categoryId',
-                name: AppRoutes.categoryLessons,
                 pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  CategoryLessonsScreen(
+                  child: CategoryLessonsScreen(
                     categoryId: state.pathParameters['categoryId']!,
                   ),
+                  state: state,
                 ),
               ),
             ],
           ),
           GoRoute(
             path: '/profile',
-            name: AppRoutes.profile,
             pageBuilder: (context, state) => _fadeTransition(
-              context,
-              state,
-              const ProfileScreen(),
+              child: const ProfileScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/settings',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const SettingsScreen(),
+              state: state,
             ),
           ),
         ],
       ),
 
-      // Standalone routes (no bottom nav)
+      // Standalone routes (outside shell)
       GoRoute(
         path: '/lesson/:lessonId',
-        name: AppRoutes.lessonDetail,
         pageBuilder: (context, state) => _slideTransition(
-          context,
-          state,
-          LessonDetailScreen(
+          child: LessonDetailScreen(
             lessonId: state.pathParameters['lessonId']!,
           ),
+          state: state,
         ),
       ),
       GoRoute(
         path: '/quiz/:quizId',
-        name: AppRoutes.quiz,
         pageBuilder: (context, state) => _slideTransition(
-          context,
-          state,
-          QuizScreen(
+          child: QuizScreen(
             quizId: state.pathParameters['quizId']!,
           ),
-        ),
-      ),
-      GoRoute(
-        path: '/settings',
-        name: AppRoutes.settings,
-        pageBuilder: (context, state) => _slideTransition(
-          context,
-          state,
-          const SettingsScreen(),
+          state: state,
         ),
       ),
 
@@ -254,94 +224,55 @@ final routerProvider = Provider<GoRouter>((ref) {
         routes: [
           GoRoute(
             path: '/admin',
-            name: AppRoutes.admin,
             pageBuilder: (context, state) => _fadeTransition(
-              context,
-              state,
-              const AdminDashboardScreen(),
+              child: const AdminDashboardScreen(),
+              state: state,
             ),
-            routes: [
-              GoRoute(
-                path: 'categories',
-                name: AppRoutes.adminCategories,
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminCategoriesScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'banners',
-                name: AppRoutes.adminBanners,
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminBannersScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'letters',
-                name: AppRoutes.adminLetters,
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminLettersScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'lessons',
-                name: AppRoutes.adminLessons,
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminLessonsScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'quizzes',
-                name: AppRoutes.adminQuizzes,
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminQuizzesScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'media',
-                name: 'adminMedia',
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminMediaScreen(),
-                ),
-              ),
-              GoRoute(
-                path: 'audio',
-                name: 'adminAudio',
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminMediaScreen(),  // Same screen, filtered
-                ),
-              ),
-              GoRoute(
-                path: 'video',
-                name: 'adminVideo',
-                pageBuilder: (context, state) => _slideTransition(
-                  context,
-                  state,
-                  const AdminMediaScreen(),  // Same screen, filtered
-                ),
-              ),
-            ],
+          ),
+          GoRoute(
+            path: '/admin/categories',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminCategoriesScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/admin/banners',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminBannersScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/admin/letters',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminLettersScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/admin/lessons',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminLessonsScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/admin/quizzes',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminQuizzesScreen(),
+              state: state,
+            ),
+          ),
+          GoRoute(
+            path: '/admin/media',
+            pageBuilder: (context, state) => _slideTransition(
+              child: const AdminMediaScreen(),
+              state: state,
+            ),
           ),
         ],
       ),
     ],
-    errorBuilder: (context, state) => Scaffold(
-      body: Center(
-        child: Text('Page not found: ${state.matchedLocation}'),
-      ),
-    ),
   );
 });

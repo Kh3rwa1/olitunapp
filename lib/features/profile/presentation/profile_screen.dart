@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../shared/widgets/bubble_background.dart';
-import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/animated_buttons.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
 import '../../../shared/providers/providers.dart';
 
 class ProfileScreen extends ConsumerWidget {
@@ -14,189 +11,36 @@ class ProfileScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final user = ref.watch(currentUserProvider);
+    final userName = ref.watch(userNameProvider);
+    final streak = ref.watch(userStreakProvider);
+    final stars = ref.watch(userStarsProvider);
+    final lessonsCompleted = ref.watch(lessonsCompletedProvider);
+    final quizzesCompleted = ref.watch(quizzesCompletedProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return BubbleBackground(
-      child: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppConstants.spacingM),
-          child: Column(
-            children: [
-              // Header
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Profile',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  CircleIconButton(
-                    icon: Icons.settings_outlined,
-                    onPressed: () => context.pushNamed('settings'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppConstants.spacingXL),
-
-              // Profile card
-              user.when(
-                data: (userData) => _buildProfileCard(context, userData),
-                loading: () => const ShimmerCard(height: 200),
-                error: (_, __) => const Text('Failed to load profile'),
-              ),
-              const SizedBox(height: AppConstants.spacingL),
-
-              // Stats grid
-              user.when(
-                data: (userData) => _buildStatsGrid(context, userData),
-                loading: () => const ShimmerCard(height: 120),
-                error: (_, __) => const SizedBox.shrink(),
-              ),
-              const SizedBox(height: AppConstants.spacingL),
-
-              // Achievements section
-              _buildSectionTitle(context, 'Achievements'),
-              const SizedBox(height: AppConstants.spacingM),
-              _buildAchievements(context),
-              const SizedBox(height: AppConstants.spacingL),
-
-              // Admin access (if admin)
-              Consumer(
-                builder: (context, ref, child) {
-                  final isAdmin = ref.watch(isAdminProvider);
-                  return isAdmin.when(
-                    data: (admin) {
-                      if (!admin) return const SizedBox.shrink();
-                      return Column(
-                        children: [
-                          const Divider(),
-                          const SizedBox(height: AppConstants.spacingM),
-                          SoftCard(
-                            onTap: () => context.go('/admin'),
-                            padding: const EdgeInsets.all(AppConstants.spacingM),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 48,
-                                  height: 48,
-                                  decoration: BoxDecoration(
-                                    gradient: AppColors.purpleGradient,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: const Icon(
-                                    Icons.admin_panel_settings_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: AppConstants.spacingM),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(
-                                        'Admin Panel',
-                                        style: Theme.of(context).textTheme.titleSmall,
-                                      ),
-                                      Text(
-                                        'Manage app content',
-                                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                          color: isDark
-                                              ? AppColors.textTertiaryDark
-                                              : AppColors.textTertiaryLight,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                const Icon(Icons.arrow_forward_ios_rounded, size: 16),
-                              ],
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                    loading: () => const SizedBox.shrink(),
-                    error: (_, __) => const SizedBox.shrink(),
-                  );
-                },
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildProfileCard(BuildContext context, dynamic userData) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final name = userData?.displayName ?? 'Learner';
-    final email = userData?.email ?? '';
-
-    return SoftCard(
-      padding: const EdgeInsets.all(AppConstants.spacingL),
-      child: Column(
-        children: [
-          // Avatar
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppColors.primaryGradient,
-              shape: BoxShape.circle,
-              boxShadow: AppColors.coloredShadow(AppColors.primaryCyan),
-            ),
-            child: Center(
-              child: Text(
-                name.isNotEmpty ? name[0].toUpperCase() : 'L',
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 40,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      body: CustomScrollView(
+        physics: const BouncingScrollPhysics(),
+        slivers: [
+          SliverToBoxAdapter(
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    // Profile Header
+                    _buildProfileHeader(userName, isDark).animate().fadeIn(duration: 500.ms),
+                    const SizedBox(height: 32),
+                    
+                    // Stats Grid
+                    _buildStatsGrid(streak, stars, lessonsCompleted, quizzesCompleted, isDark),
+                    const SizedBox(height: 32),
+                    
+                    // Actions
+                    _buildActionsList(context, ref, isDark),
+                  ],
                 ),
-              ),
-            ),
-          ),
-          const SizedBox(height: AppConstants.spacingM),
-
-          // Name
-          Text(
-            name,
-            style: Theme.of(context).textTheme.titleLarge,
-          ),
-          const SizedBox(height: 4),
-
-          // Email
-          Text(
-            email,
-            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ),
-          const SizedBox(height: AppConstants.spacingM),
-
-          // Level badge
-          Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppConstants.spacingM,
-              vertical: AppConstants.spacingXS,
-            ),
-            decoration: BoxDecoration(
-              color: AppColors.primaryCyan.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
-            ),
-            child: Text(
-              (userData?.preferences.level ?? 'beginner').toUpperCase(),
-              style: const TextStyle(
-                fontFamily: 'Poppins',
-                fontSize: 12,
-                fontWeight: FontWeight.w600,
-                color: AppColors.primaryCyan,
               ),
             ),
           ),
@@ -205,137 +49,197 @@ class ProfileScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildStatsGrid(BuildContext context, dynamic userData) {
-    final stats = userData?.stats;
+  Widget _buildProfileHeader(String userName, bool isDark) {
+    return Column(
+      children: [
+        Container(
+          width: 100,
+          height: 100,
+          decoration: BoxDecoration(
+            gradient: AppColors.heroGradient,
+            borderRadius: BorderRadius.circular(30),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 30,
+                offset: const Offset(0, 12),
+              ),
+            ],
+          ),
+          child: const Icon(Icons.person_rounded, size: 48, color: Colors.white),
+        ),
+        const SizedBox(height: 20),
+        Text(
+          userName,
+          style: TextStyle(
+            fontSize: 28,
+            fontWeight: FontWeight.w800,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          'Ol Chiki Learner',
+          style: TextStyle(
+            fontSize: 14,
+            color: isDark ? Colors.white54 : Colors.black45,
+          ),
+        ),
+      ],
+    );
+  }
 
+  Widget _buildStatsGrid(int streak, int stars, int lessons, int quizzes, bool isDark) {
     return Row(
       children: [
         Expanded(
           child: _StatCard(
             icon: Icons.local_fire_department_rounded,
-            iconColor: AppColors.accentOrange,
-            value: '${stats?.streak ?? 0}',
+            value: '$streak',
             label: 'Day Streak',
+            gradient: AppColors.premiumOrange,
           ),
         ),
-        const SizedBox(width: AppConstants.spacingM),
+        const SizedBox(width: 12),
         Expanded(
           child: _StatCard(
             icon: Icons.star_rounded,
-            iconColor: AppColors.accentYellow,
-            value: '${stats?.stars ?? 0}',
+            value: '$stars',
             label: 'Stars',
-          ),
-        ),
-        const SizedBox(width: AppConstants.spacingM),
-        Expanded(
-          child: _StatCard(
-            icon: Icons.check_circle_rounded,
-            iconColor: AppColors.success,
-            value: '${stats?.totalLessonsCompleted ?? 0}',
-            label: 'Lessons',
+            gradient: AppColors.premiumGreen,
           ),
         ),
       ],
-    );
+    ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 
-  Widget _buildSectionTitle(BuildContext context, String title) {
-    return Row(
+  Widget _buildActionsList(BuildContext context, WidgetRef ref, bool isDark) {
+    return Column(
       children: [
-        Text(
-          title,
-          style: Theme.of(context).textTheme.titleMedium,
+        _ActionTile(
+          icon: Icons.edit_rounded,
+          label: 'Edit Profile',
+          onTap: () => _showEditNameDialog(context, ref),
+          isDark: isDark,
+        ),
+        _ActionTile(
+          icon: Icons.settings_rounded,
+          label: 'Settings',
+          onTap: () => context.go('/settings'),
+          isDark: isDark,
+        ),
+        _ActionTile(
+          icon: Icons.admin_panel_settings_rounded,
+          label: 'Admin Panel',
+          onTap: () => context.go('/admin'),
+          isDark: isDark,
+          showBadge: true,
+        ),
+        _ActionTile(
+          icon: Icons.help_outline_rounded,
+          label: 'Help & Support',
+          onTap: () {},
+          isDark: isDark,
+        ),
+        _ActionTile(
+          icon: Icons.info_outline_rounded,
+          label: 'About',
+          onTap: () {},
+          isDark: isDark,
         ),
       ],
-    );
+    ).animate().fadeIn(delay: 400.ms, duration: 500.ms);
   }
 
-  Widget _buildAchievements(BuildContext context) {
-    final achievements = [
-      _Achievement(
-        icon: Icons.school_rounded,
-        title: 'First Steps',
-        description: 'Complete your first lesson',
-        isUnlocked: true,
-        gradient: AppColors.skyBlueGradient,
-      ),
-      _Achievement(
-        icon: Icons.local_fire_department_rounded,
-        title: 'On Fire',
-        description: '7 day streak',
-        isUnlocked: false,
-        gradient: AppColors.coralGradient,
-      ),
-      _Achievement(
-        icon: Icons.star_rounded,
-        title: 'Star Collector',
-        description: 'Earn 100 stars',
-        isUnlocked: false,
-        gradient: AppColors.sunsetGradient,
-      ),
-      _Achievement(
-        icon: Icons.quiz_rounded,
-        title: 'Quiz Master',
-        description: 'Complete 10 quizzes',
-        isUnlocked: false,
-        gradient: AppColors.mintGradient,
-      ),
-    ];
+  void _showEditNameDialog(BuildContext context, WidgetRef ref) {
+    final controller = TextEditingController(text: ref.read(userNameProvider));
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        crossAxisSpacing: AppConstants.spacingM,
-        mainAxisSpacing: AppConstants.spacingM,
-        childAspectRatio: 1.2,
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Text('Edit Name', style: TextStyle(color: isDark ? Colors.white : Colors.black)),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          decoration: InputDecoration(
+            hintText: 'Enter your name',
+            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              if (controller.text.isNotEmpty) {
+                updateUserName(ref, controller.text);
+                Navigator.pop(context);
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Save'),
+          ),
+        ],
       ),
-      itemCount: achievements.length,
-      itemBuilder: (context, index) {
-        final achievement = achievements[index];
-        return _AchievementCard(achievement: achievement);
-      },
     );
   }
 }
 
 class _StatCard extends StatelessWidget {
   final IconData icon;
-  final Color iconColor;
   final String value;
   final String label;
+  final Gradient gradient;
 
   const _StatCard({
     required this.icon,
-    required this.iconColor,
     required this.value,
     required this.label,
+    required this.gradient,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return SoftCard(
-      padding: const EdgeInsets.all(AppConstants.spacingM),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: gradient,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: (gradient as LinearGradient).colors.first.withValues(alpha: 0.3),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
       child: Column(
         children: [
-          Icon(icon, color: iconColor, size: 28),
-          const SizedBox(height: AppConstants.spacingS),
+          Icon(icon, color: Colors.white, size: 28),
+          const SizedBox(height: 10),
           Text(
             value,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              fontWeight: FontWeight.w700,
+            style: const TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
             ),
           ),
           Text(
             label,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isDark
-                  ? AppColors.textTertiaryDark
-                  : AppColors.textTertiaryLight,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withValues(alpha: 0.85),
             ),
           ),
         ],
@@ -344,77 +248,85 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _Achievement {
+class _ActionTile extends StatelessWidget {
   final IconData icon;
-  final String title;
-  final String description;
-  final bool isUnlocked;
-  final LinearGradient gradient;
+  final String label;
+  final VoidCallback onTap;
+  final bool isDark;
+  final bool showBadge;
 
-  const _Achievement({
+  const _ActionTile({
     required this.icon,
-    required this.title,
-    required this.description,
-    required this.isUnlocked,
-    required this.gradient,
+    required this.label,
+    required this.onTap,
+    required this.isDark,
+    this.showBadge = false,
   });
-}
-
-class _AchievementCard extends StatelessWidget {
-  final _Achievement achievement;
-
-  const _AchievementCard({required this.achievement});
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return SoftCard(
-      padding: const EdgeInsets.all(AppConstants.spacingM),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: achievement.isUnlocked ? achievement.gradient : null,
-              color: achievement.isUnlocked
-                  ? null
-                  : (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              achievement.icon,
-              color: achievement.isUnlocked
-                  ? Colors.white
-                  : (isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight),
-              size: 24,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: GestureDetector(
+        onTap: () {
+          HapticFeedback.lightImpact();
+          onTap();
+        },
+        child: Container(
+          padding: const EdgeInsets.all(18),
+          decoration: BoxDecoration(
+            color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
             ),
           ),
-          const SizedBox(height: AppConstants.spacingS),
-          Text(
-            achievement.title,
-            style: Theme.of(context).textTheme.labelLarge?.copyWith(
-              color: achievement.isUnlocked ? null : AppColors.textTertiaryLight,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(icon, color: AppColors.primary),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  label,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              if (showBadge)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(
+                    gradient: AppColors.heroGradient,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Text(
+                    'CMS',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              const SizedBox(width: 8),
+              Icon(
+                Icons.chevron_right_rounded,
+                color: isDark ? Colors.white38 : Colors.black38,
+              ),
+            ],
           ),
-          const SizedBox(height: 2),
-          Text(
-            achievement.description,
-            style: Theme.of(context).textTheme.labelSmall?.copyWith(
-              color: isDark
-                  ? AppColors.textTertiaryDark
-                  : AppColors.textTertiaryLight,
-            ),
-            textAlign: TextAlign.center,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-          ),
-        ],
+        ),
       ),
     );
   }

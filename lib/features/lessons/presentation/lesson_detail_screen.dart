@@ -1,350 +1,219 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/constants/app_constants.dart';
-import '../../../shared/widgets/bubble_background.dart';
-import '../../../shared/widgets/glass_card.dart';
-import '../../../shared/widgets/animated_buttons.dart';
-import '../../../shared/widgets/shimmer_loading.dart';
-import '../../../shared/repositories/content_repository.dart';
-import '../../../shared/models/content_models.dart';
+import '../../../shared/providers/providers.dart';
 
-final lessonDetailProvider = FutureProvider.family<LessonModel?, String>((ref, lessonId) async {
-  final contentRepo = ContentRepository();
-  return contentRepo.getLesson(lessonId);
-});
-
-class LessonDetailScreen extends ConsumerStatefulWidget {
+class LessonDetailScreen extends ConsumerWidget {
   final String lessonId;
 
-  const LessonDetailScreen({
-    super.key,
-    required this.lessonId,
-  });
+  const LessonDetailScreen({super.key, required this.lessonId});
 
   @override
-  ConsumerState<LessonDetailScreen> createState() => _LessonDetailScreenState();
-}
-
-class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
-  int _currentBlockIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
-    final lessonAsync = ref.watch(lessonDetailProvider(widget.lessonId));
+  Widget build(BuildContext context, WidgetRef ref) {
+    final lessons = ref.watch(lessonsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return BubbleBackground(
-      child: Scaffold(
+    final lesson = lessons.firstWhere(
+      (l) => l.id == lessonId,
+      orElse: () => lessons.first,
+    );
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      appBar: AppBar(
         backgroundColor: Colors.transparent,
-        appBar: AppBar(
-          backgroundColor: Colors.transparent,
-          leading: CircleIconButton(
-            icon: Icons.close_rounded,
-            onPressed: () => context.pop(),
-          ),
-          title: lessonAsync.when(
-            data: (lesson) => lesson != null
-                ? Text(lesson.titleLatin)
-                : const Text('Lesson'),
-            loading: () => const ShimmerText(width: 100),
-            error: (_, __) => const Text('Lesson'),
-          ),
-          actions: [
-            CircleIconButton(
-              icon: Icons.volume_up_rounded,
-              onPressed: () {
-                // Toggle sound
-              },
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_rounded, color: isDark ? Colors.white : Colors.black),
+          onPressed: () => context.pop(),
+        ),
+        title: Text(
+          lesson.titleLatin,
+          style: TextStyle(fontWeight: FontWeight.w700, color: isDark ? Colors.white : Colors.black),
+        ),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Lesson header
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    lesson.titleLatin,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w800,
+                      color: Colors.white,
+                    ),
+                  ),
+                  if (lesson.titleOlChiki.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        lesson.titleOlChiki,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontFamily: 'OlChiki',
+                          color: Colors.white.withValues(alpha: 0.9),
+                        ),
+                      ),
+                    ),
+                  const SizedBox(height: 16),
+                  Row(
+                    children: [
+                      _InfoChip(Icons.timer_rounded, '${lesson.estimatedMinutes} min'),
+                      const SizedBox(width: 12),
+                      _InfoChip(Icons.signal_cellular_alt_rounded, lesson.level),
+                    ],
+                  ),
+                ],
+              ),
             ),
-            const SizedBox(width: AppConstants.spacingS),
+            const SizedBox(height: 28),
+            
+            // Description
+            if (lesson.description != null) ...[
+              Text(
+                'About this lesson',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Text(
+                lesson.description!,
+                style: TextStyle(
+                  fontSize: 15,
+                  height: 1.6,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              const SizedBox(height: 28),
+            ],
+            
+            // Content placeholder
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.06) : const Color(0xFFF8FAFC),
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(
+                  color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                ),
+              ),
+              child: Column(
+                children: [
+                  Icon(
+                    Icons.article_outlined,
+                    size: 48,
+                    color: AppColors.primary.withValues(alpha: 0.5),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    'Lesson Content',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Content will be added via Admin CMS',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white54 : Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 40),
           ],
         ),
-        body: lessonAsync.when(
-          data: (lesson) {
-            if (lesson == null) {
-              return const Center(child: Text('Lesson not found'));
-            }
-
-            if (lesson.blocks.isEmpty) {
-              return Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.construction_rounded,
-                      size: 64,
-                      color: isDark
-                          ? AppColors.textTertiaryDark
-                          : AppColors.textTertiaryLight,
-                    ),
-                    const SizedBox(height: AppConstants.spacingM),
-                    Text(
-                      'Lesson content coming soon!',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                  ],
-                ),
-              );
-            }
-
-            return Column(
-              children: [
-                // Progress bar
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: AppConstants.spacingM,
+      ),
+      bottomNavigationBar: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: GestureDetector(
+            onTap: () {
+              incrementLessonsCompleted(ref);
+              addStars(ref, 10);
+              context.pop();
+            },
+            child: Container(
+              padding: const EdgeInsets.symmetric(vertical: 18),
+              decoration: BoxDecoration(
+                gradient: AppColors.heroGradient,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? AppColors.darkSurfaceVariant
-                                : AppColors.lightSurfaceVariant,
-                            borderRadius: BorderRadius.circular(4),
-                          ),
-                          child: FractionallySizedBox(
-                            alignment: Alignment.centerLeft,
-                            widthFactor: (_currentBlockIndex + 1) / lesson.blocks.length,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: AppColors.primaryGradient,
-                                borderRadius: BorderRadius.circular(4),
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: AppConstants.spacingS),
-                      Text(
-                        '${_currentBlockIndex + 1}/${lesson.blocks.length}',
-                        style: Theme.of(context).textTheme.labelSmall,
-                      ),
-                    ],
+                ],
+              ),
+              child: const Center(
+                child: Text(
+                  'Complete Lesson',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: AppConstants.spacingL),
-
-                // Block content
-                Expanded(
-                  child: PageView.builder(
-                    itemCount: lesson.blocks.length,
-                    onPageChanged: (index) {
-                      setState(() {
-                        _currentBlockIndex = index;
-                      });
-                    },
-                    itemBuilder: (context, index) {
-                      return _buildBlock(context, lesson.blocks[index]);
-                    },
-                  ),
-                ),
-
-                // Navigation buttons
-                Padding(
-                  padding: const EdgeInsets.all(AppConstants.spacingM),
-                  child: Row(
-                    children: [
-                      if (_currentBlockIndex > 0)
-                        Expanded(
-                          child: SecondaryButton(
-                            text: 'Previous',
-                            onPressed: () {
-                              setState(() {
-                                _currentBlockIndex--;
-                              });
-                            },
-                          ),
-                        ),
-                      if (_currentBlockIndex > 0)
-                        const SizedBox(width: AppConstants.spacingM),
-                      Expanded(
-                        child: PrimaryButton(
-                          text: _currentBlockIndex < lesson.blocks.length - 1
-                              ? 'Next'
-                              : 'Complete',
-                          onPressed: () {
-                            if (_currentBlockIndex < lesson.blocks.length - 1) {
-                              setState(() {
-                                _currentBlockIndex++;
-                              });
-                            } else {
-                              // Complete lesson
-                              _showCompletionDialog(context);
-                            }
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            );
-          },
-          loading: () => const Center(child: CircularProgressIndicator()),
-          error: (error, _) => Center(child: Text('Error: $error')),
+              ),
+            ),
+          ),
         ),
       ),
     );
   }
+}
 
-  Widget _buildBlock(BuildContext context, LessonBlock block) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+class _InfoChip extends StatelessWidget {
+  final IconData icon;
+  final String label;
 
-    switch (block.type) {
-      case 'text':
-        return Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingM),
-          child: SoftCard(
-            padding: const EdgeInsets.all(AppConstants.spacingL),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (block.textOlChiki != null && block.textOlChiki!.isNotEmpty)
-                  Text(
-                    block.textOlChiki!,
-                    style: const TextStyle(
-                      fontFamily: 'OlChiki',
-                      fontSize: 32,
-                      fontWeight: FontWeight.w600,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
-                  const SizedBox(height: AppConstants.spacingM),
-                  Text(
-                    block.textLatin!,
-                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      color: isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                ],
-              ],
+  const _InfoChip(this.icon, this.label);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.2),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 16, color: Colors.white),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.white,
             ),
           ),
-        );
-
-      case 'image':
-        return Padding(
-          padding: const EdgeInsets.all(AppConstants.spacingM),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (block.imageUrl != null)
-                Expanded(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-                    child: CachedNetworkImage(
-                      imageUrl: block.imageUrl!,
-                      fit: BoxFit.contain,
-                      placeholder: (_, __) => const ShimmerCard(height: 200),
-                      errorWidget: (_, __, ___) => const Icon(Icons.image_not_supported),
-                    ),
-                  ),
-                ),
-              if (block.textLatin != null) ...[
-                const SizedBox(height: AppConstants.spacingM),
-                Text(
-                  block.textLatin!,
-                  style: Theme.of(context).textTheme.bodyLarge,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ],
-          ),
-        );
-
-      case 'quiz':
-        if (block.quizRefId != null) {
-          return Center(
-            child: PrimaryButton(
-              text: 'Start Quiz',
-              
-              icon: Icons.quiz_rounded,
-              onPressed: () => context.pushNamed(
-                'quiz',
-                pathParameters: {'quizId': block.quizRefId!},
-              ),
-            ),
-          );
-        }
-        return const Center(child: Text('Quiz not available'));
-
-      default:
-        return Center(
-          child: Text('Unknown block type: ${block.type}'),
-        );
-    }
-  }
-
-  void _showCompletionDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppConstants.radiusLarge),
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 80,
-              height: 80,
-              decoration: BoxDecoration(
-                gradient: AppColors.sunsetGradient,
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.check_rounded,
-                color: Colors.white,
-                size: 40,
-              ),
-            ),
-            const SizedBox(height: AppConstants.spacingL),
-            Text(
-              'Lesson Complete!',
-              style: Theme.of(context).textTheme.titleLarge,
-            ),
-            const SizedBox(height: AppConstants.spacingS),
-            Text(
-              'Great job! You earned 10 stars.',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: AppConstants.spacingL),
-            Row(
-              children: [
-                Expanded(
-                  child: SecondaryButton(
-                    text: 'Back',
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      context.pop();
-                    },
-                  ),
-                ),
-                const SizedBox(width: AppConstants.spacingM),
-                Expanded(
-                  child: PrimaryButton(
-                    text: 'Continue',
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      context.pop();
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

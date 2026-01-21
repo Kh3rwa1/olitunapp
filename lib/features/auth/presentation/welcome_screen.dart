@@ -1,587 +1,283 @@
-import 'dart:math' as math;
-import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
 
-class WelcomeScreen extends ConsumerStatefulWidget {
+class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
   @override
-  ConsumerState<WelcomeScreen> createState() => _WelcomeScreenState();
-}
-
-class _WelcomeScreenState extends ConsumerState<WelcomeScreen>
-    with TickerProviderStateMixin {
-  late AnimationController _floatController;
-  late AnimationController _pulseController;
-  late AnimationController _gradientController;
-
-  @override
-  void initState() {
-    super.initState();
-    _floatController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
-
-    _pulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 2000),
-    )..repeat(reverse: true);
-
-    _gradientController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 8),
-    )..repeat();
-  }
-
-  @override
-  void dispose() {
-    _floatController.dispose();
-    _pulseController.dispose();
-    _gradientController.dispose();
-    super.dispose();
-  }
-
-  void _skipToExplore() {
-    HapticFeedback.lightImpact();
-    // Enable guest mode
-    ref.read(guestModeProvider.notifier).state = true;
-    context.go('/home');
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
 
-    return AnnotatedRegion<SystemUiOverlayStyle>(
-      value: isDark ? SystemUiOverlayStyle.light : SystemUiOverlayStyle.dark,
-      child: Scaffold(
-        body: Stack(
-          children: [
-            // Animated gradient background
-            _buildAnimatedBackground(isDark, size),
-
-            // Floating decorative elements
-            _buildFloatingElements(size),
-
-            // Main content
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    // Skip button at top right
-                    Align(
-                      alignment: Alignment.topRight,
-                      child: _buildSkipButton(context, isDark),
-                    ).animate().fadeIn(delay: 1200.ms, duration: 400.ms),
-
-                    const SizedBox(height: 24),
-
-                    // Animated Logo with actual image
-                    _buildHeroLogo()
-                        .animate()
-                        .fadeIn(duration: 800.ms, curve: Curves.easeOut)
-                        .scale(
-                          begin: const Offset(0.8, 0.8),
-                          duration: 800.ms,
-                          curve: Curves.easeOutBack,
-                        ),
-
-                    const SizedBox(height: 28),
-
-                    // App name with premium typography
-                    _buildAppTitle(context)
-                        .animate()
-                        .fadeIn(delay: 200.ms, duration: 600.ms)
-                        .slideY(begin: 0.3, curve: Curves.easeOut),
-
-                    const SizedBox(height: 10),
-
-                    // Tagline
-                    _buildTagline(context, isDark)
-                        .animate()
-                        .fadeIn(delay: 400.ms, duration: 600.ms)
-                        .slideY(begin: 0.3, curve: Curves.easeOut),
-
-                    const Spacer(),
-
-                    // Feature cards
-                    _buildFeatureCards(context, isDark),
-
-                    const SizedBox(height: 40),
-
-                    // CTA Buttons
-                    _buildCTAButtons(context, isDark)
-                        .animate()
-                        .fadeIn(delay: 800.ms, duration: 600.ms)
-                        .slideY(begin: 0.2, curve: Curves.easeOut),
-
-                    const SizedBox(height: 28),
-                  ],
-                ),
+    return Scaffold(
+      body: Stack(
+        children: [
+          // Animated gradient background
+          _buildBackground(isDark, size),
+          
+          // Content
+          SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 28),
+              child: Column(
+                children: [
+                  const Spacer(flex: 2),
+                  
+                  // Logo and branding
+                  _buildLogo().animate()
+                      .fadeIn(duration: 800.ms)
+                      .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
+                  
+                  const SizedBox(height: 28),
+                  
+                  // Title
+                  ShaderMask(
+                    shaderCallback: (bounds) => LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryLight],
+                    ).createShader(bounds),
+                    child: const Text(
+                      'Olitun',
+                      style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -2,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
+                  
+                  const SizedBox(height: 12),
+                  
+                  Text(
+                    'Learn Ol Chiki Script',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                    ),
+                  ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
+                  
+                  const Spacer(flex: 2),
+                  
+                  // Features
+                  _buildFeatureCards(isDark),
+                  
+                  const Spacer(),
+                  
+                  // CTA Buttons
+                  _buildCTAButtons(context, isDark),
+                  
+                  const SizedBox(height: 40),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
 
-  Widget _buildSkipButton(BuildContext context, bool isDark) {
-    return GestureDetector(
-      onTap: _skipToExplore,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.08)
-              : Colors.black.withValues(alpha: 0.05),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.12)
-                : Colors.black.withValues(alpha: 0.08),
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Skip for now',
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight,
-              ),
-            ),
-            const SizedBox(width: 4),
-            Icon(
-              Icons.arrow_forward_rounded,
-              size: 16,
-              color: isDark
-                  ? AppColors.textSecondaryDark
-                  : AppColors.textSecondaryLight,
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAnimatedBackground(bool isDark, Size size) {
-    return AnimatedBuilder(
-      animation: _gradientController,
-      builder: (context, child) {
-        return Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment(
-                math.cos(_gradientController.value * 2 * math.pi),
-                math.sin(_gradientController.value * 2 * math.pi),
-              ),
-              end: Alignment(
-                -math.cos(_gradientController.value * 2 * math.pi),
-                -math.sin(_gradientController.value * 2 * math.pi),
-              ),
-              colors: isDark
-                  ? [
-                      const Color(0xFF0A0F0D),  // Near black with green tint
-                      const Color(0xFF0D1410),  // Dark green-black
-                      const Color(0xFF0F1A14).withValues(alpha: 0.8),
-                    ]
-                  : [
-                      const Color(0xFFF0FDF6),  // Mint tinted white
-                      const Color(0xFFFAFCFA),  // Pure white hint
-                      const Color(0xFFE8F8EE),  // Light green tint
-                    ],
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildFloatingElements(Size size) {
+  Widget _buildBackground(bool isDark, Size size) {
     return Stack(
       children: [
-        // Top right blob (green)
+        Container(
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: isDark
+                  ? [const Color(0xFF0A0E14), const Color(0xFF161B22)]
+                  : [Colors.white, const Color(0xFFF0FDF4)],
+            ),
+          ),
+        ),
+        // Floating orbs
         Positioned(
-          top: -100,
-          right: -80,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, _floatController.value * 20),
-                child: child,
-              );
-            },
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primary.withValues(alpha: 0.18),
-                    AppColors.primary.withValues(alpha: 0),
-                  ],
-                ),
+          top: -size.height * 0.15,
+          right: -size.width * 0.25,
+          child: Container(
+            width: size.width * 0.7,
+            height: size.width * 0.7,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.primary.withValues(alpha: 0.2),
+                  AppColors.primary.withValues(alpha: 0),
+                ],
               ),
             ),
           ),
         ),
-
-        // Bottom left blob (subtle green)
         Positioned(
-          bottom: -120,
-          left: -100,
-          child: AnimatedBuilder(
-            animation: _floatController,
-            builder: (context, child) {
-              return Transform.translate(
-                offset: Offset(0, -_floatController.value * 15),
-                child: child,
-              );
-            },
-            child: Container(
-              width: 350,
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                gradient: RadialGradient(
-                  colors: [
-                    AppColors.primaryDark.withValues(alpha: 0.12),
-                    AppColors.primaryDark.withValues(alpha: 0),
-                  ],
-                ),
+          bottom: -size.height * 0.1,
+          left: -size.width * 0.2,
+          child: Container(
+            width: size.width * 0.5,
+            height: size.width * 0.5,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              gradient: RadialGradient(
+                colors: [
+                  AppColors.accentPurple.withValues(alpha: 0.15),
+                  AppColors.accentPurple.withValues(alpha: 0),
+                ],
               ),
             ),
           ),
         ),
-
-        // Scattered small orbs (green-themed)
-        ...List.generate(6, (index) {
-          final random = math.Random(index);
-          return Positioned(
-            top: random.nextDouble() * size.height * 0.7,
-            left: random.nextDouble() * size.width,
-            child: AnimatedBuilder(
-              animation: _pulseController,
-              builder: (context, child) {
-                return Transform.scale(
-                  scale: 0.8 + (_pulseController.value * 0.4),
-                  child: Opacity(
-                    opacity: 0.3 + (_pulseController.value * 0.3),
-                    child: child,
-                  ),
-                );
-              },
-              child: Container(
-                width: 8 + random.nextDouble() * 12,
-                height: 8 + random.nextDouble() * 12,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: [
-                    AppColors.primary,
-                    AppColors.primaryLight,
-                    AppColors.primaryDark,
-                  ][index % 3]
-                      .withValues(alpha: 0.6),
-                ),
-              ),
-            ),
-          );
-        }),
       ],
     );
   }
 
-  Widget _buildHeroLogo() {
-    return AnimatedBuilder(
-      animation: _floatController,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, _floatController.value * 8),
-          child: child,
-        );
-      },
-      child: AnimatedBuilder(
-        animation: _pulseController,
-        builder: (context, child) {
-          return Container(
-            width: 150,
-            height: 150,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(42),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(
-                    alpha: 0.35 + (_pulseController.value * 0.15),
-                  ),
-                  blurRadius: 50 + (_pulseController.value * 25),
-                  offset: const Offset(0, 20),
-                  spreadRadius: -10,
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(42),
-              child: Image.asset(
-                'assets/icons/olitun_logo.png',
-                width: 150,
-                height: 150,
-                fit: BoxFit.cover,
-              ),
-            ),
-          );
-        },
+  Widget _buildLogo() {
+    return Container(
+      width: 120,
+      height: 120,
+      decoration: BoxDecoration(
+        gradient: AppColors.heroGradient,
+        borderRadius: BorderRadius.circular(36),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withValues(alpha: 0.4),
+            blurRadius: 40,
+            offset: const Offset(0, 16),
+          ),
+        ],
       ),
-    );
-  }
-
-  Widget _buildAppTitle(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return ShaderMask(
-      shaderCallback: (bounds) => LinearGradient(
-        colors: isDark
-            ? [Colors.white, Colors.white.withValues(alpha: 0.9)]
-            : [const Color(0xFF0D1F12), const Color(0xFF1A3D22)],
-      ).createShader(bounds),
-      child: const Text(
-        'Olitun',
-        style: TextStyle(
-          fontSize: 52,
-          fontWeight: FontWeight.w800,
-          letterSpacing: -2.5,
-          height: 1,
-          color: Colors.white,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(36),
+        child: Image.asset(
+          'assets/icons/olitun_logo.png',
+          fit: BoxFit.cover,
+          errorBuilder: (_, __, ___) => const Center(
+            child: Text('ᱚ', style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white)),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildTagline(BuildContext context, bool isDark) {
-    return Text(
-      'Master Ol Chiki. Your way.',
-      style: TextStyle(
-        fontSize: 17,
-        fontWeight: FontWeight.w500,
-        letterSpacing: -0.2,
-        color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
-      ),
-    );
-  }
-
-  Widget _buildFeatureCards(BuildContext context, bool isDark) {
+  Widget _buildFeatureCards(bool isDark) {
     final features = [
-      _FeatureData(
-        icon: Icons.auto_awesome_rounded,
-        title: 'Smart Learning',
-        subtitle: 'AI-powered personalized path',
-        gradient: AppColors.premiumGreen,
-      ),
-      _FeatureData(
-        icon: Icons.psychology_rounded,
-        title: 'Interactive Practice',
-        subtitle: 'Engaging quizzes & exercises',
-        gradient: AppColors.premiumMint,
-      ),
-      _FeatureData(
-        icon: Icons.emoji_events_rounded,
-        title: 'Track Progress',
-        subtitle: 'Earn rewards & maintain streaks',
-        gradient: AppColors.premiumPurple,
-      ),
+      _FeatureData(Icons.auto_awesome_rounded, 'Interactive', 'Learn by doing'),
+      _FeatureData(Icons.school_rounded, 'Structured', 'Step-by-step lessons'),
+      _FeatureData(Icons.emoji_events_rounded, 'Gamified', 'Earn rewards'),
     ];
 
-    return Column(
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
       children: features.asMap().entries.map((entry) {
-        final index = entry.key;
         final feature = entry.value;
-        return _buildFeatureCard(context, feature, isDark)
-            .animate()
-            .fadeIn(delay: (500 + index * 100).ms, duration: 500.ms)
-            .slideX(begin: -0.1, curve: Curves.easeOut);
-      }).toList(),
-    );
-  }
-
-  Widget _buildFeatureCard(
-      BuildContext context, _FeatureData feature, bool isDark) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        return Expanded(
           child: Container(
-            padding: const EdgeInsets.all(16),
+            margin: EdgeInsets.only(
+              left: entry.key == 0 ? 0 : 8,
+              right: entry.key == features.length - 1 ? 0 : 8,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20),
             decoration: BoxDecoration(
+              color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
               borderRadius: BorderRadius.circular(20),
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.white.withValues(alpha: 0.75),
               border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.white.withValues(alpha: 0.9),
+                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
               ),
-              boxShadow: [
+              boxShadow: isDark ? null : [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                  color: Colors.black.withValues(alpha: 0.05),
                   blurRadius: 20,
-                  offset: const Offset(0, 4),
+                  offset: const Offset(0, 8),
                 ),
               ],
             ),
-            child: Row(
+            child: Column(
               children: [
-                // Icon container with gradient
                 Container(
-                  width: 52,
-                  height: 52,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: feature.gradient,
-                    boxShadow: AppColors.glowShadow(
-                      (feature.gradient as LinearGradient).colors.first,
-                    ),
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
                   ),
-                  child: Icon(
-                    feature.icon,
-                    color: Colors.white,
-                    size: 26,
+                  child: Icon(feature.icon, color: AppColors.primary, size: 24),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  feature.title,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                    color: isDark ? Colors.white : Colors.black,
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        feature.title,
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: -0.3,
-                          color: isDark
-                              ? AppColors.textPrimaryDark
-                              : AppColors.textPrimaryLight,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        feature.subtitle,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w500,
-                          color: isDark
-                              ? AppColors.textTertiaryDark
-                              : AppColors.textTertiaryLight,
-                        ),
-                      ),
-                    ],
+                const SizedBox(height: 4),
+                Text(
+                  feature.subtitle,
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: isDark ? Colors.white54 : Colors.black45,
                   ),
-                ),
-                Icon(
-                  Icons.arrow_forward_ios_rounded,
-                  size: 16,
-                  color: isDark
-                      ? AppColors.textTertiaryDark
-                      : AppColors.textTertiaryLight,
                 ),
               ],
             ),
           ),
-        ),
-      ),
+        ).animate().fadeIn(delay: (600 + entry.key * 100).ms, duration: 400.ms).slideY(begin: 0.2);
+      }).toList(),
     );
   }
 
   Widget _buildCTAButtons(BuildContext context, bool isDark) {
     return Column(
       children: [
-        // Primary CTA - Get Started
-        _PremiumButton(
-          text: 'Get Started',
-          onPressed: () {
-            HapticFeedback.mediumImpact();
-            context.pushNamed('signUp');
-          },
-          isPrimary: true,
-        ),
-
-        const SizedBox(height: 12),
-
-        // Secondary CTA - Sign In
-        _PremiumButton(
-          text: 'I have an account',
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            context.pushNamed('signIn');
-          },
-          isPrimary: false,
-        ),
-
-        const SizedBox(height: 20),
-
-        // Explore as guest option
+        // Start Learning Button
         GestureDetector(
-          onTap: _skipToExplore,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.explore_outlined,
-                size: 18,
-                color: AppColors.primary,
-              ),
-              const SizedBox(width: 8),
-              Text(
-                'Explore without account',
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.go('/home');
+          },
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 18),
+            decoration: BoxDecoration(
+              gradient: AppColors.heroGradient,
+              borderRadius: BorderRadius.circular(18),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.primary.withValues(alpha: 0.4),
+                  blurRadius: 25,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: const Center(
+              child: Text(
+                'Start Learning',
                 style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: AppColors.primary,
+                  fontSize: 18,
+                  fontWeight: FontWeight.w800,
+                  color: Colors.white,
+                  letterSpacing: 0.5,
                 ),
               ),
-            ],
+            ),
           ),
-        ),
-
+        ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
+        
         const SizedBox(height: 16),
-
-        // Trust indicator
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.verified_rounded,
-              size: 16,
-              color: AppColors.success,
-            ),
-            const SizedBox(width: 6),
-            Text(
-              'Join 50,000+ learners',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
-              ),
-            ),
-          ],
-        ),
+        
+        // Trust text
+        Text(
+          'Join 50,000+ learners worldwide',
+          style: TextStyle(
+            fontSize: 13,
+            color: isDark ? Colors.white38 : Colors.black38,
+          ),
+        ).animate().fadeIn(delay: 1000.ms, duration: 500.ms),
       ],
     );
   }
@@ -591,110 +287,6 @@ class _FeatureData {
   final IconData icon;
   final String title;
   final String subtitle;
-  final Gradient gradient;
 
-  _FeatureData({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.gradient,
-  });
-}
-
-class _PremiumButton extends StatefulWidget {
-  final String text;
-  final VoidCallback onPressed;
-  final bool isPrimary;
-
-  const _PremiumButton({
-    required this.text,
-    required this.onPressed,
-    required this.isPrimary,
-  });
-
-  @override
-  State<_PremiumButton> createState() => _PremiumButtonState();
-}
-
-class _PremiumButtonState extends State<_PremiumButton>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _scaleAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 150),
-    );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        widget.onPressed();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
-        },
-        child: Container(
-          width: double.infinity,
-          height: 58,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            gradient: widget.isPrimary ? AppColors.heroGradient : null,
-            color: widget.isPrimary
-                ? null
-                : (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.05)),
-            boxShadow: widget.isPrimary ? AppColors.buttonShadow : null,
-            border: widget.isPrimary
-                ? null
-                : Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.08),
-                  ),
-          ),
-          child: Center(
-            child: Text(
-              widget.text,
-              style: TextStyle(
-                fontSize: 17,
-                fontWeight: FontWeight.w700,
-                letterSpacing: -0.3,
-                color: widget.isPrimary
-                    ? Colors.white
-                    : (isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+  _FeatureData(this.icon, this.title, this.subtitle);
 }

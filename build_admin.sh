@@ -16,6 +16,12 @@ export PATH="$PATH:`pwd`/flutter/bin"
 echo "Configuring Flutter..."
 flutter config --enable-web
 
+# Create dummy .env if it doesn't exist (required by pubspec assets)
+if [ ! -f ".env" ]; then
+  echo "Creating placeholder .env file..."
+  touch .env
+fi
+
 # 3. Build the application
 echo "Fetching dependencies..."
 flutter pub get

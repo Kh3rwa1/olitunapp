@@ -235,19 +235,41 @@ class AppColors {
     premiumCyan,
   ];
 
-  // ============== GLASS MORPHISM ==============
-  static Color glassWhite = Colors.white.withOpacity(0.1);
-  static Color glassBorder = Colors.white.withOpacity(0.15);
-  static Color glassWhiteDark = Colors.white.withOpacity(0.05);
-  static Color glassBorderDark = Colors.white.withOpacity(0.08);
+  // ============== MODERN EVOLUTION (BENTO & GLASS) ==============
+  // Glass variants
+  static Color glass(BuildContext context, {double opacity = 0.1}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return (isDark ? Colors.white : Colors.black).withOpacity(opacity);
+  }
 
-  // Premium glass effect
-  static Color glassPremium = Colors.white.withOpacity(0.9);
-  static Color glassPremiumBorder = Colors.white.withOpacity(0.2);
+  static Color glassBorderColor(BuildContext context, {double opacity = 0.1}) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return (isDark ? Colors.white : Colors.black).withOpacity(opacity);
+  }
 
-  // Green tinted glass
-  static Color glassGreen = primary.withOpacity(0.1);
-  static Color glassGreenBorder = primary.withOpacity(0.2);
+  // Bento card colors
+  static const Color bento1 = Color(0xFF1EE088);
+  static const Color bento2 = Color(0xFF7C4DFF);
+  static const Color bento3 = Color(0xFFFF4081);
+  static const Color bento4 = Color(0xFF1CB0F6);
+
+  // Sophisticated Shadows
+  static List<BoxShadow> bentoShadow = [
+    BoxShadow(
+      color: Colors.black.withOpacity(0.04),
+      blurRadius: 24,
+      offset: const Offset(0, 8),
+    ),
+  ];
+
+  static List<BoxShadow> fluidShadow = [
+    BoxShadow(
+      color: primary.withOpacity(0.15),
+      blurRadius: 40,
+      offset: const Offset(0, 12),
+      spreadRadius: -8,
+    ),
+  ];
 
   // ============== SHADOWS ==============
   // Subtle - for base cards
@@ -330,6 +352,7 @@ class AppColors {
   static const Color primaryDeep = richBlack;
   static const Color accentGold = accentYellow;
   static const Color accentPeach = Color(0xFFFFAB91);
+  static const Color primaryPurple = Color(0xFF7C4DFF);
   static LinearGradient primaryGradient = heroGradient;
 
   static List<BoxShadow> coloredShadow(Color color) => glowShadow(color);

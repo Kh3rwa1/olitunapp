@@ -447,7 +447,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             ),
                           ),
                           _GradientOption(
-                            gradient: AppColors.purpleGradient,
+                            gradient: AppColors.skyBlueGradient,
                             label: 'Purple',
                             isSelected: selectedGradient == 'purple',
                             onTap: () => setDialogState(
@@ -766,7 +766,7 @@ class _CategoryCardState extends State<_CategoryCard> {
       case 'sunset':
         return AppColors.sunsetGradient;
       case 'purple':
-        return AppColors.purpleGradient;
+        return AppColors.skyBlueGradient;
       default:
         return AppColors.skyBlueGradient;
     }

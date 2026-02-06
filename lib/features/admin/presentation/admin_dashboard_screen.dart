@@ -8,6 +8,7 @@ import 'admin_banners_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_letters_screen.dart';
 import 'admin_lessons_screen.dart';
+import 'admin_rhymes_screen.dart';
 import 'admin_quizzes_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -57,6 +58,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
       case 4:
         return const AdminLessonsScreen();
       case 5:
+        return const AdminRhymesScreen();
+      case 6:
         return const AdminQuizzesScreen();
       default:
         return _buildOverview(isDark);
@@ -169,8 +172,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   error: (_, __) => '0',
                 ),
                 Icons.quiz_rounded,
-                AppColors.duoPurple,
-                AppColors.duoPurpleDark,
+                AppColors.duoBlue,
+                AppColors.duoBlueDark,
               ),
               _buildStatCard(
                 'Banners',

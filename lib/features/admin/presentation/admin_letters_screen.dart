@@ -8,6 +8,8 @@ import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../core/storage/supabase_service.dart';
+import 'package:file_picker/file_picker.dart';
 
 class AdminLettersScreen extends ConsumerWidget {
   const AdminLettersScreen({super.key});
@@ -289,199 +291,324 @@ class AdminLettersScreen extends ConsumerWidget {
     );
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // State variables - declared OUTSIDE StatefulBuilder.builder() to preserve across rebuilds
+    String? audioUrl = letter?.audioUrl;
+    bool isUploading = false;
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        height: MediaQuery.of(context).size.height * 0.7,
-        decoration: BoxDecoration(
-          color: isDark ? const Color(0xFF161B22) : Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-        ),
-        child: Column(
-          children: [
-            Container(
-              margin: const EdgeInsets.only(top: 12),
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: isDark ? Colors.white24 : Colors.black12,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(24),
-              child: Row(
+      builder: (context) {
+        return Container(
+          height: MediaQuery.of(context).size.height * 0.85,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF161B22) : Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+          ),
+          child: StatefulBuilder(
+            builder: (context, setDialogState) {
+              Future<void> pickAudio() async {
+                try {
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.audio,
+                    withData:
+                        true, // CRITICAL for web: ensures bytes are loaded
+                  );
+                  if (result != null && result.files.isNotEmpty) {
+                    setDialogState(() => isUploading = true);
+
+                    final file = result.files.first;
+                    print(
+                      'Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}',
+                    );
+
+                    final uploadedUrl = await ref
+                        .read(supabaseServiceProvider)
+                        .uploadMedia(file, 'letters-audio');
+
+                    print('Upload result: $uploadedUrl');
+
+                    setDialogState(() {
+                      audioUrl = uploadedUrl;
+                      isUploading = false;
+                    });
+
+                    if (uploadedUrl == null && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text(
+                            'Upload failed. Check console for details.',
+                          ),
+                          backgroundColor: Colors.red,
+                        ),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  print('Error picking audio: $e');
+                  setDialogState(() => isUploading = false);
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: $e'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                }
+              }
+
+              return Column(
                 children: [
                   Container(
-                    width: 48,
-                    height: 48,
+                    margin: const EdgeInsets.only(top: 12),
+                    width: 40,
+                    height: 4,
                     decoration: BoxDecoration(
-                      gradient: AppColors.premiumMint,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Icon(
-                      isEditing ? Icons.edit_rounded : Icons.add_rounded,
-                      color: Colors.white,
+                      color: isDark ? Colors.white24 : Colors.black12,
+                      borderRadius: BorderRadius.circular(2),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Text(
-                    isEditing ? 'Edit Letter' : 'New Letter',
-                    style: TextStyle(
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : Colors.black,
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            gradient: AppColors.premiumMint,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(
+                            isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(width: 16),
+                        Text(
+                          isEditing ? 'Edit Letter' : 'New Letter',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                        const Spacer(),
+                        IconButton(
+                          onPressed: () => Navigator.pop(context),
+                          icon: Icon(
+                            Icons.close_rounded,
+                            color: isDark ? Colors.white54 : Colors.black45,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  const Spacer(),
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(
-                      Icons.close_rounded,
-                      color: isDark ? Colors.white54 : Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            Divider(
-              color: isDark
-                  ? Colors.white10
-                  : Colors.black.withValues(alpha: 0.06),
-            ),
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.all(24),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildTextField(
-                      controller: charController,
-                      label: 'Ol Chiki Character',
-                      hint: 'e.g., ᱚ',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: romanController,
-                      label: 'Romanization',
-                      hint: 'e.g., a',
-                      isDark: isDark,
-                    ),
-                    const SizedBox(height: 20),
-                    _buildTextField(
-                      controller: pronunciationController,
-                      label: 'Pronunciation (optional)',
-                      hint: 'e.g., like "a" in "about"',
-                      isDark: isDark,
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Container(
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? const Color(0xFF0D1117)
-                    : const Color(0xFFF8FAFC),
-                border: Border(
-                  top: BorderSide(
+                  Divider(
                     color: isDark
                         ? Colors.white10
-                        : Colors.black.withValues(alpha: 0.06),
+                        : Colors.black.withOpacity(0.06),
                   ),
-                ),
-              ),
-              child: Row(
-                children: [
                   Expanded(
-                    child: GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white10
-                              : Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Center(
-                          child: Text(
-                            'Cancel',
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(24),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildTextField(
+                            controller: charController,
+                            label: 'Ol Chiki Character',
+                            hint: 'e.g., ᱚ',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            controller: romanController,
+                            label: 'Romanization',
+                            hint: 'e.g., a',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 20),
+                          _buildTextField(
+                            controller: pronunciationController,
+                            label: 'Pronunciation (optional)',
+                            hint: 'e.g., like "a" in "about"',
+                            isDark: isDark,
+                          ),
+                          const SizedBox(height: 24),
+                          Text(
+                            'Audio Pronunciation',
                             style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white70 : Colors.black54,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
-                        ),
+                          const SizedBox(height: 12),
+                          InkWell(
+                            onTap: isUploading ? null : pickAudio,
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.03),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white10
+                                      : Colors.black.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isUploading
+                                        ? Icons.hourglass_top_rounded
+                                        : Icons.audiotrack_rounded,
+                                    color: AppColors.primary,
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      isUploading
+                                          ? 'Uploading...'
+                                          : (audioUrl != null
+                                                ? 'Audio Linked'
+                                                : 'Upload Audio File'),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  if (audioUrl != null && !isUploading)
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: AppColors.primary,
+                                      size: 20,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    flex: 2,
-                    child: GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        final newLetter = LetterModel(
-                          id: letter?.id ?? const Uuid().v4(),
-                          charOlChiki: charController.text,
-                          transliterationLatin: romanController.text,
-                          pronunciation: pronunciationController.text.isNotEmpty
-                              ? pronunciationController.text
-                              : null,
-                          order: letter?.order ?? 0,
-                          isActive: true,
-                        );
-                        if (isEditing) {
-                          ref
-                              .read(lettersProvider.notifier)
-                              .updateLetter(newLetter);
-                        } else {
-                          ref
-                              .read(lettersProvider.notifier)
-                              .addLetter(newLetter);
-                        }
-                        Navigator.pop(context);
-                      },
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 16),
-                        decoration: BoxDecoration(
-                          gradient: AppColors.premiumMint,
-                          borderRadius: BorderRadius.circular(14),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.accentMint.withValues(
-                                alpha: 0.4,
-                              ),
-                              blurRadius: 15,
-                              offset: const Offset(0, 6),
-                            ),
-                          ],
+                  Container(
+                    padding: const EdgeInsets.all(24),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? const Color(0xFF0D1117)
+                          : const Color(0xFFF8FAFC),
+                      border: Border(
+                        top: BorderSide(
+                          color: isDark
+                              ? Colors.white10
+                              : Colors.black.withOpacity(0.06),
                         ),
-                        child: Center(
-                          child: Text(
-                            isEditing ? 'Save Changes' : 'Add Letter',
-                            style: const TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white,
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => Navigator.pop(context),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white10
+                                    : Colors.black.withOpacity(0.05),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: Center(
+                                child: Text(
+                                  'Cancel',
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
-                      ),
+                        const SizedBox(width: 16),
+                        Expanded(
+                          flex: 2,
+                          child: GestureDetector(
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              final newLetter = LetterModel(
+                                id: letter?.id ?? const Uuid().v4(),
+                                charOlChiki: charController.text,
+                                transliterationLatin: romanController.text,
+                                pronunciation:
+                                    pronunciationController.text.isNotEmpty
+                                    ? pronunciationController.text
+                                    : null,
+                                order: letter?.order ?? 0,
+                                isActive: true,
+                                audioUrl: audioUrl,
+                              );
+                              if (isEditing) {
+                                ref
+                                    .read(lettersProvider.notifier)
+                                    .updateLetter(newLetter);
+                              } else {
+                                ref
+                                    .read(lettersProvider.notifier)
+                                    .addLetter(newLetter);
+                              }
+                              Navigator.pop(context);
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.premiumMint,
+                                borderRadius: BorderRadius.circular(14),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: AppColors.accentMint.withOpacity(
+                                      0.4,
+                                    ),
+                                    blurRadius: 15,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  isEditing ? 'Save Changes' : 'Add Letter',
+                                  style: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
-              ),
-            ),
-          ],
-        ),
-      ),
+              );
+            },
+          ),
+        );
+      },
     );
   }
 

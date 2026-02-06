@@ -411,7 +411,7 @@ class AdminBannersScreen extends ConsumerWidget {
                             ),
                           ),
                           _GradientOption(
-                            gradient: AppColors.purpleGradient,
+                            gradient: AppColors.skyBlueGradient,
                             isSelected: selectedGradient == 'purple',
                             onTap: () => setDialogState(
                               () => selectedGradient = 'purple',
@@ -675,7 +675,7 @@ class _BannerCardState extends State<_BannerCard> {
       case 'sunset':
         return AppColors.sunsetGradient;
       case 'purple':
-        return AppColors.purpleGradient;
+        return AppColors.skyBlueGradient;
       default:
         return AppColors.skyBlueGradient;
     }

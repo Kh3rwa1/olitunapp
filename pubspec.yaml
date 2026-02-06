@@ -30,17 +30,20 @@ dependencies:
   flutter_svg: ^2.0.17
 
   # Audio
-  audioplayers: ^6.4.0
+  audioplayers: ^6.5.1
 
   # Utils
   uuid: ^4.5.1
   intl: ^0.20.2
   image_picker: ^1.1.2
-  file_picker: ^8.3.7
+  file_picker: ^10.3.10
   path: ^1.9.1
+  http: ^1.2.0
 
   # Icons
   cupertino_icons: ^1.0.8
+  supabase_flutter: ^2.12.0
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:

@@ -16,7 +16,7 @@ class AdminShell extends ConsumerWidget {
 
     // TEMPORARILY BYPASS AUTH CHECK FOR PREVIEW
     // TODO: Re-enable isAdminProvider check before production
-    
+
     if (isWideScreen) {
       // Web/Desktop layout with sidebar
       return Scaffold(
@@ -35,18 +35,16 @@ class AdminShell extends ConsumerWidget {
                 ),
                 border: Border(
                   right: BorderSide(
-                    color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
+                    color: isDark
+                        ? AppColors.darkBorder
+                        : AppColors.lightBorder,
                   ),
                 ),
               ),
               child: _AdminSidebar(),
             ),
             // Main content
-            Expanded(
-              child: BubbleBackground(
-                child: child,
-              ),
-            ),
+            Expanded(child: BubbleBackground(child: child)),
           ],
         ),
       );
@@ -66,16 +64,16 @@ class AdminShell extends ConsumerWidget {
                 ),
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(10),
-                  child: Image.asset('assets/icons/olitun_logo.png', fit: BoxFit.cover),
+                  child: Image.asset(
+                    'assets/icons/olitun_logo.png',
+                    fit: BoxFit.cover,
+                  ),
                 ),
               ),
               const SizedBox(width: 12),
               const Text(
                 'Admin CMS',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 18,
-                ),
+                style: TextStyle(fontWeight: FontWeight.w700, fontSize: 18),
               ),
             ],
           ),
@@ -87,9 +85,7 @@ class AdminShell extends ConsumerWidget {
             ),
           ],
         ),
-        drawer: Drawer(
-          child: _AdminSidebar(),
-        ),
+        drawer: Drawer(child: _AdminSidebar()),
         body: BubbleBackground(child: child),
       );
     }
@@ -119,7 +115,10 @@ class _AdminSidebar extends StatelessWidget {
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(14),
-                    child: Image.asset('assets/icons/olitun_logo.png', fit: BoxFit.cover),
+                    child: Image.asset(
+                      'assets/icons/olitun_logo.png',
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -151,7 +150,7 @@ class _AdminSidebar extends StatelessWidget {
               ],
             ),
           ),
-          
+
           Divider(
             color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             height: 1,
@@ -170,12 +169,14 @@ class _AdminSidebar extends StatelessWidget {
                   fontSize: 11,
                   fontWeight: FontWeight.w700,
                   letterSpacing: 1.2,
-                  color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
                 ),
               ),
             ),
           ),
-          
+
           const SizedBox(height: 12),
 
           // Navigation items
@@ -214,14 +215,20 @@ class _AdminSidebar extends StatelessWidget {
                   onTap: () => context.go('/admin/lessons'),
                 ),
                 _NavItem(
+                  icon: Icons.music_note_rounded,
+                  label: 'Rhymes & Stories',
+                  isSelected: location == '/admin/rhymes',
+                  onTap: () => context.go('/admin/rhymes'),
+                ),
+                _NavItem(
                   icon: Icons.quiz_rounded,
                   label: 'Quizzes',
                   isSelected: location == '/admin/quizzes',
                   onTap: () => context.go('/admin/quizzes'),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Media section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 8),
@@ -231,12 +238,14 @@ class _AdminSidebar extends StatelessWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       letterSpacing: 1.2,
-                      color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                      color: isDark
+                          ? AppColors.textTertiaryDark
+                          : AppColors.textTertiaryLight,
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 _NavItem(
                   icon: Icons.perm_media_rounded,
                   label: 'Media Library',
@@ -275,7 +284,11 @@ class _AdminSidebar extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.arrow_back_rounded, size: 20, color: Colors.white),
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 20,
+                      color: Colors.white,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Back to App',
@@ -312,7 +325,7 @@ class _NavItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     return Padding(
       padding: const EdgeInsets.only(bottom: 4),
       child: Material(
@@ -321,10 +334,7 @@ class _NavItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: 14,
-              vertical: 12,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary.withValues(alpha: 0.15)
@@ -339,9 +349,11 @@ class _NavItem extends StatelessWidget {
                 Icon(
                   icon,
                   size: 20,
-                  color: isSelected 
-                      ? AppColors.primary 
-                      : (isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight),
+                  color: isSelected
+                      ? AppColors.primary
+                      : (isDark
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
                 ),
                 const SizedBox(width: 12),
                 Text(
@@ -349,9 +361,11 @@ class _NavItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                    color: isSelected 
-                        ? AppColors.primary 
-                        : (isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight),
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark
+                              ? AppColors.textPrimaryDark
+                              : AppColors.textPrimaryLight),
                   ),
                 ),
               ],

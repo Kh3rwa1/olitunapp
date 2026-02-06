@@ -12,7 +12,19 @@ import 'features/admin/presentation/admin_letters_screen.dart';
 import 'features/admin/presentation/admin_lessons_screen.dart';
 import 'features/admin/presentation/admin_quizzes_screen.dart';
 import 'features/lessons/presentation/category_lessons_screen.dart';
+import 'features/lessons/presentation/lesson_detail_screen.dart';
+import 'features/lessons/presentation/letter_detail_screen.dart';
+import 'features/lessons/presentation/word_detail_screen.dart';
+import 'features/lessons/presentation/number_detail_screen.dart';
+import 'features/lessons/presentation/practice/practice_screen.dart';
+import 'features/lessons/presentation/quiz/quiz_screen.dart';
+import 'features/profile/presentation/progress_screen.dart';
 import 'features/profile/presentation/settings_screen.dart';
+import 'features/onboarding/presentation/onboarding_screen.dart';
+import 'features/onboarding/presentation/splash_screen.dart';
+import 'features/onboarding/providers/onboarding_provider.dart';
+
+import 'features/main/presentation/main_shell_screen.dart';
 
 import 'core/storage/storage_service.dart';
 
@@ -35,10 +47,35 @@ void main() async {
 
 // Simple router
 final _router = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/splash',
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
-    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
+    GoRoute(
+      path: '/',
+      redirect: (context, state) {
+        final container = ProviderScope.containerOf(context);
+        final showOnboarding = container.read(onboardingProvider);
+        if (showOnboarding) return '/onboarding';
+        return '/home';
+      },
+      builder: (context, state) => const MainShellScreen(),
+    ),
+    GoRoute(
+      path: '/onboarding',
+      builder: (context, state) => const OnboardingScreen(),
+    ),
+    GoRoute(
+      path: '/profile',
+      builder: (context, state) => const ProgressScreen(),
+    ),
+    GoRoute(
+      path: '/settings',
+      builder: (context, state) => const SettingsScreen(),
+    ),
+    GoRoute(
+      path: '/home',
+      builder: (context, state) => const MainShellScreen(),
+    ),
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
@@ -51,7 +88,52 @@ final _router = GoRouter(
         return CategoryLessonsScreen(categoryId: categoryId);
       },
     ),
-    GoRoute(path: '/quiz', builder: (context, state) => const HomeScreen()),
+    GoRoute(
+      path: '/lesson/:lessonId',
+      builder: (context, state) {
+        final lessonId = state.pathParameters['lessonId'] ?? '';
+        return LessonDetailScreen(lessonId: lessonId);
+      },
+    ),
+    GoRoute(
+      path: '/letter/:lessonId/:letterId',
+      builder: (context, state) {
+        final lessonId = state.pathParameters['lessonId'] ?? '';
+        final letterId = state.pathParameters['letterId'] ?? '';
+        return LetterDetailScreen(lessonId: lessonId, letterId: letterId);
+      },
+    ),
+    GoRoute(
+      path: '/word/:lessonId/:wordId',
+      builder: (context, state) {
+        final lessonId = state.pathParameters['lessonId'] ?? '';
+        final wordId = state.pathParameters['wordId'] ?? '';
+        return WordDetailScreen(lessonId: lessonId, wordId: wordId);
+      },
+    ),
+    GoRoute(
+      path: '/number/:lessonId/:numberId',
+      builder: (context, state) {
+        final lessonId = state.pathParameters['lessonId'] ?? '';
+        final numberId = state.pathParameters['numberId'] ?? '';
+        return NumberDetailScreen(lessonId: lessonId, numberId: numberId);
+      },
+    ),
+    GoRoute(
+      path: '/practice/:char/:name',
+      builder: (context, state) {
+        final char = state.pathParameters['char'] ?? '';
+        final name = state.pathParameters['name'] ?? '';
+        return PracticeScreen(letterChar: char, letterName: name);
+      },
+    ),
+    GoRoute(
+      path: '/quiz/:quizId',
+      builder: (context, state) {
+        final quizId = state.pathParameters['quizId'];
+        return QuizScreen(quizId: quizId);
+      },
+    ),
     GoRoute(
       path: '/admin',
       builder: (context, state) => const AdminDashboardScreen(),

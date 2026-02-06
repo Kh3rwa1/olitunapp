@@ -107,7 +107,10 @@ class FeaturedBannerModel {
     this.isActive = true,
   });
 
-  factory FeaturedBannerModel.fromJson(Map<String, dynamic> data, [String? docId]) {
+  factory FeaturedBannerModel.fromJson(
+    Map<String, dynamic> data, [
+    String? docId,
+  ]) {
     return FeaturedBannerModel(
       id: docId ?? data['id'] as String? ?? '',
       title: data['title'] as String? ?? '',
@@ -182,15 +185,19 @@ class LetterModel {
     this.pronunciation,
   });
 
-  // Convenience getters for backwards compatibility  
+  // Convenience getters for backwards compatibility
   String get character => charOlChiki;
   String get romanization => transliterationLatin;
 
   factory LetterModel.fromJson(Map<String, dynamic> data, [String? docId]) {
     return LetterModel(
       id: docId ?? data['id'] as String? ?? '',
-      charOlChiki: data['charOlChiki'] as String? ?? data['character'] as String? ?? '',
-      transliterationLatin: data['transliterationLatin'] as String? ?? data['romanization'] as String? ?? '',
+      charOlChiki:
+          data['charOlChiki'] as String? ?? data['character'] as String? ?? '',
+      transliterationLatin:
+          data['transliterationLatin'] as String? ??
+          data['romanization'] as String? ??
+          '',
       exampleWordOlChiki: data['exampleWordOlChiki'] as String?,
       exampleWordLatin: data['exampleWordLatin'] as String?,
       imageUrl: data['imageUrl'] as String?,
@@ -256,6 +263,7 @@ class LessonModel {
   final int estimatedMinutes;
   final String? thumbnailUrl;
   final String? description;
+  final String? audioUrl;
   final bool isPremium;
 
   LessonModel({
@@ -270,6 +278,7 @@ class LessonModel {
     this.estimatedMinutes = 5,
     this.thumbnailUrl,
     this.description,
+    this.audioUrl,
     this.isPremium = false,
   });
 
@@ -282,15 +291,20 @@ class LessonModel {
     return LessonModel(
       id: docId ?? data['id'] as String? ?? '',
       categoryId: data['categoryId'] as String? ?? '',
-      titleOlChiki: data['titleOlChiki'] as String? ?? data['titleOl'] as String? ?? '',
-      titleLatin: data['titleLatin'] as String? ?? data['titleEn'] as String? ?? '',
+      titleOlChiki:
+          data['titleOlChiki'] as String? ?? data['titleOl'] as String? ?? '',
+      titleLatin:
+          data['titleLatin'] as String? ?? data['titleEn'] as String? ?? '',
       level: data['level'] as String? ?? 'beginner',
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
-      blocks: blocksData.map((b) => LessonBlock.fromMap(b as Map<String, dynamic>)).toList(),
+      blocks: blocksData
+          .map((b) => LessonBlock.fromMap(b as Map<String, dynamic>))
+          .toList(),
       estimatedMinutes: data['estimatedMinutes'] as int? ?? 5,
       thumbnailUrl: data['thumbnailUrl'] as String?,
       description: data['description'] as String?,
+      audioUrl: data['audioUrl'] as String?,
       isPremium: data['isPremium'] as bool? ?? false,
     );
   }
@@ -308,6 +322,7 @@ class LessonModel {
       'estimatedMinutes': estimatedMinutes,
       'thumbnailUrl': thumbnailUrl,
       'description': description,
+      'audioUrl': audioUrl,
       'isPremium': isPremium,
     };
   }
@@ -413,7 +428,9 @@ class QuizModel {
       level: data['level'] as String? ?? 'beginner',
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
-      questions: questionsData.map((q) => QuizQuestion.fromMap(q as Map<String, dynamic>)).toList(),
+      questions: questionsData
+          .map((q) => QuizQuestion.fromMap(q as Map<String, dynamic>))
+          .toList(),
       title: data['title'] as String?,
       passingScore: data['passingScore'] as int? ?? 70,
     );
@@ -556,11 +573,14 @@ class UserProgressModel {
     this.totalLessons = 0,
   });
 
-  factory UserProgressModel.fromJson(Map<String, dynamic> data, [String? docId]) {
+  factory UserProgressModel.fromJson(
+    Map<String, dynamic> data, [
+    String? docId,
+  ]) {
     return UserProgressModel(
       categoryId: docId ?? data['categoryId'] as String? ?? '',
       percent: (data['percent'] as num?)?.toDouble() ?? 0,
-      updatedAt: data['updatedAt'] != null 
+      updatedAt: data['updatedAt'] != null
           ? DateTime.parse(data['updatedAt'] as String)
           : DateTime.now(),
       completedLessons: data['completedLessons'] as int? ?? 0,

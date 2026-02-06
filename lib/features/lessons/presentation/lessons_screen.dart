@@ -71,7 +71,7 @@ class _CategoryLessonCard extends StatelessWidget {
       case 'sunset':
         return AppColors.sunsetGradient;
       case 'purple':
-        return AppColors.purpleGradient;
+        return AppColors.skyBlueGradient;
       default:
         return AppColors.skyBlueGradient;
     }

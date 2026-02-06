@@ -1,272 +1,498 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:itun/l10n/generated/app_localizations.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
-import 'widgets/home_header.dart';
-import 'widgets/stats_row.dart';
-import 'widgets/continue_learning_banner.dart';
-import 'widgets/quick_actions_grid.dart';
-import 'widgets/category_card.dart';
+import '../../../shared/models/content_models.dart';
 
-class HomeScreen extends ConsumerStatefulWidget {
+class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
 
   @override
-  ConsumerState<HomeScreen> createState() => _HomeScreenState();
-}
-
-class _HomeScreenState extends ConsumerState<HomeScreen> {
-  final ScrollController _scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // Watch adaptors for user stats
+  Widget build(BuildContext context, WidgetRef ref) {
     final userName = ref.watch(userNameProvider);
     final streak = ref.watch(userStreakProvider);
     final stars = ref.watch(userStarsProvider);
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
-
-    // Watch async categories
     final categoriesAsync = ref.watch(categoriesProvider);
-    final lessonsAsync = ref.watch(lessonsProvider);
-    final userProfile = ref.watch(userProfileProvider).value;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final size = MediaQuery.of(context).size;
 
     return Scaffold(
-      body: Stack(
-        children: [
-          _buildBackground(isDark, size),
-          CustomScrollView(
-            controller: _scrollController,
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              SliverToBoxAdapter(
-                child: SafeArea(
-                  bottom: false,
-                  child: Padding(
-                    padding: const EdgeInsets.all(20),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        HomeHeader(userName: userName, isDark: isDark),
-                        const SizedBox(height: 28),
-
-                        // Stats
-                        StatsRow(
-                          streak: streak,
-                          stars: stars,
-                          lessons: lessonsCompleted,
+      backgroundColor: isDark ? const Color(0xFF0D1117) : const Color(0xFFF8FAF9),
+      body: SafeArea(
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Header
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Hello, $userName! 👋',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
-                        const SizedBox(height: 28),
-
-                        // Continue Learning Banner
-                        ContinueLearningBanner(isDark: isDark),
-                        const SizedBox(height: 28),
-
-                        // Quick Actions
-                        QuickActionsGrid(isDark: isDark),
-                        const SizedBox(height: 28),
-
-                        // Categories Section
-                        _buildSectionHeader(
-                          AppLocalizations.of(context)!.explore,
-                          AppLocalizations.of(context)!.chooseCategory,
-                          isDark,
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        'Ready to learn today?',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDark ? Colors.white54 : Colors.black54,
                         ),
-                        const SizedBox(height: 16),
-                      ],
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    onPressed: () => context.go('/settings'),
+                    icon: Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Icon(
+                        Icons.settings_outlined,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
                     ),
                   ),
+                ],
+              ),
+              const SizedBox(height: 24),
+
+              // Stats Row
+              Row(
+                children: [
+                  _StatCard(
+                    icon: Icons.local_fire_department,
+                    value: '$streak',
+                    label: 'Day Streak',
+                    color: Colors.orange,
+                    isDark: isDark,
+                  ),
+                  const SizedBox(width: 12),
+                  _StatCard(
+                    icon: Icons.star,
+                    value: '$stars',
+                    label: 'Stars',
+                    color: Colors.amber,
+                    isDark: isDark,
+                  ),
+                  const SizedBox(width: 12),
+                  _StatCard(
+                    icon: Icons.school,
+                    value: '$lessonsCompleted',
+                    label: 'Lessons',
+                    color: AppColors.primary,
+                    isDark: isDark,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+
+              // Continue Learning Banner
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: AppColors.premiumCyan,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Continue Learning',
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+                          Text(
+                            'Pick up where you left off',
+                            style: TextStyle(
+                              fontSize: 14,
+                              color: Colors.white.withValues(alpha: 0.8),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            onPressed: () => context.go('/lessons'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: AppColors.primary,
+                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            child: const Text('Resume', style: TextStyle(fontWeight: FontWeight.w700)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: const Icon(
+                        Icons.menu_book_rounded,
+                        size: 40,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ],
                 ),
               ),
+              const SizedBox(height: 28),
+
+              // Quick Actions
+              Text(
+                'Quick Actions',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.quiz_outlined,
+                      label: 'Daily Quiz',
+                      color: Colors.purple,
+                      isDark: isDark,
+                      onTap: () => context.go('/quiz'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.text_fields,
+                      label: 'Alphabet',
+                      color: Colors.blue,
+                      isDark: isDark,
+                      onTap: () => context.go('/lessons/category/alphabets'),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: _QuickActionCard(
+                      icon: Icons.admin_panel_settings,
+                      label: 'Admin',
+                      color: Colors.teal,
+                      isDark: isDark,
+                      onTap: () => context.go('/admin'),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 28),
+
+              // Categories Section
+              Text(
+                'Explore Categories',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                'Choose a category to start learning',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white54 : Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 16),
 
               // Categories Grid
               categoriesAsync.when(
-                data: (categories) => SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  sliver: SliverGrid(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                      final category = categories[index];
-                      final progress = _categoryProgress(
-                        category: category,
-                        categories: categories,
-                        lessonsAsync: lessonsAsync,
-                        totalCompletedLessons:
-                            userProfile?.stats.totalLessonsCompleted ?? 0,
-                      );
-
-                      return CategoryCard(
-                            category: category,
-                            progress: progress,
-                            onTap: () =>
-                                context.go('/lessons/category/${category.id}'),
-                          )
-                          .animate()
-                          .fadeIn(
-                            delay: (600 + index * 80).ms,
-                            duration: 400.ms,
-                          )
-                          .scale(
-                            begin: const Offset(0.9, 0.9),
-                            delay: (600 + index * 80).ms,
-                            duration: 400.ms,
-                            curve: Curves.easeOutBack,
-                          );
-                    }, childCount: categories.length),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 14,
-                          crossAxisSpacing: 14,
-                          childAspectRatio: 0.9,
-                        ),
+                data: (categories) => GridView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 2,
+                    mainAxisSpacing: 14,
+                    crossAxisSpacing: 14,
+                    childAspectRatio: 0.95,
+                  ),
+                  itemCount: categories.length,
+                  itemBuilder: (context, index) {
+                    final category = categories[index];
+                    return _CategoryCard(
+                      category: category,
+                      isDark: isDark,
+                      onTap: () => context.go('/lessons/category/${category.id}'),
+                    );
+                  },
+                ),
+                loading: () => const Center(
+                  child: Padding(
+                    padding: EdgeInsets.all(40),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-                loading: () => const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator()),
-                ),
-                error: (error, stack) => SliverToBoxAdapter(
-                  child: Center(child: Text('Error: $error')),
+                error: (e, st) => Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(40),
+                    child: Text('Error loading categories: $e'),
+                  ),
                 ),
               ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 120)),
+              const SizedBox(height: 100),
             ],
           ),
-        ],
+        ),
       ),
     );
   }
+}
 
-  double _categoryProgress({
-    required CategoryModel category,
-    required List<CategoryModel> categories,
-    required AsyncValue<List<LessonModel>> lessonsAsync,
-    required int totalCompletedLessons,
-  }) {
-    final lessons = lessonsAsync.value ?? const <LessonModel>[];
-    final lessonsByCategory = <String, int>{};
+class _StatCard extends StatelessWidget {
+  final IconData icon;
+  final String value;
+  final String label;
+  final Color color;
+  final bool isDark;
 
-    for (final lesson in lessons) {
-      lessonsByCategory.update(
-        lesson.categoryId,
-        (value) => value + 1,
-        ifAbsent: () => 1,
-      );
-    }
+  const _StatCard({
+    required this.icon,
+    required this.value,
+    required this.label,
+    required this.color,
+    required this.isDark,
+  });
 
-    int totalLessonsInApp = 0;
-    final orderedCategories = [...categories]..sort((a, b) => a.order.compareTo(b.order));
-
-    for (final cat in orderedCategories) {
-      totalLessonsInApp += lessonsByCategory[cat.id] ?? cat.totalLessons;
-    }
-
-    if (totalLessonsInApp <= 0 || totalCompletedLessons <= 0) {
-      return 0;
-    }
-
-    final boundedCompleted = totalCompletedLessons.clamp(0, totalLessonsInApp);
-    var remaining = boundedCompleted;
-
-    for (final cat in orderedCategories) {
-      final categoryLessonCount = lessonsByCategory[cat.id] ?? cat.totalLessons;
-      if (categoryLessonCount <= 0) {
-        if (cat.id == category.id) return 0;
-        continue;
-      }
-
-      final completedInCategory = remaining.clamp(0, categoryLessonCount);
-      if (cat.id == category.id) {
-        return (completedInCategory / categoryLessonCount) * 100;
-      }
-
-      remaining = (remaining - categoryLessonCount).clamp(0, totalLessonsInApp);
-    }
-
-    return 0;
-  }
-
-  Widget _buildBackground(bool isDark, Size size) {
-    return Stack(
-      children: [
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [const Color(0xFF0A0E14), const Color(0xFF161B22)]
-                  : [Colors.white, const Color(0xFFF0FDF4)],
-            ),
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
           ),
         ),
-        Positioned(
-          top: -size.height * 0.1,
-          right: -size.width * 0.2,
-          child: Container(
-            width: size.width * 0.6,
-            height: size.width * 0.6,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              gradient: RadialGradient(
-                colors: [
-                  AppColors.primary.withValues(alpha: 0.15),
-                  Colors.transparent,
-                ],
-              ),
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSectionHeader(String title, String subtitle, bool isDark) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 28,
-          decoration: BoxDecoration(
-            gradient: AppColors.heroGradient,
-            borderRadius: BorderRadius.circular(2),
-          ),
-        ),
-        const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
+        child: Column(
           children: [
+            Icon(icon, color: color, size: 28),
+            const SizedBox(height: 8),
             Text(
-              title,
+              value,
               style: TextStyle(
-                fontSize: 22,
+                fontSize: 24,
                 fontWeight: FontWeight.w800,
                 color: isDark ? Colors.white : Colors.black,
               ),
             ),
+            const SizedBox(height: 4),
             Text(
-              subtitle,
+              label,
               style: TextStyle(
-                fontSize: 13,
-                color: isDark ? Colors.white54 : Colors.black45,
+                fontSize: 12,
+                color: isDark ? Colors.white54 : Colors.black54,
               ),
             ),
           ],
         ),
-      ],
-    ).animate().fadeIn(delay: 500.ms, duration: 400.ms);
+      ),
+    );
+  }
+}
+
+class _QuickActionCard extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final Color color;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _QuickActionCard({
+    required this.icon,
+    required this.label,
+    required this.color,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+          ),
+        ),
+        child: Column(
+          children: [
+            Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _CategoryCard extends StatelessWidget {
+  final CategoryModel category;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  const _CategoryCard({
+    required this.category,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  LinearGradient _getGradient() {
+    switch (category.gradientPreset) {
+      case 'peach':
+        return AppColors.premiumOrange;
+      case 'mint':
+        return AppColors.premiumMint;
+      case 'sunset':
+        return AppColors.premiumCoral;
+      case 'purple':
+        return AppColors.premiumPurple;
+      case 'skyBlue':
+        return AppColors.premiumCyan;
+      default:
+        return AppColors.premiumGreen;
+    }
+  }
+
+  IconData _getIcon() {
+    switch (category.iconName) {
+      case 'alphabet':
+        return Icons.text_fields;
+      case 'numbers':
+        return Icons.numbers;
+      case 'words':
+        return Icons.abc;
+      case 'stories':
+        return Icons.auto_stories;
+      default:
+        return Icons.book;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        decoration: BoxDecoration(
+          gradient: _getGradient(),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: _getGradient().colors.first.withValues(alpha: 0.3),
+              blurRadius: 15,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Padding(
+          padding: const EdgeInsets.all(18),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 50,
+                height: 50,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: Icon(
+                  _getIcon(),
+                  color: Colors.white,
+                  size: 26,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                category.titleLatin,
+                style: const TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                category.titleOlChiki,
+                style: TextStyle(
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.85),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                '${category.totalLessons ?? 0} lessons',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

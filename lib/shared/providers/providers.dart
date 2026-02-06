@@ -1,153 +1,63 @@
-import 'dart:async';
+import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-
 import '../models/content_models.dart';
-import '../models/user_model.dart';
-import '../../core/config/supabase_config.dart';
-import '../../features/auth/data/auth_repository.dart';
-
-// Keep main import if needed for global prefs, but usually we use the instance below
 import '../../main.dart';
 
-// ============== AUTH & USER ==============
+// ============== USER DATA (Local Storage) ==============
 
-final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(SupabaseConfig.client);
+final userNameProvider = StateProvider<String>((ref) {
+  return prefs.getString('user_name') ?? 'Learner';
 });
 
-final authStateProvider = StreamProvider<AuthState>((ref) {
-  return ref.watch(authRepositoryProvider).authStateChanges;
+final userStreakProvider = StateProvider<int>((ref) {
+  return prefs.getInt('user_streak') ?? 0;
 });
 
-final currentUserProvider = Provider<User?>((ref) {
-  return ref.watch(authStateProvider).value?.session?.user;
+final userStarsProvider = StateProvider<int>((ref) {
+  return prefs.getInt('user_stars') ?? 0;
 });
 
-/// Real-time stream of the user's profile
-final userProfileProvider = StreamProvider<UserModel?>((ref) async* {
-  final user = ref.watch(currentUserProvider);
-  if (user == null) {
-    yield null;
-    return;
-  }
-
-  final stream = SupabaseConfig.client
-      .from('profiles')
-      .stream(primaryKey: ['id'])
-      .eq('id', user.id)
-      .map(
-        (event) => event.isNotEmpty ? UserModel.fromJson(event.first) : null,
-      );
-
-  yield* stream;
+final lessonsCompletedProvider = StateProvider<int>((ref) {
+  return prefs.getInt('lessons_completed') ?? 0;
 });
 
-// --- Legacy Provider Adapters (Read-Only) ---
-// These allow existing UI to read values (handling nulls gracefully)
-
-final userNameProvider = Provider<String>((ref) {
-  return ref.watch(userProfileProvider).value?.displayName ?? 'Learner';
+final quizzesCompletedProvider = StateProvider<int>((ref) {
+  return prefs.getInt('quizzes_completed') ?? 0;
 });
 
-final userStreakProvider = Provider<int>((ref) {
-  return ref.watch(userProfileProvider).value?.stats.streak ?? 0;
-});
-
-final userStarsProvider = Provider<int>((ref) {
-  return ref.watch(userProfileProvider).value?.stats.stars ?? 0;
-});
-
-final lessonsCompletedProvider = Provider<int>((ref) {
-  return ref.watch(userProfileProvider).value?.stats.totalLessonsCompleted ?? 0;
-});
-
-final quizzesCompletedProvider = Provider<int>((ref) {
-  return ref.watch(userProfileProvider).value?.stats.totalQuizzesCompleted ?? 0;
-});
-
-// --- Write Actions ---
-// These replace the StateProvider.notifier updates
-
-Future<void> updateUserName(WidgetRef ref, String name) async {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return;
-  await SupabaseConfig.client
-      .from('profiles')
-      .update({'display_name': name})
-      .eq('id', user.id);
+// User data update functions
+void updateUserName(WidgetRef ref, String name) {
+  prefs.setString('user_name', name);
+  ref.read(userNameProvider.notifier).state = name;
 }
 
-Future<void> updateStreak(WidgetRef ref, int streak) async {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return;
-
-  // We need to merge with existing stats, but for now simple update
-  // Ideally this should be a stored procedure or careful update
-  // Fetch current stats first or use jsonb_set in SQL.
-  // Simple approach: READ -> MODIFY -> WRITE
-  // Note: better to do this in backend, but client-side for now:
-  final currentProfile = ref.read(userProfileProvider).value;
-  if (currentProfile != null) {
-    final newStats = currentProfile.stats.copyWith(streak: streak).toJson();
-    await SupabaseConfig.client
-        .from('profiles')
-        .update({'stats': newStats})
-        .eq('id', user.id);
-  }
+void updateStreak(WidgetRef ref, int streak) {
+  prefs.setInt('user_streak', streak);
+  ref.read(userStreakProvider.notifier).state = streak;
 }
 
-Future<void> addStars(WidgetRef ref, int amount) async {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return;
-
-  final currentProfile = ref.read(userProfileProvider).value;
-  if (currentProfile != null) {
-    final newStars = currentProfile.stats.stars + amount;
-    final newStats = currentProfile.stats.copyWith(stars: newStars).toJson();
-    await SupabaseConfig.client
-        .from('profiles')
-        .update({'stats': newStats})
-        .eq('id', user.id);
-  }
+void addStars(WidgetRef ref, int amount) {
+  final current = ref.read(userStarsProvider);
+  final newValue = current + amount;
+  prefs.setInt('user_stars', newValue);
+  ref.read(userStarsProvider.notifier).state = newValue;
 }
 
-Future<void> incrementLessonsCompleted(WidgetRef ref) async {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return;
-
-  final currentProfile = ref.read(userProfileProvider).value;
-  if (currentProfile != null) {
-    final newVal = currentProfile.stats.totalLessonsCompleted + 1;
-    final newStats = currentProfile.stats
-        .copyWith(totalLessonsCompleted: newVal)
-        .toJson();
-    await SupabaseConfig.client
-        .from('profiles')
-        .update({'stats': newStats})
-        .eq('id', user.id);
-  }
+void incrementLessonsCompleted(WidgetRef ref) {
+  final current = ref.read(lessonsCompletedProvider);
+  final newValue = current + 1;
+  prefs.setInt('lessons_completed', newValue);
+  ref.read(lessonsCompletedProvider.notifier).state = newValue;
 }
 
-Future<void> incrementQuizzesCompleted(WidgetRef ref) async {
-  final user = ref.read(currentUserProvider);
-  if (user == null) return;
-
-  final currentProfile = ref.read(userProfileProvider).value;
-  if (currentProfile != null) {
-    final newVal = currentProfile.stats.totalQuizzesCompleted + 1;
-    final newStats = currentProfile.stats
-        .copyWith(totalQuizzesCompleted: newVal)
-        .toJson();
-    await SupabaseConfig.client
-        .from('profiles')
-        .update({'stats': newStats})
-        .eq('id', user.id);
-  }
+void incrementQuizzesCompleted(WidgetRef ref) {
+  final current = ref.read(quizzesCompletedProvider);
+  final newValue = current + 1;
+  prefs.setInt('quizzes_completed', newValue);
+  ref.read(quizzesCompletedProvider.notifier).state = newValue;
 }
 
 // ============== SETTINGS (Local Storage) ==============
-// These can remain local for now as they are device specific often
 
 final themeModeProvider = StateProvider<String>((ref) {
   return prefs.getString('theme_mode') ?? 'system';
@@ -177,328 +87,470 @@ void toggleSound(WidgetRef ref) {
   ref.read(soundEnabledProvider.notifier).state = !current;
 }
 
-// ============== CONTENT PROVIDERS (Supabase) ==============
-// All content providers are now AsyncValue
+// ============== CONTENT PROVIDERS (Local Storage) ==============
 
-// 1. Categories
-final categoriesProvider =
-    StateNotifierProvider<CategoriesNotifier, AsyncValue<List<CategoryModel>>>((
-      ref,
-    ) {
-      return CategoriesNotifier();
-    });
+// Default categories
+final _defaultCategories = [
+  CategoryModel(
+    id: 'alphabets',
+    titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+    titleLatin: 'Ol Chiki Alphabet',
+    iconName: 'alphabet',
+    gradientPreset: 'skyBlue',
+    order: 0,
+    isActive: true,
+    totalLessons: 30,
+  ),
+  CategoryModel(
+    id: 'numbers',
+    titleOlChiki: 'ᱮᱞᱠᱷᱟ',
+    titleLatin: 'Numbers',
+    iconName: 'numbers',
+    gradientPreset: 'peach',
+    order: 1,
+    isActive: true,
+    totalLessons: 10,
+  ),
+  CategoryModel(
+    id: 'words',
+    titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
+    titleLatin: 'Common Words',
+    iconName: 'words',
+    gradientPreset: 'mint',
+    order: 2,
+    isActive: true,
+    totalLessons: 20,
+  ),
+  CategoryModel(
+    id: 'phrases',
+    titleOlChiki: 'ᱛᱮᱞᱟ ᱯᱟᱹᱨᱥᱤ',
+    titleLatin: 'Phrases',
+    iconName: 'stories',
+    gradientPreset: 'sunset',
+    order: 3,
+    isActive: true,
+    totalLessons: 15,
+  ),
+];
 
-class CategoriesNotifier
-    extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
+// Categories Provider
+final categoriesProvider = StateNotifierProvider<CategoriesNotifier, AsyncValue<List<CategoryModel>>>((ref) {
+  return CategoriesNotifier();
+});
 
+class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> {
   CategoriesNotifier() : super(const AsyncValue.loading()) {
-    _subscribe();
+    _loadCategories();
   }
 
-  void _subscribe() {
-    _subscription = SupabaseConfig.client
-        .from('categories')
-        .stream(primaryKey: ['id'])
-        .order('order')
-        .listen(
-          (data) {
-            final list = data.map((e) => CategoryModel.fromJson(e)).toList();
-            state = AsyncValue.data(list);
-          },
-          onError: (error, stack) {
-            state = AsyncValue.error(error, stack);
-          },
-        );
-  }
-
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
-  }
-
-  Future<void> addCategory(CategoryModel item) async {
-    await SupabaseConfig.client.from('categories').insert(item.toJson());
-  }
-
-  Future<void> updateCategory(CategoryModel item) async {
-    await SupabaseConfig.client
-        .from('categories')
-        .update(item.toJson())
-        .eq('id', item.id);
-  }
-
-  Future<void> deleteCategory(String id) async {
-    await SupabaseConfig.client.from('categories').delete().eq('id', id);
-  }
-
-  Future<void> reorderCategories(int oldIndex, int newIndex) async {
-    final current = state.value;
-    if (current == null || current.isEmpty) return;
-    if (oldIndex < 0 || oldIndex >= current.length) return;
-    if (newIndex < 0 || newIndex > current.length) return;
-
-    final reordered = [...current];
-    final moved = reordered.removeAt(oldIndex);
-    reordered.insert(newIndex, moved);
-
-    final normalized = [
-      for (var i = 0; i < reordered.length; i++) reordered[i].copyWith(order: i),
-    ];
-
-    state = AsyncValue.data(normalized);
-
+  void _loadCategories() {
     try {
-      final updates = [
-        for (final category in normalized)
-          {'id': category.id, 'order': category.order},
-      ];
-
-      await SupabaseConfig.client.from('categories').upsert(updates);
-    } catch (error, stack) {
-      state = AsyncValue.error(error, stack);
-      state = AsyncValue.data(current);
-      rethrow;
+      final stored = prefs.getString('categories');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final categories = decoded.map((e) => CategoryModel.fromJson(e)).toList();
+        state = AsyncValue.data(categories);
+      } else {
+        state = AsyncValue.data(_defaultCategories);
+        _saveCategories(_defaultCategories);
+      }
+    } catch (e) {
+      state = AsyncValue.data(_defaultCategories);
     }
   }
+
+  void _saveCategories(List<CategoryModel> categories) {
+    final encoded = jsonEncode(categories.map((e) => e.toJson()).toList());
+    prefs.setString('categories', encoded);
+  }
+
+  void add(CategoryModel item) {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveCategories(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  void update(CategoryModel item) {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveCategories(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  void delete(String id) {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveCategories(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  void reorder(List<CategoryModel> items) {
+    _saveCategories(items);
+    state = AsyncValue.data(items);
+  }
+  
+  // Aliases for admin screens
+  void addCategory(CategoryModel item) => add(item);
+  void updateCategory(CategoryModel item) => update(item);
+  void deleteCategory(String id) => delete(id);
+  
+  Future<void> reorderCategories(int oldIndex, int newIndex) async {
+    final current = state.value ?? [];
+    final updated = [...current];
+    final item = updated.removeAt(oldIndex);
+    updated.insert(newIndex, item);
+    // Update order values
+    for (int i = 0; i < updated.length; i++) {
+      updated[i] = CategoryModel(
+        id: updated[i].id,
+        titleOlChiki: updated[i].titleOlChiki,
+        titleLatin: updated[i].titleLatin,
+        iconName: updated[i].iconName,
+        iconUrl: updated[i].iconUrl,
+        gradientPreset: updated[i].gradientPreset,
+        order: i,
+        isActive: updated[i].isActive,
+        totalLessons: updated[i].totalLessons,
+        description: updated[i].description,
+      );
+    }
+    _saveCategories(updated);
+    state = AsyncValue.data(updated);
+  }
 }
 
-// 2. Banners
-final featuredBannersProvider =
-    StateNotifierProvider<
-      BannersNotifier,
-      AsyncValue<List<FeaturedBannerModel>>
-    >((ref) {
-      return BannersNotifier();
-    });
+// Banners Provider
+final bannersProvider = StateNotifierProvider<BannersNotifier, AsyncValue<List<FeaturedBannerModel>>>((ref) {
+  return BannersNotifier();
+});
 
-class BannersNotifier
-    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
-  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
-
+class BannersNotifier extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
   BannersNotifier() : super(const AsyncValue.loading()) {
-    _subscribe();
+    _loadBanners();
   }
 
-  void _subscribe() {
-    _subscription = SupabaseConfig.client
-        .from('banners')
-        .stream(primaryKey: ['id'])
-        .order('order')
-        .listen(
-          (data) {
-            final list = data
-                .map((e) => FeaturedBannerModel.fromJson(e))
-                .toList();
-            state = AsyncValue.data(list);
-          },
-          onError: (error, stack) {
-            state = AsyncValue.error(error, stack);
-          },
-        );
+  void _loadBanners() {
+    try {
+      final stored = prefs.getString('banners');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final banners = decoded.map((e) => FeaturedBannerModel.fromJson(e)).toList();
+        state = AsyncValue.data(banners);
+      } else {
+        state = AsyncValue.data([
+          FeaturedBannerModel(
+            id: '1',
+            title: 'Start Your Journey',
+            subtitle: 'Learn Ol Chiki alphabet today',
+            gradientPreset: 'mint',
+            order: 0,
+            isActive: true,
+          ),
+        ]);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
+  void _saveBanners(List<FeaturedBannerModel> banners) {
+    final encoded = jsonEncode(banners.map((e) => e.toJson()).toList());
+    prefs.setString('banners', encoded);
   }
 
-  Future<void> addBanner(FeaturedBannerModel item) async {
-    await SupabaseConfig.client.from('banners').insert(item.toJson());
+  void add(FeaturedBannerModel item) {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveBanners(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> updateBanner(FeaturedBannerModel item) async {
-    await SupabaseConfig.client
-        .from('banners')
-        .update(item.toJson())
-        .eq('id', item.id);
+  void update(FeaturedBannerModel item) {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveBanners(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> deleteBanner(String id) async {
-    await SupabaseConfig.client.from('banners').delete().eq('id', id);
+  void delete(String id) {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveBanners(updated);
+    state = AsyncValue.data(updated);
   }
+  
+  // Aliases for admin screens
+  void addBanner(FeaturedBannerModel item) => add(item);
+  void updateBanner(FeaturedBannerModel item) => update(item);
+  void deleteBanner(String id) => delete(id);
 }
 
-// 3. Letters
-final lettersProvider =
-    StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>((
-      ref,
-    ) {
-      return LettersNotifier();
-    });
+// Alias for backward compatibility
+final featuredBannersProvider = bannersProvider;
+
+// Letters Provider
+final lettersProvider = StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>((ref) {
+  return LettersNotifier();
+});
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
-  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
-
   LettersNotifier() : super(const AsyncValue.loading()) {
-    _subscribe();
+    _loadLetters();
   }
 
-  void _subscribe() {
-    _subscription = SupabaseConfig.client
-        .from('letters')
-        .stream(primaryKey: ['id'])
-        .order('order')
-        .listen(
-          (data) {
-            final list = data.map((e) => LetterModel.fromJson(e)).toList();
-            state = AsyncValue.data(list);
-          },
-          onError: (error, stack) {
-            state = AsyncValue.error(error, stack);
-          },
-        );
+  void _loadLetters() {
+    try {
+      final stored = prefs.getString('letters');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final letters = decoded.map((e) => LetterModel.fromJson(e)).toList();
+        state = AsyncValue.data(letters);
+      } else {
+        // Default Ol Chiki letters
+        state = AsyncValue.data([
+          LetterModel(id: '1', charOlChiki: 'ᱚ', transliterationLatin: 'a', order: 1, isActive: true),
+          LetterModel(id: '2', charOlChiki: 'ᱛ', transliterationLatin: 'at', order: 2, isActive: true),
+          LetterModel(id: '3', charOlChiki: 'ᱜ', transliterationLatin: 'ag', order: 3, isActive: true),
+          LetterModel(id: '4', charOlChiki: 'ᱝ', transliterationLatin: 'ang', order: 4, isActive: true),
+          LetterModel(id: '5', charOlChiki: 'ᱞ', transliterationLatin: 'al', order: 5, isActive: true),
+          LetterModel(id: '6', charOlChiki: 'ᱟ', transliterationLatin: 'la', order: 6, isActive: true),
+          LetterModel(id: '7', charOlChiki: 'ᱠ', transliterationLatin: 'ak', order: 7, isActive: true),
+          LetterModel(id: '8', charOlChiki: 'ᱡ', transliterationLatin: 'aj', order: 8, isActive: true),
+        ]);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
+  void _saveLetters(List<LetterModel> letters) {
+    final encoded = jsonEncode(letters.map((e) => e.toJson()).toList());
+    prefs.setString('letters', encoded);
   }
 
-  Future<void> addLetter(LetterModel item) async {
-    await SupabaseConfig.client.from('letters').insert(item.toJson());
+  void add(LetterModel item) {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveLetters(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> updateLetter(LetterModel item) async {
-    await SupabaseConfig.client
-        .from('letters')
-        .update(item.toJson())
-        .eq('id', item.id);
+  void update(LetterModel item) {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveLetters(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> deleteLetter(String id) async {
-    await SupabaseConfig.client.from('letters').delete().eq('id', id);
+  void delete(String id) {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveLetters(updated);
+    state = AsyncValue.data(updated);
   }
+  
+  // Aliases for admin screens
+  void addLetter(LetterModel item) => add(item);
+  void updateLetter(LetterModel item) => update(item);
+  void deleteLetter(String id) => delete(id);
 }
 
-// 4. Lessons
-final lessonsProvider =
-    StateNotifierProvider<LessonsNotifier, AsyncValue<List<LessonModel>>>((
-      ref,
-    ) {
-      return LessonsNotifier();
-    });
+// Lessons Provider
+final lessonsProvider = StateNotifierProvider<LessonsNotifier, AsyncValue<List<LessonModel>>>((ref) {
+  return LessonsNotifier();
+});
 
 class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
-  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
-
   LessonsNotifier() : super(const AsyncValue.loading()) {
-    _subscribe();
+    _loadLessons();
   }
 
-  void _subscribe() {
-    _subscription = SupabaseConfig.client
-        .from('lessons')
-        .stream(primaryKey: ['id'])
-        .order('order')
-        .listen(
-          (data) {
-            final list = data.map((e) => LessonModel.fromJson(e)).toList();
-            state = AsyncValue.data(list);
-          },
-          onError: (error, stack) {
-            state = AsyncValue.error(error, stack);
-          },
-        );
+  void _loadLessons() {
+    try {
+      final stored = prefs.getString('lessons');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final lessons = decoded.map((e) => LessonModel.fromJson(e)).toList();
+        state = AsyncValue.data(lessons);
+      } else {
+        // Default lessons
+        state = AsyncValue.data([
+          LessonModel(
+            id: 'alphabets_1',
+            categoryId: 'alphabets',
+            titleOlChiki: 'ᱯᱟᱹᱦᱤᱞ ᱯᱟᱹᱴ',
+            titleLatin: 'First Lesson',
+            level: 'beginner',
+            order: 0,
+            isActive: true,
+            estimatedMinutes: 5,
+          ),
+          LessonModel(
+            id: 'alphabets_2',
+            categoryId: 'alphabets',
+            titleOlChiki: 'ᱵᱟᱨᱭᱟ ᱯᱟᱹᱴ',
+            titleLatin: 'Second Lesson',
+            level: 'beginner',
+            order: 1,
+            isActive: true,
+            estimatedMinutes: 5,
+          ),
+          LessonModel(
+            id: 'numbers_1',
+            categoryId: 'numbers',
+            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱯᱟᱹᱴ',
+            titleLatin: 'Numbers Intro',
+            level: 'beginner',
+            order: 0,
+            isActive: true,
+            estimatedMinutes: 5,
+          ),
+        ]);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
+  void _saveLessons(List<LessonModel> lessons) {
+    final encoded = jsonEncode(lessons.map((e) => e.toJson()).toList());
+    prefs.setString('lessons', encoded);
   }
 
-  Future<void> addLesson(LessonModel item) async {
-    await SupabaseConfig.client.from('lessons').insert(item.toJson());
+  void add(LessonModel item) {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveLessons(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> updateLesson(LessonModel item) async {
-    await SupabaseConfig.client
-        .from('lessons')
-        .update(item.toJson())
-        .eq('id', item.id);
+  void update(LessonModel item) {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveLessons(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> deleteLesson(String id) async {
-    await SupabaseConfig.client.from('lessons').delete().eq('id', id);
+  void delete(String id) {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveLessons(updated);
+    state = AsyncValue.data(updated);
   }
+  
+  // Aliases for admin screens (async for await compatibility)
+  Future<void> addLesson(LessonModel item) async => add(item);
+  Future<void> updateLesson(LessonModel item) async => update(item);
+  Future<void> deleteLesson(String id) async => delete(id);
 }
 
-final lessonsByCategoryProvider =
-    Provider.family<AsyncValue<List<LessonModel>>, String>((ref, categoryId) {
-      final lessonsAsync = ref.watch(lessonsProvider);
-      return lessonsAsync.whenData(
-        (lessons) => lessons.where((l) => l.categoryId == categoryId).toList(),
-      );
-    });
-
-// 5. Quizzes
-final quizzesProvider =
-    StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
-      return QuizzesNotifier();
-    });
+// Quizzes Provider
+final quizzesProvider = StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
+  return QuizzesNotifier();
+});
 
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
-  StreamSubscription<List<Map<String, dynamic>>>? _subscription;
-
   QuizzesNotifier() : super(const AsyncValue.loading()) {
-    _subscribe();
+    _loadQuizzes();
   }
 
-  void _subscribe() {
-    _subscription = SupabaseConfig.client
-        .from('quizzes')
-        .stream(primaryKey: ['id'])
-        .order('order')
-        .listen(
-          (data) {
-            final list = data.map((e) => QuizModel.fromJson(e)).toList();
-            state = AsyncValue.data(list);
-          },
-          onError: (error, stack) {
-            state = AsyncValue.error(error, stack);
-          },
-        );
+  void _loadQuizzes() {
+    try {
+      final stored = prefs.getString('quizzes');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final quizzes = decoded.map((e) => QuizModel.fromJson(e)).toList();
+        state = AsyncValue.data(quizzes);
+      } else {
+        state = AsyncValue.data([]);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
   }
 
-  @override
-  void dispose() {
-    _subscription?.cancel();
-    super.dispose();
+  void _saveQuizzes(List<QuizModel> quizzes) {
+    final encoded = jsonEncode(quizzes.map((e) => e.toJson()).toList());
+    prefs.setString('quizzes', encoded);
   }
 
-  Future<void> addQuiz(QuizModel item) async {
-    await SupabaseConfig.client.from('quizzes').insert(item.toJson());
+  void add(QuizModel item) {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveQuizzes(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> updateQuiz(QuizModel item) async {
-    await SupabaseConfig.client
-        .from('quizzes')
-        .update(item.toJson())
-        .eq('id', item.id);
+  void update(QuizModel item) {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveQuizzes(updated);
+    state = AsyncValue.data(updated);
   }
 
-  Future<void> deleteQuiz(String id) async {
-    await SupabaseConfig.client.from('quizzes').delete().eq('id', id);
+  void delete(String id) {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveQuizzes(updated);
+    state = AsyncValue.data(updated);
   }
+  
+  // Aliases for admin screens (async for await compatibility)
+  Future<void> addQuiz(QuizModel item) async => add(item);
+  Future<void> updateQuiz(QuizModel item) async => update(item);
+  Future<void> deleteQuiz(String id) async => delete(id);
 }
 
-// 6. Media
-final mediaFilesProvider =
-    StateNotifierProvider<MediaFilesNotifier, AsyncValue<List<MediaFileModel>>>(
-      (ref) {
-        return MediaFilesNotifier();
-      },
-    );
+// Filtered lessons by category
+final lessonsByCategoryProvider = Provider.family<AsyncValue<List<LessonModel>>, String>((ref, categoryId) {
+  final lessonsAsync = ref.watch(lessonsProvider);
+  return lessonsAsync.when(
+    data: (lessons) => AsyncValue.data(lessons.where((l) => l.categoryId == categoryId).toList()),
+    loading: () => const AsyncValue.loading(),
+    error: (e, st) => AsyncValue.error(e, st),
+  );
+});
 
-class MediaFilesNotifier
-    extends StateNotifier<AsyncValue<List<MediaFileModel>>> {
-  MediaFilesNotifier() : super(const AsyncValue.data([])); // Mock for now
+// ============== USER PROFILE PROVIDER (Local) ==============
 
-  // TODO: Implement Storage
-  Future<void> addMediaFile(MediaFileModel file) async {}
-  Future<void> deleteMediaFile(String id) async {}
+final userProfileProvider = Provider<AsyncValue<UserProfileLocal?>>((ref) {
+  final name = ref.watch(userNameProvider);
+  final streak = ref.watch(userStreakProvider);
+  final stars = ref.watch(userStarsProvider);
+  final lessons = ref.watch(lessonsCompletedProvider);
+  final quizzes = ref.watch(quizzesCompletedProvider);
+  
+  return AsyncValue.data(UserProfileLocal(
+    displayName: name,
+    stats: UserStatsLocal(
+      streak: streak,
+      stars: stars,
+      totalLessonsCompleted: lessons,
+      totalQuizzesCompleted: quizzes,
+    ),
+  ));
+});
+
+class UserProfileLocal {
+  final String displayName;
+  final UserStatsLocal stats;
+  
+  UserProfileLocal({required this.displayName, required this.stats});
 }
+
+class UserStatsLocal {
+  final int streak;
+  final int stars;
+  final int totalLessonsCompleted;
+  final int totalQuizzesCompleted;
+  
+  UserStatsLocal({
+    required this.streak,
+    required this.stars,
+    required this.totalLessonsCompleted,
+    required this.totalQuizzesCompleted,
+  });
+}
+
+

@@ -542,6 +542,50 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
       ),
     );
   }
+
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isDark,
+    int maxLines = 1,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+            filled: true,
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _FilterChip extends StatelessWidget {

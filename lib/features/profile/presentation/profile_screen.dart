@@ -244,7 +244,7 @@ class ProfileScreen extends ConsumerWidget {
       width: double.infinity,
       child: ElevatedButton.icon(
         onPressed: () async {
-          await ref.read(authRepositoryProvider).signOut();
+          // Clear local user data (no auth in local storage mode)
           if (context.mounted) {
             context.go('/welcome');
           }

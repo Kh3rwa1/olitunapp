@@ -11,11 +11,11 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.light,
       colorScheme: const ColorScheme.light(
-        primary: AppColors.primaryCyan,
-        primaryContainer: AppColors.primaryTeal,
-        secondary: AppColors.accentCoral,
-        secondaryContainer: AppColors.accentPeach,
-        tertiary: AppColors.accentGold,
+        primary: AppColors.primary,
+        primaryContainer: AppColors.primaryLight,
+        secondary: AppColors.duoBlue,
+        secondaryContainer: AppColors.duoBlueDark,
+        tertiary: AppColors.duoYellow,
         surface: AppColors.lightSurface,
         error: AppColors.error,
         onPrimary: Colors.white,
@@ -45,9 +45,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.lightSurface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
       // Elevated Button Theme
@@ -117,7 +115,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
         hintStyle: const TextStyle(
           fontFamily: 'Poppins',
           color: AppColors.textTertiaryLight,
@@ -159,7 +160,10 @@ class AppTheme {
       ),
 
       // Text Theme
-      textTheme: _textTheme(AppColors.textPrimaryLight, AppColors.textSecondaryLight),
+      textTheme: _textTheme(
+        AppColors.textPrimaryLight,
+        AppColors.textSecondaryLight,
+      ),
     );
   }
 
@@ -169,11 +173,11 @@ class AppTheme {
       useMaterial3: true,
       brightness: Brightness.dark,
       colorScheme: const ColorScheme.dark(
-        primary: AppColors.primaryCyan,
-        primaryContainer: AppColors.primaryTeal,
-        secondary: AppColors.accentCoral,
-        secondaryContainer: AppColors.accentPeach,
-        tertiary: AppColors.accentGold,
+        primary: AppColors.primary,
+        primaryContainer: AppColors.primaryDark,
+        secondary: AppColors.duoBlue,
+        secondaryContainer: AppColors.duoBlueDark,
+        tertiary: AppColors.duoYellow,
         surface: AppColors.darkSurface,
         error: AppColors.error,
         onPrimary: Colors.white,
@@ -203,9 +207,7 @@ class AppTheme {
       cardTheme: CardThemeData(
         color: AppColors.darkSurface,
         elevation: 0,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(24),
-        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
 
       // Elevated Button Theme
@@ -263,7 +265,10 @@ class AppTheme {
           borderRadius: BorderRadius.circular(16),
           borderSide: const BorderSide(color: AppColors.error, width: 1),
         ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 20,
+          vertical: 18,
+        ),
         hintStyle: const TextStyle(
           fontFamily: 'Poppins',
           color: AppColors.textTertiaryDark,
@@ -297,7 +302,10 @@ class AppTheme {
       ),
 
       // Text Theme
-      textTheme: _textTheme(AppColors.textPrimaryDark, AppColors.textSecondaryDark),
+      textTheme: _textTheme(
+        AppColors.textPrimaryDark,
+        AppColors.textSecondaryDark,
+      ),
     );
   }
 

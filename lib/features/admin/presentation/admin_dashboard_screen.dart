@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../../shared/widgets/gamified_card.dart';
+import '../../../../shared/widgets/animated_buttons.dart';
 import 'widgets/admin_nav_rail.dart';
 import 'admin_banners_screen.dart';
 import 'admin_categories_screen.dart';
 import 'admin_letters_screen.dart';
 import 'admin_lessons_screen.dart';
 import 'admin_quizzes_screen.dart';
+import '../../../../core/theme/app_colors.dart';
 
 class AdminDashboardScreen extends ConsumerStatefulWidget {
   const AdminDashboardScreen({super.key});
@@ -21,8 +24,12 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : const Color(0xFFF8FAFC),
       body: Row(
         children: [
           AdminNavRail(
@@ -31,33 +38,32 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
               setState(() => _selectedIndex = index);
             },
           ),
-          Expanded(child: _buildContent(_selectedIndex)),
+          Expanded(child: _buildContent(_selectedIndex, isDark)),
         ],
       ),
     );
   }
 
-  Widget _buildContent(int index) {
+  Widget _buildContent(int index, bool isDark) {
     switch (index) {
       case 0:
-        return _buildOverview();
+        return _buildOverview(isDark);
       case 1:
-        return const AdminBannersScreen(); // Placeholder until file updated
+        return const AdminBannersScreen();
       case 2:
-        return const AdminCategoriesScreen(); // Placeholder
+        return const AdminCategoriesScreen();
       case 3:
-        return const AdminLettersScreen(); // Placeholder
+        return const AdminLettersScreen();
       case 4:
-        return const AdminLessonsScreen(); // Placeholder
+        return const AdminLessonsScreen();
       case 5:
-        return const AdminQuizzesScreen(); // Placeholder
+        return const AdminQuizzesScreen();
       default:
-        return _buildOverview();
+        return _buildOverview(isDark);
     }
   }
 
-  Widget _buildOverview() {
-    // Watch all async providers
+  Widget _buildOverview(bool isDark) {
     final categoriesAsync = ref.watch(categoriesProvider);
     final bannersAsync = ref.watch(featuredBannersProvider);
     final lettersAsync = ref.watch(lettersProvider);
@@ -65,23 +71,62 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     final quizzesAsync = ref.watch(quizzesProvider);
 
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.all(40),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Dashboard Overview',
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Admin Panel',
+                    style: TextStyle(
+                      fontSize: 36,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1,
+                      color: isDark ? Colors.white : AppColors.primaryDark,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Manage your content and settings',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: isDark ? Colors.white54 : Colors.black54,
+                    ),
+                  ),
+                ],
+              ),
+              DuoButton(
+                text: 'SEED SAMPLE DATA',
+                icon: Icons.auto_fix_high_rounded,
+                color: AppColors.primary,
+                width: 220,
+                height: 52,
+                borderRadius: 14,
+                onPressed: () => _handleSeeding(),
+              ),
+            ],
+          ),
+          const SizedBox(height: 48),
+
+          Text(
+            'STATISTICS',
             style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w800,
-              letterSpacing: -0.5,
-              color: Color(0xFF1E293B),
+              fontSize: 14,
+              fontWeight: FontWeight.w900,
+              letterSpacing: 1.5,
+              color: isDark ? AppColors.primary : AppColors.primaryDark,
             ),
           ),
-          const SizedBox(height: 32),
+          const SizedBox(height: 20),
+
           Wrap(
-            spacing: 24,
-            runSpacing: 24,
+            spacing: 20,
+            runSpacing: 20,
             children: [
               _buildStatCard(
                 'Categories',
@@ -91,17 +136,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   error: (_, __) => '0',
                 ),
                 Icons.category_rounded,
-                Colors.blue,
-              ),
-              _buildStatCard(
-                'Banners',
-                bannersAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.view_carousel_rounded,
-                Colors.orange,
+                AppColors.duoGreen,
+                AppColors.duoGreenDark,
               ),
               _buildStatCard(
                 'Letters',
@@ -111,7 +147,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   error: (_, __) => '0',
                 ),
                 Icons.text_fields_rounded,
-                Colors.purple,
+                AppColors.duoOrange,
+                AppColors.duoOrangeDark,
               ),
               _buildStatCard(
                 'Lessons',
@@ -121,7 +158,8 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   error: (_, __) => '0',
                 ),
                 Icons.book_rounded,
-                Colors.green,
+                AppColors.duoBlue,
+                AppColors.duoBlueDark,
               ),
               _buildStatCard(
                 'Quizzes',
@@ -131,7 +169,19 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                   error: (_, __) => '0',
                 ),
                 Icons.quiz_rounded,
-                Colors.red,
+                AppColors.duoPurple,
+                AppColors.duoPurpleDark,
+              ),
+              _buildStatCard(
+                'Banners',
+                bannersAsync.when(
+                  data: (l) => l.length.toString(),
+                  loading: () => '...',
+                  error: (_, __) => '0',
+                ),
+                Icons.view_carousel_rounded,
+                AppColors.duoYellow,
+                AppColors.duoYellowDark,
               ),
             ],
           ),
@@ -145,50 +195,77 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
     String value,
     IconData icon,
     Color color,
+    Color shadowColor,
   ) {
-    return Container(
-      width: 240,
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    return SizedBox(
+      width: 220,
+      child: GamifiedCard(
+        padding: const EdgeInsets.all(24),
+        borderRadius: 24,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(icon, color: color, size: 28),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              value,
+              style: const TextStyle(
+                fontSize: 40,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -1,
+                height: 1,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              title.toUpperCase(),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w800,
+                letterSpacing: 1,
+                color: Colors.black.withOpacity(0.4),
+              ),
+            ),
+          ],
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Icon(icon, color: color, size: 28),
+    );
+  }
+
+  void _handleSeeding() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Seed Sample Data?'),
+        content: const Text(
+          'This will populate the app with rich sample categories, lessons, and letters. It will not delete existing data.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCEL'),
           ),
-          const SizedBox(height: 20),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.w800,
-              color: Colors.black.withOpacity(0.8),
-              height: 1.1,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            title,
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.black.withOpacity(0.5),
-              fontWeight: FontWeight.w500,
-            ),
+          TextButton(
+            onPressed: () async {
+              Navigator.pop(context);
+              // We'll implement this function in the next step
+              await seedAppContent(ref);
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Content seeded successfully! ✨'),
+                  ),
+                );
+              }
+            },
+            child: const Text('SEED DATA'),
           ),
         ],
       ),

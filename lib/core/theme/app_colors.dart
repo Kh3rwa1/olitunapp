@@ -8,11 +8,27 @@ class AppColors {
 
   // ============== PRIMARY BRAND COLORS ==============
   // Signature Olitun Green (extracted from logo)
-  static const Color primary = Color(0xFF1EE088);  // Exact logo green
-  static const Color primaryLight = Color(0xFF5DFFA8);  // Lighter tint
-  static const Color primaryDark = Color(0xFF00C767);  // Deeper green
+  static const Color primary = Color(0xFF1EE088); // Exact logo green
+  static const Color primaryLight = Color(0xFF5DFFA8); // Lighter tint
+  static const Color primaryDark = Color(
+    0xFF00C767,
+  ); // Deeper green (Used for 3D shadow)
   static const Color primaryMuted = Color(0xFF1EE088);
-  
+
+  // Playful Gamified Accents (Duo-style)
+  static const Color duoBlue = Color(0xFF1CB0F6);
+  static const Color duoBlueDark = Color(0xFF1899D6);
+  static const Color duoGreen = Color(0xFF78C800);
+  static const Color duoGreenDark = Color(0xFF58A700);
+  static const Color duoOrange = Color(0xFFFF9600);
+  static const Color duoOrangeDark = Color(0xFFD37D00);
+  static const Color duoRed = Color(0xFFFF4B4B);
+  static const Color duoRedDark = Color(0xFFD33131);
+  static const Color duoPurple = Color(0xFFCE82FF);
+  static const Color duoPurpleDark = Color(0xFFAF67E9);
+  static const Color duoYellow = Color(0xFFFFC800);
+  static const Color duoYellowDark = Color(0xFFE5A100);
+
   // Pure Black & White
   static const Color pureBlack = Color(0xFF000000);
   static const Color pureWhite = Color(0xFFFFFFFF);
@@ -70,7 +86,7 @@ class AppColors {
   static const Color textDisabledDark = Color(0xFF616161);
 
   // ============== PREMIUM GRADIENTS ==============
-  
+
   // Hero gradient - Signature green (logo colors)
   static const LinearGradient heroGradient = LinearGradient(
     begin: Alignment.topLeft,
@@ -89,9 +105,9 @@ class AppColors {
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
     colors: [
-      Color(0xFF1EE088),  // Logo primary
-      Color(0xFF00C767),  // Deeper
-      Color(0xFF00A855),  // Darkest
+      Color(0xFF1EE088), // Logo primary
+      Color(0xFF00C767), // Deeper
+      Color(0xFF00A855), // Darkest
     ],
   );
 
@@ -106,11 +122,7 @@ class AppColors {
   static const LinearGradient greenGlowGradient = LinearGradient(
     begin: Alignment.topCenter,
     end: Alignment.bottomCenter,
-    colors: [
-      Color(0xFF1EE088),
-      Color(0xFF00C767),
-      Color(0xFF009650),
-    ],
+    colors: [Color(0xFF1EE088), Color(0xFF00C767), Color(0xFF009650)],
   );
 
   // Premium card gradients (logo-derived)
@@ -160,21 +172,13 @@ class AppColors {
   static const LinearGradient meshLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFFF8F9FA),
-      Color(0xFFFFFFFF),
-      Color(0xFFF0FFF4),
-    ],
+    colors: [Color(0xFFF8F9FA), Color(0xFFFFFFFF), Color(0xFFF0FFF4)],
   );
 
   static const LinearGradient meshDark = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [
-      Color(0xFF000000),
-      Color(0xFF0D0D0D),
-      Color(0xFF001A0D),
-    ],
+    colors: [Color(0xFF000000), Color(0xFF0D0D0D), Color(0xFF001A0D)],
   );
 
   // Dark mode card gradients
@@ -232,24 +236,24 @@ class AppColors {
   ];
 
   // ============== GLASS MORPHISM ==============
-  static Color glassWhite = Colors.white.withValues(alpha: 0.1);
-  static Color glassBorder = Colors.white.withValues(alpha: 0.15);
-  static Color glassWhiteDark = Colors.white.withValues(alpha: 0.05);
-  static Color glassBorderDark = Colors.white.withValues(alpha: 0.08);
-  
+  static Color glassWhite = Colors.white.withOpacity(0.1);
+  static Color glassBorder = Colors.white.withOpacity(0.15);
+  static Color glassWhiteDark = Colors.white.withOpacity(0.05);
+  static Color glassBorderDark = Colors.white.withOpacity(0.08);
+
   // Premium glass effect
-  static Color glassPremium = Colors.white.withValues(alpha: 0.9);
-  static Color glassPremiumDark = const Color(0xFF1E1E1E).withValues(alpha: 0.95);
+  static Color glassPremium = Colors.white.withOpacity(0.9);
+  static Color glassPremiumBorder = Colors.white.withOpacity(0.2);
 
   // Green tinted glass
-  static Color glassGreen = primary.withValues(alpha: 0.1);
-  static Color glassGreenBorder = primary.withValues(alpha: 0.2);
+  static Color glassGreen = primary.withOpacity(0.1);
+  static Color glassGreenBorder = primary.withOpacity(0.2);
 
   // ============== SHADOWS ==============
   // Subtle - for base cards
   static List<BoxShadow> subtleShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.05),
+      color: Colors.black.withOpacity(0.05),
       blurRadius: 10,
       offset: const Offset(0, 2),
     ),
@@ -258,7 +262,7 @@ class AppColors {
   // Soft - for elevated cards
   static List<BoxShadow> softShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.08),
+      color: Colors.black.withOpacity(0.08),
       blurRadius: 20,
       offset: const Offset(0, 4),
       spreadRadius: 0,
@@ -268,7 +272,7 @@ class AppColors {
   // Medium - for floating elements
   static List<BoxShadow> mediumShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.12),
+      color: Colors.black.withOpacity(0.12),
       blurRadius: 30,
       offset: const Offset(0, 8),
       spreadRadius: -4,
@@ -278,7 +282,7 @@ class AppColors {
   // Large - for modals and overlays
   static List<BoxShadow> largeShadow = [
     BoxShadow(
-      color: Colors.black.withValues(alpha: 0.2),
+      color: Colors.black.withOpacity(0.2),
       blurRadius: 50,
       offset: const Offset(0, 20),
       spreadRadius: -8,
@@ -288,13 +292,13 @@ class AppColors {
   // Green glow shadows
   static List<BoxShadow> glowShadow(Color color) => [
     BoxShadow(
-      color: color.withValues(alpha: 0.4),
+      color: color.withOpacity(0.4),
       blurRadius: 24,
       offset: const Offset(0, 8),
       spreadRadius: -4,
     ),
     BoxShadow(
-      color: color.withValues(alpha: 0.2),
+      color: color.withOpacity(0.2),
       blurRadius: 12,
       offset: const Offset(0, 4),
     ),
@@ -303,7 +307,7 @@ class AppColors {
   // Premium green button shadow
   static List<BoxShadow> buttonShadow = [
     BoxShadow(
-      color: primary.withValues(alpha: 0.4),
+      color: primary.withOpacity(0.4),
       blurRadius: 20,
       offset: const Offset(0, 8),
       spreadRadius: -4,
@@ -312,13 +316,9 @@ class AppColors {
 
   // Neon glow effect
   static List<BoxShadow> neonGlow = [
+    BoxShadow(color: primary.withOpacity(0.6), blurRadius: 30, spreadRadius: 2),
     BoxShadow(
-      color: primary.withValues(alpha: 0.6),
-      blurRadius: 30,
-      spreadRadius: 2,
-    ),
-    BoxShadow(
-      color: primary.withValues(alpha: 0.3),
+      color: primary.withOpacity(0.3),
       blurRadius: 60,
       spreadRadius: 10,
     ),

@@ -8,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/gamified_card.dart';
 
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});
@@ -754,8 +755,6 @@ class _CategoryCard extends StatefulWidget {
 }
 
 class _CategoryCardState extends State<_CategoryCard> {
-  bool _isHovered = false;
-
   LinearGradient _getGradient(String preset) {
     switch (preset) {
       case 'skyBlue':
@@ -793,141 +792,95 @@ class _CategoryCardState extends State<_CategoryCard> {
   @override
   Widget build(BuildContext context) {
     final gradient = _getGradient(widget.category.gradientPreset);
+    final themeColor = gradient.colors.first;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
-      child: MouseRegion(
-        onEnter: (_) => setState(() => _isHovered = true),
-        onExit: (_) => setState(() => _isHovered = false),
-        child: AnimatedContainer(
-          duration: const Duration(milliseconds: 200),
-          transform: _isHovered
-              ? (Matrix4.identity()..translate(-4.0, 0))
-              : Matrix4.identity(),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  color: widget.isDark
-                      ? Colors.white.withValues(alpha: _isHovered ? 0.1 : 0.06)
-                      : Colors.white.withValues(alpha: _isHovered ? 1 : 0.9),
-                  border: Border.all(
-                    color: _isHovered
-                        ? gradient.colors.first.withValues(alpha: 0.5)
-                        : (widget.isDark
-                              ? Colors.white10
-                              : Colors.black.withValues(alpha: 0.05)),
-                    width: _isHovered ? 2 : 1,
-                  ),
-                  boxShadow: _isHovered
-                      ? [
-                          BoxShadow(
-                            color: gradient.colors.first.withValues(alpha: 0.2),
-                            blurRadius: 20,
-                            offset: const Offset(0, 6),
-                          ),
-                        ]
-                      : null,
-                ),
-                child: Row(
-                  children: [
-                    // Icon
-                    Container(
-                      width: 54,
-                      height: 54,
-                      decoration: BoxDecoration(
-                        gradient: gradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: gradient.colors.first.withValues(alpha: 0.4),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Icon(
-                        _getIcon(widget.category.iconName),
-                        color: Colors.white,
-                        size: 26,
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-
-                    // Content
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.category.titleLatin,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              color: widget.isDark
-                                  ? Colors.white
-                                  : Colors.black,
-                            ),
-                          ),
-                          if (widget.category.titleOlChiki.isNotEmpty) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              widget.category.titleOlChiki,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontFamily: 'OlChiki',
-                                color: widget.isDark
-                                    ? Colors.white60
-                                    : Colors.black54,
-                              ),
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-
-                    // Actions
-                    Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          onPressed: widget.onEdit,
-                          icon: Icon(
-                            Icons.edit_rounded,
-                            color: widget.isDark
-                                ? Colors.white70
-                                : Colors.black54,
-                            size: 20,
-                          ),
-                        ),
-                        IconButton(
-                          onPressed: widget.onDelete,
-                          icon: Icon(
-                            Icons.delete_outline_rounded,
-                            color: widget.isDark
-                                ? Colors.white38
-                                : Colors.black38,
-                            size: 20,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        Icon(
-                          Icons.drag_handle_rounded,
-                          color: widget.isDark
-                              ? Colors.white24
-                              : Colors.black12,
-                        ),
-                      ],
-                    ),
-                  ],
+      padding: const EdgeInsets.only(bottom: 16),
+      child: GamifiedCard(
+        color: widget.isDark ? AppColors.darkSurfaceElevated : Colors.white,
+        borderRadius: 20,
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            // Order Handle
+            ReorderableDragStartListener(
+              index: widget.index,
+              child: Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: Icon(
+                  Icons.drag_indicator_rounded,
+                  color: widget.isDark ? Colors.white24 : Colors.black12,
                 ),
               ),
             ),
-          ),
+
+            // Icon
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: BorderRadius.circular(14),
+                boxShadow: [
+                  BoxShadow(
+                    color: themeColor.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: Icon(
+                _getIcon(widget.category.iconName),
+                color: Colors.white,
+                size: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+
+            // Details
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.category.titleLatin,
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: widget.isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    widget.category.titleOlChiki,
+                    style: TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      color: widget.isDark ? Colors.white54 : Colors.black45,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            // Actions
+            IconButton(
+              onPressed: widget.onEdit,
+              icon: Icon(
+                Icons.edit_note_rounded,
+                color: widget.isDark ? Colors.white54 : Colors.black45,
+              ),
+              tooltip: 'Edit',
+            ),
+            IconButton(
+              onPressed: widget.onDelete,
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+              ),
+              tooltip: 'Delete',
+            ),
+          ],
         ),
       ),
     );

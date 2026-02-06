@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -293,17 +294,253 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
   }
 
   void _showLessonDialog(BuildContext context, LessonModel? lesson) {
-    // TODO: Implement full lesson editor dialog
-    // For now just showing a basic placeholder or simplified editor
-    // The prompt asked for "smoothly", so I should probably implement it fully later
-    // But focusing on architecture first.
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Lesson editor implementation pending...')),
+    final isEditing = lesson != null;
+    final categories = ref.read(categoriesProvider).value ?? const <CategoryModel>[];
+    var selectedCategoryId = lesson?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+    final titleLatinController = TextEditingController(text: lesson?.titleLatin ?? '');
+    final titleOlChikiController = TextEditingController(text: lesson?.titleOlChiki ?? '');
+    final descriptionController = TextEditingController(text: lesson?.description ?? '');
+    final minutesController = TextEditingController(text: (lesson?.estimatedMinutes ?? 5).toString());
+    final orderController = TextEditingController(text: (lesson?.order ?? 0).toString());
+    var level = lesson?.level ?? 'beginner';
+    var isActive = lesson?.isActive ?? true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => Container(
+            height: MediaQuery.of(context).size.height * 0.86,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161B22) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          isEditing ? 'Edit Lesson' : 'Create Lesson',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    children: [
+                      _buildTextField(
+                        controller: titleLatinController,
+                        label: 'Title (Latin)',
+                        hint: 'Enter lesson title',
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        controller: titleOlChikiController,
+                        label: 'Title (Ol Chiki)',
+                        hint: 'ᱯᱟᱲᱦᱟ ᱫᱟᱨᱮ',
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 14),
+                      _buildTextField(
+                        controller: descriptionController,
+                        label: 'Description',
+                        hint: 'Short lesson description',
+                        isDark: isDark,
+                        maxLines: 3,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: selectedCategoryId,
+                        items: categories
+                            .map((c) => DropdownMenuItem(value: c.id, child: Text(c.titleLatin)))
+                            .toList(),
+                        onChanged: (value) => setDialogState(() => selectedCategoryId = value),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              controller: minutesController,
+                              label: 'Minutes',
+                              hint: '5',
+                              isDark: isDark,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _buildTextField(
+                              controller: orderController,
+                              label: 'Order',
+                              hint: '0',
+                              isDark: isDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Level',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: level,
+                        items: const [
+                          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
+                          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
+                          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) setDialogState(() => level = value);
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        value: isActive,
+                        onChanged: (value) => setDialogState(() => isActive = value),
+                        title: const Text('Active'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: selectedCategoryId == null
+                              ? null
+                              : () async {
+                                  final newLesson = LessonModel(
+                                    id: lesson?.id ?? const Uuid().v4(),
+                                    categoryId: selectedCategoryId!,
+                                    titleLatin: titleLatinController.text.trim(),
+                                    titleOlChiki: titleOlChikiController.text.trim(),
+                                    description: descriptionController.text.trim().isEmpty
+                                        ? null
+                                        : descriptionController.text.trim(),
+                                    estimatedMinutes: int.tryParse(minutesController.text.trim()) ?? 5,
+                                    order: int.tryParse(orderController.text.trim()) ?? 0,
+                                    level: level,
+                                    isActive: isActive,
+                                    blocks: lesson?.blocks ?? const <LessonBlock>[],
+                                    thumbnailUrl: lesson?.thumbnailUrl,
+                                    isPremium: lesson?.isPremium ?? false,
+                                  );
+
+                                  if (isEditing) {
+                                    await ref.read(lessonsProvider.notifier).updateLesson(newLesson);
+                                  } else {
+                                    await ref.read(lessonsProvider.notifier).addLesson(newLesson);
+                                  }
+
+                                  if (context.mounted) Navigator.pop(context);
+                                },
+                          child: Text(isEditing ? 'Save Changes' : 'Create Lesson'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
   void _showDeleteDialog(BuildContext context, LessonModel lesson) {
-    // Implement delete dialog
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete lesson?'),
+        content: Text('This will permanently delete "${lesson.titleLatin}".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref.read(lessonsProvider.notifier).deleteLesson(lesson.id);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
   }
 }
 

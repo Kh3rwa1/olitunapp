@@ -264,16 +264,14 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         100,
       ),
       itemCount: categories.length,
-      onReorder: (oldIndex, newIndex) {
+      onReorder: (oldIndex, newIndex) async {
         if (oldIndex < newIndex) {
           newIndex -= 1;
         }
-        final item = categories.removeAt(oldIndex);
-        categories.insert(newIndex, item);
 
-        // Update order in Supabase
-        // In a real app we would batch update order fields
-        // For now just optimistic UI - actual update needs implementation in provider
+        await ref
+            .read(categoriesProvider.notifier)
+            .reorderCategories(oldIndex, newIndex);
       },
       itemBuilder: (context, index) {
         final category = categories[index];

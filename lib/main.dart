@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:go_router/go_router.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/providers/providers.dart';
@@ -15,14 +14,13 @@ import 'features/admin/presentation/admin_quizzes_screen.dart';
 import 'features/lessons/presentation/category_lessons_screen.dart';
 import 'features/profile/presentation/settings_screen.dart';
 
-// Global SharedPreferences instance
-late SharedPreferences prefs;
+import 'core/storage/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  // Initialize SharedPreferences for local storage
-  prefs = await SharedPreferences.getInstance();
+  // Initialize shared storage
+  await initStorage();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -39,22 +37,13 @@ void main() async {
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(
-      path: '/',
-      builder: (context, state) => const HomeScreen(),
-    ),
-    GoRoute(
-      path: '/home',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/home', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/settings',
       builder: (context, state) => const SettingsScreen(),
     ),
-    GoRoute(
-      path: '/lessons',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    GoRoute(path: '/lessons', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/lessons/category/:categoryId',
       builder: (context, state) {
@@ -62,10 +51,7 @@ final _router = GoRouter(
         return CategoryLessonsScreen(categoryId: categoryId);
       },
     ),
-    GoRoute(
-      path: '/quiz',
-      builder: (context, state) => const HomeScreen(),
-    ),
+    GoRoute(path: '/quiz', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/admin',
       builder: (context, state) => const AdminDashboardScreen(),

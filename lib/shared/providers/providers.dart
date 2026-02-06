@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/content_models.dart';
-import '../../main.dart';
+import '../../core/storage/storage_service.dart';
 
 // ============== USER DATA (Local Storage) ==============
 
@@ -134,11 +134,15 @@ final _defaultCategories = [
 ];
 
 // Categories Provider
-final categoriesProvider = StateNotifierProvider<CategoriesNotifier, AsyncValue<List<CategoryModel>>>((ref) {
-  return CategoriesNotifier();
-});
+final categoriesProvider =
+    StateNotifierProvider<CategoriesNotifier, AsyncValue<List<CategoryModel>>>((
+      ref,
+    ) {
+      return CategoriesNotifier();
+    });
 
-class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> {
+class CategoriesNotifier
+    extends StateNotifier<AsyncValue<List<CategoryModel>>> {
   CategoriesNotifier() : super(const AsyncValue.loading()) {
     _loadCategories();
   }
@@ -148,7 +152,9 @@ class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> 
       final stored = prefs.getString('categories');
       if (stored != null) {
         final List<dynamic> decoded = jsonDecode(stored);
-        final categories = decoded.map((e) => CategoryModel.fromJson(e)).toList();
+        final categories = decoded
+            .map((e) => CategoryModel.fromJson(e))
+            .toList();
         state = AsyncValue.data(categories);
       } else {
         state = AsyncValue.data(_defaultCategories);
@@ -189,12 +195,12 @@ class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> 
     _saveCategories(items);
     state = AsyncValue.data(items);
   }
-  
+
   // Aliases for admin screens
   void addCategory(CategoryModel item) => add(item);
   void updateCategory(CategoryModel item) => update(item);
   void deleteCategory(String id) => delete(id);
-  
+
   Future<void> reorderCategories(int oldIndex, int newIndex) async {
     final current = state.value ?? [];
     final updated = [...current];
@@ -221,11 +227,16 @@ class CategoriesNotifier extends StateNotifier<AsyncValue<List<CategoryModel>>> 
 }
 
 // Banners Provider
-final bannersProvider = StateNotifierProvider<BannersNotifier, AsyncValue<List<FeaturedBannerModel>>>((ref) {
-  return BannersNotifier();
-});
+final bannersProvider =
+    StateNotifierProvider<
+      BannersNotifier,
+      AsyncValue<List<FeaturedBannerModel>>
+    >((ref) {
+      return BannersNotifier();
+    });
 
-class BannersNotifier extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
+class BannersNotifier
+    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
   BannersNotifier() : super(const AsyncValue.loading()) {
     _loadBanners();
   }
@@ -235,7 +246,9 @@ class BannersNotifier extends StateNotifier<AsyncValue<List<FeaturedBannerModel>
       final stored = prefs.getString('banners');
       if (stored != null) {
         final List<dynamic> decoded = jsonDecode(stored);
-        final banners = decoded.map((e) => FeaturedBannerModel.fromJson(e)).toList();
+        final banners = decoded
+            .map((e) => FeaturedBannerModel.fromJson(e))
+            .toList();
         state = AsyncValue.data(banners);
       } else {
         state = AsyncValue.data([
@@ -279,7 +292,7 @@ class BannersNotifier extends StateNotifier<AsyncValue<List<FeaturedBannerModel>
     _saveBanners(updated);
     state = AsyncValue.data(updated);
   }
-  
+
   // Aliases for admin screens
   void addBanner(FeaturedBannerModel item) => add(item);
   void updateBanner(FeaturedBannerModel item) => update(item);
@@ -290,9 +303,12 @@ class BannersNotifier extends StateNotifier<AsyncValue<List<FeaturedBannerModel>
 final featuredBannersProvider = bannersProvider;
 
 // Letters Provider
-final lettersProvider = StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>((ref) {
-  return LettersNotifier();
-});
+final lettersProvider =
+    StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>((
+      ref,
+    ) {
+      return LettersNotifier();
+    });
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
   LettersNotifier() : super(const AsyncValue.loading()) {
@@ -309,14 +325,62 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       } else {
         // Default Ol Chiki letters
         state = AsyncValue.data([
-          LetterModel(id: '1', charOlChiki: 'ᱚ', transliterationLatin: 'a', order: 1, isActive: true),
-          LetterModel(id: '2', charOlChiki: 'ᱛ', transliterationLatin: 'at', order: 2, isActive: true),
-          LetterModel(id: '3', charOlChiki: 'ᱜ', transliterationLatin: 'ag', order: 3, isActive: true),
-          LetterModel(id: '4', charOlChiki: 'ᱝ', transliterationLatin: 'ang', order: 4, isActive: true),
-          LetterModel(id: '5', charOlChiki: 'ᱞ', transliterationLatin: 'al', order: 5, isActive: true),
-          LetterModel(id: '6', charOlChiki: 'ᱟ', transliterationLatin: 'la', order: 6, isActive: true),
-          LetterModel(id: '7', charOlChiki: 'ᱠ', transliterationLatin: 'ak', order: 7, isActive: true),
-          LetterModel(id: '8', charOlChiki: 'ᱡ', transliterationLatin: 'aj', order: 8, isActive: true),
+          LetterModel(
+            id: '1',
+            charOlChiki: 'ᱚ',
+            transliterationLatin: 'a',
+            order: 1,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '2',
+            charOlChiki: 'ᱛ',
+            transliterationLatin: 'at',
+            order: 2,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '3',
+            charOlChiki: 'ᱜ',
+            transliterationLatin: 'ag',
+            order: 3,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '4',
+            charOlChiki: 'ᱝ',
+            transliterationLatin: 'ang',
+            order: 4,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '5',
+            charOlChiki: 'ᱞ',
+            transliterationLatin: 'al',
+            order: 5,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '6',
+            charOlChiki: 'ᱟ',
+            transliterationLatin: 'la',
+            order: 6,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '7',
+            charOlChiki: 'ᱠ',
+            transliterationLatin: 'ak',
+            order: 7,
+            isActive: true,
+          ),
+          LetterModel(
+            id: '8',
+            charOlChiki: 'ᱡ',
+            transliterationLatin: 'aj',
+            order: 8,
+            isActive: true,
+          ),
         ]);
       }
     } catch (e) {
@@ -349,7 +413,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
     _saveLetters(updated);
     state = AsyncValue.data(updated);
   }
-  
+
   // Aliases for admin screens
   void addLetter(LetterModel item) => add(item);
   void updateLetter(LetterModel item) => update(item);
@@ -357,9 +421,12 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
 }
 
 // Lessons Provider
-final lessonsProvider = StateNotifierProvider<LessonsNotifier, AsyncValue<List<LessonModel>>>((ref) {
-  return LessonsNotifier();
-});
+final lessonsProvider =
+    StateNotifierProvider<LessonsNotifier, AsyncValue<List<LessonModel>>>((
+      ref,
+    ) {
+      return LessonsNotifier();
+    });
 
 class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
   LessonsNotifier() : super(const AsyncValue.loading()) {
@@ -438,7 +505,7 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
     _saveLessons(updated);
     state = AsyncValue.data(updated);
   }
-  
+
   // Aliases for admin screens (async for await compatibility)
   Future<void> addLesson(LessonModel item) async => add(item);
   Future<void> updateLesson(LessonModel item) async => update(item);
@@ -446,9 +513,10 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 }
 
 // Quizzes Provider
-final quizzesProvider = StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
-  return QuizzesNotifier();
-});
+final quizzesProvider =
+    StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
+      return QuizzesNotifier();
+    });
 
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   QuizzesNotifier() : super(const AsyncValue.loading()) {
@@ -495,7 +563,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
     _saveQuizzes(updated);
     state = AsyncValue.data(updated);
   }
-  
+
   // Aliases for admin screens (async for await compatibility)
   Future<void> addQuiz(QuizModel item) async => add(item);
   Future<void> updateQuiz(QuizModel item) async => update(item);
@@ -503,14 +571,17 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 }
 
 // Filtered lessons by category
-final lessonsByCategoryProvider = Provider.family<AsyncValue<List<LessonModel>>, String>((ref, categoryId) {
-  final lessonsAsync = ref.watch(lessonsProvider);
-  return lessonsAsync.when(
-    data: (lessons) => AsyncValue.data(lessons.where((l) => l.categoryId == categoryId).toList()),
-    loading: () => const AsyncValue.loading(),
-    error: (e, st) => AsyncValue.error(e, st),
-  );
-});
+final lessonsByCategoryProvider =
+    Provider.family<AsyncValue<List<LessonModel>>, String>((ref, categoryId) {
+      final lessonsAsync = ref.watch(lessonsProvider);
+      return lessonsAsync.when(
+        data: (lessons) => AsyncValue.data(
+          lessons.where((l) => l.categoryId == categoryId).toList(),
+        ),
+        loading: () => const AsyncValue.loading(),
+        error: (e, st) => AsyncValue.error(e, st),
+      );
+    });
 
 // ============== USER PROFILE PROVIDER (Local) ==============
 
@@ -520,22 +591,24 @@ final userProfileProvider = Provider<AsyncValue<UserProfileLocal?>>((ref) {
   final stars = ref.watch(userStarsProvider);
   final lessons = ref.watch(lessonsCompletedProvider);
   final quizzes = ref.watch(quizzesCompletedProvider);
-  
-  return AsyncValue.data(UserProfileLocal(
-    displayName: name,
-    stats: UserStatsLocal(
-      streak: streak,
-      stars: stars,
-      totalLessonsCompleted: lessons,
-      totalQuizzesCompleted: quizzes,
+
+  return AsyncValue.data(
+    UserProfileLocal(
+      displayName: name,
+      stats: UserStatsLocal(
+        streak: streak,
+        stars: stars,
+        totalLessonsCompleted: lessons,
+        totalQuizzesCompleted: quizzes,
+      ),
     ),
-  ));
+  );
 });
 
 class UserProfileLocal {
   final String displayName;
   final UserStatsLocal stats;
-  
+
   UserProfileLocal({required this.displayName, required this.stats});
 }
 
@@ -544,7 +617,7 @@ class UserStatsLocal {
   final int stars;
   final int totalLessonsCompleted;
   final int totalQuizzesCompleted;
-  
+
   UserStatsLocal({
     required this.streak,
     required this.stars,
@@ -553,4 +626,100 @@ class UserStatsLocal {
   });
 }
 
+// ============== CONTENT SEEDING ==============
 
+Future<void> seedAppContent(WidgetRef ref) async {
+  final categoriesNotifier = ref.read(categoriesProvider.notifier);
+  final lettersNotifier = ref.read(lettersProvider.notifier);
+  final lessonsNotifier = ref.read(lessonsProvider.notifier);
+
+  // 1. Add Alphabets Category
+  final alphabetsId = 'cat_alphabets_${DateTime.now().millisecondsSinceEpoch}';
+  categoriesNotifier.add(
+    CategoryModel(
+      id: alphabetsId,
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+      titleLatin: 'Alphabets',
+      iconName: 'alphabet',
+      gradientPreset: 'skyBlue',
+      order: 0,
+      isActive: true,
+      totalLessons: 5,
+    ),
+  );
+
+  // 2. Add sample letters
+  final letters = [
+    ['ᱚ', 'a'],
+    ['ᱛ', 'at'],
+    ['ᱜ', 'ag'],
+    ['ᱝ', 'ang'],
+    ['ᱞ', 'al'],
+  ];
+
+  for (int i = 0; i < letters.length; i++) {
+    lettersNotifier.add(
+      LetterModel(
+        id: 'letter_${i}_${DateTime.now().microsecondsSinceEpoch}',
+        charOlChiki: letters[i][0],
+        transliterationLatin: letters[i][1],
+        order: i,
+        isActive: true,
+      ),
+    );
+  }
+
+  // 3. Add sample lessons
+  final lessonTitles = [
+    'Basics of Ol Chiki',
+    'Vowels I',
+    'Consonants I',
+    'Vowels II',
+    'Consonants II',
+  ];
+
+  for (int i = 0; i < lessonTitles.length; i++) {
+    await lessonsNotifier.addLesson(
+      LessonModel(
+        id: 'lesson_${i}_${DateTime.now().microsecondsSinceEpoch}',
+        categoryId: alphabetsId,
+        titleOlChiki: 'ᱯᱟᱹᱴ $i',
+        titleLatin: lessonTitles[i],
+        level: 'beginner',
+        order: i,
+        isActive: true,
+        estimatedMinutes: 5,
+        blocks: [],
+      ),
+    );
+  }
+
+  // 4. Add Numbers Category
+  final numbersId = 'cat_numbers_${DateTime.now().millisecondsSinceEpoch}';
+  categoriesNotifier.add(
+    CategoryModel(
+      id: numbersId,
+      titleOlChiki: 'ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers',
+      iconName: 'numbers',
+      gradientPreset: 'peach',
+      order: 1,
+      isActive: true,
+      totalLessons: 3,
+    ),
+  );
+
+  // 5. Add Phrases Category
+  categoriesNotifier.add(
+    CategoryModel(
+      id: 'cat_phrases_${DateTime.now().millisecondsSinceEpoch}',
+      titleOlChiki: 'ᱛᱮᱞᱟ ᱯᱟᱹᱨᱥᱤ',
+      titleLatin: 'Greetings',
+      iconName: 'words',
+      gradientPreset: 'mint',
+      order: 2,
+      isActive: true,
+      totalLessons: 4,
+    ),
+  );
+}

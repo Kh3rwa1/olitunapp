@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/gamified_card.dart';
+import '../../../shared/widgets/animated_buttons.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -19,14 +22,16 @@ class HomeScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0D1117) : const Color(0xFFF8FAF9),
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
+              // Header with Animation
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -34,85 +39,79 @@ class HomeScreen extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Hello, $userName! 👋',
-                        style: TextStyle(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
+                        'Hello, $userName!',
+                        style: Theme.of(context).textTheme.headlineMedium
+                            ?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 30,
+                              letterSpacing: -1,
+                            ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Ready to learn today?',
+                        'Ready to learn today? 👋',
                         style: TextStyle(
                           fontSize: 16,
+                          fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white54 : Colors.black54,
                         ),
                       ),
                     ],
                   ),
-                  IconButton(
+                  CircleIconButton(
+                    icon: Icons.settings_rounded,
                     onPressed: () => context.go('/settings'),
-                    icon: Container(
-                      padding: const EdgeInsets.all(10),
-                      decoration: BoxDecoration(
-                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.settings_outlined,
-                        color: isDark ? Colors.white70 : Colors.black54,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 24),
-
-              // Stats Row
-              Row(
-                children: [
-                  _StatCard(
-                    icon: Icons.local_fire_department,
-                    value: '$streak',
-                    label: 'Day Streak',
-                    color: Colors.orange,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.star,
-                    value: '$stars',
-                    label: 'Stars',
-                    color: Colors.amber,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.school,
-                    value: '$lessonsCompleted',
-                    label: 'Lessons',
-                    color: AppColors.primary,
-                    isDark: isDark,
+                    size: 52,
                   ),
                 ],
               ),
               const SizedBox(height: 28),
 
-              // Continue Learning Banner
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: AppColors.premiumCyan,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
-                    ),
-                  ],
-                ),
+              // Stats Row with Gamified Cards
+              Row(
+                children: [
+                  _StatCard(
+                        icon: Icons.local_fire_department_rounded,
+                        value: '$streak',
+                        label: 'Streak',
+                        color: AppColors.duoOrange,
+                        shadowColor: AppColors.duoOrangeDark,
+                        delay: 400,
+                      )
+                      .animate()
+                      .fadeIn(delay: 400.ms)
+                      .scale(curve: Curves.easeOutBack),
+                  const SizedBox(width: 12),
+                  _StatCard(
+                        icon: Icons.star_rounded,
+                        value: '$stars',
+                        label: 'Stars',
+                        color: AppColors.duoYellow,
+                        shadowColor: AppColors.duoYellowDark,
+                        delay: 500,
+                      )
+                      .animate()
+                      .fadeIn(delay: 500.ms)
+                      .scale(curve: Curves.easeOutBack),
+                  const SizedBox(width: 12),
+                  _StatCard(
+                    icon: Icons.auto_awesome_rounded,
+                    value: '$lessonsCompleted',
+                    label: 'Level',
+                    color: AppColors.primary,
+                    shadowColor: AppColors.primaryDark,
+                    delay: 600,
+                  ),
+                ],
+              ),
+              const SizedBox(height: 32),
+
+              // Continue Learning Banner - Gamified
+              GamifiedCard(
+                color: AppColors.primary,
+                bottomBorderColor: AppColors.primaryDark,
+                borderRadius: 24,
+                padding: const EdgeInsets.all(24),
                 child: Row(
                   children: [
                     Expanded(
@@ -120,139 +119,95 @@ class HomeScreen extends ConsumerWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           const Text(
-                            'Continue Learning',
+                            'UP NEXT',
                             style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w700,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.white70,
+                              letterSpacing: 2,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            'Continue Journey',
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.w900,
                               color: Colors.white,
                             ),
                           ),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Pick up where you left off',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Colors.white.withValues(alpha: 0.8),
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          ElevatedButton(
+                          const SizedBox(height: 20),
+                          DuoButton(
+                            text: 'START NOW',
+                            color: Colors.white,
                             onPressed: () => context.go('/lessons'),
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.white,
-                              foregroundColor: AppColors.primary,
-                              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: const Text('Resume', style: TextStyle(fontWeight: FontWeight.w700)),
+                            width: 160,
+                            height: 48,
+                            shadowColor: Colors.black12,
+                            borderRadius: 12,
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: const Icon(
-                        Icons.menu_book_rounded,
-                        size: 40,
-                        color: Colors.white,
-                      ),
-                    ),
+                    Hero(
+                          tag: 'journey_icon',
+                          child: Container(
+                            width: 90,
+                            height: 90,
+                            decoration: BoxDecoration(
+                              color: Colors.white.withOpacity(0.2),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Icon(
+                              Icons.rocket_launch_rounded,
+                              size: 44,
+                              color: Colors.white,
+                            ),
+                          ),
+                        )
+                        .animate(
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true),
+                        )
+                        .moveY(
+                          begin: 0,
+                          end: -8,
+                          duration: 1500.ms,
+                          curve: Curves.easeInOut,
+                        ),
                   ],
                 ),
               ),
-              const SizedBox(height: 28),
+              const SizedBox(height: 36),
 
-              // Quick Actions
+              // Section Header
               Text(
-                'Quick Actions',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.quiz_outlined,
-                      label: 'Daily Quiz',
-                      color: Colors.purple,
-                      isDark: isDark,
-                      onTap: () => context.go('/quiz'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.text_fields,
-                      label: 'Alphabet',
-                      color: Colors.blue,
-                      isDark: isDark,
-                      onTap: () => context.go('/lessons/category/alphabets'),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _QuickActionCard(
-                      icon: Icons.admin_panel_settings,
-                      label: 'Admin',
-                      color: Colors.teal,
-                      isDark: isDark,
-                      onTap: () => context.go('/admin'),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
-
-              // Categories Section
-              Text(
-                'Explore Categories',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                'Choose a category to start learning',
+                'COLUMBUS PATH',
                 style: TextStyle(
                   fontSize: 14,
-                  color: isDark ? Colors.white54 : Colors.black54,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? AppColors.primary : AppColors.primaryDark,
+                  letterSpacing: 1.5,
                 ),
               ),
               const SizedBox(height: 16),
 
-              // Categories Grid
+              // Categories Grid or List
               categoriesAsync.when(
                 data: (categories) => GridView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2,
-                    mainAxisSpacing: 14,
-                    crossAxisSpacing: 14,
-                    childAspectRatio: 0.95,
+                    mainAxisSpacing: 16,
+                    crossAxisSpacing: 16,
+                    childAspectRatio: 0.88,
                   ),
                   itemCount: categories.length,
                   itemBuilder: (context, index) {
                     final category = categories[index];
-                    return _CategoryCard(
-                      category: category,
-                      isDark: isDark,
-                      onTap: () => context.go('/lessons/category/${category.id}'),
-                    );
+                    return _CategoryCard(category: category, index: index);
                   },
                 ),
                 loading: () => const Center(
@@ -282,216 +237,169 @@ class _StatCard extends StatelessWidget {
   final String value;
   final String label;
   final Color color;
-  final bool isDark;
+  final Color shadowColor;
+  final int delay;
 
   const _StatCard({
     required this.icon,
     required this.value,
     required this.label,
     required this.color,
-    required this.isDark,
+    required this.shadowColor,
+    required this.delay,
   });
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-          ),
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 28),
-            const SizedBox(height: 8),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white54 : Colors.black54,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _QuickActionCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final Color color;
-  final bool isDark;
-  final VoidCallback onTap;
-
-  const _QuickActionCard({
-    required this.icon,
-    required this.label,
-    required this.color,
-    required this.isDark,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(
-            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-          ),
-        ),
+      child: GamifiedCard(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
+        borderRadius: 20,
         child: Column(
           children: [
             Container(
-              width: 48,
-              height: 48,
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
+                color: color.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24),
             ),
             const SizedBox(height: 10),
             Text(
-              label,
+              value,
               style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w600,
+                fontSize: 22,
+                fontWeight: FontWeight.w900,
                 color: isDark ? Colors.white : Colors.black,
               ),
-              textAlign: TextAlign.center,
+            ),
+            Text(
+              label.toUpperCase(),
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white38 : Colors.black38,
+                letterSpacing: 0.5,
+              ),
             ),
           ],
         ),
-      ),
+      ).animate().fadeIn(delay: delay.ms).scale(curve: Curves.easeOutBack),
     );
   }
 }
 
 class _CategoryCard extends StatelessWidget {
   final CategoryModel category;
-  final bool isDark;
-  final VoidCallback onTap;
+  final int index;
 
-  const _CategoryCard({
-    required this.category,
-    required this.isDark,
-    required this.onTap,
-  });
+  const _CategoryCard({required this.category, required this.index});
 
-  LinearGradient _getGradient() {
+  Color _getPrimaryColor() {
     switch (category.gradientPreset) {
       case 'peach':
-        return AppColors.premiumOrange;
+        return AppColors.duoOrange;
       case 'mint':
-        return AppColors.premiumMint;
-      case 'sunset':
-        return AppColors.premiumCoral;
+        return AppColors.duoGreen;
       case 'purple':
-        return AppColors.premiumPurple;
+        return AppColors.duoPurple;
       case 'skyBlue':
-        return AppColors.premiumCyan;
+        return AppColors.duoBlue;
       default:
-        return AppColors.premiumGreen;
+        return AppColors.primary;
+    }
+  }
+
+  Color _getShadowColor() {
+    switch (category.gradientPreset) {
+      case 'peach':
+        return AppColors.duoOrangeDark;
+      case 'mint':
+        return AppColors.duoGreenDark;
+      case 'purple':
+        return AppColors.duoPurpleDark;
+      case 'skyBlue':
+        return AppColors.duoBlueDark;
+      default:
+        return AppColors.primaryDark;
     }
   }
 
   IconData _getIcon() {
     switch (category.iconName) {
       case 'alphabet':
-        return Icons.text_fields;
+        return Icons.translate_rounded;
       case 'numbers':
-        return Icons.numbers;
+        return Icons.calculate_rounded;
       case 'words':
-        return Icons.abc;
+        return Icons.forum_rounded;
       case 'stories':
-        return Icons.auto_stories;
+        return Icons.auto_stories_rounded;
       default:
-        return Icons.book;
+        return Icons.school_rounded;
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: _getGradient(),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: _getGradient().colors.first.withValues(alpha: 0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 8),
+    final themeColor = _getPrimaryColor();
+    final shadowColor = _getShadowColor();
+
+    return GamifiedCard(
+      onTap: () => context.go('/lessons/category/${category.id}'),
+      color: themeColor,
+      bottomBorderColor: shadowColor,
+      borderRadius: 24,
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.25),
+              borderRadius: BorderRadius.circular(16),
             ),
-          ],
-        ),
-        child: Padding(
-          padding: const EdgeInsets.all(18),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Container(
-                width: 50,
-                height: 50,
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.25),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  _getIcon(),
-                  color: Colors.white,
-                  size: 26,
-                ),
-              ),
-              const Spacer(),
-              Text(
-                category.titleLatin,
-                style: const TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.w700,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                category.titleOlChiki,
-                style: TextStyle(
-                  fontSize: 14,
-                  color: Colors.white.withValues(alpha: 0.85),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                '${category.totalLessons ?? 0} lessons',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Colors.white.withValues(alpha: 0.7),
-                ),
-              ),
-            ],
+            child: Icon(_getIcon(), color: Colors.white, size: 28),
           ),
-        ),
+          const Spacer(),
+          Text(
+            category.titleLatin,
+            style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.w900,
+              color: Colors.white,
+              letterSpacing: -0.5,
+            ),
+          ),
+          Text(
+            category.titleOlChiki,
+            style: TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              color: Colors.white.withOpacity(0.8),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+            decoration: BoxDecoration(
+              color: shadowColor.withOpacity(0.4),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${category.totalLessons} LESSONS',
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

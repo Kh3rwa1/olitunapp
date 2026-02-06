@@ -39,9 +39,10 @@ class _PrimaryButtonState extends State<PrimaryButton>
       vsync: this,
       duration: const Duration(milliseconds: 120),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -67,10 +68,7 @@ class _PrimaryButtonState extends State<PrimaryButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
@@ -183,9 +181,10 @@ class _SecondaryButtonState extends State<SecondaryButton>
       vsync: this,
       duration: const Duration(milliseconds: 120),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -212,10 +211,7 @@ class _SecondaryButtonState extends State<SecondaryButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: AnimatedOpacity(
           duration: const Duration(milliseconds: 200),
@@ -313,9 +309,10 @@ class _GradientOutlineButtonState extends State<GradientOutlineButton>
       vsync: this,
       duration: const Duration(milliseconds: 120),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -339,10 +336,7 @@ class _GradientOutlineButtonState extends State<GradientOutlineButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: Container(
           width: widget.width ?? double.infinity,
@@ -355,11 +349,14 @@ class _GradientOutlineButtonState extends State<GradientOutlineButton>
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(14),
-              color: isDark ? AppColors.darkBackground : AppColors.lightBackground,
+              color: isDark
+                  ? AppColors.darkBackground
+                  : AppColors.lightBackground,
             ),
             child: Center(
               child: ShaderMask(
-                shaderCallback: (bounds) => widget.gradient.createShader(bounds),
+                shaderCallback: (bounds) =>
+                    widget.gradient.createShader(bounds),
                 child: Text(
                   widget.text,
                   style: const TextStyle(
@@ -413,9 +410,10 @@ class _CircleIconButtonState extends State<CircleIconButton>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -439,17 +437,15 @@ class _CircleIconButtonState extends State<CircleIconButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: Container(
           width: widget.size,
           height: widget.size,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(widget.size / 3),
-            color: widget.backgroundColor ??
+            color:
+                widget.backgroundColor ??
                 (isDark
                     ? Colors.white.withValues(alpha: 0.08)
                     : Colors.black.withValues(alpha: 0.04)),
@@ -464,7 +460,8 @@ class _CircleIconButtonState extends State<CircleIconButton>
           child: Icon(
             widget.icon,
             size: widget.size * 0.45,
-            color: widget.color ??
+            color:
+                widget.color ??
                 (isDark
                     ? AppColors.textSecondaryDark
                     : AppColors.textSecondaryLight),
@@ -506,9 +503,10 @@ class _PremiumFABState extends State<PremiumFAB>
       vsync: this,
       duration: const Duration(milliseconds: 120),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.9).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.9,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -530,10 +528,7 @@ class _PremiumFABState extends State<PremiumFAB>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: Container(
           width: widget.size,
@@ -614,9 +609,10 @@ class _ChipButtonState extends State<ChipButton>
       vsync: this,
       duration: const Duration(milliseconds: 100),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.95,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -640,10 +636,7 @@ class _ChipButtonState extends State<ChipButton>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
@@ -656,14 +649,14 @@ class _ChipButtonState extends State<ChipButton>
             color: widget.isSelected
                 ? AppColors.primary
                 : (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.05)),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.05)),
             border: Border.all(
               color: widget.isSelected
                   ? AppColors.primary
                   : (isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.08)),
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.08)),
             ),
           ),
           child: Row(
@@ -676,8 +669,8 @@ class _ChipButtonState extends State<ChipButton>
                   color: widget.isSelected
                       ? Colors.white
                       : (isDark
-                          ? AppColors.textSecondaryDark
-                          : AppColors.textSecondaryLight),
+                            ? AppColors.textSecondaryDark
+                            : AppColors.textSecondaryLight),
                 ),
                 const SizedBox(width: 6),
               ],
@@ -689,12 +682,154 @@ class _ChipButtonState extends State<ChipButton>
                   color: widget.isSelected
                       ? Colors.white
                       : (isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight),
+                            ? AppColors.textPrimaryDark
+                            : AppColors.textPrimaryLight),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+/// Playful 3D Pressed Button (Duo-style)
+class DuoButton extends StatefulWidget {
+  final String text;
+  final VoidCallback onPressed;
+  final Color color;
+  final Color? shadowColor;
+  final bool isLoading;
+  final bool isDisabled;
+  final IconData? icon;
+  final double? width;
+  final double height;
+  final double borderRadius;
+
+  const DuoButton({
+    super.key,
+    required this.text,
+    required this.onPressed,
+    this.color = AppColors.primary,
+    this.shadowColor,
+    this.isLoading = false,
+    this.isDisabled = false,
+    this.icon,
+    this.width,
+    this.height = 56,
+    this.borderRadius = 16,
+  });
+
+  @override
+  State<DuoButton> createState() => _DuoButtonState();
+}
+
+class _DuoButtonState extends State<DuoButton>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _translateAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 60),
+    );
+    _translateAnimation = Tween<double>(
+      begin: 0.0,
+      end: 4.0,
+    ).animate(_controller);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isEnabled = !widget.isDisabled && !widget.isLoading;
+    final effectiveShadowColor =
+        widget.shadowColor ??
+        (widget.color == AppColors.primary
+            ? AppColors.primaryDark
+            : widget.color.withOpacity(0.7));
+
+    // Auto-detect contrast color for text
+    final textColor = widget.color == Colors.white
+        ? AppColors.primary
+        : Colors.white;
+
+    return GestureDetector(
+      onTapDown: isEnabled ? (_) => _controller.forward() : null,
+      onTapUp: isEnabled
+          ? (_) {
+              _controller.reverse();
+              HapticFeedback.lightImpact();
+              widget.onPressed();
+            }
+          : null,
+      onTapCancel: isEnabled ? () => _controller.reverse() : null,
+      child: Container(
+        width: widget.width ?? double.infinity,
+        height: widget.height,
+        // Shadow/Bottom part
+        decoration: BoxDecoration(
+          color: effectiveShadowColor,
+          borderRadius: BorderRadius.circular(widget.borderRadius),
+        ),
+        child: AnimatedBuilder(
+          animation: _controller,
+          builder: (context, _) {
+            return Transform.translate(
+              // Move from -4 (top/unpressed) to 0 (pressed)
+              offset: Offset(0, _translateAnimation.value - 4),
+              child: Container(
+                width: widget.width ?? double.infinity,
+                height: widget.height,
+                decoration: BoxDecoration(
+                  color: widget.color,
+                  borderRadius: BorderRadius.circular(widget.borderRadius),
+                  border: Border.all(
+                    color: Colors.white.withOpacity(0.1),
+                    width: 1,
+                  ),
+                ),
+                child: Center(
+                  child: widget.isLoading
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (widget.icon != null) ...[
+                              Icon(widget.icon, color: textColor, size: 20),
+                              const SizedBox(width: 8),
+                            ],
+                            Text(
+                              widget.text,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 0.5,
+                                color: textColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            );
+          },
         ),
       ),
     );

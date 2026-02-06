@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -9,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/gamified_card.dart';
 
 class AdminLessonsScreen extends ConsumerStatefulWidget {
   const AdminLessonsScreen({super.key});
@@ -295,13 +294,26 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
   void _showLessonDialog(BuildContext context, LessonModel? lesson) {
     final isEditing = lesson != null;
-    final categories = ref.read(categoriesProvider).value ?? const <CategoryModel>[];
-    var selectedCategoryId = lesson?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
-    final titleLatinController = TextEditingController(text: lesson?.titleLatin ?? '');
-    final titleOlChikiController = TextEditingController(text: lesson?.titleOlChiki ?? '');
-    final descriptionController = TextEditingController(text: lesson?.description ?? '');
-    final minutesController = TextEditingController(text: (lesson?.estimatedMinutes ?? 5).toString());
-    final orderController = TextEditingController(text: (lesson?.order ?? 0).toString());
+    final categories =
+        ref.read(categoriesProvider).value ?? const <CategoryModel>[];
+    var selectedCategoryId =
+        lesson?.categoryId ??
+        (categories.isNotEmpty ? categories.first.id : null);
+    final titleLatinController = TextEditingController(
+      text: lesson?.titleLatin ?? '',
+    );
+    final titleOlChikiController = TextEditingController(
+      text: lesson?.titleOlChiki ?? '',
+    );
+    final descriptionController = TextEditingController(
+      text: lesson?.description ?? '',
+    );
+    final minutesController = TextEditingController(
+      text: (lesson?.estimatedMinutes ?? 5).toString(),
+    );
+    final orderController = TextEditingController(
+      text: (lesson?.order ?? 0).toString(),
+    );
     var level = lesson?.level ?? 'beginner';
     var isActive = lesson?.isActive ?? true;
 
@@ -316,7 +328,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
             height: MediaQuery.of(context).size.height * 0.86,
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF161B22) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(28),
+              ),
             ),
             child: Column(
               children: [
@@ -386,11 +400,17 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: selectedCategoryId,
+                        initialValue: selectedCategoryId,
                         items: categories
-                            .map((c) => DropdownMenuItem(value: c.id, child: Text(c.titleLatin)))
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.titleLatin),
+                              ),
+                            )
                             .toList(),
-                        onChanged: (value) => setDialogState(() => selectedCategoryId = value),
+                        onChanged: (value) =>
+                            setDialogState(() => selectedCategoryId = value),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
@@ -435,14 +455,24 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: level,
+                        initialValue: level,
                         items: const [
-                          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
-                          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
-                          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+                          DropdownMenuItem(
+                            value: 'beginner',
+                            child: Text('Beginner'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'intermediate',
+                            child: Text('Intermediate'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'advanced',
+                            child: Text('Advanced'),
+                          ),
                         ],
                         onChanged: (value) {
-                          if (value != null) setDialogState(() => level = value);
+                          if (value != null)
+                            setDialogState(() => level = value);
                         },
                         decoration: InputDecoration(
                           filled: true,
@@ -458,7 +488,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       const SizedBox(height: 12),
                       SwitchListTile(
                         value: isActive,
-                        onChanged: (value) => setDialogState(() => isActive = value),
+                        onChanged: (value) =>
+                            setDialogState(() => isActive = value),
                         title: const Text('Active'),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -484,29 +515,49 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                                   final newLesson = LessonModel(
                                     id: lesson?.id ?? const Uuid().v4(),
                                     categoryId: selectedCategoryId!,
-                                    titleLatin: titleLatinController.text.trim(),
-                                    titleOlChiki: titleOlChikiController.text.trim(),
-                                    description: descriptionController.text.trim().isEmpty
+                                    titleLatin: titleLatinController.text
+                                        .trim(),
+                                    titleOlChiki: titleOlChikiController.text
+                                        .trim(),
+                                    description:
+                                        descriptionController.text
+                                            .trim()
+                                            .isEmpty
                                         ? null
                                         : descriptionController.text.trim(),
-                                    estimatedMinutes: int.tryParse(minutesController.text.trim()) ?? 5,
-                                    order: int.tryParse(orderController.text.trim()) ?? 0,
+                                    estimatedMinutes:
+                                        int.tryParse(
+                                          minutesController.text.trim(),
+                                        ) ??
+                                        5,
+                                    order:
+                                        int.tryParse(
+                                          orderController.text.trim(),
+                                        ) ??
+                                        0,
                                     level: level,
                                     isActive: isActive,
-                                    blocks: lesson?.blocks ?? const <LessonBlock>[],
+                                    blocks:
+                                        lesson?.blocks ?? const <LessonBlock>[],
                                     thumbnailUrl: lesson?.thumbnailUrl,
                                     isPremium: lesson?.isPremium ?? false,
                                   );
 
                                   if (isEditing) {
-                                    await ref.read(lessonsProvider.notifier).updateLesson(newLesson);
+                                    await ref
+                                        .read(lessonsProvider.notifier)
+                                        .updateLesson(newLesson);
                                   } else {
-                                    await ref.read(lessonsProvider.notifier).addLesson(newLesson);
+                                    await ref
+                                        .read(lessonsProvider.notifier)
+                                        .addLesson(newLesson);
                                   }
 
                                   if (context.mounted) Navigator.pop(context);
                                 },
-                          child: Text(isEditing ? 'Save Changes' : 'Create Lesson'),
+                          child: Text(
+                            isEditing ? 'Save Changes' : 'Create Lesson',
+                          ),
                         ),
                       ),
                     ],
@@ -565,9 +616,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
         TextField(
           controller: controller,
           maxLines: maxLines,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-          ),
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: TextStyle(
@@ -664,32 +713,25 @@ class _LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
-        padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark
-                ? Colors.white10
-                : Colors.black.withValues(alpha: 0.05),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
+      child: GamifiedCard(
+        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+        borderRadius: 20,
+        padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
                 gradient: AppColors.premiumCyan,
                 borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withOpacity(0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.school_rounded,
@@ -706,16 +748,18 @@ class _LessonCard extends StatelessWidget {
                     lesson.titleOlChiki,
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
-                    '${lesson.blocks.length} content blocks',
+                    '${lesson.blocks.length} CONTENT BLOCKS',
                     style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.white54 : Colors.black54,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      color: isDark ? Colors.white38 : Colors.black38,
                     ),
                   ),
                 ],
@@ -723,15 +767,19 @@ class _LessonCard extends StatelessWidget {
             ),
             IconButton(
               onPressed: onEdit,
-              icon: const Icon(Icons.edit_rounded, size: 20),
+              icon: Icon(
+                Icons.edit_note_rounded,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
+              tooltip: 'Edit',
             ),
             IconButton(
               onPressed: onDelete,
               icon: const Icon(
                 Icons.delete_outline_rounded,
-                size: 20,
                 color: AppColors.error,
               ),
+              tooltip: 'Delete',
             ),
           ],
         ),

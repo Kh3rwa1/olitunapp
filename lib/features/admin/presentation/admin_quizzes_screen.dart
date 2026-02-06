@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -293,14 +294,276 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
   }
 
   void _showQuizDialog(BuildContext context, QuizModel? quiz) {
-    // Placeholder for Quiz Editor
-    ScaffoldMessenger.of(
-      context,
-    ).showSnackBar(const SnackBar(content: Text('Quiz editor coming soon...')));
+    final isEditing = quiz != null;
+    final categories = ref.read(categoriesProvider).value ?? const <CategoryModel>[];
+    var selectedCategoryId = quiz?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+    final titleController = TextEditingController(text: quiz?.title ?? '');
+    final orderController = TextEditingController(text: (quiz?.order ?? 0).toString());
+    final passingScoreController = TextEditingController(text: (quiz?.passingScore ?? 70).toString());
+    var level = quiz?.level ?? 'beginner';
+    var isActive = quiz?.isActive ?? true;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) {
+        final isDark = Theme.of(context).brightness == Brightness.dark;
+        return StatefulBuilder(
+          builder: (context, setDialogState) => Container(
+            height: MediaQuery.of(context).size.height * 0.78,
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF161B22) : Colors.white,
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+            ),
+            child: Column(
+              children: [
+                Container(
+                  margin: const EdgeInsets.only(top: 12),
+                  width: 44,
+                  height: 4,
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white24 : Colors.black12,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          isEditing ? 'Edit Quiz' : 'Create Quiz',
+                          style: TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : Colors.black,
+                          ),
+                        ),
+                      ),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close_rounded),
+                      ),
+                    ],
+                  ),
+                ),
+                Expanded(
+                  child: ListView(
+                    padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
+                    children: [
+                      _dialogTextField(
+                        controller: titleController,
+                        label: 'Title',
+                        hint: 'Enter quiz title',
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Category',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: selectedCategoryId,
+                        items: categories
+                            .map((c) => DropdownMenuItem(value: c.id, child: Text(c.titleLatin)))
+                            .toList(),
+                        onChanged: (value) => setDialogState(() => selectedCategoryId = value),
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: _dialogTextField(
+                              controller: orderController,
+                              label: 'Order',
+                              hint: '0',
+                              isDark: isDark,
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: _dialogTextField(
+                              controller: passingScoreController,
+                              label: 'Passing Score',
+                              hint: '70',
+                              isDark: isDark,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 14),
+                      Text(
+                        'Level',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      DropdownButtonFormField<String>(
+                        value: level,
+                        items: const [
+                          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
+                          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
+                          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+                        ],
+                        onChanged: (value) {
+                          if (value != null) setDialogState(() => level = value);
+                        },
+                        decoration: InputDecoration(
+                          filled: true,
+                          fillColor: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(14),
+                            borderSide: BorderSide.none,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SwitchListTile(
+                        value: isActive,
+                        onChanged: (value) => setDialogState(() => isActive = value),
+                        title: const Text('Active'),
+                        contentPadding: EdgeInsets.zero,
+                      ),
+                    ],
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton(
+                          onPressed: () => Navigator.pop(context),
+                          child: const Text('Cancel'),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: ElevatedButton(
+                          onPressed: selectedCategoryId == null
+                              ? null
+                              : () async {
+                                  final newQuiz = QuizModel(
+                                    id: quiz?.id ?? const Uuid().v4(),
+                                    categoryId: selectedCategoryId,
+                                    title: titleController.text.trim().isEmpty ? null : titleController.text.trim(),
+                                    order: int.tryParse(orderController.text.trim()) ?? 0,
+                                    passingScore: int.tryParse(passingScoreController.text.trim()) ?? 70,
+                                    level: level,
+                                    isActive: isActive,
+                                    questions: quiz?.questions ?? const <QuizQuestion>[],
+                                  );
+
+                                  if (isEditing) {
+                                    await ref.read(quizzesProvider.notifier).updateQuiz(newQuiz);
+                                  } else {
+                                    await ref.read(quizzesProvider.notifier).addQuiz(newQuiz);
+                                  }
+
+                                  if (context.mounted) Navigator.pop(context);
+                                },
+                          child: Text(isEditing ? 'Save Changes' : 'Create Quiz'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
   }
 
   void _showDeleteDialog(BuildContext context, QuizModel quiz) {
-    // Placeholder for delete
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete quiz?'),
+        content: Text('This will permanently delete "${quiz.title ?? 'Untitled Quiz'}".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _dialogTextField({
+    required TextEditingController controller,
+    required String label,
+    required String hint,
+    required bool isDark,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          style: TextStyle(
+            color: isDark ? Colors.white : Colors.black,
+            fontWeight: FontWeight.w500,
+          ),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
+            filled: true,
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide(color: AppColors.primary, width: 2),
+            ),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
+          ),
+        ),
+      ],
+    );
   }
 }
 

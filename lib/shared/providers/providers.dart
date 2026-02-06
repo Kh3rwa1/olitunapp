@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/content_models.dart';
 import '../../core/storage/storage_service.dart';
+import '../../features/rhymes/domain/rhyme_model.dart';
 
 // ============== USER DATA (Local Storage) ==============
 
@@ -435,43 +436,125 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 
   void _loadLessons() {
     try {
+      // Force reset to use new lesson data with categoryId and descriptions
+      // Remove this block after first run to allow persistence
+      prefs.remove('lessons');
+
       final stored = prefs.getString('lessons');
       if (stored != null) {
         final List<dynamic> decoded = jsonDecode(stored);
         final lessons = decoded.map((e) => LessonModel.fromJson(e)).toList();
         state = AsyncValue.data(lessons);
       } else {
-        // Default lessons
+        // Default lessons with descriptions
         state = AsyncValue.data([
           LessonModel(
             id: 'alphabets_1',
             categoryId: 'alphabets',
             titleOlChiki: 'ᱯᱟᱹᱦᱤᱞ ᱯᱟᱹᱴ',
-            titleLatin: 'First Lesson',
+            titleLatin: 'Introduction to Ol Chiki',
             level: 'beginner',
             order: 0,
             isActive: true,
             estimatedMinutes: 5,
+            description:
+                'Learn about the Ol Chiki script, invented by Pandit Raghunath Murmu in 1925 for the Santali language. Discover how this unique alphabet helps preserve Santali culture.',
           ),
           LessonModel(
             id: 'alphabets_2',
             categoryId: 'alphabets',
-            titleOlChiki: 'ᱵᱟᱨᱭᱟ ᱯᱟᱹᱴ',
-            titleLatin: 'Second Lesson',
+            titleOlChiki: 'ᱚᱠᱤᱞ ᱠᱚ',
+            titleLatin: 'Vowels (ᱚ-ᱩ)',
             level: 'beginner',
             order: 1,
             isActive: true,
-            estimatedMinutes: 5,
+            estimatedMinutes: 8,
+            description:
+                'Master the six basic vowels of Ol Chiki: ᱚ (a), ᱟ (aa), ᱤ (i), ᱩ (u), ᱮ (e), and ᱳ (o). Practice their pronunciation and writing.',
+          ),
+          LessonModel(
+            id: 'alphabets_3',
+            categoryId: 'alphabets',
+            titleOlChiki: 'ᱚᱞ ᱠᱚ',
+            titleLatin: 'Consonants Part 1',
+            level: 'beginner',
+            order: 2,
+            isActive: true,
+            estimatedMinutes: 10,
+            description:
+                'Learn the first set of consonants: ᱠ (k), ᱜ (g), ᱝ (ng), ᱪ (c), ᱡ (j). Practice writing and recognizing each character.',
+          ),
+          LessonModel(
+            id: 'alphabets_4',
+            categoryId: 'alphabets',
+            titleOlChiki: 'ᱚᱞ ᱠᱚ ᱵᱟᱨᱭᱟ',
+            titleLatin: 'Consonants Part 2',
+            level: 'beginner',
+            order: 3,
+            isActive: true,
+            estimatedMinutes: 10,
+            description:
+                'Continue with more consonants: ᱴ (t), ᱰ (d), ᱱ (n), ᱯ (p), ᱵ (b). Build your character recognition skills.',
           ),
           LessonModel(
             id: 'numbers_1',
             categoryId: 'numbers',
-            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱯᱟᱹᱴ',
-            titleLatin: 'Numbers Intro',
+            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱑-᱕',
+            titleLatin: 'Numbers 1-5',
             level: 'beginner',
             order: 0,
             isActive: true,
             estimatedMinutes: 5,
+            description:
+                'Learn to count from 1 to 5 in Santali: ᱑ (mit), ᱒ (bar), ᱓ (pe), ᱔ (pon), ᱕ (mone). Practice writing the Ol Chiki numerals.',
+          ),
+          LessonModel(
+            id: 'numbers_2',
+            categoryId: 'numbers',
+            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱖-᱑᱐',
+            titleLatin: 'Numbers 6-10',
+            level: 'beginner',
+            order: 1,
+            isActive: true,
+            estimatedMinutes: 5,
+            description:
+                'Continue counting from 6 to 10: ᱖ (turui), ᱗ (eae), ᱘ (irel), ᱙ (are), ᱑᱐ (gel). Complete your basic number vocabulary.',
+          ),
+          LessonModel(
+            id: 'words_1',
+            categoryId: 'words',
+            titleOlChiki: 'ᱱᱳᱣᱟ ᱯᱟᱹᱨᱥᱤ',
+            titleLatin: 'Greetings',
+            level: 'beginner',
+            order: 0,
+            isActive: true,
+            estimatedMinutes: 7,
+            description:
+                'Learn essential Santali greetings: ᱡᱚᱦᱟᱨ (Johar - Hello), ᱥᱮᱨᱢᱟ (Serma - Good morning), ᱥᱳᱢᱟ ᱪᱤᱱᱟᱜ (How are you?).',
+          ),
+          LessonModel(
+            id: 'words_2',
+            categoryId: 'words',
+            titleOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ',
+            titleLatin: 'Family Words',
+            level: 'beginner',
+            order: 1,
+            isActive: true,
+            estimatedMinutes: 8,
+            description:
+                'Learn family vocabulary: ᱟᱯᱟ (Apa - Father), ᱟᱭᱳ (Ayo - Mother), ᱵᱳᱭᱦᱟ (Boyha - Brother), ᱢᱤᱥᱨᱟ (Misra - Sister).',
+          ),
+          LessonModel(
+            id: 'phrases_1',
+            categoryId: 'phrases',
+            titleOlChiki: 'ᱫᱤᱱᱟᱢ ᱛᱮᱞᱟ',
+            titleLatin: 'Daily Phrases',
+            level: 'beginner',
+            order: 0,
+            isActive: true,
+            estimatedMinutes: 10,
+            description:
+                'Essential daily phrases for conversation. Learn to introduce yourself, ask for directions, and express common needs in Santali.',
           ),
         ]);
       }
@@ -568,6 +651,105 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   Future<void> addQuiz(QuizModel item) async => add(item);
   Future<void> updateQuiz(QuizModel item) async => update(item);
   Future<void> deleteQuiz(String id) async => delete(id);
+}
+
+// ============== RHYMES PROVIDER ==============
+
+final rhymesProvider =
+    StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>((ref) {
+      return RhymesNotifier();
+    });
+
+class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
+  RhymesNotifier() : super(const AsyncValue.loading()) {
+    _loadRhymes();
+  }
+
+  void _loadRhymes() {
+    try {
+      final stored = prefs.getString('rhymes');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        final rhymes = decoded.map((e) => RhymeModel.fromJson(e)).toList();
+        state = AsyncValue.data(rhymes);
+      } else {
+        final defaultRhymes = [
+          RhymeModel(
+            id: 'rhyme_1',
+            titleOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ',
+            titleLatin: 'Hati Lagit',
+            contentOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱛᱤ...\nᱥᱮᱛᱟ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱛᱟ...',
+            contentLatin: 'Hati lagit hati...\nSeta lagit seta...',
+            category: 'Animal',
+            thumbnailUrl:
+                'assets/images/rhyme_hati.png', // Fallback or placeholder
+          ),
+          RhymeModel(
+            id: 'rhyme_2',
+            titleOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ',
+            titleLatin: 'Buru Re',
+            contentOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ ᱵᱩᱨᱩ...\nᱡᱷᱟᱨᱱᱟ ᱨᱮ ᱡᱷᱟᱨᱱᱟ...',
+            contentLatin: 'Buru re buru...\nJharna re jharna...',
+            category: 'Nature',
+          ),
+          RhymeModel(
+            id: 'rhyme_3',
+            titleOlChiki: 'ᱥᱮᱛᱟ',
+            titleLatin: 'The Dog (Seta)',
+            contentOlChiki: 'ᱥᱮᱛᱟ ᱥᱮᱛᱟ ᱚᱭᱟ ᱥᱮᱛᱟ...\nᱫᱟᱹᱲ ᱟᱠᱟᱱᱟᱭ ᱥᱮᱛᱟ ᱫᱟᱹᱲ...',
+            contentLatin: 'Seta seta oya seta...\nDar akanay seta dar...',
+            category: 'Animal',
+          ),
+          RhymeModel(
+            id: 'rhyme_4',
+            titleOlChiki: 'ᱫᱟᱜ ᱡᱟᱹᱲᱤ',
+            titleLatin: 'Rainy Day',
+            contentOlChiki: 'ᱫᱟᱜ ᱡᱟᱹᱲᱤ ᱫᱟᱜ ᱡᱟᱹᱲᱤ...\nᱨᱤᱢᱤᱞ ᱨᱟᱠᱟᱵ ᱮᱱᱟ...',
+            contentLatin: 'Dag jari dag jari...\nRimil rakab ena...',
+            category: 'Nature',
+          ),
+          RhymeModel(
+            id: 'rhyme_5',
+            titleOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚᱣᱟᱜ ᱢᱚᱱᱮ',
+            titleLatin: 'Child\'s Mind',
+            contentOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚᱣᱟᱜ ᱢᱚᱱᱮ...\nᱚᱞ ᱪᱤᱠᱤ ᱞᱟᱹᱜᱤᱫ ᱢᱚᱱᱮ...',
+            contentLatin: 'Gidra koag mone...\nOl Chiki lagit mone...',
+            category: 'Moral',
+          ),
+        ];
+        state = AsyncValue.data(defaultRhymes);
+        _saveRhymes(defaultRhymes);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
+  }
+
+  void _saveRhymes(List<RhymeModel> rhymes) {
+    final encoded = jsonEncode(rhymes.map((e) => e.toJson()).toList());
+    prefs.setString('rhymes', encoded);
+  }
+
+  Future<void> addRhyme(RhymeModel item) async {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _saveRhymes(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> updateRhyme(RhymeModel item) async {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _saveRhymes(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> deleteRhyme(String id) async {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _saveRhymes(updated);
+    state = AsyncValue.data(updated);
+  }
 }
 
 // Filtered lessons by category
@@ -720,6 +902,84 @@ Future<void> seedAppContent(WidgetRef ref) async {
       order: 2,
       isActive: true,
       totalLessons: 4,
+    ),
+  );
+
+  // 6. Add Sample Quiz
+  final quizzesNotifier = ref.read(quizzesProvider.notifier);
+  final quizId = 'quiz_basics_${DateTime.now().millisecondsSinceEpoch}';
+
+  await quizzesNotifier.addQuiz(
+    QuizModel(
+      id: quizId,
+      categoryId: alphabetsId,
+      title: 'Basics Quiz',
+      level: 'beginner',
+      questions: [
+        QuizQuestion(
+          promptOlChiki: 'Which letter is "La"?',
+          optionsOlChiki: ['ᱚ', 'ᱛ', 'ᱜ', 'ᱞ'],
+          optionsLatin: ['a', 'at', 'ag', 'al'],
+          correctIndex: 3,
+        ),
+        QuizQuestion(
+          promptOlChiki: 'What sound does ᱚ make?',
+          optionsOlChiki: ['A', 'O', 'I', 'U'],
+          optionsLatin: ['a', 'o', 'i', 'u'],
+          correctIndex: 0,
+        ),
+      ],
+    ),
+  );
+
+  // 7. update first lesson to include blocks
+  // Instead, let's just add a new "Quiz Lesson"
+
+  await lessonsNotifier.addLesson(
+    LessonModel(
+      id: 'lesson_quiz_demo_${DateTime.now().millisecondsSinceEpoch}',
+      categoryId: alphabetsId,
+      titleOlChiki: 'ᱠᱩᱤᱡᱽ',
+      titleLatin: 'Quiz Demo',
+      level: 'beginner',
+      order: 99,
+      isActive: true,
+      estimatedMinutes: 2,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textLatin: 'Ready to test your knowledge? Take the quiz below!',
+          textOlChiki: 'ᱵᱤᱰᱟᱹᱣ ᱨᱮᱱᱟᱜ ᱚᱠᱛᱚ!',
+        ),
+        LessonBlock(type: 'quiz', quizRefId: quizId),
+      ],
+    ),
+  );
+
+  // 8. Add Sample Rhymes
+  final rhymesNotifier = ref.read(rhymesProvider.notifier);
+
+  await rhymesNotifier.addRhyme(
+    RhymeModel(
+      id: 'rhyme_hati',
+      titleOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ',
+      titleLatin: 'Hati Lagit (For Elephant)',
+      contentOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱛᱤ...\nᱥᱮᱛᱟ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱛᱟ...',
+      contentLatin: 'Hati lagit hati...\nSeta lagit seta...',
+      category: 'Animal',
+      audioUrl: 'https://hostinger.com/audio/hati.mp3', // Placeholder
+    ),
+  );
+
+  await rhymesNotifier.addRhyme(
+    RhymeModel(
+      id: 'rhyme_buru',
+      titleOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ',
+      titleLatin: 'Buru Re (In the Hill)',
+      contentOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ ᱵᱩᱨᱩ...\nᱡᱷᱟᱨᱱᱟ ᱨᱮ ᱡᱷᱟᱨᱱᱟ...',
+      contentLatin: 'Buru re buru...\nJharna re jharna...',
+      category: 'Nature',
+      audioUrl: 'https://hostinger.com/audio/buru.mp3', // Placeholder
     ),
   );
 }

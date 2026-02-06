@@ -72,6 +72,11 @@ class AdminNavRail extends ConsumerWidget {
           label: Text('Lessons'),
         ),
         NavigationRailDestination(
+          icon: Icon(Icons.music_note_outlined),
+          selectedIcon: Icon(Icons.music_note_rounded),
+          label: Text('Rhymes'),
+        ),
+        NavigationRailDestination(
           icon: Icon(Icons.quiz_outlined),
           selectedIcon: Icon(Icons.quiz_rounded),
           label: Text('Quizzes'),

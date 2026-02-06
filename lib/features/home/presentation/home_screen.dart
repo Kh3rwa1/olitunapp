@@ -5,8 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/widgets/gamified_card.dart';
 import '../../../shared/widgets/animated_buttons.dart';
+import '../../../core/presentation/animations/fade_in_slide.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -25,308 +25,366 @@ class HomeScreen extends ConsumerWidget {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Header with Animation
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Hello, $userName!',
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w900,
-                              fontSize: 30,
-                              letterSpacing: -1,
-                            ),
+      body: Stack(
+        children: [
+          // Background Mesh/Glow
+          Positioned(
+            top: -100,
+            right: -100,
+            child:
+                Container(
+                      width: 300,
+                      height: 300,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: AppColors.primary.withOpacity(0.15),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Ready to learn today? 👋',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white54 : Colors.black54,
+                    )
+                    .animate()
+                    .fadeIn(duration: 1200.ms)
+                    .scale(begin: const Offset(0.5, 0.5)),
+          ),
+
+          SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Hello, $userName!',
+                            style: TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                              letterSpacing: -1.2,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.glass(context, opacity: 0.05),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.glass(context, opacity: 0.1),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 14,
+                                  color: AppColors.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Daily Progress: 85%',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      CircleIconButton(
+                        icon: Icons.notifications_none_rounded,
+                        onPressed: () {},
+                        size: 52,
+                        backgroundColor: AppColors.glass(
+                          context,
+                          opacity: 0.05,
                         ),
                       ),
                     ],
                   ),
-                  CircleIconButton(
-                    icon: Icons.settings_rounded,
-                    onPressed: () => context.go('/settings'),
-                    size: 52,
-                  ),
-                ],
-              ),
-              const SizedBox(height: 28),
+                  const SizedBox(height: 32),
 
-              // Stats Row with Gamified Cards
-              Row(
-                children: [
-                  _StatCard(
-                        icon: Icons.local_fire_department_rounded,
-                        value: '$streak',
-                        label: 'Streak',
-                        color: AppColors.duoOrange,
-                        shadowColor: AppColors.duoOrangeDark,
-                        delay: 400,
-                      )
-                      .animate()
-                      .fadeIn(delay: 400.ms)
-                      .scale(curve: Curves.easeOutBack),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                        icon: Icons.star_rounded,
-                        value: '$stars',
-                        label: 'Stars',
-                        color: AppColors.duoYellow,
-                        shadowColor: AppColors.duoYellowDark,
-                        delay: 500,
-                      )
-                      .animate()
-                      .fadeIn(delay: 500.ms)
-                      .scale(curve: Curves.easeOutBack),
-                  const SizedBox(width: 12),
-                  _StatCard(
-                    icon: Icons.auto_awesome_rounded,
-                    value: '$lessonsCompleted',
-                    label: 'Level',
-                    color: AppColors.primary,
-                    shadowColor: AppColors.primaryDark,
-                    delay: 600,
+                  // Bento Stats Grid
+                  Row(
+                    children: [
+                      Expanded(
+                        flex: 2,
+                        child: FadeInSlide(
+                          index: 1, // 1st tier
+                          child: _ModernStatCard(
+                            icon: Icons.local_fire_department_rounded,
+                            value: '$streak',
+                            label: 'Day Streak',
+                            color: AppColors.duoOrange,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: FadeInSlide(
+                          index: 2, // 2nd tier
+                          child: _ModernStatCard(
+                            icon: Icons.star_rounded,
+                            value: '$stars',
+                            label: 'Stars',
+                            color: AppColors.duoYellow,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(height: 32),
+                  const SizedBox(height: 12),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FadeInSlide(
+                          index: 3,
+                          child: _ModernStatCard(
+                            icon: Icons.emoji_events_rounded,
+                            value: '$lessonsCompleted',
+                            label: 'Milestones',
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: FadeInSlide(
+                          index: 4,
+                          child: _ModernStatCard(
+                            icon: Icons.timer_rounded,
+                            value: '24m',
+                            label: 'Learning Time',
+                            color: AppColors.duoBlue,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 32),
 
-              // Continue Learning Banner - Gamified
-              GamifiedCard(
-                color: AppColors.primary,
-                bottomBorderColor: AppColors.primaryDark,
-                borderRadius: 24,
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                  // Main Journey Card - Glassmorphism Bento
+                  FadeInSlide(
+                    index: 5,
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(28),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryDark],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(32),
+                        boxShadow: AppColors.fluidShadow,
+                      ),
+                      child: Stack(
                         children: [
-                          const Text(
-                            'UP NEXT',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white70,
-                              letterSpacing: 2,
-                            ),
+                          Positioned(
+                            right: -20,
+                            bottom: -20,
+                            child:
+                                Icon(
+                                      Icons.rocket_launch_rounded,
+                                      size: 120,
+                                      color: Colors.white.withOpacity(0.15),
+                                    )
+                                    .animate(
+                                      onPlay: (c) => c.repeat(reverse: true),
+                                    )
+                                    .moveY(
+                                      begin: 0,
+                                      end: -10,
+                                      duration: 2.seconds,
+                                    ),
                           ),
-                          const SizedBox(height: 4),
-                          const Text(
-                            'Continue Journey',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 20),
-                          DuoButton(
-                            text: 'START NOW',
-                            color: Colors.white,
-                            onPressed: () => context.go('/lessons'),
-                            width: 160,
-                            height: 48,
-                            shadowColor: Colors.black12,
-                            borderRadius: 12,
+                          Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'CONTINUE LEARNING',
+                                style: TextStyle(
+                                  color: Colors.white70,
+                                  fontWeight: FontWeight.w900,
+                                  letterSpacing: 1.5,
+                                  fontSize: 12,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              const Text(
+                                'Master the Vowels',
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 26,
+                                  letterSpacing: -0.5,
+                                ),
+                              ),
+                              const SizedBox(height: 24),
+                              DuoButton(
+                                text: 'RESUME JOURNEY',
+                                color: Colors.white,
+                                onPressed: () => context.go('/lessons'),
+                                width: double.infinity,
+                                height: 56,
+                                borderRadius: 18,
+                              ),
+                            ],
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(width: 16),
-                    Hero(
-                          tag: 'journey_icon',
-                          child: Container(
-                            width: 90,
-                            height: 90,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                            ),
-                            child: const Icon(
-                              Icons.rocket_launch_rounded,
-                              size: 44,
-                              color: Colors.white,
-                            ),
-                          ),
-                        )
-                        .animate(
-                          onPlay: (controller) =>
-                              controller.repeat(reverse: true),
-                        )
-                        .moveY(
-                          begin: 0,
-                          end: -8,
-                          duration: 1500.ms,
-                          curve: Curves.easeInOut,
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // Categories Header
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        'LEARNING PATHS',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: isDark
+                              ? AppColors.primary
+                              : AppColors.primaryDark,
                         ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 36),
+                      ),
+                      Text(
+                        'See All',
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white38 : Colors.black38,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 20),
 
-              // Section Header
-              Text(
-                'COLUMBUS PATH',
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? AppColors.primary : AppColors.primaryDark,
-                  letterSpacing: 1.5,
-                ),
+                  // Categories Grid
+                  categoriesAsync.when(
+                    data: (categories) => GridView.builder(
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      gridDelegate:
+                          const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 2,
+                            mainAxisSpacing: 16,
+                            crossAxisSpacing: 16,
+                            childAspectRatio: 0.9,
+                          ),
+                      itemCount: categories.length,
+                      itemBuilder: (context, index) {
+                        final category = categories[index];
+                        return FadeInSlide(
+                          index:
+                              6 + index, // Stagger categories after stats/hero
+                          child: _ModernCategoryCard(
+                            category: category,
+                            index: index,
+                          ),
+                        );
+                      },
+                    ),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
+                    error: (e, st) => Center(child: Text('Error: $e')),
+                  ),
+                  const SizedBox(height: 100),
+                ],
               ),
-              const SizedBox(height: 16),
-
-              // Categories Grid or List
-              categoriesAsync.when(
-                data: (categories) => GridView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 2,
-                    mainAxisSpacing: 16,
-                    crossAxisSpacing: 16,
-                    childAspectRatio: 0.88,
-                  ),
-                  itemCount: categories.length,
-                  itemBuilder: (context, index) {
-                    final category = categories[index];
-                    return _CategoryCard(category: category, index: index);
-                  },
-                ),
-                loading: () => const Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(40),
-                    child: CircularProgressIndicator(),
-                  ),
-                ),
-                error: (e, st) => Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(40),
-                    child: Text('Error loading categories: $e'),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 100),
-            ],
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
 }
 
-class _StatCard extends StatelessWidget {
+class _ModernStatCard extends StatelessWidget {
   final IconData icon;
   final String value;
   final String label;
   final Color color;
-  final Color shadowColor;
-  final int delay;
 
-  const _StatCard({
+  const _ModernStatCard({
     required this.icon,
     required this.value,
     required this.label,
     required this.color,
-    required this.shadowColor,
-    required this.delay,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Expanded(
-      child: GamifiedCard(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 8),
-        borderRadius: 20,
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 24),
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.glass(context, opacity: 0.04),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: AppColors.glass(context, opacity: 0.08)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: color.withOpacity(0.12),
+              borderRadius: BorderRadius.circular(12),
             ),
-            const SizedBox(height: 10),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : Colors.black,
-              ),
+            child: Icon(icon, color: color, size: 20),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            value,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.w900,
+              color: isDark ? Colors.white : Colors.black,
+              letterSpacing: -0.5,
             ),
-            Text(
-              label.toUpperCase(),
-              style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white38 : Colors.black38,
-                letterSpacing: 0.5,
-              ),
+          ),
+          Text(
+            label.toUpperCase(),
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white38 : Colors.black38,
+              letterSpacing: 0.5,
             ),
-          ],
-        ),
-      ).animate().fadeIn(delay: delay.ms).scale(curve: Curves.easeOutBack),
+          ),
+        ],
+      ),
     );
   }
 }
 
-class _CategoryCard extends StatelessWidget {
+class _ModernCategoryCard extends StatelessWidget {
   final CategoryModel category;
   final int index;
 
-  const _CategoryCard({required this.category, required this.index});
-
-  Color _getPrimaryColor() {
-    switch (category.gradientPreset) {
-      case 'peach':
-        return AppColors.duoOrange;
-      case 'mint':
-        return AppColors.duoGreen;
-      case 'purple':
-        return AppColors.duoPurple;
-      case 'skyBlue':
-        return AppColors.duoBlue;
-      default:
-        return AppColors.primary;
-    }
-  }
-
-  Color _getShadowColor() {
-    switch (category.gradientPreset) {
-      case 'peach':
-        return AppColors.duoOrangeDark;
-      case 'mint':
-        return AppColors.duoGreenDark;
-      case 'purple':
-        return AppColors.duoPurpleDark;
-      case 'skyBlue':
-        return AppColors.duoBlueDark;
-      default:
-        return AppColors.primaryDark;
-    }
-  }
+  const _ModernCategoryCard({required this.category, required this.index});
 
   IconData _getIcon() {
     switch (category.iconName) {
@@ -345,61 +403,49 @@ class _CategoryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeColor = _getPrimaryColor();
-    final shadowColor = _getShadowColor();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GamifiedCard(
+    return InkWell(
       onTap: () => context.go('/lessons/category/${category.id}'),
-      color: themeColor,
-      bottomBorderColor: shadowColor,
-      borderRadius: 24,
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.25),
-              borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(28),
+      child: Container(
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: AppColors.glass(context, opacity: 0.03),
+          borderRadius: BorderRadius.circular(28),
+          border: Border.all(color: AppColors.glass(context, opacity: 0.06)),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Icon(_getIcon(), color: AppColors.primary, size: 28),
             ),
-            child: Icon(_getIcon(), color: Colors.white, size: 28),
-          ),
-          const Spacer(),
-          Text(
-            category.titleLatin,
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w900,
-              color: Colors.white,
-              letterSpacing: -0.5,
-            ),
-          ),
-          Text(
-            category.titleOlChiki,
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: Colors.white.withOpacity(0.8),
-            ),
-          ),
-          const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: shadowColor.withOpacity(0.4),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Text(
-              '${category.totalLessons} LESSONS',
-              style: const TextStyle(
-                fontSize: 10,
+            const Spacer(),
+            Text(
+              category.titleLatin,
+              style: TextStyle(
+                fontSize: 18,
                 fontWeight: FontWeight.w900,
-                color: Colors.white,
+                color: isDark ? Colors.white : Colors.black,
+                letterSpacing: -0.5,
               ),
             ),
-          ),
-        ],
+            Text(
+              category.titleOlChiki,
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: isDark ? Colors.white38 : Colors.black38,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

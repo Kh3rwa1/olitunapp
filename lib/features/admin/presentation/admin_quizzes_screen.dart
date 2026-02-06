@@ -1,6 +1,4 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
@@ -369,7 +367,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: selectedCategoryId,
+                        initialValue: selectedCategoryId,
                         items: categories
                             .map((c) => DropdownMenuItem(value: c.id, child: Text(c.titleLatin)))
                             .toList(),
@@ -418,7 +416,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: level,
+                        initialValue: level,
                         items: const [
                           DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
                           DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),

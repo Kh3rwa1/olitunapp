@@ -1,0 +1,107 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
+import '../../../core/theme/app_colors.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+class SplashScreen extends ConsumerStatefulWidget {
+  const SplashScreen({super.key});
+
+  @override
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends ConsumerState<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _navigateToNext();
+  }
+
+  Future<void> _navigateToNext() async {
+    // Wait for animation and pre-fetching
+    await Future.delayed(2.seconds);
+
+    if (mounted) {
+      final showOnboarding = ref.read(onboardingProvider);
+      if (showOnboarding) {
+        context.go('/onboarding');
+      } else {
+        context.go('/home');
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0F172A) : Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            // Logo Animation
+            Container(
+                  width: 120,
+                  height: 120,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppColors.primary.withOpacity(0.3),
+                        blurRadius: 40,
+                        offset: const Offset(0, 20),
+                      ),
+                    ],
+                  ),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: Image.asset(
+                      'assets/icons/olitun_logo.png',
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                )
+                .animate()
+                .scale(
+                  duration: 800.ms,
+                  curve: Curves.easeOutBack,
+                  begin: const Offset(0, 0),
+                  end: const Offset(1, 1),
+                )
+                .shimmer(delay: 800.ms, duration: 1.5.seconds),
+
+            const SizedBox(height: 48),
+
+            // App Name
+            Text(
+              'OLITUN',
+              style: TextStyle(
+                fontSize: 32,
+                fontWeight: FontWeight.w900,
+                letterSpacing: 8,
+                color: isDark ? Colors.white : AppColors.primaryDark,
+              ),
+            ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.5, end: 0),
+
+            const SizedBox(height: 12),
+
+            // Subtitle
+            Text(
+              'LEARN OL CHIKI',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 2,
+                color: isDark ? Colors.white38 : Colors.black26,
+              ),
+            ).animate().fadeIn(delay: 600.ms),
+          ],
+        ),
+      ),
+    );
+  }
+}

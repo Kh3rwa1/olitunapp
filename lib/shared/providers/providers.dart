@@ -233,9 +233,34 @@ class CategoriesNotifier
     await SupabaseConfig.client.from('categories').delete().eq('id', id);
   }
 
-  // Reorder is complex, simplifying for now
   Future<void> reorderCategories(int oldIndex, int newIndex) async {
-    // TODO: Implement reorder logic with DB updates
+    final current = state.value;
+    if (current == null || current.isEmpty) return;
+    if (oldIndex < 0 || oldIndex >= current.length) return;
+    if (newIndex < 0 || newIndex > current.length) return;
+
+    final reordered = [...current];
+    final moved = reordered.removeAt(oldIndex);
+    reordered.insert(newIndex, moved);
+
+    final normalized = [
+      for (var i = 0; i < reordered.length; i++) reordered[i].copyWith(order: i),
+    ];
+
+    state = AsyncValue.data(normalized);
+
+    try {
+      final updates = [
+        for (final category in normalized)
+          {'id': category.id, 'order': category.order},
+      ];
+
+      await SupabaseConfig.client.from('categories').upsert(updates);
+    } catch (error, stack) {
+      state = AsyncValue.error(error, stack);
+      state = AsyncValue.data(current);
+      rethrow;
+    }
   }
 }
 

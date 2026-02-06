@@ -28,7 +28,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   @override
-  @override
   Widget build(BuildContext context) {
     // Watch adaptors for user stats
     final userName = ref.watch(userNameProvider);
@@ -38,6 +37,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     // Watch async categories
     final categoriesAsync = ref.watch(categoriesProvider);
+    final lessonsAsync = ref.watch(lessonsProvider);
+    final userProfile = ref.watch(userProfileProvider).value;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final size = MediaQuery.of(context).size;
@@ -98,8 +99,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   sliver: SliverGrid(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final category = categories[index];
-                      // TODO: Implement proper category progress from Supabase
-                      final progress = 0.0;
+                      final progress = _categoryProgress(
+                        category: category,
+                        categories: categories,
+                        lessonsAsync: lessonsAsync,
+                        totalCompletedLessons:
+                            userProfile?.stats.totalLessonsCompleted ?? 0,
+                      );
 
                       return CategoryCard(
                             category: category,
@@ -142,6 +148,55 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     );
+  }
+
+  double _categoryProgress({
+    required CategoryModel category,
+    required List<CategoryModel> categories,
+    required AsyncValue<List<LessonModel>> lessonsAsync,
+    required int totalCompletedLessons,
+  }) {
+    final lessons = lessonsAsync.value ?? const <LessonModel>[];
+    final lessonsByCategory = <String, int>{};
+
+    for (final lesson in lessons) {
+      lessonsByCategory.update(
+        lesson.categoryId,
+        (value) => value + 1,
+        ifAbsent: () => 1,
+      );
+    }
+
+    int totalLessonsInApp = 0;
+    final orderedCategories = [...categories]..sort((a, b) => a.order.compareTo(b.order));
+
+    for (final cat in orderedCategories) {
+      totalLessonsInApp += lessonsByCategory[cat.id] ?? cat.totalLessons;
+    }
+
+    if (totalLessonsInApp <= 0 || totalCompletedLessons <= 0) {
+      return 0;
+    }
+
+    final boundedCompleted = totalCompletedLessons.clamp(0, totalLessonsInApp);
+    var remaining = boundedCompleted;
+
+    for (final cat in orderedCategories) {
+      final categoryLessonCount = lessonsByCategory[cat.id] ?? cat.totalLessons;
+      if (categoryLessonCount <= 0) {
+        if (cat.id == category.id) return 0;
+        continue;
+      }
+
+      final completedInCategory = remaining.clamp(0, categoryLessonCount);
+      if (cat.id == category.id) {
+        return (completedInCategory / categoryLessonCount) * 100;
+      }
+
+      remaining = (remaining - categoryLessonCount).clamp(0, totalLessonsInApp);
+    }
+
+    return 0;
   }
 
   Widget _buildBackground(bool isDark, Size size) {

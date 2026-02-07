@@ -475,8 +475,14 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                         icon: Icons.edit_rounded,
                         color: letter['accentColor'],
                         onPressed: () {
+                          final encodedChar = Uri.encodeComponent(
+                            letter['char'].toString(),
+                          );
+                          final encodedName = Uri.encodeComponent(
+                            letter['name'].toString(),
+                          );
                           context.push(
-                            '/practice/${letter['char']}/${letter['name']}',
+                            '/practice/$encodedChar/$encodedName',
                           );
                         },
                       ),

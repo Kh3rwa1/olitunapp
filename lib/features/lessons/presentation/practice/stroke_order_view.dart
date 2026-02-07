@@ -11,8 +11,8 @@ class StrokeOrderView extends StatefulWidget {
 
 class _StrokeOrderViewState extends State<StrokeOrderView>
     with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  late Animation<double> _animation;
+  late final AnimationController _controller;
+  late final Animation<double> _animation;
 
   @override
   void initState() {
@@ -22,8 +22,6 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
       duration: const Duration(seconds: 3),
     );
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-
-    // Auto start and loop
     _controller.repeat();
   }
 
@@ -37,50 +35,78 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(
-          width: 300,
-          height: 300,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.05),
-                blurRadius: 20,
-                offset: const Offset(0, 10),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boardSize = constraints.biggest.shortestSide.clamp(260.0, 560.0);
+
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 16, 16, 20),
+          child: Column(
+            children: [
+              Expanded(
+                child: Center(
+                  child: Container(
+                    width: boardSize,
+                    height: boardSize,
+                    decoration: BoxDecoration(
+                      color: isDark ? const Color(0xFF111A28) : Colors.white,
+                      borderRadius: BorderRadius.circular(26),
+                      border: Border.all(
+                        color: isDark
+                            ? Colors.white.withOpacity(0.10)
+                            : Colors.black.withOpacity(0.05),
+                      ),
+                    ),
+                    child: Stack(
+                      children: [
+                        Center(
+                          child: Text(
+                            widget.letterChar,
+                            style: TextStyle(
+                              fontSize: boardSize * 0.56,
+                              color: Colors.grey.withOpacity(0.10),
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: StrokePainter(
+                              progress: _animation,
+                              color: const Color(0xFF35C7B5),
+                              letter: widget.letterChar,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Watch the stroke flow and follow the same direction.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: () {
+                  _controller
+                    ..reset()
+                    ..forward();
+                },
+                icon: const Icon(Icons.replay_rounded),
+                label: const Text('Replay Animation'),
               ),
             ],
           ),
-          child: CustomPaint(
-            painter: StrokePainter(
-              progress: _animation,
-              color: Colors.teal,
-              letter: widget.letterChar,
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
-        Text(
-          'Watch how to write',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FloatingActionButton(
-          onPressed: () {
-            _controller.reset();
-            _controller.forward();
-          },
-          backgroundColor: Colors.teal,
-          child: const Icon(Icons.refresh),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -98,44 +124,34 @@ class StrokePainter extends CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    final paint = Paint()
+    final guidePaint = Paint()
+      ..color = Colors.grey.withOpacity(0.25)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.04
+      ..strokeCap = StrokeCap.round;
+
+    final strokePaint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 12.0
+      ..strokeWidth = size.width * 0.04
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final bgPaint = Paint()
-      ..color = Colors.grey.withOpacity(0.2)
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 12.0
-      ..strokeCap = StrokeCap.round;
-
-    // Simulate a path for demo (circle/spiral-ish) based on size
-    // In real app, we'd have SVG paths for each letter
     final path = Path();
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 3;
-
-    // Simple path simulation: Draw a circle starting from top
+    final radius = size.width * 0.28;
     path.addOval(Rect.fromCircle(center: center, radius: radius));
 
-    // Draw background guide (faint)
-    canvas.drawPath(path, bgPaint);
+    canvas.drawPath(path, guidePaint);
 
-    // Draw animated path
-    final pathMetrics = path.computeMetrics();
-    for (final metric in pathMetrics) {
-      final extractPath = metric.extractPath(
-        0.0,
-        metric.length * progress.value,
-      );
-      canvas.drawPath(extractPath, paint);
+    for (final metric in path.computeMetrics()) {
+      final animatedPath = metric.extractPath(0.0, metric.length * progress.value);
+      canvas.drawPath(animatedPath, strokePaint);
     }
   }
 
   @override
   bool shouldRepaint(covariant StrokePainter oldDelegate) {
-    return oldDelegate.progress != progress;
+    return oldDelegate.progress != progress || oldDelegate.color != color;
   }
 }

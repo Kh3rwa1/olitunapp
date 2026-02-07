@@ -21,6 +21,7 @@ class NumberDetailScreen extends ConsumerStatefulWidget {
 
 class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   int _currentIndex = 0;
+  static const double _swipeVelocityThreshold = 380;
 
   // Ol Chiki numbers data with values and names
   final Map<String, List<Map<String, dynamic>>> lessonNumbers = {
@@ -130,6 +131,34 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     }
   }
 
+  void _goToNextNumber() {
+    if (_currentIndex < numbers.length - 1) {
+      _goToNumber(_currentIndex + 1);
+    } else {
+      HapticFeedback.selectionClick();
+    }
+  }
+
+  void _goToPreviousNumber() {
+    if (_currentIndex > 0) {
+      _goToNumber(_currentIndex - 1);
+    } else {
+      HapticFeedback.selectionClick();
+    }
+  }
+
+  void _handleSwipe(DragEndDetails details) {
+    final velocity = details.primaryVelocity ?? 0;
+    if (velocity.abs() < _swipeVelocityThreshold) return;
+
+    if (velocity < 0) {
+      _goToNextNumber();
+      return;
+    }
+
+    _goToPreviousNumber();
+  }
+
   @override
   Widget build(BuildContext context) {
     final number = numbers[_currentIndex];
@@ -183,19 +212,72 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           const SizedBox(width: 8),
         ],
       ),
-      body: SafeArea(
-        child: Column(
+      body: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onHorizontalDragEnd: _handleSwipe,
+        child: SafeArea(
+          child: Column(
           children: [
             // Main content
             Expanded(
               child: SingleChildScrollView(
                 padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 280),
+                  switchInCurve: Curves.easeOutCubic,
+                  switchOutCurve: Curves.easeInCubic,
+                  transitionBuilder: (child, animation) {
+                    return FadeTransition(
+                      opacity: animation,
+                      child: SlideTransition(
+                        position: Tween<Offset>(
+                          begin: const Offset(0.06, 0),
+                          end: Offset.zero,
+                        ).animate(animation),
+                        child: child,
+                      ),
+                    );
+                  },
+                  child: Column(
+                    key: ValueKey(_currentIndex),
+                    children: [
+                      const SizedBox(height: 12),
 
-                    // Hero illustration card
-                    Container(
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 8,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.8),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: number['accentColor'].withOpacity(0.25),
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.swipe_rounded,
+                              size: 18,
+                              color: number['accentColor'],
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              'Swipe left / right to change',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: Colors.grey[700],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+
+                      // Hero illustration card
+                      Container(
                       width: double.infinity,
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
@@ -237,11 +319,11 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 32),
+                      ),
+                      const SizedBox(height: 32),
 
                     // Large Ol Chiki number
-                    Container(
+                      Container(
                       width: 140,
                       height: 140,
                       decoration: BoxDecoration(
@@ -269,11 +351,11 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 24),
+                      ),
+                      const SizedBox(height: 24),
 
                     // Value representation (dots)
-                    Container(
+                      Container(
                       padding: const EdgeInsets.all(20),
                       decoration: BoxDecoration(
                         color: Colors.white,
@@ -302,9 +384,39 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           ),
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 100),
-                  ],
+                      ),
+                      const SizedBox(height: 24),
+
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ScaleButton(
+                              onPressed: _goToPreviousNumber,
+                              child: _buildNavButton(
+                                label: 'Previous',
+                                icon: Icons.chevron_left_rounded,
+                                accentColor: number['accentColor'],
+                                enabled: _currentIndex > 0,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: ScaleButton(
+                              onPressed: _goToNextNumber,
+                              child: _buildNavButton(
+                                label: 'Next',
+                                icon: Icons.chevron_right_rounded,
+                                accentColor: number['accentColor'],
+                                enabled: _currentIndex < numbers.length - 1,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 100),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -370,6 +482,40 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             ),
           ],
         ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildNavButton({
+    required String label,
+    required IconData icon,
+    required Color accentColor,
+    required bool enabled,
+  }) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 220),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      decoration: BoxDecoration(
+        color: enabled ? Colors.white : Colors.white.withOpacity(0.45),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: accentColor.withOpacity(enabled ? 0.4 : 0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: enabled ? accentColor : Colors.grey[400]),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              fontWeight: FontWeight.w700,
+              color: enabled ? accentColor : Colors.grey[400],
+            ),
+          ),
+        ],
       ),
     );
   }

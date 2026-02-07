@@ -79,21 +79,29 @@ class _TracingViewState extends State<TracingView> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Trace over the guide letter. Lift your finger and continue as needed.',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 12),
-              FilledButton.icon(
-                onPressed: _clearCanvas,
-                style: FilledButton.styleFrom(
-                  backgroundColor: const Color(0xFFFF5C7A),
+
+              // Interactive Drawing Canvas
+              GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanStart: (details) {
+                  setState(() {
+                    _points.add(details.localPosition);
+                  });
+                },
+                onPanUpdate: (details) {
+                  setState(() {
+                    _points.add(details.localPosition);
+                  });
+                },
+                onPanEnd: (details) {
+                  setState(() {
+                    _points.add(null); // End showing continuous line
+                  });
+                },
+                child: SizedBox.expand(
+                  child: CustomPaint(
+                    painter: TracingPainter(points: _points, color: Colors.teal),
+                  ),
                 ),
                 icon: const Icon(Icons.delete_outline_rounded),
                 label: const Text('Clear Tracing'),

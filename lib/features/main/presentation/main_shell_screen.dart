@@ -8,6 +8,7 @@ import '../../home/presentation/home_screen.dart';
 import '../../rhymes/presentation/rhyme_screen.dart';
 import '../../profile/presentation/progress_screen.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
@@ -34,17 +35,77 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
-      extendBody: true, // Crucial for glassmorphic nav to overlap content
-      body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: _buildGlassicNav(isDark),
+      extendBody: true,
+      body: Stack(
+        children: [
+          _buildPremiumBackground(isDark),
+          if (isTablet)
+            _buildTabletPremiumContainer(isDark)
+          else
+            IndexedStack(index: _selectedIndex, children: _screens),
+        ],
+      ),
+      bottomNavigationBar: _buildGlassicNav(isDark, isTablet),
     );
   }
 
-  Widget _buildGlassicNav(bool isDark) {
+  Widget _buildPremiumBackground(bool isDark) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF0A0E1A), Color(0xFF121A2B), Color(0xFF1E2A44)]
+              : const [Color(0xFFF3F8FF), Color(0xFFF8FAFF), Color(0xFFE8F0FF)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabletPremiumContainer(bool isDark) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 115),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        (isDark ? Colors.black : Colors.white).withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.24 : 0.09),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: IndexedStack(index: _selectedIndex, children: _screens),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildGlassicNav(bool isDark, bool isTablet) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+      margin: EdgeInsets.fromLTRB(isTablet ? 32 : 24, 0, isTablet ? 32 : 24, 30),
       height: 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),

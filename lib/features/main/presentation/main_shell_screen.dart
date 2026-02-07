@@ -37,19 +37,36 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
 
-    return Scaffold(
-      extendBody: true,
-      body: Stack(
-        children: [
-          _buildPremiumBackground(isDark),
-          if (isTablet)
-            _buildTabletPremiumContainer(isDark)
-          else
-            IndexedStack(index: _selectedIndex, children: _screens),
-        ],
+    return WillPopScope(
+      onWillPop: _onWillPop,
+      child: Scaffold(
+        extendBody: true,
+        body: Stack(
+          children: [
+            _buildPremiumBackground(isDark),
+            SafeArea(
+              child: Padding(
+                padding: EdgeInsets.only(bottom: isTablet ? 115 : 110),
+                child: IndexedStack(index: _selectedIndex, children: _screens),
+              ),
+            ),
+          ],
+        ),
+        bottomNavigationBar: _buildGlassicNav(isDark, isTablet),
       ),
-      bottomNavigationBar: _buildGlassicNav(isDark, isTablet),
     );
+  }
+
+  Future<bool> _onWillPop() async {
+    if (_selectedIndex > 0) {
+      setState(() {
+        _selectedIndex -= 1;
+      });
+      return false;
+    }
+
+    // Keep users inside the app shell instead of closing from the root tab.
+    return false;
   }
 
   Widget _buildPremiumBackground(bool isDark) {
@@ -61,43 +78,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
           colors: isDark
               ? const [Color(0xFF0A0E1A), Color(0xFF121A2B), Color(0xFF1E2A44)]
               : const [Color(0xFFF3F8FF), Color(0xFFF8FAFF), Color(0xFFE8F0FF)],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildTabletPremiumContainer(bool isDark) {
-    return SafeArea(
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(24, 20, 24, 115),
-        child: Center(
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 920),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(32),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                child: Container(
-                  decoration: BoxDecoration(
-                    color:
-                        (isDark ? Colors.black : Colors.white).withOpacity(0.55),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.24 : 0.09),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: IndexedStack(index: _selectedIndex, children: _screens),
-                ),
-              ),
-            ),
-          ),
         ),
       ),
     );

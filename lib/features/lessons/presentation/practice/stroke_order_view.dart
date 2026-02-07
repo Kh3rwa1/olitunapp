@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'practice_guide.dart';
+
 class StrokeOrderView extends StatefulWidget {
   final String letterChar;
 
@@ -20,9 +22,8 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
-    );
+    )..repeat();
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
-    _controller.repeat();
   }
 
   @override
@@ -64,7 +65,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                             widget.letterChar,
                             style: TextStyle(
                               fontSize: boardSize * 0.56,
-                              color: Colors.grey.withOpacity(0.10),
+                              color: Colors.grey.withOpacity(0.12),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -85,7 +86,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
               ),
               const SizedBox(height: 8),
               Text(
-                'Watch the stroke flow and follow the same direction.',
+                'Watch the stroke flow and then switch to Tracing mode to replicate it.',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
@@ -105,48 +106,8 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
               ),
             ],
           ),
-          child: Stack(
-            children: [
-              Center(
-                child: Text(
-                  widget.letterChar,
-                  style: TextStyle(
-                    fontSize: 190,
-                    color: Colors.grey.withOpacity(0.12),
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              CustomPaint(
-                size: Size.infinite,
-                painter: StrokePainter(
-                  progress: _animation,
-                  color: Colors.teal,
-                  letter: widget.letterChar,
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 32),
-        Text(
-          'Watch how to write',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 16),
-        FloatingActionButton(
-          onPressed: () {
-            _controller.reset();
-            _controller.forward();
-          },
-          backgroundColor: Colors.teal,
-          child: const Icon(Icons.refresh),
-        ),
-      ],
+        );
+      },
     );
   }
 }
@@ -177,21 +138,31 @@ class StrokePainter extends CustomPainter {
       ..strokeCap = StrokeCap.round
       ..strokeJoin = StrokeJoin.round;
 
-    final path = Path();
-    final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width * 0.28;
-    path.addOval(Rect.fromCircle(center: center, radius: radius));
-
+    final path = buildPracticeGuidePath(size, letter);
     canvas.drawPath(path, guidePaint);
 
+    final targetLength = path
+            .computeMetrics()
+            .fold<double>(0, (sum, metric) => sum + metric.length) *
+        progress.value;
+    var consumed = 0.0;
+
     for (final metric in path.computeMetrics()) {
-      final animatedPath = metric.extractPath(0.0, metric.length * progress.value);
+      if (consumed >= targetLength) {
+        break;
+      }
+      final remain = targetLength - consumed;
+      final drawLength = remain.clamp(0.0, metric.length);
+      final animatedPath = metric.extractPath(0.0, drawLength);
       canvas.drawPath(animatedPath, strokePaint);
+      consumed += metric.length;
     }
   }
 
   @override
   bool shouldRepaint(covariant StrokePainter oldDelegate) {
-    return oldDelegate.progress != progress || oldDelegate.color != color;
+    return oldDelegate.progress != progress ||
+        oldDelegate.color != color ||
+        oldDelegate.letter != letter;
   }
 }

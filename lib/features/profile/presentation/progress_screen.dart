@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -19,6 +20,7 @@ class ProgressScreen extends ConsumerWidget {
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
     final quizzesCompleted = ref.watch(quizzesCompletedProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
       backgroundColor: isDark
@@ -79,39 +81,70 @@ class ProgressScreen extends ConsumerWidget {
           ),
 
           SliverToBoxAdapter(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
+            child: ResponsivePageContainer(
+              padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // Core Stats Row
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _AnalyticsMetricCard(
-                          icon: Icons.local_fire_department_rounded,
-                          value: '$streak',
-                          label: 'Day Streak',
-                          color: AppColors.duoOrange,
+                  isTablet
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: _AnalyticsMetricCard(
+                                icon: Icons.local_fire_department_rounded,
+                                value: '$streak',
+                                label: 'Day Streak',
+                                color: AppColors.duoOrange,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _AnalyticsMetricCard(
+                                icon: Icons.star_rounded,
+                                value: '$stars',
+                                label: 'Stars Earned',
+                                color: AppColors.duoYellow,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _AnalyticsMetricCard(
+                                icon: Icons.quiz_rounded,
+                                value: '$quizzesCompleted',
+                                label: 'Quiz Done',
+                                color: AppColors.duoBlue,
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              child: _AnalyticsMetricCard(
+                                icon: Icons.local_fire_department_rounded,
+                                value: '$streak',
+                                label: 'Day Streak',
+                                color: AppColors.duoOrange,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            Expanded(
+                              child: _AnalyticsMetricCard(
+                                icon: Icons.star_rounded,
+                                value: '$stars',
+                                label: 'Stars Earned',
+                                color: AppColors.duoYellow,
+                              ),
+                            ),
+                          ],
                         ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _AnalyticsMetricCard(
-                          icon: Icons.star_rounded,
-                          value: '$stars',
-                          label: 'Stars Earned',
-                          color: AppColors.duoYellow,
-                        ),
-                      ),
-                    ],
-                  ),
                   const SizedBox(height: 32),
 
                   // Skills Breakdown
                   _buildSectionHeader('SKILLS MASTERY', isDark),
                   const SizedBox(height: 16),
-                  _buildSkillsGrid(context, isDark),
+                  _buildSkillsGrid(context, isDark, isTablet),
                   const SizedBox(height: 40),
 
                   // Accuracy / Quizzes
@@ -151,7 +184,7 @@ class ProgressScreen extends ConsumerWidget {
     ).animate().fadeIn().slideX(begin: -0.1, end: 0);
   }
 
-  Widget _buildSkillsGrid(BuildContext context, bool isDark) {
+  Widget _buildSkillsGrid(BuildContext context, bool isDark, bool isTablet) {
     return Row(
       children: [
         Expanded(
@@ -180,6 +213,17 @@ class ProgressScreen extends ConsumerWidget {
             isDark: isDark,
           ),
         ),
+        if (isTablet) ...[
+          const SizedBox(width: 12),
+          Expanded(
+            child: _SkillProgressCard(
+              label: 'Rhymes',
+              progress: 0.66,
+              color: AppColors.primary,
+              isDark: isDark,
+            ),
+          ),
+        ],
       ],
     );
   }

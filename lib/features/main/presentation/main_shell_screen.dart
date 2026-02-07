@@ -8,6 +8,7 @@ import '../../home/presentation/home_screen.dart';
 import '../../rhymes/presentation/rhyme_screen.dart';
 import '../../profile/presentation/progress_screen.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
@@ -34,11 +35,69 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
       extendBody: true, // Crucial for glassmorphic nav to overlap content
-      body: IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: _buildGlassicNav(isDark),
+      body: isTablet
+          ? Row(
+              children: [
+                SafeArea(child: _buildRailNav(isDark)),
+                Expanded(
+                  child: IndexedStack(index: _selectedIndex, children: _screens),
+                ),
+              ],
+            )
+          : IndexedStack(index: _selectedIndex, children: _screens),
+      bottomNavigationBar: isTablet ? null : _buildGlassicNav(isDark),
+    );
+  }
+
+  Widget _buildRailNav(bool isDark) {
+    return Container(
+      margin: const EdgeInsets.all(20),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(28),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
+          child: NavigationRail(
+            minWidth: 96,
+            extended: true,
+            groupAlignment: -0.5,
+            backgroundColor:
+                (isDark ? Colors.black : Colors.white).withOpacity(0.65),
+            indicatorColor: AppColors.primary.withOpacity(0.16),
+            selectedIconTheme: const IconThemeData(
+              color: AppColors.primary,
+              size: 28,
+            ),
+            selectedLabelTextStyle: GoogleFonts.fredoka(
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+            unselectedLabelTextStyle: GoogleFonts.fredoka(
+              fontWeight: FontWeight.w500,
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
+            destinations: const [
+              NavigationRailDestination(
+                icon: Icon(Icons.home_rounded),
+                label: Text('Home'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.music_note_rounded),
+                label: Text('Rhymes'),
+              ),
+              NavigationRailDestination(
+                icon: Icon(Icons.analytics_rounded),
+                label: Text('Progress'),
+              ),
+            ],
+            selectedIndex: _selectedIndex,
+            onDestinationSelected: _onItemTapped,
+          ),
+        ),
+      ),
     );
   }
 

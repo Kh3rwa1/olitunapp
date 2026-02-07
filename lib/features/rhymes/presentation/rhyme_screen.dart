@@ -9,6 +9,7 @@ import '../domain/rhyme_model.dart';
 import 'widgets/whimsical_audio_waves.dart';
 import 'widgets/tilt_card.dart';
 import 'widgets/whimsical_background.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class RhymeScreen extends ConsumerWidget {
   const RhymeScreen({super.key});
@@ -17,6 +18,7 @@ class RhymeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final rhymesAsync = ref.watch(rhymesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
       backgroundColor: Colors.transparent,
@@ -27,8 +29,13 @@ class RhymeScreen extends ConsumerWidget {
             slivers: [
               // Header
               SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
+                child: ResponsivePageContainer(
+                  padding: EdgeInsets.fromLTRB(
+                    isTablet ? 32 : 24,
+                    20,
+                    isTablet ? 32 : 24,
+                    24,
+                  ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -76,7 +83,9 @@ class RhymeScreen extends ConsumerWidget {
                 data: (rhymes) => rhymes.isNotEmpty
                     ? SliverToBoxAdapter(
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 24),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 32 : 24,
+                          ),
                           child: TiltCard(
                             child: _FeaturedRhymeCard(rhyme: rhymes.first),
                           ),
@@ -112,15 +121,18 @@ class RhymeScreen extends ConsumerWidget {
               // Bento Grid
               rhymesAsync.when(
                 data: (rhymes) => SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
                   sliver: SliverGrid(
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          mainAxisSpacing: 20,
-                          crossAxisSpacing: 20,
-                          childAspectRatio: 0.85,
-                        ),
+                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: ResponsiveLayout.gridColumns(
+                        context,
+                        mobile: 2,
+                        tablet: 3,
+                      ),
+                      mainAxisSpacing: 20,
+                      crossAxisSpacing: 20,
+                      childAspectRatio: isTablet ? 0.95 : 0.85,
+                    ),
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final rhymeIndex = index + 1;
                       if (rhymeIndex >= rhymes.length) return null;

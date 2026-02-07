@@ -23,6 +23,8 @@ class LetterDetailScreen extends ConsumerStatefulWidget {
 class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
   int _currentIndex = 0;
 
+  static const _emojiBaseUrl = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
+
   // Ol Chiki letters data with examples
   final Map<String, List<Map<String, dynamic>>> lessonLetters = {
     'alphabets_1': [
@@ -253,6 +255,14 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     }
   }
 
+  String _emojiToPngUrl(String emoji) {
+    final runes = emoji.runes
+        .where((rune) => rune != 0xFE0F)
+        .map((rune) => rune.toRadixString(16))
+        .join('-');
+    return '$_emojiBaseUrl/$runes.png';
+  }
+
   @override
   Widget build(BuildContext context) {
     final letter = letters[_currentIndex];
@@ -317,29 +327,50 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                   children: [
                     const SizedBox(height: 20),
 
-                    // Hero illustration card
-                    Container(
+                    // Hero illustration (transparent background)
+                    SizedBox(
                       width: double.infinity,
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: [
-                          BoxShadow(
-                            color: letter['accentColor'].withOpacity(0.15),
-                            blurRadius: 30,
-                            offset: const Offset(0, 15),
-                          ),
-                        ],
-                      ),
                       child: Column(
                         children: [
-                          // Big emoji illustration
-                          Text(
-                            letter['emoji'],
-                            style: const TextStyle(fontSize: 100),
+                          TweenAnimationBuilder<double>(
+                            tween: Tween(begin: 0.94, end: 1.0),
+                            duration: const Duration(milliseconds: 1200),
+                            curve: Curves.easeInOut,
+                            builder: (context, scale, child) {
+                              return Transform.scale(
+                                scale: scale,
+                                child: child,
+                              );
+                            },
+                            child: TweenAnimationBuilder<double>(
+                              tween: Tween(begin: -0.06, end: 0.06),
+                              duration: const Duration(milliseconds: 1700),
+                              curve: Curves.easeInOut,
+                              builder: (context, turn, child) {
+                                return Transform.rotate(
+                                  angle: turn,
+                                  child: child,
+                                );
+                              },
+                              onEnd: () {
+                                if (mounted) {
+                                  setState(() {});
+                                }
+                              },
+                              child: Image.network(
+                                _emojiToPngUrl(letter['emoji'].toString()),
+                                width: 220,
+                                height: 220,
+                                fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                                errorBuilder: (context, _, __) => Text(
+                                  letter['emoji'],
+                                  style: const TextStyle(fontSize: 120),
+                                ),
+                              ),
+                            ),
                           ),
-                          const SizedBox(height: 24),
+                          const SizedBox(height: 16),
 
                           // Letter title
                           Text(

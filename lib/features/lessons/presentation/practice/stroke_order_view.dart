@@ -105,8 +105,48 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
               ),
             ],
           ),
-        );
-      },
+          child: Stack(
+            children: [
+              Center(
+                child: Text(
+                  widget.letterChar,
+                  style: TextStyle(
+                    fontSize: 190,
+                    color: Colors.grey.withOpacity(0.12),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              CustomPaint(
+                size: Size.infinite,
+                painter: StrokePainter(
+                  progress: _animation,
+                  color: Colors.teal,
+                  letter: widget.letterChar,
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 32),
+        Text(
+          'Watch how to write',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 16),
+        FloatingActionButton(
+          onPressed: () {
+            _controller.reset();
+            _controller.forward();
+          },
+          backgroundColor: Colors.teal,
+          child: const Icon(Icons.refresh),
+        ),
+      ],
     );
   }
 }

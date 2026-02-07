@@ -7,6 +7,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class HomeScreen extends ConsumerWidget {
   const HomeScreen({super.key});
@@ -20,6 +21,7 @@ class HomeScreen extends ConsumerWidget {
     final categoriesAsync = ref.watch(categoriesProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
       backgroundColor: isDark
@@ -47,10 +49,10 @@ class HomeScreen extends ConsumerWidget {
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
+              child: ResponsivePageContainer(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
                   // Header
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -118,64 +120,118 @@ class HomeScreen extends ConsumerWidget {
                   const SizedBox(height: 32),
 
                   // Bento Stats Grid
-                  Row(
-                    children: [
-                      Expanded(
-                        flex: 2,
-                        child: FadeInSlide(
-                          index: 1, // 1st tier
-                          child: _ModernStatCard(
-                            icon: Icons.local_fire_department_rounded,
-                            value: '$streak',
-                            label: 'Day Streak',
-                            color: AppColors.duoOrange,
+                  isTablet
+                      ? Row(
+                          children: [
+                            Expanded(
+                              child: FadeInSlide(
+                                index: 1,
+                                child: _ModernStatCard(
+                                  icon: Icons.local_fire_department_rounded,
+                                  value: '$streak',
+                                  label: 'Day Streak',
+                                  color: AppColors.duoOrange,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FadeInSlide(
+                                index: 2,
+                                child: _ModernStatCard(
+                                  icon: Icons.star_rounded,
+                                  value: '$stars',
+                                  label: 'Stars',
+                                  color: AppColors.duoYellow,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FadeInSlide(
+                                index: 3,
+                                child: _ModernStatCard(
+                                  icon: Icons.emoji_events_rounded,
+                                  value: '$lessonsCompleted',
+                                  label: 'Milestones',
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FadeInSlide(
+                                index: 4,
+                                child: _ModernStatCard(
+                                  icon: Icons.timer_rounded,
+                                  value: '24m',
+                                  label: 'Learning Time',
+                                  color: AppColors.duoBlue,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      : Row(
+                          children: [
+                            Expanded(
+                              flex: 2,
+                              child: FadeInSlide(
+                                index: 1, // 1st tier
+                                child: _ModernStatCard(
+                                  icon: Icons.local_fire_department_rounded,
+                                  value: '$streak',
+                                  label: 'Day Streak',
+                                  color: AppColors.duoOrange,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: FadeInSlide(
+                                index: 2, // 2nd tier
+                                child: _ModernStatCard(
+                                  icon: Icons.star_rounded,
+                                  value: '$stars',
+                                  label: 'Stars',
+                                  color: AppColors.duoYellow,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                  if (!isTablet) ...[
+                    const SizedBox(height: 12),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FadeInSlide(
+                            index: 3,
+                            child: _ModernStatCard(
+                              icon: Icons.emoji_events_rounded,
+                              value: '$lessonsCompleted',
+                              label: 'Milestones',
+                              color: AppColors.primary,
+                            ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: FadeInSlide(
-                          index: 2, // 2nd tier
-                          child: _ModernStatCard(
-                            icon: Icons.star_rounded,
-                            value: '$stars',
-                            label: 'Stars',
-                            color: AppColors.duoYellow,
+                        const SizedBox(width: 12),
+                        Expanded(
+                          flex: 2,
+                          child: FadeInSlide(
+                            index: 4,
+                            child: _ModernStatCard(
+                              icon: Icons.timer_rounded,
+                              value: '24m',
+                              label: 'Learning Time',
+                              color: AppColors.duoBlue,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FadeInSlide(
-                          index: 3,
-                          child: _ModernStatCard(
-                            icon: Icons.emoji_events_rounded,
-                            value: '$lessonsCompleted',
-                            label: 'Milestones',
-                            color: AppColors.primary,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        flex: 2,
-                        child: FadeInSlide(
-                          index: 4,
-                          child: _ModernStatCard(
-                            icon: Icons.timer_rounded,
-                            value: '24m',
-                            label: 'Learning Time',
-                            color: AppColors.duoBlue,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
+                      ],
+                    ),
+                  ],
                   const SizedBox(height: 32),
 
                   // Main Journey Card - Glassmorphism Bento
@@ -285,13 +341,16 @@ class HomeScreen extends ConsumerWidget {
                     data: (categories) => GridView.builder(
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                            crossAxisCount: 2,
-                            mainAxisSpacing: 16,
-                            crossAxisSpacing: 16,
-                            childAspectRatio: 0.9,
-                          ),
+                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                        crossAxisCount: ResponsiveLayout.gridColumns(
+                          context,
+                          mobile: 2,
+                          tablet: 3,
+                        ),
+                        mainAxisSpacing: 16,
+                        crossAxisSpacing: 16,
+                        childAspectRatio: isTablet ? 1.05 : 0.9,
+                      ),
                       itemCount: categories.length,
                       itemBuilder: (context, index) {
                         final category = categories[index];
@@ -310,7 +369,8 @@ class HomeScreen extends ConsumerWidget {
                     error: (e, st) => Center(child: Text('Error: $e')),
                   ),
                   const SizedBox(height: 100),
-                ],
+                  ],
+                ),
               ),
             ),
           ),

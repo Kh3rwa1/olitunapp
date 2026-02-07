@@ -55,17 +55,26 @@ class _TracingViewState extends State<TracingView> {
 
               // Interactive Drawing Canvas
               GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanStart: (details) {
+                  setState(() {
+                    _points.add(details.localPosition);
+                  });
+                },
                 onPanUpdate: (details) {
                   setState(() {
                     _points.add(details.localPosition);
                   });
                 },
                 onPanEnd: (details) {
-                  _points.add(null); // End showing continuous line
+                  setState(() {
+                    _points.add(null); // End showing continuous line
+                  });
                 },
-                child: CustomPaint(
-                  painter: TracingPainter(points: _points, color: Colors.teal),
-                  size: Size.infinite,
+                child: SizedBox.expand(
+                  child: CustomPaint(
+                    painter: TracingPainter(points: _points, color: Colors.teal),
+                  ),
                 ),
               ),
             ],

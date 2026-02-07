@@ -38,72 +38,74 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     final isTablet = ResponsiveLayout.isTablet(context);
 
     return Scaffold(
-      extendBody: true, // Crucial for glassmorphic nav to overlap content
-      body: isTablet
-          ? Row(
-              children: [
-                SafeArea(child: _buildRailNav(isDark)),
-                Expanded(
-                  child: IndexedStack(index: _selectedIndex, children: _screens),
-                ),
-              ],
-            )
-          : IndexedStack(index: _selectedIndex, children: _screens),
-      bottomNavigationBar: isTablet ? null : _buildGlassicNav(isDark),
+      extendBody: true,
+      body: Stack(
+        children: [
+          _buildPremiumBackground(isDark),
+          if (isTablet)
+            _buildTabletPremiumContainer(isDark)
+          else
+            IndexedStack(index: _selectedIndex, children: _screens),
+        ],
+      ),
+      bottomNavigationBar: _buildGlassicNav(isDark, isTablet),
     );
   }
 
-  Widget _buildRailNav(bool isDark) {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(28),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 18, sigmaY: 18),
-          child: NavigationRail(
-            minWidth: 96,
-            extended: true,
-            groupAlignment: -0.5,
-            backgroundColor:
-                (isDark ? Colors.black : Colors.white).withOpacity(0.65),
-            indicatorColor: AppColors.primary.withOpacity(0.16),
-            selectedIconTheme: const IconThemeData(
-              color: AppColors.primary,
-              size: 28,
-            ),
-            selectedLabelTextStyle: GoogleFonts.fredoka(
-              fontWeight: FontWeight.w700,
-              color: AppColors.primary,
-            ),
-            unselectedLabelTextStyle: GoogleFonts.fredoka(
-              fontWeight: FontWeight.w500,
-              color: isDark ? Colors.white54 : Colors.black45,
-            ),
-            destinations: const [
-              NavigationRailDestination(
-                icon: Icon(Icons.home_rounded),
-                label: Text('Home'),
+  Widget _buildPremiumBackground(bool isDark) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? const [Color(0xFF0A0E1A), Color(0xFF121A2B), Color(0xFF1E2A44)]
+              : const [Color(0xFFF3F8FF), Color(0xFFF8FAFF), Color(0xFFE8F0FF)],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabletPremiumContainer(bool isDark) {
+    return SafeArea(
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(24, 20, 24, 115),
+        child: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 920),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(32),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                child: Container(
+                  decoration: BoxDecoration(
+                    color:
+                        (isDark ? Colors.black : Colors.white).withOpacity(0.55),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(isDark ? 0.24 : 0.09),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: IndexedStack(index: _selectedIndex, children: _screens),
+                ),
               ),
-              NavigationRailDestination(
-                icon: Icon(Icons.music_note_rounded),
-                label: Text('Rhymes'),
-              ),
-              NavigationRailDestination(
-                icon: Icon(Icons.analytics_rounded),
-                label: Text('Progress'),
-              ),
-            ],
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: _onItemTapped,
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildGlassicNav(bool isDark) {
+  Widget _buildGlassicNav(bool isDark, bool isTablet) {
     return Container(
-      margin: const EdgeInsets.fromLTRB(24, 0, 24, 30),
+      margin: EdgeInsets.fromLTRB(isTablet ? 32 : 24, 0, isTablet ? 32 : 24, 30),
       height: 80,
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(30),

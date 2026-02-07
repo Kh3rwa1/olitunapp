@@ -54,12 +54,27 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
               ),
             ],
           ),
-          child: CustomPaint(
-            painter: StrokePainter(
-              progress: _animation,
-              color: Colors.teal,
-              letter: widget.letterChar,
-            ),
+          child: Stack(
+            children: [
+              Center(
+                child: Text(
+                  widget.letterChar,
+                  style: TextStyle(
+                    fontSize: 190,
+                    color: Colors.grey.withOpacity(0.12),
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              CustomPaint(
+                size: Size.infinite,
+                painter: StrokePainter(
+                  progress: _animation,
+                  color: Colors.teal,
+                  letter: widget.letterChar,
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 32),

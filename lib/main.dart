@@ -122,8 +122,8 @@ final _router = GoRouter(
     GoRoute(
       path: '/practice/:char/:name',
       builder: (context, state) {
-        final char = state.pathParameters['char'] ?? '';
-        final name = state.pathParameters['name'] ?? '';
+        final char = Uri.decodeComponent(state.pathParameters['char'] ?? '');
+        final name = Uri.decodeComponent(state.pathParameters['name'] ?? '');
         return PracticeScreen(letterChar: char, letterName: name);
       },
     ),

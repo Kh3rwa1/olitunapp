@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'practice_guide.dart';
+
 class TracingView extends StatefulWidget {
   final String letterChar;
 
@@ -11,9 +13,31 @@ class TracingView extends StatefulWidget {
 
 class _TracingViewState extends State<TracingView> {
   final List<Offset?> _points = [];
+  double _progress = 0;
 
   void _clearCanvas() {
-    setState(_points.clear);
+    setState(() {
+      _points.clear();
+      _progress = 0;
+    });
+  }
+
+  void _recalculateProgress(double boardSize) {
+    final guidePath = buildPracticeGuidePath(
+      Size.square(boardSize),
+      widget.letterChar,
+    );
+    final guidePoints = samplePath(guidePath, samplesPerMetric: 64);
+
+    final progress = computeTraceProgress(
+      guidePoints: guidePoints,
+      tracedPoints: _points,
+      tolerance: boardSize * 0.07,
+    );
+
+    setState(() {
+      _progress = progress;
+    });
   }
 
   @override
@@ -49,8 +73,18 @@ class _TracingViewState extends State<TracingView> {
                             widget.letterChar,
                             style: TextStyle(
                               fontSize: boardSize * 0.56,
-                              color: Colors.grey.withOpacity(0.16),
+                              color: Colors.grey.withOpacity(0.14),
                               fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: _GuidePainter(
+                              letterChar: widget.letterChar,
+                              color: isDark
+                                  ? Colors.white.withOpacity(0.18)
+                                  : Colors.black.withOpacity(0.18),
                             ),
                           ),
                         ),
@@ -61,10 +95,13 @@ class _TracingViewState extends State<TracingView> {
                               setState(() => _points.add(details.localPosition));
                             },
                             onPanUpdate: (details) {
-                              setState(() => _points.add(details.localPosition));
+                              setState(() {
+                                _points.add(details.localPosition);
+                              });
                             },
                             onPanEnd: (_) {
-                              setState(() => _points.add(null));
+                              _points.add(null);
+                              _recalculateProgress(boardSize);
                             },
                             child: CustomPaint(
                               painter: TracingPainter(
@@ -79,30 +116,33 @@ class _TracingViewState extends State<TracingView> {
                   ),
                 ),
               ),
-
-              // Interactive Drawing Canvas
-              GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanStart: (details) {
-                  setState(() {
-                    _points.add(details.localPosition);
-                  });
-                },
-                onPanUpdate: (details) {
-                  setState(() {
-                    _points.add(details.localPosition);
-                  });
-                },
-                onPanEnd: (details) {
-                  setState(() {
-                    _points.add(null); // End showing continuous line
-                  });
-                },
-                child: SizedBox.expand(
-                  child: CustomPaint(
-                    painter: TracingPainter(points: _points, color: Colors.teal),
-                  ),
+              const SizedBox(height: 8),
+              Text(
+                _progress >= 0.9
+                    ? 'Amazing! Your trace is super accurate.'
+                    : 'Trace on the guideline. Accuracy: ${(_progress * 100).round()}%',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : Colors.black54,
                 ),
+              ),
+              const SizedBox(height: 10),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(100),
+                child: LinearProgressIndicator(
+                  minHeight: 9,
+                  value: _progress,
+                  backgroundColor:
+                      isDark ? Colors.white.withOpacity(0.08) : Colors.black12,
+                  valueColor:
+                      const AlwaysStoppedAnimation<Color>(Color(0xFF35C7B5)),
+                ),
+              ),
+              const SizedBox(height: 12),
+              FilledButton.icon(
+                onPressed: _clearCanvas,
                 icon: const Icon(Icons.delete_outline_rounded),
                 label: const Text('Clear Tracing'),
               ),
@@ -111,6 +151,30 @@ class _TracingViewState extends State<TracingView> {
         );
       },
     );
+  }
+}
+
+class _GuidePainter extends CustomPainter {
+  final String letterChar;
+  final Color color;
+
+  _GuidePainter({required this.letterChar, required this.color});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final guidePaint = Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = size.width * 0.035
+      ..strokeCap = StrokeCap.round;
+
+    final path = buildPracticeGuidePath(size, letterChar);
+    canvas.drawPath(path, guidePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _GuidePainter oldDelegate) {
+    return oldDelegate.letterChar != letterChar || oldDelegate.color != color;
   }
 }
 

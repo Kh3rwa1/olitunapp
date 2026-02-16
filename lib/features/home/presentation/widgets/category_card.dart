@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
@@ -45,7 +46,17 @@ class CategoryCard extends StatelessWidget {
                     gradient: gradient,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: category.iconUrl != null
+                  child: category.animationUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(14),
+                          child: LottieDisplay(
+                            url: category.animationUrl!,
+                            width: 48,
+                            height: 48,
+                            fit: BoxFit.cover,
+                          ),
+                        )
+                      : category.iconUrl != null
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(14),
                           child: CachedNetworkImage(

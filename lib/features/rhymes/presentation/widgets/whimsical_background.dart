@@ -41,8 +41,11 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? [const Color(0xFF0F172A), const Color(0xFF1E293B)]
-                  : [const Color(0xFFF0F9FF), const Color(0xFFE0F2FE)],
+                  ? [
+                      const Color(0xFF0F172A),
+                      const Color(0xFF1E1B4B), // Custom indigo-dark
+                    ]
+                  : [const Color(0xFFF8FAFC), const Color(0xFFEFF6FF)],
             ),
           ),
         ),
@@ -61,6 +64,15 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
           },
         ),
 
+        // Subtle Grid Overlay (Optimized with CustomPaint)
+        if (!isDark)
+          Positioned.fill(
+            child: Opacity(
+              opacity: 0.03,
+              child: CustomPaint(painter: _GridPainter()),
+            ),
+          ),
+
         // Foreground content
         widget.child,
       ],
@@ -77,50 +89,72 @@ class _BlobPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 60);
+      ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 80);
 
     final angle = animationValue * 2 * math.pi;
 
-    // Blob 1
+    // Blob 1: Deep Blue / Soft Blue
     paint.color = (isDark
-        ? Colors.blue.withOpacity(0.1)
-        : Colors.blue.withOpacity(0.05));
+        ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
+        : const Color(0xFF60A5FA).withValues(alpha: 0.08));
     canvas.drawCircle(
       Offset(
-        size.width * 0.2 + math.sin(angle) * 50,
-        size.height * 0.3 + math.cos(angle) * 30,
+        size.width * 0.2 + math.sin(angle) * 70,
+        size.height * 0.2 + math.cos(angle * 0.5) * 50,
       ),
-      200,
+      size.width * 0.6,
       paint,
     );
 
-    // Blob 2
+    // Blob 2: Indigo / Light Indigo
     paint.color = (isDark
-        ? Colors.cyan.withOpacity(0.1)
-        : Colors.cyan.withOpacity(0.05));
+        ? const Color(0xFF6366F1).withValues(alpha: 0.1)
+        : const Color(0xFF818CF8).withValues(alpha: 0.06));
     canvas.drawCircle(
       Offset(
-        size.width * 0.8 + math.cos(angle * 0.8) * 40,
-        size.height * 0.7 + math.sin(angle * 1.2) * 60,
+        size.width * 0.8 + math.cos(angle * 0.7) * 60,
+        size.height * 0.5 + math.sin(angle * 1.1) * 80,
       ),
-      250,
+      size.width * 0.7,
       paint,
     );
 
-    // Blob 3
+    // Blob 3: Violet / Soft Lavender
     paint.color = (isDark
-        ? Colors.teal.withOpacity(0.1)
-        : Colors.teal.withOpacity(0.05));
+        ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
+        : const Color(0xFFA78BFA).withValues(alpha: 0.07));
     canvas.drawCircle(
       Offset(
-        size.width * 0.5 + math.sin(angle * 1.5) * 70,
-        size.height * 0.9 + math.cos(angle * 0.5) * 40,
+        size.width * 0.4 + math.sin(angle * 1.3) * 90,
+        size.height * 0.8 + math.cos(angle * 0.6) * 60,
       ),
-      180,
+      size.width * 0.5,
       paint,
     );
   }
 
   @override
   bool shouldRepaint(covariant _BlobPainter oldDelegate) => true;
+}
+
+class _GridPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.black
+      ..strokeWidth = 1.0;
+
+    const spacing = 32.0;
+
+    for (double i = 0; i <= size.width; i += spacing) {
+      canvas.drawLine(Offset(i, 0), Offset(i, size.height), paint);
+    }
+
+    for (double i = 0; i <= size.height; i += spacing) {
+      canvas.drawLine(Offset(0, i), Offset(size.width, i), paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

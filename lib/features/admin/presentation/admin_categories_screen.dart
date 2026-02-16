@@ -1,14 +1,15 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/storage/supabase_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/widgets/gamified_card.dart';
+import 'widgets/admin_glass_card.dart';
+import 'widgets/admin_section_header.dart';
 
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});
@@ -25,141 +26,40 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isWideScreen ? 32 : 16,
+        vertical: isWideScreen ? 32 : 16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Background
-          _buildBackground(isDark),
+          // Header
+          AdminSectionHeader(
+            title: 'Categories',
+            subtitle: 'Organize your learning modules',
+            icon: Icons.category_rounded,
+            actions: isWideScreen ? [] : null,
+          ),
 
-          // Content
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Header
-                Padding(
-                  padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                  child: _buildHeader(context, isDark, isWideScreen),
+          // Categories List
+          Expanded(
+            child: categoriesAsync.when(
+              data: (categories) => categories.isEmpty
+                  ? _buildEmptyState(context, isDark)
+                  : _buildCategoriesList(categories, isDark, isWideScreen),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: SelectableText(
+                  'Error loading categories: $error',
+                  style: TextStyle(color: AppColors.error),
                 ),
-
-                // Categories List
-                Expanded(
-                  child: categoriesAsync.when(
-                    data: (categories) => categories.isEmpty
-                        ? _buildEmptyState(context, isDark)
-                        : _buildCategoriesList(
-                            categories,
-                            isDark,
-                            isWideScreen,
-                          ),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, stack) => Center(
-                      child: SelectableText(
-                        'Error loading categories: $error',
-                        style: TextStyle(color: AppColors.error),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
+              ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCategoryDialog(context, null),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text(
-          'Add Category',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-      ),
     );
-  }
-
-  Widget _buildBackground(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
-              : [const Color(0xFFF8FAFC), Colors.white],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isWideScreen)
-          GestureDetector(
-            onTap: () => context.go('/admin'),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-        if (!isWideScreen) const SizedBox(height: 20),
-        Row(
-          children: [
-            Container(
-              width: 4,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumGreen,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Categories',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.5,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Organize your learning modules',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: isDark
-                          ? AppColors.textTertiaryDark
-                          : AppColors.textTertiaryLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      ],
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
@@ -175,7 +75,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: AppColors.primary.withOpacity(0.3),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -221,7 +121,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
+                        color: AppColors.primary.withOpacity(0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -258,12 +158,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     bool isWideScreen,
   ) {
     return ReorderableListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        isWideScreen ? 32 : 20,
-        0,
-        isWideScreen ? 32 : 20,
-        100,
-      ),
+      padding: const EdgeInsets.only(bottom: 100),
       itemCount: categories.length,
       onReorder: (oldIndex, newIndex) async {
         if (oldIndex < newIndex) {
@@ -298,6 +193,12 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     );
     final descriptionController = TextEditingController(
       text: category?.description ?? '',
+    );
+    final iconUrlController = TextEditingController(
+      text: category?.iconUrl ?? '',
+    );
+    final animationUrlController = TextEditingController(
+      text: category?.animationUrl ?? '',
     );
     String selectedGradient = category?.gradientPreset ?? 'skyBlue';
     String selectedIcon = category?.iconName ?? 'alphabet';
@@ -366,9 +267,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               ),
 
               Divider(
-                color: isDark
-                    ? Colors.white10
-                    : Colors.black.withValues(alpha: 0.06),
+                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
               ),
 
               // Form
@@ -398,6 +297,32 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                         hint: 'Brief description of this category',
                         isDark: isDark,
                         maxLines: 2,
+                      ),
+                      const SizedBox(height: 20),
+                      _buildUploadField(
+                        controller: iconUrlController,
+                        label: 'Icon URL (Optional)',
+                        icon: Icons.image_rounded,
+                        isDark: isDark,
+                        onUpload: () => _pickAndUpload(
+                          context,
+                          iconUrlController,
+                          'category-icons',
+                          setDialogState,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      _buildUploadField(
+                        controller: animationUrlController,
+                        label: 'Lottie Animation (Optional)',
+                        icon: Icons.animation_rounded,
+                        isDark: isDark,
+                        onUpload: () => _pickAndUploadLottie(
+                          context,
+                          animationUrlController,
+                          'animations',
+                          setDialogState,
+                        ),
                       ),
                       const SizedBox(height: 28),
 
@@ -532,7 +457,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     top: BorderSide(
                       color: isDark
                           ? Colors.white10
-                          : Colors.black.withValues(alpha: 0.06),
+                          : Colors.black.withOpacity(0.06),
                     ),
                   ),
                 ),
@@ -546,7 +471,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                           decoration: BoxDecoration(
                             color: isDark
                                 ? Colors.white10
-                                : Colors.black.withValues(alpha: 0.05),
+                                : Colors.black.withOpacity(0.05),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Center(
@@ -573,6 +498,12 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             titleLatin: titleLatinController.text,
                             titleOlChiki: titleOlChikiController.text,
                             description: descriptionController.text,
+                            iconUrl: iconUrlController.text.isNotEmpty
+                                ? iconUrlController.text
+                                : null,
+                            animationUrl: animationUrlController.text.isNotEmpty
+                                ? animationUrlController.text
+                                : null,
                             gradientPreset: selectedGradient,
                             iconName: selectedIcon,
                             order: category?.order ?? 0,
@@ -597,7 +528,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.4),
+                                color: AppColors.primary.withOpacity(0.4),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                               ),
@@ -659,8 +590,8 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -693,7 +624,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.15),
+                color: AppColors.error.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
@@ -731,6 +662,131 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         ],
       ),
     );
+  }
+
+  Widget _buildUploadField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    required VoidCallback onUpload,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'https://...',
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white.withOpacity(0.08)
+                      : Colors.black.withOpacity(0.04),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              onPressed: onUpload,
+              icon: Icon(icon, size: 20),
+              tooltip: 'Upload Icon',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickAndUpload(
+    BuildContext context,
+    TextEditingController controller,
+    String folder,
+    StateSetter setDialogState,
+  ) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: FileType.image,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setDialogState(() {
+            controller.text = url;
+          });
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadLottie(
+    BuildContext context,
+    TextEditingController controller,
+    String folder,
+    StateSetter setDialogState,
+  ) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setDialogState(() {
+            controller.text = url;
+          });
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Lottie animation uploaded!')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
   }
 }
 
@@ -796,94 +852,106 @@ class _CategoryCardState extends State<_CategoryCard> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: GamifiedCard(
-        color: widget.isDark ? AppColors.darkSurfaceElevated : Colors.white,
-        borderRadius: 20,
+      child: AdminGlassCard(
         padding: const EdgeInsets.all(16),
-        child: Row(
-          children: [
-            // Order Handle
-            ReorderableDragStartListener(
-              index: widget.index,
-              child: Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: Icon(
-                  Icons.drag_indicator_rounded,
-                  color: widget.isDark ? Colors.white24 : Colors.black12,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final isSmall = constraints.maxWidth < 380;
+            return Row(
+              children: [
+                // Order Handle
+                ReorderableDragStartListener(
+                  index: widget.index,
+                  child: Padding(
+                    padding: EdgeInsets.only(right: isSmall ? 8 : 16),
+                    child: Icon(
+                      Icons.drag_indicator_rounded,
+                      color: widget.isDark ? Colors.white24 : Colors.black12,
+                      size: isSmall ? 20 : 24,
+                    ),
+                  ),
                 ),
-              ),
-            ),
 
-            // Icon
-            Container(
-              width: 52,
-              height: 52,
-              decoration: BoxDecoration(
-                gradient: gradient,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: themeColor.withOpacity(0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
+                // Icon
+                Container(
+                  width: isSmall ? 40 : 52,
+                  height: isSmall ? 40 : 52,
+                  decoration: BoxDecoration(
+                    gradient: gradient,
+                    borderRadius: BorderRadius.circular(isSmall ? 12 : 16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: themeColor.withOpacity(0.3),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Icon(
-                _getIcon(widget.category.iconName),
-                color: Colors.white,
-                size: 26,
-              ),
-            ),
-            const SizedBox(width: 16),
+                  child: Icon(
+                    _getIcon(widget.category.iconName),
+                    color: Colors.white,
+                    size: isSmall ? 20 : 26,
+                  ),
+                ).animate().shimmer(delay: 1.seconds, duration: 2.seconds),
+                SizedBox(width: isSmall ? 12 : 20),
 
-            // Details
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.category.titleLatin,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: widget.isDark ? Colors.white : Colors.black87,
-                    ),
+                // Details
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.category.titleLatin,
+                        style: TextStyle(
+                          fontSize: isSmall ? 16 : 18,
+                          fontWeight: FontWeight.w800,
+                          color: widget.isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.category.titleOlChiki,
+                        style: TextStyle(
+                          fontSize: isSmall ? 12 : 14,
+                          fontWeight: FontWeight.w600,
+                          color: widget.isDark
+                              ? Colors.white38
+                              : Colors.black38,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 4),
-                  Text(
-                    widget.category.titleOlChiki,
-                    style: TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w600,
-                      color: widget.isDark ? Colors.white54 : Colors.black45,
-                    ),
-                  ),
-                ],
-              ),
-            ),
+                ),
 
-            // Actions
-            IconButton(
-              onPressed: widget.onEdit,
-              icon: Icon(
-                Icons.edit_note_rounded,
-                color: widget.isDark ? Colors.white54 : Colors.black45,
-              ),
-              tooltip: 'Edit',
-            ),
-            IconButton(
-              onPressed: widget.onDelete,
-              icon: const Icon(
-                Icons.delete_outline_rounded,
-                color: AppColors.error,
-              ),
-              tooltip: 'Delete',
-            ),
-          ],
+                // Actions
+                IconButton(
+                  onPressed: widget.onEdit,
+                  icon: Icon(
+                    Icons.edit_note_rounded,
+                    color: widget.isDark ? Colors.white54 : Colors.black45,
+                    size: isSmall ? 20 : 24,
+                  ),
+                  visualDensity: isSmall ? VisualDensity.compact : null,
+                  padding: isSmall ? EdgeInsets.zero : null,
+                  tooltip: 'Edit',
+                ),
+                IconButton(
+                  onPressed: widget.onDelete,
+                  icon: Icon(
+                    Icons.delete_outline_rounded,
+                    color: AppColors.error,
+                    size: isSmall ? 20 : 24,
+                  ),
+                  visualDensity: isSmall ? VisualDensity.compact : null,
+                  padding: isSmall ? EdgeInsets.zero : null,
+                  tooltip: 'Delete',
+                ),
+              ],
+            );
+          },
         ),
       ),
-    );
+    ).animate().fadeIn(delay: (widget.index * 50).ms).slideX(begin: 0.05);
   }
 }
 
@@ -918,7 +986,7 @@ class _GradientOption extends StatelessWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: gradient.colors.first.withValues(alpha: 0.4),
+                        color: gradient.colors.first.withOpacity(0.4),
                         blurRadius: 10,
                       ),
                     ]

@@ -5,73 +5,77 @@ import 'dart:convert';
 
 /// Configuration for Hostinger API
 class AppConfig {
-  // TODO: Update this to your Hostinger domain
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'http://localhost:8080', // For local testing
+  static const String uploadBaseUrl = String.fromEnvironment(
+    'UPLOAD_BASE_URL',
+    defaultValue: 'http://localhost:3000',
   );
 
-  static String get uploadEndpoint => '$apiBaseUrl/api/upload.php';
+  static String get uploadEndpoint => '$uploadBaseUrl/api/upload.php';
 }
 
 /// Upload service for Hostinger PHP API
 class HostingerUploadService {
   /// Uploads a file to Hostinger server
   /// [file] - The file to upload
-  /// [folder] - Subfolder name (e.g., 'letters', 'lessons')
+  /// [folder] - Subfolder name (e.g., 'letters', 'lessons', 'video')
   /// Returns the public URL on success, null on failure
   Future<String?> uploadMedia(PlatformFile file, String folder) async {
     try {
-      print('HostingerUpload: Uploading ${file.name} to folder: $folder');
-      print(
-        'HostingerUpload: File size: ${file.size}, Has bytes: ${file.bytes != null}',
-      );
-
-      if (file.bytes == null) {
-        print(
-          'HostingerUpload: ERROR - No bytes available (use withData: true in FilePicker)',
+      if (file.bytes == null && file.path == null) {
+        throw Exception(
+          'File data is missing. Ensure bytes or path is available.',
         );
-        return null;
       }
 
-      // Create multipart request
       final uri = Uri.parse(AppConfig.uploadEndpoint);
       final request = http.MultipartRequest('POST', uri);
 
-      // Add file
-      request.files.add(
-        http.MultipartFile.fromBytes('file', file.bytes!, filename: file.name),
-      );
+      // Add file data
+      if (file.bytes != null) {
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'file',
+            file.bytes!,
+            filename: file.name,
+          ),
+        );
+      } else {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'file',
+            file.path!,
+            filename: file.name,
+          ),
+        );
+      }
 
       // Add folder parameter
       request.fields['folder'] = folder;
 
-      print('HostingerUpload: Sending to ${AppConfig.uploadEndpoint}');
+      // Increase timeout for larger files (e.g., videos)
+      final streamedResponse = await request.send().timeout(
+        const Duration(minutes: 5),
+      );
 
-      // Send request
-      final streamedResponse = await request.send();
       final response = await http.Response.fromStream(streamedResponse);
-
-      print('HostingerUpload: Response status: ${response.statusCode}');
-      print('HostingerUpload: Response body: ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         if (data['success'] == true) {
-          print('HostingerUpload: Success! URL: ${data['url']}');
           return data['url'];
         } else {
-          print('HostingerUpload: API error: ${data['error']}');
-          return null;
+          final errorMessage = data['error'] ?? 'Unknown API error';
+          throw Exception('Upload Failed: $errorMessage');
         }
       } else {
-        print('HostingerUpload: HTTP error: ${response.statusCode}');
-        return null;
+        throw Exception(
+          'Server Error (${response.statusCode}): ${response.reasonPhrase}\nBody: ${response.body}',
+        );
       }
-    } catch (e, stackTrace) {
-      print('HostingerUpload: Exception: $e');
-      print('HostingerUpload: Stack trace: $stackTrace');
-      return null;
+    } catch (e) {
+      // Log error for debugging
+      print('HostingerUploadService error: $e');
+      rethrow;
     }
   }
 }

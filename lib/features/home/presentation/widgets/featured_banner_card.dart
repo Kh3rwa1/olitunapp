@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:itun/shared/widgets/lottie_display.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../shared/widgets/glass_card.dart';
 
@@ -8,6 +9,7 @@ class FeaturedBannerCard extends StatelessWidget {
   final String? subtitle;
   final Gradient gradient;
   final String? imageUrl;
+  final String? animationUrl;
   final IconData? icon;
   final VoidCallback? onTap;
 
@@ -17,6 +19,7 @@ class FeaturedBannerCard extends StatelessWidget {
     this.subtitle,
     required this.gradient,
     this.imageUrl,
+    this.animationUrl,
     this.icon,
     this.onTap,
   });
@@ -57,8 +60,24 @@ class FeaturedBannerCard extends StatelessWidget {
             ),
           ),
 
-          // Background image (if provided)
-          if (imageUrl != null)
+          // Background animation or image (if provided)
+          if (animationUrl != null)
+            Positioned(
+              right: -10,
+              bottom: -10,
+              child: Opacity(
+                opacity: 0.6,
+                child: LottieDisplay(
+                  url: animationUrl!,
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
+                  placeholder: const SizedBox.shrink(),
+                  errorWidget: const SizedBox.shrink(),
+                ),
+              ),
+            )
+          else if (imageUrl != null)
             Positioned(
               right: -20,
               bottom: -20,
@@ -113,7 +132,9 @@ class FeaturedBannerCard extends StatelessWidget {
                         ),
                         decoration: BoxDecoration(
                           color: Colors.white.withValues(alpha: 0.25),
-                          borderRadius: BorderRadius.circular(AppConstants.radiusSmall),
+                          borderRadius: BorderRadius.circular(
+                            AppConstants.radiusSmall,
+                          ),
                         ),
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
@@ -147,11 +168,7 @@ class FeaturedBannerCard extends StatelessWidget {
                       color: Colors.white.withValues(alpha: 0.25),
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
-                      icon,
-                      color: Colors.white,
-                      size: 28,
-                    ),
+                    child: Icon(icon, color: Colors.white, size: 28),
                   ),
               ],
             ),

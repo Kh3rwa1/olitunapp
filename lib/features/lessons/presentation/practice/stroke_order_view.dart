@@ -22,7 +22,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
-    )..repeat();
+    )..forward();
     _animation = CurvedAnimation(parent: _controller, curve: Curves.easeInOut);
   }
 
@@ -141,9 +141,11 @@ class StrokePainter extends CustomPainter {
     final path = buildPracticeGuidePath(size, letter);
     canvas.drawPath(path, guidePaint);
 
-    final targetLength = path
-            .computeMetrics()
-            .fold<double>(0, (sum, metric) => sum + metric.length) *
+    final targetLength =
+        path.computeMetrics().fold<double>(
+          0,
+          (sum, metric) => sum + metric.length,
+        ) *
         progress.value;
     var consumed = 0.0;
 

@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/theme/app_colors.dart';
 
-/// A playful, "Duo-style" card with a 3D pressed effect.
-/// Features a thick bottom border that simulates depth.
-class GamifiedCard extends StatelessWidget {
+class GamifiedCard extends StatefulWidget {
   final Widget child;
   final Color? color;
   final Color? bottomBorderColor;
@@ -24,41 +23,78 @@ class GamifiedCard extends StatelessWidget {
   });
 
   @override
+  State<GamifiedCard> createState() => _GamifiedCardState();
+}
+
+class _GamifiedCardState extends State<GamifiedCard>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+  late Animation<double> _scaleAnimation;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 100),
+    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.96,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final baseColor =
-        color ?? (isDark ? AppColors.darkSurfaceElevated : Colors.white);
+        widget.color ?? (isDark ? AppColors.darkSurfaceElevated : Colors.white);
 
-    // Shadow color for the 3D effect
     final borderColor =
-        bottomBorderColor ??
+        widget.bottomBorderColor ??
         (isDark
-            ? Colors.black.withOpacity(0.3)
-            : Colors.black.withOpacity(0.08));
+            ? Colors.black.withValues(alpha: 0.3)
+            : Colors.black.withValues(alpha: 0.08));
 
     return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        // The "3D" shadow/side part
-        decoration: BoxDecoration(
-          color: borderColor,
-          borderRadius: BorderRadius.circular(borderRadius),
-        ),
+      onTapDown: (_) => _controller.forward(),
+      onTapUp: (_) => _controller.reverse(),
+      onTapCancel: () => _controller.reverse(),
+      onTap: () {
+        HapticFeedback.lightImpact();
+        widget.onTap?.call();
+      },
+      child: AnimatedBuilder(
+        animation: _scaleAnimation,
+        builder: (context, child) =>
+            Transform.scale(scale: _scaleAnimation.value, child: child),
         child: Container(
-          // Shift the main content UP to create the 3D look
-          margin: EdgeInsets.only(bottom: borderWidth),
-          padding: padding ?? const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: baseColor,
-            borderRadius: BorderRadius.circular(borderRadius),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.05)
-                  : Colors.black.withOpacity(0.02),
-              width: 1,
-            ),
+            color: borderColor,
+            borderRadius: BorderRadius.circular(widget.borderRadius),
           ),
-          child: child,
+          child: Container(
+            margin: EdgeInsets.only(bottom: widget.borderWidth),
+            padding: widget.padding ?? const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: baseColor,
+              borderRadius: BorderRadius.circular(widget.borderRadius),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.02),
+
+                width: 1,
+              ),
+            ),
+            child: widget.child,
+          ),
         ),
       ),
     );

@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
 import 'core/theme/app_theme.dart';
+import 'features/admin/presentation/admin_login_screen.dart';
 import 'features/admin/presentation/admin_dashboard_screen.dart';
 import 'features/admin/presentation/admin_categories_screen.dart';
 import 'features/admin/presentation/admin_banners_screen.dart';
@@ -11,6 +14,9 @@ import 'features/admin/presentation/admin_lessons_screen.dart';
 import 'features/admin/presentation/admin_lesson_content_screen.dart';
 import 'features/admin/presentation/admin_quizzes_screen.dart';
 import 'features/admin/presentation/admin_rhymes_screen.dart';
+import 'features/admin/presentation/admin_media_screen.dart';
+import 'features/admin/presentation/admin_shell.dart';
+import 'features/admin/providers/admin_auth_provider.dart';
 
 import 'core/storage/storage_service.dart';
 
@@ -19,6 +25,7 @@ void main() async {
 
   // Initialize shared storage
   await initStorage();
+  final prefs = await SharedPreferences.getInstance();
 
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -27,53 +34,100 @@ void main() async {
     ),
   );
 
-  runApp(const ProviderScope(child: AdminWebLoader()));
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const AdminWebLoader(),
+    ),
+  );
 }
 
 final _adminRouter = GoRouter(
-  initialLocation: '/',
+  initialLocation: '/admin',
   routes: [
     GoRoute(
-      path: '/',
-      builder: (context, state) => const AdminDashboardScreen(),
+      path: '/admin/login',
+      builder: (context, state) => const AdminLoginScreen(),
     ),
-    GoRoute(
-      path: '/admin',
-      builder: (context, state) => const AdminDashboardScreen(),
-    ),
-    GoRoute(
-      path: '/admin/categories',
-      builder: (context, state) => const AdminCategoriesScreen(),
-    ),
-    GoRoute(
-      path: '/admin/banners',
-      builder: (context, state) => const AdminBannersScreen(),
-    ),
-    GoRoute(
-      path: '/admin/letters',
-      builder: (context, state) => const AdminLettersScreen(),
-    ),
-    GoRoute(
-      path: '/admin/lessons',
-      builder: (context, state) => const AdminLessonsScreen(),
-    ),
-    GoRoute(
-      path: '/admin/lessons/content/:lessonId',
-      builder: (context, state) {
-        final lessonId = state.pathParameters['lessonId'] ?? '';
-        return AdminLessonContentScreen(lessonId: lessonId);
+    GoRoute(path: '/', redirect: (_, __) => '/admin'),
+    ShellRoute(
+      builder: (context, state, child) {
+        return AdminShell(child: child);
       },
-    ),
-    GoRoute(
-      path: '/admin/quizzes',
-      builder: (context, state) => const AdminQuizzesScreen(),
-    ),
-    GoRoute(
-      path: '/admin/rhymes',
-      builder: (context, state) => const AdminRhymesScreen(),
+      routes: [
+        GoRoute(
+          path: '/admin',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminDashboardScreen(),
+        ),
+        GoRoute(
+          path: '/admin/categories',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminCategoriesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/banners',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminBannersScreen(),
+        ),
+        GoRoute(
+          path: '/admin/letters',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminLettersScreen(),
+        ),
+        GoRoute(
+          path: '/admin/lessons',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminLessonsScreen(),
+          routes: [
+            GoRoute(
+              path: 'content/:lessonId',
+              builder: (context, state) {
+                final lessonId = state.pathParameters['lessonId'] ?? '';
+                return AdminLessonContentScreen(lessonId: lessonId);
+              },
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/admin/quizzes',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminQuizzesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/rhymes',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) => const AdminRhymesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/media',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.all),
+        ),
+        GoRoute(
+          path: '/admin/audio',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.audio),
+        ),
+        GoRoute(
+          path: '/admin/video',
+          redirect: _adminAuthRedirect,
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.video),
+        ),
+      ],
     ),
   ],
 );
+
+String? _adminAuthRedirect(BuildContext context, GoRouterState state) {
+  final container = ProviderScope.containerOf(context);
+  final isAuthenticated = container.read(adminAuthProvider);
+  if (!isAuthenticated) return '/admin/login';
+  return null;
+}
 
 class AdminWebLoader extends ConsumerWidget {
   const AdminWebLoader({super.key});
@@ -85,8 +139,7 @@ class AdminWebLoader extends ConsumerWidget {
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
-      themeMode: ThemeMode
-          .light, // Admin panel usually preferred in light or dark explicitly
+      themeMode: ThemeMode.light,
       routerConfig: _adminRouter,
     );
   }

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../../../core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../shared/widgets/animated_buttons.dart';
-import '../../../core/presentation/animations/scale_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/audio/audio_service.dart';
+import '../../../shared/providers/providers.dart';
+import '../../../shared/models/content_models.dart';
 
 class LetterDetailScreen extends ConsumerStatefulWidget {
   final String letterId;
@@ -21,238 +22,64 @@ class LetterDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
+  late PageController _pageController;
   int _currentIndex = 0;
 
-  static const _emojiBaseUrl = 'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
-
-  // Ol Chiki letters data with examples
-  final Map<String, List<Map<String, dynamic>>> lessonLetters = {
-    'alphabets_1': [
-      {
-        'char': 'ᱚ',
-        'latin': 'a',
-        'name': 'La',
-        'example': 'ᱟᱡ',
-        'exampleLatin': 'Aaj (Today)',
-        'color': const Color(0xFFFFF0F5),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '🌅',
-      },
-      {
-        'char': 'ᱟ',
-        'latin': 'aa',
-        'name': 'Aah',
-        'example': 'ᱟᱯᱟ',
-        'exampleLatin': 'Apa (Father)',
-        'color': const Color(0xFFF0F4FF),
-        'accentColor': const Color(0xFF3F51B5),
-        'emoji': '👨',
-      },
-      {
-        'char': 'ᱤ',
-        'latin': 'i',
-        'name': 'Li',
-        'example': 'ᱤᱧ',
-        'exampleLatin': 'Ing (I/Me)',
-        'color': const Color(0xFFF5FFF0),
-        'accentColor': const Color(0xFF4CAF50),
-        'emoji': '🙋',
-      },
-      {
-        'char': 'ᱩ',
-        'latin': 'u',
-        'name': 'Lu',
-        'example': 'ᱩᱞ',
-        'exampleLatin': 'Ul (Mango)',
-        'color': const Color(0xFFFFFBE5),
-        'accentColor': const Color(0xFFFF9800),
-        'emoji': '🥭',
-      },
-    ],
-    'alphabets_2': [
-      {
-        'char': 'ᱚ',
-        'latin': 'a',
-        'name': 'A vowel',
-        'example': 'ᱟᱢ',
-        'exampleLatin': 'Am (You)',
-        'color': const Color(0xFFFFF0F5),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '👋',
-      },
-      {
-        'char': 'ᱟ',
-        'latin': 'aa',
-        'name': 'AA vowel',
-        'example': 'ᱟᱭᱳ',
-        'exampleLatin': 'Ayo (Mother)',
-        'color': const Color(0xFFFCE4EC),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '👩',
-      },
-      {
-        'char': 'ᱤ',
-        'latin': 'i',
-        'name': 'I vowel',
-        'example': 'ᱤᱱ',
-        'exampleLatin': 'In (House)',
-        'color': const Color(0xFFE8F5E9),
-        'accentColor': const Color(0xFF4CAF50),
-        'emoji': '🏠',
-      },
-      {
-        'char': 'ᱩ',
-        'latin': 'u',
-        'name': 'U vowel',
-        'example': 'ᱩᱲᱩᱜ',
-        'exampleLatin': 'Urub (Egg)',
-        'color': const Color(0xFFFFF8E1),
-        'accentColor': const Color(0xFFFF9800),
-        'emoji': '🥚',
-      },
-      {
-        'char': 'ᱮ',
-        'latin': 'e',
-        'name': 'E vowel',
-        'example': 'ᱮᱞ',
-        'exampleLatin': 'El (Come)',
-        'color': const Color(0xFFE3F2FD),
-        'accentColor': const Color(0xFF2196F3),
-        'emoji': '🚶',
-      },
-      {
-        'char': 'ᱳ',
-        'latin': 'o',
-        'name': 'O vowel',
-        'example': 'ᱳᱞ',
-        'exampleLatin': 'Ol (Write)',
-        'color': const Color(0xFFEDE7F6),
-        'accentColor': const Color(0xFF673AB7),
-        'emoji': '✍️',
-      },
-    ],
-    'alphabets_3': [
-      {
-        'char': 'ᱠ',
-        'latin': 'k',
-        'name': 'Ok',
-        'example': 'ᱠᱩᱲᱤ',
-        'exampleLatin': 'Kurhi (Girl)',
-        'color': const Color(0xFFFCE4EC),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '👧',
-      },
-      {
-        'char': 'ᱜ',
-        'latin': 'g',
-        'name': 'Ol',
-        'example': 'ᱜᱟᱰᱟ',
-        'exampleLatin': 'Gada (River)',
-        'color': const Color(0xFFE3F2FD),
-        'accentColor': const Color(0xFF2196F3),
-        'emoji': '🏞️',
-      },
-      {
-        'char': 'ᱝ',
-        'latin': 'ng',
-        'name': 'Ong',
-        'example': 'ᱥᱤᱝ',
-        'exampleLatin': 'Sing (Sun)',
-        'color': const Color(0xFFFFF8E1),
-        'accentColor': const Color(0xFFFF9800),
-        'emoji': '☀️',
-      },
-      {
-        'char': 'ᱪ',
-        'latin': 'c',
-        'name': 'Uc',
-        'example': 'ᱪᱟᱸᱫᱚ',
-        'exampleLatin': 'Chando (Moon)',
-        'color': const Color(0xFFEDE7F6),
-        'accentColor': const Color(0xFF673AB7),
-        'emoji': '🌙',
-      },
-      {
-        'char': 'ᱡ',
-        'latin': 'j',
-        'name': 'Oj',
-        'example': 'ᱡᱚᱡᱚ',
-        'exampleLatin': 'Jojo (Baby)',
-        'color': const Color(0xFFFFF0F5),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '👶',
-      },
-    ],
-    'alphabets_4': [
-      {
-        'char': 'ᱴ',
-        'latin': 't',
-        'name': 'Ot',
-        'example': 'ᱴᱟᱹᱜᱤ',
-        'exampleLatin': 'Taki (Axe)',
-        'color': const Color(0xFFEFEBE9),
-        'accentColor': const Color(0xFF795548),
-        'emoji': '🪓',
-      },
-      {
-        'char': 'ᱰ',
-        'latin': 'd',
-        'name': 'Od',
-        'example': 'ᱰᱟᱹᱦᱤ',
-        'exampleLatin': 'Dahi (Yogurt)',
-        'color': const Color(0xFFFFFDE7),
-        'accentColor': const Color(0xFFFFEB3B),
-        'emoji': '🥛',
-      },
-      {
-        'char': 'ᱱ',
-        'latin': 'n',
-        'name': 'On',
-        'example': 'ᱱᱤᱫᱟ',
-        'exampleLatin': 'Nida (Sleep)',
-        'color': const Color(0xFFE8EAF6),
-        'accentColor': const Color(0xFF3F51B5),
-        'emoji': '😴',
-      },
-      {
-        'char': 'ᱯ',
-        'latin': 'p',
-        'name': 'Op',
-        'example': 'ᱯᱩᱥᱤ',
-        'exampleLatin': 'Pusi (Cat)',
-        'color': const Color(0xFFF3E5F5),
-        'accentColor': AppColors.duoBlue,
-        'emoji': '🐱',
-      },
-      {
-        'char': 'ᱵ',
-        'latin': 'b',
-        'name': 'Ob',
-        'example': 'ᱵᱟᱝ',
-        'exampleLatin': 'Baha (Flower)',
-        'color': const Color(0xFFFCE4EC),
-        'accentColor': const Color(0xFFE91E63),
-        'emoji': '🌸',
-      },
-    ],
+  // Fallback emoji mapping for letters that don't have imageUrl
+  static const Map<String, String> _letterEmojis = {
+    'ᱚ': '🌅',
+    'ᱟ': '👨',
+    'ᱤ': '🙋',
+    'ᱩ': '🥭',
+    'ᱮ': '🚶',
+    'ᱳ': '✍️',
+    'ᱠ': '👧',
+    'ᱜ': '🏞️',
+    'ᱝ': '☀️',
+    'ᱪ': '🌙',
+    'ᱡ': '🍇',
+    'ᱛ': '⭐',
+    'ᱞ': '📖',
   };
 
-  List<Map<String, dynamic>> get letters =>
-      lessonLetters[widget.lessonId] ?? lessonLetters['alphabets_1']!;
+  // Accent colors for letters
+  static const List<Color> _accentColors = [
+    Color(0xFFE91E63),
+    Color(0xFF3F51B5),
+    Color(0xFF4CAF50),
+    Color(0xFFFF9800),
+    Color(0xFF2196F3),
+    Color(0xFF673AB7),
+    Color(0xFF009688),
+    Color(0xFFFF5722),
+  ];
+
+  static const _emojiBaseUrl =
+      'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
 
   @override
   void initState() {
     super.initState();
-    // Find initial index based on letterId
-    final index = letters.indexWhere((l) => l['char'] == widget.letterId);
-    _currentIndex = index >= 0 ? index : 0;
+    _pageController = PageController(initialPage: _currentIndex);
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
   }
 
-  void _goToLetter(int index) {
-    if (index >= 0 && index < letters.length) {
-      HapticFeedback.lightImpact();
-      setState(() => _currentIndex = index);
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onPageChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() => _currentIndex = index);
   }
 
   String _emojiToPngUrl(String emoji) {
@@ -263,326 +90,512 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     return '$_emojiBaseUrl/$runes.png';
   }
 
+  Color _getAccentColor(int index) {
+    return _accentColors[index % _accentColors.length];
+  }
+
+  Color _getBackgroundColor(int index, bool isDark) {
+    if (isDark) return const Color(0xFF0A0E14);
+    final colors = [
+      const Color(0xFFFFF0F5),
+      const Color(0xFFF0F4FF),
+      const Color(0xFFF5FFF0),
+      const Color(0xFFFFFBE5),
+      const Color(0xFFE3F2FD),
+      const Color(0xFFEDE7F6),
+      const Color(0xFFE0F7FA),
+      const Color(0xFFFFF3E0),
+    ];
+    return colors[index % colors.length];
+  }
+
   @override
   Widget build(BuildContext context) {
-    final letter = letters[_currentIndex];
+    final lettersAsync = ref.watch(lettersProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : letter['color'],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ScaleButton(
-            onPressed: () => context.go('/lesson/${widget.lessonId}'),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: letter['accentColor'],
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          // Audio button
-          // Audio button
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ScaleButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                // TODO: Play audio
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.volume_up_rounded,
-                  color: letter['accentColor'],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
+    return lettersAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: const Center(child: CircularProgressIndicator()),
       ),
-      body: SafeArea(
-        child: Column(
-          children: [
-            // Main content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: Column(
-                  children: [
-                    const SizedBox(height: 20),
+      error: (error, stack) => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: Center(child: Text('Error: $error')),
+      ),
+      data: (letters) {
+        if (letters.isEmpty) {
+          return Scaffold(
+            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_rounded, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No letters available',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add letters from the admin panel',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white38 : Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
 
-                    // Hero illustration (transparent background)
-                    SizedBox(
-                      width: double.infinity,
-                      child: Column(
-                        children: [
-                          TweenAnimationBuilder<double>(
-                            tween: Tween(begin: 0.94, end: 1.0),
-                            duration: const Duration(milliseconds: 1200),
-                            curve: Curves.easeInOut,
-                            builder: (context, scale, child) {
-                              return Transform.scale(
-                                scale: scale,
-                                child: child,
-                              );
-                            },
-                            child: TweenAnimationBuilder<double>(
-                              tween: Tween(begin: -0.06, end: 0.06),
-                              duration: const Duration(milliseconds: 1700),
-                              curve: Curves.easeInOut,
-                              builder: (context, turn, child) {
-                                return Transform.rotate(
-                                  angle: turn,
-                                  child: child,
-                                );
-                              },
-                              onEnd: () {
-                                if (mounted) {
-                                  setState(() {});
-                                }
-                              },
-                              child: Image.network(
-                                _emojiToPngUrl(letter['emoji'].toString()),
-                                width: 220,
-                                height: 220,
+        // Find initial index by letterId
+        if (_currentIndex == 0 && widget.letterId.isNotEmpty) {
+          final index = letters.indexWhere(
+            (l) => l.id == widget.letterId || l.charOlChiki == widget.letterId,
+          );
+          if (index >= 0 && _currentIndex != index) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => _currentIndex = index);
+                _pageController.jumpToPage(index);
+              }
+            });
+          }
+        }
+
+        final currentLetter = letters[_currentIndex];
+        final accentColor = _getAccentColor(_currentIndex);
+        final bgColor = _getBackgroundColor(_currentIndex, isDark);
+
+        return Scaffold(
+          backgroundColor: bgColor,
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          body: Stack(
+            children: [
+              // Full-screen PageView with swipe navigation
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                itemCount: letters.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final letter = letters[index];
+                  return _buildLetterPage(
+                    letter,
+                    index,
+                    isDark,
+                    statusBarHeight,
+                  );
+                },
+              ),
+
+              // Floating back button
+              Positioned(
+                top: statusBarHeight + 8,
+                left: 16,
+                child: _buildFloatingButton(
+                  icon: Icons.arrow_back_rounded,
+                  color: accentColor,
+                  onTap: () => context.pop(),
+                ),
+              ),
+
+              // Floating audio button
+              if (currentLetter.audioUrl != null)
+                Positioned(
+                  top: statusBarHeight + 8,
+                  right: 16,
+                  child: _buildFloatingButton(
+                    icon: Icons.volume_up_rounded,
+                    color: accentColor,
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      ref
+                          .read(audioServiceProvider)
+                          .playUrl(currentLetter.audioUrl!);
+                    },
+                  ),
+                ),
+
+              // Bottom page indicator
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+                left: 0,
+                right: 0,
+                child: _buildPageIndicator(letters.length, accentColor, isDark),
+              ),
+            ],
+          ),
+          floatingActionButton: Container(
+            margin: const EdgeInsets.only(left: 32, right: 32, bottom: 80),
+            width: double.infinity,
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                context.push(
+                  '/practice/${currentLetter.charOlChiki}/${currentLetter.transliterationLatin}',
+                );
+              },
+              backgroundColor: accentColor,
+              elevation: 4,
+              label: const Text(
+                'PRACTICE WRITING',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
+            ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+        );
+      },
+    );
+  }
+
+  Widget _buildFloatingButton({
+    required IconData icon,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.95),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: color, size: 24),
+      ),
+    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
+  }
+
+  Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final isActive = index == _currentIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 28 : 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: isActive
+                ? accentColor
+                : (isDark ? Colors.white30 : Colors.black26),
+            borderRadius: BorderRadius.circular(5),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildLetterPage(
+    LetterModel letter,
+    int index,
+    bool isDark,
+    double statusBarHeight,
+  ) {
+    final accentColor = _getAccentColor(index);
+    final emoji = _letterEmojis[letter.charOlChiki] ?? '📖';
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24, statusBarHeight + 70, 24, 100),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        children: [
+          const SizedBox(height: 20),
+
+          // Hero image/emoji
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.94, end: 1.0),
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeInOut,
+                  builder: (context, scale, child) {
+                    return Transform.scale(scale: scale, child: child);
+                  },
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: -0.06, end: 0.06),
+                    duration: const Duration(milliseconds: 1700),
+                    curve: Curves.easeInOut,
+                    builder: (context, turn, child) {
+                      return Transform.rotate(angle: turn, child: child);
+                    },
+                    onEnd: () {
+                      if (mounted) setState(() {});
+                    },
+                    // Use imageUrl from database if available, otherwise fallback to emoji
+                    child:
+                        letter.imageUrl != null && letter.imageUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              letter.imageUrl!,
+                              width: 200,
+                              height: 200,
+                              fit: BoxFit.contain,
+                              filterQuality: FilterQuality.high,
+                              errorBuilder: (context, _, __) => Image.network(
+                                _emojiToPngUrl(emoji),
+                                width: 200,
+                                height: 200,
                                 fit: BoxFit.contain,
-                                filterQuality: FilterQuality.high,
-                                errorBuilder: (context, _, __) => Text(
-                                  letter['emoji'],
-                                  style: const TextStyle(fontSize: 120),
-                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 16),
-
-                          // Letter title
-                          Text(
-                            letter['exampleLatin'],
-                            style: TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w800,
-                              color: letter['accentColor'],
+                          )
+                        : Image.network(
+                            _emojiToPngUrl(emoji),
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            errorBuilder: (context, _, __) => Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 100),
                             ),
                           ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 32),
+                  ),
+                ),
+                const SizedBox(height: 16),
 
-                    // Large Ol Chiki character
-                    Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            letter['accentColor'].withOpacity(0.1),
-                            letter['accentColor'].withOpacity(0.2),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
+                // Letter name/example
+                Animate(
+                  child: Text(
+                    letter.exampleWordLatin ?? letter.transliterationLatin,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                ).fadeIn(delay: 300.ms).scale(),
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Large Ol Chiki character
+          Container(
+            width: 180,
+            height: 180,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accentColor.withValues(alpha: 0.15),
+                  accentColor.withValues(alpha: 0.25),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(36),
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.4),
+                width: 4,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.2),
+                  blurRadius: 30,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                letter.charOlChiki,
+                style: TextStyle(
+                  fontSize: 80,
+                  fontWeight: FontWeight.w900,
+                  color: accentColor,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          // Romanization badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withValues(alpha: 0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Text(
+              letter.transliterationLatin.toUpperCase(),
+              style: const TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+                letterSpacing: 2,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Pronunciation hint
+          if (letter.pronunciation != null && letter.pronunciation!.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
                         ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: letter['accentColor'].withOpacity(0.3),
-                          width: 3,
+                      ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.record_voice_over_rounded,
+                        color: accentColor,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pronunciation',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: accentColor,
                         ),
                       ),
-                      child: Center(
-                        child: Text(
-                          letter['char'],
-                          style: TextStyle(
-                            fontSize: 72,
-                            fontWeight: FontWeight.w700,
-                            color: letter['accentColor'],
-                          ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    letter.pronunciation!,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.5,
+                      color: isDark ? Colors.white70 : Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          // Example word
+          if (letter.exampleWordOlChiki != null)
+            Padding(
+              padding: const EdgeInsets.only(top: 16),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      accentColor.withValues(alpha: 0.1),
+                      accentColor.withValues(alpha: 0.05),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.2),
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Example',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: accentColor.withValues(alpha: 0.8),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      letter.exampleWordOlChiki!,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: accentColor,
+                      ),
+                    ),
+                    if (letter.exampleWordLatin != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        letter.exampleWordLatin!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.grey[600],
                         ),
                       ),
-                    ),
-                    const SizedBox(height: 16),
-
-                    // Latin pronunciation
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 24,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: letter['accentColor'].withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(20),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            letter['latin'].toString().toUpperCase(),
-                            style: TextStyle(
-                              fontSize: 28,
-                              fontWeight: FontWeight.w800,
-                              color: letter['accentColor'],
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Text(
-                            '• ${letter['name']}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: letter['accentColor'].withOpacity(0.8),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Example word
-                    Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          Text(
-                            'Example Word',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            letter['example'],
-                            style: TextStyle(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w600,
-                              color: letter['accentColor'],
-                            ),
-                          ),
-                          Text(
-                            letter['exampleLatin'],
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Colors.grey[600],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
-
-                    // Practice Button
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 24),
-                      child: DuoButton(
-                        text: 'PRACTICE WRITING',
-                        icon: Icons.edit_rounded,
-                        color: letter['accentColor'],
-                        onPressed: () {
-                          final encodedChar = Uri.encodeComponent(
-                            letter['char'].toString(),
-                          );
-                          final encodedName = Uri.encodeComponent(
-                            letter['name'].toString(),
-                          );
-                          context.push(
-                            '/practice/$encodedChar/$encodedName',
-                          );
-                        },
-                      ),
-                    ),
-                    const SizedBox(height: 100),
+                    ],
                   ],
                 ),
               ),
             ),
-
-            // Bottom pagination
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(letters.length, (index) {
-                  final isActive = index == _currentIndex;
-                  return ScaleButton(
-                    onPressed: () => _goToLetter(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      width: isActive ? 44 : 36,
-                      height: isActive ? 44 : 36,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? letter['accentColor']
-                            : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(isActive ? 14 : 12),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: letter['accentColor'].withOpacity(0.4),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: TextStyle(
-                            fontSize: isActive ? 18 : 14,
-                            fontWeight: FontWeight.w700,
-                            color: isActive ? Colors.white : Colors.grey[600],
-                          ),
-                        ),
-                      ),
-                    ),
-                  );
-                }),
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }

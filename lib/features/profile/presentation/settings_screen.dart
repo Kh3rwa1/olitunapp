@@ -3,7 +3,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/storage/storage_service.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -14,6 +16,92 @@ class SettingsScreen extends ConsumerWidget {
     final scriptMode = ref.watch(scriptModeProvider);
     final soundEnabled = ref.watch(soundEnabledProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDesktop = ResponsiveLayout.isDesktop(context);
+
+    final settingsBody = ListView(
+      padding: EdgeInsets.symmetric(
+        horizontal: isDesktop ? 32 : 20,
+        vertical: isDesktop ? 32 : 20,
+      ),
+      children: [
+        if (isDesktop) ...[
+          Text(
+            'Settings',
+            style: TextStyle(
+              fontSize: 28,
+              fontWeight: FontWeight.w800,
+              color: isDark ? Colors.white : Colors.black,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Customize your learning experience',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white54 : Colors.black45,
+            ),
+          ),
+          const SizedBox(height: 32),
+        ],
+
+        // Appearance Section
+        _SectionHeader('Appearance', isDark),
+        const SizedBox(height: 16),
+        _SettingTile(
+          icon: Icons.dark_mode_rounded,
+          title: 'Dark Mode',
+          subtitle: _getThemeLabel(themeMode),
+          isDark: isDark,
+          onTap: () => _showThemeDialog(context, ref, themeMode),
+        ),
+
+        const SizedBox(height: 28),
+
+        // Script Section
+        _SectionHeader('Script Display', isDark),
+        const SizedBox(height: 16),
+        _SettingTile(
+          icon: Icons.translate_rounded,
+          title: 'Script Mode',
+          subtitle: _getScriptLabel(scriptMode),
+          isDark: isDark,
+          onTap: () => _showScriptDialog(context, ref, scriptMode),
+        ),
+
+        const SizedBox(height: 28),
+
+        // Sound Section
+        _SectionHeader('Sound', isDark),
+        const SizedBox(height: 16),
+        _ToggleTile(
+          icon: Icons.volume_up_rounded,
+          title: 'Sound Effects',
+          subtitle: 'Play sounds for actions',
+          value: soundEnabled,
+          isDark: isDark,
+          onChanged: (value) => toggleSound(ref),
+        ),
+
+        const SizedBox(height: 28),
+
+        // Data Section
+        _SectionHeader('Data', isDark),
+        const SizedBox(height: 16),
+        _SettingTile(
+          icon: Icons.restart_alt_rounded,
+          title: 'Reset Progress',
+          subtitle: 'Clear all learning data',
+          isDark: isDark,
+          isDestructive: true,
+          onTap: () => _showResetDialog(context, ref),
+        ),
+      ],
+    );
+
+    // On desktop, render inline (no Scaffold/AppBar) since it's inside MainShellScreen
+    if (isDesktop) {
+      return settingsBody;
+    }
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -35,62 +123,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          // Appearance Section
-          _SectionHeader('Appearance', isDark),
-          const SizedBox(height: 16),
-          _SettingTile(
-            icon: Icons.dark_mode_rounded,
-            title: 'Dark Mode',
-            subtitle: _getThemeLabel(themeMode),
-            isDark: isDark,
-            onTap: () => _showThemeDialog(context, ref, themeMode),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Script Section
-          _SectionHeader('Script Display', isDark),
-          const SizedBox(height: 16),
-          _SettingTile(
-            icon: Icons.translate_rounded,
-            title: 'Script Mode',
-            subtitle: _getScriptLabel(scriptMode),
-            isDark: isDark,
-            onTap: () => _showScriptDialog(context, ref, scriptMode),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Sound Section
-          _SectionHeader('Sound', isDark),
-          const SizedBox(height: 16),
-          _ToggleTile(
-            icon: Icons.volume_up_rounded,
-            title: 'Sound Effects',
-            subtitle: 'Play sounds for actions',
-            value: soundEnabled,
-            isDark: isDark,
-            onChanged: (value) => toggleSound(ref),
-          ),
-
-          const SizedBox(height: 28),
-
-          // Data Section
-          _SectionHeader('Data', isDark),
-          const SizedBox(height: 16),
-          _SettingTile(
-            icon: Icons.restart_alt_rounded,
-            title: 'Reset Progress',
-            subtitle: 'Clear all learning data',
-            isDark: isDark,
-            isDestructive: true,
-            onTap: () => _showResetDialog(context, ref),
-          ),
-        ],
-      ),
+      body: settingsBody,
     );
   }
 
@@ -231,8 +264,10 @@ class SettingsScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
-              updateStreak(ref, 0);
-              addStars(ref, -ref.read(userStarsProvider));
+              // Reset progress by clearing the stored data
+              prefs.remove('user_progress_data');
+              // Force a reload by invalidating the provider
+              ref.invalidate(progressProvider);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -373,56 +408,61 @@ class _ToggleTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+    return Material(
+      color: Colors.transparent,
+      child: Container(
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isDark
+                ? Colors.white10
+                : Colors.black.withValues(alpha: 0.05),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 44,
-            height: 44,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(12),
+        child: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: AppColors.primary),
             ),
-            child: Icon(icon, color: AppColors.primary),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white : Colors.black,
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  subtitle,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white54 : Colors.black45,
+                  const SizedBox(height: 2),
+                  Text(
+                    subtitle,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: isDark ? Colors.white54 : Colors.black45,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          Switch(
-            value: value,
-            onChanged: onChanged,
-            activeColor: AppColors.primary,
-          ),
-        ],
+            Switch(
+              value: value,
+              onChanged: onChanged,
+              activeThumbColor: AppColors.primary,
+            ),
+          ],
+        ),
       ),
     );
   }

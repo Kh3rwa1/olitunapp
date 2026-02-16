@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -19,7 +18,7 @@ class WelcomeScreen extends ConsumerWidget {
         children: [
           // Animated gradient background
           _buildBackground(isDark, size),
-          
+
           // Content
           SafeArea(
             child: Padding(
@@ -27,14 +26,18 @@ class WelcomeScreen extends ConsumerWidget {
               child: Column(
                 children: [
                   const Spacer(flex: 2),
-                  
+
                   // Logo and branding
-                  _buildLogo().animate()
+                  _buildLogo()
+                      .animate()
                       .fadeIn(duration: 800.ms)
-                      .scale(begin: const Offset(0.8, 0.8), curve: Curves.easeOutBack),
-                  
+                      .scale(
+                        begin: const Offset(0.8, 0.8),
+                        curve: Curves.easeOutBack,
+                      ),
+
                   const SizedBox(height: 28),
-                  
+
                   // Title
                   ShaderMask(
                     shaderCallback: (bounds) => LinearGradient(
@@ -50,28 +53,30 @@ class WelcomeScreen extends ConsumerWidget {
                       ),
                     ),
                   ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
-                  
+
                   const SizedBox(height: 12),
-                  
+
                   Text(
                     'Learn Ol Chiki Script',
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
-                      color: isDark ? AppColors.textSecondaryDark : AppColors.textSecondaryLight,
+                      color: isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight,
                     ),
                   ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
-                  
+
                   const Spacer(flex: 2),
-                  
+
                   // Features
                   _buildFeatureCards(isDark),
-                  
+
                   const Spacer(),
-                  
+
                   // CTA Buttons
                   _buildCTAButtons(context, isDark),
-                  
+
                   const SizedBox(height: 40),
                 ],
               ),
@@ -156,7 +161,14 @@ class WelcomeScreen extends ConsumerWidget {
           'assets/icons/olitun_logo.png',
           fit: BoxFit.cover,
           errorBuilder: (_, __, ___) => const Center(
-            child: Text('ᱚ', style: TextStyle(fontSize: 56, fontWeight: FontWeight.w900, color: Colors.white)),
+            child: Text(
+              'ᱚ',
+              style: TextStyle(
+                fontSize: 56,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
           ),
         ),
       ),
@@ -175,58 +187,71 @@ class WelcomeScreen extends ConsumerWidget {
       children: features.asMap().entries.map((entry) {
         final feature = entry.value;
         return Expanded(
-          child: Container(
-            margin: EdgeInsets.only(
-              left: entry.key == 0 ? 0 : 8,
-              right: entry.key == features.length - 1 ? 0 : 8,
-            ),
-            padding: const EdgeInsets.symmetric(vertical: 20),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white.withValues(alpha: 0.06) : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.05),
+              child: Container(
+                margin: EdgeInsets.only(
+                  left: entry.key == 0 ? 0 : 8,
+                  right: entry.key == features.length - 1 ? 0 : 8,
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 20),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                  boxShadow: isDark
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 20,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
+                ),
+                child: Column(
+                  children: [
+                    Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Icon(
+                        feature.icon,
+                        color: AppColors.primary,
+                        size: 24,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      feature.title,
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      feature.subtitle,
+                      style: TextStyle(
+                        fontSize: 11,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              boxShadow: isDark ? null : [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.05),
-                  blurRadius: 20,
-                  offset: const Offset(0, 8),
-                ),
-              ],
-            ),
-            child: Column(
-              children: [
-                Container(
-                  width: 48,
-                  height: 48,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(14),
-                  ),
-                  child: Icon(feature.icon, color: AppColors.primary, size: 24),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  feature.title,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  feature.subtitle,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark ? Colors.white54 : Colors.black45,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ).animate().fadeIn(delay: (600 + entry.key * 100).ms, duration: 400.ms).slideY(begin: 0.2);
+            )
+            .animate()
+            .fadeIn(delay: (600 + entry.key * 100).ms, duration: 400.ms)
+            .slideY(begin: 0.2);
       }).toList(),
     );
   }
@@ -238,7 +263,7 @@ class WelcomeScreen extends ConsumerWidget {
         GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            context.go('/home');
+            context.go('/auth');
           },
           child: Container(
             width: double.infinity,
@@ -267,15 +292,32 @@ class WelcomeScreen extends ConsumerWidget {
             ),
           ),
         ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
-        
+
         const SizedBox(height: 16),
-        
-        // Trust text
-        Text(
-          'Join 50,000+ learners worldwide',
-          style: TextStyle(
-            fontSize: 13,
-            color: isDark ? Colors.white38 : Colors.black38,
+
+        // Login link
+        GestureDetector(
+          onTap: () {
+            HapticFeedback.lightImpact();
+            context.go('/auth');
+          },
+          child: RichText(
+            text: TextSpan(
+              text: "Already have an account? ",
+              style: TextStyle(
+                color: isDark ? Colors.white38 : Colors.black38,
+                fontSize: 14,
+              ),
+              children: [
+                TextSpan(
+                  text: "Sign In",
+                  style: TextStyle(
+                    color: AppColors.primary,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
           ),
         ).animate().fadeIn(delay: 1000.ms, duration: 500.ms),
       ],

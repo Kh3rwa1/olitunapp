@@ -21,7 +21,7 @@ class QuickActionsGrid extends StatelessWidget {
             icon: Icons.quiz_rounded,
             label: l10n.dailyQuiz,
             gradient: AppColors.premiumPink,
-            onTap: () => context.go('/quiz/daily'),
+            onTap: () => context.go('/quizzes'),
           ),
         ),
         const SizedBox(width: 14),

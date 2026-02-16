@@ -30,6 +30,7 @@ echo "Building web application targeting Admin Panel..."
 # Removed --web-renderer for compatibility with newer Flutter versions
 flutter build web \
   -t lib/main_admin.dart \
-  --release
+  --release \
+  --base-href "/admin/"
 
 echo "Build complete!"

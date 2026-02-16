@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/lottie_display.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 
@@ -15,6 +17,25 @@ class LessonDetailScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lessons = ref.watch(lessonsProvider);
+
+    // Watch these content providers to ensure data is available for dynamic block matching
+    final letters = ref.watch(lettersProvider);
+    final numbers = ref.watch(numbersProvider);
+    final words = ref.watch(wordsProvider);
+    final sentences = ref.watch(sentencesProvider);
+
+    final allLoaded =
+        letters.hasValue &&
+        numbers.hasValue &&
+        words.hasValue &&
+        sentences.hasValue;
+
+    final countsString =
+        'Letters: ${letters.value?.length ?? 'null'} (loading: ${letters.isLoading}, hasError: ${letters.hasError})\n'
+        'Numbers: ${numbers.value?.length ?? 'null'} (loading: ${numbers.isLoading}, hasError: ${numbers.hasError})\n'
+        'Words: ${words.value?.length ?? 'null'} (loading: ${words.isLoading}, hasError: ${words.hasError})\n'
+        'Sentences: ${sentences.value?.length ?? 'null'} (loading: ${sentences.isLoading}, hasError: ${sentences.hasError})';
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return lessons.when(
@@ -38,7 +59,7 @@ class LessonDetailScreen extends ConsumerWidget {
                   Icons.arrow_back_rounded,
                   color: isDark ? Colors.white : Colors.black,
                 ),
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.pop(),
               ),
             ),
             body: const Center(child: Text('No lessons available')),
@@ -60,7 +81,7 @@ class LessonDetailScreen extends ConsumerWidget {
                 Icons.arrow_back_rounded,
                 color: isDark ? Colors.white : Colors.black,
               ),
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.pop(),
             ),
             title: Text(
               lesson.titleLatin,
@@ -89,11 +110,13 @@ class LessonDetailScreen extends ConsumerWidget {
                       Text(
                         lesson.titleLatin,
                         style: const TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.w800,
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
                           color: Colors.white,
+                          letterSpacing: -1.0,
                         ),
                       ),
+
                       if (lesson.titleOlChiki.isNotEmpty)
                         Padding(
                           padding: const EdgeInsets.only(top: 8),
@@ -153,13 +176,32 @@ class LessonDetailScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(
-                        _getSectionTitle(lesson.categoryId),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : Colors.black,
-                        ),
+                      Row(
+                        children: [
+                          Text(
+                            _getSectionTitle(lesson.categoryId),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          Tooltip(
+                            message: countsString,
+                            child: Container(
+                              width: 10,
+                              height: 10,
+                              decoration: BoxDecoration(
+                                color: allLoaded ? Colors.green : Colors.red,
+                                shape: BoxShape.circle,
+                                border: Border.all(
+                                  color: Colors.white,
+                                  width: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 16),
                       // Build content based on category
@@ -174,18 +216,20 @@ class LessonDetailScreen extends ConsumerWidget {
                   ),
                 ),
 
-                const SizedBox(height: 100), // Space for button
+                const SizedBox(height: 80),
+                const SizedBox(height: 32),
               ],
             ),
           ),
           floatingActionButton: Container(
-            margin: const EdgeInsets.symmetric(horizontal: 20),
+            margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
             width: double.infinity,
             child: FloatingActionButton.extended(
               onPressed: () {
-                incrementLessonsCompleted(ref);
-                addStars(ref, 10);
-                context.go('/home');
+                final notifier = ref.read(progressProvider.notifier);
+                notifier.completeLesson(lessonId);
+                notifier.addStars(15);
+                context.pop();
               },
               backgroundColor: AppColors.primary,
               label: const Text(
@@ -239,6 +283,8 @@ class LessonDetailScreen extends ConsumerWidget {
         return 'Numbers to Learn';
       case 'words':
         return 'Vocabulary';
+      case 'sentences':
+        return 'Sentences to Learn';
       case 'phrases':
         return 'Common Phrases';
       default:
@@ -267,64 +313,206 @@ class LessonDetailScreen extends ConsumerWidget {
         children: lesson.blocks.map((block) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 20),
-            child: _buildDynamicBlock(context, block, isDark),
+            child: _buildDynamicBlock(context, ref, lessonId, block, isDark),
           );
         }).toList(),
       );
     }
 
-    // 3. Fallback to legacy hardcoded grids
+    // 3. Fallback to provider-based grids
     switch (categoryId) {
       case 'alphabets':
-        return _buildLetterGrid(context, lessonId, isDark);
+        return _buildLetterGrid(context, ref, lessonId, isDark);
       case 'numbers':
-        return _buildNumberGrid(lessonId, isDark);
+        return _buildNumberGrid(context, ref, lessonId, isDark);
+      case 'sentences':
+        return _buildSentenceList(context, ref, lessonId, isDark);
       default:
-        return _buildVocabularyList(context, lessonId, isDark);
+        return _buildVocabularyList(context, ref, lessonId, isDark);
     }
   }
 
   Widget _buildDynamicBlock(
     BuildContext context,
+    WidgetRef ref,
+    String lessonId,
     LessonBlock block,
     bool isDark,
   ) {
     switch (block.type) {
       case 'text':
-        return Container(
+        final textOlChiki = block.textOlChiki?.trim();
+        if (textOlChiki == null || textOlChiki.isEmpty) {
+          return const SizedBox.shrink();
+        }
+
+        // Try to find matching entity for navigation
+        String? navRoute;
+
+        // Robust fuzzy matching helper
+        bool isFuzzyMatch(String target, String entityText) {
+          if (entityText.isEmpty) return false;
+          final t = target.trim().toLowerCase();
+          final e = entityText.trim().toLowerCase();
+
+          if (t == e) return true;
+
+          // Match at start with common separators
+          final separators = [' ', '-', '–', '—', '−', '.', '!', '?', ':', ';'];
+          for (final s in separators) {
+            if (t.startsWith('$e$s')) return true;
+          }
+
+          // Check if e is the first token
+          final tokens = t.split(RegExp(r'[\s\-\–\—\−\.\!\?\:\;]'));
+          if (tokens.isNotEmpty && tokens.first == e) return true;
+
+          // Punctuation-stripped check
+          final tClean = t
+              .replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '')
+              .trim();
+          final eClean = e
+              .replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '')
+              .trim();
+          if (tClean == eClean && tClean.isNotEmpty) return true;
+
+          return false;
+        }
+
+        debugPrint('DynamicBlock CHECK: "$textOlChiki"');
+
+        // 1. Check Letters
+        final letters = ref.read(lettersProvider).value ?? [];
+        final matchedLetter = letters
+            .where((l) => isFuzzyMatch(textOlChiki, l.charOlChiki))
+            .firstOrNull;
+        if (matchedLetter != null) {
+          navRoute = '/letter/$lessonId/${matchedLetter.charOlChiki}';
+          debugPrint(
+            'Matched Letter: ${matchedLetter.charOlChiki} -> $navRoute',
+          );
+        }
+
+        // 2. Check Numbers
+        if (navRoute == null) {
+          final numbers = ref.read(numbersProvider).value ?? [];
+          final matchedNumber = numbers.where((n) {
+            return isFuzzyMatch(textOlChiki, n.numeral) ||
+                isFuzzyMatch(textOlChiki, n.value.toString());
+          }).firstOrNull;
+          if (matchedNumber != null) {
+            navRoute = '/number/$lessonId/${matchedNumber.id}';
+            debugPrint('Matched Number: ${matchedNumber.numeral} -> $navRoute');
+          }
+        }
+
+        // 3. Check Words
+        if (navRoute == null) {
+          final words = ref.read(wordsProvider).value ?? [];
+          final matchedWord = words
+              .where((w) => isFuzzyMatch(textOlChiki, w.wordOlChiki))
+              .firstOrNull;
+          if (matchedWord != null) {
+            navRoute = '/word/$lessonId/${matchedWord.id}';
+            debugPrint('Matched Word: ${matchedWord.wordOlChiki} -> $navRoute');
+          }
+        }
+
+        // 4. Check Sentences
+        if (navRoute == null) {
+          final sentences = ref.read(sentencesProvider).value ?? [];
+          final matchedSentence = sentences
+              .where((s) => isFuzzyMatch(textOlChiki, s.sentenceOlChiki))
+              .firstOrNull;
+          if (matchedSentence != null) {
+            navRoute = '/sentence/$lessonId/${matchedSentence.id}';
+            debugPrint('Matched Sentence: ${matchedSentence.id} -> $navRoute');
+          }
+        }
+
+        final content = Container(
           width: double.infinity,
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           decoration: BoxDecoration(
             color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: navRoute != null
+                  ? AppColors.primary.withValues(alpha: 0.4)
+                  : Colors.grey.withValues(alpha: 0.1),
+              width: navRoute != null ? 1.5 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: Row(
             children: [
-              if (block.textOlChiki != null && block.textOlChiki!.isNotEmpty)
-                Text(
-                  block.textOlChiki!,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w600,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      block.textOlChiki!,
+                      style: TextStyle(
+                        fontSize: (block.textOlChiki!.length < 5) ? 36 : 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        height: 1.2,
+                      ),
+                    ),
+                    if (block.textLatin != null &&
+                        block.textLatin!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        block.textLatin!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (navRoute != null) ...[
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
                     color: AppColors.primary,
                   ),
                 ),
-              if (block.textOlChiki != null && block.textLatin != null)
-                const SizedBox(height: 8),
-              if (block.textLatin != null && block.textLatin!.isNotEmpty)
-                Text(
-                  block.textLatin!,
-                  style: TextStyle(
-                    fontSize: 16,
-                    height: 1.5,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
+              ],
             ],
           ),
         );
+
+        if (navRoute != null) {
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: ScaleButton(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                context.push(navRoute!);
+              },
+              child: content,
+            ),
+          );
+        }
+        return content;
 
       case 'image':
         return ClipRRect(
@@ -424,100 +612,137 @@ class LessonDetailScreen extends ConsumerWidget {
           ),
         );
 
+      case 'lottie':
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.grey.withOpacity(0.1)),
+          ),
+          child: Column(
+            children: [
+              if (block.animationUrl != null)
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: LottieDisplay(
+                    url: block.animationUrl!,
+                    width: double.infinity,
+                    height: 200,
+                    fit: BoxFit.contain,
+                  ),
+                ),
+              if (block.textLatin != null) ...[
+                const SizedBox(height: 8),
+                Text(
+                  block.textLatin!,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                    fontStyle: FontStyle.italic,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        );
+
       default:
         return const SizedBox.shrink();
     }
   }
 
-  Widget _buildLetterGrid(BuildContext context, String lessonId, bool isDark) {
-    final letterData = {
-      'alphabets_1': [
-        {'char': 'ᱚ', 'latin': 'a', 'name': 'La'},
-        {'char': 'ᱟ', 'latin': 'aa', 'name': 'Aah'},
-        {'char': 'ᱤ', 'latin': 'i', 'name': 'Li'},
-        {'char': 'ᱩ', 'latin': 'u', 'name': 'Lu'},
-      ],
-      'alphabets_2': [
-        {'char': 'ᱚ', 'latin': 'a', 'name': 'A vowel'},
-        {'char': 'ᱟ', 'latin': 'aa', 'name': 'AA vowel'},
-        {'char': 'ᱤ', 'latin': 'i', 'name': 'I vowel'},
-        {'char': 'ᱩ', 'latin': 'u', 'name': 'U vowel'},
-        {'char': 'ᱮ', 'latin': 'e', 'name': 'E vowel'},
-        {'char': 'ᱳ', 'latin': 'o', 'name': 'O vowel'},
-      ],
-      'alphabets_3': [
-        {'char': 'ᱠ', 'latin': 'k', 'name': 'Ok'},
-        {'char': 'ᱜ', 'latin': 'g', 'name': 'Ol'},
-        {'char': 'ᱝ', 'latin': 'ng', 'name': 'Ong'},
-        {'char': 'ᱪ', 'latin': 'c', 'name': 'Uc'},
-        {'char': 'ᱡ', 'latin': 'j', 'name': 'Oj'},
-      ],
-      'alphabets_4': [
-        {'char': 'ᱴ', 'latin': 't', 'name': 'Ot'},
-        {'char': 'ᱰ', 'latin': 'd', 'name': 'Od'},
-        {'char': 'ᱱ', 'latin': 'n', 'name': 'On'},
-        {'char': 'ᱯ', 'latin': 'p', 'name': 'Op'},
-        {'char': 'ᱵ', 'latin': 'b', 'name': 'Ob'},
-      ],
-    };
+  Widget _buildLetterGrid(
+    BuildContext context,
+    WidgetRef ref,
+    String lessonId,
+    bool isDark,
+  ) {
+    final allLetters = ref.read(lettersProvider).value ?? [];
+    final letters = allLetters.where((l) => l.isActive).toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
-    final letters = letterData[lessonId] ?? letterData['alphabets_1']!;
+    if (letters.isEmpty) {
+      return _buildEmptyContent('No letters available yet', isDark);
+    }
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.1,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 180,
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.9,
       ),
       itemCount: letters.length,
       itemBuilder: (context, index) {
         final letter = letters[index];
         return ScaleButton(
-          onPressed: () => context.go('/letter/$lessonId/${letter['char']}'),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push('/letter/$lessonId/${letter.charOlChiki}');
+          },
           child: Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
-              boxShadow: isDark
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.05),
-                        blurRadius: 10,
-                        offset: const Offset(0, 4),
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        letter.charOlChiki,
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
+                          height: 1.1,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        letter.transliterationLatin.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          letterSpacing: 1.5,
+                        ),
                       ),
                     ],
-            ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  letter['char']!,
-                  style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.primary,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  letter['latin']!.toUpperCase(),
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                Text(
-                  letter['name']!,
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: isDark ? Colors.white54 : Colors.black45,
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 12,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -528,71 +753,103 @@ class LessonDetailScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNumberGrid(String lessonId, bool isDark) {
-    final numberData = {
-      'numbers_1': [
-        {'num': '᱑', 'value': '1', 'name': 'Mit'},
-        {'num': '᱒', 'value': '2', 'name': 'Bar'},
-        {'num': '᱓', 'value': '3', 'name': 'Pe'},
-        {'num': '᱔', 'value': '4', 'name': 'Pon'},
-        {'num': '᱕', 'value': '5', 'name': 'Mone'},
-      ],
-      'numbers_2': [
-        {'num': '᱖', 'value': '6', 'name': 'Turui'},
-        {'num': '᱗', 'value': '7', 'name': 'Eae'},
-        {'num': '᱘', 'value': '8', 'name': 'Irel'},
-        {'num': '᱙', 'value': '9', 'name': 'Are'},
-        {'num': '᱑᱐', 'value': '10', 'name': 'Gel'},
-      ],
-    };
+  Widget _buildNumberGrid(
+    BuildContext context,
+    WidgetRef ref,
+    String lessonId,
+    bool isDark,
+  ) {
+    final allNumbers = ref.read(numbersProvider).value ?? [];
+    final numbers = allNumbers.where((n) => n.isActive).toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
-    final numbers = numberData[lessonId] ?? numberData['numbers_1']!;
+    if (numbers.isEmpty) {
+      return _buildEmptyContent('No numbers available yet', isDark);
+    }
 
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: 3,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
+      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
+        maxCrossAxisExtent: 150,
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
         childAspectRatio: 0.85,
       ),
       itemCount: numbers.length,
       itemBuilder: (context, index) {
-        final num = numbers[index];
+        final number = numbers[index];
         return ScaleButton(
-          onPressed: () => context.go('/number/$lessonId/${num['value']}'),
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push('/number/$lessonId/${number.id}');
+          },
           child: Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
               color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                Text(
-                  num['num']!,
-                  style: const TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.primary,
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        number.numeral,
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${number.value}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        number.nameLatin,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
                   ),
                 ),
-                Text(
-                  num['value']!,
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black87,
-                  ),
-                ),
-                Text(
-                  num['name']!,
-                  style: TextStyle(
-                    fontSize: 10,
-                    color: isDark ? Colors.white54 : Colors.black45,
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -605,110 +862,239 @@ class LessonDetailScreen extends ConsumerWidget {
 
   Widget _buildVocabularyList(
     BuildContext context,
+    WidgetRef ref,
     String lessonId,
     bool isDark,
   ) {
-    final vocabData = {
-      'words_1': [
-        {'olchiki': 'ᱡᱚᱦᱟᱨ', 'latin': 'Johar', 'meaning': 'Hello / Greetings'},
-        {'olchiki': 'ᱥᱮᱨᱢᱟ', 'latin': 'Serma', 'meaning': 'Good morning'},
-        {'olchiki': 'ᱵᱳᱭᱤᱱ', 'latin': 'Boyin', 'meaning': 'Goodbye'},
-        {'olchiki': 'ᱫᱷᱟᱱᱭᱟᱵᱟᱫ', 'latin': 'Dhanyabad', 'meaning': 'Thank you'},
-      ],
-      'words_2': [
-        {'olchiki': 'ᱟᱯᱟ', 'latin': 'Apa', 'meaning': 'Father'},
-        {'olchiki': 'ᱟᱭᱳ', 'latin': 'Ayo', 'meaning': 'Mother'},
-        {'olchiki': 'ᱵᱳᱭᱦᱟ', 'latin': 'Boyha', 'meaning': 'Brother'},
-        {'olchiki': 'ᱢᱤᱥᱨᱟ', 'latin': 'Misra', 'meaning': 'Sister'},
-      ],
-      'phrases_1': [
-        {
-          'olchiki': 'ᱟᱢ ᱪᱮᱫᱟᱜ ᱢᱮᱱᱟᱜ ᱟ?',
-          'latin': 'Am chedag menag a?',
-          'meaning': 'How are you?',
-        },
-        {
-          'olchiki': 'ᱤᱧ ᱵᱷᱟᱞᱮ ᱢᱮᱱᱟᱜ ᱟ',
-          'latin': 'Ing bhale menag a',
-          'meaning': 'I am fine',
-        },
-        {
-          'olchiki': 'ᱟᱢ ᱧᱩᱛᱩᱢ ᱪᱮᱫᱟᱜ?',
-          'latin': 'Am nyutum chedag?',
-          'meaning': 'What is your name?',
-        },
-        {
-          'olchiki': 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ...',
-          'latin': 'Ingag nyutum...',
-          'meaning': 'My name is...',
-        },
-      ],
-    };
+    final allWords = ref.read(wordsProvider).value ?? [];
+    final words = allWords.where((w) => w.isActive).toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
-    final vocab = vocabData[lessonId] ?? vocabData['words_1']!;
+    if (words.isEmpty) {
+      return _buildEmptyContent('No words available yet', isDark);
+    }
 
     return Column(
-      children: vocab
+      children: words
           .map(
-            (item) => ScaleButton(
-              onPressed: () => context.go('/word/$lessonId/${item['olchiki']}'),
-              child: Container(
-                margin: const EdgeInsets.only(bottom: 12),
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.grey.withOpacity(0.2)),
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      flex: 2,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            item['olchiki']!,
-                            style: const TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                          Text(
-                            item['latin']!,
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? Colors.white70 : Colors.black54,
-                            ),
-                          ),
-                        ],
-                      ),
+            (word) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ScaleButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  context.push('/word/$lessonId/${word.id}');
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkSurfaceElevated
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      width: 1.5,
                     ),
-                    Expanded(
-                      flex: 2,
-                      child: Text(
-                        item['meaning']!,
-                        textAlign: TextAlign.right,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: isDark ? Colors.white : Colors.black87,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.2 : 0.05,
+                        ),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              word.wordOlChiki,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                                height: 1.2,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              word.wordLatin,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              word.meaning,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: isDark ? Colors.white : Colors.black87,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                          ],
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 16,
-                      color: AppColors.primary.withOpacity(0.5),
-                    ),
-                  ],
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
           )
           .toList(),
+    );
+  }
+
+  Widget _buildSentenceList(
+    BuildContext context,
+    WidgetRef ref,
+    String lessonId,
+    bool isDark,
+  ) {
+    final allSentences = ref.read(sentencesProvider).value ?? [];
+    final sentences = allSentences.where((s) => s.isActive).toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    if (sentences.isEmpty) {
+      return _buildEmptyContent('No sentences available yet', isDark);
+    }
+
+    return Column(
+      children: sentences
+          .map(
+            (sentence) => Padding(
+              padding: const EdgeInsets.only(bottom: 16),
+              child: ScaleButton(
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  context.push('/sentence/$lessonId/${sentence.id}');
+                },
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? AppColors.darkSurfaceElevated
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      width: 1.5,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.2 : 0.05,
+                        ),
+                        blurRadius: 12,
+                        offset: const Offset(0, 4),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sentence.sentenceOlChiki,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: AppColors.primary,
+                                height: 1.3,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              sentence.sentenceLatin,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                                fontStyle: FontStyle.italic,
+                              ),
+                            ),
+                            const SizedBox(height: 10),
+                            Text(
+                              sentence.meaning,
+                              style: TextStyle(
+                                fontSize: 15,
+                                color: isDark ? Colors.white : Colors.black87,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.arrow_forward_ios_rounded,
+                          size: 16,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          )
+          .toList(),
+    );
+  }
+
+  Widget _buildEmptyContent(String message, bool isDark) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 24),
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurfaceElevated : Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Column(
+        children: [
+          Icon(
+            Icons.inbox_rounded,
+            size: 48,
+            color: isDark ? Colors.white24 : Colors.black12,
+          ),
+          const SizedBox(height: 12),
+          Text(
+            message,
+            style: TextStyle(
+              fontSize: 15,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

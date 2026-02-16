@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/providers.dart';
 import 'stroke_order_view.dart';
 import 'tracing_view.dart';
 
-class PracticeScreen extends StatefulWidget {
+class PracticeScreen extends ConsumerStatefulWidget {
   final String letterChar;
   final String letterName;
 
@@ -18,11 +20,23 @@ class PracticeScreen extends StatefulWidget {
   });
 
   @override
-  State<PracticeScreen> createState() => _PracticeScreenState();
+  ConsumerState<PracticeScreen> createState() => _PracticeScreenState();
 }
 
-class _PracticeScreenState extends State<PracticeScreen> {
+class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   int _selectedIndex = 0;
+  bool _hasCompletedPractice = false;
+
+  void _onPracticeComplete() {
+    if (_hasCompletedPractice) return; // Only award once per session
+    _hasCompletedPractice = true;
+
+    // Mark letter as practiced
+    ref.read(progressProvider.notifier).practiceLetter(widget.letterChar);
+
+    // Award stars
+    ref.read(progressProvider.notifier).addStars(10);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -142,6 +156,7 @@ class _PracticeScreenState extends State<PracticeScreen> {
                           : TracingView(
                               key: const ValueKey('trace_view'),
                               letterChar: widget.letterChar,
+                              onComplete: _onPracticeComplete,
                             ),
                     ),
                   ),

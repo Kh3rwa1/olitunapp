@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -96,8 +95,8 @@ class AdminLettersScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -164,7 +163,7 @@ class AdminLettersScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentMint.withValues(alpha: 0.3),
+                  color: AppColors.accentMint.withOpacity(0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -212,7 +211,7 @@ class AdminLettersScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentMint.withValues(alpha: 0.4),
+                    color: AppColors.accentMint.withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -293,7 +292,11 @@ class AdminLettersScreen extends ConsumerWidget {
 
     // State variables - declared OUTSIDE StatefulBuilder.builder() to preserve across rebuilds
     String? audioUrl = letter?.audioUrl;
+    String? imageUrl = letter?.imageUrl;
+    String? animationUrl = letter?.animationUrl;
     bool isUploading = false;
+    bool isUploadingImage = false;
+    bool isUploadingAnimation = false;
 
     showModalBottomSheet(
       context: context,
@@ -497,6 +500,279 @@ class AdminLettersScreen extends ConsumerWidget {
                               ),
                             ),
                           ),
+                          const SizedBox(height: 24),
+                          // Image/GIF upload section
+                          Text(
+                            'Hero Image/GIF (Optional)',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Upload high-quality image or animated GIF',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          InkWell(
+                            onTap: isUploadingImage
+                                ? null
+                                : () async {
+                                    try {
+                                      final result = await FilePicker.platform
+                                          .pickFiles(
+                                            type: FileType.image,
+                                            withData: true,
+                                          );
+                                      if (result != null &&
+                                          result.files.isNotEmpty) {
+                                        setDialogState(
+                                          () => isUploadingImage = true,
+                                        );
+                                        final file = result.files.first;
+
+                                        final uploadedUrl = await ref
+                                            .read(supabaseServiceProvider)
+                                            .uploadMedia(
+                                              file,
+                                              'letters-images',
+                                            );
+
+                                        setDialogState(() {
+                                          imageUrl = uploadedUrl;
+                                          isUploadingImage = false;
+                                        });
+
+                                        if (uploadedUrl == null &&
+                                            context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Image upload failed.',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    } catch (e) {
+                                      setDialogState(
+                                        () => isUploadingImage = false,
+                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.03),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white10
+                                      : Colors.black.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Column(
+                                children: [
+                                  if (imageUrl != null &&
+                                      !isUploadingImage) ...[
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Image.network(
+                                        imageUrl!,
+                                        height: 120,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (_, __, ___) =>
+                                            const Icon(
+                                              Icons.broken_image_rounded,
+                                              size: 60,
+                                              color: Colors.grey,
+                                            ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 12),
+                                  ],
+                                  Row(
+                                    children: [
+                                      Icon(
+                                        isUploadingImage
+                                            ? Icons.hourglass_top_rounded
+                                            : Icons.image_rounded,
+                                        color: const Color(0xFF6366F1),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          isUploadingImage
+                                              ? 'Uploading...'
+                                              : (imageUrl != null
+                                                    ? 'Tap to change image'
+                                                    : 'Upload Image or GIF'),
+                                          style: TextStyle(
+                                            color: isDark
+                                                ? Colors.white70
+                                                : Colors.black87,
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                      if (imageUrl != null && !isUploadingImage)
+                                        const Icon(
+                                          Icons.check_circle_rounded,
+                                          color: Color(0xFF6366F1),
+                                          size: 20,
+                                        ),
+                                    ],
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                          // Lottie Animation upload section
+                          Text(
+                            'Lottie Animation (Optional)',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            'Upload a .json Lottie animation file',
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          InkWell(
+                            onTap: isUploadingAnimation
+                                ? null
+                                : () async {
+                                    try {
+                                      final result = await FilePicker.platform
+                                          .pickFiles(
+                                            type: FileType.custom,
+                                            allowedExtensions: ['json'],
+                                            withData: true,
+                                          );
+                                      if (result != null &&
+                                          result.files.isNotEmpty) {
+                                        setDialogState(
+                                          () => isUploadingAnimation = true,
+                                        );
+                                        final file = result.files.first;
+
+                                        final uploadedUrl = await ref
+                                            .read(supabaseServiceProvider)
+                                            .uploadMedia(file, 'animations');
+
+                                        setDialogState(() {
+                                          animationUrl = uploadedUrl;
+                                          isUploadingAnimation = false;
+                                        });
+
+                                        if (uploadedUrl == null &&
+                                            context.mounted) {
+                                          ScaffoldMessenger.of(
+                                            context,
+                                          ).showSnackBar(
+                                            const SnackBar(
+                                              content: Text(
+                                                'Animation upload failed.',
+                                              ),
+                                              backgroundColor: Colors.red,
+                                            ),
+                                          );
+                                        }
+                                      }
+                                    } catch (e) {
+                                      setDialogState(
+                                        () => isUploadingAnimation = false,
+                                      );
+                                      if (context.mounted) {
+                                        ScaffoldMessenger.of(
+                                          context,
+                                        ).showSnackBar(
+                                          SnackBar(
+                                            content: Text('Error: $e'),
+                                            backgroundColor: Colors.red,
+                                          ),
+                                        );
+                                      }
+                                    }
+                                  },
+                            borderRadius: BorderRadius.circular(14),
+                            child: Container(
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withOpacity(0.05)
+                                    : Colors.black.withOpacity(0.03),
+                                borderRadius: BorderRadius.circular(14),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white10
+                                      : Colors.black.withOpacity(0.1),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    isUploadingAnimation
+                                        ? Icons.hourglass_top_rounded
+                                        : Icons.animation_rounded,
+                                    color: const Color(0xFF10B981),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  Expanded(
+                                    child: Text(
+                                      isUploadingAnimation
+                                          ? 'Uploading...'
+                                          : (animationUrl != null
+                                                ? 'Animation Linked'
+                                                : 'Upload Lottie Animation'),
+                                      style: TextStyle(
+                                        color: isDark
+                                            ? Colors.white70
+                                            : Colors.black87,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                  ),
+                                  if (animationUrl != null &&
+                                      !isUploadingAnimation)
+                                    const Icon(
+                                      Icons.check_circle_rounded,
+                                      color: Color(0xFF10B981),
+                                      size: 20,
+                                    ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -560,6 +836,8 @@ class AdminLettersScreen extends ConsumerWidget {
                                 order: letter?.order ?? 0,
                                 isActive: true,
                                 audioUrl: audioUrl,
+                                imageUrl: imageUrl,
+                                animationUrl: animationUrl,
                               );
                               if (isEditing) {
                                 ref
@@ -644,8 +922,8 @@ class AdminLettersScreen extends ConsumerWidget {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -681,7 +959,7 @@ class AdminLettersScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.15),
+                color: AppColors.error.withOpacity(0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
@@ -748,7 +1026,7 @@ class _LetterCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentMint.withValues(alpha: 0.3),
+                  color: AppColors.accentMint.withOpacity(0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -773,7 +1051,7 @@ class _LetterCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
+                    color: Colors.white.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../core/storage/supabase_service.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/gamified_card.dart';
 import '../../../core/presentation/animations/scale_button.dart';
@@ -231,6 +233,18 @@ class _AdminLessonContentScreenState
         title = 'Audio Block';
         subtitle = block.audioUrl ?? 'No audio selected';
         break;
+      case 'video':
+        icon = Icons.videocam_rounded;
+        color = Colors.purple;
+        title = 'Video Block';
+        subtitle = block.audioUrl ?? 'No video selected';
+        break;
+      case 'lottie':
+        icon = Icons.animation_rounded;
+        color = const Color(0xFF10B981);
+        title = 'Lottie Animation';
+        subtitle = block.animationUrl ?? 'No animation selected';
+        break;
       case 'quiz':
         icon = Icons.quiz_rounded;
         color = Colors.green;
@@ -349,12 +363,30 @@ class _AdminLessonContentScreenState
                     },
                   ),
                   _buildTypeOption(
+                    icon: Icons.videocam_rounded,
+                    label: 'Video',
+                    color: Colors.purple,
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addBlock('video');
+                    },
+                  ),
+                  _buildTypeOption(
                     icon: Icons.quiz_rounded,
                     label: 'Quiz',
                     color: Colors.green,
                     onTap: () {
                       Navigator.pop(context);
                       _addBlock('quiz');
+                    },
+                  ),
+                  _buildTypeOption(
+                    icon: Icons.animation_rounded,
+                    label: 'Lottie',
+                    color: const Color(0xFF10B981),
+                    onTap: () {
+                      Navigator.pop(context);
+                      _addBlock('lottie');
                     },
                   ),
                 ],
@@ -400,6 +432,7 @@ class _AdminLessonContentScreenState
     final latinCtrl = TextEditingController(text: block.textLatin ?? '');
     final imageCtrl = TextEditingController(text: block.imageUrl ?? '');
     final audioCtrl = TextEditingController(text: block.audioUrl ?? '');
+    final animationCtrl = TextEditingController(text: block.animationUrl ?? '');
     final quizRefCtrl = TextEditingController(text: block.quizRefId ?? '');
 
     showModalBottomSheet(
@@ -456,19 +489,34 @@ class _AdminLessonContentScreenState
                       ),
                     ],
                     if (block.type == 'image') ...[
-                      _buildTextField(
-                        imageCtrl,
-                        'Image URL',
-                        'https://example.com/image.png',
-                        isDark,
+                      _buildUploadField(
+                        controller: imageCtrl,
+                        label: 'Image URL',
+                        icon: Icons.image_rounded,
+                        isDark: isDark,
+                        onUpload: () =>
+                            _pickAndUpload(context, imageCtrl, 'lesson-images'),
                       ),
                     ],
                     if (block.type == 'audio') ...[
-                      _buildTextField(
-                        audioCtrl,
-                        'Audio URL',
-                        'https://example.com/audio.mp3',
-                        isDark,
+                      _buildUploadField(
+                        controller: audioCtrl,
+                        label: 'Audio URL',
+                        icon: Icons.audiotrack_rounded,
+                        isDark: isDark,
+                        onUpload: () =>
+                            _pickAndUpload(context, audioCtrl, 'lesson-audio'),
+                      ),
+                    ],
+                    if (block.type == 'video') ...[
+                      _buildUploadField(
+                        controller:
+                            audioCtrl, // Re-using audioCtrl for video URL storage in model
+                        label: 'Video URL',
+                        icon: Icons.videocam_rounded,
+                        isDark: isDark,
+                        onUpload: () =>
+                            _pickAndUpload(context, audioCtrl, 'lesson-video'),
                       ),
                     ],
                     if (block.type == 'quiz') ...[
@@ -479,8 +527,24 @@ class _AdminLessonContentScreenState
                         isDark,
                       ),
                     ],
+                    if (block.type == 'lottie') ...[
+                      _buildUploadField(
+                        controller: animationCtrl,
+                        label: 'Lottie Animation URL',
+                        icon: Icons.animation_rounded,
+                        isDark: isDark,
+                        onUpload: () => _pickAndUploadLottie(
+                          context,
+                          animationCtrl,
+                          'animations',
+                        ),
+                      ),
+                    ],
 
-                    if (block.type == 'image' || block.type == 'audio') ...[
+                    if (block.type == 'image' ||
+                        block.type == 'audio' ||
+                        block.type == 'video' ||
+                        block.type == 'lottie') ...[
                       const SizedBox(height: 16),
                       _buildTextField(
                         latinCtrl,
@@ -506,6 +570,9 @@ class _AdminLessonContentScreenState
                       textLatin: latinCtrl.text.isEmpty ? null : latinCtrl.text,
                       imageUrl: imageCtrl.text.isEmpty ? null : imageCtrl.text,
                       audioUrl: audioCtrl.text.isEmpty ? null : audioCtrl.text,
+                      animationUrl: animationCtrl.text.isEmpty
+                          ? null
+                          : animationCtrl.text,
                       quizRefId: quizRefCtrl.text.isEmpty
                           ? null
                           : quizRefCtrl.text,
@@ -577,5 +644,133 @@ class _AdminLessonContentScreenState
         ),
       ],
     );
+  }
+
+  Widget _buildUploadField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    required VoidCallback onUpload,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white70 : Colors.black87,
+            fontSize: 14,
+          ),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: TextField(
+                controller: controller,
+                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                decoration: InputDecoration(
+                  hintText: 'https://...',
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.grey[100],
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.all(16),
+                ),
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              onPressed: onUpload,
+              icon: Icon(icon, size: 20),
+              tooltip: 'Upload File',
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Future<void> _pickAndUpload(
+    BuildContext context,
+    TextEditingController controller,
+    String folder,
+  ) async {
+    try {
+      final fileType = folder.contains('audio')
+          ? FileType.audio
+          : (folder.contains('video') ? FileType.video : FileType.image);
+
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: fileType,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setState(() {
+            controller.text = url;
+            _hasChanges = true;
+          });
+          if (context.mounted) {
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(const SnackBar(content: Text('Upload successful!')));
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadLottie(
+    BuildContext context,
+    TextEditingController controller,
+    String folder,
+  ) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setState(() {
+            controller.text = url;
+            _hasChanges = true;
+          });
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Lottie animation uploaded!')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
   }
 }

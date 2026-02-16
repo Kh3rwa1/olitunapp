@@ -6,7 +6,8 @@ class RhymeModel {
   final String contentLatin;
   final String? audioUrl;
   final String? thumbnailUrl;
-  final String? category; // e.g. "Nature", "Animal", "Moral"
+  final String? category;
+  final String? subcategory;
 
   RhymeModel({
     required this.id,
@@ -17,6 +18,7 @@ class RhymeModel {
     this.audioUrl,
     this.thumbnailUrl,
     this.category,
+    this.subcategory,
   });
 
   factory RhymeModel.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class RhymeModel {
       audioUrl: json['audioUrl'] as String?,
       thumbnailUrl: json['thumbnailUrl'] as String?,
       category: json['category'] as String?,
+      subcategory: json['subcategory'] as String?,
     );
   }
 
@@ -42,6 +45,7 @@ class RhymeModel {
       'audioUrl': audioUrl,
       'thumbnailUrl': thumbnailUrl,
       'category': category,
+      'subcategory': subcategory,
     };
   }
 }

@@ -4,6 +4,11 @@ class ResponsiveLayout {
   static const double tabletBreakpoint = 700;
   static const double desktopBreakpoint = 1100;
 
+  // Desktop sidebar widths
+  static const double leftSidebarWidth = 240;
+  static const double rightSidebarWidth = 300;
+  static const double collapsedSidebarWidth = 80;
+
   static bool isTablet(BuildContext context) =>
       MediaQuery.sizeOf(context).width >= tabletBreakpoint;
 
@@ -12,14 +17,14 @@ class ResponsiveLayout {
 
   static double maxContentWidth(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
-    if (isDesktop(context)) return 1120;
+    if (isDesktop(context)) return 800; // Center column max
     if (isTablet(context)) return 900;
     return width;
   }
 
   static EdgeInsets pagePadding(BuildContext context) {
     if (isDesktop(context)) {
-      return const EdgeInsets.symmetric(horizontal: 40, vertical: 28);
+      return const EdgeInsets.symmetric(horizontal: 32, vertical: 28);
     }
     if (isTablet(context)) {
       return const EdgeInsets.symmetric(horizontal: 32, vertical: 24);
@@ -27,8 +32,15 @@ class ResponsiveLayout {
     return const EdgeInsets.symmetric(horizontal: 24, vertical: 20);
   }
 
-  static int gridColumns(BuildContext context, {int mobile = 2, int tablet = 3}) {
-    return isTablet(context) ? tablet : mobile;
+  static int gridColumns(
+    BuildContext context, {
+    int mobile = 2,
+    int tablet = 3,
+    int desktop = 3,
+  }) {
+    if (isDesktop(context)) return desktop;
+    if (isTablet(context)) return tablet;
+    return mobile;
   }
 }
 
@@ -36,11 +48,7 @@ class ResponsivePageContainer extends StatelessWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
 
-  const ResponsivePageContainer({
-    super.key,
-    required this.child,
-    this.padding,
-  });
+  const ResponsivePageContainer({super.key, required this.child, this.padding});
 
   @override
   Widget build(BuildContext context) {

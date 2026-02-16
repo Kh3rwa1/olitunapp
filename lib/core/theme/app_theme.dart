@@ -24,7 +24,7 @@ class AppTheme {
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.lightBackground,
-      fontFamily: 'Fredoka',
+      fontFamily: 'Poppins',
 
       // AppBar Theme
       appBarTheme: const AppBarTheme(
@@ -192,7 +192,7 @@ class AppTheme {
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
-      fontFamily: 'Fredoka',
+      fontFamily: 'Poppins',
 
       // AppBar Theme
       appBarTheme: const AppBarTheme(

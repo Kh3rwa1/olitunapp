@@ -1,48 +1,40 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
+import '../../../core/auth/stack_auth_service.dart';
 
 class AuthRepository {
-  final SupabaseClient _supabase;
+  final StackAuthService _stackAuth;
 
-  AuthRepository(this._supabase);
+  AuthRepository(this._stackAuth);
 
-  // Current session
-  Session? get currentSession => _supabase.auth.currentSession;
-  User? get currentUser => _supabase.auth.currentUser;
-
-  // Stream of auth state changes
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
-
-  // Sign In
-  Future<AuthResponse> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
-    return await _supabase.auth.signInWithPassword(
-      email: email,
-      password: password,
-    );
+  /// Send OTP code to user's email
+  Future<void> sendOtp(String email) async {
+    await _stackAuth.sendOtpCode(email);
   }
 
-  // Sign Up
-  Future<AuthResponse> signUp({
-    required String email,
-    required String password,
-    required String displayName,
-  }) async {
-    return await _supabase.auth.signUp(
-      email: email,
-      password: password,
-      data: {'display_name': displayName},
-    );
+  /// Verify OTP code and authenticate user
+  Future<Map<String, dynamic>> verifyOtp(String code) async {
+    return await _stackAuth.verifyOtp(code);
   }
 
-  // Sign Out
+  /// Sign out and clear tokens
   Future<void> signOut() async {
-    await _supabase.auth.signOut();
+    await _stackAuth.signOut();
   }
 
-  // Reset Password
-  Future<void> resetPassword(String email) async {
-    await _supabase.auth.resetPasswordForEmail(email);
+  /// Get current user profile
+  Future<Map<String, dynamic>> getMe() async {
+    return await _stackAuth.getMe();
   }
+
+  /// Update user metadata (for progress sync)
+  Future<void> updateMetadata(Map<String, dynamic> metadata) async {
+    await _stackAuth.updateMetadata(metadata);
+  }
+
+  /// Update user profile name
+  Future<void> updateDisplayName(String name) async {
+    await _stackAuth.updateProfile({'display_name': name});
+  }
+
+  /// Get stored auth token
+  Future<String?> getToken() async => await _stackAuth.token;
 }

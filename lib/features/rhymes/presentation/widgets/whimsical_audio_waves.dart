@@ -1,6 +1,5 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 
 class WhimsicalAudioWaves extends StatefulWidget {
   final bool isPlaying;

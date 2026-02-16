@@ -27,7 +27,7 @@ class CategoryLessonsScreen extends ConsumerWidget {
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
-          onPressed: () => context.go('/lessons'),
+          onPressed: () => context.pop(),
         ),
         title: categories.when(
           data: (data) {
@@ -59,12 +59,47 @@ class CategoryLessonsScreen extends ConsumerWidget {
                     lesson: lesson,
                     isDark: isDark,
                     index: index,
-                    onTap: () => context.go('/lesson/${lesson.id}'),
+                    onTap: () => context.push('/lesson/${lesson.id}'),
                   );
                 },
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(child: Text('Error: $e')),
+        error: (e, s) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(
+                Icons.cloud_off_rounded,
+                size: 48,
+                color: isDark ? Colors.white38 : Colors.black26,
+              ),
+              const SizedBox(height: 16),
+              Text(
+                'Could not load lessons',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'Check your connection and try again',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+              const SizedBox(height: 20),
+              TextButton.icon(
+                onPressed: () => ref.invalidate(lessonsProvider),
+                icon: const Icon(Icons.refresh_rounded),
+                label: const Text('Retry'),
+                style: TextButton.styleFrom(foregroundColor: AppColors.primary),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

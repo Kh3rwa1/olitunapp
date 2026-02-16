@@ -1,8 +1,35 @@
-import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../models/content_models.dart';
 import '../../core/storage/storage_service.dart';
+import '../../core/api/api_service.dart'; // Import API Service
 import '../../features/rhymes/domain/rhyme_model.dart';
+import '../../features/rhymes/domain/rhyme_category_model.dart';
+import '../../core/auth/stack_auth_service.dart';
+import '../../features/auth/data/auth_repository.dart';
+import 'dart:convert';
+import 'progress_provider.dart';
+
+// ============== APP SETTINGS (from API) ==============
+
+final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  try {
+    final apiService = ref.read(apiServiceProvider);
+    final response = await apiService.get('/settings.php');
+    if (response is Map<String, dynamic>) return response;
+    return <String, dynamic>{};
+  } catch (e) {
+    debugPrint('Failed to load app settings: $e');
+    return <String, dynamic>{};
+  }
+});
+
+final onboardingVideoUrlProvider = Provider<String?>((ref) {
+  final settings = ref.watch(appSettingsProvider);
+  return settings.whenOrNull(
+    data: (data) => data['onboarding_video_url'] as String?,
+  );
+});
 
 // ============== USER DATA (Local Storage) ==============
 
@@ -10,55 +37,117 @@ final userNameProvider = StateProvider<String>((ref) {
   return prefs.getString('user_name') ?? 'Learner';
 });
 
-final userStreakProvider = StateProvider<int>((ref) {
-  return prefs.getInt('user_streak') ?? 0;
+// Derived from progressProvider — single source of truth
+final userStarsProvider = Provider<int>((ref) {
+  return ref.watch(progressProvider).totalStars;
 });
 
-final userStarsProvider = StateProvider<int>((ref) {
-  return prefs.getInt('user_stars') ?? 0;
+final lessonsCompletedProvider = Provider<int>((ref) {
+  return ref.watch(progressProvider).lessonsCompletedCount;
 });
 
-final lessonsCompletedProvider = StateProvider<int>((ref) {
-  return prefs.getInt('lessons_completed') ?? 0;
-});
-
-final quizzesCompletedProvider = StateProvider<int>((ref) {
-  return prefs.getInt('quizzes_completed') ?? 0;
+final quizzesCompletedProvider = Provider<int>((ref) {
+  return ref.watch(progressProvider).quizzesCompletedCount;
 });
 
 // User data update functions
-void updateUserName(WidgetRef ref, String name) {
+Future<void> updateUserName(WidgetRef ref, String name) async {
   prefs.setString('user_name', name);
   ref.read(userNameProvider.notifier).state = name;
+
+  // Sync to cloud if logged in
+  try {
+    final authRepo = ref.read(authRepositoryProvider);
+    final token = await authRepo.getToken();
+    if (token != null) {
+      await authRepo.updateDisplayName(name);
+    }
+  } catch (e) {
+    debugPrint('Failed to sync user name to cloud: $e');
+  }
 }
 
-void updateStreak(WidgetRef ref, int streak) {
-  prefs.setInt('user_streak', streak);
-  ref.read(userStreakProvider.notifier).state = streak;
+/// Synchronize profile name from Stack Auth to local storage
+Future<void> syncProfileName(WidgetRef ref) async {
+  try {
+    final authRepo = ref.read(authRepositoryProvider);
+    final token = await authRepo.getToken();
+    if (token == null) return;
+
+    final profile = await authRepo.getMe();
+    final cloudName = profile['display_name'] as String?;
+
+    if (cloudName != null && cloudName.isNotEmpty) {
+      final localName = prefs.getString('user_name');
+      if (localName != cloudName) {
+        prefs.setString('user_name', cloudName);
+        ref.read(userNameProvider.notifier).state = cloudName;
+      }
+    } else {
+      // If cloud name is empty but local name exists, push local name to cloud
+      final localName = prefs.getString('user_name');
+      if (localName != null && localName != 'Learner') {
+        await authRepo.updateDisplayName(localName);
+      }
+    }
+  } catch (e) {
+    debugPrint('Profile sync failed: $e');
+  }
 }
 
-void addStars(WidgetRef ref, int amount) {
-  final current = ref.read(userStarsProvider);
-  final newValue = current + amount;
-  prefs.setInt('user_stars', newValue);
-  ref.read(userStarsProvider.notifier).state = newValue;
+// Member since date — set on first launch
+final memberSinceProvider = StateProvider<String>((ref) {
+  final stored = prefs.getString('member_since');
+  if (stored != null) return stored;
+  final now = DateTime.now();
+  final dateStr =
+      '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+  prefs.setString('member_since', dateStr);
+  return dateStr;
+});
+
+// Avatar emoji — user-selectable, persisted
+final userAvatarEmojiProvider = StateProvider<String>((ref) {
+  return prefs.getString('user_avatar_emoji') ?? '';
+});
+
+void updateAvatarEmoji(WidgetRef ref, String emoji) {
+  prefs.setString('user_avatar_emoji', emoji);
+  ref.read(userAvatarEmojiProvider.notifier).state = emoji;
 }
 
-void incrementLessonsCompleted(WidgetRef ref) {
-  final current = ref.read(lessonsCompletedProvider);
-  final newValue = current + 1;
-  prefs.setInt('lessons_completed', newValue);
-  ref.read(lessonsCompletedProvider.notifier).state = newValue;
+// Avatar color index — user-selectable, persisted
+final userAvatarColorIndexProvider = StateProvider<int>((ref) {
+  return prefs.getInt('user_avatar_color') ?? 0;
+});
+
+void updateAvatarColorIndex(WidgetRef ref, int index) {
+  prefs.setInt('user_avatar_color', index);
+  ref.read(userAvatarColorIndexProvider.notifier).state = index;
 }
 
-void incrementQuizzesCompleted(WidgetRef ref) {
-  final current = ref.read(quizzesCompletedProvider);
-  final newValue = current + 1;
-  prefs.setInt('quizzes_completed', newValue);
-  ref.read(quizzesCompletedProvider.notifier).state = newValue;
-}
+// Avatar color palettes (available for selection)
+const avatarPalettes = [
+  [Color(0xFF1EE088), Color(0xFF00C767)], // Green
+  [Color(0xFF1CB0F6), Color(0xFF1899D6)], // Blue
+  [Color(0xFFFF9600), Color(0xFFD37D00)], // Orange
+  [Color(0xFFCE82FF), Color(0xFFAF67E9)], // Purple
+  [Color(0xFFFF4B4B), Color(0xFFD33131)], // Red
+  [Color(0xFFFFC800), Color(0xFFE5A100)], // Yellow
+  [Color(0xFF00E5FF), Color(0xFF00B8D4)], // Cyan
+  [Color(0xFFFF4081), Color(0xFFF50057)], // Pink
+];
+
+// Current avatar colors (computed from index)
+final userAvatarColorsProvider = Provider<List<Color>>((ref) {
+  final index = ref.watch(userAvatarColorIndexProvider);
+  return avatarPalettes[index.clamp(0, avatarPalettes.length - 1)];
+});
 
 // ============== SETTINGS (Local Storage) ==============
+
+// Shell tab index — allows child screens to switch tabs
+final shellTabIndexProvider = StateProvider<int>((ref) => 0);
 
 final themeModeProvider = StateProvider<String>((ref) {
   return prefs.getString('theme_mode') ?? 'system';
@@ -90,111 +179,129 @@ void toggleSound(WidgetRef ref) {
 
 // ============== CONTENT PROVIDERS (Local Storage) ==============
 
-// Default categories
-final _defaultCategories = [
-  CategoryModel(
-    id: 'alphabets',
-    titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-    titleLatin: 'Ol Chiki Alphabet',
-    iconName: 'alphabet',
-    gradientPreset: 'skyBlue',
-    order: 0,
-    isActive: true,
-    totalLessons: 30,
-  ),
-  CategoryModel(
-    id: 'numbers',
-    titleOlChiki: 'ᱮᱞᱠᱷᱟ',
-    titleLatin: 'Numbers',
-    iconName: 'numbers',
-    gradientPreset: 'peach',
-    order: 1,
-    isActive: true,
-    totalLessons: 10,
-  ),
-  CategoryModel(
-    id: 'words',
-    titleOlChiki: 'ᱯᱟᱹᱨᱥᱤ',
-    titleLatin: 'Common Words',
-    iconName: 'words',
-    gradientPreset: 'mint',
-    order: 2,
-    isActive: true,
-    totalLessons: 20,
-  ),
-  CategoryModel(
-    id: 'phrases',
-    titleOlChiki: 'ᱛᱮᱞᱟ ᱯᱟᱹᱨᱥᱤ',
-    titleLatin: 'Phrases',
-    iconName: 'stories',
-    gradientPreset: 'sunset',
-    order: 3,
-    isActive: true,
-    totalLessons: 15,
-  ),
-];
+// Default categories removed - fetched from API
+
+// ============== AUTH PROVIDERS (Stack Auth) ==============
+
+final stackAuthServiceProvider = Provider<StackAuthService>((ref) {
+  // Use environment variables or secure storage in production
+  return StackAuthService(
+    projectId: 'ec138b74-cdb7-4c55-a7e0-a59d68561548',
+    publishableKey: 'pck_2v7xw0j8hbgj6tqec50m4mev9yhvw195v8c753y7n6nw0',
+  );
+});
+
+final authRepositoryProvider = Provider<AuthRepository>((ref) {
+  return AuthRepository(ref.watch(stackAuthServiceProvider));
+});
+
+final progressProvider =
+    StateNotifierProvider<ProgressNotifier, UserProgressData>((ref) {
+      final authRepo = ref.watch(authRepositoryProvider);
+      return ProgressNotifier(authRepository: authRepo);
+    });
 
 // Categories Provider
 final categoriesProvider =
     StateNotifierProvider<CategoriesNotifier, AsyncValue<List<CategoryModel>>>((
       ref,
     ) {
-      return CategoriesNotifier();
+      return CategoriesNotifier(ref);
     });
 
 class CategoriesNotifier
     extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  CategoriesNotifier() : super(const AsyncValue.loading()) {
+  CategoriesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadCategories();
   }
 
-  void _loadCategories() {
+  final Ref ref;
+
+  static final List<CategoryModel> _seedCategories = [
+    CategoryModel(
+      id: 'seed_alphabet',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+      titleLatin: 'Alphabet',
+      iconName: 'abc',
+      gradientPreset: 'skyBlue',
+      order: 0,
+      totalLessons: 6,
+      description: 'Learn the Ol Chiki script letters',
+    ),
+    CategoryModel(
+      id: 'seed_numbers',
+      titleOlChiki: 'ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers',
+      iconName: 'pin',
+      gradientPreset: 'sunset',
+      order: 1,
+      totalLessons: 4,
+      description: 'Learn Santali numbers and counting',
+    ),
+    CategoryModel(
+      id: 'seed_words',
+      titleOlChiki: 'ᱨᱚᱲ',
+      titleLatin: 'Words',
+      iconName: 'menu_book',
+      gradientPreset: 'forest',
+      order: 2,
+      totalLessons: 5,
+      description: 'Build your Santali vocabulary',
+    ),
+    CategoryModel(
+      id: 'seed_sentences',
+      titleOlChiki: 'ᱣᱟᱠᱭ',
+      titleLatin: 'Sentences',
+      iconName: 'chat_bubble',
+      gradientPreset: 'ocean',
+      order: 3,
+      totalLessons: 4,
+      description: 'Form sentences in Santali',
+    ),
+  ];
+
+  Future<void> _loadCategories() async {
     try {
-      final stored = prefs.getString('categories');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        final categories = decoded
-            .map((e) => CategoryModel.fromJson(e))
-            .toList();
-        state = AsyncValue.data(categories);
-      } else {
-        state = AsyncValue.data(_defaultCategories);
-        _saveCategories(_defaultCategories);
-      }
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/categories.php');
+      final list = (data as List)
+          .map((e) => CategoryModel.fromJson(e))
+          .toList();
+      state = AsyncValue.data(list);
     } catch (e) {
-      state = AsyncValue.data(_defaultCategories);
+      // Fallback to local seed data when API is unreachable
+      state = AsyncValue.data(_seedCategories);
     }
   }
 
-  void _saveCategories(List<CategoryModel> categories) {
-    final encoded = jsonEncode(categories.map((e) => e.toJson()).toList());
-    prefs.setString('categories', encoded);
+  Future<void> add(CategoryModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/categories.php', item.toJson());
+      await _loadCategories(); // Refresh list
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void add(CategoryModel item) {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _saveCategories(updated);
-    state = AsyncValue.data(updated);
+  Future<void> update(CategoryModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/categories.php', item.toJson());
+      await _loadCategories();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void update(CategoryModel item) {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _saveCategories(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  void delete(String id) {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _saveCategories(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  void reorder(List<CategoryModel> items) {
-    _saveCategories(items);
-    state = AsyncValue.data(items);
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/categories.php', params: {'id': id});
+      await _loadCategories();
+    } catch (e) {
+      // Handle error
+    }
   }
 
   // Aliases for admin screens
@@ -204,26 +311,30 @@ class CategoriesNotifier
 
   Future<void> reorderCategories(int oldIndex, int newIndex) async {
     final current = state.value ?? [];
+    if (oldIndex < 0 ||
+        oldIndex >= current.length ||
+        newIndex < 0 ||
+        newIndex >= current.length)
+      return;
+
     final updated = [...current];
     final item = updated.removeAt(oldIndex);
     updated.insert(newIndex, item);
-    // Update order values
+
+    // Update order values locally first
     for (int i = 0; i < updated.length; i++) {
-      updated[i] = CategoryModel(
-        id: updated[i].id,
-        titleOlChiki: updated[i].titleOlChiki,
-        titleLatin: updated[i].titleLatin,
-        iconName: updated[i].iconName,
-        iconUrl: updated[i].iconUrl,
-        gradientPreset: updated[i].gradientPreset,
+      updated[i] = updated[i].copyWith(
         order: i,
-        isActive: updated[i].isActive,
-        totalLessons: updated[i].totalLessons,
-        description: updated[i].description,
-      );
+      ); // Assuming copyWith exists, or recreate
     }
-    _saveCategories(updated);
     state = AsyncValue.data(updated);
+
+    // TODO: Implement bulk reorder API or individual updates
+  }
+
+  Future<void> seed() async {
+    state = const AsyncValue.loading();
+    _loadCategories();
   }
 }
 
@@ -233,71 +344,69 @@ final bannersProvider =
       BannersNotifier,
       AsyncValue<List<FeaturedBannerModel>>
     >((ref) {
-      return BannersNotifier();
+      return BannersNotifier(ref);
     });
 
 class BannersNotifier
     extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
-  BannersNotifier() : super(const AsyncValue.loading()) {
+  BannersNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadBanners();
   }
 
-  void _loadBanners() {
+  final Ref ref;
+
+  Future<void> _loadBanners() async {
     try {
-      final stored = prefs.getString('banners');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        final banners = decoded
-            .map((e) => FeaturedBannerModel.fromJson(e))
-            .toList();
-        state = AsyncValue.data(banners);
-      } else {
-        state = AsyncValue.data([
-          FeaturedBannerModel(
-            id: '1',
-            title: 'Start Your Journey',
-            subtitle: 'Learn Ol Chiki alphabet today',
-            gradientPreset: 'mint',
-            order: 0,
-            isActive: true,
-          ),
-        ]);
-      }
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/banners.php');
+      final list = (data as List)
+          .map((e) => FeaturedBannerModel.fromJson(e))
+          .toList();
+      state = AsyncValue.data(list);
     } catch (e) {
-      state = AsyncValue.data([]);
+      state = AsyncValue.error(e, StackTrace.current);
     }
   }
 
-  void _saveBanners(List<FeaturedBannerModel> banners) {
-    final encoded = jsonEncode(banners.map((e) => e.toJson()).toList());
-    prefs.setString('banners', encoded);
+  Future<void> add(FeaturedBannerModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/banners.php', item.toJson());
+      await _loadBanners();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void add(FeaturedBannerModel item) {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _saveBanners(updated);
-    state = AsyncValue.data(updated);
+  Future<void> update(FeaturedBannerModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/banners.php', item.toJson());
+      await _loadBanners();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void update(FeaturedBannerModel item) {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _saveBanners(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  void delete(String id) {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _saveBanners(updated);
-    state = AsyncValue.data(updated);
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/banners.php', params: {'id': id});
+      await _loadBanners();
+    } catch (e) {
+      // Handle error
+    }
   }
 
   // Aliases for admin screens
   void addBanner(FeaturedBannerModel item) => add(item);
   void updateBanner(FeaturedBannerModel item) => update(item);
   void deleteBanner(String id) => delete(id);
+
+  Future<void> seed() async {
+    // Implement seed logic via API if needed
+    _loadBanners();
+  }
 }
 
 // Alias for backward compatibility
@@ -308,117 +417,374 @@ final lettersProvider =
     StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>((
       ref,
     ) {
-      return LettersNotifier();
+      return LettersNotifier(ref);
     });
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
-  LettersNotifier() : super(const AsyncValue.loading()) {
+  LettersNotifier(this.ref) : super(AsyncValue.data(_seedLetters)) {
     _loadLetters();
   }
 
-  void _loadLetters() {
+  final Ref ref;
+
+  static final List<LetterModel> _seedLetters = [
+    LetterModel(
+      id: 'ᱚ',
+      charOlChiki: 'ᱚ',
+      transliterationLatin: 'La',
+      pronunciation: 'o',
+    ),
+    LetterModel(
+      id: 'ᱟ',
+      charOlChiki: 'ᱟ',
+      transliterationLatin: 'Aah',
+      pronunciation: 'aa',
+    ),
+    LetterModel(
+      id: 'ᱤ',
+      charOlChiki: 'ᱤ',
+      transliterationLatin: 'Li',
+      pronunciation: 'i',
+    ),
+    LetterModel(
+      id: 'ᱩ',
+      charOlChiki: 'ᱩ',
+      transliterationLatin: 'Lu',
+      pronunciation: 'u',
+    ),
+    LetterModel(
+      id: 'ᱮ',
+      charOlChiki: 'ᱮ',
+      transliterationLatin: 'Le',
+      pronunciation: 'e',
+    ),
+    LetterModel(
+      id: 'ᱳ',
+      charOlChiki: 'ᱳ',
+      transliterationLatin: 'Lo',
+      pronunciation: 'oh',
+    ),
+    LetterModel(
+      id: 'ᱠ',
+      charOlChiki: 'ᱠ',
+      transliterationLatin: 'Ok',
+      pronunciation: 'ko',
+    ),
+    LetterModel(
+      id: 'ᱜ',
+      charOlChiki: 'ᱜ',
+      transliterationLatin: 'Ol',
+      pronunciation: 'ga',
+    ),
+  ];
+
+  Future<void> _loadLetters() async {
     try {
-      final stored = prefs.getString('letters');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        final letters = decoded.map((e) => LetterModel.fromJson(e)).toList();
-        state = AsyncValue.data(letters);
-      } else {
-        // Default Ol Chiki letters
-        state = AsyncValue.data([
-          LetterModel(
-            id: '1',
-            charOlChiki: 'ᱚ',
-            transliterationLatin: 'a',
-            order: 1,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '2',
-            charOlChiki: 'ᱛ',
-            transliterationLatin: 'at',
-            order: 2,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '3',
-            charOlChiki: 'ᱜ',
-            transliterationLatin: 'ag',
-            order: 3,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '4',
-            charOlChiki: 'ᱝ',
-            transliterationLatin: 'ang',
-            order: 4,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '5',
-            charOlChiki: 'ᱞ',
-            transliterationLatin: 'al',
-            order: 5,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '6',
-            charOlChiki: 'ᱟ',
-            transliterationLatin: 'la',
-            order: 6,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '7',
-            charOlChiki: 'ᱠ',
-            transliterationLatin: 'ak',
-            order: 7,
-            isActive: true,
-          ),
-          LetterModel(
-            id: '8',
-            charOlChiki: 'ᱡ',
-            transliterationLatin: 'aj',
-            order: 8,
-            isActive: true,
-          ),
-        ]);
-      }
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/letters.php');
+      final list = (data as List).map((e) => LetterModel.fromJson(e)).toList();
+      state = AsyncValue.data(list);
     } catch (e) {
-      state = AsyncValue.data([]);
+      state = AsyncValue.data(_seedLetters);
     }
   }
 
-  void _saveLetters(List<LetterModel> letters) {
-    final encoded = jsonEncode(letters.map((e) => e.toJson()).toList());
-    prefs.setString('letters', encoded);
+  Future<void> add(LetterModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/letters.php', item.toJson());
+      await _loadLetters();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void add(LetterModel item) {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _saveLetters(updated);
-    state = AsyncValue.data(updated);
+  Future<void> update(LetterModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/letters.php', item.toJson());
+      await _loadLetters();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void update(LetterModel item) {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _saveLetters(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  void delete(String id) {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _saveLetters(updated);
-    state = AsyncValue.data(updated);
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/letters.php', params: {'id': id});
+      await _loadLetters();
+    } catch (e) {
+      // Handle error
+    }
   }
 
   // Aliases for admin screens
   void addLetter(LetterModel item) => add(item);
   void updateLetter(LetterModel item) => update(item);
   void deleteLetter(String id) => delete(id);
+
+  Future<void> seed() async {
+    _loadLetters();
+  }
+}
+
+// Numbers Provider
+final numbersProvider =
+    StateNotifierProvider<NumbersNotifier, AsyncValue<List<NumberModel>>>((
+      ref,
+    ) {
+      return NumbersNotifier(ref);
+    });
+
+class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
+  NumbersNotifier(this.ref) : super(AsyncValue.data(_seedNumbers)) {
+    _loadNumbers();
+  }
+
+  final Ref ref;
+
+  static final List<NumberModel> _seedNumbers = [
+    NumberModel(
+      id: '1',
+      numeral: '᱑',
+      value: 1,
+      nameOlChiki: 'ᱢᱤᱫ',
+      nameLatin: 'Mit',
+    ),
+    NumberModel(
+      id: '2',
+      numeral: '᱒',
+      value: 2,
+      nameOlChiki: 'ᱵᱟᱨ',
+      nameLatin: 'Bar',
+    ),
+    NumberModel(
+      id: '3',
+      numeral: '᱓',
+      value: 3,
+      nameOlChiki: 'ᱯᱮ',
+      nameLatin: 'Pe',
+    ),
+    NumberModel(
+      id: '4',
+      numeral: '᱔',
+      value: 4,
+      nameOlChiki: 'ᱯᱩᱱ',
+      nameLatin: 'Pun',
+    ),
+    NumberModel(
+      id: '5',
+      numeral: '᱕',
+      value: 5,
+      nameOlChiki: 'ᱢᱚᱬᱮ',
+      nameLatin: 'Mone',
+    ),
+  ];
+
+  Future<void> _loadNumbers() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/numbers.php');
+      final list = (data as List).map((e) => NumberModel.fromJson(e)).toList();
+      state = AsyncValue.data(list);
+    } catch (e) {
+      state = AsyncValue.data(_seedNumbers);
+    }
+  }
+
+  Future<void> add(NumberModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/numbers.php', item.toJson());
+      await _loadNumbers();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> update(NumberModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/numbers.php', item.toJson());
+      await _loadNumbers();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/numbers.php', params: {'id': id});
+      await _loadNumbers();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void addNumber(NumberModel item) => add(item);
+  void updateNumber(NumberModel item) => update(item);
+  void deleteNumber(String id) => delete(id);
+
+  Future<void> seed() async {
+    _loadNumbers();
+  }
+}
+
+// Words Provider
+final wordsProvider =
+    StateNotifierProvider<WordsNotifier, AsyncValue<List<WordModel>>>((ref) {
+      return WordsNotifier(ref);
+    });
+
+class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
+  WordsNotifier(this.ref) : super(AsyncValue.data(_seedWords)) {
+    _loadWords();
+  }
+
+  final Ref ref;
+
+  static final List<WordModel> _seedWords = [
+    WordModel(
+      id: 'w1',
+      wordOlChiki: 'ᱡᱚᱦᱟᱨ',
+      wordLatin: 'Johar',
+      meaning: 'Hello',
+    ),
+    WordModel(id: 'w2', wordOlChiki: 'ᱫᱟᱠ', wordLatin: 'Dak', meaning: 'Water'),
+  ];
+
+  Future<void> _loadWords() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/words.php');
+      final list = (data as List).map((e) => WordModel.fromJson(e)).toList();
+      state = AsyncValue.data(list);
+    } catch (e) {
+      state = AsyncValue.data(_seedWords);
+    }
+  }
+
+  Future<void> add(WordModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/words.php', item.toJson());
+      await _loadWords();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> update(WordModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/words.php', item.toJson());
+      await _loadWords();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/words.php', params: {'id': id});
+      await _loadWords();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  void addWord(WordModel item) => add(item);
+  void updateWord(WordModel item) => update(item);
+  void deleteWord(String id) => delete(id);
+
+  Future<void> seed() async {
+    _loadWords();
+  }
+}
+
+// Sentences Provider
+final sentencesProvider =
+    StateNotifierProvider<SentencesNotifier, AsyncValue<List<SentenceModel>>>((
+      ref,
+    ) {
+      return SentencesNotifier(ref);
+    });
+
+class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
+  SentencesNotifier(this.ref) : super(AsyncValue.data(_seedSentences)) {
+    _loadSentences();
+  }
+
+  final Ref ref;
+
+  static final List<SentenceModel> _seedSentences = [
+    SentenceModel(
+      id: 's1',
+      sentenceOlChiki: 'ᱡᱚᱦᱟᱨ, ᱟᱢ ᱫᱚ ᱪᱮᱫ ᱧᱩᱛᱩᱢ ᱠᱟᱱᱟ?',
+      sentenceLatin: 'Johar, am do ced nyutum kana?',
+      meaning: 'Hello, how are you?',
+      pronunciation: 'Jo-har, am do ched nyu-tum ka-na?',
+      category: 'Greeting',
+    ),
+    SentenceModel(
+      id: 's2',
+      sentenceOlChiki: 'ᱤᱧ ᱫᱚ ᱵᱟᱝ ᱧᱩᱛᱩᱢ ᱠᱟᱱᱟ',
+      sentenceLatin: 'Ing do bang nyutum kana',
+      meaning: 'I am fine',
+      pronunciation: 'Ing do bang nyu-tum ka-na',
+      category: 'Greeting',
+    ),
+  ];
+
+  Future<void> _loadSentences() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/sentences.php');
+      final list = (data as List)
+          .map((e) => SentenceModel.fromJson(e))
+          .toList();
+      state = AsyncValue.data(list);
+    } catch (e) {
+      state = AsyncValue.data(_seedSentences);
+    }
+  }
+
+  Future<void> add(SentenceModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/sentences.php', item.toJson());
+      await _loadSentences();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> update(SentenceModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/sentences.php', item.toJson());
+      await _loadSentences();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/sentences.php', params: {'id': id});
+      await _loadSentences();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> seed() async {
+    _loadSentences();
+  }
 }
 
 // Lessons Provider
@@ -426,173 +792,310 @@ final lessonsProvider =
     StateNotifierProvider<LessonsNotifier, AsyncValue<List<LessonModel>>>((
       ref,
     ) {
-      return LessonsNotifier();
+      return LessonsNotifier(ref);
     });
 
 class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
-  LessonsNotifier() : super(const AsyncValue.loading()) {
+  LessonsNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadLessons();
   }
 
-  void _loadLessons() {
-    try {
-      // Force reset to use new lesson data with categoryId and descriptions
-      // Remove this block after first run to allow persistence
-      prefs.remove('lessons');
+  final Ref ref;
 
-      final stored = prefs.getString('lessons');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        final lessons = decoded.map((e) => LessonModel.fromJson(e)).toList();
-        state = AsyncValue.data(lessons);
-      } else {
-        // Default lessons with descriptions
-        state = AsyncValue.data([
-          LessonModel(
-            id: 'alphabets_1',
-            categoryId: 'alphabets',
-            titleOlChiki: 'ᱯᱟᱹᱦᱤᱞ ᱯᱟᱹᱴ',
-            titleLatin: 'Introduction to Ol Chiki',
-            level: 'beginner',
-            order: 0,
-            isActive: true,
-            estimatedMinutes: 5,
-            description:
-                'Learn about the Ol Chiki script, invented by Pandit Raghunath Murmu in 1925 for the Santali language. Discover how this unique alphabet helps preserve Santali culture.',
-          ),
-          LessonModel(
-            id: 'alphabets_2',
-            categoryId: 'alphabets',
-            titleOlChiki: 'ᱚᱠᱤᱞ ᱠᱚ',
-            titleLatin: 'Vowels (ᱚ-ᱩ)',
-            level: 'beginner',
-            order: 1,
-            isActive: true,
-            estimatedMinutes: 8,
-            description:
-                'Master the six basic vowels of Ol Chiki: ᱚ (a), ᱟ (aa), ᱤ (i), ᱩ (u), ᱮ (e), and ᱳ (o). Practice their pronunciation and writing.',
-          ),
-          LessonModel(
-            id: 'alphabets_3',
-            categoryId: 'alphabets',
-            titleOlChiki: 'ᱚᱞ ᱠᱚ',
-            titleLatin: 'Consonants Part 1',
-            level: 'beginner',
-            order: 2,
-            isActive: true,
-            estimatedMinutes: 10,
-            description:
-                'Learn the first set of consonants: ᱠ (k), ᱜ (g), ᱝ (ng), ᱪ (c), ᱡ (j). Practice writing and recognizing each character.',
-          ),
-          LessonModel(
-            id: 'alphabets_4',
-            categoryId: 'alphabets',
-            titleOlChiki: 'ᱚᱞ ᱠᱚ ᱵᱟᱨᱭᱟ',
-            titleLatin: 'Consonants Part 2',
-            level: 'beginner',
-            order: 3,
-            isActive: true,
-            estimatedMinutes: 10,
-            description:
-                'Continue with more consonants: ᱴ (t), ᱰ (d), ᱱ (n), ᱯ (p), ᱵ (b). Build your character recognition skills.',
-          ),
-          LessonModel(
-            id: 'numbers_1',
-            categoryId: 'numbers',
-            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱑-᱕',
-            titleLatin: 'Numbers 1-5',
-            level: 'beginner',
-            order: 0,
-            isActive: true,
-            estimatedMinutes: 5,
-            description:
-                'Learn to count from 1 to 5 in Santali: ᱑ (mit), ᱒ (bar), ᱓ (pe), ᱔ (pon), ᱕ (mone). Practice writing the Ol Chiki numerals.',
-          ),
-          LessonModel(
-            id: 'numbers_2',
-            categoryId: 'numbers',
-            titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱖-᱑᱐',
-            titleLatin: 'Numbers 6-10',
-            level: 'beginner',
-            order: 1,
-            isActive: true,
-            estimatedMinutes: 5,
-            description:
-                'Continue counting from 6 to 10: ᱖ (turui), ᱗ (eae), ᱘ (irel), ᱙ (are), ᱑᱐ (gel). Complete your basic number vocabulary.',
-          ),
-          LessonModel(
-            id: 'words_1',
-            categoryId: 'words',
-            titleOlChiki: 'ᱱᱳᱣᱟ ᱯᱟᱹᱨᱥᱤ',
-            titleLatin: 'Greetings',
-            level: 'beginner',
-            order: 0,
-            isActive: true,
-            estimatedMinutes: 7,
-            description:
-                'Learn essential Santali greetings: ᱡᱚᱦᱟᱨ (Johar - Hello), ᱥᱮᱨᱢᱟ (Serma - Good morning), ᱥᱳᱢᱟ ᱪᱤᱱᱟᱜ (How are you?).',
-          ),
-          LessonModel(
-            id: 'words_2',
-            categoryId: 'words',
-            titleOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ',
-            titleLatin: 'Family Words',
-            level: 'beginner',
-            order: 1,
-            isActive: true,
-            estimatedMinutes: 8,
-            description:
-                'Learn family vocabulary: ᱟᱯᱟ (Apa - Father), ᱟᱭᱳ (Ayo - Mother), ᱵᱳᱭᱦᱟ (Boyha - Brother), ᱢᱤᱥᱨᱟ (Misra - Sister).',
-          ),
-          LessonModel(
-            id: 'phrases_1',
-            categoryId: 'phrases',
-            titleOlChiki: 'ᱫᱤᱱᱟᱢ ᱛᱮᱞᱟ',
-            titleLatin: 'Daily Phrases',
-            level: 'beginner',
-            order: 0,
-            isActive: true,
-            estimatedMinutes: 10,
-            description:
-                'Essential daily phrases for conversation. Learn to introduce yourself, ask for directions, and express common needs in Santali.',
-          ),
-        ]);
-      }
+  static final List<LessonModel> _seedLessons = [
+    // Alphabet lessons
+    LessonModel(
+      id: 'seed_lesson_a1',
+      categoryId: 'seed_alphabet',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱟᱹᱲᱟᱝ',
+      titleLatin: 'Vowels (Part 1)',
+      description: 'Learn the first 3 Ol Chiki vowels',
+      order: 0,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱚ',
+          textLatin: 'O – as in "got"',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱟ',
+          textLatin: 'A – as in "far"',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱤ',
+          textLatin: 'I – as in "sit"',
+        ),
+      ],
+    ),
+    LessonModel(
+      id: 'seed_lesson_a2',
+      categoryId: 'seed_alphabet',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱟᱹᱲᱟᱝ',
+      titleLatin: 'Vowels (Part 2)',
+      description: 'Learn the next 3 Ol Chiki vowels',
+      order: 1,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱩ',
+          textLatin: 'U – as in "put"',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱮ',
+          textLatin: 'E – as in "bed"',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱳ',
+          textLatin: 'Oh – as in "go"',
+        ),
+      ],
+    ),
+    LessonModel(
+      id: 'seed_lesson_a3',
+      categoryId: 'seed_alphabet',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱠᱚ',
+      titleLatin: 'Consonants (Part 1)',
+      description: 'Learn the first consonants: K, G, C',
+      order: 2,
+      estimatedMinutes: 7,
+      blocks: [
+        LessonBlock(type: 'text', textOlChiki: 'ᱠ', textLatin: 'Ko – K sound'),
+        LessonBlock(type: 'text', textOlChiki: 'ᱜ', textLatin: 'Ga – G sound'),
+        LessonBlock(type: 'text', textOlChiki: 'ᱪ', textLatin: 'Ca – Ch sound'),
+      ],
+    ),
+
+    // Numbers lessons
+    LessonModel(
+      id: 'seed_lesson_n1',
+      categoryId: 'seed_numbers',
+      titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱑-᱕',
+      titleLatin: 'Numbers 1–5',
+      description: 'Count from one to five in Santali',
+      order: 0,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱑ – ᱢᱤᱫ',
+          textLatin: '1 – Mid (one)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱒ – ᱵᱟᱨ',
+          textLatin: '2 – Bar (two)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱓ – ᱯᱮ',
+          textLatin: '3 – Pe (three)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱔ – ᱯᱩᱱ',
+          textLatin: '4 – Pun (four)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱕ – ᱢᱚᱬᱮ',
+          textLatin: '5 – Moṇe (five)',
+        ),
+      ],
+    ),
+    LessonModel(
+      id: 'seed_lesson_n2',
+      categoryId: 'seed_numbers',
+      titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱖-᱑᱐',
+      titleLatin: 'Numbers 6–10',
+      description: 'Count from six to ten in Santali',
+      order: 1,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱖ – ᱛᱩᱨᱩᱭ',
+          textLatin: '6 – Turuy (six)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱗ – ᱮᱭᱟᱮ',
+          textLatin: '7 – Eyae (seven)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱘ – ᱤᱨᱟᱞ',
+          textLatin: '8 – Iral (eight)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱙ – ᱟᱨᱮ',
+          textLatin: '9 – Are (nine)',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: '᱑᱐ – ᱜᱮᱞ',
+          textLatin: '10 – Gel (ten)',
+        ),
+      ],
+    ),
+
+    // Words lessons
+    LessonModel(
+      id: 'seed_lesson_w1',
+      categoryId: 'seed_words',
+      titleOlChiki: 'ᱡᱤᱱᱤᱥ ᱨᱚᱲ',
+      titleLatin: 'Common Objects',
+      description: 'Learn everyday object names in Santali',
+      order: 0,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱫᱟᱠᱟ',
+          textLatin: 'Daka – Rice / Food',
+        ),
+        LessonBlock(type: 'text', textOlChiki: 'ᱫᱟᱠ', textLatin: 'Dak – Water'),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱚᱲᱟᱜ',
+          textLatin: 'Oṛak – House',
+        ),
+      ],
+    ),
+    LessonModel(
+      id: 'seed_lesson_w2',
+      categoryId: 'seed_words',
+      titleOlChiki: 'ᱡᱟᱱᱣᱟᱨ',
+      titleLatin: 'Animals',
+      description: 'Learn animal names in Santali',
+      order: 1,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(type: 'text', textOlChiki: 'ᱥᱮᱛᱟ', textLatin: 'Seta – Dog'),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱢᱮᱨᱚᱢ',
+          textLatin: 'Merom – Goat',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱫᱟᱨᱮ',
+          textLatin: 'Dare – Tree / Bird',
+        ),
+      ],
+    ),
+
+    // Sentences lessons
+    LessonModel(
+      id: 'seed_lesson_s1',
+      categoryId: 'seed_sentences',
+      titleOlChiki: 'ᱡᱚᱦᱟᱨ ᱣᱟᱠᱭ',
+      titleLatin: 'Greetings',
+      description: 'Learn basic Santali greetings',
+      order: 0,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱡᱚᱦᱟᱨ!',
+          textLatin: 'Johar! – Hello!',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱪᱮᱫ ᱠᱟᱱᱟ?',
+          textLatin: 'Ced kana? – How are you?',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱟᱹᱰᱤ ᱵᱟᱝᱪᱟᱣ',
+          textLatin: 'Aḍi bangchao – Very well',
+        ),
+      ],
+    ),
+    LessonModel(
+      id: 'seed_lesson_s2',
+      categoryId: 'seed_sentences',
+      titleOlChiki: 'ᱱᱟᱜᱟᱢ ᱣᱟᱠᱭ',
+      titleLatin: 'Introductions',
+      description: 'Introduce yourself in Santali',
+      order: 1,
+      estimatedMinutes: 5,
+      blocks: [
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱤᱧ ᱧᱩᱛᱩᱢ ... ᱠᱟᱱᱟ',
+          textLatin: 'Iñ ñutum ... kana – My name is ...',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱟᱢ ᱧᱩᱛᱩᱢ ᱪᱮᱫ?',
+          textLatin: 'Am ñutum ced? – What is your name?',
+        ),
+        LessonBlock(
+          type: 'text',
+          textOlChiki: 'ᱥᱮᱨᱢᱟ ᱦᱩᱭᱩᱜ ᱟ',
+          textLatin: 'Serma huyug a – Nice to meet you',
+        ),
+      ],
+    ),
+  ];
+
+  Future<void> _loadLessons() async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/lessons.php');
+      final list = (data as List).map((e) => LessonModel.fromJson(e)).toList();
+      state = AsyncValue.data(list);
     } catch (e) {
-      state = AsyncValue.data([]);
+      state = AsyncValue.data(_seedLessons);
     }
   }
 
-  void _saveLessons(List<LessonModel> lessons) {
-    final encoded = jsonEncode(lessons.map((e) => e.toJson()).toList());
-    prefs.setString('lessons', encoded);
+  Future<void> add(LessonModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/lessons.php', item.toJson());
+      await _loadLessons();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void add(LessonModel item) {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _saveLessons(updated);
-    state = AsyncValue.data(updated);
+  Future<void> update(LessonModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/lessons.php', item.toJson());
+      await _loadLessons();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void update(LessonModel item) {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _saveLessons(updated);
-    state = AsyncValue.data(updated);
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/lessons.php', params: {'id': id});
+      await _loadLessons();
+    } catch (e) {
+      // Handle error
+    }
   }
 
-  void delete(String id) {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _saveLessons(updated);
-    state = AsyncValue.data(updated);
-  }
-
-  // Aliases for admin screens (async for await compatibility)
+  // Aliases for admin screens
   Future<void> addLesson(LessonModel item) async => add(item);
   Future<void> updateLesson(LessonModel item) async => update(item);
   Future<void> deleteLesson(String id) async => delete(id);
+
+  Future<void> seed() async {
+    state = const AsyncValue.loading();
+    _loadLessons();
+  }
 }
 
 // Quizzes Provider
@@ -614,7 +1117,135 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         final quizzes = decoded.map((e) => QuizModel.fromJson(e)).toList();
         state = AsyncValue.data(quizzes);
       } else {
-        state = AsyncValue.data([]);
+        // Default quizzes with actual questions
+        final defaultQuizzes = [
+          QuizModel(
+            id: 'quiz_alphabets_basics',
+            categoryId: 'alphabets',
+            title: 'Alphabet Basics',
+            level: 'beginner',
+            order: 0,
+            isActive: true,
+            passingScore: 70,
+            questions: [
+              QuizQuestion(
+                promptOlChiki: 'ᱚ',
+                promptLatin: 'Which sound does this letter make?',
+                optionsOlChiki: ['a', 'i', 'u', 'o'],
+                optionsLatin: ['a', 'i', 'u', 'o'],
+                correctIndex: 0,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱛ',
+                promptLatin: 'Identify this consonant:',
+                optionsOlChiki: ['at', 'ag', 'al', 'ak'],
+                optionsLatin: ['at', 'ag', 'al', 'ak'],
+                correctIndex: 0,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱜ',
+                promptLatin: 'What is this letter?',
+                optionsOlChiki: ['ag', 'ang', 'al', 'at'],
+                optionsLatin: ['ag', 'ang', 'al', 'at'],
+                correctIndex: 0,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱞ',
+                promptLatin: 'Which letter represents "al"?',
+                optionsOlChiki: ['ᱚ', 'ᱛ', 'ᱜ', 'ᱞ'],
+                optionsLatin: ['a', 'at', 'ag', 'al'],
+                correctIndex: 3,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱟ',
+                promptLatin: 'This vowel sounds like:',
+                optionsOlChiki: ['a', 'aa/la', 'i', 'u'],
+                optionsLatin: ['a', 'aa/la', 'i', 'u'],
+                correctIndex: 1,
+              ),
+            ],
+          ),
+          QuizModel(
+            id: 'quiz_numbers_1to10',
+            categoryId: 'numbers',
+            title: 'Numbers 1-10',
+            level: 'beginner',
+            order: 1,
+            isActive: true,
+            passingScore: 70,
+            questions: [
+              QuizQuestion(
+                promptOlChiki: '᱑',
+                promptLatin: 'What number is this?',
+                optionsOlChiki: ['1', '2', '3', '4'],
+                optionsLatin: ['One', 'Two', 'Three', 'Four'],
+                correctIndex: 0,
+              ),
+              QuizQuestion(
+                promptOlChiki: '᱕',
+                promptLatin: 'Identify this number:',
+                optionsOlChiki: ['3', '4', '5', '6'],
+                optionsLatin: ['Three', 'Four', 'Five', 'Six'],
+                correctIndex: 2,
+              ),
+              QuizQuestion(
+                promptOlChiki: '᱑᱐',
+                promptLatin: 'What is this number?',
+                optionsOlChiki: ['8', '9', '10', '11'],
+                optionsLatin: ['Eight', 'Nine', 'Ten', 'Eleven'],
+                correctIndex: 2,
+              ),
+              QuizQuestion(
+                promptOlChiki: '᱓',
+                promptLatin: 'Which number is shown?',
+                optionsOlChiki: ['1', '2', '3', '4'],
+                optionsLatin: ['One', 'Two', 'Three', 'Four'],
+                correctIndex: 2,
+              ),
+            ],
+          ),
+          QuizModel(
+            id: 'quiz_vowels',
+            categoryId: 'alphabets',
+            title: 'Master the Vowels',
+            level: 'intermediate',
+            order: 2,
+            isActive: true,
+            passingScore: 80,
+            questions: [
+              QuizQuestion(
+                promptOlChiki: 'ᱤ',
+                promptLatin: 'This is the vowel for:',
+                optionsOlChiki: ['a', 'i', 'u', 'e'],
+                optionsLatin: ['a', 'i', 'u', 'e'],
+                correctIndex: 1,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱩ',
+                promptLatin: 'Identify this vowel sound:',
+                optionsOlChiki: ['a', 'i', 'u', 'o'],
+                optionsLatin: ['a', 'i', 'u', 'o'],
+                correctIndex: 2,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱮ',
+                promptLatin: 'What vowel is this?',
+                optionsOlChiki: ['a', 'i', 'e', 'o'],
+                optionsLatin: ['a', 'i', 'e', 'o'],
+                correctIndex: 2,
+              ),
+              QuizQuestion(
+                promptOlChiki: 'ᱳ',
+                promptLatin: 'This letter represents:',
+                optionsOlChiki: ['a', 'u', 'e', 'o'],
+                optionsLatin: ['a', 'u', 'e', 'o'],
+                correctIndex: 3,
+              ),
+            ],
+          ),
+        ];
+        state = AsyncValue.data(defaultQuizzes);
+        _saveQuizzes(defaultQuizzes);
       }
     } catch (e) {
       state = AsyncValue.data([]);
@@ -651,106 +1282,434 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   Future<void> addQuiz(QuizModel item) async => add(item);
   Future<void> updateQuiz(QuizModel item) async => update(item);
   Future<void> deleteQuiz(String id) async => delete(id);
+
+  Future<void> seed() async {
+    state = const AsyncValue.loading();
+    prefs.remove('quizzes');
+    _loadQuizzes();
+  }
 }
 
 // ============== RHYMES PROVIDER ==============
 
 final rhymesProvider =
     StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>((ref) {
-      return RhymesNotifier();
+      return RhymesNotifier(ref);
     });
 
 class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
-  RhymesNotifier() : super(const AsyncValue.loading()) {
+  RhymesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadRhymes();
   }
 
-  void _loadRhymes() {
+  final Ref ref;
+
+  static final List<RhymeModel> _seedRhymes = [
+    RhymeModel(
+      id: 'seed_1',
+      titleOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ',
+      titleLatin: 'Isin Sanam',
+      contentOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ ᱨᱮ\nᱵᱤᱨ ᱦᱚᱨ ᱥᱟᱱᱟᱢ\nᱫᱟᱨᱮ ᱛᱷᱟᱞᱮ\nᱡᱚᱛᱚ ᱥᱟᱱᱟᱢ',
+      contentLatin: 'Isin sanam re\nBir hor sanam\nDare thale\nJoto sanam',
+      category: 'Nature',
+    ),
+    RhymeModel(
+      id: 'seed_2',
+      titleOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ',
+      titleLatin: 'Meram Pasi',
+      contentOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ\nᱠᱟᱛᱮ ᱟᱥᱤ\nᱵᱟᱝ ᱠᱟᱛᱮ\nᱵᱟᱝ ᱟᱥᱤ',
+      contentLatin: 'Meram pasi\nKate asi\nBang kate\nBang asi',
+      category: 'Animal',
+    ),
+    RhymeModel(
+      id: 'seed_3',
+      titleOlChiki: 'ᱫᱟᱠᱟ ᱦᱟᱥᱟ',
+      titleLatin: 'Daka Hasa',
+      contentOlChiki: 'ᱫᱟᱠᱟ ᱦᱟᱥᱟ\nᱫᱟᱠᱟ ᱡᱚᱢ\nᱵᱟᱝ ᱦᱟᱥᱟ\nᱵᱟᱝ ᱡᱚᱢ',
+      contentLatin: 'Daka hasa\nDaka jom\nBang hasa\nBang jom',
+      category: 'General',
+    ),
+    RhymeModel(
+      id: 'seed_4',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+      titleLatin: 'Ol Chiki',
+      contentOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱞᱤᱯᱤ\nᱥᱟᱱᱛᱟᱲ ᱞᱤᱯᱤ\nᱯᱟᱱᱛᱮ ᱨᱟᱜᱷᱩ\nᱥᱟᱫᱷᱩ ᱢᱩᱨᱢᱩ',
+      contentLatin: 'Ol Chiki lipi\nSantar lipi\nPante raghu\nSadhu murmu',
+      category: 'Moral',
+    ),
+    RhymeModel(
+      id: 'seed_5',
+      titleOlChiki: 'ᱥᱤᱧ ᱵᱚᱝᱜᱟ',
+      titleLatin: 'Sing Bonga',
+      contentOlChiki: 'ᱥᱤᱧ ᱵᱚᱝᱜᱟ\nᱢᱟᱨᱟᱝ ᱵᱚᱝᱜᱟ\nᱫᱷᱟᱨᱛᱤ ᱥᱮᱨᱢᱟ\nᱡᱚᱛᱚ ᱵᱚᱝᱜᱟ',
+      contentLatin: 'Sing Bonga\nMarang Bonga\nDharti Serma\nJoto Bonga',
+      category: 'Nature',
+    ),
+    RhymeModel(
+      id: 'seed_6',
+      titleOlChiki: 'ᱵᱤᱨ ᱫᱟᱨᱮ',
+      titleLatin: 'Bir Dare',
+      contentOlChiki: 'ᱵᱤᱨ ᱫᱟᱨᱮ ᱵᱟᱦᱟ\nᱨᱟᱝ ᱥᱩᱠᱨᱤ\nᱦᱚᱲ ᱫᱩᱲᱩᱵ\nᱵᱤᱨ ᱥᱟᱱᱟᱢ',
+      contentLatin: 'Bir dare baha\nRang sukri\nHor durub\nBir sanam',
+      category: 'Nature',
+    ),
+    RhymeModel(
+      id: 'seed_7',
+      titleOlChiki: 'ᱟᱞᱟᱝ ᱠᱟᱛᱷᱟ',
+      titleLatin: 'Alang Katha',
+      contentOlChiki: 'ᱟᱞᱟᱝ ᱠᱟᱛᱷᱟ\nᱟᱛᱚ ᱨᱮ\nᱟᱵᱩᱝ ᱟᱯᱩᱝ\nᱫᱚ ᱠᱟᱛᱷᱟ',
+      contentLatin: 'Alang katha\nAto re\nAbung apung\nDo katha',
+      category: 'Moral',
+    ),
+    RhymeModel(
+      id: 'seed_8',
+      titleOlChiki: 'ᱥᱤᱢ ᱥᱟᱹᱠᱟᱹᱢ',
+      titleLatin: 'Sim Sakam',
+      contentOlChiki: 'ᱥᱤᱢ ᱥᱟᱹᱠᱟᱹᱢ\nᱫᱟᱨᱮ ᱨᱮᱱᱟᱜ\nᱥᱤᱢ ᱫᱚ ᱩᱰᱟᱹᱣ\nᱡᱟᱹᱱᱤᱡ ᱛᱟᱦᱮᱸᱱ',
+      contentLatin: 'Sim sakam\nDare renag\nSim do udaw\nJanij tahen',
+      category: 'Animal',
+    ),
+  ];
+
+  Future<void> _loadRhymes() async {
     try {
-      final stored = prefs.getString('rhymes');
+      final api = ref.read(apiServiceProvider);
+      final data = await api.get('/rhymes.php');
+      final list = (data as List).map((e) => RhymeModel.fromJson(e)).toList();
+      state = AsyncValue.data(list);
+    } catch (e) {
+      // Fallback to local seed data when API is unreachable
+      state = AsyncValue.data(_seedRhymes);
+    }
+  }
+
+  Future<void> add(RhymeModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/rhymes.php', item.toJson());
+      await _loadRhymes();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> update(RhymeModel item) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/rhymes.php', item.toJson());
+      await _loadRhymes();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  Future<void> delete(String id) async {
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/rhymes.php', params: {'id': id});
+      await _loadRhymes();
+    } catch (e) {
+      // Handle error
+    }
+  }
+
+  // Aliases for admin screens
+  Future<void> addRhyme(RhymeModel item) async => add(item);
+  Future<void> updateRhyme(RhymeModel item) async => update(item);
+  Future<void> deleteRhyme(String id) async => delete(id);
+
+  Future<void> seed() async {
+    _loadRhymes();
+  }
+}
+
+// ============== RHYME CATEGORIES PROVIDER ==============
+
+final rhymeCategoriesProvider =
+    StateNotifierProvider<
+      RhymeCategoriesNotifier,
+      AsyncValue<List<RhymeCategoryModel>>
+    >((ref) {
+      return RhymeCategoriesNotifier();
+    });
+
+class RhymeCategoriesNotifier
+    extends StateNotifier<AsyncValue<List<RhymeCategoryModel>>> {
+  RhymeCategoriesNotifier() : super(const AsyncValue.loading()) {
+    _load();
+  }
+
+  void _load() {
+    try {
+      final stored = prefs.getString('rhyme_categories');
       if (stored != null) {
         final List<dynamic> decoded = jsonDecode(stored);
-        final rhymes = decoded.map((e) => RhymeModel.fromJson(e)).toList();
-        state = AsyncValue.data(rhymes);
+        state = AsyncValue.data(
+          decoded.map((e) => RhymeCategoryModel.fromJson(e)).toList(),
+        );
       } else {
-        final defaultRhymes = [
-          RhymeModel(
-            id: 'rhyme_1',
-            titleOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ',
-            titleLatin: 'Hati Lagit',
-            contentOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱛᱤ...\nᱥᱮᱛᱟ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱛᱟ...',
-            contentLatin: 'Hati lagit hati...\nSeta lagit seta...',
-            category: 'Animal',
-            thumbnailUrl:
-                'assets/images/rhyme_hati.png', // Fallback or placeholder
+        final defaults = [
+          RhymeCategoryModel(
+            id: 'rcat_animal',
+            nameOlChiki: 'ᱡᱟᱱᱣᱟᱨ',
+            nameLatin: 'Animal',
+            iconName: 'pets',
+            order: 0,
           ),
-          RhymeModel(
-            id: 'rhyme_2',
-            titleOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ',
-            titleLatin: 'Buru Re',
-            contentOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ ᱵᱩᱨᱩ...\nᱡᱷᱟᱨᱱᱟ ᱨᱮ ᱡᱷᱟᱨᱱᱟ...',
-            contentLatin: 'Buru re buru...\nJharna re jharna...',
-            category: 'Nature',
+          RhymeCategoryModel(
+            id: 'rcat_nature',
+            nameOlChiki: 'ᱯᱨᱚᱠᱨᱤᱛᱤ',
+            nameLatin: 'Nature',
+            iconName: 'nature',
+            order: 1,
           ),
-          RhymeModel(
-            id: 'rhyme_3',
-            titleOlChiki: 'ᱥᱮᱛᱟ',
-            titleLatin: 'The Dog (Seta)',
-            contentOlChiki: 'ᱥᱮᱛᱟ ᱥᱮᱛᱟ ᱚᱭᱟ ᱥᱮᱛᱟ...\nᱫᱟᱹᱲ ᱟᱠᱟᱱᱟᱭ ᱥᱮᱛᱟ ᱫᱟᱹᱲ...',
-            contentLatin: 'Seta seta oya seta...\nDar akanay seta dar...',
-            category: 'Animal',
+          RhymeCategoryModel(
+            id: 'rcat_moral',
+            nameOlChiki: 'ᱱᱤᱛᱤ',
+            nameLatin: 'Moral',
+            iconName: 'auto_awesome',
+            order: 2,
           ),
-          RhymeModel(
-            id: 'rhyme_4',
-            titleOlChiki: 'ᱫᱟᱜ ᱡᱟᱹᱲᱤ',
-            titleLatin: 'Rainy Day',
-            contentOlChiki: 'ᱫᱟᱜ ᱡᱟᱹᱲᱤ ᱫᱟᱜ ᱡᱟᱹᱲᱤ...\nᱨᱤᱢᱤᱞ ᱨᱟᱠᱟᱵ ᱮᱱᱟ...',
-            contentLatin: 'Dag jari dag jari...\nRimil rakab ena...',
-            category: 'Nature',
-          ),
-          RhymeModel(
-            id: 'rhyme_5',
-            titleOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚᱣᱟᱜ ᱢᱚᱱᱮ',
-            titleLatin: 'Child\'s Mind',
-            contentOlChiki: 'ᱜᱤᱫᱽᱨᱟᱹ ᱠᱚᱣᱟᱜ ᱢᱚᱱᱮ...\nᱚᱞ ᱪᱤᱠᱤ ᱞᱟᱹᱜᱤᱫ ᱢᱚᱱᱮ...',
-            contentLatin: 'Gidra koag mone...\nOl Chiki lagit mone...',
-            category: 'Moral',
+          RhymeCategoryModel(
+            id: 'rcat_general',
+            nameOlChiki: 'ᱥᱟᱫᱷᱟᱨᱚᱬ',
+            nameLatin: 'General',
+            iconName: 'child_care',
+            order: 3,
           ),
         ];
-        state = AsyncValue.data(defaultRhymes);
-        _saveRhymes(defaultRhymes);
+        state = AsyncValue.data(defaults);
+        _save(defaults);
       }
     } catch (e) {
       state = AsyncValue.data([]);
     }
   }
 
-  void _saveRhymes(List<RhymeModel> rhymes) {
-    final encoded = jsonEncode(rhymes.map((e) => e.toJson()).toList());
-    prefs.setString('rhymes', encoded);
+  void _save(List<RhymeCategoryModel> items) {
+    prefs.setString(
+      'rhyme_categories',
+      jsonEncode(items.map((e) => e.toJson()).toList()),
+    );
   }
 
-  Future<void> addRhyme(RhymeModel item) async {
+  Future<void> add(RhymeCategoryModel item) async {
     final current = state.value ?? [];
     final updated = [...current, item];
-    _saveRhymes(updated);
+    _save(updated);
     state = AsyncValue.data(updated);
   }
 
-  Future<void> updateRhyme(RhymeModel item) async {
+  Future<void> update(RhymeCategoryModel item) async {
     final current = state.value ?? [];
     final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _saveRhymes(updated);
+    _save(updated);
     state = AsyncValue.data(updated);
   }
 
-  Future<void> deleteRhyme(String id) async {
+  Future<void> delete(String id) async {
     final current = state.value ?? [];
     final updated = current.where((e) => e.id != id).toList();
-    _saveRhymes(updated);
+    _save(updated);
     state = AsyncValue.data(updated);
   }
 }
+
+// ============== RHYME SUBCATEGORIES PROVIDER ==============
+
+final rhymeSubcategoriesProvider =
+    StateNotifierProvider<
+      RhymeSubcategoriesNotifier,
+      AsyncValue<List<RhymeSubcategoryModel>>
+    >((ref) {
+      return RhymeSubcategoriesNotifier();
+    });
+
+class RhymeSubcategoriesNotifier
+    extends StateNotifier<AsyncValue<List<RhymeSubcategoryModel>>> {
+  RhymeSubcategoriesNotifier() : super(const AsyncValue.loading()) {
+    _load();
+  }
+
+  void _load() {
+    try {
+      final stored = prefs.getString('rhyme_subcategories');
+      if (stored != null) {
+        final List<dynamic> decoded = jsonDecode(stored);
+        state = AsyncValue.data(
+          decoded.map((e) => RhymeSubcategoryModel.fromJson(e)).toList(),
+        );
+      } else {
+        final defaults = [
+          // Animal subcategories
+          RhymeSubcategoryModel(
+            id: 'rsub_wild',
+            categoryId: 'rcat_animal',
+            nameOlChiki: 'ᱵᱤᱨ ᱡᱟᱱᱣᱟᱨ',
+            nameLatin: 'Wild Animals',
+            order: 0,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_domestic',
+            categoryId: 'rcat_animal',
+            nameOlChiki: 'ᱜᱷᱚᱨ ᱡᱟᱱᱣᱟᱨ',
+            nameLatin: 'Domestic Animals',
+            order: 1,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_birds',
+            categoryId: 'rcat_animal',
+            nameOlChiki: 'ᱪᱮᱬᱮ',
+            nameLatin: 'Birds',
+            order: 2,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_insects',
+            categoryId: 'rcat_animal',
+            nameOlChiki: 'ᱠᱤᱲᱟ',
+            nameLatin: 'Insects',
+            order: 3,
+          ),
+          // Nature subcategories
+          RhymeSubcategoryModel(
+            id: 'rsub_rivers',
+            categoryId: 'rcat_nature',
+            nameOlChiki: 'ᱜᱟᱰᱟ',
+            nameLatin: 'Rivers & Water',
+            order: 0,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_mountains',
+            categoryId: 'rcat_nature',
+            nameOlChiki: 'ᱵᱩᱨᱩ',
+            nameLatin: 'Mountains & Forest',
+            order: 1,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_weather',
+            categoryId: 'rcat_nature',
+            nameOlChiki: 'ᱦᱚᱭ ᱦᱤᱥᱤᱫ',
+            nameLatin: 'Weather',
+            order: 2,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_flowers',
+            categoryId: 'rcat_nature',
+            nameOlChiki: 'ᱵᱟᱦᱟ',
+            nameLatin: 'Flowers & Plants',
+            order: 3,
+          ),
+          // Moral subcategories
+          RhymeSubcategoryModel(
+            id: 'rsub_honesty',
+            categoryId: 'rcat_moral',
+            nameOlChiki: 'ᱥᱟᱹᱨᱤ',
+            nameLatin: 'Honesty',
+            order: 0,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_kindness',
+            categoryId: 'rcat_moral',
+            nameOlChiki: 'ᱫᱟᱭᱟ',
+            nameLatin: 'Kindness',
+            order: 1,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_courage',
+            categoryId: 'rcat_moral',
+            nameOlChiki: 'ᱵᱤᱨ',
+            nameLatin: 'Courage',
+            order: 2,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_wisdom',
+            categoryId: 'rcat_moral',
+            nameOlChiki: 'ᱜᱤᱭᱟᱱ',
+            nameLatin: 'Wisdom',
+            order: 3,
+          ),
+          // General subcategories
+          RhymeSubcategoryModel(
+            id: 'rsub_lullaby',
+            categoryId: 'rcat_general',
+            nameOlChiki: 'ᱡᱩᱢᱤᱫ ᱥᱮᱨᱮᱧ',
+            nameLatin: 'Lullaby',
+            order: 0,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_festive',
+            categoryId: 'rcat_general',
+            nameOlChiki: 'ᱯᱚᱨᱚᱵ',
+            nameLatin: 'Festive',
+            order: 1,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_counting',
+            categoryId: 'rcat_general',
+            nameOlChiki: 'ᱞᱮᱠᱷᱟ',
+            nameLatin: 'Counting',
+            order: 2,
+          ),
+          RhymeSubcategoryModel(
+            id: 'rsub_play',
+            categoryId: 'rcat_general',
+            nameOlChiki: 'ᱟᱹᱭᱩᱨ',
+            nameLatin: 'Play Songs',
+            order: 3,
+          ),
+        ];
+        state = AsyncValue.data(defaults);
+        _save(defaults);
+      }
+    } catch (e) {
+      state = AsyncValue.data([]);
+    }
+  }
+
+  void _save(List<RhymeSubcategoryModel> items) {
+    prefs.setString(
+      'rhyme_subcategories',
+      jsonEncode(items.map((e) => e.toJson()).toList()),
+    );
+  }
+
+  Future<void> add(RhymeSubcategoryModel item) async {
+    final current = state.value ?? [];
+    final updated = [...current, item];
+    _save(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> update(RhymeSubcategoryModel item) async {
+    final current = state.value ?? [];
+    final updated = current.map((e) => e.id == item.id ? item : e).toList();
+    _save(updated);
+    state = AsyncValue.data(updated);
+  }
+
+  Future<void> delete(String id) async {
+    final current = state.value ?? [];
+    final updated = current.where((e) => e.id != id).toList();
+    _save(updated);
+    state = AsyncValue.data(updated);
+  }
+}
+
+// Filtered subcategories by category
+final rhymeSubcategoriesByCategoryProvider =
+    Provider.family<AsyncValue<List<RhymeSubcategoryModel>>, String>((
+      ref,
+      categoryId,
+    ) {
+      final subcatsAsync = ref.watch(rhymeSubcategoriesProvider);
+      return subcatsAsync.when(
+        data: (subcats) => AsyncValue.data(
+          subcats.where((s) => s.categoryId == categoryId).toList(),
+        ),
+        loading: () => const AsyncValue.loading(),
+        error: (e, st) => AsyncValue.error(e, st),
+      );
+    });
 
 // Filtered lessons by category
 final lessonsByCategoryProvider =
@@ -769,10 +1728,11 @@ final lessonsByCategoryProvider =
 
 final userProfileProvider = Provider<AsyncValue<UserProfileLocal?>>((ref) {
   final name = ref.watch(userNameProvider);
-  final streak = ref.watch(userStreakProvider);
-  final stars = ref.watch(userStarsProvider);
-  final lessons = ref.watch(lessonsCompletedProvider);
-  final quizzes = ref.watch(quizzesCompletedProvider);
+  final progress = ref.watch(progressProvider);
+  final streak = progress.currentStreak;
+  final stars = progress.totalStars;
+  final lessons = progress.lessonsCompletedCount;
+  final quizzes = progress.quizzesCompletedCount;
 
   return AsyncValue.data(
     UserProfileLocal(
@@ -967,7 +1927,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
       contentOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱛᱤ...\nᱥᱮᱛᱟ ᱞᱟᱹᱜᱤᱫ ᱥᱮᱛᱟ...',
       contentLatin: 'Hati lagit hati...\nSeta lagit seta...',
       category: 'Animal',
-      audioUrl: 'https://hostinger.com/audio/hati.mp3', // Placeholder
+      subcategory: 'Wild Animals',
+      audioUrl: 'https://hostinger.com/audio/hati.mp3',
     ),
   );
 
@@ -979,7 +1940,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
       contentOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ ᱵᱩᱨᱩ...\nᱡᱷᱟᱨᱱᱟ ᱨᱮ ᱡᱷᱟᱨᱱᱟ...',
       contentLatin: 'Buru re buru...\nJharna re jharna...',
       category: 'Nature',
-      audioUrl: 'https://hostinger.com/audio/buru.mp3', // Placeholder
+      subcategory: 'Mountains & Forest',
+      audioUrl: 'https://hostinger.com/audio/buru.mp3',
     ),
   );
 }

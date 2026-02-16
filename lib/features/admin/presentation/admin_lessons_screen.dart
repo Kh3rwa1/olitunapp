@@ -8,6 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/gamified_card.dart';
+import 'widgets/admin_upload_field.dart';
 
 class AdminLessonsScreen extends ConsumerStatefulWidget {
   const AdminLessonsScreen({super.key});
@@ -156,8 +157,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
+                    ? Colors.white.withOpacity(0.1)
+                    : Colors.black.withOpacity(0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -226,7 +227,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
+                      color: AppColors.primary.withOpacity(0.3),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -313,6 +314,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     );
     final orderController = TextEditingController(
       text: (lesson?.order ?? 0).toString(),
+    );
+    final thumbnailController = TextEditingController(
+      text: lesson?.thumbnailUrl ?? '',
     );
     var level = lesson?.level ?? 'beginner';
     var isActive = lesson?.isActive ?? true;
@@ -414,8 +418,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.04),
+                              ? Colors.white.withOpacity(0.08)
+                              : Colors.black.withOpacity(0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -471,19 +475,30 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                           ),
                         ],
                         onChanged: (value) {
-                          if (value != null)
+                          if (value != null) {
                             setDialogState(() => level = value);
+                          }
                         },
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withValues(alpha: 0.08)
-                              : Colors.black.withValues(alpha: 0.04),
+                              ? Colors.white.withOpacity(0.08)
+                              : Colors.black.withOpacity(0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
                           ),
                         ),
+                      ),
+                      const SizedBox(height: 14),
+                      AdminUploadField(
+                        controller: thumbnailController,
+                        label: 'Thumbnail',
+                        icon: Icons.image_rounded,
+                        isDark: isDark,
+                        folder: 'lesson-thumbnails',
+                        uploadType: AdminUploadType.image,
+                        dialogSetState: setDialogState,
                       ),
                       const SizedBox(height: 12),
                       SwitchListTile(
@@ -539,7 +554,10 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                                     isActive: isActive,
                                     blocks:
                                         lesson?.blocks ?? const <LessonBlock>[],
-                                    thumbnailUrl: lesson?.thumbnailUrl,
+                                    thumbnailUrl:
+                                        thumbnailController.text.trim().isEmpty
+                                        ? null
+                                        : thumbnailController.text.trim(),
                                     isPremium: lesson?.isPremium ?? false,
                                   );
 
@@ -624,8 +642,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -660,9 +678,7 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.premiumCyan.colors.first
-              : (isDark
-                    ? Colors.white10
-                    : Colors.black.withValues(alpha: 0.05)),
+              : (isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isSelected
@@ -672,9 +688,7 @@ class _FilterChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.premiumCyan.colors.first.withValues(
-                      alpha: 0.3,
-                    ),
+                    color: AppColors.premiumCyan.colors.first.withOpacity(0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

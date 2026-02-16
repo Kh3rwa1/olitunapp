@@ -1,0 +1,23 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Force HTTPS (Uncomment after SSL is installed)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. Skip rules for actual files or directories
+  RewriteCond %{REQUEST_FILENAME} -f
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule .? - [S=2]
+
+  # 3. EXCLUDE admin and admin-panel from Flutter routing
+  RewriteCond %{REQUEST_URI} ^/(admin|admin-panel) [NC]
+  RewriteRule .? - [L]
+
+  # 4. Route all other requests to index.html for Flutter SPA
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>

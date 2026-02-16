@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Olitun brand green extracted from logo -->
+    <color name="splash_background">#1EE088</color>
+    <!-- Adaptive icon background color -->
+    <color name="ic_launcher_background">#1EE088</color>
+</resources>
+

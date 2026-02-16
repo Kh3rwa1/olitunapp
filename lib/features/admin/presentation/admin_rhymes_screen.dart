@@ -6,6 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_model.dart';
+import 'widgets/admin_upload_field.dart';
 
 class AdminRhymesScreen extends ConsumerStatefulWidget {
   const AdminRhymesScreen({super.key});
@@ -139,9 +140,21 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
               rhyme.titleLatin,
               style: const TextStyle(fontWeight: FontWeight.w700),
             ),
-            subtitle: Text(
-              rhyme.titleOlChiki,
-              style: const TextStyle(fontSize: 12),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(rhyme.titleOlChiki, style: const TextStyle(fontSize: 12)),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  children: [
+                    if (rhyme.category != null)
+                      _buildChip(rhyme.category!, AppColors.primary),
+                    if (rhyme.subcategory != null)
+                      _buildChip(rhyme.subcategory!, AppColors.duoBlue),
+                  ],
+                ),
+              ],
             ),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
@@ -163,6 +176,25 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
           ),
         ).animate().fadeIn(delay: (index * 50).ms).slideX(begin: 0.1);
       },
+    );
+  }
+
+  Widget _buildChip(String label, Color color) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: color.withOpacity(0.3)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w600,
+          color: color,
+        ),
+      ),
     );
   }
 
@@ -192,85 +224,177 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     );
     final audioController = TextEditingController(text: rhyme?.audioUrl);
     final thumbController = TextEditingController(text: rhyme?.thumbnailUrl);
-    String selectedCategory = rhyme?.category ?? 'General';
+
+    // Load categories and subcategories dynamically
+    final categories = ref.read(rhymeCategoriesProvider).value ?? [];
+    final allSubcategories = ref.read(rhymeSubcategoriesProvider).value ?? [];
+
+    String selectedCategory =
+        rhyme?.category ??
+        (categories.isNotEmpty ? categories.first.nameLatin : 'General');
+    String? selectedSubcategory = rhyme?.subcategory;
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(rhyme == null ? 'Add Rhyme' : 'Edit Rhyme'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: titleLatinController,
-                decoration: const InputDecoration(labelText: 'Title (Latin)'),
-              ),
-              TextField(
-                controller: titleOlChikiController,
-                decoration: const InputDecoration(
-                  labelText: 'Title (Ol Chiki)',
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) {
+          // Filter subcategories by selected category
+          final matchingCat = categories
+              .where((c) => c.nameLatin == selectedCategory)
+              .toList();
+          final catId = matchingCat.isNotEmpty ? matchingCat.first.id : '';
+          final filteredSubcats = allSubcategories
+              .where((s) => s.categoryId == catId)
+              .toList();
+
+          // Validate selectedSubcategory
+          final validSubcatNames = filteredSubcats
+              .map((s) => s.nameLatin)
+              .toList();
+          if (selectedSubcategory != null &&
+              !validSubcatNames.contains(selectedSubcategory)) {
+            selectedSubcategory = filteredSubcats.isNotEmpty
+                ? filteredSubcats.first.nameLatin
+                : null;
+          }
+
+          return AlertDialog(
+            title: Text(rhyme == null ? 'Add Rhyme' : 'Edit Rhyme'),
+            content: SizedBox(
+              width: 500,
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    TextField(
+                      controller: titleLatinController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title (Latin)',
+                      ),
+                    ),
+                    TextField(
+                      controller: titleOlChikiController,
+                      decoration: const InputDecoration(
+                        labelText: 'Title (Ol Chiki)',
+                      ),
+                    ),
+                    TextField(
+                      controller: contentLatinController,
+                      decoration: const InputDecoration(
+                        labelText: 'Content (Latin)',
+                      ),
+                      maxLines: 3,
+                    ),
+                    TextField(
+                      controller: contentOlChikiController,
+                      decoration: const InputDecoration(
+                        labelText: 'Content (Ol Chiki)',
+                      ),
+                      maxLines: 3,
+                    ),
+                    const SizedBox(height: 16),
+                    AdminUploadField(
+                      controller: audioController,
+                      label: 'Audio',
+                      icon: Icons.audiotrack_rounded,
+                      isDark: isDark,
+                      folder: 'rhymes-audio',
+                      uploadType: AdminUploadType.audio,
+                      dialogSetState: setDialogState,
+                    ),
+                    const SizedBox(height: 16),
+                    AdminUploadField(
+                      controller: thumbController,
+                      label: 'Thumbnail',
+                      icon: Icons.image_rounded,
+                      isDark: isDark,
+                      folder: 'rhymes-images',
+                      uploadType: AdminUploadType.image,
+                      dialogSetState: setDialogState,
+                    ),
+                    const SizedBox(height: 8),
+                    // Category dropdown (dynamic)
+                    DropdownButtonFormField<String>(
+                      initialValue:
+                          categories.any((c) => c.nameLatin == selectedCategory)
+                          ? selectedCategory
+                          : (categories.isNotEmpty
+                                ? categories.first.nameLatin
+                                : null),
+                      items: categories
+                          .map(
+                            (c) => DropdownMenuItem(
+                              value: c.nameLatin,
+                              child: Text(c.nameLatin),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selectedCategory = val!;
+                          selectedSubcategory = null; // reset subcategory
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Category'),
+                    ),
+                    const SizedBox(height: 8),
+                    // Subcategory dropdown (cascading)
+                    DropdownButtonFormField<String>(
+                      initialValue: selectedSubcategory,
+                      items: filteredSubcats
+                          .map(
+                            (s) => DropdownMenuItem(
+                              value: s.nameLatin,
+                              child: Text(s.nameLatin),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (val) {
+                        setDialogState(() {
+                          selectedSubcategory = val;
+                        });
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Subcategory',
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextField(
-                controller: contentLatinController,
-                decoration: const InputDecoration(labelText: 'Content (Latin)'),
-                maxLines: 3,
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              TextField(
-                controller: contentOlChikiController,
-                decoration: const InputDecoration(
-                  labelText: 'Content (Ol Chiki)',
-                ),
-                maxLines: 3,
-              ),
-              TextField(
-                controller: audioController,
-                decoration: const InputDecoration(labelText: 'Audio URL'),
-              ),
-              TextField(
-                controller: thumbController,
-                decoration: const InputDecoration(labelText: 'Thumbnail URL'),
-              ),
-              DropdownButtonFormField<String>(
-                value: selectedCategory,
-                items: ['Animal', 'Nature', 'Moral', 'General']
-                    .map((e) => DropdownMenuItem(value: e, child: Text(e)))
-                    .toList(),
-                onChanged: (val) => selectedCategory = val!,
-                decoration: const InputDecoration(labelText: 'Category'),
+              ElevatedButton(
+                onPressed: () {
+                  final newItem = RhymeModel(
+                    id: rhyme?.id ?? const Uuid().v4(),
+                    titleLatin: titleLatinController.text,
+                    titleOlChiki: titleOlChikiController.text,
+                    contentLatin: contentLatinController.text,
+                    contentOlChiki: contentOlChikiController.text,
+                    audioUrl: audioController.text,
+                    thumbnailUrl: thumbController.text,
+                    category: selectedCategory,
+                    subcategory: selectedSubcategory,
+                  );
+
+                  if (rhyme == null) {
+                    ref.read(rhymesProvider.notifier).addRhyme(newItem);
+                  } else {
+                    ref.read(rhymesProvider.notifier).updateRhyme(newItem);
+                  }
+                  Navigator.pop(context);
+                },
+                child: const Text('Save'),
               ),
             ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final newItem = RhymeModel(
-                id: rhyme?.id ?? const Uuid().v4(),
-                titleLatin: titleLatinController.text,
-                titleOlChiki: titleOlChikiController.text,
-                contentLatin: contentLatinController.text,
-                contentOlChiki: contentOlChikiController.text,
-                audioUrl: audioController.text,
-                thumbnailUrl: thumbController.text,
-                category: selectedCategory,
-              );
-
-              if (rhyme == null) {
-                ref.read(rhymesProvider.notifier).addRhyme(newItem);
-              } else {
-                ref.read(rhymesProvider.notifier).updateRhyme(newItem);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
+          );
+        },
       ),
     );
   }

@@ -5,6 +5,7 @@ class CategoryModel {
   final String titleLatin;
   final String? iconUrl;
   final String? iconName;
+  final String? animationUrl;
   final String gradientPreset;
   final int order;
   final bool isActive;
@@ -17,6 +18,7 @@ class CategoryModel {
     required this.titleLatin,
     this.iconUrl,
     this.iconName,
+    this.animationUrl,
     this.gradientPreset = 'skyBlue',
     this.order = 0,
     this.isActive = true,
@@ -31,6 +33,7 @@ class CategoryModel {
       titleLatin: data['titleLatin'] as String? ?? '',
       iconUrl: data['iconUrl'] as String?,
       iconName: data['iconName'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       gradientPreset: data['gradientPreset'] as String? ?? 'skyBlue',
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
@@ -46,6 +49,7 @@ class CategoryModel {
       'titleLatin': titleLatin,
       'iconUrl': iconUrl,
       'iconName': iconName,
+      'animationUrl': animationUrl,
       'gradientPreset': gradientPreset,
       'order': order,
       'isActive': isActive,
@@ -64,6 +68,7 @@ class CategoryModel {
     String? titleLatin,
     String? iconUrl,
     String? iconName,
+    String? animationUrl,
     String? gradientPreset,
     int? order,
     bool? isActive,
@@ -76,6 +81,7 @@ class CategoryModel {
       titleLatin: titleLatin ?? this.titleLatin,
       iconUrl: iconUrl ?? this.iconUrl,
       iconName: iconName ?? this.iconName,
+      animationUrl: animationUrl ?? this.animationUrl,
       gradientPreset: gradientPreset ?? this.gradientPreset,
       order: order ?? this.order,
       isActive: isActive ?? this.isActive,
@@ -91,6 +97,7 @@ class FeaturedBannerModel {
   final String title;
   final String? subtitle;
   final String? imageUrl;
+  final String? animationUrl;
   final String gradientPreset;
   final String? targetRoute;
   final int order;
@@ -101,6 +108,7 @@ class FeaturedBannerModel {
     required this.title,
     this.subtitle,
     this.imageUrl,
+    this.animationUrl,
     this.gradientPreset = 'skyBlue',
     this.targetRoute,
     this.order = 0,
@@ -116,6 +124,7 @@ class FeaturedBannerModel {
       title: data['title'] as String? ?? '',
       subtitle: data['subtitle'] as String?,
       imageUrl: data['imageUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       gradientPreset: data['gradientPreset'] as String? ?? 'skyBlue',
       targetRoute: data['targetRoute'] as String?,
       order: data['order'] as int? ?? 0,
@@ -129,6 +138,7 @@ class FeaturedBannerModel {
       'title': title,
       'subtitle': subtitle,
       'imageUrl': imageUrl,
+      'animationUrl': animationUrl,
       'gradientPreset': gradientPreset,
       'targetRoute': targetRoute,
       'order': order,
@@ -141,6 +151,7 @@ class FeaturedBannerModel {
     String? title,
     String? subtitle,
     String? imageUrl,
+    String? animationUrl,
     String? gradientPreset,
     String? targetRoute,
     int? order,
@@ -151,6 +162,7 @@ class FeaturedBannerModel {
       title: title ?? this.title,
       subtitle: subtitle ?? this.subtitle,
       imageUrl: imageUrl ?? this.imageUrl,
+      animationUrl: animationUrl ?? this.animationUrl,
       gradientPreset: gradientPreset ?? this.gradientPreset,
       targetRoute: targetRoute ?? this.targetRoute,
       order: order ?? this.order,
@@ -168,6 +180,7 @@ class LetterModel {
   final String? exampleWordLatin;
   final String? imageUrl;
   final String? audioUrl;
+  final String? animationUrl;
   final int order;
   final bool isActive;
   final String? pronunciation;
@@ -180,6 +193,7 @@ class LetterModel {
     this.exampleWordLatin,
     this.imageUrl,
     this.audioUrl,
+    this.animationUrl,
     this.order = 0,
     this.isActive = true,
     this.pronunciation,
@@ -202,6 +216,7 @@ class LetterModel {
       exampleWordLatin: data['exampleWordLatin'] as String?,
       imageUrl: data['imageUrl'] as String?,
       audioUrl: data['audioUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
       pronunciation: data['pronunciation'] as String?,
@@ -217,6 +232,7 @@ class LetterModel {
       'exampleWordLatin': exampleWordLatin,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
+      'animationUrl': animationUrl,
       'order': order,
       'isActive': isActive,
       'pronunciation': pronunciation,
@@ -231,6 +247,7 @@ class LetterModel {
     String? exampleWordLatin,
     String? imageUrl,
     String? audioUrl,
+    String? animationUrl,
     int? order,
     bool? isActive,
     String? pronunciation,
@@ -243,10 +260,129 @@ class LetterModel {
       exampleWordLatin: exampleWordLatin ?? this.exampleWordLatin,
       imageUrl: imageUrl ?? this.imageUrl,
       audioUrl: audioUrl ?? this.audioUrl,
+      animationUrl: animationUrl ?? this.animationUrl,
       order: order ?? this.order,
       isActive: isActive ?? this.isActive,
       pronunciation: pronunciation ?? this.pronunciation,
     );
+  }
+}
+
+// ============== NUMBER MODEL ==============
+class NumberModel {
+  final String id;
+  final String numeral; // Ol Chiki numeral: ᱑, ᱒, etc.
+  final int value; // Numeric value: 1, 2, etc.
+  final String nameOlChiki; // Name in Ol Chiki: ᱢᱤᱛ
+  final String nameLatin; // Name in Latin: mit (one)
+  final String? imageUrl;
+  final String? audioUrl;
+  final String? pronunciation;
+  final int order;
+  final bool isActive;
+
+  NumberModel({
+    required this.id,
+    required this.numeral,
+    required this.value,
+    required this.nameOlChiki,
+    required this.nameLatin,
+    this.imageUrl,
+    this.audioUrl,
+    this.pronunciation,
+    this.order = 0,
+    this.isActive = true,
+  });
+
+  factory NumberModel.fromJson(Map<String, dynamic> data, [String? docId]) {
+    return NumberModel(
+      id: docId ?? data['id'] as String? ?? '',
+      numeral: data['numeral'] as String? ?? '',
+      value: data['value'] as int? ?? 0,
+      nameOlChiki: data['nameOlChiki'] as String? ?? '',
+      nameLatin: data['nameLatin'] as String? ?? '',
+      imageUrl: data['imageUrl'] as String?,
+      audioUrl: data['audioUrl'] as String?,
+      pronunciation: data['pronunciation'] as String?,
+      order: data['order'] as int? ?? 0,
+      isActive: data['isActive'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'numeral': numeral,
+      'value': value,
+      'nameOlChiki': nameOlChiki,
+      'nameLatin': nameLatin,
+      'imageUrl': imageUrl,
+      'audioUrl': audioUrl,
+      'pronunciation': pronunciation,
+      'order': order,
+      'isActive': isActive,
+    };
+  }
+}
+
+// ============== WORD MODEL ==============
+class WordModel {
+  final String id;
+  final String wordOlChiki; // Word in Ol Chiki: ᱡᱚᱦᱟᱨ
+  final String wordLatin; // Word in Latin: johar
+  final String meaning; // English meaning: hello
+  final String? usage; // Usage hint
+  final String? category; // greetings, family, etc.
+  final String? imageUrl;
+  final String? audioUrl;
+  final String? pronunciation;
+  final int order;
+  final bool isActive;
+
+  WordModel({
+    required this.id,
+    required this.wordOlChiki,
+    required this.wordLatin,
+    required this.meaning,
+    this.usage,
+    this.category,
+    this.imageUrl,
+    this.audioUrl,
+    this.pronunciation,
+    this.order = 0,
+    this.isActive = true,
+  });
+
+  factory WordModel.fromJson(Map<String, dynamic> data, [String? docId]) {
+    return WordModel(
+      id: docId ?? data['id'] as String? ?? '',
+      wordOlChiki: data['wordOlChiki'] as String? ?? '',
+      wordLatin: data['wordLatin'] as String? ?? '',
+      meaning: data['meaning'] as String? ?? '',
+      usage: data['usage'] as String?,
+      category: data['category'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      audioUrl: data['audioUrl'] as String?,
+      pronunciation: data['pronunciation'] as String?,
+      order: data['order'] as int? ?? 0,
+      isActive: data['isActive'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'wordOlChiki': wordOlChiki,
+      'wordLatin': wordLatin,
+      'meaning': meaning,
+      'usage': usage,
+      'category': category,
+      'imageUrl': imageUrl,
+      'audioUrl': audioUrl,
+      'pronunciation': pronunciation,
+      'order': order,
+      'isActive': isActive,
+    };
   }
 }
 
@@ -359,11 +495,12 @@ class LessonModel {
 }
 
 class LessonBlock {
-  final String type; // text, image, audio, quiz
+  final String type; // text, image, audio, quiz, video, lottie
   final String? textOlChiki;
   final String? textLatin;
   final String? imageUrl;
   final String? audioUrl;
+  final String? animationUrl;
   final String? quizRefId;
 
   LessonBlock({
@@ -372,6 +509,7 @@ class LessonBlock {
     this.textLatin,
     this.imageUrl,
     this.audioUrl,
+    this.animationUrl,
     this.quizRefId,
   });
 
@@ -382,6 +520,7 @@ class LessonBlock {
       textLatin: data['textLatin'] as String?,
       imageUrl: data['imageUrl'] as String?,
       audioUrl: data['audioUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       quizRefId: data['quizRefId'] as String?,
     );
   }
@@ -393,6 +532,7 @@ class LessonBlock {
       'textLatin': textLatin,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
+      'animationUrl': animationUrl,
       'quizRefId': quizRefId,
     };
   }
@@ -552,6 +692,67 @@ class StickerModel {
       'name': name,
       'imageUrl': imageUrl,
       'category': category,
+      'isActive': isActive,
+    };
+  }
+}
+
+// ============== SENTENCE MODEL ==============
+class SentenceModel {
+  final String id;
+  final String sentenceOlChiki;
+  final String sentenceLatin;
+  final String meaning;
+  final String? usage;
+  final String? category;
+  final String? imageUrl;
+  final String? audioUrl;
+  final String? pronunciation;
+  final int order;
+  final bool isActive;
+
+  SentenceModel({
+    required this.id,
+    required this.sentenceOlChiki,
+    required this.sentenceLatin,
+    required this.meaning,
+    this.usage,
+    this.category,
+    this.imageUrl,
+    this.audioUrl,
+    this.pronunciation,
+    this.order = 0,
+    this.isActive = true,
+  });
+
+  factory SentenceModel.fromJson(Map<String, dynamic> data, [String? docId]) {
+    return SentenceModel(
+      id: docId ?? data['id'] as String? ?? '',
+      sentenceOlChiki: data['sentenceOlChiki'] as String? ?? '',
+      sentenceLatin: data['sentenceLatin'] as String? ?? '',
+      meaning: data['meaning'] as String? ?? '',
+      usage: data['usage'] as String?,
+      category: data['category'] as String?,
+      imageUrl: data['imageUrl'] as String?,
+      audioUrl: data['audioUrl'] as String?,
+      pronunciation: data['pronunciation'] as String?,
+      order: data['order'] as int? ?? 0,
+      isActive: data['isActive'] as bool? ?? true,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'sentenceOlChiki': sentenceOlChiki,
+      'sentenceLatin': sentenceLatin,
+      'meaning': meaning,
+      'usage': usage,
+      'category': category,
+      'imageUrl': imageUrl,
+      'audioUrl': audioUrl,
+      'pronunciation': pronunciation,
+      'order': order,
       'isActive': isActive,
     };
   }

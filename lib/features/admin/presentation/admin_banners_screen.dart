@@ -1,13 +1,15 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/storage/supabase_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import 'widgets/admin_glass_card.dart';
+import 'widgets/admin_section_header.dart';
 
 class AdminBannersScreen extends ConsumerWidget {
   const AdminBannersScreen({super.key});
@@ -18,138 +20,46 @@ class AdminBannersScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Stack(
+    return Padding(
+      padding: EdgeInsets.symmetric(
+        horizontal: isWideScreen ? 32 : 16,
+        vertical: isWideScreen ? 32 : 16,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _buildBackground(isDark),
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                  child: _buildHeader(context, isDark, isWideScreen),
-                ),
-                Expanded(
-                  child: bannersAsync.when(
-                    data: (banners) => banners.isEmpty
-                        ? _buildEmptyState(context, ref, isDark)
-                        : _buildBannersList(
-                            context,
-                            ref,
-                            banners,
-                            isDark,
-                            isWideScreen,
-                          ),
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, stack) => Center(
-                      child: SelectableText(
-                        'Error loading banners: $error',
-                        style: TextStyle(color: AppColors.error),
-                      ),
+          // Header
+          AdminSectionHeader(
+            title: 'Featured Banners',
+            subtitle: 'Home screen promotional banners',
+            icon: Icons.featured_play_list_rounded,
+            actions: isWideScreen ? [] : null,
+          ),
+
+          // Banners List
+          Expanded(
+            child: bannersAsync.when(
+              data: (banners) => banners.isEmpty
+                  ? _buildEmptyState(context, ref, isDark)
+                  : _buildBannersList(
+                      context,
+                      ref,
+                      banners,
+                      isDark,
+                      isWideScreen,
                     ),
-                  ),
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (error, stack) => Center(
+                child: SelectableText(
+                  'Error loading banners: $error',
+                  style: TextStyle(color: AppColors.error),
                 ),
-              ],
+              ),
             ),
           ),
         ],
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showBannerDialog(context, ref, null),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(
-          Icons.add_photo_alternate_rounded,
-          color: Colors.white,
-        ),
-        label: const Text(
-          'Add Banner',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
-        ),
-      ),
     );
-  }
-
-  Widget _buildBackground(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
-              : [const Color(0xFFF8FAFC), Colors.white],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        if (!isWideScreen)
-          GestureDetector(
-            onTap: () => context.go('/admin'),
-            child: Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-        if (!isWideScreen) const SizedBox(height: 20),
-        Row(
-          children: [
-            Container(
-              width: 4,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumPurple,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Featured Banners',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.5,
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Home screen promotional banners',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: isDark
-                        ? AppColors.textTertiaryDark
-                        : AppColors.textTertiaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ],
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref, bool isDark) {
@@ -165,7 +75,7 @@ class AdminBannersScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentPurple.withValues(alpha: 0.3),
+                  color: AppColors.accentPurple.withOpacity(0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -208,7 +118,7 @@ class AdminBannersScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentPurple.withValues(alpha: 0.4),
+                    color: AppColors.accentPurple.withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -277,6 +187,12 @@ class AdminBannersScreen extends ConsumerWidget {
     final targetRouteController = TextEditingController(
       text: banner?.targetRoute ?? '',
     );
+    final imageUrlController = TextEditingController(
+      text: banner?.imageUrl ?? '',
+    );
+    final animationUrlController = TextEditingController(
+      text: banner?.animationUrl ?? '',
+    );
     String selectedGradient = banner?.gradientPreset ?? 'skyBlue';
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -286,63 +202,95 @@ class AdminBannersScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) => Container(
-          height: MediaQuery.of(context).size.height * 0.75,
+          height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161B22) : Colors.white,
+            color: isDark
+                ? const Color(0xFF0F172A).withOpacity(0.95)
+                : Colors.white.withOpacity(0.95),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.3),
+                blurRadius: 40,
+                spreadRadius: 10,
+              ),
+            ],
           ),
           child: Column(
             children: [
+              // Drag Handle
               Container(
                 margin: const EdgeInsets.only(top: 12),
                 width: 40,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark ? Colors.white24 : Colors.black12,
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.black.withOpacity(0.05),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
+
               Padding(
                 padding: const EdgeInsets.all(24),
                 child: Row(
                   children: [
                     Container(
-                      width: 48,
-                      height: 48,
+                      width: 52,
+                      height: 52,
                       decoration: BoxDecoration(
                         gradient: AppColors.premiumPurple,
-                        borderRadius: BorderRadius.circular(14),
+                        borderRadius: BorderRadius.circular(16),
                       ),
                       child: Icon(
-                        isEditing ? Icons.edit_rounded : Icons.add_rounded,
+                        isEditing
+                            ? Icons.edit_note_rounded
+                            : Icons.add_photo_alternate_rounded,
                         color: Colors.white,
+                        size: 28,
                       ),
                     ),
                     const SizedBox(width: 16),
-                    Text(
-                      isEditing ? 'Edit Banner' : 'New Banner',
-                      style: TextStyle(
-                        fontSize: 22,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          isEditing ? 'Edit Banner' : 'Create New Banner',
+                          style: TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.5,
+                            color: isDark ? Colors.white : Colors.black87,
+                          ),
+                        ),
+                        Text(
+                          isEditing
+                              ? 'Update featured content'
+                              : 'Promote new modules',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                          ),
+                        ),
+                      ],
                     ),
                     const Spacer(),
                     IconButton(
                       onPressed: () => Navigator.pop(context),
-                      icon: Icon(
-                        Icons.close_rounded,
-                        color: isDark ? Colors.white54 : Colors.black45,
+                      icon: const Icon(Icons.close_rounded),
+                      style: IconButton.styleFrom(
+                        backgroundColor: isDark
+                            ? Colors.white10
+                            : Colors.black.withOpacity(0.05),
                       ),
                     ),
                   ],
                 ),
               ),
-              Divider(
-                color: isDark
-                    ? Colors.white10
-                    : Colors.black.withValues(alpha: 0.06),
-              ),
+
+              const Divider(height: 1),
+
               Expanded(
                 child: SingleChildScrollView(
                   padding: const EdgeInsets.all(24),
@@ -351,37 +299,65 @@ class AdminBannersScreen extends ConsumerWidget {
                     children: [
                       _buildTextField(
                         controller: titleController,
-                        label: 'Title',
-                        hint: 'e.g., Start Learning Today',
+                        label: 'Banner Title',
+                        hint: 'What will users see first?',
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       _buildTextField(
                         controller: subtitleController,
-                        label: 'Subtitle',
-                        hint: 'e.g., Begin your Ol Chiki journey',
+                        label: 'Description',
+                        hint: 'Additional details (optional)',
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 24),
                       _buildTextField(
                         controller: targetRouteController,
-                        label: 'Target Route (optional)',
-                        hint: 'e.g., /lessons/alphabets',
+                        label: 'Target Action',
+                        hint: '/lessons/alphabet-intro',
                         isDark: isDark,
                       ),
-                      const SizedBox(height: 28),
-                      Text(
-                        'Color Theme',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : Colors.black,
+                      const SizedBox(height: 24),
+                      _buildUploadField(
+                        controller: imageUrlController,
+                        label: 'Featured Image',
+                        icon: Icons.upload_file_rounded,
+                        isDark: isDark,
+                        onUpload: () => _pickAndUpload(
+                          context,
+                          ref,
+                          imageUrlController,
+                          'banners',
+                          setDialogState,
                         ),
                       ),
-                      const SizedBox(height: 14),
+                      const SizedBox(height: 24),
+                      _buildUploadField(
+                        controller: animationUrlController,
+                        label: 'Lottie Animation (Optional)',
+                        icon: Icons.animation_rounded,
+                        isDark: isDark,
+                        onUpload: () => _pickAndUploadLottie(
+                          context,
+                          ref,
+                          animationUrlController,
+                          'animations',
+                          setDialogState,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Text(
+                        'Aesthetic Style',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
                       Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
+                        spacing: 16,
+                        runSpacing: 16,
                         children: [
                           _GradientOption(
                             gradient: AppColors.skyBlueGradient,
@@ -410,55 +386,34 @@ class AdminBannersScreen extends ConsumerWidget {
                               () => selectedGradient = 'sunset',
                             ),
                           ),
-                          _GradientOption(
-                            gradient: AppColors.skyBlueGradient,
-                            isSelected: selectedGradient == 'purple',
-                            onTap: () => setDialogState(
-                              () => selectedGradient = 'purple',
-                            ),
-                          ),
                         ],
                       ),
                     ],
-                  ),
+                  ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.1),
                 ),
               ),
-              Container(
+
+              const Divider(height: 1),
+
+              Padding(
                 padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? const Color(0xFF0D1117)
-                      : const Color(0xFFF8FAFC),
-                  border: Border(
-                    top: BorderSide(
-                      color: isDark
-                          ? Colors.white10
-                          : Colors.black.withValues(alpha: 0.06),
-                    ),
-                  ),
-                ),
                 child: Row(
                   children: [
                     Expanded(
-                      child: GestureDetector(
-                        onTap: () => Navigator.pop(context),
-                        child: Container(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white10
-                                : Colors.black.withValues(alpha: 0.05),
-                            borderRadius: BorderRadius.circular(14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child: Center(
-                            child: Text(
-                              'Cancel',
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white70 : Colors.black54,
-                              ),
-                            ),
+                        ),
+                        child: Text(
+                          'Cancel',
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white38 : Colors.black38,
                           ),
                         ),
                       ),
@@ -466,14 +421,20 @@ class AdminBannersScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       flex: 2,
-                      child: GestureDetector(
-                        onTap: () {
-                          HapticFeedback.lightImpact();
+                      child: ElevatedButton(
+                        onPressed: () {
+                          HapticFeedback.heavyImpact();
                           final newBanner = FeaturedBannerModel(
                             id: banner?.id ?? const Uuid().v4(),
                             title: titleController.text,
                             subtitle: subtitleController.text.isNotEmpty
                                 ? subtitleController.text
+                                : null,
+                            imageUrl: imageUrlController.text.isNotEmpty
+                                ? imageUrlController.text
+                                : null,
+                            animationUrl: animationUrlController.text.isNotEmpty
+                                ? animationUrlController.text
                                 : null,
                             gradientPreset: selectedGradient,
                             targetRoute: targetRouteController.text.isNotEmpty
@@ -493,33 +454,23 @@ class AdminBannersScreen extends ConsumerWidget {
                           }
                           Navigator.pop(context);
                         },
-                        child: Container(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 16),
-                          decoration: BoxDecoration(
-                            gradient: AppColors.premiumPurple,
-                            borderRadius: BorderRadius.circular(14),
-                            boxShadow: [
-                              BoxShadow(
-                                color: AppColors.accentPurple.withValues(
-                                  alpha: 0.4,
-                                ),
-                                blurRadius: 15,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                          ),
-                          child: Center(
-                            child: Text(
-                              isEditing ? 'Save Changes' : 'Create Banner',
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                              ),
-                            ),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
                         ),
-                      ),
+                        child: Text(
+                          isEditing ? 'Save Changes' : 'Publish Banner',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ).animate().shimmer(delay: 1.seconds),
                     ),
                   ],
                 ),
@@ -562,8 +513,8 @@ class AdminBannersScreen extends ConsumerWidget {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
+                ? Colors.white.withOpacity(0.08)
+                : Colors.black.withOpacity(0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -590,55 +541,243 @@ class AdminBannersScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(
+      builder: (context) =>
+          Center(
+                child: AdminGlassCard(
+                  margin: const EdgeInsets.all(24),
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 64,
+                        height: 64,
+                        decoration: BoxDecoration(
+                          color: AppColors.error.withOpacity(0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.delete_sweep_rounded,
+                          color: AppColors.error,
+                          size: 32,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                      Text(
+                        'Delete Banner?',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Are you sure you want to remove "${banner.title}"? This cannot be undone.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                          height: 1.5,
+                        ),
+                      ),
+                      const SizedBox(height: 32),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              style: TextButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: Text(
+                                'Keep it',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black38,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                ref
+                                    .read(featuredBannersProvider.notifier)
+                                    .deleteBanner(banner.id);
+                                Navigator.pop(context);
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppColors.error,
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
+                                elevation: 0,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Delete',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              )
+              .animate()
+              .scale(
+                begin: const Offset(0.9, 0.9),
+                curve: Curves.easeOutBack,
+                duration: 400.ms,
+              )
+              .fadeIn(),
+    );
+  }
+
+  Widget _buildUploadField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
+    required bool isDark,
+    required VoidCallback onUpload,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        Row(
           children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                color: AppColors.error,
+            Expanded(
+              child: TextField(
+                controller: controller,
+                style: TextStyle(
+                  color: isDark ? Colors.white : Colors.black,
+                  fontWeight: FontWeight.w500,
+                ),
+                decoration: InputDecoration(
+                  hintText: 'https://...',
+                  filled: true,
+                  fillColor: isDark
+                      ? Colors.white.withOpacity(0.08)
+                      : Colors.black.withOpacity(0.04),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 18,
+                    vertical: 16,
+                  ),
+                ),
               ),
             ),
-            const SizedBox(width: 14),
-            const Text('Delete Banner'),
+            const SizedBox(width: 8),
+            IconButton.filledTonal(
+              onPressed: onUpload,
+              icon: Icon(icon, size: 20),
+              tooltip: 'Upload Image',
+            ),
           ],
         ),
-        content: Text(
-          'Are you sure you want to delete "${banner.title}"? This action cannot be undone.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              ref
-                  .read(featuredBannersProvider.notifier)
-                  .deleteBanner(banner.id);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      ],
     );
+  }
+
+  Future<void> _pickAndUpload(
+    BuildContext context,
+    WidgetRef ref,
+    TextEditingController controller,
+    String folder,
+    StateSetter setDialogState,
+  ) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: FileType.image,
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setDialogState(() {
+            controller.text = url;
+          });
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
+  }
+
+  Future<void> _pickAndUploadLottie(
+    BuildContext context,
+    WidgetRef ref,
+    TextEditingController controller,
+    String folder,
+    StateSetter setDialogState,
+  ) async {
+    try {
+      final result = await FilePicker.platform.pickFiles(
+        withData: true,
+        type: FileType.custom,
+        allowedExtensions: ['json'],
+      );
+
+      if (result != null && result.files.isNotEmpty) {
+        final url = await ref
+            .read(supabaseServiceProvider)
+            .uploadMedia(result.files.first, folder);
+        if (url != null) {
+          setDialogState(() {
+            controller.text = url;
+          });
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Lottie animation uploaded!')),
+            );
+          }
+        }
+      }
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+      }
+    }
   }
 }
 
@@ -662,8 +801,6 @@ class _BannerCard extends StatefulWidget {
 }
 
 class _BannerCardState extends State<_BannerCard> {
-  bool _isHovered = false;
-
   LinearGradient _getGradient(String preset) {
     switch (preset) {
       case 'skyBlue':
@@ -684,142 +821,164 @@ class _BannerCardState extends State<_BannerCard> {
   @override
   Widget build(BuildContext context) {
     final gradient = _getGradient(widget.banner.gradientPreset);
+
     return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: MouseRegion(
-            onEnter: (_) => setState(() => _isHovered = true),
-            onExit: (_) => setState(() => _isHovered = false),
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              transform: _isHovered
-                  ? (Matrix4.identity()..scale(1.02))
-                  : Matrix4.identity(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+      padding: const EdgeInsets.only(bottom: 20),
+      child: AdminGlassCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Visual Banner Area
+            Container(
+              height: 160,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(24),
+                ),
+              ),
+              child: Stack(
                 children: [
-                  Container(
-                    height: 140,
-                    decoration: BoxDecoration(
-                      gradient: gradient,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: _isHovered
-                          ? [
-                              BoxShadow(
-                                color: gradient.colors.first.withValues(
-                                  alpha: 0.4,
-                                ),
-                                blurRadius: 25,
-                                offset: const Offset(0, 10),
-                              ),
-                            ]
-                          : [
-                              BoxShadow(
-                                color: gradient.colors.first.withValues(
-                                  alpha: 0.2,
-                                ),
-                                blurRadius: 15,
-                                offset: const Offset(0, 6),
-                              ),
-                            ],
-                    ),
-                    padding: const EdgeInsets.all(24),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                widget.banner.title,
-                                style: const TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w800,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              if (widget.banner.subtitle != null)
-                                Padding(
-                                  padding: const EdgeInsets.only(top: 6),
-                                  child: Text(
-                                    widget.banner.subtitle!,
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.9,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
-                        ),
-                        Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            IconButton(
-                              onPressed: widget.onEdit,
-                              icon: const Icon(
-                                Icons.edit_rounded,
-                                color: Colors.white,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withValues(
-                                  alpha: 0.2,
-                                ),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            IconButton(
-                              onPressed: widget.onDelete,
-                              icon: const Icon(
-                                Icons.delete_outline_rounded,
-                                color: Colors.white,
-                              ),
-                              style: IconButton.styleFrom(
-                                backgroundColor: Colors.white.withValues(
-                                  alpha: 0.2,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-                  if (widget.banner.targetRoute != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8, left: 4),
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.link_rounded,
-                            size: 14,
-                            color: widget.isDark
-                                ? Colors.white38
-                                : Colors.black38,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            widget.banner.targetRoute!,
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: widget.isDark
-                                  ? Colors.white38
-                                  : Colors.black38,
-                            ),
-                          ),
-                        ],
+                  // Abstract patterns or Glow
+                  Positioned(
+                    right: -20,
+                    top: -20,
+                    child: Container(
+                      width: 150,
+                      height: 150,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        shape: BoxShape.circle,
                       ),
                     ),
+                  ),
+
+                  Padding(
+                    padding: const EdgeInsets.all(24),
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final isSmall = constraints.maxWidth < 400;
+                        return Row(
+                          children: [
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Text(
+                                    widget.banner.title,
+                                    style: TextStyle(
+                                      fontSize: isSmall ? 20 : 24,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: -0.5,
+                                    ),
+                                  ),
+                                  if (widget.banner.subtitle != null) ...[
+                                    const SizedBox(height: 8),
+                                    Text(
+                                      widget.banner.subtitle!,
+                                      style: TextStyle(
+                                        fontSize: isSmall ? 13 : 15,
+                                        fontWeight: FontWeight.w500,
+                                        color: Colors.white.withOpacity(0.85),
+                                      ),
+                                    ),
+                                  ],
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+                            // Action buttons inside banner
+                            Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                _BannerActionButton(
+                                  icon: Icons.edit_note_rounded,
+                                  onTap: widget.onEdit,
+                                ),
+                                const SizedBox(height: 12),
+                                _BannerActionButton(
+                                  icon: Icons.delete_outline_rounded,
+                                  onTap: widget.onDelete,
+                                  isDelete: true,
+                                ),
+                              ],
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
                 ],
               ),
             ),
-          ),
-        )
-        .animate()
-        .fadeIn(delay: (widget.index * 60).ms, duration: 400.ms)
-        .slideX(begin: -0.1);
+
+            // Info Bar
+            if (widget.banner.targetRoute != null)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.link_rounded,
+                      size: 16,
+                      color: widget.isDark ? Colors.white38 : Colors.black38,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      widget.banner.targetRoute!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: widget.isDark ? Colors.white38 : Colors.black38,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        ),
+      ),
+    ).animate().fadeIn(delay: (widget.index * 60).ms).slideY(begin: 0.1);
+  }
+}
+
+class _BannerActionButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+  final bool isDelete;
+
+  const _BannerActionButton({
+    required this.icon,
+    required this.onTap,
+    this.isDelete = false,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(
+          color: Colors.black.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Colors.white.withOpacity(0.1)),
+        ),
+        child: Icon(
+          icon,
+          size: 20,
+          color: isDelete ? Colors.white.withOpacity(0.9) : Colors.white,
+        ),
+      ),
+    );
   }
 }
 
@@ -852,7 +1011,7 @@ class _GradientOption extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: gradient.colors.first.withValues(alpha: 0.5),
+                    color: gradient.colors.first.withOpacity(0.5),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),

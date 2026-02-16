@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../onboarding/providers/onboarding_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
+import '../../../shared/providers/providers.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -24,11 +26,30 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     await Future.delayed(2.seconds);
 
     if (mounted) {
+      // Desktop/web wide screens skip onboarding entirely
+      final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
+
       final showOnboarding = ref.read(onboardingProvider);
-      if (showOnboarding) {
+      if (showOnboarding && !isDesktopWeb) {
         context.go('/onboarding');
-      } else {
+        return;
+      }
+
+      // If desktop skipped onboarding, mark it as done
+      if (showOnboarding && isDesktopWeb) {
+        ref.read(onboardingProvider.notifier).completeOnboarding();
+      }
+
+      // Check authentication status
+      final authRepo = ref.read(authRepositoryProvider);
+      final token = await authRepo.getToken();
+
+      if (token != null) {
+        // Sync profile name in background
+        syncProfileName(ref).catchError((_) {});
         context.go('/home');
+      } else {
+        context.go('/welcome');
       }
     }
   }
@@ -51,7 +72,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     borderRadius: BorderRadius.circular(30),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
+
                         blurRadius: 40,
                         offset: const Offset(0, 20),
                       ),

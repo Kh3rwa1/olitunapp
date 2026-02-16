@@ -46,6 +46,34 @@ class AppColors {
   static const Color accentMint = Color(0xFF1DE9B6);
   static const Color accentCyan = Color(0xFF00E5FF);
 
+  // ============== KID-FRIENDLY QUIZ COLORS ==============
+  // Warm background
+  static const Color quizBackground = Color(0xFFFFF8F0);
+  static const Color quizBackgroundDark = Color(0xFF1A1510);
+
+  // Answer card backgrounds (soft pastels)
+  static const Color quizCardA = Color(0xFFFFF9E6); // Light yellow
+  static const Color quizCardB = Color(0xFFFFECD6); // Light orange/peach
+  static const Color quizCardC = Color(0xFFF0E6FF); // Light purple
+  static const Color quizCardD = Color(0xFFE6F9E6); // Light green
+
+  // Letter badge colors (vibrant)
+  static const Color quizBadgeA = Color(0xFFF9C846); // Yellow
+  static const Color quizBadgeB = Color(0xFFF97B4B); // Orange
+  static const Color quizBadgeC = Color(0xFF9B72CF); // Purple
+  static const Color quizBadgeD = Color(0xFF4CAF50); // Green
+
+  // Feedback colors
+  static const Color quizCorrect = Color(0xFF4CAF50);
+  static const Color quizIncorrect = Color(0xFFE57373);
+
+  // Next button gradient
+  static const LinearGradient quizNextButton = LinearGradient(
+    begin: Alignment.centerLeft,
+    end: Alignment.centerRight,
+    colors: [Color(0xFFFF8C5A), Color(0xFFFF6B4B)],
+  );
+
   // ============== SEMANTIC COLORS ==============
   static const Color success = Color(0xFF00E676);
   static const Color successSoft = Color(0xFF1B5E20);
@@ -239,12 +267,12 @@ class AppColors {
   // Glass variants
   static Color glass(BuildContext context, {double opacity = 0.1}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return (isDark ? Colors.white : Colors.black).withOpacity(opacity);
+    return (isDark ? Colors.white : Colors.black).withValues(alpha: opacity);
   }
 
   static Color glassBorderColor(BuildContext context, {double opacity = 0.1}) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    return (isDark ? Colors.white : Colors.black).withOpacity(opacity);
+    return (isDark ? Colors.white : Colors.black).withValues(alpha: opacity);
   }
 
   // Bento card colors
@@ -256,7 +284,7 @@ class AppColors {
   // Sophisticated Shadows
   static List<BoxShadow> bentoShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.04),
+      color: Colors.black.withValues(alpha: 0.04),
       blurRadius: 24,
       offset: const Offset(0, 8),
     ),
@@ -264,7 +292,7 @@ class AppColors {
 
   static List<BoxShadow> fluidShadow = [
     BoxShadow(
-      color: primary.withOpacity(0.15),
+      color: primary.withValues(alpha: 0.15),
       blurRadius: 40,
       offset: const Offset(0, 12),
       spreadRadius: -8,
@@ -275,7 +303,7 @@ class AppColors {
   // Subtle - for base cards
   static List<BoxShadow> subtleShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.05),
+      color: Colors.black.withValues(alpha: 0.05),
       blurRadius: 10,
       offset: const Offset(0, 2),
     ),
@@ -284,7 +312,7 @@ class AppColors {
   // Soft - for elevated cards
   static List<BoxShadow> softShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.08),
+      color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 20,
       offset: const Offset(0, 4),
       spreadRadius: 0,
@@ -294,7 +322,7 @@ class AppColors {
   // Medium - for floating elements
   static List<BoxShadow> mediumShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.12),
+      color: Colors.black.withValues(alpha: 0.12),
       blurRadius: 30,
       offset: const Offset(0, 8),
       spreadRadius: -4,
@@ -304,7 +332,7 @@ class AppColors {
   // Large - for modals and overlays
   static List<BoxShadow> largeShadow = [
     BoxShadow(
-      color: Colors.black.withOpacity(0.2),
+      color: Colors.black.withValues(alpha: 0.2),
       blurRadius: 50,
       offset: const Offset(0, 20),
       spreadRadius: -8,
@@ -314,13 +342,13 @@ class AppColors {
   // Green glow shadows
   static List<BoxShadow> glowShadow(Color color) => [
     BoxShadow(
-      color: color.withOpacity(0.4),
+      color: color.withValues(alpha: 0.4),
       blurRadius: 24,
       offset: const Offset(0, 8),
       spreadRadius: -4,
     ),
     BoxShadow(
-      color: color.withOpacity(0.2),
+      color: color.withValues(alpha: 0.2),
       blurRadius: 12,
       offset: const Offset(0, 4),
     ),
@@ -329,7 +357,7 @@ class AppColors {
   // Premium green button shadow
   static List<BoxShadow> buttonShadow = [
     BoxShadow(
-      color: primary.withOpacity(0.4),
+      color: primary.withValues(alpha: 0.4),
       blurRadius: 20,
       offset: const Offset(0, 8),
       spreadRadius: -4,
@@ -338,9 +366,13 @@ class AppColors {
 
   // Neon glow effect
   static List<BoxShadow> neonGlow = [
-    BoxShadow(color: primary.withOpacity(0.6), blurRadius: 30, spreadRadius: 2),
     BoxShadow(
-      color: primary.withOpacity(0.3),
+      color: primary.withValues(alpha: 0.6),
+      blurRadius: 30,
+      spreadRadius: 2,
+    ),
+    BoxShadow(
+      color: primary.withValues(alpha: 0.3),
       blurRadius: 60,
       spreadRadius: 10,
     ),

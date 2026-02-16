@@ -2,7 +2,21 @@ import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 
+import '../../data/ol_chiki_strokes.dart';
+
 Path buildPracticeGuidePath(Size size, String letter) {
+  // Use actual stroke data if available
+  final strokeData = olChikiStrokes[letter];
+  if (strokeData != null) {
+    return buildPathFromStrokes(size, strokeData);
+  }
+
+  // Fallback: generate a simple placeholder for unknown letters
+  return _buildFallbackPath(size, letter);
+}
+
+/// Fallback path for letters without stroke data
+Path _buildFallbackPath(Size size, String letter) {
   final path = Path();
   final seed = letter.runes.fold<int>(0, (sum, rune) => sum + rune);
   final variant = seed % 3;
@@ -30,7 +44,12 @@ Path buildPracticeGuidePath(Size size, String letter) {
         ..lineTo(left, bottom)
         ..quadraticBezierTo(centerX, bottom + size.height * 0.02, right, bottom)
         ..moveTo(left, centerY)
-        ..quadraticBezierTo(centerX, centerY - size.height * 0.06, right, centerY)
+        ..quadraticBezierTo(
+          centerX,
+          centerY - size.height * 0.06,
+          right,
+          centerY,
+        )
         ..moveTo(left, top)
         ..quadraticBezierTo(centerX, top - size.height * 0.04, right, top);
       break;

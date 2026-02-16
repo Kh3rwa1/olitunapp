@@ -3,7 +3,10 @@ import '../../../core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/presentation/animations/scale_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/audio/audio_service.dart';
+import '../../../shared/providers/providers.dart';
+import '../../../shared/models/content_models.dart';
 
 class NumberDetailScreen extends ConsumerStatefulWidget {
   final String numberId;
@@ -20,499 +23,603 @@ class NumberDetailScreen extends ConsumerStatefulWidget {
 }
 
 class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
+  late PageController _pageController;
   int _currentIndex = 0;
-  static const double _swipeVelocityThreshold = 380;
 
-  // Ol Chiki numbers data with values and names
-  final Map<String, List<Map<String, dynamic>>> lessonNumbers = {
-    'numbers_1': [
-      {
-        'num': '᱑',
-        'value': '1',
-        'name': 'Mit',
-        'emoji': '☝️',
-        'color': const Color(0xFFE3F2FD),
-        'accentColor': const Color(0xFF2196F3),
-      },
-      {
-        'num': '᱒',
-        'value': '2',
-        'name': 'Bar',
-        'emoji': '✌️',
-        'color': const Color(0xFFE8F5E9),
-        'accentColor': const Color(0xFF4CAF50),
-      },
-      {
-        'num': '᱓',
-        'value': '3',
-        'name': 'Pe',
-        'emoji': '🤟',
-        'color': const Color(0xFFFFF8E1),
-        'accentColor': const Color(0xFFFFC107),
-      },
-      {
-        'num': '᱔',
-        'value': '4',
-        'name': 'Pon',
-        'emoji': '🍀',
-        'color': const Color(0xFFF3E5F5),
-        'accentColor': AppColors.duoBlue,
-      },
-      {
-        'num': '᱕',
-        'value': '5',
-        'name': 'Mone',
-        'emoji': '🖐️',
-        'color': const Color(0xFFFCE4EC),
-        'accentColor': const Color(0xFFE91E63),
-      },
-    ],
-    'numbers_2': [
-      {
-        'num': '᱖',
-        'value': '6',
-        'name': 'Turui',
-        'emoji': '🎲',
-        'color': const Color(0xFFE0F7FA),
-        'accentColor': const Color(0xFF00BCD4),
-      },
-      {
-        'num': '᱗',
-        'value': '7',
-        'name': 'Eae',
-        'emoji': '🌈',
-        'color': const Color(0xFFFAFAFA),
-        'accentColor': const Color(0xFF607D8B),
-      },
-      {
-        'num': '᱘',
-        'value': '8',
-        'name': 'Irel',
-        'emoji': '🎱',
-        'color': const Color(0xFFECEFF1),
-        'accentColor': const Color(0xFF455A64),
-      },
-      {
-        'num': '᱙',
-        'value': '9',
-        'name': 'Are',
-        'emoji': '🕘',
-        'color': const Color(0xFFFFF3E0),
-        'accentColor': const Color(0xFFFF5722),
-      },
-      {
-        'num': '᱑᱐',
-        'value': '10',
-        'name': 'Gel',
-        'emoji': '🔟',
-        'color': const Color(0xFFFFEBEE),
-        'accentColor': const Color(0xFFF44336),
-      },
-    ],
+  static const _emojiBaseUrl =
+      'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
+
+  // Fallback emoji mapping for numbers
+  static const Map<String, String> _numberEmojis = {
+    '᱑': '☝️',
+    '᱒': '✌️',
+    '᱓': '🤟',
+    '᱔': '🍀',
+    '᱕': '🖐️',
+    '᱖': '🎲',
+    '᱗': '🌈',
+    '᱘': '🎱',
+    '᱙': '🕘',
+    '᱑᱐': '🔟',
   };
 
-  List<Map<String, dynamic>> get numbers =>
-      lessonNumbers[widget.lessonId] ?? lessonNumbers['numbers_1']!;
+  static const List<Color> _accentColors = [
+    Color(0xFF2196F3),
+    Color(0xFF4CAF50),
+    Color(0xFFFFC107),
+    AppColors.duoBlue,
+    Color(0xFFE91E63),
+    Color(0xFF00BCD4),
+    Color(0xFF607D8B),
+    Color(0xFF455A64),
+    Color(0xFFFF5722),
+    Color(0xFFF44336),
+  ];
 
   @override
   void initState() {
     super.initState();
-    // Find initial index based on numberId or value
-    final index = numbers.indexWhere(
-      (n) => n['num'] == widget.numberId || n['value'] == widget.numberId,
+    _pageController = PageController(initialPage: _currentIndex);
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
     );
-    _currentIndex = index >= 0 ? index : 0;
   }
 
-  void _goToNumber(int index) {
-    if (index >= 0 && index < numbers.length) {
-      HapticFeedback.lightImpact();
-      setState(() => _currentIndex = index);
-    }
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
   }
 
-  void _goToNextNumber() {
-    if (_currentIndex < numbers.length - 1) {
-      _goToNumber(_currentIndex + 1);
-    } else {
-      HapticFeedback.selectionClick();
-    }
+  void _onPageChanged(int index) {
+    HapticFeedback.selectionClick();
+    setState(() => _currentIndex = index);
   }
 
-  void _goToPreviousNumber() {
-    if (_currentIndex > 0) {
-      _goToNumber(_currentIndex - 1);
-    } else {
-      HapticFeedback.selectionClick();
-    }
+  String _emojiToPngUrl(String emoji) {
+    final runes = emoji.runes
+        .where((rune) => rune != 0xFE0F)
+        .map((rune) => rune.toRadixString(16))
+        .join('-');
+    return '$_emojiBaseUrl/$runes.png';
   }
 
-  void _handleSwipe(DragEndDetails details) {
-    final velocity = details.primaryVelocity ?? 0;
-    if (velocity.abs() < _swipeVelocityThreshold) return;
+  Color _getAccentColor(int index) {
+    return _accentColors[index % _accentColors.length];
+  }
 
-    if (velocity < 0) {
-      _goToNextNumber();
-      return;
-    }
-
-    _goToPreviousNumber();
+  Color _getBackgroundColor(int index, bool isDark) {
+    if (isDark) return const Color(0xFF0A0E14);
+    final colors = [
+      const Color(0xFFE3F2FD),
+      const Color(0xFFE8F5E9),
+      const Color(0xFFFFF8E1),
+      const Color(0xFFF3E5F5),
+      const Color(0xFFFCE4EC),
+      const Color(0xFFE0F7FA),
+      const Color(0xFFFAFAFA),
+      const Color(0xFFECEFF1),
+      const Color(0xFFFFF3E0),
+      const Color(0xFFFFEBEE),
+    ];
+    return colors[index % colors.length];
   }
 
   @override
   Widget build(BuildContext context) {
-    final number = numbers[_currentIndex];
+    final numbersAsync = ref.watch(numbersProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final statusBarHeight = MediaQuery.of(context).padding.top;
 
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : number['color'],
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: ScaleButton(
-            onPressed: () => context.go('/lesson/${widget.lessonId}'),
-            child: Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.9),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                Icons.arrow_back_rounded,
-                color: number['accentColor'],
-              ),
-            ),
-          ),
-        ),
-        actions: [
-          // Audio button
-          // Audio button
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ScaleButton(
-              onPressed: () {
-                HapticFeedback.mediumImpact();
-                // TODO: Play audio
-              },
-              child: Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.9),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(
-                  Icons.volume_up_rounded,
-                  color: number['accentColor'],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-        ],
+    return numbersAsync.when(
+      loading: () => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: const Center(child: CircularProgressIndicator()),
       ),
-      body: GestureDetector(
-        behavior: HitTestBehavior.opaque,
-        onHorizontalDragEnd: _handleSwipe,
-        child: SafeArea(
-          child: Column(
-          children: [
-            // Main content
-            Expanded(
-              child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 280),
-                  switchInCurve: Curves.easeOutCubic,
-                  switchOutCurve: Curves.easeInCubic,
-                  transitionBuilder: (child, animation) {
-                    return FadeTransition(
-                      opacity: animation,
-                      child: SlideTransition(
-                        position: Tween<Offset>(
-                          begin: const Offset(0.06, 0),
-                          end: Offset.zero,
-                        ).animate(animation),
-                        child: child,
-                      ),
-                    );
-                  },
-                  child: Column(
-                    key: ValueKey(_currentIndex),
-                    children: [
-                      const SizedBox(height: 12),
-
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.8),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: number['accentColor'].withOpacity(0.25),
-                          ),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(
-                              Icons.swipe_rounded,
-                              size: 18,
-                              color: number['accentColor'],
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Swipe left / right to change',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w600,
-                                color: Colors.grey[700],
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      const SizedBox(height: 20),
-
-                      // Hero illustration card
-                      Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.all(32),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(32),
-                        boxShadow: [
-                          BoxShadow(
-                            color: number['accentColor'].withOpacity(0.15),
-                            blurRadius: 30,
-                            offset: const Offset(0, 15),
-                          ),
-                        ],
-                      ),
-                      child: Column(
-                        children: [
-                          // Big emoji illustration
-                          Text(
-                            number['emoji'],
-                            style: const TextStyle(fontSize: 100),
-                          ),
-                          const SizedBox(height: 24),
-
-                          // Number name
-                          Text(
-                            number['name'],
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w800,
-                              color: number['accentColor'],
-                            ),
-                          ),
-                          Text(
-                            'Number ${number['value']}',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey[500],
-                            ),
-                          ),
-                        ],
-                      ),
-                      ),
-                      const SizedBox(height: 32),
-
-                    // Large Ol Chiki number
-                      Container(
-                      width: 140,
-                      height: 140,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            number['accentColor'].withOpacity(0.1),
-                            number['accentColor'].withOpacity(0.2),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(28),
-                        border: Border.all(
-                          color: number['accentColor'].withOpacity(0.3),
-                          width: 3,
-                        ),
-                      ),
-                      child: Center(
-                        child: Text(
-                          number['num'],
-                          style: TextStyle(
-                            fontSize: 72,
-                            fontWeight: FontWeight.w700,
-                            color: number['accentColor'],
-                          ),
-                        ),
-                      ),
-                      ),
-                      const SizedBox(height: 24),
-
-                    // Value representation (dots)
-                      Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
-                      ),
-                      child: Wrap(
-                        spacing: 12,
-                        runSpacing: 12,
-                        alignment: WrapAlignment.center,
-                        children: List.generate(
-                          int.parse(number['value']),
-                          (index) => Container(
-                            width: 20,
-                            height: 20,
-                            decoration: BoxDecoration(
-                              color: number['accentColor'],
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ),
-                      ),
-                      ),
-                      const SizedBox(height: 24),
-
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ScaleButton(
-                              onPressed: _goToPreviousNumber,
-                              child: _buildNavButton(
-                                label: 'Previous',
-                                icon: Icons.chevron_left_rounded,
-                                accentColor: number['accentColor'],
-                                enabled: _currentIndex > 0,
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: ScaleButton(
-                              onPressed: _goToNextNumber,
-                              child: _buildNavButton(
-                                label: 'Next',
-                                icon: Icons.chevron_right_rounded,
-                                accentColor: number['accentColor'],
-                                enabled: _currentIndex < numbers.length - 1,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 100),
-                    ],
-                  ),
-                ),
+      error: (error, stack) => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: Center(child: Text('Error: $error')),
+      ),
+      data: (numbers) {
+        if (numbers.isEmpty) {
+          return Scaffold(
+            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
               ),
             ),
+            body: const Center(child: Text('No numbers available')),
+          );
+        }
 
-            // Bottom pagination
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(24),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    offset: const Offset(0, -5),
-                  ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: List.generate(numbers.length, (index) {
-                  final isActive = index == _currentIndex;
-                  return ScaleButton(
-                    onPressed: () => _goToNumber(index),
-                    child: AnimatedContainer(
-                      duration: const Duration(milliseconds: 200),
-                      margin: const EdgeInsets.symmetric(horizontal: 6),
-                      width: isActive ? 44 : 36,
-                      height: isActive ? 44 : 36,
-                      decoration: BoxDecoration(
-                        color: isActive
-                            ? number['accentColor']
-                            : (isDark ? Colors.white10 : Colors.grey[200]),
-                        borderRadius: BorderRadius.circular(isActive ? 14 : 12),
-                        boxShadow: isActive
-                            ? [
-                                BoxShadow(
-                                  color: number['accentColor'].withOpacity(0.4),
-                                  blurRadius: 8,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ]
-                            : null,
-                      ),
-                      child: Center(
-                        child: Text(
-                          numbers[index]['value'],
-                          style: TextStyle(
-                            fontSize: isActive ? 18 : 14,
-                            fontWeight: FontWeight.w700,
-                            color: isActive
-                                ? Colors.white
-                                : (isDark ? Colors.white70 : Colors.grey[600]),
-                          ),
-                        ),
-                      ),
-                    ),
+        // Find initial index
+        if (_currentIndex == 0 && widget.numberId.isNotEmpty) {
+          final index = numbers.indexWhere(
+            (n) =>
+                n.id == widget.numberId ||
+                n.numeral == widget.numberId ||
+                n.value.toString() == widget.numberId,
+          );
+          if (index >= 0 && _currentIndex != index) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => _currentIndex = index);
+                _pageController.jumpToPage(index);
+              }
+            });
+          }
+        }
+
+        final accentColor = _getAccentColor(_currentIndex);
+        final bgColor = _getBackgroundColor(_currentIndex, isDark);
+
+        return Scaffold(
+          backgroundColor: bgColor,
+          extendBodyBehindAppBar: true,
+          extendBody: true,
+          body: Stack(
+            children: [
+              PageView.builder(
+                controller: _pageController,
+                onPageChanged: _onPageChanged,
+                itemCount: numbers.length,
+                physics: const BouncingScrollPhysics(),
+                itemBuilder: (context, index) {
+                  final number = numbers[index];
+                  return _buildNumberPage(
+                    number,
+                    index,
+                    isDark,
+                    statusBarHeight,
                   );
-                }),
+                },
               ),
+
+              // Floating back button
+              Positioned(
+                top: statusBarHeight + 8,
+                left: 16,
+                child: _buildFloatingButton(
+                  icon: Icons.arrow_back_rounded,
+                  color: accentColor,
+                  onTap: () => context.pop(),
+                ),
+              ),
+
+              // Floating audio button
+              if (numbers[_currentIndex].audioUrl != null)
+                Positioned(
+                  top: statusBarHeight + 8,
+                  right: 16,
+                  child: _buildFloatingButton(
+                    icon: Icons.volume_up_rounded,
+                    color: accentColor,
+                    onTap: () {
+                      HapticFeedback.mediumImpact();
+                      ref
+                          .read(audioServiceProvider)
+                          .playUrl(numbers[_currentIndex].audioUrl!);
+                    },
+                  ),
+                ),
+
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+                left: 0,
+                right: 0,
+                child: _buildPageIndicator(numbers.length, accentColor, isDark),
+              ),
+            ],
+          ),
+          floatingActionButton: Container(
+            margin: const EdgeInsets.only(left: 32, right: 32, bottom: 80),
+            width: double.infinity,
+            child: FloatingActionButton.extended(
+              onPressed: () {
+                HapticFeedback.heavyImpact();
+                final number = numbers[_currentIndex];
+                context.push('/practice/${number.numeral}/${number.nameLatin}');
+              },
+              backgroundColor: accentColor,
+              elevation: 4,
+              label: const Text(
+                'PRACTICE WRITING',
+                style: TextStyle(
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
             ),
-          ],
-        ),
-        ),
-      ),
+          ),
+          floatingActionButtonLocation:
+              FloatingActionButtonLocation.centerFloat,
+        );
+      },
     );
   }
 
-  Widget _buildNavButton({
-    required String label,
+  Widget _buildFloatingButton({
     required IconData icon,
-    required Color accentColor,
-    required bool enabled,
+    required Color color,
+    required VoidCallback onTap,
   }) {
-    return AnimatedContainer(
-      duration: const Duration(milliseconds: 220),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      decoration: BoxDecoration(
-        color: enabled ? Colors.white : Colors.white.withOpacity(0.45),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: accentColor.withOpacity(enabled ? 0.4 : 0.15),
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: Colors.white.withOpacity(0.95),
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.1),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
+        child: Icon(icon, color: color, size: 24),
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
+    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
+  }
+
+  Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: List.generate(count, (index) {
+        final isActive = index == _currentIndex;
+        return AnimatedContainer(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+          margin: const EdgeInsets.symmetric(horizontal: 4),
+          width: isActive ? 28 : 10,
+          height: 10,
+          decoration: BoxDecoration(
+            color: isActive
+                ? accentColor
+                : (isDark ? Colors.white30 : Colors.black26),
+            borderRadius: BorderRadius.circular(5),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: accentColor.withOpacity(0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
+          ),
+        );
+      }),
+    );
+  }
+
+  Widget _buildNumberPage(
+    NumberModel number,
+    int index,
+    bool isDark,
+    double statusBarHeight,
+  ) {
+    final accentColor = _getAccentColor(index);
+    final emoji = _numberEmojis[number.numeral] ?? '🔢';
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(24, statusBarHeight + 70, 24, 100),
+      physics: const BouncingScrollPhysics(),
+      child: Column(
         children: [
-          Icon(icon, color: enabled ? accentColor : Colors.grey[400]),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontWeight: FontWeight.w700,
-              color: enabled ? accentColor : Colors.grey[400],
+          const SizedBox(height: 20),
+
+          // Hero illustration
+          SizedBox(
+            width: double.infinity,
+            child: Column(
+              children: [
+                TweenAnimationBuilder<double>(
+                  tween: Tween(begin: 0.94, end: 1.0),
+                  duration: const Duration(milliseconds: 1200),
+                  curve: Curves.easeInOut,
+                  builder: (context, scale, child) {
+                    return Transform.scale(scale: scale, child: child);
+                  },
+                  child: TweenAnimationBuilder<double>(
+                    tween: Tween(begin: -0.06, end: 0.06),
+                    duration: const Duration(milliseconds: 1700),
+                    curve: Curves.easeInOut,
+                    builder: (context, turn, child) {
+                      return Transform.rotate(angle: turn, child: child);
+                    },
+                    onEnd: () {
+                      if (mounted) setState(() {});
+                    },
+                    child:
+                        number.imageUrl != null && number.imageUrl!.isNotEmpty
+                        ? ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Image.network(
+                              number.imageUrl!,
+                              width: 180,
+                              height: 180,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, _, __) => Image.network(
+                                _emojiToPngUrl(emoji),
+                                width: 180,
+                                height: 180,
+                                fit: BoxFit.contain,
+                              ),
+                            ),
+                          )
+                        : Image.network(
+                            _emojiToPngUrl(emoji),
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            errorBuilder: (context, _, __) => Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 100),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Name with animation
+                Animate(
+                  child: Text(
+                    number.nameLatin,
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                      letterSpacing: -1.0,
+                    ),
+                  ),
+                ).fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
+
+                Text(
+                  'Number ${number.value}',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white54 : Colors.grey[500],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 32),
+
+          // Large Ol Chiki number
+          Container(
+            width: 160,
+            height: 160,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accentColor.withOpacity(0.15),
+                  accentColor.withOpacity(0.25),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(32),
+              border: Border.all(color: accentColor.withOpacity(0.4), width: 4),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withOpacity(0.2),
+                  blurRadius: 40,
+                  offset: const Offset(0, 10),
+                ),
+              ],
+            ),
+            child: Animate(
+              child: Center(
+                child: Text(
+                  number.numeral,
+                  style: TextStyle(
+                    fontSize: 80,
+                    fontWeight: FontWeight.w700,
+                    color: accentColor,
+                  ),
+                ),
+              ),
+            ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
+          ),
+          const SizedBox(height: 20),
+
+          // Ol Chiki name badge
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            decoration: BoxDecoration(
+              color: accentColor,
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: [
+                BoxShadow(
+                  color: accentColor.withOpacity(0.4),
+                  blurRadius: 15,
+                  offset: const Offset(0, 6),
+                ),
+              ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text(
+                  number.nameOlChiki,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 1,
+                  ),
+                ),
+                if (number.audioUrl != null) ...[
+                  const SizedBox(width: 12),
+                  GestureDetector(
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      ref.read(audioServiceProvider).playUrl(number.audioUrl!);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: const Icon(
+                        Icons.volume_up_rounded,
+                        color: Colors.white,
+                        size: 20,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Pronunciation hint
+          if (number.pronunciation != null && number.pronunciation!.isNotEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.record_voice_over_rounded,
+                        color: accentColor,
+                        size: 24,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Pronunciation',
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                          color: accentColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    number.pronunciation!,
+                    style: TextStyle(
+                      fontSize: 16,
+                      height: 1.5,
+                      color: isDark ? Colors.white70 : Colors.grey[700],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+          const SizedBox(height: 16),
+
+          // Value representation (animated dots)
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  accentColor.withValues(alpha: 0.08),
+                  accentColor.withValues(alpha: 0.04),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: accentColor.withValues(alpha: 0.15),
+                width: 2,
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  'Count',
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: accentColor.withValues(alpha: 0.8),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 12,
+                  runSpacing: 12,
+                  alignment: WrapAlignment.center,
+                  children: List.generate(
+                    number.value,
+                    (i) =>
+                        Animate(
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      accentColor,
+                                      accentColor.withValues(alpha: 0.7),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: accentColor.withValues(alpha: 0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .fadeIn(
+                              delay: Duration(milliseconds: 800 + (i * 80)),
+                            )
+                            .scale(
+                              begin: const Offset(0, 0),
+                              curve: Curves.easeOutBack,
+                              delay: Duration(milliseconds: 800 + (i * 80)),
+                            ),
+                  ),
+                ),
+              ],
             ),
           ),
         ],

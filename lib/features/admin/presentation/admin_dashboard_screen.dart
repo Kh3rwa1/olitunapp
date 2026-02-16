@@ -1,80 +1,374 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fl_chart/fl_chart.dart';
 import '../../../../shared/providers/providers.dart';
-import '../../../../shared/widgets/gamified_card.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
-import 'widgets/admin_nav_rail.dart';
-import 'admin_banners_screen.dart';
-import 'admin_categories_screen.dart';
-import 'admin_letters_screen.dart';
-import 'admin_lessons_screen.dart';
-import 'admin_rhymes_screen.dart';
-import 'admin_quizzes_screen.dart';
+import '../providers/admin_auth_provider.dart';
 import '../../../../core/theme/app_colors.dart';
 
-class AdminDashboardScreen extends ConsumerStatefulWidget {
+class AdminDashboardScreen extends ConsumerWidget {
   const AdminDashboardScreen({super.key});
 
   @override
-  ConsumerState<AdminDashboardScreen> createState() =>
-      _AdminDashboardScreenState();
-}
-
-class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
-  int _selectedIndex = 0;
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : const Color(0xFFF8FAFC),
-      body: Row(
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF1F5F9),
+      ),
+      child: Stack(
         children: [
-          AdminNavRail(
-            selectedIndex: _selectedIndex,
-            onDestinationSelected: (index) {
-              setState(() => _selectedIndex = index);
-            },
-          ),
-          Expanded(child: _buildContent(_selectedIndex, isDark)),
+          // Subtle background decoration
+          if (isDark)
+            Positioned(
+              top: -100,
+              right: -100,
+              child:
+                  Container(
+                        width: 400,
+                        height: 400,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.03),
+                          shape: BoxShape.circle,
+                        ),
+                      )
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .scale(
+                        begin: const Offset(1, 1),
+                        end: const Offset(1.2, 1.2),
+                        duration: 10.seconds,
+                      ),
+            ),
+
+          _buildOverview(context, ref, isDark),
         ],
       ),
     );
   }
 
-  Widget _buildContent(int index, bool isDark) {
-    switch (index) {
-      case 0:
-        return _buildOverview(isDark);
-      case 1:
-        return const AdminBannersScreen();
-      case 2:
-        return const AdminCategoriesScreen();
-      case 3:
-        return const AdminLettersScreen();
-      case 4:
-        return const AdminLessonsScreen();
-      case 5:
-        return const AdminRhymesScreen();
-      case 6:
-        return const AdminQuizzesScreen();
-      default:
-        return _buildOverview(isDark);
-    }
+  Widget _buildOverview(BuildContext context, WidgetRef ref, bool isDark) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      padding: const EdgeInsets.all(32),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildHeroHeader(context, ref, isDark),
+          const SizedBox(height: 40),
+
+          // Bento Grid Layout
+          _buildBentoGrid(context, ref, isDark),
+
+          const SizedBox(height: 40),
+
+          // Analytics Section
+          _buildAnalyticsSection(context, ref, isDark),
+        ],
+      ),
+    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.02, end: 0);
   }
 
-  Widget _buildOverview(bool isDark) {
+  Widget _buildHeroHeader(BuildContext context, WidgetRef ref, bool isDark) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.primary.withOpacity(0.2),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.verified_user_rounded,
+                        size: 14,
+                        color: AppColors.primary,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        'SECURE ACCESS',
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w900,
+                          letterSpacing: 1.2,
+                          color: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'Dashboard',
+              style: TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w900,
+                letterSpacing: -2,
+                color: isDark ? Colors.white : AppColors.primaryDark,
+                height: 0.9,
+              ),
+            ),
+          ],
+        ),
+        Row(
+          children: [
+            _buildHeaderAction(
+              icon: Icons.logout_rounded,
+              onTap: () => ref.read(adminAuthProvider.notifier).logout(),
+              isDark: isDark,
+              tooltip: 'Sign Out',
+            ),
+            const SizedBox(width: 12),
+            DuoButton(
+              text: 'SEED DATA',
+              icon: Icons.auto_fix_high_rounded,
+              color: AppColors.primary,
+              width: 160,
+              height: 48,
+              borderRadius: 12,
+              onPressed: () => _handleSeeding(context, ref),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHeaderAction({
+    required IconData icon,
+    required VoidCallback onTap,
+    required bool isDark,
+    required String tooltip,
+  }) {
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withOpacity(0.05)
+                : Colors.black.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(
+              color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 20,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBentoGrid(BuildContext context, WidgetRef ref, bool isDark) {
     final categoriesAsync = ref.watch(categoriesProvider);
-    final bannersAsync = ref.watch(featuredBannersProvider);
     final lettersAsync = ref.watch(lettersProvider);
     final lessonsAsync = ref.watch(lessonsProvider);
+    final wordsAsync = ref.watch(wordsProvider);
+    final numbersAsync = ref.watch(numbersProvider);
     final quizzesAsync = ref.watch(quizzesProvider);
 
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(40),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isWide = constraints.maxWidth > 900;
+
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: isWide ? 4 : 2,
+          mainAxisSpacing: 20,
+          crossAxisSpacing: 20,
+          childAspectRatio: 1.5,
+          children: [
+            _buildPremiumStatCard(
+              title: 'Curriculum',
+              value: categoriesAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Categories Active',
+              icon: Icons.category_rounded,
+              color: AppColors.duoGreen,
+              isDark: isDark,
+            ),
+            _buildPremiumStatCard(
+              title: 'Alphabets',
+              value: lettersAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Total Letters',
+              icon: Icons.text_fields_rounded,
+              color: AppColors.duoOrange,
+              isDark: isDark,
+            ),
+            _buildPremiumStatCard(
+              title: 'Lessons',
+              value: lessonsAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Educational Units',
+              icon: Icons.book_rounded,
+              color: AppColors.duoBlue,
+              isDark: isDark,
+            ),
+            _buildPremiumStatCard(
+              title: 'Vocabulary',
+              value: wordsAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Words & Phrases',
+              icon: Icons.menu_book_rounded,
+              color: AppColors.duoYellow,
+              isDark: isDark,
+            ),
+            _buildPremiumStatCard(
+              title: 'Numerals',
+              value: numbersAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Number Objects',
+              icon: Icons.format_list_numbered_rounded,
+              color: AppColors.duoOrange,
+              isDark: isDark,
+            ),
+            _buildPremiumStatCard(
+              title: 'Evaluation',
+              value: quizzesAsync.when(
+                data: (l) => l.length.toString(),
+                loading: () => '...',
+                error: (_, __) => '0',
+              ),
+              subtitle: 'Quizzes Created',
+              icon: Icons.quiz_rounded,
+              color: AppColors.duoBlue,
+              isDark: isDark,
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPremiumStatCard({
+    required String title,
+    required String value,
+    required String subtitle,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+        ),
+        boxShadow: [
+          if (!isDark)
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 20,
+              offset: const Offset(0, 10),
+            ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                title.toUpperCase(),
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: 1.5,
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+              ),
+              Icon(icon, color: color.withOpacity(0.6), size: 18),
+            ],
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                value,
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : AppColors.primaryDark,
+                  height: 1,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                subtitle,
+                style: TextStyle(
+                  fontSize: 12,
+                  color: isDark ? Colors.white24 : Colors.black26,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    ).animate().scale(duration: 300.ms, curve: Curves.easeOutBack);
+  }
+
+  Widget _buildAnalyticsSection(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDark,
+  ) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(32),
+      decoration: BoxDecoration(
+        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        borderRadius: BorderRadius.circular(32),
+        border: Border.all(
+          color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+        ),
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -85,193 +379,211 @@ class _AdminDashboardScreenState extends ConsumerState<AdminDashboardScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'Admin Panel',
+                    'ENGAGEMENT INSIGHTS',
                     style: TextStyle(
-                      fontSize: 36,
+                      fontSize: 12,
                       fontWeight: FontWeight.w900,
-                      letterSpacing: -1,
-                      color: isDark ? Colors.white : AppColors.primaryDark,
+                      letterSpacing: 1.5,
+                      color: isDark ? AppColors.primary : AppColors.primaryDark,
                     ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    'Manage your content and settings',
+                    'Content performance metrics',
                     style: TextStyle(
-                      fontSize: 16,
+                      fontSize: 14,
                       color: isDark ? Colors.white54 : Colors.black54,
                     ),
                   ),
                 ],
               ),
-              DuoButton(
-                text: 'SEED SAMPLE DATA',
-                icon: Icons.auto_fix_high_rounded,
-                color: AppColors.primary,
-                width: 220,
-                height: 52,
-                borderRadius: 14,
-                onPressed: () => _handleSeeding(),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withOpacity(0.05)
+                      : Colors.black.withOpacity(0.02),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.show_chart_rounded,
+                      size: 16,
+                      color: AppColors.duoGreen,
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      '+12% overall growth',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
+                    ),
+                  ],
+                ),
               ),
             ],
           ),
-          const SizedBox(height: 48),
+          const SizedBox(height: 40),
 
-          Text(
-            'STATISTICS',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w900,
-              letterSpacing: 1.5,
-              color: isDark ? AppColors.primary : AppColors.primaryDark,
+          // Chart placeholder / real chart
+          SizedBox(height: 250, child: _buildMainChart(isDark)),
+        ],
+      ),
+    ).animate().fadeIn(delay: 200.ms);
+  }
+
+  Widget _buildMainChart(bool isDark) {
+    return LineChart(
+      LineChartData(
+        gridData: FlGridData(
+          show: true,
+          drawVerticalLine: false,
+          getDrawingHorizontalLine: (value) => FlLine(
+            color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+            strokeWidth: 1,
+          ),
+        ),
+        titlesData: FlTitlesData(
+          show: true,
+          rightTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          topTitles: const AxisTitles(
+            sideTitles: SideTitles(showTitles: false),
+          ),
+          bottomTitles: AxisTitles(
+            sideTitles: SideTitles(
+              showTitles: true,
+              reservedSize: 30,
+              interval: 1,
+              getTitlesWidget: (value, meta) {
+                const days = ['MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT', 'SUN'];
+                if (value.toInt() < 0 || value.toInt() >= days.length) {
+                  return const SizedBox();
+                }
+                return Text(
+                  days[value.toInt()],
+                  style: TextStyle(
+                    color: isDark ? Colors.white38 : Colors.black38,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 10,
+                  ),
+                );
+              },
             ),
           ),
-          const SizedBox(height: 20),
-
-          Wrap(
-            spacing: 20,
-            runSpacing: 20,
-            children: [
-              _buildStatCard(
-                'Categories',
-                categoriesAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.category_rounded,
-                AppColors.duoGreen,
-                AppColors.duoGreenDark,
-              ),
-              _buildStatCard(
-                'Letters',
-                lettersAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.text_fields_rounded,
-                AppColors.duoOrange,
-                AppColors.duoOrangeDark,
-              ),
-              _buildStatCard(
-                'Lessons',
-                lessonsAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.book_rounded,
-                AppColors.duoBlue,
-                AppColors.duoBlueDark,
-              ),
-              _buildStatCard(
-                'Quizzes',
-                quizzesAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.quiz_rounded,
-                AppColors.duoBlue,
-                AppColors.duoBlueDark,
-              ),
-              _buildStatCard(
-                'Banners',
-                bannersAsync.when(
-                  data: (l) => l.length.toString(),
-                  loading: () => '...',
-                  error: (_, __) => '0',
-                ),
-                Icons.view_carousel_rounded,
-                AppColors.duoYellow,
-                AppColors.duoYellowDark,
-              ),
+        ),
+        borderData: FlBorderData(show: false),
+        lineBarsData: [
+          LineChartBarData(
+            spots: const [
+              FlSpot(0, 3),
+              FlSpot(1, 4),
+              FlSpot(2, 3.5),
+              FlSpot(3, 5),
+              FlSpot(4, 4),
+              FlSpot(5, 6),
+              FlSpot(6, 5.5),
             ],
+            isCurved: true,
+            color: AppColors.primary,
+            barWidth: 6,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.primary.withOpacity(0.1),
+            ),
+          ),
+          LineChartBarData(
+            spots: const [
+              FlSpot(0, 2),
+              FlSpot(1, 2.5),
+              FlSpot(2, 2.2),
+              FlSpot(3, 3),
+              FlSpot(4, 3.5),
+              FlSpot(5, 3),
+              FlSpot(6, 4),
+            ],
+            isCurved: true,
+            color: AppColors.duoGreen,
+            barWidth: 4,
+            isStrokeCapRound: true,
+            dotData: const FlDotData(show: false),
+            belowBarData: BarAreaData(
+              show: true,
+              color: AppColors.duoGreen.withOpacity(0.05),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildStatCard(
-    String title,
-    String value,
-    IconData icon,
-    Color color,
-    Color shadowColor,
-  ) {
-    return SizedBox(
-      width: 220,
-      child: GamifiedCard(
-        padding: const EdgeInsets.all(24),
-        borderRadius: 24,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: color.withOpacity(0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Icon(icon, color: color, size: 28),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 40,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1,
-                height: 1,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              title.toUpperCase(),
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.w800,
-                letterSpacing: 1,
-                color: Colors.black.withOpacity(0.4),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _handleSeeding() {
+  void _handleSeeding(BuildContext context, WidgetRef ref) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('Seed Sample Data?'),
+        backgroundColor: Theme.of(context).brightness == Brightness.dark
+            ? const Color(0xFF1E293B)
+            : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        title: const Text(
+          'Seed Sample Data?',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
         content: const Text(
           'This will populate the app with rich sample categories, lessons, and letters. It will not delete existing data.',
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text('CANCEL'),
+            child: Text('CANCEL', style: TextStyle(color: Colors.grey[600])),
           ),
-          TextButton(
+          ElevatedButton(
             onPressed: () async {
               Navigator.pop(context);
-              // We'll implement this function in the next step
               await seedAppContent(ref);
-              if (mounted) {
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Content seeded successfully! ✨'),
+                  SnackBar(
+                    content: const Text('Content seeded successfully! ✨'),
+                    behavior: SnackBarBehavior.floating,
+                    backgroundColor: AppColors.duoGreen,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
                   ),
                 );
               }
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
             child: const Text('SEED DATA'),
           ),
         ],
       ),
     );
   }
+}
+
+// Extension to help with seeding (imported from providers.dart typically)
+Future<void> seedAppContent(WidgetRef ref) async {
+  // Mock seeding logic - calls existing providers
+  await ref.read(categoriesProvider.notifier).seed();
+  await ref.read(lettersProvider.notifier).seed();
+  await ref.read(lessonsProvider.notifier).seed();
+  await ref.read(numbersProvider.notifier).seed();
+  await ref.read(wordsProvider.notifier).seed();
 }

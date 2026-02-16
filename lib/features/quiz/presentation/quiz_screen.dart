@@ -376,8 +376,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         setState(() {
           _isQuizComplete = true;
         });
-        incrementQuizzesCompleted(ref);
-        addStars(ref, _score * 5);
+        ref
+            .read(progressProvider.notifier)
+            .completeQuiz(widget.quizId, _score, quiz.questions.length);
+        ref.read(progressProvider.notifier).addStars(_score * 5);
       }
     });
   }

@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/providers/providers.dart';
-import 'features/home/presentation/home_screen.dart';
+
 import 'features/admin/presentation/admin_dashboard_screen.dart';
 import 'features/admin/presentation/admin_categories_screen.dart';
 import 'features/admin/presentation/admin_banners_screen.dart';
@@ -13,19 +14,28 @@ import 'features/admin/presentation/admin_lessons_screen.dart';
 import 'features/admin/presentation/admin_quizzes_screen.dart';
 import 'features/lessons/presentation/category_lessons_screen.dart';
 import 'features/lessons/presentation/lesson_detail_screen.dart';
+import 'features/lessons/presentation/lessons_screen.dart';
+
 import 'features/lessons/presentation/letter_detail_screen.dart';
 import 'features/lessons/presentation/word_detail_screen.dart';
 import 'features/lessons/presentation/number_detail_screen.dart';
+import 'features/lessons/presentation/sentence_detail_screen.dart';
 import 'features/lessons/presentation/practice/practice_screen.dart';
 import 'features/lessons/presentation/quiz/quiz_screen.dart';
+import 'features/quiz/presentation/quiz_list_screen.dart';
 import 'features/profile/presentation/progress_screen.dart';
 import 'features/profile/presentation/settings_screen.dart';
 import 'features/onboarding/presentation/onboarding_screen.dart';
 import 'features/onboarding/presentation/splash_screen.dart';
 import 'features/onboarding/providers/onboarding_provider.dart';
-
+import 'features/auth/presentation/welcome_screen.dart';
+import 'features/auth/presentation/email_auth_screen.dart';
 import 'features/main/presentation/main_shell_screen.dart';
-
+import 'features/admin/presentation/admin_login_screen.dart';
+import 'features/admin/presentation/admin_rhymes_screen.dart';
+import 'features/admin/presentation/admin_settings_screen.dart';
+import 'features/admin/presentation/admin_shell.dart';
+import 'features/admin/providers/admin_auth_provider.dart';
 import 'core/storage/storage_service.dart';
 
 void main() async {
@@ -33,6 +43,7 @@ void main() async {
 
   // Initialize shared storage
   await initStorage();
+  final prefs = await SharedPreferences.getInstance();
 
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
@@ -42,7 +53,12 @@ void main() async {
     ),
   );
 
-  runApp(const ProviderScope(child: OlitunApp()));
+  runApp(
+    ProviderScope(
+      overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+      child: const OlitunApp(),
+    ),
+  );
 }
 
 // Simple router
@@ -65,6 +81,14 @@ final _router = GoRouter(
       builder: (context, state) => const OnboardingScreen(),
     ),
     GoRoute(
+      path: '/welcome',
+      builder: (context, state) => const WelcomeScreen(),
+    ),
+    GoRoute(
+      path: '/auth',
+      builder: (context, state) => const EmailAuthScreen(),
+    ),
+    GoRoute(
       path: '/profile',
       builder: (context, state) => const ProgressScreen(),
     ),
@@ -77,10 +101,9 @@ final _router = GoRouter(
       builder: (context, state) => const MainShellScreen(),
     ),
     GoRoute(
-      path: '/settings',
-      builder: (context, state) => const SettingsScreen(),
+      path: '/lessons',
+      builder: (context, state) => const LessonsScreen(),
     ),
-    GoRoute(path: '/lessons', builder: (context, state) => const HomeScreen()),
     GoRoute(
       path: '/lessons/category/:categoryId',
       builder: (context, state) {
@@ -120,12 +143,24 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
+      path: '/sentence/:lessonId/:sentenceId',
+      builder: (context, state) {
+        final lessonId = state.pathParameters['lessonId'] ?? '';
+        final sentenceId = state.pathParameters['sentenceId'] ?? '';
+        return SentenceDetailScreen(lessonId: lessonId, sentenceId: sentenceId);
+      },
+    ),
+    GoRoute(
       path: '/practice/:char/:name',
       builder: (context, state) {
-        final char = Uri.decodeComponent(state.pathParameters['char'] ?? '');
-        final name = Uri.decodeComponent(state.pathParameters['name'] ?? '');
+        final char = state.pathParameters['char'] ?? '';
+        final name = state.pathParameters['name'] ?? '';
         return PracticeScreen(letterChar: char, letterName: name);
       },
+    ),
+    GoRoute(
+      path: '/quizzes',
+      builder: (context, state) => const QuizListScreen(),
     ),
     GoRoute(
       path: '/quiz/:quizId',
@@ -135,28 +170,53 @@ final _router = GoRouter(
       },
     ),
     GoRoute(
-      path: '/admin',
-      builder: (context, state) => const AdminDashboardScreen(),
+      path: '/admin/login',
+      builder: (context, state) => const AdminLoginScreen(),
     ),
-    GoRoute(
-      path: '/admin/categories',
-      builder: (context, state) => const AdminCategoriesScreen(),
-    ),
-    GoRoute(
-      path: '/admin/banners',
-      builder: (context, state) => const AdminBannersScreen(),
-    ),
-    GoRoute(
-      path: '/admin/letters',
-      builder: (context, state) => const AdminLettersScreen(),
-    ),
-    GoRoute(
-      path: '/admin/lessons',
-      builder: (context, state) => const AdminLessonsScreen(),
-    ),
-    GoRoute(
-      path: '/admin/quizzes',
-      builder: (context, state) => const AdminQuizzesScreen(),
+    ShellRoute(
+      builder: (context, state, child) {
+        return AdminShell(child: child);
+      },
+      routes: [
+        GoRoute(
+          path: '/admin',
+          redirect: (context, state) {
+            final container = ProviderScope.containerOf(context);
+            final isAuthenticated = container.read(adminAuthProvider);
+            if (!isAuthenticated) return '/admin/login';
+            return null;
+          },
+          builder: (context, state) => const AdminDashboardScreen(),
+        ),
+        GoRoute(
+          path: '/admin/categories',
+          builder: (context, state) => const AdminCategoriesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/banners',
+          builder: (context, state) => const AdminBannersScreen(),
+        ),
+        GoRoute(
+          path: '/admin/letters',
+          builder: (context, state) => const AdminLettersScreen(),
+        ),
+        GoRoute(
+          path: '/admin/lessons',
+          builder: (context, state) => const AdminLessonsScreen(),
+        ),
+        GoRoute(
+          path: '/admin/quizzes',
+          builder: (context, state) => const AdminQuizzesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/rhymes',
+          builder: (context, state) => const AdminRhymesScreen(),
+        ),
+        GoRoute(
+          path: '/admin/settings',
+          builder: (context, state) => const AdminSettingsScreen(),
+        ),
+      ],
     ),
   ],
 );

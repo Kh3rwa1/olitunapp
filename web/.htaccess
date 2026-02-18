@@ -11,8 +11,12 @@
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteRule .? - [S=2]
 
-  # 3. EXCLUDE admin and admin-panel from Flutter routing
-  RewriteCond %{REQUEST_URI} ^/(admin|admin-panel) [NC]
+  # 3. Redirect /admin URLs to Flutter hash-based routing
+  RewriteCond %{REQUEST_URI} ^/admin/?(.*)$ [NC]
+  RewriteRule ^admin/?(.*)$ /#/admin/$1 [NE,R=302,L]
+
+  # 4. EXCLUDE admin-panel API from Flutter routing
+  RewriteCond %{REQUEST_URI} ^/admin-panel [NC]
   RewriteRule .? - [L]
 
   # 4. Route all other requests to index.html for Flutter SPA

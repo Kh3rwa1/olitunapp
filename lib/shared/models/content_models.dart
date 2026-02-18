@@ -522,14 +522,30 @@ class LessonBlock {
   });
 
   factory LessonBlock.fromMap(Map<String, dynamic> data) {
+    // Unwrap nested contentJson from API response
+    // API may return: {type, contentJson: {type, contentJson: {textOlChiki, textLatin}}}
+    // or: {type, contentJson: {textOlChiki, textLatin}}
+    Map<String, dynamic> content = data;
+    if (data['contentJson'] is Map<String, dynamic>) {
+      content = data['contentJson'] as Map<String, dynamic>;
+      // Handle double-nesting
+      if (content['contentJson'] is Map<String, dynamic>) {
+        content = content['contentJson'] as Map<String, dynamic>;
+      }
+    }
+
     return LessonBlock(
       type: data['type'] as String? ?? 'text',
-      textOlChiki: data['textOlChiki'] as String?,
-      textLatin: data['textLatin'] as String?,
-      imageUrl: data['imageUrl'] as String?,
-      audioUrl: data['audioUrl'] as String?,
-      animationUrl: data['animationUrl'] as String?,
-      quizRefId: data['quizRefId'] as String?,
+      textOlChiki:
+          content['textOlChiki'] as String? ?? data['textOlChiki'] as String?,
+      textLatin:
+          content['textLatin'] as String? ?? data['textLatin'] as String?,
+      imageUrl: content['imageUrl'] as String? ?? data['imageUrl'] as String?,
+      audioUrl: content['audioUrl'] as String? ?? data['audioUrl'] as String?,
+      animationUrl:
+          content['animationUrl'] as String? ?? data['animationUrl'] as String?,
+      quizRefId:
+          content['quizRefId'] as String? ?? data['quizRefId'] as String?,
     );
   }
 

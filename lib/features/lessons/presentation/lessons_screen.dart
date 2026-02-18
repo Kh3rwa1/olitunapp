@@ -5,11 +5,26 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 
-class LessonsScreen extends ConsumerWidget {
+class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LessonsScreen> createState() => _LessonsScreenState();
+}
+
+class _LessonsScreenState extends ConsumerState<LessonsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Force refresh categories and lessons from API
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(categoriesProvider.notifier).refresh();
+      ref.read(lessonsProvider.notifier).refresh();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -27,18 +42,26 @@ class LessonsScreen extends ConsumerWidget {
         ),
       ),
       body: categories.when(
-        data: (data) => ListView.builder(
-          padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
-          itemCount: data.length,
-          itemBuilder: (context, index) {
-            final category = data[index];
-            return _CategoryLessonCard(
-              category: category,
-              isDark: isDark,
-              index: index,
-              onTap: () => context.go('/lessons/category/${category.id}'),
-            );
+        data: (data) => RefreshIndicator(
+          onRefresh: () async {
+            await ref.read(categoriesProvider.notifier).refresh();
+            await ref.read(lessonsProvider.notifier).refresh();
           },
+          color: AppColors.primary,
+          child: ListView.builder(
+            physics: const AlwaysScrollableScrollPhysics(),
+            padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+            itemCount: data.length,
+            itemBuilder: (context, index) {
+              final category = data[index];
+              return _CategoryLessonCard(
+                category: category,
+                isDark: isDark,
+                index: index,
+                onTap: () => context.go('/lessons/category/${category.id}'),
+              );
+            },
+          ),
         ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(child: Text('Error: $e')),

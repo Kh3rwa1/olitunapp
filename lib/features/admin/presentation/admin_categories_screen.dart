@@ -301,10 +301,10 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                       const SizedBox(height: 20),
                       _buildUploadField(
                         controller: iconUrlController,
-                        label: 'Icon URL (Optional)',
-                        icon: Icons.image_rounded,
+                        label: 'Icon / Lottie Animation',
+                        icon: Icons.animation_rounded,
                         isDark: isDark,
-                        onUpload: () => _pickAndUpload(
+                        onUpload: () => _pickAndUploadIconOrLottie(
                           context,
                           iconUrlController,
                           'category-icons',
@@ -721,37 +721,81 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     );
   }
 
-  Future<void> _pickAndUpload(
+  /// Picks and uploads an icon image OR Lottie animation (.json, .webp, .png, .jpg, .gif)
+  Future<void> _pickAndUploadIconOrLottie(
     BuildContext context,
     TextEditingController controller,
     String folder,
     StateSetter setDialogState,
   ) async {
     try {
+      final validExtensions = [
+        'json',
+        'webp',
+        'png',
+        'jpg',
+        'jpeg',
+        'gif',
+        'svg',
+      ];
+
+      // On web, FileType.custom with allowedExtensions throws PlatformException
+      // Use FileType.any and validate client-side instead
       final result = await FilePicker.platform.pickFiles(
         withData: true,
-        type: FileType.image,
+        type: FileType.any,
       );
 
       if (result != null && result.files.isNotEmpty) {
+        final pickedFile = result.files.first;
+        final ext = pickedFile.name.split('.').last.toLowerCase();
+
+        if (!validExtensions.contains(ext)) {
+          throw Exception(
+            'Invalid file type: .$ext\nAllowed: ${validExtensions.map((e) => '.$e').join(', ')}',
+          );
+        }
+
+        if (pickedFile.bytes == null || pickedFile.bytes!.isEmpty) {
+          throw Exception('File data is empty. Please try again.');
+        }
+
         final url = await ref
             .read(supabaseServiceProvider)
-            .uploadMedia(result.files.first, folder);
+            .uploadMedia(pickedFile, folder);
         if (url != null) {
           setDialogState(() {
             controller.text = url;
           });
+          if (context.mounted) {
+            final isLottie = ext == 'json';
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  isLottie
+                      ? '✅ Lottie animation uploaded!'
+                      : '✅ Icon uploaded!',
+                ),
+                backgroundColor: const Color(0xFF10B981),
+              ),
+            );
+          }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ $e'),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 6),
+          ),
+        );
       }
     }
   }
 
+  /// Picks and uploads a Lottie animation (.json only)
   Future<void> _pickAndUploadLottie(
     BuildContext context,
     TextEditingController controller,
@@ -759,32 +803,50 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     StateSetter setDialogState,
   ) async {
     try {
+      // On web, FileType.custom throws PlatformException — use FileType.any
       final result = await FilePicker.platform.pickFiles(
         withData: true,
-        type: FileType.custom,
-        allowedExtensions: ['json'],
+        type: FileType.any,
       );
 
       if (result != null && result.files.isNotEmpty) {
+        final pickedFile = result.files.first;
+        final ext = pickedFile.name.split('.').last.toLowerCase();
+
+        if (ext != 'json') {
+          throw Exception('Only .json Lottie files are allowed. Got: .$ext');
+        }
+
+        if (pickedFile.bytes == null || pickedFile.bytes!.isEmpty) {
+          throw Exception('File data is empty. Please try again.');
+        }
+
         final url = await ref
             .read(supabaseServiceProvider)
-            .uploadMedia(result.files.first, folder);
+            .uploadMedia(pickedFile, folder);
         if (url != null) {
           setDialogState(() {
             controller.text = url;
           });
           if (context.mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Lottie animation uploaded!')),
+              const SnackBar(
+                content: Text('✅ Lottie animation uploaded!'),
+                backgroundColor: Color(0xFF10B981),
+              ),
             );
           }
         }
       }
     } catch (e) {
       if (context.mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ $e'),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 6),
+          ),
+        );
       }
     }
   }

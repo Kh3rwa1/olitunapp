@@ -407,6 +407,23 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
                     style: const TextStyle(color: Colors.red, fontSize: 13),
                   ),
                 ),
+                const SizedBox(width: 8),
+                GestureDetector(
+                  onTap: () {
+                    Clipboard.setData(ClipboardData(text: _errorMessage!));
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Error copied to clipboard'),
+                        duration: Duration(seconds: 2),
+                      ),
+                    );
+                  },
+                  child: Icon(
+                    Icons.copy_rounded,
+                    color: Colors.red.withValues(alpha: 0.5),
+                    size: 16,
+                  ),
+                ),
               ],
             ),
           ).animate().shake(),

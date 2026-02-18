@@ -51,7 +51,7 @@ class CategoryLessonsScreen extends ConsumerWidget {
         data: (data) => data.isEmpty
             ? _buildEmptyState(isDark)
             : ListView.builder(
-                padding: const EdgeInsets.all(20),
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
                 itemCount: data.length,
                 itemBuilder: (context, index) {
                   final lesson = data[index];

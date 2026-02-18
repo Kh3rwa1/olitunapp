@@ -1,13 +1,15 @@
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'dart:convert';
 
 /// Configuration for Hostinger API
 class AppConfig {
   static const String uploadBaseUrl = String.fromEnvironment(
     'UPLOAD_BASE_URL',
-    defaultValue: 'http://localhost:3000',
+    defaultValue: 'https://olitun.in/admin-panel',
   );
 
   static String get uploadEndpoint => '$uploadBaseUrl/api/upload.php';
@@ -15,6 +17,34 @@ class AppConfig {
 
 /// Upload service for Hostinger PHP API
 class HostingerUploadService {
+  /// Maps file extension to proper MIME type
+  static MediaType? _getMimeType(String filename) {
+    final ext = filename.split('.').last.toLowerCase();
+    const mimeMap = {
+      'json': 'application/json',
+      'webp': 'image/webp',
+      'webm': 'video/webm',
+      'png': 'image/png',
+      'jpg': 'image/jpeg',
+      'jpeg': 'image/jpeg',
+      'gif': 'image/gif',
+      'svg': 'image/svg+xml',
+      'mp3': 'audio/mpeg',
+      'wav': 'audio/wav',
+      'ogg': 'audio/ogg',
+      'aac': 'audio/aac',
+      'm4a': 'audio/mp4',
+      'mp4': 'video/mp4',
+      'mov': 'video/quicktime',
+    };
+    final mime = mimeMap[ext];
+    if (mime != null) {
+      final parts = mime.split('/');
+      return MediaType(parts[0], parts[1]);
+    }
+    return null;
+  }
+
   /// Uploads a file to Hostinger server
   /// [file] - The file to upload
   /// [folder] - Subfolder name (e.g., 'letters', 'lessons', 'video')
@@ -30,13 +60,20 @@ class HostingerUploadService {
       final uri = Uri.parse(AppConfig.uploadEndpoint);
       final request = http.MultipartRequest('POST', uri);
 
-      // Add file data
+      // Determine content type from extension
+      final contentType = _getMimeType(file.name);
+      debugPrint(
+        'Upload: ${file.name} (${file.size} bytes) → $contentType → folder: $folder',
+      );
+
+      // Add file data with proper content type
       if (file.bytes != null) {
         request.files.add(
           http.MultipartFile.fromBytes(
             'file',
             file.bytes!,
             filename: file.name,
+            contentType: contentType,
           ),
         );
       } else {
@@ -45,6 +82,7 @@ class HostingerUploadService {
             'file',
             file.path!,
             filename: file.name,
+            contentType: contentType,
           ),
         );
       }
@@ -58,6 +96,7 @@ class HostingerUploadService {
       );
 
       final response = await http.Response.fromStream(streamedResponse);
+      debugPrint('Upload response: ${response.statusCode} ${response.body}');
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
@@ -65,16 +104,15 @@ class HostingerUploadService {
           return data['url'];
         } else {
           final errorMessage = data['error'] ?? 'Unknown API error';
-          throw Exception('Upload Failed: $errorMessage');
+          throw Exception('Upload failed: $errorMessage');
         }
       } else {
         throw Exception(
-          'Server Error (${response.statusCode}): ${response.reasonPhrase}\nBody: ${response.body}',
+          'Server error ${response.statusCode}: ${response.body}',
         );
       }
     } catch (e) {
-      // Log error for debugging
-      print('HostingerUploadService error: $e');
+      debugPrint('HostingerUploadService error: $e');
       rethrow;
     }
   }

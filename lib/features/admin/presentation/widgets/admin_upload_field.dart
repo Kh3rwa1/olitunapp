@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -40,49 +41,93 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
 
       FileType fileType;
       List<String>? allowedExtensions;
+      List<String> validExtensions = [];
 
       switch (widget.uploadType) {
         case AdminUploadType.audio:
           fileType = FileType.audio;
+          validExtensions = ['mp3', 'wav', 'ogg', 'aac', 'm4a'];
           break;
         case AdminUploadType.video:
           fileType = FileType.video;
+          validExtensions = ['mp4', 'webm', 'mov'];
           break;
         case AdminUploadType.lottie:
-          fileType = FileType.custom;
-          allowedExtensions = ['json'];
+          // On web use FileType.any; on native use custom for better UX
+          if (kIsWeb) {
+            fileType = FileType.any;
+          } else {
+            fileType = FileType.custom;
+            allowedExtensions = ['json'];
+          }
+          validExtensions = ['json'];
+          break;
+        case AdminUploadType.lottieOrWebm:
+          // On web use FileType.any; on native use custom for better UX
+          if (kIsWeb) {
+            fileType = FileType.any;
+          } else {
+            fileType = FileType.custom;
+            allowedExtensions = ['json', 'webm', 'webp'];
+          }
+          validExtensions = ['json', 'webm', 'webp'];
           break;
         case AdminUploadType.image:
         default:
           fileType = FileType.image;
+          validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
           break;
       }
 
       final result = await FilePicker.platform.pickFiles(
         withData: true,
         type: fileType,
-        allowedExtensions: allowedExtensions,
+        // CRITICAL: only pass allowedExtensions with FileType.custom
+        allowedExtensions: fileType == FileType.custom
+            ? allowedExtensions
+            : null,
       );
 
       if (result != null && result.files.isNotEmpty) {
+        final pickedFile = result.files.first;
+
+        // Client-side extension validation for FileType.any
+        final ext = pickedFile.name.split('.').last.toLowerCase();
+        if (validExtensions.isNotEmpty && !validExtensions.contains(ext)) {
+          throw Exception(
+            'Invalid file type: .$ext — Allowed: ${validExtensions.map((e) => '.$e').join(', ')}',
+          );
+        }
+
+        if (pickedFile.bytes == null || pickedFile.bytes!.isEmpty) {
+          throw Exception('File data is empty. Please try again.');
+        }
+
         final url = await ref
             .read(supabaseServiceProvider)
-            .uploadMedia(result.files.first, widget.folder);
+            .uploadMedia(pickedFile, widget.folder);
         if (url != null) {
           widget.controller.text = url;
           widget.dialogSetState?.call(() {});
           if (mounted) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(const SnackBar(content: Text('Upload successful!')));
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('✅ Upload successful!'),
+                backgroundColor: Color(0xFF10B981),
+              ),
+            );
           }
         }
       }
     } catch (e) {
       if (mounted) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Upload failed: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('❌ $e'),
+            backgroundColor: Colors.red.shade700,
+            duration: const Duration(seconds: 6),
+          ),
+        );
       }
     } finally {
       if (mounted) {
@@ -224,4 +269,4 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
   }
 }
 
-enum AdminUploadType { image, audio, video, lottie }
+enum AdminUploadType { image, audio, video, lottie, lottieOrWebm }

@@ -277,6 +277,7 @@ class NumberModel {
   final String nameLatin; // Name in Latin: mit (one)
   final String? imageUrl;
   final String? audioUrl;
+  final String? animationUrl;
   final String? pronunciation;
   final int order;
   final bool isActive;
@@ -289,6 +290,7 @@ class NumberModel {
     required this.nameLatin,
     this.imageUrl,
     this.audioUrl,
+    this.animationUrl,
     this.pronunciation,
     this.order = 0,
     this.isActive = true,
@@ -303,6 +305,7 @@ class NumberModel {
       nameLatin: data['nameLatin'] as String? ?? '',
       imageUrl: data['imageUrl'] as String?,
       audioUrl: data['audioUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       pronunciation: data['pronunciation'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
@@ -318,6 +321,7 @@ class NumberModel {
       'nameLatin': nameLatin,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
+      'animationUrl': animationUrl,
       'pronunciation': pronunciation,
       'order': order,
       'isActive': isActive,
@@ -335,6 +339,7 @@ class WordModel {
   final String? category; // greetings, family, etc.
   final String? imageUrl;
   final String? audioUrl;
+  final String? animationUrl;
   final String? pronunciation;
   final int order;
   final bool isActive;
@@ -348,6 +353,7 @@ class WordModel {
     this.category,
     this.imageUrl,
     this.audioUrl,
+    this.animationUrl,
     this.pronunciation,
     this.order = 0,
     this.isActive = true,
@@ -363,6 +369,7 @@ class WordModel {
       category: data['category'] as String?,
       imageUrl: data['imageUrl'] as String?,
       audioUrl: data['audioUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       pronunciation: data['pronunciation'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
@@ -379,6 +386,7 @@ class WordModel {
       'category': category,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
+      'animationUrl': animationUrl,
       'pronunciation': pronunciation,
       'order': order,
       'isActive': isActive,
@@ -707,6 +715,7 @@ class SentenceModel {
   final String? category;
   final String? imageUrl;
   final String? audioUrl;
+  final String? animationUrl;
   final String? pronunciation;
   final int order;
   final bool isActive;
@@ -720,6 +729,7 @@ class SentenceModel {
     this.category,
     this.imageUrl,
     this.audioUrl,
+    this.animationUrl,
     this.pronunciation,
     this.order = 0,
     this.isActive = true,
@@ -735,6 +745,7 @@ class SentenceModel {
       category: data['category'] as String?,
       imageUrl: data['imageUrl'] as String?,
       audioUrl: data['audioUrl'] as String?,
+      animationUrl: data['animationUrl'] as String?,
       pronunciation: data['pronunciation'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
@@ -751,6 +762,7 @@ class SentenceModel {
       'category': category,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
+      'animationUrl': animationUrl,
       'pronunciation': pronunciation,
       'order': order,
       'isActive': isActive,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -76,6 +77,21 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+          ElevatedButton.icon(
+            onPressed: () => context.go('/admin/rhymes/categories'),
+            icon: const Icon(Icons.grid_view_rounded, size: 18),
+            label: const Text('Manage Categories'),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary.withOpacity(0.1),
+              foregroundColor: AppColors.primary,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+                side: BorderSide(color: AppColors.primary.withOpacity(0.2)),
+              ),
             ),
           ),
         ],
@@ -311,7 +327,7 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                       icon: Icons.image_rounded,
                       isDark: isDark,
                       folder: 'rhymes-images',
-                      uploadType: AdminUploadType.image,
+                      uploadType: AdminUploadType.lottieOrWebm,
                       dialogSetState: setDialogState,
                     ),
                     const SizedBox(height: 8),

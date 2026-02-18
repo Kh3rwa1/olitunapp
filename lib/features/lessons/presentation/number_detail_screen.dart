@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/lottie_display.dart';
 
 class NumberDetailScreen extends ConsumerStatefulWidget {
   final String numberId;
@@ -345,7 +346,15 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                       if (mounted) setState(() {});
                     },
                     child:
-                        number.imageUrl != null && number.imageUrl!.isNotEmpty
+                        number.animationUrl != null &&
+                            number.animationUrl!.isNotEmpty
+                        ? LottieDisplay(
+                            url: number.animationUrl!,
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.contain,
+                          )
+                        : number.imageUrl != null && number.imageUrl!.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Image.network(

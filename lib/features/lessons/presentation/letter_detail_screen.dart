@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/lottie_display.dart';
 
 class LetterDetailScreen extends ConsumerStatefulWidget {
   final String letterId;
@@ -368,9 +369,17 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                     onEnd: () {
                       if (mounted) setState(() {});
                     },
-                    // Use imageUrl from database if available, otherwise fallback to emoji
+                    // Use animationUrl first, then imageUrl, otherwise fallback to emoji
                     child:
-                        letter.imageUrl != null && letter.imageUrl!.isNotEmpty
+                        letter.animationUrl != null &&
+                            letter.animationUrl!.isNotEmpty
+                        ? LottieDisplay(
+                            url: letter.animationUrl!,
+                            width: 200,
+                            height: 200,
+                            fit: BoxFit.contain,
+                          )
+                        : letter.imageUrl != null && letter.imageUrl!.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Image.network(

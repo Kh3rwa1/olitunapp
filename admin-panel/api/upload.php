@@ -15,6 +15,12 @@ header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
 
+// Debug logging
+function debugLog($msg) {
+    file_put_contents('debug.log', date('[Y-m-d H:i:s] ') . $msg . "\n", FILE_APPEND);
+}
+debugLog("Request from " . $_SERVER['REMOTE_ADDR'] . " Method: " . $_SERVER['REQUEST_METHOD']);
+
 // Handle preflight
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -64,13 +70,17 @@ $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mimeType = finfo_file($finfo, $file['tmp_name']);
 finfo_close($finfo);
 
-// For Lottie files, also check extension since JSON mime detection can vary
+// For Lottie and WebP/WebM, also check extension since MIME detection can vary
 $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-$isLottie = ($extension === 'json' && ($mimeType === 'application/json' || $mimeType === 'text/plain'));
+$isLottie = ($extension === 'json' && ($mimeType === 'application/json' || $mimeType === 'text/plain' || $mimeType === 'application/octet-stream'));
+$isWebMedia = (($extension === 'webp' || $extension === 'webm') && ($mimeType === 'application/octet-stream' || strpos($mimeType, 'image/') === 0 || strpos($mimeType, 'video/') === 0));
 
-if (!in_array($mimeType, $allowedTypes) && !$isLottie) {
+debugLog("File: " . $file['name'] . " MIME: $mimeType EXT: $extension Lottie: " . ($isLottie ? "YES" : "NO") . " WebMedia: " . ($isWebMedia ? "YES" : "NO"));
+
+if (!in_array($mimeType, $allowedTypes) && !$isLottie && !$isWebMedia) {
+    debugLog("REJECTED: Invalid type $mimeType");
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => "Invalid file type: $mimeType"]);
+    echo json_encode(['success' => false, 'error' => "Invalid file type: $mimeType. Try renaming or using a different browser."]);
     exit();
 }
 
@@ -91,8 +101,9 @@ $targetPath = $targetDir . $filename;
 if (move_uploaded_file($file['tmp_name'], $targetPath)) {
     // Build public URL (adjust base URL as needed)
     $baseUrl = (isset($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'];
-    $publicUrl = $baseUrl . '/audio/' . $folder . '/' . $filename;
+    $publicUrl = $baseUrl . '/admin-panel/audio/' . $folder . '/' . $filename;
     
+    debugLog("SUCCESS: " . $publicUrl);
     echo json_encode([
         'success' => true,
         'url' => $publicUrl,

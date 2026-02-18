@@ -46,7 +46,9 @@ class CategoryCard extends StatelessWidget {
                     gradient: gradient,
                     borderRadius: BorderRadius.circular(14),
                   ),
-                  child: category.animationUrl != null
+                  child:
+                      category.animationUrl != null &&
+                          category.animationUrl!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(14),
                           child: LottieDisplay(
@@ -56,14 +58,24 @@ class CategoryCard extends StatelessWidget {
                             fit: BoxFit.cover,
                           ),
                         )
-                      : category.iconUrl != null
+                      : category.iconUrl != null && category.iconUrl!.isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(14),
-                          child: CachedNetworkImage(
-                            imageUrl: category.iconUrl!,
-                            fit: BoxFit.cover,
-                            errorWidget: (_, __, ___) => _buildDefaultIcon(),
-                          ),
+                          child: _isLottieUrl(category.iconUrl!)
+                              ? LottieDisplay(
+                                  url: category.iconUrl!,
+                                  width: 48,
+                                  height: 48,
+                                  fit: BoxFit.cover,
+                                )
+                              : CachedNetworkImage(
+                                  imageUrl: category.iconUrl!,
+                                  fit: BoxFit.cover,
+                                  width: 48,
+                                  height: 48,
+                                  errorWidget: (_, __, ___) =>
+                                      _buildDefaultIcon(),
+                                ),
                         )
                       : _buildDefaultIcon(),
                 ),
@@ -140,6 +152,12 @@ class CategoryCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  /// Checks if a URL points to a Lottie JSON file
+  bool _isLottieUrl(String url) {
+    final lower = url.toLowerCase().split('?').first;
+    return lower.endsWith('.json');
   }
 
   Widget _buildDefaultIcon() {

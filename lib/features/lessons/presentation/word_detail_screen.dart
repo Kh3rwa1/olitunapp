@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../shared/widgets/lottie_display.dart';
 
 class WordDetailScreen extends ConsumerStatefulWidget {
   final String wordId;
@@ -335,7 +336,16 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                     onEnd: () {
                       if (mounted) setState(() {});
                     },
-                    child: word.imageUrl != null && word.imageUrl!.isNotEmpty
+                    child:
+                        word.animationUrl != null &&
+                            word.animationUrl!.isNotEmpty
+                        ? LottieDisplay(
+                            url: word.animationUrl!,
+                            width: 180,
+                            height: 180,
+                            fit: BoxFit.contain,
+                          )
+                        : word.imageUrl != null && word.imageUrl!.isNotEmpty
                         ? ClipRRect(
                             borderRadius: BorderRadius.circular(20),
                             child: Image.network(

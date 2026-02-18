@@ -31,6 +31,18 @@ final onboardingVideoUrlProvider = Provider<String?>((ref) {
   );
 });
 
+// ============== AUTH STATE ==============
+
+final isAuthenticatedProvider = FutureProvider<bool>((ref) async {
+  try {
+    final authRepo = ref.read(authRepositoryProvider);
+    final token = await authRepo.getToken();
+    return token != null;
+  } catch (_) {
+    return false;
+  }
+});
+
 // ============== USER DATA (Local Storage) ==============
 
 final userNameProvider = StateProvider<String>((ref) {
@@ -314,8 +326,9 @@ class CategoriesNotifier
     if (oldIndex < 0 ||
         oldIndex >= current.length ||
         newIndex < 0 ||
-        newIndex >= current.length)
+        newIndex >= current.length) {
       return;
+    }
 
     final updated = [...current];
     final item = updated.removeAt(oldIndex);
@@ -1430,88 +1443,63 @@ final rhymeCategoriesProvider =
       RhymeCategoriesNotifier,
       AsyncValue<List<RhymeCategoryModel>>
     >((ref) {
-      return RhymeCategoriesNotifier();
+      return RhymeCategoriesNotifier(ref);
     });
 
 class RhymeCategoriesNotifier
     extends StateNotifier<AsyncValue<List<RhymeCategoryModel>>> {
-  RhymeCategoriesNotifier() : super(const AsyncValue.loading()) {
+  RhymeCategoriesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _load();
   }
 
-  void _load() {
+  final Ref ref;
+
+  Future<void> _load() async {
     try {
-      final stored = prefs.getString('rhyme_categories');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        state = AsyncValue.data(
-          decoded.map((e) => RhymeCategoryModel.fromJson(e)).toList(),
-        );
-      } else {
-        final defaults = [
-          RhymeCategoryModel(
-            id: 'rcat_animal',
-            nameOlChiki: 'ᱡᱟᱱᱣᱟᱨ',
-            nameLatin: 'Animal',
-            iconName: 'pets',
-            order: 0,
-          ),
-          RhymeCategoryModel(
-            id: 'rcat_nature',
-            nameOlChiki: 'ᱯᱨᱚᱠᱨᱤᱛᱤ',
-            nameLatin: 'Nature',
-            iconName: 'nature',
-            order: 1,
-          ),
-          RhymeCategoryModel(
-            id: 'rcat_moral',
-            nameOlChiki: 'ᱱᱤᱛᱤ',
-            nameLatin: 'Moral',
-            iconName: 'auto_awesome',
-            order: 2,
-          ),
-          RhymeCategoryModel(
-            id: 'rcat_general',
-            nameOlChiki: 'ᱥᱟᱫᱷᱟᱨᱚᱬ',
-            nameLatin: 'General',
-            iconName: 'child_care',
-            order: 3,
-          ),
-        ];
-        state = AsyncValue.data(defaults);
-        _save(defaults);
-      }
-    } catch (e) {
-      state = AsyncValue.data([]);
+      final api = ref.read(apiServiceProvider);
+      final response = await api.get('/rhyme_categories.php');
+      final List<dynamic> data = response as List<dynamic>;
+      state = AsyncValue.data(
+        data.map((e) => RhymeCategoryModel.fromJson(e)).toList(),
+      );
+    } catch (e, st) {
+      debugPrint('Error loading rhyme categories: $e');
+      debugPrint(st.toString());
+      state = AsyncValue.error(e, st);
     }
   }
 
-  void _save(List<RhymeCategoryModel> items) {
-    prefs.setString(
-      'rhyme_categories',
-      jsonEncode(items.map((e) => e.toJson()).toList()),
-    );
-  }
-
   Future<void> add(RhymeCategoryModel item) async {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/rhyme_categories.php', item.toJson());
+      await _load();
+    } catch (e) {
+      debugPrint('Error adding rhyme category: $e');
+      rethrow;
+    }
   }
 
   Future<void> update(RhymeCategoryModel item) async {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/rhyme_categories.php', item.toJson());
+      await _load();
+    } catch (e) {
+      debugPrint('Error updating rhyme category: $e');
+      rethrow;
+    }
   }
 
   Future<void> delete(String id) async {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/rhyme_categories.php', params: {'id': id});
+      await _load();
+    } catch (e) {
+      debugPrint('Error deleting rhyme category: $e');
+      rethrow;
+    }
   }
 }
 
@@ -1522,176 +1510,63 @@ final rhymeSubcategoriesProvider =
       RhymeSubcategoriesNotifier,
       AsyncValue<List<RhymeSubcategoryModel>>
     >((ref) {
-      return RhymeSubcategoriesNotifier();
+      return RhymeSubcategoriesNotifier(ref);
     });
 
 class RhymeSubcategoriesNotifier
     extends StateNotifier<AsyncValue<List<RhymeSubcategoryModel>>> {
-  RhymeSubcategoriesNotifier() : super(const AsyncValue.loading()) {
+  RhymeSubcategoriesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _load();
   }
 
-  void _load() {
+  final Ref ref;
+
+  Future<void> _load() async {
     try {
-      final stored = prefs.getString('rhyme_subcategories');
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        state = AsyncValue.data(
-          decoded.map((e) => RhymeSubcategoryModel.fromJson(e)).toList(),
-        );
-      } else {
-        final defaults = [
-          // Animal subcategories
-          RhymeSubcategoryModel(
-            id: 'rsub_wild',
-            categoryId: 'rcat_animal',
-            nameOlChiki: 'ᱵᱤᱨ ᱡᱟᱱᱣᱟᱨ',
-            nameLatin: 'Wild Animals',
-            order: 0,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_domestic',
-            categoryId: 'rcat_animal',
-            nameOlChiki: 'ᱜᱷᱚᱨ ᱡᱟᱱᱣᱟᱨ',
-            nameLatin: 'Domestic Animals',
-            order: 1,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_birds',
-            categoryId: 'rcat_animal',
-            nameOlChiki: 'ᱪᱮᱬᱮ',
-            nameLatin: 'Birds',
-            order: 2,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_insects',
-            categoryId: 'rcat_animal',
-            nameOlChiki: 'ᱠᱤᱲᱟ',
-            nameLatin: 'Insects',
-            order: 3,
-          ),
-          // Nature subcategories
-          RhymeSubcategoryModel(
-            id: 'rsub_rivers',
-            categoryId: 'rcat_nature',
-            nameOlChiki: 'ᱜᱟᱰᱟ',
-            nameLatin: 'Rivers & Water',
-            order: 0,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_mountains',
-            categoryId: 'rcat_nature',
-            nameOlChiki: 'ᱵᱩᱨᱩ',
-            nameLatin: 'Mountains & Forest',
-            order: 1,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_weather',
-            categoryId: 'rcat_nature',
-            nameOlChiki: 'ᱦᱚᱭ ᱦᱤᱥᱤᱫ',
-            nameLatin: 'Weather',
-            order: 2,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_flowers',
-            categoryId: 'rcat_nature',
-            nameOlChiki: 'ᱵᱟᱦᱟ',
-            nameLatin: 'Flowers & Plants',
-            order: 3,
-          ),
-          // Moral subcategories
-          RhymeSubcategoryModel(
-            id: 'rsub_honesty',
-            categoryId: 'rcat_moral',
-            nameOlChiki: 'ᱥᱟᱹᱨᱤ',
-            nameLatin: 'Honesty',
-            order: 0,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_kindness',
-            categoryId: 'rcat_moral',
-            nameOlChiki: 'ᱫᱟᱭᱟ',
-            nameLatin: 'Kindness',
-            order: 1,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_courage',
-            categoryId: 'rcat_moral',
-            nameOlChiki: 'ᱵᱤᱨ',
-            nameLatin: 'Courage',
-            order: 2,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_wisdom',
-            categoryId: 'rcat_moral',
-            nameOlChiki: 'ᱜᱤᱭᱟᱱ',
-            nameLatin: 'Wisdom',
-            order: 3,
-          ),
-          // General subcategories
-          RhymeSubcategoryModel(
-            id: 'rsub_lullaby',
-            categoryId: 'rcat_general',
-            nameOlChiki: 'ᱡᱩᱢᱤᱫ ᱥᱮᱨᱮᱧ',
-            nameLatin: 'Lullaby',
-            order: 0,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_festive',
-            categoryId: 'rcat_general',
-            nameOlChiki: 'ᱯᱚᱨᱚᱵ',
-            nameLatin: 'Festive',
-            order: 1,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_counting',
-            categoryId: 'rcat_general',
-            nameOlChiki: 'ᱞᱮᱠᱷᱟ',
-            nameLatin: 'Counting',
-            order: 2,
-          ),
-          RhymeSubcategoryModel(
-            id: 'rsub_play',
-            categoryId: 'rcat_general',
-            nameOlChiki: 'ᱟᱹᱭᱩᱨ',
-            nameLatin: 'Play Songs',
-            order: 3,
-          ),
-        ];
-        state = AsyncValue.data(defaults);
-        _save(defaults);
-      }
-    } catch (e) {
-      state = AsyncValue.data([]);
+      final api = ref.read(apiServiceProvider);
+      final response = await api.get('/rhyme_subcategories.php');
+      final List<dynamic> data = response as List<dynamic>;
+      state = AsyncValue.data(
+        data.map((e) => RhymeSubcategoryModel.fromJson(e)).toList(),
+      );
+    } catch (e, st) {
+      debugPrint('Error loading rhyme subcategories: $e');
+      debugPrint(st.toString());
+      state = AsyncValue.error(e, st);
     }
   }
 
-  void _save(List<RhymeSubcategoryModel> items) {
-    prefs.setString(
-      'rhyme_subcategories',
-      jsonEncode(items.map((e) => e.toJson()).toList()),
-    );
-  }
-
   Future<void> add(RhymeSubcategoryModel item) async {
-    final current = state.value ?? [];
-    final updated = [...current, item];
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.post('/rhyme_subcategories.php', item.toJson());
+      await _load();
+    } catch (e) {
+      debugPrint('Error adding rhyme subcategory: $e');
+      rethrow;
+    }
   }
 
   Future<void> update(RhymeSubcategoryModel item) async {
-    final current = state.value ?? [];
-    final updated = current.map((e) => e.id == item.id ? item : e).toList();
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.put('/rhyme_subcategories.php', item.toJson());
+      await _load();
+    } catch (e) {
+      debugPrint('Error updating rhyme subcategory: $e');
+      rethrow;
+    }
   }
 
   Future<void> delete(String id) async {
-    final current = state.value ?? [];
-    final updated = current.where((e) => e.id != id).toList();
-    _save(updated);
-    state = AsyncValue.data(updated);
+    try {
+      final api = ref.read(apiServiceProvider);
+      await api.delete('/rhyme_subcategories.php', params: {'id': id});
+      await _load();
+    } catch (e) {
+      debugPrint('Error deleting rhyme subcategory: $e');
+      rethrow;
+    }
   }
 }
 

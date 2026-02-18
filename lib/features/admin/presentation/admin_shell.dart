@@ -221,6 +221,14 @@ class _AdminSidebar extends StatelessWidget {
                   isCompact: isCompact,
                 ),
                 _NavItem(
+                  icon: Icons.grid_view_rounded,
+                  label: 'Rhyme Categories',
+                  isSelected: location == '/admin/rhymes/categories',
+                  onTap: () => context.go('/admin/rhymes/categories'),
+                  isCompact: isCompact,
+                  padding: const EdgeInsets.only(left: 16),
+                ),
+                _NavItem(
                   icon: Icons.quiz_rounded,
                   label: 'Quizzes',
                   isSelected: location == '/admin/quizzes',
@@ -332,12 +340,15 @@ class _NavItem extends StatelessWidget {
   final VoidCallback onTap;
   final bool isCompact;
 
+  final EdgeInsets? padding;
+
   const _NavItem({
     required this.icon,
     required this.label,
     required this.isSelected,
     required this.onTap,
     this.isCompact = false,
+    this.padding,
   });
 
   @override
@@ -352,7 +363,9 @@ class _NavItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(12),
           child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            padding:
+                padding ??
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
                   ? AppColors.primary.withOpacity(0.15)

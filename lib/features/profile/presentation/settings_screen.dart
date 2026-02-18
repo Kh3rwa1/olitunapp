@@ -95,6 +95,20 @@ class SettingsScreen extends ConsumerWidget {
           isDestructive: true,
           onTap: () => _showResetDialog(context, ref),
         ),
+
+        const SizedBox(height: 28),
+
+        // Account Section
+        _SectionHeader('Account', isDark),
+        const SizedBox(height: 16),
+        _SettingTile(
+          icon: Icons.delete_forever_rounded,
+          title: 'Delete Account',
+          subtitle: 'Permanently delete your account',
+          isDark: isDark,
+          isDestructive: true,
+          onTap: () => _showDeleteAccountDialog(context, ref),
+        ),
       ],
     );
 
@@ -275,6 +289,90 @@ class SettingsScreen extends ConsumerWidget {
               foregroundColor: Colors.white,
             ),
             child: const Text('Reset'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: Row(
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.15),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: const Icon(
+                Icons.delete_forever_rounded,
+                color: AppColors.error,
+              ),
+            ),
+            const SizedBox(width: 14),
+            const Expanded(child: Text('Delete Account')),
+          ],
+        ),
+        content: const Text(
+          'This will permanently delete your account and all associated data. This action cannot be undone.\n\nYour progress, settings, and personal information will be permanently removed.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () async {
+              HapticFeedback.mediumImpact();
+              try {
+                // Show loading
+                Navigator.pop(context);
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) =>
+                      const Center(child: CircularProgressIndicator()),
+                );
+
+                // Delete account from Stack Auth
+                final authRepo = ref.read(authRepositoryProvider);
+                await authRepo.deleteAccount();
+
+                // Clear all local data
+                await prefs.clear();
+
+                // Navigate to welcome screen
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  context.go('/welcome');
+                }
+              } catch (e) {
+                // Handle error
+                if (context.mounted) {
+                  Navigator.pop(context); // Close loading
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        'Failed to delete account: ${e.toString()}',
+                      ),
+                      backgroundColor: AppColors.error,
+                    ),
+                  );
+                }
+              }
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.error,
+              foregroundColor: Colors.white,
+            ),
+            child: const Text('Delete Permanently'),
           ),
         ],
       ),

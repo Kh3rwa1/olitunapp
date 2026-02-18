@@ -37,9 +37,9 @@ switch($method) {
         }
 
         $query = "INSERT INTO categories 
-                  (id, title_ol_chiki, title_latin, icon_name, icon_url, gradient_preset, order_index, is_active, total_lessons, description) 
+                  (id, title_ol_chiki, title_latin, icon_name, icon_url, lottie_url, gradient_preset, order_index, is_active, total_lessons, description) 
                   VALUES 
-                  (:id, :title_ol_chiki, :title_latin, :icon_name, :icon_url, :gradient_preset, :order_index, :is_active, :total_lessons, :description)";
+                  (:id, :title_ol_chiki, :title_latin, :icon_name, :icon_url, :lottie_url, :gradient_preset, :order_index, :is_active, :total_lessons, :description)";
         
         $stmt = $db->prepare($query);
         
@@ -48,6 +48,7 @@ switch($method) {
         $stmt->bindParam(':title_latin', $data['title_latin']);
         $stmt->bindParam(':icon_name', $data['icon_name']);
         $stmt->bindParam(':icon_url', $data['icon_url']);
+        $stmt->bindParam(':lottie_url', $data['lottie_url']);
         $stmt->bindParam(':gradient_preset', $data['gradient_preset']);
         $stmt->bindParam(':order_index', $data['order_index']);
         $stmt->bindValue(':is_active', getField($data, 'is_active', true) ? 1 : 0, PDO::PARAM_INT);
@@ -74,6 +75,7 @@ switch($method) {
                   title_latin = :title_latin, 
                   icon_name = :icon_name, 
                   icon_url = :icon_url,
+                  lottie_url = :lottie_url,
                   gradient_preset = :gradient_preset, 
                   order_index = :order_index, 
                   is_active = :is_active, 
@@ -88,6 +90,7 @@ switch($method) {
         $stmt->bindParam(':title_latin', $data['title_latin']);
         $stmt->bindParam(':icon_name', $data['icon_name']);
         $stmt->bindParam(':icon_url', $data['icon_url']);
+        $stmt->bindParam(':lottie_url', $data['lottie_url']);
         $stmt->bindParam(':gradient_preset', $data['gradient_preset']);
         $stmt->bindParam(':order_index', $data['order_index']);
         $stmt->bindValue(':is_active', getField($data, 'is_active', true) ? 1 : 0, PDO::PARAM_INT);

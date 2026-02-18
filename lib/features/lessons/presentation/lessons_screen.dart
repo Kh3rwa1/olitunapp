@@ -28,7 +28,7 @@ class LessonsScreen extends ConsumerWidget {
       ),
       body: categories.when(
         data: (data) => ListView.builder(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
           itemCount: data.length,
           itemBuilder: (context, index) {
             final category = data[index];

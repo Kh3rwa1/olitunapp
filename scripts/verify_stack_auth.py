@@ -13,7 +13,7 @@ headers = {
 }
 data = {
     "email": "olitun_test_otp@mailinator.com",
-    "callback_url": "https://olitun.vercel.app/auth/callback"
+    "callback_url": "https://olitun.in/auth/callback"
 }
 
 print(f"Testing OTP Send with Project ID: {project_id}")

@@ -15,6 +15,7 @@ import 'features/admin/presentation/admin_lesson_content_screen.dart';
 import 'features/admin/presentation/admin_quizzes_screen.dart';
 import 'features/admin/presentation/admin_rhymes_screen.dart';
 import 'features/admin/presentation/admin_media_screen.dart';
+import 'features/admin/presentation/admin_rhyme_categories_screen.dart';
 import 'features/admin/presentation/admin_shell.dart';
 import 'features/admin/providers/admin_auth_provider.dart';
 
@@ -98,6 +99,12 @@ final _adminRouter = GoRouter(
           path: '/admin/rhymes',
           redirect: _adminAuthRedirect,
           builder: (context, state) => const AdminRhymesScreen(),
+          routes: [
+            GoRoute(
+              path: 'categories',
+              builder: (context, state) => const AdminRhymeCategoriesScreen(),
+            ),
+          ],
         ),
         GoRoute(
           path: '/admin/media',

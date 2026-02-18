@@ -37,4 +37,9 @@ class AuthRepository {
 
   /// Get stored auth token
   Future<String?> getToken() async => await _stackAuth.token;
+
+  /// Delete current user account permanently
+  Future<void> deleteAccount() async {
+    await _stackAuth.deleteAccount();
+  }
 }

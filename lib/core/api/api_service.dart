@@ -5,7 +5,7 @@ import 'package:flutter/foundation.dart';
 
 /// Configuration for API
 class ApiConfig {
-  static const String baseUrl = 'http://www.olitun.in/admin-panel/api/v1';
+  static const String baseUrl = 'https://olitun.in/admin-panel/api/v1';
 }
 
 /// Centralized API Service for handling HTTP requests

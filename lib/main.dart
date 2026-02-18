@@ -33,6 +33,8 @@ import 'features/auth/presentation/email_auth_screen.dart';
 import 'features/main/presentation/main_shell_screen.dart';
 import 'features/admin/presentation/admin_login_screen.dart';
 import 'features/admin/presentation/admin_rhymes_screen.dart';
+import 'features/admin/presentation/admin_rhyme_categories_screen.dart';
+import 'features/admin/presentation/admin_media_screen.dart';
 import 'features/admin/presentation/admin_settings_screen.dart';
 import 'features/admin/presentation/admin_shell.dart';
 import 'features/admin/providers/admin_auth_provider.dart';
@@ -45,11 +47,16 @@ void main() async {
   await initStorage();
   final prefs = await SharedPreferences.getInstance();
 
+  // Set system UI to edge-to-edge
+  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+
   // Set system UI overlay style
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
+      systemNavigationBarColor: Colors.transparent,
+      systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );
 
@@ -90,10 +97,24 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
+      redirect: (context, state) async {
+        final container = ProviderScope.containerOf(context);
+        final authRepo = container.read(authRepositoryProvider);
+        final token = await authRepo.getToken();
+        if (token == null) return '/welcome';
+        return null;
+      },
       builder: (context, state) => const ProgressScreen(),
     ),
     GoRoute(
       path: '/settings',
+      redirect: (context, state) async {
+        final container = ProviderScope.containerOf(context);
+        final authRepo = container.read(authRepositoryProvider);
+        final token = await authRepo.getToken();
+        if (token == null) return '/welcome';
+        return null;
+      },
       builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(
@@ -211,6 +232,27 @@ final _router = GoRouter(
         GoRoute(
           path: '/admin/rhymes',
           builder: (context, state) => const AdminRhymesScreen(),
+          routes: [
+            GoRoute(
+              path: 'categories',
+              builder: (context, state) => const AdminRhymeCategoriesScreen(),
+            ),
+          ],
+        ),
+        GoRoute(
+          path: '/admin/media',
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.all),
+        ),
+        GoRoute(
+          path: '/admin/audio',
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.audio),
+        ),
+        GoRoute(
+          path: '/admin/video',
+          builder: (context, state) =>
+              const AdminMediaScreen(initialType: MediaType.video),
         ),
         GoRoute(
           path: '/admin/settings',

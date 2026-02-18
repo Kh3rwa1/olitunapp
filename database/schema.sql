@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `title_latin` varchar(255) NOT NULL,
   `icon_name` varchar(50) DEFAULT NULL,
   `icon_url` varchar(255) DEFAULT NULL,
+  `lottie_url` varchar(255) DEFAULT NULL,
   `gradient_preset` varchar(50) DEFAULT 'blue',
   `order_index` int(11) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
@@ -176,6 +177,38 @@ CREATE TABLE IF NOT EXISTS `banners` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+-- --------------------------------------------------------
+--
+-- Table structure for table `rhyme_categories`
+--
+
+CREATE TABLE IF NOT EXISTS `rhyme_categories` (
+  `id` varchar(36) NOT NULL,
+  `name_ol_chiki` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_latin` varchar(255) NOT NULL,
+  `icon_name` varchar(50) DEFAULT 'child_care',
+  `order_index` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
+--
+-- Table structure for table `rhyme_subcategories`
+--
+
+CREATE TABLE IF NOT EXISTS `rhyme_subcategories` (
+  `id` varchar(36) NOT NULL,
+  `category_id` varchar(36) NOT NULL,
+  `name_ol_chiki` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `name_latin` varchar(255) NOT NULL,
+  `order_index` int(11) NOT NULL DEFAULT 0,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`category_id`) REFERENCES `rhyme_categories`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- --------------------------------------------------------
 
 -- --------------------------------------------------------
 
@@ -193,3 +226,29 @@ CREATE TABLE IF NOT EXISTS `app_settings` (
 -- Default settings
 INSERT IGNORE INTO `app_settings` (`setting_key`, `setting_value`) VALUES
 ('onboarding_video_url', NULL);
+
+-- Seed data for Rhyme Categories
+INSERT IGNORE INTO `rhyme_categories` (`id`, `name_ol_chiki`, `name_latin`, `icon_name`, `order_index`) VALUES
+('rcat_animal', 'ᱡᱟᱱᱣᱟᱨ', 'Animal', 'pets', 0),
+('rcat_nature', 'ᱯᱨᱚᱠᱨᱤᱛᱤ', 'Nature', 'nature', 1),
+('rcat_moral', 'ᱱᱤᱛᱤ', 'Moral', 'auto_awesome', 2),
+('rcat_general', 'ᱥᱟᱫᱷᱟᱨᱚᱬ', 'General', 'child_care', 3);
+
+-- Seed data for Rhyme Subcategories
+INSERT IGNORE INTO `rhyme_subcategories` (`id`, `category_id`, `name_ol_chiki`, `name_latin`, `order_index`) VALUES
+('rsub_wild', 'rcat_animal', 'ᱵᱤᱨ ᱡᱟᱱᱣᱟᱨ', 'Wild Animals', 0),
+('rsub_domestic', 'rcat_animal', 'ᱜᱷᱚᱨ ᱡᱟᱱᱣᱟᱨ', 'Domestic Animals', 1),
+('rsub_birds', 'rcat_animal', 'ᱪᱮᱬᱮ', 'Birds', 2),
+('rsub_insects', 'rcat_animal', 'ᱠᱤᱲᱟ', 'Insects', 3),
+('rsub_rivers', 'rcat_nature', 'ᱜᱟᱰᱟ', 'Rivers & Water', 0),
+('rsub_mountains', 'rcat_nature', 'ᱵᱩᱨᱩ', 'Mountains & Forest', 1),
+('rsub_weather', 'rcat_nature', 'ᱦᱚᱭ ᱦᱤᱥᱤᱫ', 'Weather', 2),
+('rsub_flowers', 'rcat_nature', 'ᱵᱟᱦᱟ', 'Flowers & Plants', 3),
+('rsub_honesty', 'rcat_moral', 'ᱥᱟᱹᱨᱤ', 'Honesty', 0),
+('rsub_kindness', 'rcat_moral', 'ᱫᱟᱭᱟ', 'Kindness', 1),
+('rsub_courage', 'rcat_moral', 'ᱵᱤᱨ', 'Courage', 2),
+('rsub_wisdom', 'rcat_moral', 'ᱜᱤᱭᱟᱱ', 'Wisdom', 3),
+('rsub_lullaby', 'rcat_general', 'ᱡᱩᱢᱤᱫ ᱥᱮᱨᱮᱧ', 'Lullaby', 0),
+('rsub_festive', 'rcat_general', 'ᱯᱚᱨᱚᱵ', 'Festive', 1),
+('rsub_counting', 'rcat_general', 'ᱞᱮᱠᱷᱟ', 'Counting', 2),
+('rsub_play', 'rcat_general', 'ᱟᱹᱭᱩᱨ', 'Play Songs', 3);

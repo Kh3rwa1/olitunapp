@@ -279,22 +279,30 @@ class CategoriesNotifier
       final list = (data as List)
           .map((e) => CategoryModel.fromJson(e))
           .toList();
+      debugPrint('✅ _loadCategories: loaded ${list.length} categories');
       state = AsyncValue.data(list);
     } catch (e, st) {
       debugPrint('❌ _loadCategories FAILED: $e');
       debugPrint('Stack: $st');
-      // Fallback to local seed data when API is unreachable
-      state = AsyncValue.data(_seedCategories);
+      // Only use seed data if we don't already have data
+      if (!state.hasValue || state.value!.isEmpty) {
+        state = AsyncValue.data(_seedCategories);
+      }
     }
+  }
+
+  /// Force re-fetch categories from API
+  Future<void> refresh() async {
+    await _loadCategories();
   }
 
   Future<void> add(CategoryModel item) async {
     try {
       final api = ref.read(apiServiceProvider);
       await api.post('/categories.php', item.toJson());
-      await _loadCategories(); // Refresh list
+      await _loadCategories();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add category FAILED: $e');
     }
   }
 
@@ -302,9 +310,10 @@ class CategoriesNotifier
     try {
       final api = ref.read(apiServiceProvider);
       await api.put('/categories.php', item.toJson());
+      debugPrint('✅ Category updated: ${item.id}');
       await _loadCategories();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update category FAILED: $e');
     }
   }
 
@@ -1066,12 +1075,21 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
       final api = ref.read(apiServiceProvider);
       final data = await api.get('/lessons.php');
       final list = (data as List).map((e) => LessonModel.fromJson(e)).toList();
+      debugPrint('✅ _loadLessons: loaded ${list.length} lessons');
       state = AsyncValue.data(list);
     } catch (e, st) {
       debugPrint('❌ _loadLessons FAILED: $e');
       debugPrint('Stack: $st');
-      state = AsyncValue.data(_seedLessons);
+      // Only use seed data if we don't already have data
+      if (!state.hasValue || state.value!.isEmpty) {
+        state = AsyncValue.data(_seedLessons);
+      }
     }
+  }
+
+  /// Force re-fetch lessons from API
+  Future<void> refresh() async {
+    await _loadLessons();
   }
 
   Future<void> add(LessonModel item) async {
@@ -1080,7 +1098,7 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
       await api.post('/lessons.php', item.toJson());
       await _loadLessons();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add lesson FAILED: $e');
     }
   }
 
@@ -1088,9 +1106,10 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
     try {
       final api = ref.read(apiServiceProvider);
       await api.put('/lessons.php', item.toJson());
+      debugPrint('✅ Lesson updated: ${item.id}');
       await _loadLessons();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update lesson FAILED: $e');
     }
   }
 

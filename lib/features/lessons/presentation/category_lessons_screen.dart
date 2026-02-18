@@ -6,15 +6,34 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 
-class CategoryLessonsScreen extends ConsumerWidget {
+class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
 
   const CategoryLessonsScreen({super.key, required this.categoryId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<CategoryLessonsScreen> createState() =>
+      _CategoryLessonsScreenState();
+}
+
+class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Force refresh lessons from API every time this screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(lessonsProvider.notifier).refresh();
+    });
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(lessonsProvider.notifier).refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final categories = ref.watch(categoriesProvider);
-    final lessons = ref.watch(lessonsByCategoryProvider(categoryId));
+    final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
@@ -32,7 +51,7 @@ class CategoryLessonsScreen extends ConsumerWidget {
         title: categories.when(
           data: (data) {
             final category = data.firstWhere(
-              (c) => c.id == categoryId,
+              (c) => c.id == widget.categoryId,
               orElse: () => data.first,
             );
             return Text(
@@ -50,18 +69,23 @@ class CategoryLessonsScreen extends ConsumerWidget {
       body: lessons.when(
         data: (data) => data.isEmpty
             ? _buildEmptyState(isDark)
-            : ListView.builder(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
-                itemCount: data.length,
-                itemBuilder: (context, index) {
-                  final lesson = data[index];
-                  return _LessonCard(
-                    lesson: lesson,
-                    isDark: isDark,
-                    index: index,
-                    onTap: () => context.push('/lesson/${lesson.id}'),
-                  );
-                },
+            : RefreshIndicator(
+                onRefresh: _onRefresh,
+                color: AppColors.primary,
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    final lesson = data[index];
+                    return _LessonCard(
+                      lesson: lesson,
+                      isDark: isDark,
+                      index: index,
+                      onTap: () => context.push('/lesson/${lesson.id}'),
+                    );
+                  },
+                ),
               ),
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(
@@ -92,7 +116,7 @@ class CategoryLessonsScreen extends ConsumerWidget {
               ),
               const SizedBox(height: 20),
               TextButton.icon(
-                onPressed: () => ref.invalidate(lessonsProvider),
+                onPressed: () => ref.read(lessonsProvider.notifier).refresh(),
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Retry'),
                 style: TextButton.styleFrom(foregroundColor: AppColors.primary),

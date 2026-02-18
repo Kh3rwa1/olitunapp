@@ -278,13 +278,20 @@ class LessonDetailScreen extends ConsumerWidget {
   String _getSectionTitle(String categoryId) {
     switch (categoryId) {
       case 'alphabets':
+      case 'cat_alphabet':
+      case 'seed_alphabet':
         return 'Letters to Learn';
       case 'numbers':
+      case 'cat_numbers':
+      case 'seed_numbers':
         return 'Numbers to Learn';
       case 'words':
+      case 'cat_words':
+      case 'seed_words':
         return 'Vocabulary';
       case 'sentences':
-        return 'Sentences to Learn';
+      case 'cat_sentences':
+      case 'seed_sentences':
       case 'phrases':
         return 'Common Phrases';
       default:
@@ -322,10 +329,16 @@ class LessonDetailScreen extends ConsumerWidget {
     // 3. Fallback to provider-based grids
     switch (categoryId) {
       case 'alphabets':
+      case 'cat_alphabet':
+      case 'seed_alphabet':
         return _buildLetterGrid(context, ref, lessonId, isDark);
       case 'numbers':
+      case 'cat_numbers':
+      case 'seed_numbers':
         return _buildNumberGrid(context, ref, lessonId, isDark);
       case 'sentences':
+      case 'cat_sentences':
+      case 'seed_sentences':
         return _buildSentenceList(context, ref, lessonId, isDark);
       default:
         return _buildVocabularyList(context, ref, lessonId, isDark);

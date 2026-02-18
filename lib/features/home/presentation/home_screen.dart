@@ -10,11 +10,31 @@ import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 
-class HomeScreen extends ConsumerWidget {
+class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<HomeScreen> createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends ConsumerState<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Force refresh categories and lessons from API when home opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      ref.read(categoriesProvider.notifier).refresh();
+      ref.read(lessonsProvider.notifier).refresh();
+    });
+  }
+
+  Future<void> _onRefresh() async {
+    await ref.read(categoriesProvider.notifier).refresh();
+    await ref.read(lessonsProvider.notifier).refresh();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final userName = ref.watch(userNameProvider);
     final progressData = ref.watch(progressProvider);
     final streak = progressData.currentStreak;
@@ -42,8 +62,11 @@ class HomeScreen extends ConsumerWidget {
           : isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
-      body: Stack(
-        children: [
+      body: RefreshIndicator(
+        onRefresh: _onRefresh,
+        color: AppColors.primary,
+        child: Stack(
+          children: [
           // Background Mesh/Glow — skip on desktop (shell already provides it)
           if (!isDesktop) ...[
             Positioned.fill(

@@ -280,7 +280,9 @@ class CategoriesNotifier
           .map((e) => CategoryModel.fromJson(e))
           .toList();
       state = AsyncValue.data(list);
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('❌ _loadCategories FAILED: $e');
+      debugPrint('Stack: $st');
       // Fallback to local seed data when API is unreachable
       state = AsyncValue.data(_seedCategories);
     }
@@ -1065,7 +1067,9 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
       final data = await api.get('/lessons.php');
       final list = (data as List).map((e) => LessonModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
-    } catch (e) {
+    } catch (e, st) {
+      debugPrint('❌ _loadLessons FAILED: $e');
+      debugPrint('Stack: $st');
       state = AsyncValue.data(_seedLessons);
     }
   }

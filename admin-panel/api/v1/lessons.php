@@ -36,9 +36,22 @@ switch($method) {
                 $blockStmt->execute();
                 $blocks = $blockStmt->fetchAll(PDO::FETCH_ASSOC);
 
-                // Decode JSON content
+                // Decode JSON content and flatten onto block
                 foreach($blocks as &$block) {
-                    $block['content_json'] = json_decode($block['content_json']);
+                    $decoded = json_decode($block['content_json'], true);
+                    // Unwrap any nesting: {type, contentJson: {textOlChiki...}} -> {textOlChiki...}
+                    if (is_array($decoded)) {
+                        if (isset($decoded['contentJson']) && is_array($decoded['contentJson'])) {
+                            $decoded = $decoded['contentJson'];
+                        }
+                        // Merge content fields directly onto block
+                        foreach ($decoded as $key => $val) {
+                            if ($key !== 'type') {
+                                $block[$key] = $val;
+                            }
+                        }
+                    }
+                    unset($block['content_json']);
                 }
 
                 $lesson['blocks'] = mapRowsToCamel($blocks);
@@ -76,7 +89,18 @@ switch($method) {
                 $blocks = $blockStmt->fetchAll(PDO::FETCH_ASSOC);
 
                 foreach($blocks as &$block) {
-                    $block['content_json'] = json_decode($block['content_json']);
+                    $decoded = json_decode($block['content_json'], true);
+                    if (is_array($decoded)) {
+                        if (isset($decoded['contentJson']) && is_array($decoded['contentJson'])) {
+                            $decoded = $decoded['contentJson'];
+                        }
+                        foreach ($decoded as $key => $val) {
+                            if ($key !== 'type') {
+                                $block[$key] = $val;
+                            }
+                        }
+                    }
+                    unset($block['content_json']);
                 }
 
                 $lesson['blocks'] = mapRowsToCamel($blocks);
@@ -131,7 +155,10 @@ switch($method) {
 
                 foreach($raw['blocks'] as $i => $block) {
                     $blockId = isset($block['id']) ? $block['id'] : uniqid('blk_');
-                    $contentJson = json_encode($block);
+                    // Store only the content payload, not the whole block with type
+                    $contentPayload = isset($block['contentJson']) ? $block['contentJson'] : $block;
+                    unset($contentPayload['type'], $contentPayload['id']);
+                    $contentJson = json_encode($contentPayload);
 
                     $blockStmt->bindParam(':id', $blockId);
                     $blockStmt->bindParam(':lesson_id', $data['id']);
@@ -206,7 +233,9 @@ switch($method) {
 
                 foreach($raw['blocks'] as $i => $block) {
                     $blockId = isset($block['id']) ? $block['id'] : uniqid('blk_');
-                    $contentJson = json_encode($block); 
+                    $contentPayload = isset($block['contentJson']) ? $block['contentJson'] : $block;
+                    unset($contentPayload['type'], $contentPayload['id']);
+                    $contentJson = json_encode($contentPayload);
 
                     $blockStmt->bindParam(':id', $blockId);
                     $blockStmt->bindParam(':lesson_id', $data['id']);

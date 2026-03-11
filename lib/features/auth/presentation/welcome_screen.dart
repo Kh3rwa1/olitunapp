@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/providers.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -259,7 +260,15 @@ class WelcomeScreen extends ConsumerWidget {
   Widget _buildCTAButtons(BuildContext context, bool isDark) {
     return Column(
       children: [
-        // Start Learning Button
+        // Google Sign-In Button
+        _GoogleSignInButton(isDark: isDark)
+            .animate()
+            .fadeIn(delay: 700.ms, duration: 500.ms)
+            .slideY(begin: 0.3),
+
+        const SizedBox(height: 14),
+
+        // Email Sign-In Button
         GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
@@ -281,7 +290,7 @@ class WelcomeScreen extends ConsumerWidget {
             ),
             child: const Center(
               child: Text(
-                'Start Learning',
+                'Continue with Email',
                 style: TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.w800,
@@ -293,34 +302,148 @@ class WelcomeScreen extends ConsumerWidget {
           ),
         ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
 
-        const SizedBox(height: 16),
+        const SizedBox(height: 14),
 
-        // Login link
+        // Guest mode
         GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            context.go('/auth');
+            context.go('/home');
           },
-          child: RichText(
-            text: TextSpan(
-              text: "Already have an account? ",
-              style: TextStyle(
-                color: isDark ? Colors.white38 : Colors.black38,
-                fontSize: 14,
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.grey.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(18),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.06),
               ),
-              children: [
-                TextSpan(
-                  text: "Sign In",
-                  style: TextStyle(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w700,
-                  ),
+            ),
+            child: Center(
+              child: Text(
+                'Continue as Guest',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white54 : Colors.black45,
                 ),
-              ],
+              ),
             ),
           ),
-        ).animate().fadeIn(delay: 1000.ms, duration: 500.ms),
+        ).animate().fadeIn(delay: 900.ms, duration: 500.ms),
       ],
+    );
+  }
+}
+
+class _GoogleSignInButton extends ConsumerStatefulWidget {
+  final bool isDark;
+  const _GoogleSignInButton({required this.isDark});
+
+  @override
+  ConsumerState<_GoogleSignInButton> createState() =>
+      _GoogleSignInButtonState();
+}
+
+class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
+  bool _isLoading = false;
+
+  Future<void> _handleGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    HapticFeedback.lightImpact();
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signInWithGoogle();
+
+      if (mounted) {
+        context.go('/home');
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              'Google sign-in failed: ${e.toString().replaceAll('Exception: ', '')}',
+            ),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: _isLoading ? null : _handleGoogleSignIn,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 16),
+        decoration: BoxDecoration(
+          color: widget.isDark ? Colors.white : Colors.white,
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: widget.isDark
+                ? Colors.white.withValues(alpha: 0.15)
+                : Colors.black.withValues(alpha: 0.1),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: widget.isDark ? 0.3 : 0.08),
+              blurRadius: 15,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (_isLoading)
+              const SizedBox(
+                height: 22,
+                width: 22,
+                child: CircularProgressIndicator(strokeWidth: 2.5),
+              )
+            else ...[
+              // Google "G" icon
+              Container(
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: const Text(
+                  'G',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF4285F4),
+                    height: 1.2,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              const Text(
+                'Continue with Google',
+                style: TextStyle(
+                  fontSize: 17,
+                  fontWeight: FontWeight.w700,
+                  color: Color(0xFF3C4043),
+                  letterSpacing: 0.2,
+                ),
+              ),
+            ],
+          ],
+        ),
+      ),
     );
   }
 }

@@ -42,9 +42,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       // Check authentication status
       final authRepo = ref.read(authRepositoryProvider);
-      final token = await authRepo.getToken();
+      final isLoggedIn = await authRepo.isLoggedIn();
 
-      if (token != null) {
+      if (isLoggedIn) {
         // Sync profile name in background
         syncProfileName(ref).catchError((_) {});
         context.go('/home');

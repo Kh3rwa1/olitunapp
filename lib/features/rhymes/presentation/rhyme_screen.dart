@@ -1,4 +1,6 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -20,9 +22,32 @@ class RhymeScreen extends ConsumerStatefulWidget {
   ConsumerState<RhymeScreen> createState() => _RhymeScreenState();
 }
 
-class _RhymeScreenState extends ConsumerState<RhymeScreen> {
+class _RhymeScreenState extends ConsumerState<RhymeScreen>
+    with TickerProviderStateMixin {
   String? _selectedCategory;
   String? _selectedSubcategory;
+  late final AnimationController _headerPulseController;
+  late final AnimationController _dividerGlowController;
+
+  @override
+  void initState() {
+    super.initState();
+    _headerPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
+    )..repeat(reverse: true);
+    _dividerGlowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 4),
+    )..repeat();
+  }
+
+  @override
+  void dispose() {
+    _headerPulseController.dispose();
+    _dividerGlowController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -72,8 +97,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                                     ),
                                   )
                                   .animate()
-                                  .fadeIn(delay: 100.ms)
-                                  .slideY(begin: 0.5),
+                                  .fadeIn(delay: 100.ms, duration: 600.ms)
+                                  .slideY(begin: 0.5)
+                                  .then()
+                                  .shimmer(
+                                    delay: 1.seconds,
+                                    duration: 1800.ms,
+                                    color: AppColors.primary.withValues(alpha: 0.3),
+                                  ),
                               Text(
                                     'Rhymes',
                                     style: GoogleFonts.fredoka(
@@ -87,33 +118,17 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                                     ),
                                   )
                                   .animate()
-                                  .fadeIn(delay: 200.ms)
-                                  .slideX(begin: -0.1),
+                                  .fadeIn(delay: 200.ms, duration: 600.ms)
+                                  .slideX(begin: -0.15, curve: Curves.easeOutCubic)
+                                  .blurXY(begin: 4, end: 0, duration: 500.ms),
                             ],
                           ),
                           const Spacer(),
-                          // Decorative Icon
-                          Container(
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.1,
-                                  ),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  Icons.music_note_rounded,
-                                  color: AppColors.primary,
-                                  size: 28,
-                                ),
-                              )
-                              .animate(onPlay: (c) => c.repeat(reverse: true))
-                              .scale(
-                                begin: const Offset(1, 1),
-                                end: const Offset(1.1, 1.1),
-                                duration: 2.seconds,
-                              )
-                              .rotate(begin: -0.05, end: 0.05),
+                          // Decorative Icon with layered animations
+                          _AnimatedMusicIcon(
+                            controller: _headerPulseController,
+                            isDark: isDark,
+                          ),
                         ],
                       ),
                       const SizedBox(height: 16),
@@ -123,7 +138,16 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                           fontSize: 16,
                           color: isDark ? Colors.white54 : Colors.black45,
                         ),
-                      ).animate().fadeIn(delay: 400.ms),
+                      )
+                          .animate()
+                          .fadeIn(delay: 400.ms, duration: 800.ms)
+                          .slideY(begin: 0.3, curve: Curves.easeOutCubic)
+                          .then(delay: 500.ms)
+                          .shimmer(
+                            duration: 2.seconds,
+                            color: (isDark ? Colors.white : AppColors.primary)
+                                .withValues(alpha: 0.15),
+                          ),
                     ],
                   ),
                 ),
@@ -270,14 +294,36 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                           letterSpacing: 2.5,
                           color: isDark ? Colors.white24 : Colors.black26,
                         ),
-                      ),
+                      )
+                          .animate()
+                          .fadeIn(delay: 600.ms, duration: 500.ms)
+                          .slideX(begin: -0.2),
                       const SizedBox(width: 12),
                       Expanded(
-                        child: Container(
-                          height: 1,
-                          color: isDark
-                              ? Colors.white10
-                              : Colors.black.withValues(alpha: 0.05),
+                        child: AnimatedBuilder(
+                          animation: _dividerGlowController,
+                          builder: (context, child) {
+                            return Container(
+                              height: 1.5,
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                                    AppColors.primary.withValues(
+                                      alpha: 0.3 + 0.2 * math.sin(_dividerGlowController.value * 2 * math.pi),
+                                    ),
+                                    (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                                  ],
+                                  stops: [
+                                    0,
+                                    (_dividerGlowController.value).clamp(0.1, 0.9),
+                                    1,
+                                  ],
+                                ),
+                                borderRadius: BorderRadius.circular(1),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ],
@@ -334,12 +380,23 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                               ),
                             )
                             .animate()
-                            .fadeIn(delay: (index * 100).ms, duration: 600.ms)
+                            .fadeIn(delay: (index * 120).ms, duration: 700.ms)
                             .scale(
-                              begin: const Offset(0.9, 0.9),
+                              begin: const Offset(0.85, 0.85),
                               curve: Curves.easeOutBack,
+                              delay: (index * 120).ms,
                             )
-                            .slideY(begin: 0.2);
+                            .slideY(
+                              begin: 0.25,
+                              delay: (index * 120).ms,
+                              curve: Curves.easeOutCubic,
+                            )
+                            .rotate(
+                              begin: index.isEven ? -0.02 : 0.02,
+                              end: 0,
+                              delay: (index * 120).ms,
+                              duration: 500.ms,
+                            );
                       }, childCount: gridItems.length),
                     ),
                   );
@@ -430,36 +487,176 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
   }) {
     return Padding(
       padding: const EdgeInsets.only(right: 12),
-      child: GestureDetector(
+      child: _AnimatedFilterChip(
+        label: label,
+        isSelected: isSelected,
         onTap: onTap,
+        isDark: isDark,
+        small: small,
+      ),
+    );
+  }
+}
+
+// --- Animated Music Icon with layered glow rings ---
+class _AnimatedMusicIcon extends StatelessWidget {
+  final AnimationController controller;
+  final bool isDark;
+  const _AnimatedMusicIcon({required this.controller, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, child) {
+        final pulse = 0.8 + 0.2 * math.sin(controller.value * 2 * math.pi);
+        return Stack(
+          alignment: Alignment.center,
+          children: [
+            // Outer glow ring
+            Container(
+              width: 64 * pulse,
+              height: 64 * pulse,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.1 * pulse),
+                  width: 2,
+                ),
+              ),
+            ),
+            // Middle glow ring
+            Container(
+              width: 52 * pulse,
+              height: 52 * pulse,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.15 * pulse),
+                  width: 1.5,
+                ),
+              ),
+            ),
+            // Core icon
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Transform.rotate(
+                angle: math.sin(controller.value * 2 * math.pi) * 0.15,
+                child: Icon(
+                  Icons.music_note_rounded,
+                  color: AppColors.primary,
+                  size: 28,
+                ),
+              ),
+            ),
+          ],
+        );
+      },
+    )
+        .animate()
+        .fadeIn(delay: 300.ms, duration: 600.ms)
+        .scale(begin: const Offset(0.5, 0.5), curve: Curves.easeOutBack);
+  }
+}
+
+// --- Animated Filter Chip with bounce + glow ---
+class _AnimatedFilterChip extends StatefulWidget {
+  final String label;
+  final bool isSelected;
+  final VoidCallback onTap;
+  final bool isDark;
+  final bool small;
+
+  const _AnimatedFilterChip({
+    required this.label,
+    required this.isSelected,
+    required this.onTap,
+    required this.isDark,
+    this.small = false,
+  });
+
+  @override
+  State<_AnimatedFilterChip> createState() => _AnimatedFilterChipState();
+}
+
+class _AnimatedFilterChipState extends State<_AnimatedFilterChip>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _tapController;
+  double _scale = 1.0;
+
+  @override
+  void initState() {
+    super.initState();
+    _tapController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 150),
+      lowerBound: 0.92,
+      upperBound: 1.0,
+      value: 1.0,
+    );
+  }
+
+  @override
+  void dispose() {
+    _tapController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (_) {
+        setState(() => _scale = 0.92);
+        HapticFeedback.selectionClick();
+      },
+      onTapUp: (_) {
+        setState(() => _scale = 1.0);
+        widget.onTap();
+      },
+      onTapCancel: () => setState(() => _scale = 1.0),
+      child: AnimatedScale(
+        scale: _scale,
+        duration: const Duration(milliseconds: 120),
+        curve: Curves.easeOutCubic,
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
+          duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
           padding: EdgeInsets.symmetric(
-            horizontal: small ? 14 : 20,
-            vertical: small ? 8 : 12,
+            horizontal: widget.small ? 14 : 20,
+            vertical: widget.small ? 8 : 12,
           ),
           decoration: BoxDecoration(
-            color: isSelected
+            color: widget.isSelected
                 ? AppColors.primary
-                : (isDark
+                : (widget.isDark
                       ? Colors.white.withValues(alpha: 0.05)
                       : Colors.white),
-            borderRadius: BorderRadius.circular(isSelected ? 16 : 24),
+            borderRadius: BorderRadius.circular(widget.isSelected ? 16 : 24),
             border: Border.all(
-              color: isSelected
+              color: widget.isSelected
                   ? AppColors.primary
-                  : (isDark
+                  : (widget.isDark
                         ? Colors.white.withValues(alpha: 0.1)
                         : Colors.black.withValues(alpha: 0.06)),
               width: 1.5,
             ),
-            boxShadow: isSelected
+            boxShadow: widget.isSelected
                 ? [
                     BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      blurRadius: 15,
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 20,
                       offset: const Offset(0, 8),
+                      spreadRadius: -2,
+                    ),
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      blurRadius: 40,
+                      offset: const Offset(0, 16),
+                      spreadRadius: -4,
                     ),
                   ]
                 : [
@@ -470,15 +667,16 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen> {
                     ),
                   ],
           ),
-          child: Text(
-            label,
+          child: AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 300),
             style: GoogleFonts.fredoka(
-              fontSize: small ? 12 : 14,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-              color: isSelected
+              fontSize: widget.small ? 12 : 14,
+              fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
+              color: widget.isSelected
                   ? Colors.white
-                  : (isDark ? Colors.white60 : Colors.black54),
+                  : (widget.isDark ? Colors.white60 : Colors.black54),
             ),
+            child: Text(widget.label),
           ),
         ),
       ),
@@ -494,8 +692,25 @@ class _FeaturedRhymeCard extends StatefulWidget {
   State<_FeaturedRhymeCard> createState() => _FeaturedRhymeCardState();
 }
 
-class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard> {
+class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard>
+    with SingleTickerProviderStateMixin {
   bool _isPlaying = false;
+  late final AnimationController _playPulseController;
+
+  @override
+  void initState() {
+    super.initState();
+    _playPulseController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    );
+  }
+
+  @override
+  void dispose() {
+    _playPulseController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -554,36 +769,26 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard> {
                         _buildBadge(
                           'FEATURED',
                           Colors.white.withValues(alpha: 0.2),
-                        ),
+                        )
+                            .animate()
+                            .fadeIn(delay: 200.ms, duration: 400.ms)
+                            .slideX(begin: -0.3)
+                            .scale(begin: const Offset(0.8, 0.8)),
                         if (widget.rhyme.subcategory != null) ...[
                           const SizedBox(width: 8),
                           _buildBadge(
                             widget.rhyme.subcategory?.toUpperCase() ?? '',
                             Colors.white.withValues(alpha: 0.1),
-                          ),
+                          )
+                              .animate()
+                              .fadeIn(delay: 400.ms, duration: 400.ms)
+                              .slideX(begin: -0.3)
+                              .scale(begin: const Offset(0.8, 0.8)),
                         ],
                         const Spacer(),
-                        Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.1),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Icon(
-                                _isPlaying
-                                    ? Icons.graphic_eq_rounded
-                                    : Icons.music_note_rounded,
-                                color: Colors.white70,
-                                size: 20,
-                              ),
-                            )
-                            .animate(target: _isPlaying ? 1 : 0)
-                            .scale(
-                              begin: const Offset(1, 1),
-                              end: const Offset(1.2, 1.2),
-                            )
-                            .then()
-                            .shake(),
+                        _PlayingIndicator(
+                          isPlaying: _isPlaying,
+                        ),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -596,7 +801,10 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard> {
                         letterSpacing: -1,
                         height: 1,
                       ),
-                    ),
+                    )
+                        .animate()
+                        .fadeIn(delay: 300.ms, duration: 500.ms)
+                        .slideX(begin: -0.08, curve: Curves.easeOutCubic),
                     const SizedBox(height: 4),
                     Text(
                       widget.rhyme.titleOlChiki,
@@ -606,18 +814,41 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard> {
                         color: Colors.white70,
                         fontFamily: 'OlChiki',
                       ),
-                    ),
+                    )
+                        .animate()
+                        .fadeIn(delay: 450.ms, duration: 500.ms)
+                        .slideX(begin: -0.06, curve: Curves.easeOutCubic),
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
-                          onPressed: () =>
-                              setState(() => _isPlaying = !_isPlaying),
-                          icon: Icon(
-                            _isPlaying
-                                ? Icons.stop_rounded
-                                : Icons.play_arrow_rounded,
-                            color: color,
+                          onPressed: () {
+                            HapticFeedback.mediumImpact();
+                            _playPulseController.forward(from: 0);
+                            setState(() => _isPlaying = !_isPlaying);
+                          },
+                          icon: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, anim) =>
+                                RotationTransition(
+                              turns: Tween(begin: 0.75, end: 1.0).animate(anim),
+                              child: ScaleTransition(scale: anim, child: child),
+                            ),
+                            child: Icon(
+                              _isPlaying
+                                  ? Icons.stop_rounded
+                                  : Icons.play_arrow_rounded,
+                              key: ValueKey(_isPlaying),
+                              color: color,
+                            ),
                           ),
-                          label: Text(_isPlaying ? 'PAUSE' : 'LISTEN NOW'),
+                          label: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 250),
+                            transitionBuilder: (child, anim) =>
+                                FadeTransition(opacity: anim, child: child),
+                            child: Text(
+                              _isPlaying ? 'PAUSE' : 'LISTEN NOW',
+                              key: ValueKey(_isPlaying),
+                            ),
+                          ),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
                             foregroundColor: color,
@@ -637,6 +868,12 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard> {
                           begin: const Offset(1, 1),
                           end: const Offset(1.03, 1.03),
                           duration: 2.seconds,
+                        )
+                        .then()
+                        .shimmer(
+                          delay: 3.seconds,
+                          duration: 1500.ms,
+                          color: Colors.white.withValues(alpha: 0.15),
                         ),
                   ],
                 ),
@@ -678,8 +915,25 @@ class _BentoRhymeCard extends StatefulWidget {
   State<_BentoRhymeCard> createState() => _BentoRhymeCardState();
 }
 
-class _BentoRhymeCardState extends State<_BentoRhymeCard> {
+class _BentoRhymeCardState extends State<_BentoRhymeCard>
+    with SingleTickerProviderStateMixin {
   bool _isPlaying = false;
+  late final AnimationController _iconBounceController;
+
+  @override
+  void initState() {
+    super.initState();
+    _iconBounceController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 600),
+    );
+  }
+
+  @override
+  void dispose() {
+    _iconBounceController.dispose();
+    super.dispose();
+  }
 
   final List<Color> _palette = [
     AppColors.duoBlue,
@@ -726,27 +980,57 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        _getIconForCategory(widget.rhyme.category),
-                        color: color,
-                        size: 16,
-                      ),
-                    ),
-                    IconButton(
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: () => setState(() => _isPlaying = !_isPlaying),
-                      icon: Icon(
-                        _isPlaying
-                            ? Icons.pause_circle_filled_rounded
-                            : Icons.play_circle_fill_rounded,
-                        color: color,
-                        size: 28,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Icon(
+                            _getIconForCategory(widget.rhyme.category),
+                            color: color,
+                            size: 16,
+                          ),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .rotate(
+                          begin: -0.03,
+                          end: 0.03,
+                          duration: 3.seconds,
+                          curve: Curves.easeInOutSine,
+                        ),
+                    GestureDetector(
+                      onTap: () {
+                        HapticFeedback.lightImpact();
+                        _iconBounceController.forward(from: 0);
+                        setState(() => _isPlaying = !_isPlaying);
+                      },
+                      child: AnimatedBuilder(
+                        animation: _iconBounceController,
+                        builder: (context, child) {
+                          final bounce = 1.0 +
+                              0.2 *
+                                  math.sin(_iconBounceController.value * math.pi) *
+                                  (1 - _iconBounceController.value);
+                          return Transform.scale(
+                            scale: bounce,
+                            child: child,
+                          );
+                        },
+                        child: AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 300),
+                          transitionBuilder: (child, anim) => ScaleTransition(
+                            scale: anim,
+                            child: child,
+                          ),
+                          child: Icon(
+                            _isPlaying
+                                ? Icons.pause_circle_filled_rounded
+                                : Icons.play_circle_fill_rounded,
+                            key: ValueKey(_isPlaying),
+                            color: color,
+                            size: 28,
+                          ),
+                        ),
                       ),
                     ),
                   ],
@@ -763,7 +1047,10 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard> {
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                  ),
+                  )
+                      .animate()
+                      .fadeIn(delay: 200.ms, duration: 400.ms)
+                      .slideX(begin: 0.15),
                 const SizedBox(height: 4),
                 Text(
                   widget.rhyme.titleLatin,
@@ -775,7 +1062,10 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard> {
                   ),
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                ),
+                )
+                    .animate()
+                    .fadeIn(delay: 300.ms, duration: 500.ms)
+                    .slideY(begin: 0.15, curve: Curves.easeOutCubic),
                 const SizedBox(height: 2),
                 Text(
                   widget.rhyme.titleOlChiki,
@@ -787,7 +1077,10 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard> {
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
-                ),
+                )
+                    .animate()
+                    .fadeIn(delay: 450.ms, duration: 500.ms)
+                    .slideY(begin: 0.10, curve: Curves.easeOutCubic),
               ],
             ),
           ),
@@ -807,5 +1100,115 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard> {
       default:
         return Icons.child_care_rounded;
     }
+  }
+}
+
+// --- Playing indicator with animated equalizer bars ---
+class _PlayingIndicator extends StatefulWidget {
+  final bool isPlaying;
+  const _PlayingIndicator({required this.isPlaying});
+
+  @override
+  State<_PlayingIndicator> createState() => _PlayingIndicatorState();
+}
+
+class _PlayingIndicatorState extends State<_PlayingIndicator>
+    with TickerProviderStateMixin {
+  late final List<AnimationController> _barControllers;
+  final _barCount = 3;
+
+  @override
+  void initState() {
+    super.initState();
+    _barControllers = List.generate(_barCount, (i) {
+      return AnimationController(
+        vsync: this,
+        duration: Duration(milliseconds: 400 + i * 150),
+      );
+    });
+    if (widget.isPlaying) _startBars();
+  }
+
+  @override
+  void didUpdateWidget(_PlayingIndicator old) {
+    super.didUpdateWidget(old);
+    if (widget.isPlaying != old.isPlaying) {
+      widget.isPlaying ? _startBars() : _stopBars();
+    }
+  }
+
+  void _startBars() {
+    for (final c in _barControllers) {
+      c.repeat(reverse: true);
+    }
+  }
+
+  void _stopBars() {
+    for (final c in _barControllers) {
+      c.animateTo(0.2, duration: const Duration(milliseconds: 300));
+    }
+  }
+
+  @override
+  void dispose() {
+    for (final c in _barControllers) {
+      c.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 350),
+      transitionBuilder: (child, anim) => ScaleTransition(
+        scale: anim,
+        child: FadeTransition(opacity: anim, child: child),
+      ),
+      child: widget.isPlaying
+          ? Container(
+              key: const ValueKey('equalizer'),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.15),
+                shape: BoxShape.circle,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: List.generate(_barCount, (i) {
+                  return AnimatedBuilder(
+                    animation: _barControllers[i],
+                    builder: (context, child) {
+                      return Container(
+                        width: 3,
+                        height: 6 + _barControllers[i].value * 10,
+                        margin: const EdgeInsets.symmetric(horizontal: 1),
+                        decoration: BoxDecoration(
+                          color: Colors.white70,
+                          borderRadius: BorderRadius.circular(2),
+                        ),
+                      );
+                    },
+                  );
+                }),
+              ),
+            )
+          : Container(
+              key: const ValueKey('note'),
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.music_note_rounded,
+                color: Colors.white70,
+                size: 20,
+              ),
+            )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .rotate(begin: -0.05, end: 0.05, duration: 2.seconds),
+    );
   }
 }

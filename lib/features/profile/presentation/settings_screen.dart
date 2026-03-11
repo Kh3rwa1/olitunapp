@@ -341,7 +341,7 @@ class SettingsScreen extends ConsumerWidget {
                       const Center(child: CircularProgressIndicator()),
                 );
 
-                // Delete account from Stack Auth
+                // Delete account from Appwrite
                 final authRepo = ref.read(authRepositoryProvider);
                 await authRepo.deleteAccount();
 

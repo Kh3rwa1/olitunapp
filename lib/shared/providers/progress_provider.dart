@@ -338,7 +338,7 @@ class ProgressNotifier extends StateNotifier<UserProgressData> {
   Future<void> syncWithCloud() async {
     if (_authRepository == null) return;
     try {
-      await _authRepository.updateMetadata(state.toJson());
+      await _authRepository.updatePrefs(state.toJson());
       print('Progress synced to cloud');
     } catch (e) {
       print('Cloud sync failed: $e');

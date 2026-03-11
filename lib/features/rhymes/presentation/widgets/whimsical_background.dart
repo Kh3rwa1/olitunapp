@@ -43,7 +43,7 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
               colors: isDark
                   ? [
                       const Color(0xFF0F172A),
-                      const Color(0xFF1E1B4B), // Custom indigo-dark
+                      const Color(0xFF1E1B4B),
                     ]
                   : [const Color(0xFFF8FAFC), const Color(0xFFEFF6FF)],
             ),
@@ -64,7 +64,21 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
           },
         ),
 
-        // Subtle Grid Overlay (Optimized with CustomPaint)
+        // Floating Musical Notes
+        AnimatedBuilder(
+          animation: _controller,
+          builder: (context, child) {
+            return CustomPaint(
+              size: Size.infinite,
+              painter: _FloatingNotesPainter(
+                animationValue: _controller.value,
+                isDark: isDark,
+              ),
+            );
+          },
+        ),
+
+        // Subtle Grid Overlay
         if (!isDark)
           Positioned.fill(
             child: Opacity(
@@ -135,6 +149,55 @@ class _BlobPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant _BlobPainter oldDelegate) => true;
+}
+
+class _FloatingNotesPainter extends CustomPainter {
+  final double animationValue;
+  final bool isDark;
+
+  _FloatingNotesPainter({required this.animationValue, required this.isDark});
+
+  static const _notes = ['♪', '♫', '♬', '✦', '♩'];
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final textPainter = TextPainter(textDirection: TextDirection.ltr);
+
+    for (int i = 0; i < 8; i++) {
+      final seed = i * 137.5;
+      final speed = 0.3 + (i % 3) * 0.15;
+      final rawY = (1.0 - ((animationValue * speed + seed / 360) % 1.0));
+      final y = rawY * size.height * 1.2 - size.height * 0.1;
+      final swayAmplitude = 20.0 + i * 8;
+      final x = (size.width * ((seed % 100) / 100)) +
+          math.sin((animationValue + seed / 100) * 2 * math.pi) * swayAmplitude;
+
+      final distFromCenter = (rawY - 0.5).abs();
+      final opacity = (0.5 - distFromCenter).clamp(0.0, 0.35);
+
+      textPainter.text = TextSpan(
+        text: _notes[i % _notes.length],
+        style: TextStyle(
+          fontSize: 14 + (i % 4) * 4,
+          color: (isDark
+                  ? const Color(0xFF818CF8)
+                  : const Color(0xFF6366F1))
+              .withValues(alpha: opacity),
+        ),
+      );
+      textPainter.layout();
+
+      canvas.save();
+      canvas.translate(x, y);
+      canvas.rotate(
+          math.sin((animationValue + seed / 200) * 2 * math.pi) * 0.25);
+      textPainter.paint(canvas, Offset.zero);
+      canvas.restore();
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant _FloatingNotesPainter oldDelegate) => true;
 }
 
 class _GridPainter extends CustomPainter {

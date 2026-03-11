@@ -9,6 +9,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/storage/supabase_service.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/api/ai_service.dart';
 
 class AdminLettersScreen extends ConsumerWidget {
   const AdminLettersScreen({super.key});
@@ -297,6 +298,8 @@ class AdminLettersScreen extends ConsumerWidget {
     bool isUploading = false;
     bool isUploadingImage = false;
     bool isUploadingAnimation = false;
+    bool isTranslatingRoman = false;
+    bool isTranslatingPronunciation = false;
 
     showModalBottomSheet(
       context: context,
@@ -427,18 +430,133 @@ class AdminLettersScreen extends ConsumerWidget {
                             isDark: isDark,
                           ),
                           const SizedBox(height: 20),
-                          _buildTextField(
-                            controller: romanController,
-                            label: 'Romanization',
-                            hint: 'e.g., a',
-                            isDark: isDark,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  controller: romanController,
+                                  label: 'Romanization',
+                                  hint: 'e.g., a',
+                                  isDark: isDark,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              StatefulBuilder(
+                                builder: (context, setBtnState) {
+                                  return IconButton.filledTonal(
+                                    onPressed: isTranslatingRoman
+                                        ? null
+                                        : () async {
+                                            if (charController.text
+                                                .trim()
+                                                .isEmpty) {
+                                              return;
+                                            }
+                                            setBtnState(
+                                              () => isTranslatingRoman = true,
+                                            );
+                                            try {
+                                              final result = await ref
+                                                  .read(aiServiceProvider)
+                                                  .translateFromOlChiki(
+                                                    charController.text.trim(),
+                                                    to: 'en',
+                                                  );
+                                              if (result != null) {
+                                                romanController.text = result
+                                                    .translation
+                                                    .toLowerCase();
+                                              }
+                                            } finally {
+                                              setBtnState(
+                                                () =>
+                                                    isTranslatingRoman = false,
+                                              );
+                                            }
+                                          },
+                                    icon: isTranslatingRoman
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.auto_awesome_rounded,
+                                            size: 20,
+                                          ),
+                                    tooltip: 'Magic Fill (Romanization)',
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 20),
-                          _buildTextField(
-                            controller: pronunciationController,
-                            label: 'Pronunciation (optional)',
-                            hint: 'e.g., like "a" in "about"',
-                            isDark: isDark,
+                          Row(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              Expanded(
+                                child: _buildTextField(
+                                  controller: pronunciationController,
+                                  label: 'Pronunciation (optional)',
+                                  hint: 'e.g., like "a" in "about"',
+                                  isDark: isDark,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              StatefulBuilder(
+                                builder: (context, setBtnState) {
+                                  return IconButton.filledTonal(
+                                    onPressed: isTranslatingPronunciation
+                                        ? null
+                                        : () async {
+                                            if (charController.text
+                                                .trim()
+                                                .isEmpty) {
+                                              return;
+                                            }
+                                            setBtnState(
+                                              () => isTranslatingPronunciation =
+                                                  true,
+                                            );
+                                            try {
+                                              final result = await ref
+                                                  .read(aiServiceProvider)
+                                                  .translateFromOlChiki(
+                                                    charController.text.trim(),
+                                                    to: 'en',
+                                                  );
+                                              if (result != null) {
+                                                pronunciationController.text =
+                                                    'like "${result.translation}" in ...';
+                                              }
+                                            } finally {
+                                              setBtnState(
+                                                () =>
+                                                    isTranslatingPronunciation =
+                                                        false,
+                                              );
+                                            }
+                                          },
+                                    icon: isTranslatingPronunciation
+                                        ? const SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2,
+                                            ),
+                                          )
+                                        : const Icon(
+                                            Icons.auto_awesome_rounded,
+                                            size: 20,
+                                          ),
+                                    tooltip: 'Magic Fill (Pronunciation)',
+                                  );
+                                },
+                              ),
+                            ],
                           ),
                           const SizedBox(height: 24),
                           Text(

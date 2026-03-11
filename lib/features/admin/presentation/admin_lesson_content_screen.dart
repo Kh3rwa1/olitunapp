@@ -430,6 +430,7 @@ class _AdminLessonContentScreenState
 
     final olChikiCtrl = TextEditingController(text: block.textOlChiki ?? '');
     final latinCtrl = TextEditingController(text: block.textLatin ?? '');
+    bool isTranslating = false;
     final imageCtrl = TextEditingController(text: block.imageUrl ?? '');
     final audioCtrl = TextEditingController(text: block.audioUrl ?? '');
     final animationCtrl = TextEditingController(text: block.animationUrl ?? '');
@@ -480,12 +481,62 @@ class _AdminLessonContentScreenState
                         maxLines: 3,
                       ),
                       const SizedBox(height: 16),
-                      _buildTextField(
-                        latinCtrl,
-                        'Latin Text / Meaning',
-                        'Enter translation',
-                        isDark,
-                        maxLines: 3,
+                      Row(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          Expanded(
+                            child: _buildTextField(
+                              latinCtrl,
+                              'Latin Text / Meaning',
+                              'Enter translation',
+                              isDark,
+                              maxLines: 3,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          StatefulBuilder(
+                            builder: (context, setBtnState) {
+                              return IconButton.filledTonal(
+                                onPressed: isTranslating
+                                    ? null
+                                    : () async {
+                                        if (olChikiCtrl.text.trim().isEmpty) {
+                                          return;
+                                        }
+                                        setBtnState(() => isTranslating = true);
+                                        try {
+                                          final result = await ref
+                                              .read(aiServiceProvider)
+                                              .translateFromOlChiki(
+                                                olChikiCtrl.text.trim(),
+                                                to: 'en',
+                                              );
+                                          if (result != null) {
+                                            latinCtrl.text = result.translation;
+                                          }
+                                        } finally {
+                                          setBtnState(
+                                            () => isTranslating = false,
+                                          );
+                                        }
+                                      },
+                                icon: isTranslating
+                                    ? const SizedBox(
+                                        width: 20,
+                                        height: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                        ),
+                                      )
+                                    : const Icon(
+                                        Icons.auto_awesome_rounded,
+                                        size: 20,
+                                      ),
+                                tooltip: 'Magic Fill (AI Translate)',
+                              );
+                            },
+                          ),
+                        ],
                       ),
                     ],
                     if (block.type == 'image') ...[

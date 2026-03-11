@@ -1,7 +1,7 @@
 name: itun
 description: Olitun - Premium Ol Chiki (Santali Script) Learning App
 publish_to: 'none'
-version: 1.0.4+10
+version: 1.0.5+11
 
 environment:
   sdk: ^3.9.0
@@ -37,6 +37,9 @@ dependencies:
   lottie: ^3.3.1
 
 
+  # Auth
+  appwrite: ^13.0.0
+
   # Utils
   uuid: ^4.5.1
   intl: ^0.20.2
@@ -48,9 +51,11 @@ dependencies:
 
   # Icons
   cupertino_icons: ^1.0.8
-  supabase_flutter: ^2.12.0
+
   path_provider: ^2.1.5
   flutter_secure_storage: ^9.2.2
+  record: ^6.2.0
+  permission_handler: ^12.0.1
 
 dev_dependencies:
   flutter_test:

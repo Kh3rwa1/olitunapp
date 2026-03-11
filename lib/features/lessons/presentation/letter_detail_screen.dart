@@ -244,32 +244,18 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               ),
             ],
           ),
-          floatingActionButton: Container(
-            margin: const EdgeInsets.only(left: 32, right: 32, bottom: 80),
-            width: double.infinity,
-            child: FloatingActionButton.extended(
-              onPressed: () {
-                HapticFeedback.heavyImpact();
-                context.push(
-                  '/practice/${currentLetter.charOlChiki}/${currentLetter.transliterationLatin}',
-                );
-              },
-              backgroundColor: accentColor,
-              elevation: 4,
-              label: const Text(
-                'PRACTICE WRITING',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
-            ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              context.push(
+                '/practice/${currentLetter.charOlChiki}/${currentLetter.transliterationLatin}',
+              );
+            },
+            backgroundColor: accentColor,
+            elevation: 4,
+            child: const Icon(Icons.edit_note_rounded, color: Colors.white),
           ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
       },
     );

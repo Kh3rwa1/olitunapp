@@ -2,9 +2,10 @@
 *.class
 *.log
 *.pyc
-build_log*.txt
 *.swp
 .DS_Store
+*.txt
+.atom/
 .atom/
 .build/
 .buildlog/

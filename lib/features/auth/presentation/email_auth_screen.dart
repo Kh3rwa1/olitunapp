@@ -21,6 +21,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
   bool _codeSent = false;
   String? _errorMessage;
   String? _successMessage;
+  String? _userId; // Appwrite userId from createEmailToken
 
   // Resend timer
   int _resendCooldown = 0;
@@ -60,7 +61,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.sendOtp(email);
+      final token = await authRepo.sendOtp(email);
+      _userId = token.userId;
 
       setState(() {
         _isLoading = false;
@@ -83,6 +85,11 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
       return;
     }
 
+    if (_userId == null) {
+      setState(() => _errorMessage = 'Session expired. Please resend the code.');
+      return;
+    }
+
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -90,13 +97,13 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.verifyOtp(code);
+      await authRepo.verifyOtp(userId: _userId!, secret: code);
 
-      // Try to fetch user profile
+      // Try to fetch user profile and sync name
       try {
-        final profile = await authRepo.getMe();
-        if (profile['display_name'] != null) {
-          await updateUserName(ref, profile['display_name']);
+        final user = await authRepo.getMe();
+        if (user.name.isNotEmpty) {
+          await updateUserName(ref, user.name);
         }
       } catch (_) {}
 

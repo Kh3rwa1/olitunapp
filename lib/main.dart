@@ -31,6 +31,7 @@ import 'features/onboarding/providers/onboarding_provider.dart';
 import 'features/auth/presentation/welcome_screen.dart';
 import 'features/auth/presentation/email_auth_screen.dart';
 import 'features/main/presentation/main_shell_screen.dart';
+import 'features/home/presentation/screens/ai_translator_screen.dart';
 import 'features/admin/presentation/admin_login_screen.dart';
 import 'features/admin/presentation/admin_rhymes_screen.dart';
 import 'features/admin/presentation/admin_rhyme_categories_screen.dart';
@@ -100,8 +101,8 @@ final _router = GoRouter(
       redirect: (context, state) async {
         final container = ProviderScope.containerOf(context);
         final authRepo = container.read(authRepositoryProvider);
-        final token = await authRepo.getToken();
-        if (token == null) return '/welcome';
+        final isLoggedIn = await authRepo.isLoggedIn();
+        if (!isLoggedIn) return '/welcome';
         return null;
       },
       builder: (context, state) => const ProgressScreen(),
@@ -111,8 +112,8 @@ final _router = GoRouter(
       redirect: (context, state) async {
         final container = ProviderScope.containerOf(context);
         final authRepo = container.read(authRepositoryProvider);
-        final token = await authRepo.getToken();
-        if (token == null) return '/welcome';
+        final isLoggedIn = await authRepo.isLoggedIn();
+        if (!isLoggedIn) return '/welcome';
         return null;
       },
       builder: (context, state) => const SettingsScreen(),
@@ -182,6 +183,10 @@ final _router = GoRouter(
     GoRoute(
       path: '/quizzes',
       builder: (context, state) => const QuizListScreen(),
+    ),
+    GoRoute(
+      path: '/translate',
+      builder: (context, state) => const AiTranslatorScreen(),
     ),
     GoRoute(
       path: '/quiz/:quizId',

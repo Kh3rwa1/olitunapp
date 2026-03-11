@@ -1,45 +1,61 @@
-import '../../../core/auth/stack_auth_service.dart';
+import 'package:appwrite/models.dart' as models;
+import '../../core/auth/appwrite_auth_service.dart';
 
 class AuthRepository {
-  final StackAuthService _stackAuth;
+  final AppwriteAuthService _appwrite;
 
-  AuthRepository(this._stackAuth);
+  AuthRepository(this._appwrite);
 
-  /// Send OTP code to user's email
-  Future<void> sendOtp(String email) async {
-    await _stackAuth.sendOtpCode(email);
+  /// Send OTP code to user's email. Returns token with userId.
+  Future<models.Token> sendOtp(String email) async {
+    return await _appwrite.sendOtpCode(email);
   }
 
-  /// Verify OTP code and authenticate user
-  Future<Map<String, dynamic>> verifyOtp(String code) async {
-    return await _stackAuth.verifyOtp(code);
+  /// Verify OTP code and create session
+  Future<models.Session> verifyOtp({
+    required String userId,
+    required String secret,
+  }) async {
+    return await _appwrite.verifyOtp(userId: userId, secret: secret);
   }
 
-  /// Sign out and clear tokens
-  Future<void> signOut() async {
-    await _stackAuth.signOut();
+  /// Sign in with Google OAuth2
+  Future<void> signInWithGoogle() async {
+    await _appwrite.signInWithGoogle();
+  }
+
+  /// Check if user is logged in
+  Future<bool> isLoggedIn() async {
+    return await _appwrite.isLoggedIn();
   }
 
   /// Get current user profile
-  Future<Map<String, dynamic>> getMe() async {
-    return await _stackAuth.getMe();
+  Future<models.User> getMe() async {
+    return await _appwrite.getMe();
   }
 
-  /// Update user metadata (for progress sync)
-  Future<void> updateMetadata(Map<String, dynamic> metadata) async {
-    await _stackAuth.updateMetadata(metadata);
-  }
-
-  /// Update user profile name
+  /// Update user display name
   Future<void> updateDisplayName(String name) async {
-    await _stackAuth.updateProfile({'display_name': name});
+    await _appwrite.updateName(name);
   }
 
-  /// Get stored auth token
-  Future<String?> getToken() async => await _stackAuth.token;
+  /// Update user preferences (for progress sync)
+  Future<void> updatePrefs(Map<String, dynamic> prefs) async {
+    await _appwrite.updatePrefs(prefs);
+  }
+
+  /// Get user preferences
+  Future<models.Preferences> getPrefs() async {
+    return await _appwrite.getPrefs();
+  }
+
+  /// Sign out and clear session
+  Future<void> signOut() async {
+    await _appwrite.signOut();
+  }
 
   /// Delete current user account permanently
   Future<void> deleteAccount() async {
-    await _stackAuth.deleteAccount();
+    await _appwrite.deleteAccount();
   }
 }

@@ -9,6 +9,7 @@ import '../../../shared/widgets/animated_buttons.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import 'widgets/ai_magic_hub.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -373,6 +374,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ),
                       ),
 
+                      const SizedBox(height: 32),
+
+                      // AI Magic Tools Hub
+                      FadeInSlide(index: 6, child: const AiMagicHub()),
+
                       const SizedBox(height: 40),
 
                       // Categories Header
@@ -426,8 +432,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             final category = categories[index];
                             return FadeInSlide(
                               index:
-                                  6 +
-                                  index, // Stagger categories after stats/hero
+                                  7 +
+                                  index, // Stagger categories after stats/hero/ai
                               child: _ModernCategoryCard(
                                 category: category,
                                 index: index,

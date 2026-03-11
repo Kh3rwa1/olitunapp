@@ -6,20 +6,21 @@
   # RewriteCond %{HTTPS} off
   # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
 
-  # 2. Skip rules for actual files or directories
-  RewriteCond %{REQUEST_FILENAME} -f
-  RewriteCond %{REQUEST_FILENAME} -d
-  RewriteRule .? - [S=2]
-
-  # 3. Redirect /admin URLs to Flutter hash-based routing
+  # 2. Redirect /admin URLs to Flutter hash-based routing (BEFORE directory check)
   RewriteCond %{REQUEST_URI} ^/admin/?(.*)$ [NC]
+  RewriteCond %{REQUEST_URI} !^/admin-panel [NC]
   RewriteRule ^admin/?(.*)$ /#/admin/$1 [NE,R=302,L]
 
-  # 4. EXCLUDE admin-panel API from Flutter routing
+  # 3. EXCLUDE admin-panel API from Flutter routing
   RewriteCond %{REQUEST_URI} ^/admin-panel [NC]
   RewriteRule .? - [L]
 
-  # 4. Route all other requests to index.html for Flutter SPA
+  # 4. Skip rules for actual files or directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule .? - [L]
+
+  # 5. Route all other requests to index.html for Flutter SPA
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d

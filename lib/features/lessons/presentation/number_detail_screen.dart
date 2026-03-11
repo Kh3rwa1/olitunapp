@@ -221,31 +221,17 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               ),
             ],
           ),
-          floatingActionButton: Container(
-            margin: const EdgeInsets.only(left: 32, right: 32, bottom: 80),
-            width: double.infinity,
-            child: FloatingActionButton.extended(
-              onPressed: () {
-                HapticFeedback.heavyImpact();
-                final number = numbers[_currentIndex];
-                context.push('/practice/${number.numeral}/${number.nameLatin}');
-              },
-              backgroundColor: accentColor,
-              elevation: 4,
-              label: const Text(
-                'PRACTICE WRITING',
-                style: TextStyle(
-                  fontWeight: FontWeight.w900,
-                  fontSize: 16,
-                  color: Colors.white,
-                  letterSpacing: 1.2,
-                ),
-              ),
-              icon: const Icon(Icons.edit_note_rounded, color: Colors.white),
-            ),
+          floatingActionButton: FloatingActionButton(
+            onPressed: () {
+              HapticFeedback.heavyImpact();
+              final number = numbers[_currentIndex];
+              context.push('/practice/${number.numeral}/${number.nameLatin}');
+            },
+            backgroundColor: accentColor,
+            elevation: 4,
+            child: const Icon(Icons.edit_note_rounded, color: Colors.white),
           ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
+          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
       },
     );

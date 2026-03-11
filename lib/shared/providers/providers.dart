@@ -5,7 +5,7 @@ import '../../core/storage/storage_service.dart';
 import '../../core/api/api_service.dart'; // Import API Service
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../../features/rhymes/domain/rhyme_category_model.dart';
-import '../../core/auth/stack_auth_service.dart';
+import '../../core/auth/appwrite_auth_service.dart';
 import '../../features/auth/data/auth_repository.dart';
 import 'dart:convert';
 import 'progress_provider.dart';
@@ -36,8 +36,7 @@ final onboardingVideoUrlProvider = Provider<String?>((ref) {
 final isAuthenticatedProvider = FutureProvider<bool>((ref) async {
   try {
     final authRepo = ref.read(authRepositoryProvider);
-    final token = await authRepo.getToken();
-    return token != null;
+    return await authRepo.isLoggedIn();
   } catch (_) {
     return false;
   }
@@ -70,8 +69,8 @@ Future<void> updateUserName(WidgetRef ref, String name) async {
   // Sync to cloud if logged in
   try {
     final authRepo = ref.read(authRepositoryProvider);
-    final token = await authRepo.getToken();
-    if (token != null) {
+    final loggedIn = await authRepo.isLoggedIn();
+    if (loggedIn) {
       await authRepo.updateDisplayName(name);
     }
   } catch (e) {
@@ -79,17 +78,17 @@ Future<void> updateUserName(WidgetRef ref, String name) async {
   }
 }
 
-/// Synchronize profile name from Stack Auth to local storage
+/// Synchronize profile name from Appwrite to local storage
 Future<void> syncProfileName(WidgetRef ref) async {
   try {
     final authRepo = ref.read(authRepositoryProvider);
-    final token = await authRepo.getToken();
-    if (token == null) return;
+    final loggedIn = await authRepo.isLoggedIn();
+    if (!loggedIn) return;
 
-    final profile = await authRepo.getMe();
-    final cloudName = profile['display_name'] as String?;
+    final user = await authRepo.getMe();
+    final cloudName = user.name;
 
-    if (cloudName != null && cloudName.isNotEmpty) {
+    if (cloudName.isNotEmpty) {
       final localName = prefs.getString('user_name');
       if (localName != cloudName) {
         prefs.setString('user_name', cloudName);
@@ -193,18 +192,14 @@ void toggleSound(WidgetRef ref) {
 
 // Default categories removed - fetched from API
 
-// ============== AUTH PROVIDERS (Stack Auth) ==============
+// ============== AUTH PROVIDERS (Appwrite) ==============
 
-final stackAuthServiceProvider = Provider<StackAuthService>((ref) {
-  // Use environment variables or secure storage in production
-  return StackAuthService(
-    projectId: 'ec138b74-cdb7-4c55-a7e0-a59d68561548',
-    publishableKey: 'pck_2v7xw0j8hbgj6tqec50m4mev9yhvw195v8c753y7n6nw0',
-  );
+final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
+  return AppwriteAuthService();
 });
 
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
-  return AuthRepository(ref.watch(stackAuthServiceProvider));
+  return AuthRepository(ref.watch(appwriteAuthServiceProvider));
 });
 
 final progressProvider =

@@ -1,5 +1,5 @@
 import 'package:appwrite/models.dart' as models;
-import '../../core/auth/appwrite_auth_service.dart';
+import 'package:itun/core/auth/appwrite_auth_service.dart';
 
 class AuthRepository {
   final AppwriteAuthService _appwrite;

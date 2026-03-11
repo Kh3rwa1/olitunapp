@@ -57,9 +57,21 @@ class AppwriteAuthService {
   /// Sign in with Google OAuth2
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
-    await _account.createOAuth2Session(
-      provider: OAuthProvider.google,
-    );
+
+    if (kIsWeb) {
+      // Web: need explicit redirect URLs
+      final origin = Uri.base.origin; // e.g. https://olitun.in
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+        success: '$origin/home',
+        failure: '$origin/welcome',
+      );
+    } else {
+      // Mobile: uses deep link callback automatically
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+      );
+    }
   }
 
   // ─── Session Management ───

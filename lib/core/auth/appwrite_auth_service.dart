@@ -69,12 +69,12 @@ class AppwriteAuthService {
     debugPrint('Appwrite: Starting Google OAuth');
 
     if (kIsWeb) {
-      // Web: need explicit redirect URLs
+      // Web: redirect to root — splash screen will detect session and route to /home
       final origin = Uri.base.origin; // e.g. https://olitun.in
       await _account.createOAuth2Session(
         provider: OAuthProvider.google,
-        success: '$origin/home',
-        failure: '$origin/welcome',
+        success: origin,
+        failure: origin,
       );
     } else {
       // Mobile: uses deep link callback automatically

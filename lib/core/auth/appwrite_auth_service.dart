@@ -28,6 +28,16 @@ class AppwriteAuthService {
   Account get account => _account;
   Client get client => _client;
 
+  /// Ping Appwrite backend to verify setup
+  Future<void> ping() async {
+    try {
+      await _client.ping();
+      debugPrint('Appwrite: Ping successful ✅');
+    } catch (e) {
+      debugPrint('Appwrite: Ping failed ❌ $e');
+    }
+  }
+
   // ─── Email OTP ───
 
   /// Send OTP code to email. Returns userId needed for session creation.

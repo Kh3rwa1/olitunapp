@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:appwrite/appwrite.dart';
 import '../models/content_models.dart';
 import '../../core/storage/storage_service.dart';
-import '../../core/api/api_service.dart'; // Import API Service
+import '../../core/api/appwrite_db_service.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../../features/rhymes/domain/rhyme_category_model.dart';
-import '../../core/auth/appwrite_auth_service.dart';
+
 import '../../features/auth/data/auth_repository.dart';
 import 'dart:convert';
 import 'progress_provider.dart';
@@ -14,10 +15,13 @@ import 'progress_provider.dart';
 
 final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
   try {
-    final apiService = ref.read(apiServiceProvider);
-    final response = await apiService.get('/settings.php');
-    if (response is Map<String, dynamic>) return response;
-    return <String, dynamic>{};
+    final db = ref.read(appwriteDbServiceProvider);
+    final docs = await db.listDocuments('app_settings');
+    final settings = <String, dynamic>{};
+    for (final doc in docs) {
+      settings[doc['settingKey'] as String] = doc['settingValue'];
+    }
+    return settings;
   } catch (e) {
     debugPrint('Failed to load app settings: $e');
     return <String, dynamic>{};
@@ -194,10 +198,6 @@ void toggleSound(WidgetRef ref) {
 
 // ============== AUTH PROVIDERS (Appwrite) ==============
 
-final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
-  return AppwriteAuthService();
-});
-
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   return AuthRepository(ref.watch(appwriteAuthServiceProvider));
 });
@@ -269,17 +269,17 @@ class CategoriesNotifier
 
   Future<void> _loadCategories() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/categories.php');
-      final list = (data as List)
-          .map((e) => CategoryModel.fromJson(e))
-          .toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'categories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => CategoryModel.fromJson(e)).toList();
       debugPrint('✅ _loadCategories: loaded ${list.length} categories');
       state = AsyncValue.data(list);
     } catch (e, st) {
       debugPrint('❌ _loadCategories FAILED: $e');
       debugPrint('Stack: $st');
-      // Only use seed data if we don't already have data
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedCategories);
       }
@@ -293,8 +293,8 @@ class CategoriesNotifier
 
   Future<void> add(CategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/categories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('categories', item.id, item.toJson());
       await _loadCategories();
     } catch (e) {
       debugPrint('❌ add category FAILED: $e');
@@ -303,8 +303,8 @@ class CategoriesNotifier
 
   Future<void> update(CategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/categories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('categories', item.id, item.toJson());
       debugPrint('✅ Category updated: ${item.id}');
       await _loadCategories();
     } catch (e) {
@@ -314,11 +314,11 @@ class CategoriesNotifier
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/categories.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('categories', id);
       await _loadCategories();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete category FAILED: $e');
     }
   }
 
@@ -376,11 +376,12 @@ class BannersNotifier
 
   Future<void> _loadBanners() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/banners.php');
-      final list = (data as List)
-          .map((e) => FeaturedBannerModel.fromJson(e))
-          .toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'banners',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => FeaturedBannerModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
@@ -389,31 +390,31 @@ class BannersNotifier
 
   Future<void> add(FeaturedBannerModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/banners.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('banners', item.id, item.toJson());
       await _loadBanners();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add banner FAILED: $e');
     }
   }
 
   Future<void> update(FeaturedBannerModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/banners.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('banners', item.id, item.toJson());
       await _loadBanners();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update banner FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/banners.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('banners', id);
       await _loadBanners();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete banner FAILED: $e');
     }
   }
 
@@ -499,9 +500,12 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
 
   Future<void> _loadLetters() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/letters.php');
-      final list = (data as List).map((e) => LetterModel.fromJson(e)).toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'letters',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => LetterModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
       state = AsyncValue.data(_seedLetters);
@@ -510,31 +514,31 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
 
   Future<void> add(LetterModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/letters.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('letters', item.id, item.toJson());
       await _loadLetters();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add letter FAILED: $e');
     }
   }
 
   Future<void> update(LetterModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/letters.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('letters', item.id, item.toJson());
       await _loadLetters();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update letter FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/letters.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('letters', id);
       await _loadLetters();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete letter FAILED: $e');
     }
   }
 
@@ -603,9 +607,12 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
 
   Future<void> _loadNumbers() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/numbers.php');
-      final list = (data as List).map((e) => NumberModel.fromJson(e)).toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'numbers',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => NumberModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
       state = AsyncValue.data(_seedNumbers);
@@ -614,31 +621,31 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
 
   Future<void> add(NumberModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/numbers.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('numbers', item.id, item.toJson());
       await _loadNumbers();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add number FAILED: $e');
     }
   }
 
   Future<void> update(NumberModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/numbers.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('numbers', item.id, item.toJson());
       await _loadNumbers();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update number FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/numbers.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('numbers', id);
       await _loadNumbers();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete number FAILED: $e');
     }
   }
 
@@ -676,9 +683,12 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
 
   Future<void> _loadWords() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/words.php');
-      final list = (data as List).map((e) => WordModel.fromJson(e)).toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'words',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => WordModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
       state = AsyncValue.data(_seedWords);
@@ -687,31 +697,31 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
 
   Future<void> add(WordModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/words.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('words', item.id, item.toJson());
       await _loadWords();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add word FAILED: $e');
     }
   }
 
   Future<void> update(WordModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/words.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('words', item.id, item.toJson());
       await _loadWords();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update word FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/words.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('words', id);
       await _loadWords();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete word FAILED: $e');
     }
   }
 
@@ -760,11 +770,12 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
 
   Future<void> _loadSentences() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/sentences.php');
-      final list = (data as List)
-          .map((e) => SentenceModel.fromJson(e))
-          .toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'sentences',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) => SentenceModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
       state = AsyncValue.data(_seedSentences);
@@ -773,31 +784,31 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
 
   Future<void> add(SentenceModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/sentences.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('sentences', item.id, item.toJson());
       await _loadSentences();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add sentence FAILED: $e');
     }
   }
 
   Future<void> update(SentenceModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/sentences.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('sentences', item.id, item.toJson());
       await _loadSentences();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update sentence FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/sentences.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('sentences', id);
       await _loadSentences();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete sentence FAILED: $e');
     }
   }
 
@@ -1067,15 +1078,25 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 
   Future<void> _loadLessons() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/lessons.php');
-      final list = (data as List).map((e) => LessonModel.fromJson(e)).toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'lessons',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      final list = data.map((e) {
+        // Parse blocks from JSON string if needed
+        if (e['blocks'] is String && (e['blocks'] as String).isNotEmpty) {
+          e['blocks'] = jsonDecode(e['blocks'] as String);
+        } else if (e['blocks'] is! List) {
+          e['blocks'] = [];
+        }
+        return LessonModel.fromJson(e);
+      }).toList();
       debugPrint('✅ _loadLessons: loaded ${list.length} lessons');
       state = AsyncValue.data(list);
     } catch (e, st) {
       debugPrint('❌ _loadLessons FAILED: $e');
       debugPrint('Stack: $st');
-      // Only use seed data if we don't already have data
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedLessons);
       }
@@ -1089,8 +1110,11 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 
   Future<void> add(LessonModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/lessons.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      final json = item.toJson();
+      // Serialize blocks to JSON string for Appwrite
+      json['blocks'] = jsonEncode(json['blocks']);
+      await db.createDocument('lessons', item.id, json);
       await _loadLessons();
     } catch (e) {
       debugPrint('❌ add lesson FAILED: $e');
@@ -1099,8 +1123,10 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 
   Future<void> update(LessonModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/lessons.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      final json = item.toJson();
+      json['blocks'] = jsonEncode(json['blocks']);
+      await db.updateDocument('lessons', item.id, json);
       debugPrint('✅ Lesson updated: ${item.id}');
       await _loadLessons();
     } catch (e) {
@@ -1110,11 +1136,11 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/lessons.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('lessons', id);
       await _loadLessons();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete lesson FAILED: $e');
     }
   }
 
@@ -1404,43 +1430,42 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
 
   Future<void> _loadRhymes() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final data = await api.get('/rhymes.php');
-      final list = (data as List).map((e) => RhymeModel.fromJson(e)).toList();
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments('rhymes', queries: [Query.limit(500)]);
+      final list = data.map((e) => RhymeModel.fromJson(e)).toList();
       state = AsyncValue.data(list);
     } catch (e) {
-      // Fallback to local seed data when API is unreachable
       state = AsyncValue.data(_seedRhymes);
     }
   }
 
   Future<void> add(RhymeModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/rhymes.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ add rhyme FAILED: $e');
     }
   }
 
   Future<void> update(RhymeModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/rhymes.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ update rhyme FAILED: $e');
     }
   }
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/rhymes.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('rhymes', id);
       await _loadRhymes();
     } catch (e) {
-      // Handle error
+      debugPrint('❌ delete rhyme FAILED: $e');
     }
   }
 
@@ -1474,9 +1499,11 @@ class RhymeCategoriesNotifier
 
   Future<void> _load() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final response = await api.get('/rhyme_categories.php');
-      final List<dynamic> data = response as List<dynamic>;
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'rhyme_categories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
       state = AsyncValue.data(
         data.map((e) => RhymeCategoryModel.fromJson(e)).toList(),
       );
@@ -1489,8 +1516,8 @@ class RhymeCategoriesNotifier
 
   Future<void> add(RhymeCategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/rhyme_categories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('rhyme_categories', item.id, item.toJson());
       await _load();
     } catch (e) {
       debugPrint('Error adding rhyme category: $e');
@@ -1500,8 +1527,8 @@ class RhymeCategoriesNotifier
 
   Future<void> update(RhymeCategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/rhyme_categories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('rhyme_categories', item.id, item.toJson());
       await _load();
     } catch (e) {
       debugPrint('Error updating rhyme category: $e');
@@ -1511,8 +1538,8 @@ class RhymeCategoriesNotifier
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/rhyme_categories.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('rhyme_categories', id);
       await _load();
     } catch (e) {
       debugPrint('Error deleting rhyme category: $e');
@@ -1541,9 +1568,11 @@ class RhymeSubcategoriesNotifier
 
   Future<void> _load() async {
     try {
-      final api = ref.read(apiServiceProvider);
-      final response = await api.get('/rhyme_subcategories.php');
-      final List<dynamic> data = response as List<dynamic>;
+      final db = ref.read(appwriteDbServiceProvider);
+      final data = await db.listDocuments(
+        'rhyme_subcategories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
       state = AsyncValue.data(
         data.map((e) => RhymeSubcategoryModel.fromJson(e)).toList(),
       );
@@ -1556,8 +1585,8 @@ class RhymeSubcategoriesNotifier
 
   Future<void> add(RhymeSubcategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.post('/rhyme_subcategories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.createDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
     } catch (e) {
       debugPrint('Error adding rhyme subcategory: $e');
@@ -1567,8 +1596,8 @@ class RhymeSubcategoriesNotifier
 
   Future<void> update(RhymeSubcategoryModel item) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.put('/rhyme_subcategories.php', item.toJson());
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.updateDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
     } catch (e) {
       debugPrint('Error updating rhyme subcategory: $e');
@@ -1578,8 +1607,8 @@ class RhymeSubcategoriesNotifier
 
   Future<void> delete(String id) async {
     try {
-      final api = ref.read(apiServiceProvider);
-      await api.delete('/rhyme_subcategories.php', params: {'id': id});
+      final db = ref.read(appwriteDbServiceProvider);
+      await db.deleteDocument('rhyme_subcategories', id);
       await _load();
     } catch (e) {
       debugPrint('Error deleting rhyme subcategory: $e');

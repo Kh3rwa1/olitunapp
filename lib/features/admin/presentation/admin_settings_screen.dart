@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/supabase_service.dart';
-import '../../../core/api/api_service.dart';
+import '../../../core/api/appwrite_db_service.dart';
 import '../../../shared/providers/providers.dart';
 
 class AdminSettingsScreen extends ConsumerStatefulWidget {
@@ -28,11 +28,15 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
 
   Future<void> _loadSettings() async {
     try {
-      final apiService = ref.read(apiServiceProvider);
-      final response = await apiService.get('/settings.php');
-      if (response is Map<String, dynamic> && mounted) {
+      final db = ref.read(appwriteDbServiceProvider);
+      final docs = await db.listDocuments('app_settings');
+      if (mounted) {
+        final settings = <String, dynamic>{};
+        for (final doc in docs) {
+          settings[doc['settingKey'] as String] = doc['settingValue'];
+        }
         setState(() {
-          _currentVideoUrl = response['onboarding_video_url'] as String?;
+          _currentVideoUrl = settings['onboarding_video_url'] as String?;
           _isLoading = false;
         });
       }
@@ -115,8 +119,21 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   }
 
   Future<void> _saveSetting(String key, String value) async {
-    final apiService = ref.read(apiServiceProvider);
-    await apiService.put('/settings.php', {'key': key, 'value': value});
+    final db = ref.read(appwriteDbServiceProvider);
+    // Try to update existing setting, or create new one
+    try {
+      // Use key as document ID for easy lookup
+      await db.updateDocument('app_settings', key, {
+        'settingKey': key,
+        'settingValue': value,
+      });
+    } catch (_) {
+      // If not found, create it
+      await db.createDocument('app_settings', key, {
+        'settingKey': key,
+        'settingValue': value,
+      });
+    }
   }
 
   @override

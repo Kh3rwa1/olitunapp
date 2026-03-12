@@ -1,14 +1,15 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Authentication Callback</title>
+  <title>Authentication complete</title>
 </head>
 <body>
-  <p>Authenticating...</p>
+  <p>Authentication is complete. If this does not happen automatically, please close the window.</p>
   <script>
-    // This page handles the OAuth2 callback from Appwrite.
-    // It sends the full URL (with session data) back to the parent window.
-    window.opener.postMessage(window.location.href, window.location.origin);
+    // flutter_web_auth_2 expects a postMessage with this exact object format
+    window.opener.postMessage({
+      'flutter-web-auth-2': window.location.href
+    }, window.location.origin);
     window.close();
   </script>
 </body>

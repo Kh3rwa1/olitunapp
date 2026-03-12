@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Authentication Callback</title>
+</head>
+<body>
+  <p>Authenticating...</p>
+  <script>
+    // This page handles the OAuth2 callback from Appwrite.
+    // It sends the full URL (with session data) back to the parent window.
+    window.opener.postMessage(window.location.href, window.location.origin);
+    window.close();
+  </script>
+</body>
+</html>

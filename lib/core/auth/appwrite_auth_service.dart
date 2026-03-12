@@ -65,13 +65,24 @@ class AppwriteAuthService {
   // ─── Google OAuth ───
 
   /// Sign in with Google OAuth2
-  /// On web, this opens a popup for Google auth (handled by Appwrite SDK).
+  /// On web, this opens a popup for Google auth.
   /// On mobile, this uses deep link callback.
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
-    await _account.createOAuth2Session(
-      provider: OAuthProvider.google,
-    );
+
+    if (kIsWeb) {
+      // Web: use our own callback page so popup can communicate back
+      final origin = Uri.base.origin;
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+        success: '$origin/auth.html',
+        failure: '$origin/auth.html',
+      );
+    } else {
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+      );
+    }
   }
 
   // ─── Session Management ───

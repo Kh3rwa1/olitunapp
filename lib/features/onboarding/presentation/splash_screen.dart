@@ -40,6 +40,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         ref.read(onboardingProvider.notifier).completeOnboarding();
       }
 
+      // Check for OAuth token in URL params (after Google sign-in redirect on web)
+      if (kIsWeb) {
+        final uri = Uri.base;
+        final userId = uri.queryParameters['userId'];
+        final secret = uri.queryParameters['secret'];
+        if (userId != null && secret != null) {
+          debugPrint('Splash: Found OAuth token, exchanging for session...');
+          final authService = ref.read(appwriteAuthServiceProvider);
+          final success = await authService.exchangeOAuthToken(userId, secret);
+          if (success) {
+            syncProfileName(ref).catchError((_) {});
+            context.go('/home');
+            return;
+          }
+        }
+      }
+
       // Check authentication status
       final authRepo = ref.read(authRepositoryProvider);
       final isLoggedIn = await authRepo.isLoggedIn();

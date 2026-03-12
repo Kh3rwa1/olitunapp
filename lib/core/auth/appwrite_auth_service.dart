@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
+import 'web_redirect.dart' as web_redirect;
 
 class AppwriteAuthService {
   static const String _endpoint = String.fromEnvironment(
@@ -65,23 +66,44 @@ class AppwriteAuthService {
   // ─── Google OAuth ───
 
   /// Sign in with Google OAuth2
-  /// On web, this opens a popup for Google auth.
-  /// On mobile, this uses deep link callback.
+  /// On web: redirects the entire page to Appwrite OAuth endpoint.
+  /// On mobile: uses SDK popup/deep link.
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
 
     if (kIsWeb) {
-      // Web: use our own callback page so popup can communicate back
+      // Web: full-page redirect to Appwrite OAuth2 token endpoint.
+      // After Google auth, Appwrite redirects back with ?userId=...&secret=...
       final origin = Uri.base.origin;
-      await _account.createOAuth2Session(
-        provider: OAuthProvider.google,
-        success: '$origin/auth.html',
-        failure: '$origin/auth.html',
-      );
+      final oauthUrl = '$_endpoint/account/tokens/oauth2/google'
+          '?project=$_projectId'
+          '&success=${Uri.encodeComponent(origin)}'
+          '&failure=${Uri.encodeComponent('$origin/#/welcome')}'
+          '&scopes[]=email&scopes[]=profile';
+      
+      // Navigate the entire page (not popup)
+      _redirectToUrl(oauthUrl);
     } else {
       await _account.createOAuth2Session(
         provider: OAuthProvider.google,
       );
+    }
+  }
+
+  /// Redirect the page (web only)
+  void _redirectToUrl(String url) {
+    web_redirect.redirectToUrl(url);
+  }
+
+  /// Exchange OAuth token for session (called from splash screen after redirect)
+  Future<bool> exchangeOAuthToken(String userId, String secret) async {
+    try {
+      await _account.createSession(userId: userId, secret: secret);
+      debugPrint('Appwrite: OAuth session created ✅');
+      return true;
+    } catch (e) {
+      debugPrint('Appwrite: Failed to create session from token: $e');
+      return false;
     }
   }
 

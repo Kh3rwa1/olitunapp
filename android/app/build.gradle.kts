@@ -67,10 +67,21 @@ android {
             }
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
+
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 }
 
 dependencies {
-    implementation("androidx.activity:activity-ktx:1.8.0")
+    implementation("androidx.activity:activity-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.13.1")
 }
 
 flutter {

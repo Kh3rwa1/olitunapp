@@ -111,7 +111,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Hello, $userName!',
+                                'Johar, $userName!',
                                 style: TextStyle(
                                   fontSize: 32,
                                   fontWeight: FontWeight.w900,

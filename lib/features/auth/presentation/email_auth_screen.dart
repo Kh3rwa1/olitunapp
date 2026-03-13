@@ -99,6 +99,9 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
       final authRepo = ref.read(authRepositoryProvider);
       await authRepo.verifyOtp(userId: _userId!, secret: code);
 
+      // Invalidate cached auth state so AuthGate widgets update
+      ref.invalidate(isAuthenticatedProvider);
+
       // Try to fetch user profile and sync name
       try {
         final user = await authRepo.getMe();

@@ -361,6 +361,18 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
       final authRepo = ref.read(authRepositoryProvider);
       await authRepo.signInWithGoogle();
 
+      // Invalidate cached auth state so AuthGate widgets update
+      ref.invalidate(isAuthenticatedProvider);
+
+      // Sync user's first name from Google profile
+      try {
+        final user = await authRepo.getMe();
+        if (user.name.isNotEmpty) {
+          final firstName = user.name.split(' ').first;
+          await updateUserName(ref, firstName);
+        }
+      } catch (_) {}
+
       if (mounted) {
         context.go('/home');
       }

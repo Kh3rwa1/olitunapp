@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM sentences ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM sentences ORDER BY order_index ASC");
         $stmt->execute();
         $sentences = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -34,12 +33,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO sentences 
+        $stmt = $db->prepare("INSERT INTO sentences 
                   (id, sentence_ol_chiki, sentence_latin, meaning, pronunciation, category, order_index, lesson_id) 
                   VALUES 
-                  (:id, :sentence_ol_chiki, :sentence_latin, :meaning, :pronunciation, :category, :order_index, :lesson_id)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :sentence_ol_chiki, :sentence_latin, :meaning, :pronunciation, :category, :order_index, :lesson_id)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':sentence_ol_chiki', $data['sentence_ol_chiki']);
@@ -62,7 +59,7 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE sentences SET 
+        $stmt = $db->prepare("UPDATE sentences SET 
                   sentence_ol_chiki = :sentence_ol_chiki, 
                   sentence_latin = :sentence_latin, 
                   meaning = :meaning, 
@@ -70,9 +67,7 @@ switch($method) {
                   category = :category, 
                   order_index = :order_index,
                   lesson_id = :lesson_id
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':sentence_ol_chiki', $data['sentence_ol_chiki']);
@@ -94,8 +89,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM sentences WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM sentences WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

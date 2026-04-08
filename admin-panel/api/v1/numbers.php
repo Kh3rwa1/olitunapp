@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM numbers ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM numbers ORDER BY order_index ASC");
         $stmt->execute();
         $numbers = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -35,12 +34,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO numbers 
+        $stmt = $db->prepare("INSERT INTO numbers 
                   (id, numeral, value, name_ol_chiki, name_latin, order_index, audio_url, image_url) 
                   VALUES 
-                  (:id, :numeral, :value, :name_ol_chiki, :name_latin, :order_index, :audio_url, :image_url)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :numeral, :value, :name_ol_chiki, :name_latin, :order_index, :audio_url, :image_url)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':numeral', $data['numeral']);
@@ -63,7 +60,7 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE numbers SET 
+        $stmt = $db->prepare("UPDATE numbers SET 
                   numeral = :numeral, 
                   value = :value, 
                   name_ol_chiki = :name_ol_chiki, 
@@ -71,9 +68,7 @@ switch($method) {
                   order_index = :order_index, 
                   audio_url = :audio_url, 
                   image_url = :image_url
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':numeral', $data['numeral']);
@@ -95,8 +90,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM numbers WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM numbers WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

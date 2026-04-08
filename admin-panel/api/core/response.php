@@ -7,7 +7,12 @@
 date_default_timezone_set('UTC');
 
 // Security headers
-header("Access-Control-Allow-Origin: *");
+$allowedOrigins = array_filter(array_map('trim', explode(',', getenv('ALLOWED_ORIGINS') ?: '')));
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($requestOrigin && in_array($requestOrigin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $requestOrigin);
+    header("Vary: Origin");
+}
 header("Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
 header("Content-Type: application/json; charset=UTF-8");

@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM letters ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM letters ORDER BY order_index ASC");
         $stmt->execute();
         $letters = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -35,12 +34,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO letters 
+        $stmt = $db->prepare("INSERT INTO letters 
                   (id, char_ol_chiki, transliteration_latin, order_index, is_active, example_word, audio_url, image_url, lottie_url) 
                   VALUES 
-                  (:id, :char_ol_chiki, :transliteration_latin, :order_index, :is_active, :example_word, :audio_url, :image_url, :lottie_url)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :char_ol_chiki, :transliteration_latin, :order_index, :is_active, :example_word, :audio_url, :image_url, :lottie_url)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':char_ol_chiki', $data['char_ol_chiki']);
@@ -67,7 +64,7 @@ switch($method) {
             sendResponse(null, 400, "Missing ID");
         }
 
-        $query = "UPDATE letters SET 
+        $stmt = $db->prepare("UPDATE letters SET 
                   char_ol_chiki = :char_ol_chiki, 
                   transliteration_latin = :transliteration_latin, 
                   order_index = :order_index, 
@@ -76,9 +73,7 @@ switch($method) {
                   audio_url = :audio_url, 
                   image_url = :image_url,
                   lottie_url = :lottie_url
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':char_ol_chiki', $data['char_ol_chiki']);
@@ -101,8 +96,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM letters WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM letters WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

@@ -19,8 +19,7 @@ switch($method) {
         $key = isset($_GET['key']) ? $_GET['key'] : null;
         
         if ($key) {
-            $query = "SELECT setting_key, setting_value FROM app_settings WHERE setting_key = :key";
-            $stmt = $db->prepare($query);
+            $stmt = $db->prepare("SELECT setting_key, setting_value FROM app_settings WHERE setting_key = :key");
             $stmt->bindParam(':key', $key);
             $stmt->execute();
             $row = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -34,8 +33,7 @@ switch($method) {
                 sendResponse(null, 404, "Setting not found");
             }
         } else {
-            $query = "SELECT setting_key, setting_value FROM app_settings ORDER BY setting_key";
-            $stmt = $db->prepare($query);
+            $stmt = $db->prepare("SELECT setting_key, setting_value FROM app_settings ORDER BY setting_key");
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
@@ -58,11 +56,9 @@ switch($method) {
         $key = $data['key'];
         $value = isset($data['value']) ? $data['value'] : null;
 
-        $query = "INSERT INTO app_settings (setting_key, setting_value) 
+        $stmt = $db->prepare("INSERT INTO app_settings (setting_key, setting_value) 
                   VALUES (:key, :value) 
-                  ON DUPLICATE KEY UPDATE setting_value = :value2, updated_at = CURRENT_TIMESTAMP";
-        
-        $stmt = $db->prepare($query);
+                  ON DUPLICATE KEY UPDATE setting_value = :value2, updated_at = CURRENT_TIMESTAMP");
         $stmt->bindParam(':key', $key);
         $stmt->bindParam(':value', $value);
         $stmt->bindParam(':value2', $value);

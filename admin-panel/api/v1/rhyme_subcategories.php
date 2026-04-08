@@ -16,12 +16,10 @@ switch($method) {
     case 'GET':
         $catId = isset($_GET['categoryId']) ? $_GET['categoryId'] : null;
         if ($catId) {
-            $query = "SELECT * FROM rhyme_subcategories WHERE category_id = :category_id ORDER BY order_index ASC";
-            $stmt = $db->prepare($query);
+            $stmt = $db->prepare("SELECT * FROM rhyme_subcategories WHERE category_id = :category_id ORDER BY order_index ASC");
             $stmt->bindParam(':category_id', $catId);
         } else {
-            $query = "SELECT * FROM rhyme_subcategories ORDER BY order_index ASC";
-            $stmt = $db->prepare($query);
+            $stmt = $db->prepare("SELECT * FROM rhyme_subcategories ORDER BY order_index ASC");
         }
         $stmt->execute();
         $subcategories = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -36,12 +34,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO rhyme_subcategories 
+        $stmt = $db->prepare("INSERT INTO rhyme_subcategories 
                   (id, category_id, name_ol_chiki, name_latin, order_index) 
                   VALUES 
-                  (:id, :category_id, :name_ol_chiki, :name_latin, :order_index)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :category_id, :name_ol_chiki, :name_latin, :order_index)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':category_id', $data['category_id']);
@@ -61,14 +57,12 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE rhyme_subcategories SET 
+        $stmt = $db->prepare("UPDATE rhyme_subcategories SET 
                   category_id = :category_id,
                   name_ol_chiki = :name_ol_chiki, 
                   name_latin = :name_latin, 
                   order_index = :order_index
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':category_id', $data['category_id']);
@@ -87,8 +81,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM rhyme_subcategories WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM rhyme_subcategories WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

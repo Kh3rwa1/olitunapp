@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM categories ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM categories ORDER BY order_index ASC");
         $stmt->execute();
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -36,12 +35,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO categories 
+        $stmt = $db->prepare("INSERT INTO categories 
                   (id, title_ol_chiki, title_latin, icon_name, icon_url, lottie_url, gradient_preset, order_index, is_active, total_lessons, description) 
                   VALUES 
-                  (:id, :title_ol_chiki, :title_latin, :icon_name, :icon_url, :lottie_url, :gradient_preset, :order_index, :is_active, :total_lessons, :description)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :title_ol_chiki, :title_latin, :icon_name, :icon_url, :lottie_url, :gradient_preset, :order_index, :is_active, :total_lessons, :description)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title_ol_chiki', $data['title_ol_chiki']);
@@ -70,7 +67,7 @@ switch($method) {
             sendResponse(null, 400, "Missing ID");
         }
 
-        $query = "UPDATE categories SET 
+        $stmt = $db->prepare("UPDATE categories SET 
                   title_ol_chiki = :title_ol_chiki, 
                   title_latin = :title_latin, 
                   icon_name = :icon_name, 
@@ -81,9 +78,7 @@ switch($method) {
                   is_active = :is_active, 
                   total_lessons = :total_lessons,
                   description = :description
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title_ol_chiki', $data['title_ol_chiki']);
@@ -111,8 +106,7 @@ switch($method) {
             sendResponse(null, 400, "Missing ID parameter");
         }
 
-        $query = "DELETE FROM categories WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM categories WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

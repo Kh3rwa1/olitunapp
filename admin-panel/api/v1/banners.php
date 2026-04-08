@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM banners ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM banners ORDER BY order_index ASC");
         $stmt->execute();
         $banners = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -35,12 +34,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO banners 
+        $stmt = $db->prepare("INSERT INTO banners 
                   (id, title, subtitle, image_url, lottie_url, button_text, action_url, gradient_preset, bg_color, text_color, order_index, is_active) 
                   VALUES 
-                  (:id, :title, :subtitle, :image_url, :lottie_url, :button_text, :action_url, :gradient_preset, :bg_color, :text_color, :order_index, :is_active)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :title, :subtitle, :image_url, :lottie_url, :button_text, :action_url, :gradient_preset, :bg_color, :text_color, :order_index, :is_active)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title', $data['title']);
@@ -67,7 +64,7 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE banners SET 
+        $stmt = $db->prepare("UPDATE banners SET 
                   title = :title, 
                   subtitle = :subtitle, 
                   image_url = :image_url, 
@@ -79,9 +76,7 @@ switch($method) {
                   text_color = :text_color,
                   order_index = :order_index, 
                   is_active = :is_active
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title', $data['title']);
@@ -107,8 +102,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM banners WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM banners WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

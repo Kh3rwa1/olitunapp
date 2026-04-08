@@ -10,7 +10,12 @@
  */
 
 // CORS headers for Flutter web
-header('Access-Control-Allow-Origin: *');
+$allowedOrigins = array_filter(array_map('trim', explode(',', getenv('ALLOWED_ORIGINS') ?: '')));
+$requestOrigin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if ($requestOrigin && in_array($requestOrigin, $allowedOrigins, true)) {
+    header('Access-Control-Allow-Origin: ' . $requestOrigin);
+    header('Vary: Origin');
+}
 header('Access-Control-Allow-Methods: POST, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 header('Content-Type: application/json');
@@ -36,15 +41,26 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 
 // Configuration
 $uploadDir = '../audio/';
-$allowedTypes = [
+$allowedMimeByExtension = [
     // Audio
-    'audio/mpeg', 'audio/wav', 'audio/ogg', 'audio/aac', 'audio/mp4',
+    'mp3' => ['audio/mpeg'],
+    'wav' => ['audio/wav', 'audio/x-wav'],
+    'ogg' => ['audio/ogg'],
+    'aac' => ['audio/aac'],
+    'm4a' => ['audio/mp4'],
     // Images
-    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'jpg' => ['image/jpeg'],
+    'jpeg' => ['image/jpeg'],
+    'png' => ['image/png'],
+    'gif' => ['image/gif'],
+    'webp' => ['image/webp'],
+    'svg' => ['image/svg+xml', 'text/plain'],
     // Video
-    'video/mp4', 'video/webm', 'video/quicktime',
-    // Lottie animations (JSON format)
-    'application/json', 'text/plain',
+    'mp4' => ['video/mp4'],
+    'webm' => ['video/webm'],
+    'mov' => ['video/quicktime'],
+    // Lottie
+    'json' => ['application/json', 'text/plain'],
 ];
 $maxFileSize = 50 * 1024 * 1024; // 50MB (videos can be larger)
 
@@ -61,7 +77,7 @@ $file = $_FILES['file'];
 // Validate file size
 if ($file['size'] > $maxFileSize) {
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => 'File too large (max 20MB)']);
+    echo json_encode(['success' => false, 'error' => 'File too large (max 50MB)']);
     exit();
 }
 
@@ -70,17 +86,13 @@ $finfo = finfo_open(FILEINFO_MIME_TYPE);
 $mimeType = finfo_file($finfo, $file['tmp_name']);
 finfo_close($finfo);
 
-// For Lottie and WebP/WebM, also check extension since MIME detection can vary
 $extension = strtolower(pathinfo($file['name'], PATHINFO_EXTENSION));
-$isLottie = ($extension === 'json' && ($mimeType === 'application/json' || $mimeType === 'text/plain' || $mimeType === 'application/octet-stream'));
-$isWebMedia = (($extension === 'webp' || $extension === 'webm') && ($mimeType === 'application/octet-stream' || strpos($mimeType, 'image/') === 0 || strpos($mimeType, 'video/') === 0));
-
-debugLog("File: " . $file['name'] . " MIME: $mimeType EXT: $extension Lottie: " . ($isLottie ? "YES" : "NO") . " WebMedia: " . ($isWebMedia ? "YES" : "NO"));
-
-if (!in_array($mimeType, $allowedTypes) && !$isLottie && !$isWebMedia) {
+$allowedMimes = $allowedMimeByExtension[$extension] ?? [];
+debugLog("File: " . $file['name'] . " MIME: $mimeType EXT: $extension");
+if (empty($allowedMimes) || !in_array($mimeType, $allowedMimes, true)) {
     debugLog("REJECTED: Invalid type $mimeType");
     http_response_code(400);
-    echo json_encode(['success' => false, 'error' => "Invalid file type: $mimeType. Try renaming or using a different browser."]);
+    echo json_encode(['success' => false, 'error' => "Invalid file type for extension .$extension"]);
     exit();
 }
 

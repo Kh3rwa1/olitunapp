@@ -22,16 +22,14 @@ switch($method) {
 
         if ($lessonId) {
             // Get single lesson
-            $query = "SELECT * FROM lessons WHERE id = :id";
-            $stmt = $db->prepare($query);
+            $stmt = $db->prepare("SELECT * FROM lessons WHERE id = :id");
             $stmt->bindParam(':id', $lessonId);
             $stmt->execute();
             $lesson = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($lesson) {
                 // Get blocks for this lesson
-                $blockQuery = "SELECT * FROM lesson_blocks WHERE lesson_id = :lesson_id ORDER BY order_index ASC";
-                $blockStmt = $db->prepare($blockQuery);
+                $blockStmt = $db->prepare("SELECT * FROM lesson_blocks WHERE lesson_id = :lesson_id ORDER BY order_index ASC");
                 $blockStmt->bindParam(':lesson_id', $lessonId);
                 $blockStmt->execute();
                 $blocks = $blockStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -68,22 +66,17 @@ switch($method) {
             }
         } else {
             // List lessons
-            $query = "SELECT * FROM lessons";
             if ($categoryId) {
-                $query .= " WHERE category_id = :category_id";
-            }
-            $query .= " ORDER BY order_index ASC";
-            
-            $stmt = $db->prepare($query);
-            if ($categoryId) {
+                $stmt = $db->prepare("SELECT * FROM lessons WHERE category_id = :category_id ORDER BY order_index ASC");
                 $stmt->bindParam(':category_id', $categoryId);
+            } else {
+                $stmt = $db->prepare("SELECT * FROM lessons ORDER BY order_index ASC");
             }
             $stmt->execute();
             $lessons = $stmt->fetchAll(PDO::FETCH_ASSOC);
             
             foreach($lessons as &$lesson) {
-                $blockQuery = "SELECT * FROM lesson_blocks WHERE lesson_id = :lesson_id ORDER BY order_index ASC";
-                $blockStmt = $db->prepare($blockQuery);
+                $blockStmt = $db->prepare("SELECT * FROM lesson_blocks WHERE lesson_id = :lesson_id ORDER BY order_index ASC");
                 $blockStmt->bindParam(':lesson_id', $lesson['id']);
                 $blockStmt->execute();
                 $blocks = $blockStmt->fetchAll(PDO::FETCH_ASSOC);
@@ -127,12 +120,10 @@ switch($method) {
             $db->beginTransaction();
 
             // Insert Lesson
-            $query = "INSERT INTO lessons 
+            $stmt = $db->prepare("INSERT INTO lessons 
                       (id, category_id, title_ol_chiki, title_latin, level, order_index, is_active, estimated_minutes, description, thumbnail_url, is_premium) 
                       VALUES 
-                      (:id, :category_id, :title_ol_chiki, :title_latin, :level, :order_index, :is_active, :estimated_minutes, :description, :thumbnail_url, :is_premium)";
-            
-            $stmt = $db->prepare($query);
+                      (:id, :category_id, :title_ol_chiki, :title_latin, :level, :order_index, :is_active, :estimated_minutes, :description, :thumbnail_url, :is_premium)");
             
             $stmt->bindParam(':id', $data['id']);
             $stmt->bindParam(':category_id', $data['category_id']);
@@ -150,8 +141,7 @@ switch($method) {
 
             // Insert Blocks if present
             if (isset($raw['blocks']) && is_array($raw['blocks'])) {
-                $blockQuery = "INSERT INTO lesson_blocks (id, lesson_id, type, content_json, order_index) VALUES (:id, :lesson_id, :type, :content_json, :order_index)";
-                $blockStmt = $db->prepare($blockQuery);
+                $blockStmt = $db->prepare("INSERT INTO lesson_blocks (id, lesson_id, type, content_json, order_index) VALUES (:id, :lesson_id, :type, :content_json, :order_index)");
 
                 foreach($raw['blocks'] as $i => $block) {
                     $blockId = isset($block['id']) ? $block['id'] : uniqid('blk_');
@@ -190,7 +180,7 @@ switch($method) {
             $db->beginTransaction();
 
             // Update Lesson
-            $query = "UPDATE lessons SET 
+            $stmt = $db->prepare("UPDATE lessons SET 
                       category_id = :category_id, 
                       title_ol_chiki = :title_ol_chiki, 
                       title_latin = :title_latin, 
@@ -201,9 +191,7 @@ switch($method) {
                       description = :description,
                       thumbnail_url = :thumbnail_url,
                       is_premium = :is_premium
-                      WHERE id = :id";
-            
-            $stmt = $db->prepare($query);
+                      WHERE id = :id");
             
             $stmt->bindParam(':id', $data['id']);
             $stmt->bindParam(':category_id', $data['category_id']);
@@ -222,14 +210,12 @@ switch($method) {
             // Update blocks: Delete all and re-insert
             if (isset($raw['blocks']) && is_array($raw['blocks'])) {
                 // Delete existing
-                $delQuery = "DELETE FROM lesson_blocks WHERE lesson_id = :lesson_id";
-                $delStmt = $db->prepare($delQuery);
+                $delStmt = $db->prepare("DELETE FROM lesson_blocks WHERE lesson_id = :lesson_id");
                 $delStmt->bindParam(':lesson_id', $data['id']);
                 $delStmt->execute();
 
                 // Re-insert
-                $blockQuery = "INSERT INTO lesson_blocks (id, lesson_id, type, content_json, order_index) VALUES (:id, :lesson_id, :type, :content_json, :order_index)";
-                $blockStmt = $db->prepare($blockQuery);
+                $blockStmt = $db->prepare("INSERT INTO lesson_blocks (id, lesson_id, type, content_json, order_index) VALUES (:id, :lesson_id, :type, :content_json, :order_index)");
 
                 foreach($raw['blocks'] as $i => $block) {
                     $blockId = isset($block['id']) ? $block['id'] : uniqid('blk_');
@@ -263,8 +249,7 @@ switch($method) {
         }
 
         // Blocks cascade delete automatically via foreign key
-        $query = "DELETE FROM lessons WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM lessons WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

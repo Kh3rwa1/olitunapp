@@ -13,7 +13,8 @@ header('Content-Type: application/json; charset=utf-8');
 
 // Simple auth key to prevent unauthorized access
 $key = $_GET['key'] ?? '';
-if ($key !== 'olitun_export_2025') {
+$expectedKey = getenv('EXPORT_API_KEY') ?: '';
+if ($expectedKey === '' || !hash_equals($expectedKey, $key)) {
     http_response_code(403);
     echo json_encode(['error' => 'Invalid key']);
     exit;
@@ -24,7 +25,7 @@ try {
     $pdo = new PDO(
         "mysql:host=localhost;dbname=u236276440_olitun;charset=utf8mb4",
         "u236276440_olitun",
-        "Heysusanta@2025",
+        getenv('DB_PASSWORD') ?: '',
         [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]
     );
 } catch (PDOException $e) {
@@ -51,7 +52,8 @@ $export = [];
 
 foreach ($tables as $table) {
     try {
-        $stmt = $pdo->query("SELECT * FROM `$table`");
+        $stmt = $pdo->prepare("SELECT * FROM `$table`");
+        $stmt->execute();
         $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
         $export[$table] = $rows;
     } catch (PDOException $e) {

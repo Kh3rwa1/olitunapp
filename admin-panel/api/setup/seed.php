@@ -1,5 +1,8 @@
 <?php
-header("Access-Control-Allow-Origin: *");
+if (isset($_SERVER['HTTP_ORIGIN']) && preg_match('/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/', $_SERVER['HTTP_ORIGIN'])) {
+    header("Access-Control-Allow-Origin: " . $_SERVER['HTTP_ORIGIN']);
+    header("Vary: Origin");
+}
 header("Content-Type: application/json; charset=UTF-8");
 
 include_once '../core/db.php';

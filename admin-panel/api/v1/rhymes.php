@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM rhymes ORDER BY created_at DESC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM rhymes ORDER BY created_at DESC");
         $stmt->execute();
         $rhymes = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -35,12 +34,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO rhymes 
+        $stmt = $db->prepare("INSERT INTO rhymes 
                   (id, title_ol_chiki, title_latin, content_ol_chiki, content_latin, audio_url, thumbnail_url, category, subcategory, difficulty, duration_seconds, is_premium) 
                   VALUES 
-                  (:id, :title_ol_chiki, :title_latin, :content_ol_chiki, :content_latin, :audio_url, :thumbnail_url, :category, :subcategory, :difficulty, :duration_seconds, :is_premium)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :title_ol_chiki, :title_latin, :content_ol_chiki, :content_latin, :audio_url, :thumbnail_url, :category, :subcategory, :difficulty, :duration_seconds, :is_premium)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title_ol_chiki', $data['title_ol_chiki']);
@@ -67,7 +64,7 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE rhymes SET 
+        $stmt = $db->prepare("UPDATE rhymes SET 
                   title_ol_chiki = :title_ol_chiki, 
                   title_latin = :title_latin, 
                   content_ol_chiki = :content_ol_chiki, 
@@ -79,9 +76,7 @@ switch($method) {
                   difficulty = :difficulty,
                   duration_seconds = :duration_seconds,
                   is_premium = :is_premium
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':title_ol_chiki', $data['title_ol_chiki']);
@@ -107,8 +102,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM rhymes WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM rhymes WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

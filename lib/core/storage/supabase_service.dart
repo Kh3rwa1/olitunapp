@@ -17,6 +17,7 @@ class AppConfig {
 
 /// Upload service for Hostinger PHP API
 class HostingerUploadService {
+  static const int _maxUploadBytes = 50 * 1024 * 1024; // 50MB
   /// Maps file extension to proper MIME type
   static MediaType? _getMimeType(String filename) {
     final ext = filename.split('.').last.toLowerCase();
@@ -56,12 +57,18 @@ class HostingerUploadService {
           'File data is missing. Ensure bytes or path is available.',
         );
       }
+      if (file.size <= 0 || file.size > _maxUploadBytes) {
+        throw Exception('File must be between 1 byte and 50MB.');
+      }
 
       final uri = Uri.parse(AppConfig.uploadEndpoint);
       final request = http.MultipartRequest('POST', uri);
 
       // Determine content type from extension
       final contentType = _getMimeType(file.name);
+      if (contentType == null) {
+        throw Exception('Unsupported file type: ${file.name}');
+      }
       debugPrint(
         'Upload: ${file.name} (${file.size} bytes) → $contentType → folder: $folder',
       );

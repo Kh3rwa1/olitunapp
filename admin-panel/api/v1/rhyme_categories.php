@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM rhyme_categories ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM rhyme_categories ORDER BY order_index ASC");
         $stmt->execute();
         $categories = $stmt->fetchAll(PDO::FETCH_ASSOC);
         sendResponse(mapRowsToCamel($categories));
@@ -29,12 +28,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO rhyme_categories 
+        $stmt = $db->prepare("INSERT INTO rhyme_categories 
                   (id, name_ol_chiki, name_latin, icon_name, order_index) 
                   VALUES 
-                  (:id, :name_ol_chiki, :name_latin, :icon_name, :order_index)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :name_ol_chiki, :name_latin, :icon_name, :order_index)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':name_ol_chiki', $data['name_ol_chiki']);
@@ -54,14 +51,12 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE rhyme_categories SET 
+        $stmt = $db->prepare("UPDATE rhyme_categories SET 
                   name_ol_chiki = :name_ol_chiki, 
                   name_latin = :name_latin, 
                   icon_name = :icon_name,
                   order_index = :order_index
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':name_ol_chiki', $data['name_ol_chiki']);
@@ -80,8 +75,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM rhyme_categories WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM rhyme_categories WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

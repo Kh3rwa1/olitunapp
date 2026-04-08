@@ -14,8 +14,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 
 switch($method) {
     case 'GET':
-        $query = "SELECT * FROM words ORDER BY order_index ASC";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("SELECT * FROM words ORDER BY order_index ASC");
         $stmt->execute();
         $words = $stmt->fetchAll(PDO::FETCH_ASSOC);
         
@@ -34,12 +33,10 @@ switch($method) {
             sendResponse(null, 400, "Missing required fields");
         }
 
-        $query = "INSERT INTO words 
+        $stmt = $db->prepare("INSERT INTO words 
                   (id, word_ol_chiki, word_latin, meaning, usage_example, category, order_index, audio_url, image_url) 
                   VALUES 
-                  (:id, :word_ol_chiki, :word_latin, :meaning, :usage_example, :category, :order_index, :audio_url, :image_url)";
-        
-        $stmt = $db->prepare($query);
+                  (:id, :word_ol_chiki, :word_latin, :meaning, :usage_example, :category, :order_index, :audio_url, :image_url)");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':word_ol_chiki', $data['word_ol_chiki']);
@@ -63,7 +60,7 @@ switch($method) {
         $data = mapInputToSnake($raw);
         if (!isset($data['id'])) sendResponse(null, 400, "Missing ID");
 
-        $query = "UPDATE words SET 
+        $stmt = $db->prepare("UPDATE words SET 
                   word_ol_chiki = :word_ol_chiki, 
                   word_latin = :word_latin, 
                   meaning = :meaning, 
@@ -72,9 +69,7 @@ switch($method) {
                   order_index = :order_index, 
                   audio_url = :audio_url, 
                   image_url = :image_url
-                  WHERE id = :id";
-        
-        $stmt = $db->prepare($query);
+                  WHERE id = :id");
         
         $stmt->bindParam(':id', $data['id']);
         $stmt->bindParam(':word_ol_chiki', $data['word_ol_chiki']);
@@ -97,8 +92,7 @@ switch($method) {
         $id = isset($_GET['id']) ? $_GET['id'] : null;
         if (!$id) sendResponse(null, 400, "Missing ID");
 
-        $query = "DELETE FROM words WHERE id = :id";
-        $stmt = $db->prepare($query);
+        $stmt = $db->prepare("DELETE FROM words WHERE id = :id");
         $stmt->bindParam(':id', $id);
 
         if($stmt->execute()) {

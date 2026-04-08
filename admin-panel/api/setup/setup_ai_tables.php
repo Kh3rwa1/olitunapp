@@ -34,7 +34,8 @@ $queries = [
 $results = [];
 foreach ($queries as $q) {
     try {
-        $db->exec($q);
+        $stmt = $db->prepare($q);
+        $stmt->execute();
         $results[] = ['query' => substr($q, 0, 60) . '...', 'status' => 'OK'];
     } catch (Exception $e) {
         $results[] = ['query' => substr($q, 0, 60) . '...', 'status' => 'ERROR', 'error' => $e->getMessage()];

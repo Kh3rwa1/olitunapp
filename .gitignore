@@ -50,3 +50,4 @@ app.*.map.json
 .env
 scripts/node_modules/
 run.sh
+build_web_v*.zip

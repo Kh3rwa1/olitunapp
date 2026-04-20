@@ -3,16 +3,23 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
-/// Google Translate proxy on Hostinger
+/// Translation API configuration.
+/// Set TRANSLATE_URL via --dart-define to use Appwrite Function.
+/// Falls back to legacy PHP proxy if not provided.
 class AiConfig {
-  static const String apiBaseUrl = String.fromEnvironment(
-    'API_BASE_URL',
-    defaultValue: 'https://olitun.in/admin-panel/api/v1',
+  static const String _legacyBaseUrl =
+      'https://olitun.in/admin-panel/api/v1';
+
+  /// Appwrite Function URL (or legacy PHP proxy base)
+  static const String translateUrl = String.fromEnvironment(
+    'TRANSLATE_URL',
+    defaultValue: '$_legacyBaseUrl/translate.php',
   );
 
-  static String get translateEndpoint => '$apiBaseUrl/translate.php';
-  static String get reverseTranslateEndpoint =>
-      '$apiBaseUrl/translate_from_olchiki.php';
+  static const String reverseTranslateUrl = String.fromEnvironment(
+    'REVERSE_TRANSLATE_URL',
+    defaultValue: '$_legacyBaseUrl/translate_from_olchiki.php',
+  );
 }
 
 /// Translation service — Google Translate via server proxy
@@ -29,7 +36,7 @@ class AiService {
   }) async {
     try {
       final response = await _client.post(
-        Uri.parse(AiConfig.translateEndpoint),
+        Uri.parse(AiConfig.translateUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'text': text, 'from': from, 'to': to}),
       );
@@ -75,7 +82,7 @@ class AiService {
   }) async {
     try {
       final response = await _client.post(
-        Uri.parse(AiConfig.reverseTranslateEndpoint),
+        Uri.parse(AiConfig.reverseTranslateUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({'text': text, 'to': to}),
       );

@@ -117,7 +117,7 @@ final userAvatarColorsProvider = Provider<List<Color>>((ref) {
 final shellTabIndexProvider = StateProvider<int>((ref) => 0);
 
 final themeModeProvider = StateProvider<String>((ref) {
-  return prefs.getString('theme_mode') ?? 'system';
+  return prefs.getString('theme_mode') ?? 'light';
 });
 
 final scriptModeProvider = StateProvider<String>((ref) {

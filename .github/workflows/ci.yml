@@ -23,5 +23,19 @@ jobs:
       - name: Analyze
         run: flutter analyze --no-fatal-infos
 
-      - name: Run tests
-        run: flutter test
+      - name: Run tests with coverage
+        run: flutter test --coverage
+
+      - name: Upload coverage to Codecov
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        uses: codecov/codecov-action@v4
+        with:
+          file: coverage/lcov.info
+          fail_ci_if_error: false
+
+      - name: Build web (verify)
+        run: |
+          flutter build web \
+            --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
+            --dart-define=APPWRITE_PROJECT_ID=test \
+            --dart-define=ADMIN_SECRET_KEY=test

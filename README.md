@@ -1,5 +1,8 @@
 # Olitun — Learn Ol Chiki (Santali Script) ᱚᱞᱤᱛᱩᱱ
 
+[![CI](https://github.com/Kh3rwa1/olitunapp/actions/workflows/ci.yml/badge.svg)](https://github.com/Kh3rwa1/olitunapp/actions/workflows/ci.yml)
+[![codecov](https://codecov.io/gh/Kh3rwa1/olitunapp/branch/main/graph/badge.svg)](https://codecov.io/gh/Kh3rwa1/olitunapp)
+
 A premium, gamified language learning app for **Ol Chiki** — the writing system used by ~7.6 million Santal people of South Asia. Think Duolingo, but for a culturally significant and underserved script.
 
 > Built with Flutter • Appwrite BaaS • Riverpod • Material 3

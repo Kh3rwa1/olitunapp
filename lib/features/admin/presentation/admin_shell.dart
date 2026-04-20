@@ -33,13 +33,13 @@ class AdminShell extends ConsumerWidget {
               width: isDesktop ? 280 : 88,
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.02)
-                    : Colors.white.withOpacity(0.8),
+                    ? Colors.white.withValues(alpha: 0.02)
+                    : Colors.white.withValues(alpha: 0.8),
                 border: Border(
                   right: BorderSide(
                     color: isDark
-                        ? Colors.white.withOpacity(0.05)
-                        : Colors.black.withOpacity(0.05),
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -368,11 +368,11 @@ class _NavItem extends StatelessWidget {
                 const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
             decoration: BoxDecoration(
               color: isSelected
-                  ? AppColors.primary.withOpacity(0.15)
+                  ? AppColors.primary.withValues(alpha: 0.15)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(12),
               border: isSelected
-                  ? Border.all(color: AppColors.primary.withOpacity(0.3))
+                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.3))
                   : null,
             ),
             child: Row(

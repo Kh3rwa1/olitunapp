@@ -54,8 +54,8 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                       borderRadius: BorderRadius.circular(26),
                       border: Border.all(
                         color: isDark
-                            ? Colors.white.withOpacity(0.10)
-                            : Colors.black.withOpacity(0.05),
+                            ? Colors.white.withValues(alpha: 0.10)
+                            : Colors.black.withValues(alpha: 0.05),
                       ),
                     ),
                     child: Stack(
@@ -65,7 +65,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                             widget.letterChar,
                             style: TextStyle(
                               fontSize: boardSize * 0.56,
-                              color: Colors.grey.withOpacity(0.12),
+                              color: Colors.grey.withValues(alpha: 0.12),
                               fontWeight: FontWeight.w700,
                             ),
                           ),
@@ -126,7 +126,7 @@ class StrokePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final guidePaint = Paint()
-      ..color = Colors.grey.withOpacity(0.25)
+      ..color = Colors.grey.withValues(alpha: 0.25)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.width * 0.04
       ..strokeCap = StrokeCap.round;

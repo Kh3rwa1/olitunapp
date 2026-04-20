@@ -62,6 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 await updateUserName(ref, firstName);
               }
             } catch (_) {}
+            if (!mounted) return;
             context.go('/home');
             return;
           }
@@ -75,8 +76,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (isLoggedIn) {
         // Sync profile name in background
         syncProfileName(ref).catchError((_) {});
+        if (!mounted) return;
         context.go('/home');
       } else {
+        if (!mounted) return;
         context.go('/welcome');
       }
     }

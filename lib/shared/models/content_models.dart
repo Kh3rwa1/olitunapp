@@ -483,6 +483,7 @@ class LessonModel {
     int? estimatedMinutes,
     String? thumbnailUrl,
     String? description,
+    String? audioUrl,
     bool? isPremium,
   }) {
     return LessonModel(
@@ -497,6 +498,7 @@ class LessonModel {
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
       description: description ?? this.description,
+      audioUrl: audioUrl ?? this.audioUrl,
       isPremium: isPremium ?? this.isPremium,
     );
   }

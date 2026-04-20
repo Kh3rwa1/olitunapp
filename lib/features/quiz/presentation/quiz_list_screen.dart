@@ -3,10 +3,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../core/presentation/layout/responsive_layout.dart';
+import '../../../shared/widgets/bento_grid.dart';
 
 class QuizListScreen extends ConsumerWidget {
   const QuizListScreen({super.key});
@@ -14,14 +17,19 @@ class QuizListScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final quizzesAsync = ref.watch(quizzesProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isTablet = ResponsiveLayout.isTablet(context);
+    final isDesktop = ResponsiveLayout.isDesktop(context);
 
     return Scaffold(
-      backgroundColor: AppColors.quizBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
             // Header
-            _buildHeader(context),
+            _buildHeader(context, isDark),
 
             // Content
             Expanded(
@@ -33,37 +41,111 @@ class QuizListScreen extends ConsumerWidget {
 
                   final activeQuizzes = quizzes.where((q) {
                     if (!q.isActive || q.questions.isEmpty) return false;
-
                     final currentMastery =
                         progress.categoryMastery[q.categoryId] ?? 0;
                     final quizLevelValue = _getLevelValue(q.level);
-
                     return quizLevelValue <= currentMastery;
                   }).toList();
 
                   activeQuizzes.sort(
-                    (a, b) => _getLevelValue(
-                      a.level,
-                    ).compareTo(_getLevelValue(b.level)),
+                    (a, b) => _getLevelValue(a.level)
+                        .compareTo(_getLevelValue(b.level)),
                   );
 
                   if (activeQuizzes.isEmpty) {
-                    return _buildEmptyState(context);
+                    return _buildEmptyState(context, isDark);
                   }
 
-                  return ListView.builder(
-                    padding: const EdgeInsets.all(20),
-                    itemCount: activeQuizzes.length,
-                    itemBuilder: (context, index) {
-                      return _QuizCard(
-                        quiz: activeQuizzes[index],
-                        index: index,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          context.push('/quiz/${activeQuizzes[index].id}');
-                        },
-                      );
-                    },
+                  return SingleChildScrollView(
+                    padding: EdgeInsets.fromLTRB(
+                      isTablet ? 32 : 20,
+                      20,
+                      isTablet ? 32 : 20,
+                      120,
+                    ),
+                    child: ResponsivePageContainer(
+                      padding: EdgeInsets.zero,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          // Hero Quiz Card (first quiz)
+                          if (activeQuizzes.isNotEmpty)
+                            AnimatedBentoChild(
+                              index: 0,
+                              child: GestureDetector(
+                                onTap: () {
+                                  HapticFeedback.lightImpact();
+                                  context.push(
+                                    '/quiz/${activeQuizzes.first.id}',
+                                  );
+                                },
+                                child: _HeroQuizCard(
+                                  quiz: activeQuizzes.first,
+                                  isDark: isDark,
+                                ),
+                              ),
+                            ),
+
+                          if (activeQuizzes.length > 1) ...[
+                            const SizedBox(height: 28),
+
+                            Text(
+                              'MORE QUIZZES',
+                              style: GoogleFonts.inter(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 1.5,
+                                color:
+                                    isDark ? Colors.white38 : Colors.black38,
+                              ),
+                            )
+                                .animate()
+                                .fadeIn(delay: 200.ms)
+                                .slideX(begin: -0.05),
+                            const SizedBox(height: 16),
+
+                            // Bento Grid
+                            GridView.builder(
+                              shrinkWrap: true,
+                              physics: const NeverScrollableScrollPhysics(),
+                              gridDelegate:
+                                  SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount:
+                                    ResponsiveLayout.gridColumns(
+                                  context,
+                                  mobile: 2,
+                                  tablet: 3,
+                                  desktop: 3,
+                                ),
+                                mainAxisSpacing: 16,
+                                crossAxisSpacing: 16,
+                                childAspectRatio: isDesktop
+                                    ? 1.1
+                                    : (isTablet ? 1.0 : 0.88),
+                              ),
+                              itemCount: activeQuizzes.length - 1,
+                              itemBuilder: (context, index) {
+                                final quiz = activeQuizzes[index + 1];
+                                return AnimatedBentoChild(
+                                  index: index + 1,
+                                  child: GestureDetector(
+                                    onTap: () {
+                                      HapticFeedback.lightImpact();
+                                      context.push('/quiz/${quiz.id}');
+                                    },
+                                    child: _BentoQuizCard(
+                                      quiz: quiz,
+                                      index: index,
+                                      isDark: isDark,
+                                    ),
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),
@@ -74,66 +156,68 @@ class QuizListScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildHeader(BuildContext context) {
-    return Container(
+  Widget _buildHeader(BuildContext context, bool isDark) {
+    return Padding(
       padding: const EdgeInsets.all(20),
       child: Row(
         children: [
-          // Back button
           GestureDetector(
             onTap: () => context.go('/home'),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.06),
-                    blurRadius: 10,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
+                color: AppColors.glass(context, opacity: 0.06),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.glass(context, opacity: 0.08),
+                ),
               ),
-              child: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              child: Icon(
+                Icons.arrow_back_ios_new_rounded,
+                size: 18,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
             ),
           ),
           const SizedBox(width: 16),
-          // Title
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  'Choose a Quiz',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.black87,
-                    letterSpacing: -0.5,
+                Text(
+                  'CHALLENGE YOURSELF',
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 2,
+                    color: isDark
+                        ? AppColors.duoOrange.withValues(alpha: 0.8)
+                        : AppColors.duoOrangeDark,
                   ),
                 ),
+                const SizedBox(height: 4),
                 Text(
-                  'Test your Ol Chiki knowledge!',
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey[600],
-                    fontWeight: FontWeight.w500,
+                  'Choose a Quiz',
+                  style: GoogleFonts.inter(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.8,
+                    color: isDark ? Colors.white : Colors.black87,
                   ),
                 ),
               ],
             ),
           ),
-          // Mascot placeholder
+          // Mascot
           Container(
-            width: 56,
-            height: 56,
+            width: 52,
+            height: 52,
             decoration: BoxDecoration(
               gradient: AppColors.premiumOrange,
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.3),
+                  color: AppColors.duoOrange.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -142,7 +226,7 @@ class QuizListScreen extends ConsumerWidget {
             child: const Icon(
               Icons.psychology_rounded,
               color: Colors.white,
-              size: 30,
+              size: 28,
             ),
           ),
         ],
@@ -150,44 +234,43 @@ class QuizListScreen extends ConsumerWidget {
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.1);
   }
 
-  Widget _buildEmptyState(BuildContext context) {
+  Widget _buildEmptyState(BuildContext context, bool isDark) {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            width: 120,
-            height: 120,
+            width: 100,
+            height: 100,
             decoration: BoxDecoration(
               gradient: AppColors.premiumOrange,
-              borderRadius: BorderRadius.circular(30),
+              borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.orange.withValues(alpha: 0.3),
+                  color: AppColors.duoOrange.withValues(alpha: 0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
               ],
             ),
-            child: const Icon(
-              Icons.quiz_outlined,
-              size: 60,
-              color: Colors.white,
-            ),
+            child: const Icon(Icons.quiz_outlined, size: 48, color: Colors.white),
           ),
-          const SizedBox(height: 28),
-          const Text(
+          const SizedBox(height: 24),
+          Text(
             'No quizzes yet!',
             style: TextStyle(
-              fontSize: 24,
+              fontSize: 22,
               fontWeight: FontWeight.w800,
-              color: Colors.black87,
+              color: isDark ? Colors.white : Colors.black87,
             ),
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 8),
           Text(
-            'Quizzes will appear here once created',
-            style: TextStyle(fontSize: 15, color: Colors.grey[600]),
+            'Complete some lessons first',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
           ),
         ],
       ),
@@ -195,23 +278,181 @@ class QuizListScreen extends ConsumerWidget {
   }
 }
 
-class _QuizCard extends StatelessWidget {
+// ═══════════════ HERO QUIZ CARD ═══════════════
+
+class _HeroQuizCard extends StatelessWidget {
+  final QuizModel quiz;
+  final bool isDark;
+
+  const _HeroQuizCard({required this.quiz, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    return BentoCell(
+      gradient: LinearGradient(
+        begin: Alignment.topLeft,
+        end: Alignment.bottomRight,
+        colors: [
+          AppColors.duoOrange,
+          AppColors.duoOrangeDark,
+        ],
+      ),
+      borderRadius: 32,
+      border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+      boxShadow: [
+        BoxShadow(
+          color: AppColors.duoOrange.withValues(alpha: 0.35),
+          blurRadius: 30,
+          offset: const Offset(0, 12),
+          spreadRadius: -4,
+        ),
+      ],
+      padding: const EdgeInsets.all(24),
+      child: Stack(
+        children: [
+          Positioned(
+            right: -10,
+            bottom: -10,
+            child: Icon(
+                  Icons.quiz_rounded,
+                  size: 100,
+                  color: Colors.white.withValues(alpha: 0.15),
+                )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .moveY(begin: 0, end: -8, duration: 1800.ms)
+                .scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.05, 1.05),
+                  duration: 1800.ms,
+                ),
+          ),
+          Positioned(
+            right: 60,
+            top: 8,
+            child: Icon(
+                  Icons.auto_awesome,
+                  size: 18,
+                  color: Colors.white.withValues(alpha: 0.5),
+                )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .fadeIn(duration: 600.ms)
+                .then()
+                .fadeOut(duration: 600.ms),
+          ),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.emoji_events_rounded,
+                            size: 13, color: Colors.white),
+                        const SizedBox(width: 4),
+                        Text(
+                          _getLevelEmoji(quiz.level),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                            fontSize: 11,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 14),
+              Text(
+                quiz.title ?? 'Quiz Challenge',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 24,
+                  letterSpacing: -0.5,
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${quiz.questions.length} questions • ${quiz.level}',
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.8),
+                  fontWeight: FontWeight.w600,
+                  fontSize: 14,
+                ),
+              ),
+              const SizedBox(height: 20),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(14),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.play_arrow_rounded,
+                        color: AppColors.duoOrangeDark, size: 20),
+                    const SizedBox(width: 8),
+                    Text(
+                      'START QUIZ',
+                      style: TextStyle(
+                        color: AppColors.duoOrangeDark,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .shimmer(
+                    delay: 2.seconds,
+                    duration: 1500.ms,
+                    color: AppColors.duoOrange.withValues(alpha: 0.3),
+                  ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ═══════════════ BENTO QUIZ CARD ═══════════════
+
+class _BentoQuizCard extends StatelessWidget {
   final QuizModel quiz;
   final int index;
-  final VoidCallback onTap;
+  final bool isDark;
 
-  const _QuizCard({
+  const _BentoQuizCard({
     required this.quiz,
     required this.index,
-    required this.onTap,
+    required this.isDark,
   });
-
-  static const List<List<Color>> _gradients = [
-    [Color(0xFFFFF9E6), Color(0xFFFFF3CD)], // Yellow
-    [Color(0xFFFFECD6), Color(0xFFFFE0C2)], // Orange
-    [Color(0xFFF0E6FF), Color(0xFFE6D9FF)], // Purple
-    [Color(0xFFE6F9E6), Color(0xFFD4F5D4)], // Green
-  ];
 
   static const List<Color> _badgeColors = [
     AppColors.quizBadgeA,
@@ -227,141 +468,125 @@ class _QuizCard extends StatelessWidget {
     Icons.quiz_rounded,
   ];
 
-  String _getLevelEmoji(String level) {
-    switch (level.toLowerCase()) {
-      case 'beginner':
-        return '⭐';
-      case 'intermediate':
-        return '⭐⭐';
-      case 'advanced':
-        return '⭐⭐⭐';
-      default:
-        return '⭐';
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
-    final colors = _gradients[index % 4];
     final badgeColor = _badgeColors[index % 4];
     final icon = _icons[index % 4];
 
-    return Padding(
-          padding: const EdgeInsets.only(bottom: 16),
-          child: GestureDetector(
-            onTap: onTap,
-            child: Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: colors,
-                ),
-                borderRadius: BorderRadius.circular(24),
-                boxShadow: [
-                  BoxShadow(
-                    color: badgeColor.withValues(alpha: 0.2),
-                    blurRadius: 16,
-                    offset: const Offset(0, 6),
-                  ),
-                ],
+    return BentoCell(
+      borderRadius: 28,
+      padding: const EdgeInsets.all(16),
+      color: isDark
+          ? Colors.white.withValues(alpha: 0.04)
+          : Colors.white,
+      boxShadow: isDark
+          ? null
+          : [
+              BoxShadow(
+                color: badgeColor.withValues(alpha: 0.12),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
               ),
-              child: Row(
-                children: [
-                  // Icon Badge
-                  Container(
-                    width: 64,
-                    height: 64,
-                    decoration: BoxDecoration(
-                      color: badgeColor,
-                      borderRadius: BorderRadius.circular(18),
-                      boxShadow: [
-                        BoxShadow(
-                          color: badgeColor.withValues(alpha: 0.4),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Icon(icon, color: Colors.white, size: 32),
-                  ),
-                  const SizedBox(width: 18),
+            ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Icon Badge
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: badgeColor,
+              borderRadius: BorderRadius.circular(14),
+              boxShadow: [
+                BoxShadow(
+                  color: badgeColor.withValues(alpha: 0.35),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Icon(icon, color: Colors.white, size: 20),
+          ),
+          const SizedBox(height: 10),
 
-                  // Details
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          quiz.title ?? 'Quiz ${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
-                              ),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withValues(alpha: 0.7),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                              child: Text(
-                                '${quiz.questions.length} questions',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Colors.grey[700],
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              _getLevelEmoji(quiz.level),
-                              style: const TextStyle(fontSize: 14),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
+          // Title
+          Flexible(
+            child: Text(
+              quiz.title ?? 'Quiz ${index + 2}',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+          const SizedBox(height: 6),
 
-                  // Play Button
-                  Container(
-                    width: 48,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.08),
-                          blurRadius: 8,
-                          offset: const Offset(0, 2),
-                        ),
-                      ],
-                    ),
-                    child: Icon(
-                      Icons.play_arrow_rounded,
-                      color: badgeColor,
-                      size: 28,
-                    ),
-                  ),
-                ],
+          // Meta
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : badgeColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Text(
+              '${quiz.questions.length} questions',
+              style: TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white54 : badgeColor,
               ),
             ),
           ),
-        )
-        .animate()
-        .fadeIn(delay: (index * 100).ms, duration: 400.ms)
-        .slideX(begin: 0.1);
+
+          const Spacer(),
+
+          // Level + Arrow
+          Row(
+            children: [
+              Text(
+                _getLevelEmoji(quiz.level),
+                style: const TextStyle(fontSize: 14),
+              ),
+              const Spacer(),
+              Container(
+                width: 32,
+                height: 32,
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : badgeColor.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(
+                  Icons.play_arrow_rounded,
+                  size: 18,
+                  color: badgeColor,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+String _getLevelEmoji(String level) {
+  switch (level.toLowerCase()) {
+    case 'beginner':
+      return '⭐';
+    case 'intermediate':
+      return '⭐⭐';
+    case 'advanced':
+      return '⭐⭐⭐';
+    default:
+      return '⭐';
   }
 }
 

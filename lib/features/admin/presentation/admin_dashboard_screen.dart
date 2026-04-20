@@ -30,7 +30,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                         width: 400,
                         height: 400,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.03),
+                          color: AppColors.primary.withValues(alpha: 0.03),
                           shape: BoxShape.circle,
                         ),
                       )
@@ -86,10 +86,10 @@ class AdminDashboardScreen extends ConsumerWidget {
                     vertical: 6,
                   ),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withOpacity(0.1),
+                    color: AppColors.primary.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.primary.withOpacity(0.2),
+                      color: AppColors.primary.withValues(alpha: 0.2),
                     ),
                   ),
                   child: Row(
@@ -167,11 +167,11 @@ class AdminDashboardScreen extends ConsumerWidget {
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.05)
-                : Colors.black.withOpacity(0.03),
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+              color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
             ),
           ),
           child: Icon(
@@ -293,15 +293,15 @@ class AdminDashboardScreen extends ConsumerWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
         borderRadius: BorderRadius.circular(24),
         border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: [
           if (!isDark)
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 20,
               offset: const Offset(0, 10),
             ),
@@ -323,7 +323,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                   color: isDark ? Colors.white38 : Colors.black38,
                 ),
               ),
-              Icon(icon, color: color.withOpacity(0.6), size: 18),
+              Icon(icon, color: color.withValues(alpha: 0.6), size: 18),
             ],
           ),
           Column(
@@ -363,10 +363,10 @@ class AdminDashboardScreen extends ConsumerWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
-          color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+          color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
         ),
       ),
       child: Column(
@@ -404,8 +404,8 @@ class AdminDashboardScreen extends ConsumerWidget {
                 ),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white.withOpacity(0.05)
-                      : Colors.black.withOpacity(0.02),
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.02),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
@@ -445,7 +445,7 @@ class AdminDashboardScreen extends ConsumerWidget {
           show: true,
           drawVerticalLine: false,
           getDrawingHorizontalLine: (value) => FlLine(
-            color: isDark ? Colors.white12 : Colors.black.withOpacity(0.05),
+            color: isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05),
             strokeWidth: 1,
           ),
         ),
@@ -498,7 +498,7 @@ class AdminDashboardScreen extends ConsumerWidget {
             dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.primary.withOpacity(0.1),
+              color: AppColors.primary.withValues(alpha: 0.1),
             ),
           ),
           LineChartBarData(
@@ -518,7 +518,7 @@ class AdminDashboardScreen extends ConsumerWidget {
             dotData: const FlDotData(show: false),
             belowBarData: BarAreaData(
               show: true,
-              color: AppColors.duoGreen.withOpacity(0.05),
+              color: AppColors.duoGreen.withValues(alpha: 0.05),
             ),
           ),
         ],

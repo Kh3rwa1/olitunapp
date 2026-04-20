@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/providers/progress_provider.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
+import '../../../shared/widgets/bento_grid.dart';
 import 'settings_screen.dart';
 
 class ProgressScreen extends ConsumerWidget {
@@ -128,7 +129,7 @@ class ProgressScreen extends ConsumerWidget {
         fontWeight: FontWeight.w800,
         letterSpacing: 1.5,
         color: isDark
-            ? AppColors.primary.withOpacity(0.7)
+            ? AppColors.primary.withValues(alpha: 0.7)
             : AppColors.primaryDark,
       ),
     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05, end: 0);
@@ -142,39 +143,109 @@ class ProgressScreen extends ConsumerWidget {
     required bool isDark,
     required bool isTablet,
   }) {
-    final stats = [
-      _StatData(
-        Icons.local_fire_department_rounded,
-        '$streak',
-        'Day Streak',
-        AppColors.duoOrange,
-      ),
-      _StatData(Icons.star_rounded, '$stars', 'Stars', AppColors.duoYellow),
-      _StatData(
-        Icons.quiz_rounded,
-        '$quizzesCompleted',
-        'Quizzes',
-        AppColors.duoBlue,
-      ),
-      _StatData(
-        Icons.timer_rounded,
-        '${learningTime}m',
-        'Time',
-        AppColors.primary,
-      ),
-    ];
-
-    return Row(
-      children: stats.asMap().entries.map((entry) {
-        final i = entry.key;
-        final s = entry.value;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: i < stats.length - 1 ? 10 : 0),
-            child: _StatPill(data: s, isDark: isDark, delay: i * 80),
+    return Column(
+      children: [
+        // Hero stat — streak spans full width
+        AnimatedBentoChild(
+          index: 0,
+          child: BentoCell(
+            padding: const EdgeInsets.all(20),
+            gradient: LinearGradient(
+              colors: [
+                AppColors.duoOrange.withValues(alpha: isDark ? 0.15 : 0.08),
+                AppColors.duoOrange.withValues(alpha: isDark ? 0.05 : 0.02),
+              ],
+            ),
+            border: Border.all(
+              color: AppColors.duoOrange.withValues(alpha: isDark ? 0.2 : 0.12),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppColors.duoOrange.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: const Icon(
+                    Icons.local_fire_department_rounded,
+                    color: AppColors.duoOrange,
+                    size: 28,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '$streak',
+                      style: GoogleFonts.inter(
+                        fontSize: 28,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : Colors.black,
+                      ),
+                    ),
+                    Text(
+                      'DAY STREAK',
+                      style: GoogleFonts.inter(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                        color: AppColors.duoOrange,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.trending_up_rounded,
+                  color: AppColors.duoOrange.withValues(alpha: 0.4),
+                  size: 32,
+                ),
+              ],
+            ),
           ),
-        );
-      }).toList(),
+        ),
+        const SizedBox(height: 12),
+        // 3 stat pills in a row
+        Row(
+          children: [
+            Expanded(
+              child: AnimatedBentoChild(
+                index: 1,
+                child: _StatPill(
+                  data: _StatData(Icons.star_rounded, '$stars', 'Stars', AppColors.duoYellow),
+                  isDark: isDark,
+                  delay: 80,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AnimatedBentoChild(
+                index: 2,
+                child: _StatPill(
+                  data: _StatData(Icons.quiz_rounded, '$quizzesCompleted', 'Quizzes', AppColors.duoBlue),
+                  isDark: isDark,
+                  delay: 160,
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: AnimatedBentoChild(
+                index: 3,
+                child: _StatPill(
+                  data: _StatData(Icons.timer_rounded, '${learningTime}m', 'Time', AppColors.primary),
+                  isDark: isDark,
+                  delay: 240,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
@@ -216,43 +287,61 @@ class ProgressScreen extends ConsumerWidget {
   }
 
   Widget _buildActionTiles(BuildContext context, WidgetRef ref, bool isDark) {
-    return Column(
+    return GridView.count(
+      crossAxisCount: 3,
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      childAspectRatio: 1.1,
       children: [
-        _ModernActionTile(
-          icon: Icons.edit_rounded,
-          label: 'Edit Profile Name',
-          isDark: isDark,
-          onTap: () {
-            final name = ref.read(userNameProvider);
-            _showEditNameDialog(context, ref, name);
-          },
+        AnimatedBentoChild(
+          index: 0,
+          child: _BentoActionCard(
+            icon: Icons.edit_rounded,
+            label: 'Edit Name',
+            color: AppColors.duoBlue,
+            isDark: isDark,
+            onTap: () {
+              final name = ref.read(userNameProvider);
+              _showEditNameDialog(context, ref, name);
+            },
+          ),
         ),
-        _ModernActionTile(
-          icon: Icons.share_rounded,
-          label: 'Share Progress',
-          isDark: isDark,
-          onTap: () {
-            HapticFeedback.lightImpact();
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Coming soon!'),
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+        AnimatedBentoChild(
+          index: 1,
+          child: _BentoActionCard(
+            icon: Icons.share_rounded,
+            label: 'Share',
+            color: AppColors.primary,
+            isDark: isDark,
+            onTap: () {
+              HapticFeedback.lightImpact();
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: const Text('Coming soon!'),
+                  behavior: SnackBarBehavior.floating,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
-              ),
-            );
-          },
+              );
+            },
+          ),
         ),
-        _ModernActionTile(
-          icon: Icons.settings_rounded,
-          label: 'App Settings',
-          isDark: isDark,
-          onTap: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
-          },
+        AnimatedBentoChild(
+          index: 2,
+          child: _BentoActionCard(
+            icon: Icons.settings_rounded,
+            label: 'Settings',
+            color: AppColors.duoOrange,
+            isDark: isDark,
+            onTap: () {
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+            },
+          ),
         ),
       ],
     );
@@ -316,8 +405,8 @@ class ProgressScreen extends ConsumerWidget {
                 ),
                 filled: true,
                 fillColor: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.04),
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.04),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,
@@ -478,8 +567,8 @@ class ProgressScreen extends ConsumerWidget {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: avatarPalettes[i][0].withOpacity(
-                                      0.4,
+                                    color: avatarPalettes[i][0].withValues(
+                                      alpha: 0.4,
                                     ),
                                     blurRadius: 8,
                                   ),
@@ -526,8 +615,8 @@ class ProgressScreen extends ConsumerWidget {
                           child: Container(
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? Colors.white.withOpacity(0.06)
-                                  : Colors.black.withOpacity(0.04),
+                                  ? Colors.white.withValues(alpha: 0.06)
+                                  : Colors.black.withValues(alpha: 0.04),
                               borderRadius: BorderRadius.circular(14),
                               border: isSelected
                                   ? Border.all(
@@ -557,8 +646,8 @@ class ProgressScreen extends ConsumerWidget {
                         child: Container(
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withOpacity(0.06)
-                                : Colors.black.withOpacity(0.04),
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : Colors.black.withValues(alpha: 0.04),
                             borderRadius: BorderRadius.circular(14),
                             border: isSelected
                                 ? Border.all(color: AppColors.primary, width: 2)
@@ -672,14 +761,14 @@ class _ProfileHeroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [Colors.white.withOpacity(0.06), Colors.white.withOpacity(0.02)]
-              : [Colors.white, Colors.white.withOpacity(0.9)],
+              ? [Colors.white.withValues(alpha: 0.06), Colors.white.withValues(alpha: 0.02)]
+              : [Colors.white, Colors.white.withValues(alpha: 0.9)],
         ),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.08)
-              : Colors.black.withOpacity(0.06),
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.06),
         ),
         boxShadow: isDark ? [] : AppColors.softShadow,
       ),
@@ -705,7 +794,7 @@ class _ProfileHeroCard extends StatelessWidget {
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: avatarColors[0].withOpacity(0.3),
+                            color: avatarColors[0].withValues(alpha: 0.3),
                             blurRadius: 16,
                             offset: const Offset(0, 6),
                           ),
@@ -796,10 +885,10 @@ class _ProfileHeroCard extends StatelessWidget {
                             vertical: 4,
                           ),
                           decoration: BoxDecoration(
-                            color: _getLevelColor().withOpacity(0.15),
+                            color: _getLevelColor().withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: _getLevelColor().withOpacity(0.3),
+                              color: _getLevelColor().withValues(alpha: 0.3),
                             ),
                           ),
                           child: Row(
@@ -880,8 +969,8 @@ class _ProfileHeroCard extends StatelessWidget {
                     value: value,
                     minHeight: 8,
                     backgroundColor: isDark
-                        ? Colors.white.withOpacity(0.06)
-                        : Colors.black.withOpacity(0.06),
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : Colors.black.withValues(alpha: 0.06),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       AppColors.primary,
                     ),
@@ -914,18 +1003,18 @@ class _StatPill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.04) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.05),
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.05),
         ),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.03),
+                  color: Colors.black.withValues(alpha: 0.03),
                   blurRadius: 8,
                   offset: const Offset(0, 2),
                 ),
@@ -951,8 +1040,8 @@ class _StatPill extends StatelessWidget {
               fontWeight: FontWeight.w800,
               letterSpacing: 0.5,
               color: isDark
-                  ? Colors.white.withOpacity(0.3)
-                  : Colors.black.withOpacity(0.3),
+                  ? Colors.white.withValues(alpha: 0.3)
+                  : Colors.black.withValues(alpha: 0.3),
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -990,18 +1079,18 @@ class _SkillProgressCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: isDark
-              ? Colors.white.withOpacity(0.06)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.06)
+              : Colors.black.withValues(alpha: 0.04),
         ),
         boxShadow: isDark
             ? []
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
@@ -1023,7 +1112,7 @@ class _SkillProgressCard extends StatelessWidget {
                     value: value,
                     strokeWidth: 5,
                     strokeCap: StrokeCap.round,
-                    backgroundColor: color.withOpacity(0.1),
+                    backgroundColor: color.withValues(alpha: 0.1),
                     valueColor: AlwaysStoppedAnimation<Color>(color),
                   ),
                   Text(
@@ -1085,7 +1174,7 @@ class _QuizPerformanceCard extends StatelessWidget {
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppColors.duoBlue.withOpacity(0.25),
+                color: AppColors.duoBlue.withValues(alpha: 0.25),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),
@@ -1162,7 +1251,7 @@ class _QuizMiniStat extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.18),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(10),
       ),
       child: Column(
@@ -1189,73 +1278,56 @@ class _QuizMiniStat extends StatelessWidget {
   }
 }
 
-// ═══════════════ ACTION TILE ═══════════════
+// ═══════════════ BENTO ACTION CARD ═══════════════
 
-class _ModernActionTile extends StatelessWidget {
+class _BentoActionCard extends StatelessWidget {
   final IconData icon;
   final String label;
+  final Color color;
   final bool isDark;
   final VoidCallback onTap;
 
-  const _ModernActionTile({
+  const _BentoActionCard({
     required this.icon,
     required this.label,
+    required this.color,
     required this.isDark,
     required this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
+    return BentoCell(
+      padding: const EdgeInsets.all(16),
       child: InkWell(
         onTap: () {
           HapticFeedback.lightImpact();
           onTap();
         },
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withOpacity(0.06)
-                  : Colors.black.withOpacity(0.05),
+        borderRadius: BorderRadius.circular(28),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              width: 44,
+              height: 44,
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(14),
+              ),
+              child: Icon(icon, color: color, size: 22),
             ),
-          ),
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(icon, color: AppColors.primary, size: 20),
+            const SizedBox(height: 10),
+            Text(
+              label,
+              style: GoogleFonts.inter(
+                fontSize: 12,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white70 : Colors.black87,
               ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-              ),
-              Icon(
-                Icons.chevron_right_rounded,
-                color: isDark
-                    ? Colors.white.withOpacity(0.2)
-                    : Colors.black.withOpacity(0.2),
-                size: 22,
-              ),
-            ],
-          ),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

@@ -431,7 +431,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         const Spacer(),
         // Question Counter
         Text(
-          '$_currentQuestionIndex/${_questions.length}Q',
+          '${_currentQuestionIndex + 1}/${_questions.length}Q',
           style: const TextStyle(
             fontSize: 18,
             fontWeight: FontWeight.w800,

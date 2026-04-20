@@ -127,6 +127,3 @@ class HostingerUploadService {
 
 /// Provider for upload service
 final uploadServiceProvider = Provider((ref) => HostingerUploadService());
-
-/// Legacy alias for compatibility (was supabaseServiceProvider)
-final supabaseServiceProvider = uploadServiceProvider;

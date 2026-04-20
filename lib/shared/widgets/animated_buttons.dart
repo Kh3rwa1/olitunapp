@@ -756,7 +756,7 @@ class _DuoButtonState extends State<DuoButton>
         widget.shadowColor ??
         (widget.color == AppColors.primary
             ? AppColors.primaryDark
-            : widget.color.withOpacity(0.7));
+            : widget.color.withValues(alpha: 0.7));
 
     // Auto-detect contrast color for text
     final textColor = widget.color == Colors.white
@@ -794,7 +794,7 @@ class _DuoButtonState extends State<DuoButton>
                   color: widget.color,
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                   border: Border.all(
-                    color: Colors.white.withOpacity(0.1),
+                    color: Colors.white.withValues(alpha: 0.1),
                     width: 1,
                   ),
                 ),

@@ -157,8 +157,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -227,7 +227,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -418,8 +418,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.black.withOpacity(0.04),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -482,8 +482,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.black.withOpacity(0.04),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -642,8 +642,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -678,7 +678,7 @@ class _FilterChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected
               ? AppColors.premiumCyan.colors.first
-              : (isDark ? Colors.white10 : Colors.black.withOpacity(0.05)),
+              : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isSelected
@@ -688,7 +688,7 @@ class _FilterChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.premiumCyan.colors.first.withOpacity(0.3),
+                    color: AppColors.premiumCyan.colors.first.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -741,7 +741,7 @@ class _LessonCard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.primary.withOpacity(0.3),
+                    color: AppColors.primary.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

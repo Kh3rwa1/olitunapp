@@ -39,18 +39,18 @@ import 'features/admin/presentation/admin_media_screen.dart';
 import 'features/admin/presentation/admin_settings_screen.dart';
 import 'features/admin/presentation/admin_shell.dart';
 import 'features/admin/providers/admin_auth_provider.dart';
-import 'core/auth/appwrite_auth_service.dart';
+import 'core/config/appwrite_config.dart';
 import 'core/storage/storage_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Validate all required --dart-define config values are present
+  AppwriteConfig.validate();
+
   // Initialize shared storage
   await initStorage();
   final prefs = await SharedPreferences.getInstance();
-
-  // Ping Appwrite backend to verify SDK setup
-  AppwriteAuthService().ping();
 
   // Set system UI to edge-to-edge
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);

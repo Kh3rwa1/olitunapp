@@ -512,8 +512,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    accentColor.withOpacity(0.08),
-                    accentColor.withOpacity(0.04),
+                    accentColor.withValues(alpha: 0.08),
+                    accentColor.withValues(alpha: 0.04),
                   ],
                   begin: Alignment.topLeft,
                   end: Alignment.bottomRight,

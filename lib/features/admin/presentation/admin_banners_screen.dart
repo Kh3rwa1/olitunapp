@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/storage/supabase_service.dart';
+import '../../../core/storage/upload_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import 'widgets/admin_glass_card.dart';
@@ -75,7 +75,7 @@ class AdminBannersScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentPurple.withOpacity(0.3),
+                  color: AppColors.accentPurple.withValues(alpha: 0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -118,7 +118,7 @@ class AdminBannersScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentPurple.withOpacity(0.4),
+                    color: AppColors.accentPurple.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -205,12 +205,12 @@ class AdminBannersScreen extends ConsumerWidget {
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
             color: isDark
-                ? const Color(0xFF0F172A).withOpacity(0.95)
-                : Colors.white.withOpacity(0.95),
+                ? const Color(0xFF0F172A).withValues(alpha: 0.95)
+                : Colors.white.withValues(alpha: 0.95),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 blurRadius: 40,
                 spreadRadius: 10,
               ),
@@ -226,7 +226,7 @@ class AdminBannersScreen extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: isDark
                       ? Colors.white10
-                      : Colors.black.withOpacity(0.05),
+                      : Colors.black.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -282,7 +282,7 @@ class AdminBannersScreen extends ConsumerWidget {
                       style: IconButton.styleFrom(
                         backgroundColor: isDark
                             ? Colors.white10
-                            : Colors.black.withOpacity(0.05),
+                            : Colors.black.withValues(alpha: 0.05),
                       ),
                     ),
                   ],
@@ -513,8 +513,8 @@ class AdminBannersScreen extends ConsumerWidget {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -553,7 +553,7 @@ class AdminBannersScreen extends ConsumerWidget {
                         width: 64,
                         height: 64,
                         decoration: BoxDecoration(
-                          color: AppColors.error.withOpacity(0.1),
+                          color: AppColors.error.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                         ),
                         child: const Icon(
@@ -685,8 +685,8 @@ class AdminBannersScreen extends ConsumerWidget {
                   hintText: 'https://...',
                   filled: true,
                   fillColor: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.04),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -725,7 +725,7 @@ class AdminBannersScreen extends ConsumerWidget {
 
       if (result != null && result.files.isNotEmpty) {
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(result.files.first, folder);
         if (url != null) {
           setDialogState(() {
@@ -758,7 +758,7 @@ class AdminBannersScreen extends ConsumerWidget {
 
       if (result != null && result.files.isNotEmpty) {
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(result.files.first, folder);
         if (url != null) {
           setDialogState(() {
@@ -849,7 +849,7 @@ class _BannerCardState extends State<_BannerCard> {
                       width: 150,
                       height: 150,
                       decoration: BoxDecoration(
-                        color: Colors.white.withOpacity(0.1),
+                        color: Colors.white.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -883,7 +883,7 @@ class _BannerCardState extends State<_BannerCard> {
                                       style: TextStyle(
                                         fontSize: isSmall ? 13 : 15,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.white.withOpacity(0.85),
+                                        color: Colors.white.withValues(alpha: 0.85),
                                       ),
                                     ),
                                   ],
@@ -968,14 +968,14 @@ class _BannerActionButton extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: Colors.black.withOpacity(0.1),
+          color: Colors.black.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.1)),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Icon(
           icon,
           size: 20,
-          color: isDelete ? Colors.white.withOpacity(0.9) : Colors.white,
+          color: isDelete ? Colors.white.withValues(alpha: 0.9) : Colors.white,
         ),
       ),
     );
@@ -1011,7 +1011,7 @@ class _GradientOption extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: gradient.colors.first.withOpacity(0.5),
+                    color: gradient.colors.first.withValues(alpha: 0.5),
                     blurRadius: 15,
                     spreadRadius: 2,
                   ),

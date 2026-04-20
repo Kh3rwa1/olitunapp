@@ -21,12 +21,15 @@ class MainShellScreen extends ConsumerStatefulWidget {
   ConsumerState<MainShellScreen> createState() => _MainShellScreenState();
 }
 
-class _MainShellScreenState extends ConsumerState<MainShellScreen> {
+class _MainShellScreenState extends ConsumerState<MainShellScreen>
+    with WidgetsBindingObserver {
   int _selectedIndex = 0;
+  bool _isAppActive = true;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
@@ -35,6 +38,19 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
       ),
     );
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() {
+      _isAppActive = state == AppLifecycleState.resumed;
+    });
   }
 
   final List<Widget> _screens = [
@@ -165,6 +181,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   }
 
   Widget _buildPremiumBackground(bool isDark) {
+    // Only animate particles when home tab is active and app is in foreground
+    final shouldAnimate = _selectedIndex == 0 && _isAppActive;
     return Stack(
       children: [
         Positioned.fill(
@@ -190,7 +208,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
         ),
         Positioned.fill(
           child: EnchantedVisualizer(
-            isPlaying: true,
+            isPlaying: shouldAnimate,
             color: AppColors.primary,
             showWaves: false,
             showParticles: true,
@@ -769,7 +787,7 @@ class _DesktopRightPanel extends ConsumerWidget {
   }
 }
 
-class _RightPanelStat extends StatelessWidget {
+class _RightPanelStat extends StatefulWidget {
   final IconData icon;
   final String label;
   final String value;
@@ -785,54 +803,77 @@ class _RightPanelStat extends StatelessWidget {
   });
 
   @override
+  State<_RightPanelStat> createState() => _RightPanelStatState();
+}
+
+class _RightPanelStatState extends State<_RightPanelStat> {
+  bool _isHovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.03)
-            : Colors.black.withValues(alpha: 0.02),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        transform: _isHovered
+            ? Matrix4.diagonal3Values(1.02, 1.02, 1.0)
+            : Matrix4.identity(),
+        transformAlignment: Alignment.center,
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: _isHovered
+              ? (widget.isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.black.withValues(alpha: 0.04))
+              : (widget.isDark
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.02)),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: _isHovered
+                ? widget.color.withValues(alpha: 0.2)
+                : (widget.isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+          ),
         ),
-      ),
-      child: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(10),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: widget.color.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(widget.icon, color: widget.color, size: 18),
             ),
-            child: Icon(icon, color: color, size: 18),
-          ),
-          const SizedBox(width: 14),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  value,
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : Colors.black87,
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    widget.value,
+                    style: GoogleFonts.inter(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: widget.isDark ? Colors.white : Colors.black87,
+                    ),
                   ),
-                ),
-                Text(
-                  label,
-                  style: GoogleFonts.inter(
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? Colors.white38 : Colors.black38,
+                  Text(
+                    widget.label,
+                    style: GoogleFonts.inter(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w500,
+                      color: widget.isDark ? Colors.white38 : Colors.black38,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

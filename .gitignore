@@ -49,3 +49,4 @@ app.*.map.json
 # Security
 .env
 scripts/node_modules/
+run.sh

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/storage/supabase_service.dart';
+import '../../../core/storage/upload_service.dart';
 import '../../../core/api/appwrite_db_service.dart';
 import '../../../shared/providers/providers.dart';
 
@@ -204,7 +204,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withOpacity(0.1),
+                          color: AppColors.success.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: Icon(
@@ -249,13 +249,13 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.03)
-                  : Colors.black.withOpacity(0.02),
+                  ? Colors.white.withValues(alpha: 0.03)
+                  : Colors.black.withValues(alpha: 0.02),
               borderRadius: BorderRadius.circular(16),
               border: Border.all(
                 color: isDark
-                    ? Colors.white.withOpacity(0.08)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.08)
+                    : Colors.black.withValues(alpha: 0.05),
               ),
             ),
             child: Column(
@@ -297,8 +297,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? Colors.white.withOpacity(0.05)
-                          : Colors.black.withOpacity(0.03),
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.03),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
@@ -352,7 +352,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: LinearProgressIndicator(
-                backgroundColor: AppColors.primary.withOpacity(0.2),
+                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
                 valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
                 borderRadius: BorderRadius.circular(4),
               ),
@@ -378,16 +378,16 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
           color: isPrimary
               ? null
               : (isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.04)),
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.04)),
           borderRadius: BorderRadius.circular(14),
           boxShadow: isPrimary ? AppColors.glowShadow(AppColors.primary) : null,
           border: isPrimary
               ? null
               : Border.all(
                   color: isDark
-                      ? Colors.white.withOpacity(0.1)
-                      : Colors.black.withOpacity(0.08),
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : Colors.black.withValues(alpha: 0.08),
                 ),
         ),
         child: Row(
@@ -431,13 +431,13 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         child: Container(
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.04)
-                : Colors.white.withOpacity(0.9),
+                ? Colors.white.withValues(alpha: 0.04)
+                : Colors.white.withValues(alpha: 0.9),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
               color: isDark
-                  ? Colors.white.withOpacity(0.08)
-                  : Colors.black.withOpacity(0.05),
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: 0.05),
             ),
             boxShadow: isDark ? null : AppColors.subtleShadow,
           ),
@@ -452,7 +452,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                     Container(
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withOpacity(0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(14),
                       ),
                       child: Icon(icon, color: AppColors.primary, size: 22),
@@ -493,8 +493,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
               Divider(
                 height: 1,
                 color: isDark
-                    ? Colors.white.withOpacity(0.06)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.05),
               ),
               child,
             ],

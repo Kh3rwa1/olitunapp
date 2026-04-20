@@ -7,7 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../core/storage/supabase_service.dart';
+import '../../../core/storage/upload_service.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/api/ai_service.dart';
 
@@ -96,8 +96,8 @@ class AdminLettersScreen extends ConsumerWidget {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -164,7 +164,7 @@ class AdminLettersScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(30),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentMint.withOpacity(0.3),
+                  color: AppColors.accentMint.withValues(alpha: 0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -212,7 +212,7 @@ class AdminLettersScreen extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: AppColors.accentMint.withOpacity(0.4),
+                    color: AppColors.accentMint.withValues(alpha: 0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
                   ),
@@ -325,15 +325,15 @@ class AdminLettersScreen extends ConsumerWidget {
                     setDialogState(() => isUploading = true);
 
                     final file = result.files.first;
-                    print(
+                    debugPrint(
                       'Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}',
                     );
 
                     final uploadedUrl = await ref
-                        .read(supabaseServiceProvider)
+                        .read(uploadServiceProvider)
                         .uploadMedia(file, 'letters-audio');
 
-                    print('Upload result: $uploadedUrl');
+                    debugPrint('Upload result: $uploadedUrl');
 
                     setDialogState(() {
                       audioUrl = uploadedUrl;
@@ -352,7 +352,7 @@ class AdminLettersScreen extends ConsumerWidget {
                     }
                   }
                 } catch (e) {
-                  print('Error picking audio: $e');
+                  debugPrint('Error picking audio: $e');
                   setDialogState(() => isUploading = false);
                   if (context.mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
@@ -415,7 +415,7 @@ class AdminLettersScreen extends ConsumerWidget {
                   Divider(
                     color: isDark
                         ? Colors.white10
-                        : Colors.black.withOpacity(0.06),
+                        : Colors.black.withValues(alpha: 0.06),
                   ),
                   Expanded(
                     child: SingleChildScrollView(
@@ -575,13 +575,13 @@ class AdminLettersScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.03),
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : Colors.black.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: isDark
                                       ? Colors.white10
-                                      : Colors.black.withOpacity(0.1),
+                                      : Colors.black.withValues(alpha: 0.1),
                                 ),
                               ),
                               child: Row(
@@ -655,7 +655,7 @@ class AdminLettersScreen extends ConsumerWidget {
                                         final file = result.files.first;
 
                                         final uploadedUrl = await ref
-                                            .read(supabaseServiceProvider)
+                                            .read(uploadServiceProvider)
                                             .uploadMedia(
                                               file,
                                               'letters-images',
@@ -701,13 +701,13 @@ class AdminLettersScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.03),
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : Colors.black.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: isDark
                                       ? Colors.white10
-                                      : Colors.black.withOpacity(0.1),
+                                      : Colors.black.withValues(alpha: 0.1),
                                 ),
                               ),
                               child: Column(
@@ -804,7 +804,7 @@ class AdminLettersScreen extends ConsumerWidget {
                                         final file = result.files.first;
 
                                         final uploadedUrl = await ref
-                                            .read(supabaseServiceProvider)
+                                            .read(uploadServiceProvider)
                                             .uploadMedia(file, 'animations');
 
                                         setDialogState(() {
@@ -847,13 +847,13 @@ class AdminLettersScreen extends ConsumerWidget {
                               padding: const EdgeInsets.all(16),
                               decoration: BoxDecoration(
                                 color: isDark
-                                    ? Colors.white.withOpacity(0.05)
-                                    : Colors.black.withOpacity(0.03),
+                                    ? Colors.white.withValues(alpha: 0.05)
+                                    : Colors.black.withValues(alpha: 0.03),
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(
                                   color: isDark
                                       ? Colors.white10
-                                      : Colors.black.withOpacity(0.1),
+                                      : Colors.black.withValues(alpha: 0.1),
                                 ),
                               ),
                               child: Row(
@@ -905,7 +905,7 @@ class AdminLettersScreen extends ConsumerWidget {
                         top: BorderSide(
                           color: isDark
                               ? Colors.white10
-                              : Colors.black.withOpacity(0.06),
+                              : Colors.black.withValues(alpha: 0.06),
                         ),
                       ),
                     ),
@@ -919,7 +919,7 @@ class AdminLettersScreen extends ConsumerWidget {
                               decoration: BoxDecoration(
                                 color: isDark
                                     ? Colors.white10
-                                    : Colors.black.withOpacity(0.05),
+                                    : Colors.black.withValues(alpha: 0.05),
                                 borderRadius: BorderRadius.circular(14),
                               ),
                               child: Center(
@@ -975,8 +975,8 @@ class AdminLettersScreen extends ConsumerWidget {
                                 borderRadius: BorderRadius.circular(14),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: AppColors.accentMint.withOpacity(
-                                      0.4,
+                                    color: AppColors.accentMint.withValues(
+                                      alpha: 0.4,
                                     ),
                                     blurRadius: 15,
                                     offset: const Offset(0, 6),
@@ -1040,8 +1040,8 @@ class AdminLettersScreen extends ConsumerWidget {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -1077,7 +1077,7 @@ class AdminLettersScreen extends ConsumerWidget {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.15),
+                color: AppColors.error.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
@@ -1144,7 +1144,7 @@ class _LetterCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.accentMint.withOpacity(0.3),
+                  color: AppColors.accentMint.withValues(alpha: 0.3),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -1169,7 +1169,7 @@ class _LetterCard extends StatelessWidget {
                     vertical: 4,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: Colors.white.withValues(alpha: 0.2),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(

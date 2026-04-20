@@ -247,11 +247,11 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.95),
+          color: Colors.white.withValues(alpha: 0.95),
           borderRadius: BorderRadius.circular(16),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.1),
+              color: Colors.black.withValues(alpha: 0.1),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -281,7 +281,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             boxShadow: isActive
                 ? [
                     BoxShadow(
-                      color: accentColor.withOpacity(0.4),
+                      color: accentColor.withValues(alpha: 0.4),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -404,17 +404,17 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
-                  accentColor.withOpacity(0.15),
-                  accentColor.withOpacity(0.25),
+                  accentColor.withValues(alpha: 0.15),
+                  accentColor.withValues(alpha: 0.25),
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
               borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: accentColor.withOpacity(0.4), width: 4),
+              border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 4),
               boxShadow: [
                 BoxShadow(
-                  color: accentColor.withOpacity(0.2),
+                  color: accentColor.withValues(alpha: 0.2),
                   blurRadius: 40,
                   offset: const Offset(0, 10),
                 ),
@@ -443,7 +443,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               borderRadius: BorderRadius.circular(20),
               boxShadow: [
                 BoxShadow(
-                  color: accentColor.withOpacity(0.4),
+                  color: accentColor.withValues(alpha: 0.4),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),

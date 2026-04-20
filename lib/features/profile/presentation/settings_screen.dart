@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/storage_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
+import '../../../shared/widgets/bento_grid.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -17,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
     final soundEnabled = ref.watch(soundEnabledProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final isTablet = ResponsiveLayout.isTablet(context);
 
     final settingsBody = ListView(
       padding: EdgeInsets.symmetric(
@@ -27,98 +30,42 @@ class SettingsScreen extends ConsumerWidget {
         if (isDesktop) ...[
           Text(
             'Settings',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 28,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.5,
               color: isDark ? Colors.white : Colors.black,
             ),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 4),
           Text(
             'Customize your learning experience',
-            style: TextStyle(
+            style: GoogleFonts.inter(
               fontSize: 14,
-              color: isDark ? Colors.white54 : Colors.black45,
+              color: isDark ? Colors.white38 : Colors.black38,
             ),
           ),
           const SizedBox(height: 32),
         ],
 
-        // Appearance Section
-        _SectionHeader('Appearance', isDark),
-        const SizedBox(height: 16),
-        _SettingTile(
-          icon: Icons.dark_mode_rounded,
-          title: 'Dark Mode',
-          subtitle: _getThemeLabel(themeMode),
-          isDark: isDark,
-          onTap: () => _showThemeDialog(context, ref, themeMode),
-        ),
+        // Bento grid for settings sections
+        if (isTablet || isDesktop)
+          _buildDesktopBento(context, ref, themeMode, scriptMode, soundEnabled, isDark)
+        else
+          _buildMobileBento(context, ref, themeMode, scriptMode, soundEnabled, isDark),
 
-        const SizedBox(height: 28),
-
-        // Script Section
-        _SectionHeader('Script Display', isDark),
-        const SizedBox(height: 16),
-        _SettingTile(
-          icon: Icons.translate_rounded,
-          title: 'Script Mode',
-          subtitle: _getScriptLabel(scriptMode),
-          isDark: isDark,
-          onTap: () => _showScriptDialog(context, ref, scriptMode),
-        ),
-
-        const SizedBox(height: 28),
-
-        // Sound Section
-        _SectionHeader('Sound', isDark),
-        const SizedBox(height: 16),
-        _ToggleTile(
-          icon: Icons.volume_up_rounded,
-          title: 'Sound Effects',
-          subtitle: 'Play sounds for actions',
-          value: soundEnabled,
-          isDark: isDark,
-          onChanged: (value) => toggleSound(ref),
-        ),
-
-        const SizedBox(height: 28),
-
-        // Data Section
-        _SectionHeader('Data', isDark),
-        const SizedBox(height: 16),
-        _SettingTile(
-          icon: Icons.restart_alt_rounded,
-          title: 'Reset Progress',
-          subtitle: 'Clear all learning data',
-          isDark: isDark,
-          isDestructive: true,
-          onTap: () => _showResetDialog(context, ref),
-        ),
-
-        const SizedBox(height: 28),
-
-        // Account Section
-        _SectionHeader('Account', isDark),
-        const SizedBox(height: 16),
-        _SettingTile(
-          icon: Icons.delete_forever_rounded,
-          title: 'Delete Account',
-          subtitle: 'Permanently delete your account',
-          isDark: isDark,
-          isDestructive: true,
-          onTap: () => _showDeleteAccountDialog(context, ref),
-        ),
+        const SizedBox(height: 120),
       ],
     );
 
-    // On desktop, render inline (no Scaffold/AppBar) since it's inside MainShellScreen
     if (isDesktop) {
       return settingsBody;
     }
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -131,13 +78,280 @@ class SettingsScreen extends ConsumerWidget {
         ),
         title: Text(
           'Settings',
-          style: TextStyle(
-            fontWeight: FontWeight.w800,
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w900,
             color: isDark ? Colors.white : Colors.black,
           ),
         ),
       ),
       body: settingsBody,
+    );
+  }
+
+  Widget _buildDesktopBento(
+    BuildContext context,
+    WidgetRef ref,
+    String themeMode,
+    String scriptMode,
+    bool soundEnabled,
+    bool isDark,
+  ) {
+    return Wrap(
+      spacing: 16,
+      runSpacing: 16,
+      children: [
+        // Appearance + Script grouped together
+        SizedBox(
+          width: double.infinity,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildSettingsCard(
+                  context: context,
+                  title: 'Appearance',
+                  icon: Icons.palette_rounded,
+                  color: AppColors.duoPurple,
+                  isDark: isDark,
+                  index: 0,
+                  children: [
+                    _SettingTile(
+                      icon: Icons.dark_mode_rounded,
+                      title: 'Dark Mode',
+                      subtitle: _getThemeLabel(themeMode),
+                      isDark: isDark,
+                      onTap: () => _showThemeDialog(context, ref, themeMode),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildSettingsCard(
+                  context: context,
+                  title: 'Script Display',
+                  icon: Icons.translate_rounded,
+                  color: AppColors.duoBlue,
+                  isDark: isDark,
+                  index: 1,
+                  children: [
+                    _SettingTile(
+                      icon: Icons.translate_rounded,
+                      title: 'Script Mode',
+                      subtitle: _getScriptLabel(scriptMode),
+                      isDark: isDark,
+                      onTap: () => _showScriptDialog(context, ref, scriptMode),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        // Sound + Data grouped
+        SizedBox(
+          width: double.infinity,
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Expanded(
+                child: _buildSettingsCard(
+                  context: context,
+                  title: 'Sound',
+                  icon: Icons.music_note_rounded,
+                  color: AppColors.primary,
+                  isDark: isDark,
+                  index: 2,
+                  children: [
+                    _ToggleTile(
+                      icon: Icons.volume_up_rounded,
+                      title: 'Sound Effects',
+                      subtitle: 'Play sounds for actions',
+                      value: soundEnabled,
+                      isDark: isDark,
+                      onChanged: (value) => toggleSound(ref),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: _buildSettingsCard(
+                  context: context,
+                  title: 'Danger Zone',
+                  icon: Icons.warning_rounded,
+                  color: AppColors.duoRed,
+                  isDark: isDark,
+                  index: 3,
+                  children: [
+                    _SettingTile(
+                      icon: Icons.restart_alt_rounded,
+                      title: 'Reset Progress',
+                      subtitle: 'Clear all learning data',
+                      isDark: isDark,
+                      isDestructive: true,
+                      onTap: () => _showResetDialog(context, ref),
+                    ),
+                    const SizedBox(height: 10),
+                    _SettingTile(
+                      icon: Icons.delete_forever_rounded,
+                      title: 'Delete Account',
+                      subtitle: 'Permanently delete your account',
+                      isDark: isDark,
+                      isDestructive: true,
+                      onTap: () => _showDeleteAccountDialog(context, ref),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildMobileBento(
+    BuildContext context,
+    WidgetRef ref,
+    String themeMode,
+    String scriptMode,
+    bool soundEnabled,
+    bool isDark,
+  ) {
+    return Column(
+      children: [
+        _buildSettingsCard(
+          context: context,
+          title: 'Appearance',
+          icon: Icons.palette_rounded,
+          color: AppColors.duoPurple,
+          isDark: isDark,
+          index: 0,
+          children: [
+            _SettingTile(
+              icon: Icons.dark_mode_rounded,
+              title: 'Dark Mode',
+              subtitle: _getThemeLabel(themeMode),
+              isDark: isDark,
+              onTap: () => _showThemeDialog(context, ref, themeMode),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildSettingsCard(
+          context: context,
+          title: 'Script Display',
+          icon: Icons.translate_rounded,
+          color: AppColors.duoBlue,
+          isDark: isDark,
+          index: 1,
+          children: [
+            _SettingTile(
+              icon: Icons.translate_rounded,
+              title: 'Script Mode',
+              subtitle: _getScriptLabel(scriptMode),
+              isDark: isDark,
+              onTap: () => _showScriptDialog(context, ref, scriptMode),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildSettingsCard(
+          context: context,
+          title: 'Sound',
+          icon: Icons.music_note_rounded,
+          color: AppColors.primary,
+          isDark: isDark,
+          index: 2,
+          children: [
+            _ToggleTile(
+              icon: Icons.volume_up_rounded,
+              title: 'Sound Effects',
+              subtitle: 'Play sounds for actions',
+              value: soundEnabled,
+              isDark: isDark,
+              onChanged: (value) => toggleSound(ref),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+        _buildSettingsCard(
+          context: context,
+          title: 'Danger Zone',
+          icon: Icons.warning_rounded,
+          color: AppColors.duoRed,
+          isDark: isDark,
+          index: 3,
+          children: [
+            _SettingTile(
+              icon: Icons.restart_alt_rounded,
+              title: 'Reset Progress',
+              subtitle: 'Clear all learning data',
+              isDark: isDark,
+              isDestructive: true,
+              onTap: () => _showResetDialog(context, ref),
+            ),
+            const SizedBox(height: 10),
+            _SettingTile(
+              icon: Icons.delete_forever_rounded,
+              title: 'Delete Account',
+              subtitle: 'Permanently delete your account',
+              isDark: isDark,
+              isDestructive: true,
+              onTap: () => _showDeleteAccountDialog(context, ref),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSettingsCard({
+    required BuildContext context,
+    required String title,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+    required int index,
+    required List<Widget> children,
+  }) {
+    return AnimatedBentoChild(
+      index: index,
+      child: BentoCell(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Section header
+            Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(icon, color: color, size: 18),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  title.toUpperCase(),
+                  style: GoogleFonts.inter(
+                    fontSize: 11,
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 1.5,
+                    color: color,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            ...children,
+          ],
+        ),
+      ),
     );
   }
 
@@ -380,25 +594,6 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
-class _SectionHeader extends StatelessWidget {
-  final String title;
-  final bool isDark;
-
-  const _SectionHeader(this.title, this.isDark);
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      title.toUpperCase(),
-      style: TextStyle(
-        fontSize: 12,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.2,
-        color: isDark ? Colors.white38 : Colors.black38,
-      ),
-    );
-  }
-}
 
 class _SettingTile extends StatelessWidget {
   final IconData icon;

@@ -55,15 +55,15 @@ class AdminGlassCard extends StatelessWidget {
               color:
                   color ??
                   (isDark
-                      ? Colors.white.withOpacity(opacity)
-                      : Colors.white.withOpacity(0.7)),
+                      ? Colors.white.withValues(alpha: opacity)
+                      : Colors.white.withValues(alpha: 0.7)),
               borderRadius: BorderRadius.circular(borderRadius),
               border:
                   border ??
                   Border.all(
                     color: isDark
-                        ? Colors.white.withOpacity(0.08)
-                        : Colors.black.withOpacity(0.05),
+                        ? Colors.white.withValues(alpha: 0.08)
+                        : Colors.black.withValues(alpha: 0.05),
                     width: 1.5,
                   ),
             ),

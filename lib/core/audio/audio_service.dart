@@ -1,4 +1,5 @@
 import 'package:audioplayers/audioplayers.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final audioServiceProvider = Provider((ref) => AudioService());
@@ -11,7 +12,7 @@ class AudioService {
       await _player.stop();
       await _player.play(UrlSource(url));
     } catch (e) {
-      print('Error playing audio: $e');
+      debugPrint('Error playing audio: $e');
     }
   }
 

@@ -38,10 +38,10 @@ class AdminSectionHeader extends StatelessWidget {
                   Container(
                     padding: EdgeInsets.all(width < 600 ? 10 : 12),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withOpacity(0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(
-                        color: AppColors.primary.withOpacity(0.2),
+                        color: AppColors.primary.withValues(alpha: 0.2),
                       ),
                     ),
                     child: Icon(icon, color: AppColors.primary, size: iconSize),

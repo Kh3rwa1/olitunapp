@@ -2,29 +2,25 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
+import '../config/appwrite_config.dart';
 import 'web_redirect.dart' as web_redirect;
 
 class AppwriteAuthService {
-  static const String _endpoint = String.fromEnvironment(
-    'APPWRITE_ENDPOINT',
-    defaultValue: 'https://sgp.cloud.appwrite.io/v1',
-  );
-  static const String _projectId = String.fromEnvironment(
-    'APPWRITE_PROJECT_ID',
-    defaultValue: '699495910038e39622c5',
-  );
-
-  late final Client _client;
-  late final Account _account;
-
-  AppwriteAuthService() {
+  // Singleton pattern — one SDK Client shared across the app
+  AppwriteAuthService._internal() {
     _client = Client()
-      .setEndpoint(_endpoint)
-      .setProject(_projectId)
+      .setEndpoint(AppwriteConfig.endpoint)
+      .setProject(AppwriteConfig.projectId)
       .setSelfSigned(status: kDebugMode);
 
     _account = Account(_client);
   }
+
+  static final AppwriteAuthService _instance = AppwriteAuthService._internal();
+  factory AppwriteAuthService() => _instance;
+
+  late final Client _client;
+  late final Account _account;
 
   Account get account => _account;
   Client get client => _client;
@@ -75,8 +71,8 @@ class AppwriteAuthService {
       // Web: full-page redirect to Appwrite OAuth2 token endpoint.
       // After Google auth, Appwrite redirects back with ?userId=...&secret=...
       final origin = Uri.base.origin;
-      final oauthUrl = '$_endpoint/account/tokens/oauth2/google'
-          '?project=$_projectId'
+      final oauthUrl = '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
+          '?project=${AppwriteConfig.projectId}'
           '&success=${Uri.encodeComponent(origin)}'
           '&failure=${Uri.encodeComponent('$origin/#/welcome')}'
           '&scopes[]=email&scopes[]=profile';

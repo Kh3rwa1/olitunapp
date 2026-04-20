@@ -104,9 +104,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
                     colors: [
-                      Colors.black.withOpacity(0.3),
-                      Colors.black.withOpacity(0.5),
-                      Colors.black.withOpacity(0.8),
+                      Colors.black.withValues(alpha: 0.3),
+                      Colors.black.withValues(alpha: 0.5),
+                      Colors.black.withValues(alpha: 0.8),
                     ],
                     stops: const [0.0, 0.5, 1.0],
                   ),
@@ -118,7 +118,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             Positioned.fill(
               child: EnchantedVisualizer(
                 isPlaying: true,
-                color: slide.accentColor.withOpacity(0.5),
+                color: slide.accentColor.withValues(alpha: 0.5),
                 showWaves: true,
                 showParticles: true,
                 height: MediaQuery.of(context).size.height,

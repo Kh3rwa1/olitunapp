@@ -4,15 +4,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AdminAuthNotifier extends StateNotifier<bool> {
   final SharedPreferences _prefs;
   static const _authKey = 'is_admin_authenticated';
-  // Default secret key - should be changed via environment variables in production
-  static const String _secretKey = String.fromEnvironment(
-    'ADMIN_SECRET_KEY',
-    defaultValue: 'olitun2026',
-  );
+
+  /// Admin secret — must be injected at build time:
+  /// --dart-define=ADMIN_SECRET_KEY=<your-secure-key>
+  /// If empty, admin login is disabled (production fail-safe).
+  static const String _secretKey = String.fromEnvironment('ADMIN_SECRET_KEY');
 
   AdminAuthNotifier(this._prefs) : super(_prefs.getBool(_authKey) ?? false);
 
   bool login(String key) {
+    // Reject login entirely if no secret key was injected at build time
+    if (_secretKey.isEmpty) return false;
     if (key == _secretKey) {
       state = true;
       _prefs.setBool(_authKey, true);

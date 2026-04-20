@@ -168,8 +168,8 @@ class _TracingViewState extends State<TracingView>
                           borderRadius: BorderRadius.circular(26),
                           border: Border.all(
                             color: isDark
-                                ? Colors.white.withOpacity(0.10)
-                                : Colors.black.withOpacity(0.05),
+                                ? Colors.white.withValues(alpha: 0.10)
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                         ),
                         child: Stack(
@@ -180,7 +180,7 @@ class _TracingViewState extends State<TracingView>
                                 widget.letterChar,
                                 style: TextStyle(
                                   fontSize: boardSize * 0.56,
-                                  color: Colors.grey.withOpacity(0.14),
+                                  color: Colors.grey.withValues(alpha: 0.14),
                                   fontWeight: FontWeight.w700,
                                 ),
                               ),
@@ -191,8 +191,8 @@ class _TracingViewState extends State<TracingView>
                                 painter: _GuidePainter(
                                   letterChar: widget.letterChar,
                                   color: isDark
-                                      ? Colors.white.withOpacity(0.18)
-                                      : Colors.black.withOpacity(0.18),
+                                      ? Colors.white.withValues(alpha: 0.18)
+                                      : Colors.black.withValues(alpha: 0.18),
                                 ),
                               ),
                             ),
@@ -240,7 +240,7 @@ class _TracingViewState extends State<TracingView>
                                           shape: BoxShape.circle,
                                           color: const Color(
                                             0xFF35C7B5,
-                                          ).withOpacity(0.3),
+                                          ).withValues(alpha: 0.3),
                                           border: Border.all(
                                             color: const Color(0xFF35C7B5),
                                             width: 3,
@@ -297,7 +297,7 @@ class _TracingViewState extends State<TracingView>
                   minHeight: 9,
                   value: _progress,
                   backgroundColor: isDark
-                      ? Colors.white.withOpacity(0.08)
+                      ? Colors.white.withValues(alpha: 0.08)
                       : Colors.black12,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _showCelebration
@@ -392,7 +392,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
           scale: _scaleAnimation.value,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF35C7B5).withOpacity(0.15),
+              color: const Color(0xFF35C7B5).withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(26),
             ),
             child: Column(
@@ -414,7 +414,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF35C7B5).withOpacity(0.8),
+                    color: const Color(0xFF35C7B5).withValues(alpha: 0.8),
                   ),
                 ),
               ],

@@ -118,13 +118,13 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         children: [
           // Moving blurred blobs
           _buildBlob(
-            color: AppColors.primary.withOpacity(0.15),
+            color: AppColors.primary.withValues(alpha: 0.15),
             top: -50,
             left: -50,
             duration: 15.seconds,
           ),
           _buildBlob(
-            color: AppColors.duoBlue.withOpacity(0.1),
+            color: AppColors.duoBlue.withValues(alpha: 0.1),
             bottom: -100,
             right: -50,
             duration: 20.seconds,
@@ -173,10 +173,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.1),
+            color: AppColors.primary.withValues(alpha: 0.1),
             shape: BoxShape.circle,
             border: Border.all(
-              color: AppColors.primary.withOpacity(0.2),
+              color: AppColors.primary.withValues(alpha: 0.2),
               width: 2,
             ),
           ),
@@ -201,8 +201,8 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       padding: const EdgeInsets.all(32),
       decoration: BoxDecoration(
         color: isDark
-            ? Colors.white.withOpacity(0.05)
-            : Colors.white.withOpacity(0.7),
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.white.withValues(alpha: 0.7),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(
           color: isDark ? Colors.white12 : Colors.white,
@@ -210,7 +210,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -255,7 +255,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 filled: true,
                 fillColor: isDark
                     ? Colors.black26
-                    : Colors.black.withOpacity(0.02),
+                    : Colors.black.withValues(alpha: 0.02),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(16),
                   borderSide: BorderSide.none,

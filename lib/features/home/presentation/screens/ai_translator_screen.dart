@@ -70,8 +70,8 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
         leading: Padding(
           padding: const EdgeInsets.all(8.0),
           child: CircleAvatar(
-            backgroundColor: (isDark ? Colors.white : Colors.black).withOpacity(
-              0.1,
+            backgroundColor: (isDark ? Colors.white : Colors.black).withValues(
+              alpha: 0.1,
             ),
             child: IconButton(
               icon: Icon(
@@ -121,13 +121,13 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                   Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withOpacity(
-                        0.05,
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.05,
                       ),
                       borderRadius: BorderRadius.circular(32),
                       border: Border.all(
                         color: (isDark ? Colors.white : Colors.black)
-                            .withOpacity(0.1),
+                            .withValues(alpha: 0.1),
                       ),
                     ),
                     child: TextField(
@@ -143,7 +143,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         hintText: "Type anything in English...",
                         hintStyle: GoogleFonts.inter(
                           color: (isDark ? Colors.white : Colors.black)
-                              .withOpacity(0.3),
+                              .withValues(alpha: 0.3),
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
                         ),
@@ -168,13 +168,13 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            AppColors.primary.withOpacity(0.15),
-                            AppColors.primaryDark.withOpacity(0.05),
+                            AppColors.primary.withValues(alpha: 0.15),
+                            AppColors.primaryDark.withValues(alpha: 0.05),
                           ],
                         ),
                         borderRadius: BorderRadius.circular(32),
                         border: Border.all(
-                          color: AppColors.primary.withOpacity(0.2),
+                          color: AppColors.primary.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(

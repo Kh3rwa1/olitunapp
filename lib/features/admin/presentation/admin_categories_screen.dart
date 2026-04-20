@@ -5,7 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/storage/supabase_service.dart';
+import '../../../core/storage/upload_service.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import 'widgets/admin_glass_card.dart';
@@ -75,7 +75,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -121,7 +121,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     borderRadius: BorderRadius.circular(16),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.4),
+                        color: AppColors.primary.withValues(alpha: 0.4),
                         blurRadius: 20,
                         offset: const Offset(0, 8),
                       ),
@@ -267,7 +267,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               ),
 
               Divider(
-                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.06),
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
               ),
 
               // Form
@@ -457,7 +457,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                     top: BorderSide(
                       color: isDark
                           ? Colors.white10
-                          : Colors.black.withOpacity(0.06),
+                          : Colors.black.withValues(alpha: 0.06),
                     ),
                   ),
                 ),
@@ -471,7 +471,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                           decoration: BoxDecoration(
                             color: isDark
                                 ? Colors.white10
-                                : Colors.black.withOpacity(0.05),
+                                : Colors.black.withValues(alpha: 0.05),
                             borderRadius: BorderRadius.circular(14),
                           ),
                           child: Center(
@@ -528,7 +528,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             borderRadius: BorderRadius.circular(14),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withOpacity(0.4),
+                                color: AppColors.primary.withValues(alpha: 0.4),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                               ),
@@ -590,8 +590,8 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -624,7 +624,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               width: 44,
               height: 44,
               decoration: BoxDecoration(
-                color: AppColors.error.withOpacity(0.15),
+                color: AppColors.error.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: const Icon(
@@ -696,8 +696,8 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   hintText: 'https://...',
                   filled: true,
                   fillColor: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.04),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,
@@ -761,7 +761,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         }
 
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(pickedFile, folder);
         if (url != null) {
           setDialogState(() {
@@ -822,7 +822,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         }
 
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(pickedFile, folder);
         if (url != null) {
           setDialogState(() {
@@ -943,7 +943,7 @@ class _CategoryCardState extends State<_CategoryCard> {
                     borderRadius: BorderRadius.circular(isSmall ? 12 : 16),
                     boxShadow: [
                       BoxShadow(
-                        color: themeColor.withOpacity(0.3),
+                        color: themeColor.withValues(alpha: 0.3),
                         blurRadius: 12,
                         offset: const Offset(0, 4),
                       ),
@@ -1048,7 +1048,7 @@ class _GradientOption extends StatelessWidget {
               boxShadow: isSelected
                   ? [
                       BoxShadow(
-                        color: gradient.colors.first.withOpacity(0.4),
+                        color: gradient.colors.first.withValues(alpha: 0.4),
                         blurRadius: 10,
                       ),
                     ]

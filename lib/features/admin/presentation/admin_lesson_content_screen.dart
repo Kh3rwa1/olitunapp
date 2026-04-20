@@ -4,10 +4,11 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../core/storage/supabase_service.dart';
+import '../../../core/storage/upload_service.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/gamified_card.dart';
 import '../../../core/presentation/animations/scale_button.dart';
+import '../../../core/api/ai_service.dart';
 
 class AdminLessonContentScreen extends ConsumerStatefulWidget {
   final String lessonId;
@@ -151,7 +152,7 @@ class _AdminLessonContentScreenState
                     borderRadius: BorderRadius.circular(20),
                     boxShadow: [
                       BoxShadow(
-                        color: AppColors.primary.withOpacity(0.3),
+                        color: AppColors.primary.withValues(alpha: 0.3),
                         blurRadius: 8,
                         offset: const Offset(0, 2),
                       ),
@@ -267,7 +268,7 @@ class _AdminLessonContentScreenState
         leading: Container(
           padding: const EdgeInsets.all(10),
           decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
+            color: color.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: color, size: 24),
@@ -412,7 +413,7 @@ class _AdminLessonContentScreenState
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               shape: BoxShape.circle,
             ),
             child: Icon(icon, color: color, size: 28),
@@ -684,7 +685,7 @@ class _AdminLessonContentScreenState
             ),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.05)
+                ? Colors.white.withValues(alpha: 0.05)
                 : Colors.grey[100],
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
@@ -726,7 +727,7 @@ class _AdminLessonContentScreenState
                   hintText: 'https://...',
                   filled: true,
                   fillColor: isDark
-                      ? Colors.white.withOpacity(0.05)
+                      ? Colors.white.withValues(alpha: 0.05)
                       : Colors.grey[100],
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
@@ -765,7 +766,7 @@ class _AdminLessonContentScreenState
 
       if (result != null && result.files.isNotEmpty) {
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(result.files.first, folder);
         if (url != null) {
           setState(() {
@@ -802,7 +803,7 @@ class _AdminLessonContentScreenState
 
       if (result != null && result.files.isNotEmpty) {
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(result.files.first, folder);
         if (url != null) {
           setState(() {

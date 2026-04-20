@@ -2,7 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import '../../../../core/storage/supabase_service.dart';
+import '../../../../core/storage/upload_service.dart';
 
 /// Reusable upload field widget for admin panel.
 /// Provides a text field with an upload button that picks a file,
@@ -73,7 +73,6 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
           validExtensions = ['json', 'webm', 'webp'];
           break;
         case AdminUploadType.image:
-        default:
           fileType = FileType.image;
           validExtensions = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'];
           break;
@@ -104,7 +103,7 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
         }
 
         final url = await ref
-            .read(supabaseServiceProvider)
+            .read(uploadServiceProvider)
             .uploadMedia(pickedFile, widget.folder);
         if (url != null) {
           widget.controller.text = url;
@@ -228,8 +227,8 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
                   ),
                   filled: true,
                   fillColor: isDark
-                      ? Colors.white.withOpacity(0.08)
-                      : Colors.black.withOpacity(0.04),
+                      ? Colors.white.withValues(alpha: 0.08)
+                      : Colors.black.withValues(alpha: 0.04),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(14),
                     borderSide: BorderSide.none,

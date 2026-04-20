@@ -155,8 +155,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
                 color: isDark
-                    ? Colors.white.withOpacity(0.1)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
@@ -225,7 +225,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                   borderRadius: BorderRadius.circular(30),
                   boxShadow: [
                     BoxShadow(
-                      color: AppColors.primary.withOpacity(0.3),
+                      color: AppColors.primary.withValues(alpha: 0.3),
                       blurRadius: 30,
                       offset: const Offset(0, 10),
                     ),
@@ -375,8 +375,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.black.withOpacity(0.04),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -428,8 +428,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
-                              ? Colors.white.withOpacity(0.08)
-                              : Colors.black.withOpacity(0.04),
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : Colors.black.withValues(alpha: 0.04),
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(14),
                             borderSide: BorderSide.none,
@@ -547,8 +547,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
             hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
             filled: true,
             fillColor: isDark
-                ? Colors.white.withOpacity(0.08)
-                : Colors.black.withOpacity(0.04),
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide.none,
@@ -590,7 +590,7 @@ class _FilterChip extends StatelessWidget {
               ? AppColors.premiumPink.colors.first
               : (isDark
                     ? Colors.white10
-                    : Colors.black.withOpacity(0.05)),
+                    : Colors.black.withValues(alpha: 0.05)),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isSelected
@@ -600,7 +600,7 @@ class _FilterChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.premiumPink.colors.first.withOpacity(0.3),
+                    color: AppColors.premiumPink.colors.first.withValues(alpha: 0.3),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),
@@ -642,16 +642,16 @@ class _QuizCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withOpacity(0.05) : Colors.white,
+          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: isDark
                 ? Colors.white10
-                : Colors.black.withOpacity(0.05),
+                : Colors.black.withValues(alpha: 0.05),
           ),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(isDark ? 0.2 : 0.05),
+              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
               blurRadius: 20,
               offset: const Offset(0, 4),
             ),

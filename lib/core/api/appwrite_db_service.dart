@@ -1,33 +1,32 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../auth/appwrite_auth_service.dart';
-
-const String _databaseId = 'olitun_db';
+import '../config/appwrite_config.dart';
+import '../../shared/providers/auth_providers.dart';
 
 class AppwriteDbService {
-  final Databases _databases;
+  final TablesDB _tablesDB;
   final Storage storage;
   final Client _client;
 
   AppwriteDbService(this._client)
-      : _databases = Databases(_client),
+      : _tablesDB = TablesDB(_client),
         storage = Storage(_client);
 
   // ─── Generic CRUD ───
 
-  /// List documents with optional queries
+  /// List rows with optional queries
   Future<List<Map<String, dynamic>>> listDocuments(
     String collectionId, {
     List<String>? queries,
   }) async {
-    final result = await _databases.listDocuments(
-      databaseId: _databaseId,
-      collectionId: collectionId,
+    final result = await _tablesDB.listRows(
+      databaseId: AppwriteConfig.databaseId,
+      tableId: collectionId,
       queries: queries ?? [Query.limit(500)],
     );
-    return result.documents.map((doc) {
-      final data = Map<String, dynamic>.from(doc.data);
-      data['id'] = doc.$id;
+    return result.rows.map((row) {
+      final data = Map<String, dynamic>.from(row.data);
+      data['id'] = row.$id;
       return data;
     }).toList();
   }
@@ -37,13 +36,13 @@ class AppwriteDbService {
     String collectionId,
     String documentId,
   ) async {
-    final doc = await _databases.getDocument(
-      databaseId: _databaseId,
-      collectionId: collectionId,
-      documentId: documentId,
+    final row = await _tablesDB.getRow(
+      databaseId: AppwriteConfig.databaseId,
+      tableId: collectionId,
+      rowId: documentId,
     );
-    final data = Map<String, dynamic>.from(doc.data);
-    data['id'] = doc.$id;
+    final data = Map<String, dynamic>.from(row.data);
+    data['id'] = row.$id;
     return data;
   }
 
@@ -58,10 +57,10 @@ class AppwriteDbService {
     // Remove null values
     payload.removeWhere((key, value) => value == null);
 
-    await _databases.createDocument(
-      databaseId: _databaseId,
-      collectionId: collectionId,
-      documentId: documentId,
+    await _tablesDB.createRow(
+      databaseId: AppwriteConfig.databaseId,
+      tableId: collectionId,
+      rowId: documentId,
       data: payload,
     );
   }
@@ -75,10 +74,10 @@ class AppwriteDbService {
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
-    await _databases.updateDocument(
-      databaseId: _databaseId,
-      collectionId: collectionId,
-      documentId: documentId,
+    await _tablesDB.updateRow(
+      databaseId: AppwriteConfig.databaseId,
+      tableId: collectionId,
+      rowId: documentId,
       data: payload,
     );
   }
@@ -88,10 +87,10 @@ class AppwriteDbService {
     String collectionId,
     String documentId,
   ) async {
-    await _databases.deleteDocument(
-      databaseId: _databaseId,
-      collectionId: collectionId,
-      documentId: documentId,
+    await _tablesDB.deleteRow(
+      databaseId: AppwriteConfig.databaseId,
+      tableId: collectionId,
+      rowId: documentId,
     );
   }
 
@@ -100,15 +99,13 @@ class AppwriteDbService {
   /// Get file view URL (publicly accessible)
   String getFileViewUrl(String bucketId, String fileId) {
     final endpoint = _client.endPoint;
-    final projectId = '699495910038e39622c5';
-    return '$endpoint/storage/buckets/$bucketId/files/$fileId/view?project=$projectId';
+    return '$endpoint/storage/buckets/$bucketId/files/$fileId/view?project=${AppwriteConfig.projectId}';
   }
 
   /// Get file preview URL (for images with transformations)
   String getFilePreviewUrl(String bucketId, String fileId, {int? width, int? height}) {
     final endpoint = _client.endPoint;
-    final projectId = '699495910038e39622c5';
-    var url = '$endpoint/storage/buckets/$bucketId/files/$fileId/preview?project=$projectId';
+    var url = '$endpoint/storage/buckets/$bucketId/files/$fileId/preview?project=${AppwriteConfig.projectId}';
     if (width != null) url += '&width=$width';
     if (height != null) url += '&height=$height';
     return url;
@@ -121,7 +118,3 @@ final appwriteDbServiceProvider = Provider<AppwriteDbService>((ref) {
   return AppwriteDbService(authService.client);
 });
 
-// Re-export appwriteAuthServiceProvider from providers.dart
-final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
-  return AppwriteAuthService();
-});

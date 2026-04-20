@@ -133,12 +133,12 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                     borderRadius: BorderRadius.circular(28),
                     border: Border.all(
                       color: isDark
-                          ? Colors.white.withOpacity(0.08)
-                          : Colors.black.withOpacity(0.06),
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.06),
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withOpacity(isDark ? 0.28 : 0.08),
+                        color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
                         blurRadius: 30,
                         offset: const Offset(0, 15),
                       ),
@@ -181,10 +181,10 @@ class _GlassIconButton extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.10) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.10) : Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(
-          color: isDark ? Colors.white.withOpacity(0.15) : Colors.black12,
+          color: isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black12,
         ),
       ),
       child: Icon(icon, size: 22, color: isDark ? Colors.white : Colors.black),
@@ -208,7 +208,7 @@ class _XpBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4F5CFF).withOpacity(isDark ? 0.35 : 0.22),
+            color: const Color(0xFF4F5CFF).withValues(alpha: isDark ? 0.35 : 0.22),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -249,7 +249,7 @@ class _SegmentedSwitcher extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(4),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.08) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.white,
         borderRadius: BorderRadius.circular(16),
       ),
       child: Row(

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/storage_service.dart';
 import '../../features/auth/data/auth_repository.dart';
@@ -339,9 +340,9 @@ class ProgressNotifier extends StateNotifier<UserProgressData> {
     if (_authRepository == null) return;
     try {
       await _authRepository.updatePrefs(state.toJson());
-      print('Progress synced to cloud');
+      debugPrint('Progress synced to cloud');
     } catch (e) {
-      print('Cloud sync failed: $e');
+      debugPrint('Cloud sync failed: $e');
     }
   }
 

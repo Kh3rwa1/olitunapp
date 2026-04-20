@@ -75,7 +75,7 @@ class _AiActionCard extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 160,
+        constraints: const BoxConstraints(minHeight: 140),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           gradient: LinearGradient(
@@ -114,7 +114,7 @@ class _AiActionCard extends StatelessWidget {
                   ),
                   child: Icon(icon, color: Colors.white, size: 20),
                 ),
-                const Spacer(),
+                const SizedBox(height: 16),
                 Text(
                   title,
                   style: const TextStyle(

@@ -751,24 +751,29 @@ class _BentoContentGrid extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text(
                       'Instant Translate',
                       style: TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.w900,
-                        fontSize: 15,
+                        fontSize: 14,
                         height: 1.1,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 3),
+                    const SizedBox(height: 2),
                     Text(
                       'Any Language → Ol Chiki',
                       style: TextStyle(
                         color: Colors.white.withValues(alpha: 0.7),
                         fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                        fontSize: 10,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ],
                 ),
@@ -850,10 +855,7 @@ class _BentoContentGrid extends StatelessWidget {
       // Mobile: AI Translate full width + categories in 2-col rows
       return Column(
         children: [
-          SizedBox(
-            height: 72,
-            child: _buildAITranslateCard(context),
-          ),
+          _buildAITranslateCard(context),
           const SizedBox(height: gap),
           _buildCategoryRows(catCards, 2, gap),
         ],

@@ -7,7 +7,6 @@ import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../shared/providers/providers.dart';
-import '../providers/admin_auth_provider.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import 'widgets/admin_glass_card.dart';

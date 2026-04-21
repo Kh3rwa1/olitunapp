@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
-import '../../features/onboarding/presentation/welcome_screen.dart';
-import '../../features/auth/presentation/login_screen.dart';
+import '../../features/auth/presentation/welcome_screen.dart';
+import '../../features/auth/presentation/email_auth_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
-import '../../features/home/presentation/home_screen.dart';
 import '../../features/lessons/presentation/category_lessons_screen.dart';
 import '../../features/lessons/presentation/lesson_detail_screen.dart';
 import '../../features/lessons/presentation/letter_detail_screen.dart';
 import '../../features/lessons/presentation/word_detail_screen.dart';
 import '../../features/lessons/presentation/number_detail_screen.dart';
 import '../../features/lessons/presentation/sentence_detail_screen.dart';
-import '../../features/lessons/presentation/practice_screen.dart';
+import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
-import '../../features/home/presentation/ai_translator_screen.dart';
-import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/home/presentation/screens/ai_translator_screen.dart';
 import '../../features/admin/presentation/admin_login_screen.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
@@ -31,7 +28,6 @@ import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
-final _shellNavigatorKey = GlobalKey<NavigatorState>();
 
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
@@ -51,32 +47,26 @@ final routerProvider = Provider<GoRouter>((ref) {
       GoRoute(
         path: '/login',
         name: RouteNames.login,
-        builder: (context, state) => const LoginScreen(),
+        builder: (context, state) => const EmailAuthScreen(),
       ),
-      ShellRoute(
-        navigatorKey: _shellNavigatorKey,
-        builder: (context, state, child) => MainShellScreen(child: child),
-        routes: [
-          GoRoute(
-            path: '/',
-            name: RouteNames.home,
-            builder: (context, state) => const HomeScreen(),
-          ),
-          GoRoute(
-            path: '/categories',
-            name: RouteNames.categories,
-            builder: (context, state) => const HomeScreen(), // Categories are on Home
-          ),
-          GoRoute(
-            path: '/quizzes',
-            builder: (context, state) => const QuizListScreen(),
-          ),
-          GoRoute(
-            path: '/profile',
-            name: RouteNames.profile,
-            builder: (context, state) => const ProfileScreen(),
-          ),
-        ],
+      GoRoute(
+        path: '/',
+        name: RouteNames.home,
+        builder: (context, state) => const MainShellScreen(),
+      ),
+      GoRoute(
+        path: '/categories',
+        name: RouteNames.categories,
+        builder: (context, state) => const MainShellScreen(),
+      ),
+      GoRoute(
+        path: '/quizzes',
+        builder: (context, state) => const QuizListScreen(),
+      ),
+      GoRoute(
+        path: '/profile',
+        name: RouteNames.profile,
+        builder: (context, state) => const MainShellScreen(),
       ),
       GoRoute(
         path: '/lessons/:categoryId',
@@ -142,7 +132,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/quiz/:quizId',
         name: RouteNames.quiz,
         builder: (context, state) {
-          final quizId = state.pathParameters['quizId'];
+          final quizId = state.pathParameters['quizId'] ?? '';
           return QuizScreen(quizId: quizId);
         },
       ),

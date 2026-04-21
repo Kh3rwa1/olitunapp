@@ -23,5 +23,15 @@ abstract class AuthRepository {
   Future<Either<Failure, void>> sendVerificationEmail();
 
   Future<Either<Failure, void>> deleteAccount();
+
   Future<Either<Failure, void>> updateDisplayName(String name);
+
+  Future<Either<Failure, String>> sendOtp(String email);
+
+  Future<Either<Failure, UserEntity>> verifyOtp({
+    required String userId,
+    required String secret,
+  });
+
+  Future<Either<Failure, void>> signInWithGoogle();
 }

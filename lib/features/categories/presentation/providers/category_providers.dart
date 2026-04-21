@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/network/network_info.dart';
 import '../../domain/repositories/category_repository.dart';
-import '../datasources/category_local_datasource.dart';
-import '../datasources/category_remote_datasource.dart';
-import '../repositories/category_repository_impl.dart';
+import '../../data/datasources/category_local_datasource.dart';
+import '../../data/datasources/category_remote_datasource.dart';
+import '../../data/repositories/category_repository_impl.dart';
 
 final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((ref) {
   final client = AppwriteAuthService().client;

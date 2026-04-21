@@ -8,6 +8,8 @@ class LessonEntity extends Equatable {
   final String? description;
   final int order;
   final int estimatedMinutes;
+  final bool isActive;
+  final Map<String, dynamic>? data;
   final List<LessonBlockEntity> blocks;
 
   const LessonEntity({
@@ -18,8 +20,36 @@ class LessonEntity extends Equatable {
     this.description,
     this.order = 0,
     this.estimatedMinutes = 5,
+    this.isActive = true,
+    this.data,
     this.blocks = const [],
   });
+
+  LessonEntity copyWith({
+    String? id,
+    String? categoryId,
+    String? titleOlChiki,
+    String? titleLatin,
+    String? description,
+    int? order,
+    int? estimatedMinutes,
+    bool? isActive,
+    Map<String, dynamic>? data,
+    List<LessonBlockEntity>? blocks,
+  }) {
+    return LessonEntity(
+      id: id ?? this.id,
+      categoryId: categoryId ?? this.categoryId,
+      titleOlChiki: titleOlChiki ?? this.titleOlChiki,
+      titleLatin: titleLatin ?? this.titleLatin,
+      description: description ?? this.description,
+      order: order ?? this.order,
+      estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
+      isActive: isActive ?? this.isActive,
+      data: data ?? this.data,
+      blocks: blocks ?? this.blocks,
+    );
+  }
 
   @override
   List<Object?> get props => [
@@ -30,6 +60,8 @@ class LessonEntity extends Equatable {
         description,
         order,
         estimatedMinutes,
+        isActive,
+        data,
         blocks,
       ];
 }

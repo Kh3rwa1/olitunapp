@@ -3,12 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/providers/quizzes_provider.dart';
-import '../../../shared/providers/seed_provider.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../providers/admin_auth_provider.dart';
-import '../../categories/presentation/providers/category_notifier.dart';
-import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {

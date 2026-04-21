@@ -5,7 +5,6 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/hive_service.dart';
-import '../../../shared/providers/app_settings_provider.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';

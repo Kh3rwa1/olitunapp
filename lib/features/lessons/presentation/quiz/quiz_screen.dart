@@ -141,7 +141,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final isPassing = percentage >= 70;
 
     final stats = ref.read(userStatsProvider).value;
-    final startingMastery = stats?.categoryMastery[_quiz?.categoryId] ?? 0;
+    final _ = stats?.categoryMastery[_quiz?.categoryId] ?? 0;
 
     // Persist quiz result and update streak
     final statsNotifier = ref.read(userStatsProvider.notifier);

@@ -21,14 +21,14 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(categoriesProvider.notifier).refresh();
-      ref.read(lessonsProvider.notifier).refresh();
+      ref.read(categoryNotifierProvider.notifier).refresh();
+      ref.read(lessonNotifierProvider.notifier).refresh();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoriesProvider);
+    final categories = ref.watch(categoryNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
@@ -41,8 +41,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
         child: categories.when(
           data: (data) => RefreshIndicator(
             onRefresh: () async {
-              await ref.read(categoriesProvider.notifier).refresh();
-              await ref.read(lessonsProvider.notifier).refresh();
+              await ref.read(categoryNotifierProvider.notifier).refresh();
+              await ref.read(lessonNotifierProvider.notifier).refresh();
             },
             color: AppColors.primary,
             child: SingleChildScrollView(

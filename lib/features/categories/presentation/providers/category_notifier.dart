@@ -49,4 +49,17 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
       (_) => loadCategories(),
     );
   }
+
+  Future<void> reorderCategories(int oldIndex, int newIndex) async {
+    final current = state.value;
+    if (current == null) return;
+    final list = List<CategoryEntity>.from(current);
+    final item = list.removeAt(oldIndex);
+    list.insert(newIndex, item);
+    state = AsyncValue.data(list);
+  }
+
+  Future<void> seed() async {
+    await loadCategories();
+  }
 }

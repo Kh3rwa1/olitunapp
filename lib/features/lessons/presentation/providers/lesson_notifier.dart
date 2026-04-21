@@ -61,4 +61,8 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
       (_) => loadLessons(),
     );
   }
+
+  Future<void> seed() async {
+    await loadLessons();
+  }
 }

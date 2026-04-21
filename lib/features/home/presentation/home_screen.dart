@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
@@ -13,8 +12,6 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../../lessons/presentation/providers/lesson_notifier.dart';
-import '../../../shared/providers/local_settings_provider.dart';
-import '../../../shared/providers/app_settings_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});

@@ -16,8 +16,9 @@ class CategoryModel extends CategoryEntity {
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json, [String? docId]) {
+    final resolvedId = docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
     return CategoryModel(
-      id: docId ?? json['id'] as String? ?? json['$id'] as String? ?? '',
+      id: resolvedId,
       titleOlChiki: json['titleOlChiki'] as String? ?? '',
       titleLatin: json['titleLatin'] as String? ?? '',
       iconUrl: json['iconUrl'] as String?,

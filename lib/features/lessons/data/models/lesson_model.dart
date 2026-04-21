@@ -10,6 +10,8 @@ class LessonModel extends LessonEntity {
     super.description,
     super.order = 0,
     super.estimatedMinutes = 5,
+    super.isActive = true,
+    super.data,
     required List<LessonBlockModel> super.blocks,
   });
 
@@ -22,14 +24,17 @@ class LessonModel extends LessonEntity {
       blocksJson = rawBlocks;
     }
 
+    final resolvedId = docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
     return LessonModel(
-      id: docId ?? json['id'] as String? ?? json['$id'] as String? ?? '',
+      id: resolvedId,
       categoryId: json['categoryId'] as String? ?? '',
       titleOlChiki: json['titleOlChiki'] as String? ?? '',
       titleLatin: json['titleLatin'] as String? ?? '',
       description: json['description'] as String?,
       order: json['order'] as int? ?? 0,
       estimatedMinutes: json['estimatedMinutes'] as int? ?? 5,
+      isActive: json['isActive'] as bool? ?? true,
+      data: json['data'] as Map<String, dynamic>?,
       blocks: blocksJson.map((e) => LessonBlockModel.fromJson(e as Map<String, dynamic>)).toList(),
     );
   }
@@ -43,6 +48,8 @@ class LessonModel extends LessonEntity {
       'description': description,
       'order': order,
       'estimatedMinutes': estimatedMinutes,
+      'isActive': isActive,
+      'data': data,
       'blocks': blocks.map((e) => LessonBlockModel.fromEntity(e).toJson()).toList(),
     };
   }
@@ -56,6 +63,8 @@ class LessonModel extends LessonEntity {
       description: description,
       order: order,
       estimatedMinutes: estimatedMinutes,
+      isActive: isActive,
+      data: data,
       blocks: blocks.map((e) => (e as LessonBlockModel).toEntity()).toList(),
     );
   }
@@ -69,6 +78,8 @@ class LessonModel extends LessonEntity {
       description: entity.description,
       order: entity.order,
       estimatedMinutes: entity.estimatedMinutes,
+      isActive: entity.isActive,
+      data: entity.data,
       blocks: entity.blocks.map((e) => LessonBlockModel.fromEntity(e)).toList(),
     );
   }

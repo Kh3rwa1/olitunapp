@@ -10,24 +10,13 @@ class AuthRepositoryImpl implements AuthRepository {
   final AuthRemoteDataSource remoteDataSource;
   final NetworkInfo networkInfo;
 
-  AuthRepositoryImpl({
-    required this.remoteDataSource,
-    required this.networkInfo,
-  });
+  AuthRepositoryImpl({required this.remoteDataSource, required this.networkInfo});
 
   @override
-  Future<Either<Failure, UserEntity>> signUpWithEmail({
-    required String email,
-    required String password,
-    String? name,
-  }) async {
+  Future<Either<Failure, UserEntity>> signUpWithEmail({required String email, required String password, String? name}) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.signUpWithEmail(
-          email: email,
-          password: password,
-          name: name,
-        );
+        final result = await remoteDataSource.signUpWithEmail(email: email, password: password, name: name);
         return Right(result.toEntity());
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message, code: e.code));
@@ -38,16 +27,10 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, UserEntity>> signInWithEmail({
-    required String email,
-    required String password,
-  }) async {
+  Future<Either<Failure, UserEntity>> signInWithEmail({required String email, required String password}) async {
     if (await networkInfo.isConnected) {
       try {
-        final result = await remoteDataSource.signInWithEmail(
-          email: email,
-          password: password,
-        );
+        final result = await remoteDataSource.signInWithEmail(email: email, password: password);
         return Right(result.toEntity());
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message, code: e.code));
@@ -104,6 +87,7 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(NetworkFailure());
     }
   }
+
   @override
   Future<Either<Failure, void>> deleteAccount() async {
     if (await networkInfo.isConnected) {
@@ -123,6 +107,48 @@ class AuthRepositoryImpl implements AuthRepository {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.updateDisplayName(name);
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, code: e.code));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, String>> sendOtp(String email) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final userId = await remoteDataSource.sendOtp(email);
+        return Right(userId);
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, code: e.code));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, UserEntity>> verifyOtp({required String userId, required String secret}) async {
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.verifyOtp(userId: userId, secret: secret);
+        return Right(result.toEntity());
+      } on ServerException catch (e) {
+        return Left(ServerFailure(message: e.message, code: e.code));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> signInWithGoogle() async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.signInWithGoogle();
         return const Right(null);
       } on ServerException catch (e) {
         return Left(ServerFailure(message: e.message, code: e.code));

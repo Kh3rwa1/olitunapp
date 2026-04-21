@@ -1,3 +1,4 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
@@ -151,8 +152,6 @@ class AppwriteAuthService {
   }
 }
 
-// Provider
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
   return AppwriteAuthService();

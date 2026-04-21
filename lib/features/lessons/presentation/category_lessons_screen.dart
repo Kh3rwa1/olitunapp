@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
-import '../providers/lesson_notifier.dart';
+import 'providers/lesson_notifier.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;

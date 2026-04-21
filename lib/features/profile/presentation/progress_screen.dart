@@ -18,7 +18,6 @@ class ProgressScreen extends ConsumerWidget {
     final userName = ref.watch(userNameProvider);
     final statsAsync = ref.watch(userStatsProvider);
     final avatarEmoji = ref.watch(userAvatarEmojiProvider);
-    final avatarColorIndex = ref.watch(userAvatarColorIndexProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);

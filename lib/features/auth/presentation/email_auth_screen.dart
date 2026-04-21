@@ -71,7 +71,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           });
         },
         (token) {
-          _userId = token.userId;
+          _userId = token;
           setState(() {
             _isLoading = false;
             _codeSent = true;

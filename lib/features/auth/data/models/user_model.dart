@@ -9,8 +9,9 @@ class UserModel extends UserEntity {
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
+    final docId = json['\$id'] as String? ?? json['id'] as String? ?? '';
     return UserModel(
-      id: json['$id'] as String? ?? json['id'] as String? ?? '',
+      id: docId,
       email: json['email'] as String? ?? '',
       name: json['name'] as String?,
       isEmailVerified: json['emailVerification'] as bool? ?? false,

@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/lessons/data/models/lesson_model.dart';
-import '../../features/lessons/domain/entities/lesson_entity.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../models/content_models.dart' hide CategoryModel, LessonModel;
 import 'providers.dart';

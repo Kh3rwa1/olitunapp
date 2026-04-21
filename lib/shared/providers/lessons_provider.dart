@@ -107,7 +107,7 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);
       }
-    } catch (e, st) {
+    } catch (e) {
       debugPrint('❌ _loadLessons FAILED: $e');
       // Keep existing data (seed or previously loaded) on failure
       if (!state.hasValue || state.value!.isEmpty) {

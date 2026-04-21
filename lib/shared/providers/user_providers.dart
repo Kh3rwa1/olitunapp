@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/storage_service.dart';
 import 'auth_providers.dart';
-import 'progress_provider.dart';
 
 // ============== USER DATA ==============
 

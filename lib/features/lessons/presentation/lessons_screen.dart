@@ -208,7 +208,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   }
 
   Widget _buildLessonsSkeleton(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

@@ -6,7 +6,7 @@ class AdminAuthNotifier extends StateNotifier<bool> {
   static const _authKey = 'is_admin_authenticated';
 
   /// Admin secret — must be injected at build time:
-  /// --dart-define=ADMIN_SECRET_KEY=<your-secure-key>
+  /// --dart-define=ADMIN_SECRET_KEY=`your-secure-key`
   /// If empty, admin login is disabled (production fail-safe).
   static const String _secretKey = String.fromEnvironment('ADMIN_SECRET_KEY');
 

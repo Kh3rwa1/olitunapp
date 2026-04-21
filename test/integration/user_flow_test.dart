@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/progress_provider.dart';
@@ -88,11 +86,11 @@ void main() {
       // overallProgress = average of 4 skills. Need alphabetProgress high enough
       // that average ≥ 0.2. 24/30 = 0.8 → avg = 0.8/4 = 0.2 ✓
       final intermediate = UserProgressData(
-        completedLessons: Set.from(['lesson_1', 'lesson_2', 'lesson_3']),
-        practicedLetters: Set.from([
+        completedLessons: {'lesson_1', 'lesson_2', 'lesson_3'},
+        practicedLetters: {
           'ᱚ','ᱛ','ᱜ','ᱝ','ᱞ','ᱟ','ᱠ','ᱡ','ᱢ','ᱣ','ᱤ','ᱥ',
           'ᱦ','ᱧ','ᱨ','ᱩ','ᱪ','ᱫ','ᱬ','ᱭ','ᱮ','ᱯ','ᱰ','ᱱ',
-        ]),
+        },
         totalLearningMinutes: 30,
       );
 
@@ -233,7 +231,6 @@ void main() {
 
       // Simulate: save to cloud → load from cloud
       final json = original.toJson();
-      final jsonString = '${json}'; // Force through string representation
       final restored = UserProgressData.fromJson(json);
 
       expect(restored.practicedLetters, original.practicedLetters);

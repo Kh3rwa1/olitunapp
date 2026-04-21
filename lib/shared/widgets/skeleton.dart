@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
-import '../../../core/theme/app_colors.dart';
 
 class Skeleton extends StatelessWidget {
   final double? width;
@@ -21,10 +20,15 @@ class Skeleton extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Shimmer.fromColors(
-      baseColor: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
-      highlightColor: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.1),
+      baseColor: isDark
+          ? Colors.white.withValues(alpha: 0.05)
+          : Colors.black.withValues(alpha: 0.05),
+      highlightColor: isDark
+          ? Colors.white.withValues(alpha: 0.1)
+          : Colors.black.withValues(alpha: 0.1),
       period: const Duration(milliseconds: 1500),
-      child: child ??
+      child:
+          child ??
           Container(
             width: width,
             height: height,
@@ -51,11 +55,7 @@ class SkeletonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Skeleton(
-      width: width,
-      height: height,
-      borderRadius: borderRadius,
-    );
+    return Skeleton(width: width, height: height, borderRadius: borderRadius);
   }
 }
 
@@ -74,9 +74,17 @@ class SkeletonListTile extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Skeleton(width: double.infinity, height: 18, borderRadius: 4),
+                const Skeleton(
+                  width: double.infinity,
+                  height: 18,
+                  borderRadius: 4,
+                ),
                 const SizedBox(height: 8),
-                Skeleton(width: MediaQuery.of(context).size.width * 0.4, height: 14, borderRadius: 4),
+                Skeleton(
+                  width: MediaQuery.of(context).size.width * 0.4,
+                  height: 14,
+                  borderRadius: 4,
+                ),
               ],
             ),
           ),
@@ -94,7 +102,9 @@ class SkeletonGridItem extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(child: Skeleton(width: double.infinity, borderRadius: 20)),
+        const Expanded(
+          child: Skeleton(width: double.infinity, borderRadius: 20),
+        ),
         const SizedBox(height: 12),
         const Skeleton(width: 80, height: 16, borderRadius: 4),
         const SizedBox(height: 6),

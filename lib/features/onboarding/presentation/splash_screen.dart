@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../core/api/appwrite_db_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});

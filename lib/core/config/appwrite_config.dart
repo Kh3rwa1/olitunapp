@@ -5,14 +5,14 @@
 ///
 /// Optional build flags (override defaults):
 ///   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1
-///   --dart-define=APPWRITE_PROJECT_ID=<your-project-id>
-///   --dart-define=ADMIN_SECRET_KEY=<your-admin-secret>
+///   --dart-define=APPWRITE_PROJECT_ID=`your-project-id`
+///   --dart-define=ADMIN_SECRET_KEY=`your-admin-secret`
 ///
 /// Example build command:
 ///   flutter build apk \
 ///     --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
 ///     --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 \
-///     --dart-define=ADMIN_SECRET_KEY=<new-secure-key>
+///     --dart-define=ADMIN_SECRET_KEY=`new-secure-key`
 class AppwriteConfig {
   AppwriteConfig._();
 

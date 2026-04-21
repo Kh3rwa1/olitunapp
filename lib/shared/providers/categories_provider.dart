@@ -73,7 +73,7 @@ class CategoriesNotifier
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);
       }
-    } catch (e, st) {
+    } catch (e) {
       debugPrint('❌ _loadCategories FAILED: $e');
       // Keep existing data (seed or previously loaded) on failure
       if (!state.hasValue || state.value!.isEmpty) {
@@ -124,7 +124,9 @@ class CategoriesNotifier
     if (oldIndex < 0 ||
         oldIndex >= current.length ||
         newIndex < 0 ||
-        newIndex >= current.length) return;
+        newIndex >= current.length) {
+      return;
+    }
 
     final updated = [...current];
     final item = updated.removeAt(oldIndex);

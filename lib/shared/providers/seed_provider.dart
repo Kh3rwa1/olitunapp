@@ -4,7 +4,6 @@ import '../../features/rhymes/domain/rhyme_model.dart';
 import 'categories_provider.dart';
 import 'letters_provider.dart';
 import 'lessons_provider.dart';
-import 'numbers_provider.dart';
 import 'quizzes_provider.dart';
 import 'rhymes_providers.dart';
 

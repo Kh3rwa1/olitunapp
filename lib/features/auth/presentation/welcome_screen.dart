@@ -4,7 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
+import '../presentation/providers/auth_providers.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -324,23 +324,26 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signInWithGoogle();
+      final result = await authRepo.signInWithGoogle();
 
-      // Invalidate cached auth state so AuthGate widgets update
-      ref.invalidate(isAuthenticatedProvider);
-
-      // Sync user's first name from Google profile
-      try {
-        final user = await authRepo.getMe();
-        if (user.name.isNotEmpty) {
-          final firstName = user.name.split(' ').first;
-          await updateUserName(ref, firstName);
-        }
-      } catch (_) {}
-
-      if (mounted) {
-        context.go('/home');
-      }
+      result.fold(
+        (failure) {
+          if (mounted) {
+            setState(() => _isLoading = false);
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Google sign-in failed: ${failure.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (_) {
+          if (mounted) {
+            context.go('/home');
+          }
+        },
+      );
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);

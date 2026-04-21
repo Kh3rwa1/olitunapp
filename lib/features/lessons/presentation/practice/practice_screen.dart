@@ -32,10 +32,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
     _hasCompletedPractice = true;
 
     // Mark letter as practiced
-    ref.read(progressProvider.notifier).practiceLetter(widget.letterChar);
-
-    // Award stars
-    ref.read(progressProvider.notifier).addStars(10);
+    ref.read(userStatsProvider.notifier).practiceLetter(widget.letterChar);
+    ref.read(userStatsProvider.notifier).addStars(10);
   }
 
   @override

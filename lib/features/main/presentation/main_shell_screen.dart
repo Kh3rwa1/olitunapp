@@ -591,11 +591,11 @@ class _DesktopRightPanel extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progressData = ref.watch(progressProvider);
-    final streak = progressData.currentStreak;
+    final statsAsync = ref.watch(userStatsProvider);
+    final streak = statsAsync.value?.currentStreak ?? 0;
     final stars = ref.watch(userStarsProvider);
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
-    final learningTime = progressData.totalLearningMinutes;
+    final learningTime = statsAsync.value?.totalLearningMinutes ?? 0;
     final userName = ref.watch(userNameProvider);
 
     return Container(

@@ -1,7 +1,7 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/appwrite_config.dart';
-import '../../shared/providers/auth_providers.dart';
+import '../auth/appwrite_auth_service.dart';
 
 class AppwriteDbService {
   final TablesDB _tablesDB;

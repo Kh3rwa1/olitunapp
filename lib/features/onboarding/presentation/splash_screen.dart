@@ -5,7 +5,9 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
-import '../../../shared/providers/providers.dart';
+import '../../auth/presentation/providers/auth_providers.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import '../../../core/auth/appwrite_auth_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -55,11 +57,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             // Sync user's first name from Google profile
             try {
               final authRepo = ref.read(authRepositoryProvider);
-              final user = await authRepo.getMe();
-              if (user.name.isNotEmpty) {
-                final firstName = user.name.split(' ').first;
-                await updateUserName(ref, firstName);
-              }
+              final userResult = await authRepo.getCurrentUser();
+              userResult.fold(
+                (_) => null,
+                (user) async {
+                  if (user != null && (user.name?.isNotEmpty ?? false)) {
+                    final firstName = user.name!.split(' ').first;
+                    await ref.read(userStatsProvider.notifier).updateName(ref, firstName);
+                  }
+                },
+              );
             } catch (_) {}
             if (!mounted) return;
             context.go('/home');
@@ -70,11 +77,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       // Check authentication status
       final authRepo = ref.read(authRepositoryProvider);
-      final isLoggedIn = await authRepo.isLoggedIn();
+      final isLoggedInResult = await authRepo.isLoggedIn();
+      final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
 
       if (isLoggedIn) {
-        // Sync profile name in background
-        syncProfileName(ref).catchError((_) {});
         if (!mounted) return;
         context.go('/home');
       } else {

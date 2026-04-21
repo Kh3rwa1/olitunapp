@@ -4,9 +4,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/storage/storage_service.dart';
-import '../../../shared/providers/providers.dart';
+import '../../../core/storage/hive_service.dart';
+import '../../../shared/providers/app_settings_provider.dart';
+import '../../auth/presentation/providers/auth_providers.dart';
+import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
+import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/widgets/bento_grid.dart';
 
 class SettingsScreen extends ConsumerWidget {
@@ -493,9 +496,7 @@ class SettingsScreen extends ConsumerWidget {
             onPressed: () {
               HapticFeedback.mediumImpact();
               // Reset progress by clearing the stored data
-              prefs.remove('user_progress_data');
-              // Force a reload by invalidating the provider
-              ref.invalidate(progressProvider);
+              ref.read(userStatsProvider.notifier).resetProgress();
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -555,18 +556,32 @@ class SettingsScreen extends ConsumerWidget {
                       const Center(child: CircularProgressIndicator()),
                 );
 
-                // Delete account from Appwrite
                 final authRepo = ref.read(authRepositoryProvider);
-                await authRepo.deleteAccount();
+                final result = await authRepo.deleteAccount();
 
-                // Clear all local data
-                await prefs.clear();
+                result.fold(
+                  (failure) {
+                    if (context.mounted) {
+                      Navigator.pop(context); // Close loading
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text('Failed to delete account: ${failure.message}'),
+                          backgroundColor: AppColors.error,
+                        ),
+                      );
+                    }
+                  },
+                  (_) async {
+                    // Clear all local data
+                    await prefs.clear();
 
-                // Navigate to welcome screen
-                if (context.mounted) {
-                  Navigator.pop(context); // Close loading
-                  context.go('/welcome');
-                }
+                    // Navigate to welcome screen
+                    if (context.mounted) {
+                      Navigator.pop(context); // Close loading
+                      context.go('/welcome');
+                    }
+                  },
+                );
               } catch (e) {
                 // Handle error
                 if (context.mounted) {

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../core/storage/storage_service.dart';
+import '../../core/storage/hive_service.dart';
 import '../models/content_models.dart';
 
 final quizzesProvider =

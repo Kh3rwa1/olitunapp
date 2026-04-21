@@ -59,6 +59,9 @@ dependencies:
   record: ^6.2.0
   permission_handler: ^12.0.1
   web: ^1.1.1
+  fpdart: ^1.1.0
+  connectivity_plus: ^6.1.1
+  equatable: ^2.0.7
 
 dev_dependencies:
   flutter_test:

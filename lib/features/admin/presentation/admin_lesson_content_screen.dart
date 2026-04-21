@@ -3,9 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
+import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../core/storage/upload_service.dart';
-import '../../../shared/models/content_models.dart';
+import '../../lessons/domain/entities/lesson_entity.dart';
 import '../../../shared/widgets/gamified_card.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/api/ai_service.dart';
@@ -23,10 +23,10 @@ class AdminLessonContentScreen extends ConsumerStatefulWidget {
 class _AdminLessonContentScreenState
     extends ConsumerState<AdminLessonContentScreen> {
   // Local list to manage state before saving
-  late List<LessonBlock> _blocks;
+  late List<LessonBlockEntity> _blocks;
   bool _isLoading = true;
   bool _hasChanges = false;
-  LessonModel? _lesson;
+  LessonEntity? _lesson;
 
   @override
   void initState() {
@@ -36,7 +36,7 @@ class _AdminLessonContentScreenState
   }
 
   void _loadData() {
-    final lessons = ref.read(lessonsProvider).value ?? [];
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
     try {
       _lesson = lessons.firstWhere((l) => l.id == widget.lessonId);
       _blocks = List.from(_lesson!.blocks);
@@ -51,7 +51,7 @@ class _AdminLessonContentScreenState
     if (_lesson == null) return;
 
     final updatedLesson = _lesson!.copyWith(blocks: _blocks);
-    await ref.read(lessonsProvider.notifier).updateLesson(updatedLesson);
+    await ref.read(lessonNotifierProvider.notifier).updateLesson(updatedLesson);
 
     setState(() => _hasChanges = false);
     if (mounted) {
@@ -63,14 +63,14 @@ class _AdminLessonContentScreenState
 
   void _addBlock(String type) {
     setState(() {
-      _blocks.add(LessonBlock(type: type));
+      _blocks.add(LessonBlockEntity(type: type));
       _hasChanges = true;
     });
     // Scroll to bottom -> handled by list view naturally or we can force
     _editBlock(_blocks.length - 1);
   }
 
-  void _updateBlock(int index, LessonBlock block) {
+  void _updateBlock(int index, LessonBlockEntity block) {
     setState(() {
       _blocks[index] = block;
       _hasChanges = true;
@@ -209,7 +209,7 @@ class _AdminLessonContentScreenState
     );
   }
 
-  Widget _buildBlockCard(int index, LessonBlock block, bool isDark) {
+  Widget _buildBlockCard(int index, LessonBlockEntity block, bool isDark) {
     IconData icon;
     Color color;
     String title;
@@ -244,13 +244,13 @@ class _AdminLessonContentScreenState
         icon = Icons.animation_rounded;
         color = const Color(0xFF10B981);
         title = 'Lottie Animation';
-        subtitle = block.animationUrl ?? 'No animation selected';
+        subtitle = block.data?['animationUrl'] ?? 'No animation selected';
         break;
       case 'quiz':
         icon = Icons.quiz_rounded;
         color = Colors.green;
         title = 'Quiz Block';
-        subtitle = 'Quiz Ref: ${block.quizRefId ?? "None"}';
+        subtitle = 'Quiz Ref: ${block.data?['quizRefId'] ?? "None"}';
         break;
       default:
         icon = Icons.extension;
@@ -434,8 +434,8 @@ class _AdminLessonContentScreenState
     bool isTranslating = false;
     final imageCtrl = TextEditingController(text: block.imageUrl ?? '');
     final audioCtrl = TextEditingController(text: block.audioUrl ?? '');
-    final animationCtrl = TextEditingController(text: block.animationUrl ?? '');
-    final quizRefCtrl = TextEditingController(text: block.quizRefId ?? '');
+    final animationCtrl = TextEditingController(text: block.data?['animationUrl'] ?? '');
+    final quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
 
     showModalBottomSheet(
       context: context,
@@ -614,7 +614,7 @@ class _AdminLessonContentScreenState
                 height: 50,
                 child: ElevatedButton(
                   onPressed: () {
-                    final updatedBlock = LessonBlock(
+                    final updatedBlock = LessonBlockEntity(
                       type: block.type,
                       textOlChiki: olChikiCtrl.text.isEmpty
                           ? null
@@ -622,12 +622,12 @@ class _AdminLessonContentScreenState
                       textLatin: latinCtrl.text.isEmpty ? null : latinCtrl.text,
                       imageUrl: imageCtrl.text.isEmpty ? null : imageCtrl.text,
                       audioUrl: audioCtrl.text.isEmpty ? null : audioCtrl.text,
-                      animationUrl: animationCtrl.text.isEmpty
-                          ? null
-                          : animationCtrl.text,
-                      quizRefId: quizRefCtrl.text.isEmpty
-                          ? null
-                          : quizRefCtrl.text,
+                      data: {
+                        if (animationCtrl.text.isNotEmpty)
+                          'animationUrl': animationCtrl.text,
+                        if (quizRefCtrl.text.isNotEmpty)
+                          'quizRefId': quizRefCtrl.text,
+                      },
                     );
                     _updateBlock(index, updatedBlock);
                     Navigator.pop(context);

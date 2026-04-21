@@ -5,8 +5,11 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
+import '../../categories/domain/entities/category_entity.dart';
+import '../../lessons/presentation/providers/lesson_notifier.dart';
+import '../../lessons/domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/gamified_card.dart';
 import 'widgets/admin_upload_field.dart';
 
@@ -22,8 +25,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final lessonsAsync = ref.watch(lessonsProvider);
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
@@ -269,7 +272,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
   }
 
   Widget _buildLessonsList(
-    List<LessonModel> lessons,
+    List<LessonEntity> lessons,
     bool isDark,
     bool isWideScreen,
   ) {
@@ -293,10 +296,10 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     );
   }
 
-  void _showLessonDialog(BuildContext context, LessonModel? lesson) {
+  void _showLessonDialog(BuildContext context, LessonEntity? lesson) {
     final isEditing = lesson != null;
     final categories =
-        ref.read(categoriesProvider).value ?? const <CategoryModel>[];
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
     var selectedCategoryId =
         lesson?.categoryId ??
         (categories.isNotEmpty ? categories.first.id : null);
@@ -316,9 +319,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
       text: (lesson?.order ?? 0).toString(),
     );
     final thumbnailController = TextEditingController(
-      text: lesson?.thumbnailUrl ?? '',
+      text: lesson?.data?['thumbnailUrl'] ?? '',
     );
-    var level = lesson?.level ?? 'beginner';
+    var level = 'beginner';
     var isActive = lesson?.isActive ?? true;
 
     showModalBottomSheet(
@@ -404,7 +407,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        initialValue: selectedCategoryId,
+                        value: selectedCategoryId,
                         items: categories
                             .map(
                               (c) => DropdownMenuItem(
@@ -459,7 +462,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        initialValue: level,
+                        value: level,
                         items: const [
                           DropdownMenuItem(
                             value: 'beginner',
@@ -527,7 +530,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                           onPressed: selectedCategoryId == null
                               ? null
                               : () async {
-                                  final newLesson = LessonModel(
+                                  final newLesson = LessonEntity(
                                     id: lesson?.id ?? const Uuid().v4(),
                                     categoryId: selectedCategoryId!,
                                     titleLatin: titleLatinController.text
@@ -550,24 +553,17 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                                           orderController.text.trim(),
                                         ) ??
                                         0,
-                                    level: level,
-                                    isActive: isActive,
                                     blocks:
-                                        lesson?.blocks ?? const <LessonBlock>[],
-                                    thumbnailUrl:
-                                        thumbnailController.text.trim().isEmpty
-                                        ? null
-                                        : thumbnailController.text.trim(),
-                                    isPremium: lesson?.isPremium ?? false,
+                                        lesson?.blocks ?? const <LessonBlockEntity>[],
                                   );
 
                                   if (isEditing) {
                                     await ref
-                                        .read(lessonsProvider.notifier)
+                                        .read(lessonNotifierProvider.notifier)
                                         .updateLesson(newLesson);
                                   } else {
                                     await ref
-                                        .read(lessonsProvider.notifier)
+                                        .read(lessonNotifierProvider.notifier)
                                         .addLesson(newLesson);
                                   }
 
@@ -589,7 +585,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, LessonModel lesson) {
+  void _showDeleteDialog(BuildContext context, LessonEntity lesson) {
     showDialog(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -602,7 +598,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await ref.read(lessonsProvider.notifier).deleteLesson(lesson.id);
+              await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: const Text('Delete'),
@@ -711,7 +707,7 @@ class _FilterChip extends StatelessWidget {
 }
 
 class _LessonCard extends StatelessWidget {
-  final LessonModel lesson;
+  final LessonEntity lesson;
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onDelete;

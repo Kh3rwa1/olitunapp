@@ -4,10 +4,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import 'settings_screen.dart';
+import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -15,108 +16,111 @@ class ProgressScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final userName = ref.watch(userNameProvider);
-    final progressData = ref.watch(progressProvider);
-    final streak = progressData.currentStreak;
-    final stars = ref.watch(userStarsProvider);
-    final quizzesCompleted = ref.watch(quizzesCompletedProvider);
+    final statsAsync = ref.watch(userStatsProvider);
+    final avatarEmoji = ref.watch(userAvatarEmojiProvider);
+    final avatarColorIndex = ref.watch(userAvatarColorIndexProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
-    final avatarColors = ref.watch(userAvatarColorsProvider);
-    final avatarEmoji = ref.watch(userAvatarEmojiProvider);
-    final memberSince = ref.watch(memberSinceProvider);
-    final quizAccuracy = (progressData.quizAccuracy * 100).round();
-    final learningTime = progressData.totalLearningMinutes;
 
-    return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : AppColors.lightBackground,
-      body: CustomScrollView(
-        physics: const BouncingScrollPhysics(),
-        slivers: [
-          // Minimal app bar
-          SliverAppBar(
-            expandedHeight: 0,
-            floating: false,
-            pinned: true,
-            backgroundColor: isDark
-                ? AppColors.darkBackground
-                : AppColors.lightBackground,
-            elevation: 0,
-            toolbarHeight: 0,
-          ),
+    return statsAsync.when(
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
+      data: (stats) {
+        final streak = stats.currentStreak;
+        final stars = stats.totalStars;
+        final quizzesCompleted = stats.quizzesCompletedCount;
+        final avatarColors = [AppColors.primary, AppColors.primaryDark];
+        final memberSince = 'April 2024';
+        final learningTime = stats.totalLearningMinutes;
 
-          SliverToBoxAdapter(
-            child: ResponsivePageContainer(
-              padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const SizedBox(height: 16),
-
-                  // ═══════════════ PROFILE HERO SECTION ═══════════════
-                  _ProfileHeroCard(
-                        userName: userName,
-                        avatarColors: avatarColors,
-                        avatarEmoji: avatarEmoji,
-                        level: progressData.learnerLevel,
-                        levelIndex: progressData.levelIndex,
-                        memberSince: memberSince,
-                        overallProgress: progressData.overallProgress,
-                        isDark: isDark,
-                        onEditName: () =>
-                            _showEditNameDialog(context, ref, userName),
-                        onEditAvatar: () => _showAvatarPicker(context, ref),
-                      )
-                      .animate()
-                      .fadeIn(duration: 500.ms)
-                      .slideY(begin: 0.1, end: 0),
-
-                  const SizedBox(height: 24),
-
-                  // ═══════════════ CORE STATS ROW ═══════════════
-                  _buildSectionHeader('YOUR STATS', isDark),
-                  const SizedBox(height: 14),
-                  _buildStatsGrid(
-                    streak: streak,
-                    stars: stars,
-                    quizzesCompleted: quizzesCompleted,
-                    learningTime: learningTime,
-                    isDark: isDark,
-                    isTablet: isTablet,
-                  ),
-                  const SizedBox(height: 32),
-
-                  // ═══════════════ SKILLS MASTERY ═══════════════
-                  _buildSectionHeader('SKILLS MASTERY', isDark),
-                  const SizedBox(height: 16),
-                  _buildSkillsGrid(context, isDark, isTablet, progressData),
-                  const SizedBox(height: 32),
-
-                  // ═══════════════ QUIZ ANALYSIS ═══════════════
-                  _buildSectionHeader('QUIZ ANALYSIS', isDark),
-                  const SizedBox(height: 16),
-                  _QuizPerformanceCard(
-                    quizzes: quizzesCompleted,
-                    accuracy: quizAccuracy,
-                    bestScore: progressData.bestQuizScore,
-                    isDark: isDark,
-                  ),
-                  const SizedBox(height: 32),
-
-                  // ═══════════════ ACCOUNT ACTIONS ═══════════════
-                  _buildSectionHeader('ACCOUNT', isDark),
-                  const SizedBox(height: 12),
-                  _buildActionTiles(context, ref, isDark),
-
-                  SizedBox(height: isDesktop ? 32 : 120),
-                ],
+        return Scaffold(
+          backgroundColor: isDark
+              ? AppColors.darkBackground
+              : AppColors.lightBackground,
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Minimal app bar
+              SliverAppBar(
+                expandedHeight: 0,
+                floating: false,
+                pinned: true,
+                backgroundColor: isDark
+                    ? AppColors.darkBackground
+                    : AppColors.lightBackground,
+                elevation: 0,
+                toolbarHeight: 0,
               ),
-            ),
+
+              SliverToBoxAdapter(
+                child: ResponsivePageContainer(
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 20),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const SizedBox(height: 16),
+
+                      // ═══════════════ PROFILE HERO SECTION ═══════════════
+                      _ProfileHeroCard(
+                            userName: userName,
+                            avatarColors: avatarColors,
+                            avatarEmoji: avatarEmoji,
+                            level: stats.learnerLevel,
+                            levelIndex: stats.levelIndex,
+                            memberSince: memberSince,
+                            overallProgress: stats.overallProgress,
+                            isDark: isDark,
+                            onEditName: () =>
+                                _showEditNameDialog(context, ref, userName),
+                            onEditAvatar: () => _showAvatarPicker(context, ref),
+                          )
+                          .animate()
+                          .fadeIn(duration: 500.ms)
+                          .slideY(begin: 0.1, end: 0),
+
+                      const SizedBox(height: 24),
+
+                      // ═══════════════ CORE STATS ROW ═══════════════
+                      _buildSectionHeader('YOUR STATS', isDark),
+                      const SizedBox(height: 14),
+                      _buildStatsGrid(
+                        streak: streak,
+                        stars: stars,
+                        quizzesCompleted: quizzesCompleted,
+                        learningTime: learningTime,
+                        isDark: isDark,
+                        isTablet: isTablet,
+                      ),
+                      const SizedBox(height: 32),
+
+                      _buildSectionHeader('SKILLS MASTERY', isDark),
+                      const SizedBox(height: 16),
+                      _buildSkillsGrid(context, isDark, isTablet, stats),
+                      const SizedBox(height: 32),
+
+                      _buildSectionHeader('QUIZ ANALYSIS', isDark),
+                      const SizedBox(height: 16),
+                      _QuizPerformanceCard(
+                        quizzes: quizzesCompleted,
+                        accuracy: (stats.quizAccuracy * 100).round(),
+                        bestScore: stats.bestQuizScore,
+                        isDark: isDark,
+                      ),
+                      const SizedBox(height: 32),
+
+                      _buildSectionHeader('ACCOUNT', isDark),
+                      const SizedBox(height: 12),
+                      _buildActionTiles(context, ref, isDark),
+                      SizedBox(height: isDesktop ? 32 : 120),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -252,17 +256,17 @@ class ProgressScreen extends ConsumerWidget {
     BuildContext context,
     bool isDark,
     bool isTablet,
-    UserProgressData progressData,
+    UserStatsEntity stats,
   ) {
     final skills = [
-      _SkillData('Alphabet', progressData.alphabetProgress, AppColors.duoBlue),
-      _SkillData('Numbers', progressData.numbersProgress, AppColors.duoOrange),
+      _SkillData('Alphabet', stats.alphabetProgress, AppColors.duoBlue),
+      _SkillData('Numbers', stats.numbersProgress, AppColors.duoOrange),
       _SkillData(
         'Vocabulary',
-        progressData.vocabularyProgress,
+        stats.vocabularyProgress,
         AppColors.duoGreen,
       ),
-      _SkillData('Rhymes', progressData.rhymesProgress, AppColors.primary),
+      _SkillData('Rhymes', stats.rhymesProgress, AppColors.primary),
     ];
 
     return Row(
@@ -424,7 +428,7 @@ class ProgressScreen extends ConsumerWidget {
                 onPressed: () {
                   final name = controller.text.trim();
                   if (name.isNotEmpty) {
-                    updateUserName(ref, name); // Fire and forget or await?
+                    ref.read(userStatsProvider.notifier).updateName(ref, name);
                     // Let's await to be safe and provide feedback if it fails?
                     // But the UI closes immediately.
                     // I'll keep it as is but it's now a Future.
@@ -542,12 +546,12 @@ class ProgressScreen extends ConsumerWidget {
                 const SizedBox(height: 10),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: List.generate(avatarPalettes.length, (i) {
+                  children: List.generate(AppColors.avatarPalettes.length, (i) {
                     final isSelected = i == selectedColor;
                     return GestureDetector(
                       onTap: () {
                         setSheetState(() => selectedColor = i);
-                        updateAvatarColorIndex(ref, i);
+                          ref.read(userStatsProvider.notifier).updateAvatar(ref, currentEmoji, i);
                         HapticFeedback.selectionClick();
                       },
                       child: Container(
@@ -555,7 +559,7 @@ class ProgressScreen extends ConsumerWidget {
                         height: 32,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: avatarPalettes[i]),
+                          gradient: LinearGradient(colors: AppColors.avatarPalettes[i]),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected
@@ -566,7 +570,7 @@ class ProgressScreen extends ConsumerWidget {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: avatarPalettes[i][0].withValues(
+                                    color: AppColors.avatarPalettes[i][0].withValues(
                                       alpha: 0.4,
                                     ),
                                     blurRadius: 8,
@@ -608,8 +612,8 @@ class ProgressScreen extends ConsumerWidget {
                         return GestureDetector(
                           onTap: () {
                             setSheetState(() => selectedEmoji = '');
-                            updateAvatarEmoji(ref, '');
-                            HapticFeedback.selectionClick();
+                             ref.read(userStatsProvider.notifier).updateAvatar(ref, '', selectedColor);
+                             HapticFeedback.selectionClick();
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -639,7 +643,7 @@ class ProgressScreen extends ConsumerWidget {
                       return GestureDetector(
                         onTap: () {
                           setSheetState(() => selectedEmoji = emoji);
-                          updateAvatarEmoji(ref, emoji);
+                          ref.read(userStatsProvider.notifier).updateAvatar(ref, emoji, currentColorIndex);
                           HapticFeedback.selectionClick();
                         },
                         child: Container(

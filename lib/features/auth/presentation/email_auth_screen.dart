@@ -5,7 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
+import 'providers/auth_providers.dart';
 
 class EmailAuthScreen extends ConsumerStatefulWidget {
   const EmailAuthScreen({super.key});
@@ -61,15 +61,25 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      final token = await authRepo.sendOtp(email);
-      _userId = token.userId;
+      final result = await authRepo.sendOtp(email);
 
-      setState(() {
-        _isLoading = false;
-        _codeSent = true;
-        _successMessage = 'Code sent to $email';
-      });
-      _startResendTimer();
+      result.fold(
+        (failure) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = failure.message;
+          });
+        },
+        (token) {
+          _userId = token.userId;
+          setState(() {
+            _isLoading = false;
+            _codeSent = true;
+            _successMessage = 'Code sent to $email';
+          });
+          _startResendTimer();
+        },
+      );
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -97,22 +107,21 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
     try {
       final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.verifyOtp(userId: _userId!, secret: code);
+      final result = await authRepo.verifyOtp(userId: _userId!, secret: code);
 
-      // Invalidate cached auth state so AuthGate widgets update
-      ref.invalidate(isAuthenticatedProvider);
-
-      // Try to fetch user profile and sync name
-      try {
-        final user = await authRepo.getMe();
-        if (user.name.isNotEmpty) {
-          await updateUserName(ref, user.name);
-        }
-      } catch (_) {}
-
-      if (mounted) {
-        context.go('/home');
-      }
+      result.fold(
+        (failure) {
+          setState(() {
+            _isLoading = false;
+            _errorMessage = failure.message;
+          });
+        },
+        (_) {
+          if (mounted) {
+            context.go('/home');
+          }
+        },
+      );
     } catch (e) {
       setState(() {
         _isLoading = false;

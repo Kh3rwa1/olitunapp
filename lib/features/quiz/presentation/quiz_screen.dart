@@ -3,6 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 
@@ -376,10 +378,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         setState(() {
           _isQuizComplete = true;
         });
-        ref
-            .read(progressProvider.notifier)
-            .completeQuiz(widget.quizId, _score, quiz.questions.length);
-        ref.read(progressProvider.notifier).addStars(_score * 5);
+        final statsNotifier = ref.read(userStatsProvider.notifier);
+        statsNotifier.saveQuizResult(QuizResultEntity(
+          quizId: quiz.id,
+          score: _score,
+          totalQuestions: quiz.questions.length,
+          completedAt: DateTime.now().toIso8601String(),
+        ));
+        statsNotifier.addStars(_score * 5);
       }
     });
   }

@@ -2,9 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
-import '../../../../shared/providers/providers.dart';
-import '../../../../shared/widgets/animated_buttons.dart';
+import '../../../shared/providers/providers.dart';
+import '../../../shared/providers/quizzes_provider.dart';
+import '../../../shared/providers/seed_provider.dart';
+import '../../../shared/widgets/animated_buttons.dart';
 import '../providers/admin_auth_provider.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
+import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../../core/theme/app_colors.dart';
 
 class AdminDashboardScreen extends ConsumerWidget {
@@ -185,9 +189,9 @@ class AdminDashboardScreen extends ConsumerWidget {
   }
 
   Widget _buildBentoGrid(BuildContext context, WidgetRef ref, bool isDark) {
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
     final lettersAsync = ref.watch(lettersProvider);
-    final lessonsAsync = ref.watch(lessonsProvider);
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
     final wordsAsync = ref.watch(wordsProvider);
     final numbersAsync = ref.watch(numbersProvider);
     final quizzesAsync = ref.watch(quizzesProvider);
@@ -581,9 +585,9 @@ class AdminDashboardScreen extends ConsumerWidget {
 // Extension to help with seeding (imported from providers.dart typically)
 Future<void> seedAppContent(WidgetRef ref) async {
   // Mock seeding logic - calls existing providers
-  await ref.read(categoriesProvider.notifier).seed();
+  await ref.read(categoryNotifierProvider.notifier).seed();
   await ref.read(lettersProvider.notifier).seed();
-  await ref.read(lessonsProvider.notifier).seed();
+  await ref.read(lessonNotifierProvider.notifier).seed();
   await ref.read(numbersProvider.notifier).seed();
   await ref.read(wordsProvider.notifier).seed();
 }

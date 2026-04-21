@@ -9,7 +9,12 @@ import '../../../shared/widgets/animated_buttons.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
-import '../../../shared/widgets/skeleton.dart';
+import '../../../core/widgets/shimmer_loading.dart';
+import '../../categories/domain/entities/category_entity.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
+import '../../lessons/presentation/providers/lesson_notifier.dart';
+import '../../../shared/providers/local_settings_provider.dart';
+import '../../../shared/providers/app_settings_provider.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -27,28 +32,24 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(categoriesProvider.notifier).refresh();
-    await ref.read(lessonsProvider.notifier).refresh();
+    await ref.read(categoryNotifierProvider.notifier).refresh();
+    await ref.read(lessonNotifierProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
     final userName = ref.watch(userNameProvider);
-    final progressData = ref.watch(progressProvider);
-    final streak = progressData.currentStreak;
+    final statsAsync = ref.watch(userStatsProvider);
     final stars = ref.watch(userStarsProvider);
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
-    // Real computed values
-    final learningTime = progressData.totalLearningMinutes;
-    final dailyProgress =
-        ((progressData.alphabetProgress +
-                    progressData.numbersProgress +
-                    progressData.vocabularyProgress) /
-                3 *
-                100)
-            .round();
+    final stats = statsAsync.value;
+    final streak = stats?.currentStreak ?? 0;
+    final learningTime = stats?.totalLearningMinutes ?? 0;
+    final dailyProgress = stats != null
+        ? ((stats.alphabetProgress + stats.numbersProgress + stats.vocabularyProgress) / 3 * 100).round()
+        : 0;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
@@ -534,7 +535,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   // ─── BENTO: Content Grid (AI Tools + Categories) ───────
   Widget _buildContentBentoGrid({
     required BuildContext context,
-    required AsyncValue<List<CategoryModel>> categoriesAsync,
+    required AsyncValue<List<CategoryEntity>> categoriesAsync,
     required bool isDark,
     required bool isTablet,
     required bool isDesktop,
@@ -731,7 +732,7 @@ class _BentoStatCard extends StatelessWidget {
 class _BentoContentGrid extends StatelessWidget {
   final bool isDark;
   final int cols;
-  final List<CategoryModel> categories;
+  final List<CategoryEntity> categories;
 
   const _BentoContentGrid({
     required this.isDark,
@@ -823,7 +824,7 @@ class _BentoContentGrid extends StatelessWidget {
     );
   }
 
-  Widget _buildCategoryCard(CategoryModel cat, int catIndex) {
+  Widget _buildCategoryCard(CategoryEntity cat, int catIndex) {
     final grad = _categoryGradients[catIndex % _categoryGradients.length];
     return AnimatedBentoChild(
       index: 7 + catIndex,
@@ -922,7 +923,7 @@ class _BentoContentGrid extends StatelessWidget {
 // BENTO CATEGORY CARD — individual learning path tile
 // ═══════════════════════════════════════════════════════════
 class _BentoCategoryCard extends StatelessWidget {
-  final CategoryModel category;
+  final CategoryEntity category;
   final List<Color> gradientColors;
 
   const _BentoCategoryCard({

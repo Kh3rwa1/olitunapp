@@ -14,7 +14,7 @@ import 'widgets/tilt_card.dart';
 
 import 'widgets/whimsical_background.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
-import '../../../shared/widgets/skeleton.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});

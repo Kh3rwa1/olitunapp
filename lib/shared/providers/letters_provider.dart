@@ -2,7 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
-import '../../core/storage/cache_service.dart';
+import '../../core/storage/cache_service_legacy.dart';
 import '../models/content_models.dart';
 
 final lettersProvider =

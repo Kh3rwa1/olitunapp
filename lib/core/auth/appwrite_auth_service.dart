@@ -150,3 +150,10 @@ class AppwriteAuthService {
     await signOut();
   }
 }
+
+// Provider
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
+  return AppwriteAuthService();
+});

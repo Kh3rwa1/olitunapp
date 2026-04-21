@@ -3,8 +3,10 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import 'providers/lesson_notifier.dart';
+import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/models/content_models.dart';
+import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../shared/widgets/lottie_display.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
@@ -16,7 +18,7 @@ class LessonDetailScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final lessons = ref.watch(lessonsProvider);
+    final lessons = ref.watch(lessonNotifierProvider);
 
     // Watch these content providers to ensure data is available for dynamic block matching
     final letters = ref.watch(lettersProvider);
@@ -138,7 +140,7 @@ class LessonDetailScreen extends ConsumerWidget {
                           const SizedBox(width: 12),
                           _buildChip(
                             Icons.signal_cellular_alt_rounded,
-                            lesson.level,
+                            'Beginner',
                           ),
                         ],
                       ),
@@ -226,9 +228,9 @@ class LessonDetailScreen extends ConsumerWidget {
             width: double.infinity,
             child: FloatingActionButton.extended(
               onPressed: () {
-                final notifier = ref.read(progressProvider.notifier);
-                notifier.completeLesson(lessonId);
-                notifier.addStars(15);
+                final notifier = ref.read(userStatsProvider.notifier);
+                notifier.completeLesson(lesson.id);
+                notifier.addStars(25);
                 context.pop();
               },
               backgroundColor: AppColors.primary,
@@ -307,8 +309,8 @@ class LessonDetailScreen extends ConsumerWidget {
     bool isDark,
   ) {
     // 1. Try to load lesson data from provider to check for blocks
-    final lessons = ref.read(lessonsProvider).value ?? [];
-    LessonModel? lesson;
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    LessonEntity? lesson;
     try {
       lesson = lessons.firstWhere((l) => l.id == lessonId);
     } catch (_) {}
@@ -349,7 +351,7 @@ class LessonDetailScreen extends ConsumerWidget {
     BuildContext context,
     WidgetRef ref,
     String lessonId,
-    LessonBlock block,
+    LessonBlockEntity block,
     bool isDark,
   ) {
     switch (block.type) {
@@ -563,12 +565,13 @@ class LessonDetailScreen extends ConsumerWidget {
 
       case 'quiz':
         // This is the key fix for "specailly the quiz"
+        final quizRefId = block.data?['quizRefId'] as String?;
         return ScaleButton(
           onPressed: () {
             // Navigate to actual quiz screen using quiz ID
-            if (block.quizRefId != null) {
+            if (quizRefId != null) {
               // Assuming route is /quiz/:quizId
-              context.push('/quiz/${block.quizRefId}');
+              context.push('/quiz/$quizRefId');
             }
           },
           child: Container(
@@ -626,6 +629,7 @@ class LessonDetailScreen extends ConsumerWidget {
         );
 
       case 'lottie':
+        final animationUrl = block.data?['animationUrl'] as String?;
         return Container(
           width: double.infinity,
           padding: const EdgeInsets.all(16),
@@ -636,11 +640,11 @@ class LessonDetailScreen extends ConsumerWidget {
           ),
           child: Column(
             children: [
-              if (block.animationUrl != null)
+              if (animationUrl != null)
                 ClipRRect(
                   borderRadius: BorderRadius.circular(12),
                   child: LottieDisplay(
-                    url: block.animationUrl!,
+                    url: animationUrl,
                     width: double.infinity,
                     height: 200,
                     fit: BoxFit.contain,

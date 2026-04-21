@@ -7,7 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
-import '../../../shared/widgets/skeleton.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});

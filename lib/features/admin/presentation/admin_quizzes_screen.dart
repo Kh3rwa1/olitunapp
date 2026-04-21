@@ -6,7 +6,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/models/content_models.dart';
+import '../../../shared/models/content_models.dart' hide CategoryModel;
+import '../../categories/domain/entities/category_entity.dart';
 
 class AdminQuizzesScreen extends ConsumerStatefulWidget {
   const AdminQuizzesScreen({super.key});
@@ -21,7 +22,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
   @override
   Widget build(BuildContext context) {
     final quizzesAsync = ref.watch(quizzesProvider);
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
@@ -293,7 +294,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
 
   void _showQuizDialog(BuildContext context, QuizModel? quiz) {
     final isEditing = quiz != null;
-    final categories = ref.read(categoriesProvider).value ?? const <CategoryModel>[];
+    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
     var selectedCategoryId = quiz?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
     final titleController = TextEditingController(text: quiz?.title ?? '');
     final orderController = TextEditingController(text: (quiz?.order ?? 0).toString());

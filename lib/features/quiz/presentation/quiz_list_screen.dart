@@ -37,12 +37,13 @@ class QuizListScreen extends ConsumerWidget {
                 loading: () => const Center(child: CircularProgressIndicator()),
                 error: (e, s) => Center(child: Text('Error: $e')),
                 data: (quizzes) {
-                  final progress = ref.watch(progressProvider);
+                  final statsAsync = ref.watch(userStatsProvider);
+                  final stats = statsAsync.value;
 
                   final activeQuizzes = quizzes.where((q) {
                     if (!q.isActive || q.questions.isEmpty) return false;
                     final currentMastery =
-                        progress.categoryMastery[q.categoryId] ?? 0;
+                        stats?.categoryMastery[q.categoryId] ?? 0;
                     final quizLevelValue = _getLevelValue(q.level);
                     return quizLevelValue <= currentMastery;
                   }).toList();

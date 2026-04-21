@@ -7,7 +7,9 @@ import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/models/content_models.dart';
+import '../providers/admin_auth_provider.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
+import '../../categories/domain/entities/category_entity.dart';
 import 'widgets/admin_glass_card.dart';
 import 'widgets/admin_section_header.dart';
 
@@ -22,7 +24,7 @@ class AdminCategoriesScreen extends ConsumerStatefulWidget {
 class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   @override
   Widget build(BuildContext context) {
-    final categoriesAsync = ref.watch(categoriesProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -153,7 +155,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   }
 
   Widget _buildCategoriesList(
-    List<CategoryModel> categories,
+    List<CategoryEntity> categories,
     bool isDark,
     bool isWideScreen,
   ) {
@@ -166,7 +168,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
         }
 
         await ref
-            .read(categoriesProvider.notifier)
+            .read(categoryNotifierProvider.notifier)
             .reorderCategories(oldIndex, newIndex);
       },
       itemBuilder: (context, index) {
@@ -183,7 +185,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     );
   }
 
-  void _showCategoryDialog(BuildContext context, CategoryModel? category) {
+  void _showCategoryDialog(BuildContext context, CategoryEntity? category) {
     final isEditing = category != null;
     final titleLatinController = TextEditingController(
       text: category?.titleLatin ?? '',
@@ -493,7 +495,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                       child: GestureDetector(
                         onTap: () {
                           HapticFeedback.lightImpact();
-                          final newCategory = CategoryModel(
+                          final newCategory = CategoryEntity(
                             id: category?.id ?? const Uuid().v4(),
                             titleLatin: titleLatinController.text,
                             titleOlChiki: titleOlChikiController.text,
@@ -512,11 +514,11 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
                           if (isEditing) {
                             ref
-                                .read(categoriesProvider.notifier)
+                                .read(categoryNotifierProvider.notifier)
                                 .updateCategory(newCategory);
                           } else {
                             ref
-                                .read(categoriesProvider.notifier)
+                                .read(categoryNotifierProvider.notifier)
                                 .addCategory(newCategory);
                           }
                           Navigator.pop(context);
@@ -610,7 +612,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, CategoryModel category) {
+  void _showDeleteDialog(BuildContext context, CategoryEntity category) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
@@ -647,7 +649,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
           ElevatedButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
-              ref.read(categoriesProvider.notifier).deleteCategory(category.id);
+              ref.read(categoryNotifierProvider.notifier).deleteCategory(category.id);
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
@@ -853,7 +855,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 }
 
 class _CategoryCard extends StatefulWidget {
-  final CategoryModel category;
+  final CategoryEntity category;
   final bool isDark;
   final int index;
   final VoidCallback onEdit;

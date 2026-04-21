@@ -1,5 +1,5 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../core/storage/storage_service.dart';
+import '../../../core/storage/hive_service.dart';
 
 final onboardingProvider = StateNotifierProvider<OnboardingNotifier, bool>((
   ref,

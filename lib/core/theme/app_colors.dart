@@ -29,6 +29,18 @@ class AppColors {
   static const Color duoYellow = Color(0xFFFFC800);
   static const Color duoYellowDark = Color(0xFFE5A100);
 
+  // Avatar background colors
+  static const List<List<Color>> avatarPalettes = [
+    [Color(0xFF1EE088), Color(0xFF00C767)],
+    [Color(0xFF1CB0F6), Color(0xFF1899D6)],
+    [Color(0xFFFF9600), Color(0xFFD37D00)],
+    [Color(0xFFCE82FF), Color(0xFFAF67E9)],
+    [Color(0xFFFF4B4B), Color(0xFFD33131)],
+    [Color(0xFFFFC800), Color(0xFFE5A100)],
+    [Color(0xFF00E5FF), Color(0xFF00B8D4)],
+    [Color(0xFFFF4081), Color(0xFFF50057)],
+  ];
+
   // Pure Black & White
   static const Color pureBlack = Color(0xFF000000);
   static const Color pureWhite = Color(0xFFFFFFFF);

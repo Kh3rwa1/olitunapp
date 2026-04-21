@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 
@@ -138,25 +140,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final percentage = (_score / _questions.length * 100).round();
     final isPassing = percentage >= 70;
 
-    final startingMastery =
-        ref.read(progressProvider).categoryMastery[_quiz?.categoryId] ?? 0;
+    final stats = ref.read(userStatsProvider).value;
+    final startingMastery = stats?.categoryMastery[_quiz?.categoryId] ?? 0;
 
     // Persist quiz result and update streak
-    final progressNotifier = ref.read(progressProvider.notifier);
-    progressNotifier.completeQuiz(
-      widget.quizId ?? '',
-      _score,
-      _questions.length,
-      categoryId: _quiz?.categoryId,
-    );
-
-    final finalMastery =
-        ref.read(progressProvider).categoryMastery[_quiz?.categoryId] ?? 0;
-    final leveledUp = finalMastery > startingMastery;
+    final statsNotifier = ref.read(userStatsProvider.notifier);
+    statsNotifier.saveQuizResult(QuizResultEntity(
+      quizId: widget.quizId ?? '',
+      score: _score,
+      totalQuestions: _questions.length,
+      completedAt: DateTime.now().toIso8601String(),
+    ));
 
     // Award stars based on performance
     if (isPassing) {
-      progressNotifier.addStars(_score * 5); // 5 stars per correct answer
+      statsNotifier.addStars(_score * 5); // 5 stars per correct answer
     }
 
     showDialog(
@@ -238,41 +236,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   ),
                 ),
               ),
-              if (leveledUp) ...[
-                const SizedBox(height: 16),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Icon(
-                        Icons.trending_up_rounded,
-                        color: AppColors.primary,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Level Up: ${_quiz?.level ?? ""} Mastering! 🎖️',
-                        style: const TextStyle(
-                          color: AppColors.primary,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 14,
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().shimmer(delay: 1.seconds).scale(delay: 1.2.seconds),
-              ],
               const SizedBox(height: 28),
               Row(
                 children: [

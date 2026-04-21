@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
+import '../../categories/presentation/providers/category_notifier.dart';
+import '../providers/lesson_notifier.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -22,17 +23,17 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     super.initState();
     // Force refresh lessons from API every time this screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(lessonsProvider.notifier).refresh();
+      ref.read(lessonNotifierProvider.notifier).refresh();
     });
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(lessonsProvider.notifier).refresh();
+    await ref.read(lessonNotifierProvider.notifier).refresh();
   }
 
   @override
   Widget build(BuildContext context) {
-    final categories = ref.watch(categoriesProvider);
+    final categories = ref.watch(categoryNotifierProvider);
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -116,7 +117,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               ),
               const SizedBox(height: 20),
               TextButton.icon(
-                onPressed: () => ref.read(lessonsProvider.notifier).refresh(),
+                onPressed: () => ref.read(lessonNotifierProvider.notifier).refresh(),
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Retry'),
                 style: TextButton.styleFrom(foregroundColor: AppColors.primary),

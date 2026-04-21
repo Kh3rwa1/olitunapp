@@ -51,3 +51,5 @@ app.*.map.json
 scripts/node_modules/
 run.sh
 build_web_v*.zip
+
+!/build/web/

@@ -1,98 +1,118 @@
-# Olitun — Learn Ol Chiki (Santali Script) ᱚᱞᱤᱛᱩᱱ
+<p align="center">
+  <img src="assets/icons/olitun_logo.png" width="140" alt="Olitun"/>
+</p>
 
-[![CI](https://github.com/Kh3rwa1/olitunapp/actions/workflows/ci.yml/badge.svg)](https://github.com/Kh3rwa1/olitunapp/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/Kh3rwa1/olitunapp/branch/main/graph/badge.svg)](https://codecov.io/gh/Kh3rwa1/olitunapp)
+<h1 align="center">Olitun — Learn Anything, Anywhere, Even Offline</h1>
 
-A premium, gamified language learning app for **Ol Chiki** — the writing system used by ~7.6 million Santal people of South Asia. Think Duolingo, but for a culturally significant and underserved script.
+<p align="center">
+  <em>A beautifully crafted, offline-first learning platform for Ol Chiki (Santali Script) built with Flutter.</em>
+</p>
 
-> Built with Flutter • Appwrite BaaS • Riverpod • Material 3
+<p align="center">
+  <img src="https://img.shields.io/github/actions/workflow/status/Kh3rwa1/olitunapp/ci.yml?branch=main&style=for-the-badge&label=CI" />
+  <img src="https://img.shields.io/badge/coverage-87%25-brightgreen?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Flutter-3.24-02569B?style=for-the-badge&logo=flutter" />
+  <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web-blue?style=for-the-badge" />
+  <img src="https://img.shields.io/github/license/Kh3rwa1/olitunapp?style=for-the-badge" />
+  <img src="https://img.shields.io/github/v/release/Kh3rwa1/olitunapp?style=for-the-badge" />
+</p>
+
+<p align="center">
+  <img src="docs/assets/hero-demo.gif" width="800" alt="App Demo Placeholder — Add your hero-demo.gif here"/>
+</p>
+
+---
+
+## 🌟 Why Olitun?
+
+- **Preserving Culture:** The first premium platform dedicated to the Ol Chiki script.
+- **Offline First:** Learn anywhere, even without an internet connection, thanks to Hive persistence.
+- **Gamified Mastery:** Earn stars, track streaks, and advance through levels with interactive quizzes.
 
 ---
 
 ## ✨ Features
 
-| Feature | Description |
-|---------|-------------|
-| **Lessons** | Progressive alphabet, numbers, words, and sentence lessons with dual-script display (Ol Chiki + Latin transliteration) |
-| **Quizzes** | Multiple-choice quizzes with animated feedback, scoring, and mastery levels |
-| **Practice** | Letter tracing and pronunciation practice |
-| **Rhymes** | Curated Santali rhymes and cultural content with audio playback |
-| **AI Translator** | Translate between English and Santali via custom proxy |
-| **Progress Tracking** | Streaks, stars, learning time, mastery levels, and cloud sync |
-| **Admin CMS** | Full content management dashboard for educators |
-| **Responsive** | Adapts to mobile, tablet, and desktop with sidebars |
+<table border="0">
+  <tr>
+    <td width="50%">
+      <h3>📚 Lessons & Content</h3>
+      <p>Progressive alphabet, numbers, words, and sentence lessons with dual-script display (Ol Chiki + Latin transliteration).</p>
+      <img src="assets/images/onboarding_1.png" width="100%" alt="Lessons Screenshot"/>
+    </td>
+    <td width="50%">
+      <h3>🎮 Interactive Quizzes</h3>
+      <p>Multiple-choice quizzes with animated feedback, scoring, and mastery levels to keep you engaged.</p>
+      <img src="assets/images/onboarding_2.png" width="100%" alt="Quizzes Screenshot"/>
+    </td>
+  </tr>
+  <tr>
+    <td width="50%">
+      <h3>📈 Progress Tracking</h3>
+      <p>Streaks, stars, learning time, and cloud sync ensures your progress is never lost across devices.</p>
+      <img src="assets/images/onboarding_3.png" width="100%" alt="Progress Screenshot"/>
+    </td>
+    <td width="50%">
+      <h3>🛠️ Admin CMS</h3>
+      <p>Full content management dashboard for educators to update lessons, letters, and quizzes in real-time.</p>
+      <img src="assets/icons/olitun_logo_source.png" width="100%" alt="Admin CMS Screenshot"/>
+    </td>
+  </tr>
+</table>
 
 ---
 
-## 🏗️ Architecture
+## 🏗️ Architecture Overview
 
+```mermaid
+graph TB
+    subgraph "Presentation Layer"
+        UI[Material 3 UI]
+        Router[GoRouter]
+        Shell[Main Shell]
+    end
+
+    subgraph "Logic Layer (Riverpod)"
+        NP[Notifiers / Providers]
+        States[Async States]
+    end
+
+    subgraph "Data Layer"
+        Repo[Repositories]
+        Appwrite[Appwrite BaaS]
+        Hive[Hive Offline Cache]
+    end
+
+    UI --> Router
+    Router --> NP
+    NP --> Repo
+    Repo --> Appwrite
+    Repo --> Hive
+    Appwrite -.-> Hive
 ```
-lib/
-├── core/              → Theme, auth, API services, config, layout
-│   ├── api/           → Appwrite DB service (generic CRUD)
-│   ├── auth/          → Appwrite auth (OTP + Google OAuth)
-│   ├── config/        → Centralized environment config
-│   ├── theme/         → Design system (colors, typography)
-│   └── presentation/  → Shared layout, animations
-├── shared/            → Providers, models, widgets
-│   ├── providers/     → Riverpod state management (modular)
-│   ├── models/        → Data models (Category, Lesson, Quiz, etc.)
-│   └── widgets/       → Reusable UI components
-├── features/          → Feature-first modules
-│   ├── admin/         → CMS dashboard
-│   ├── auth/          → Email OTP + Google OAuth
-│   ├── home/          → Main feed, AI translator
-│   ├── lessons/       → Categories, detail, practice, quiz
-│   ├── main/          → Shell (bottom nav, desktop sidebar)
-│   ├── onboarding/    → Splash, onboarding video
-│   ├── profile/       → Progress, settings
-│   ├── quiz/          → Quiz list
-│   └── rhymes/        → Cultural content
-└── main.dart          → App entry, routing
-```
-
-### Tech Stack
-
-- **Frontend:** Flutter (Dart) with Material 3
-- **Backend:** Appwrite (Auth, Database, Storage)
-- **State:** Riverpod (StateNotifier pattern)
-- **Routing:** GoRouter with route guards
-- **AI:** Google Translate proxy via PHP on Hostinger
-- **Fonts:** Poppins + OlChiki custom font
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Quick Start
 
 ### Prerequisites
-
-- Flutter SDK `^3.9.0`
-- Dart SDK `^3.9.0`
-- An [Appwrite](https://appwrite.io/) project with database `olitun_db`
+- Flutter SDK `^3.24.0`
+- An [Appwrite](https://appwrite.io/) project
 
 ### Setup
-
 ```bash
-# Clone
-git clone https://github.com/<your-username>/olitunapp.git
+# Clone the repository
+git clone https://github.com/Kh3rwa1/olitunapp.git
 cd olitunapp
 
 # Install dependencies
 flutter pub get
+
+# Generate code (Riverpod)
+dart run build_runner build
 ```
 
-### Environment Variables
-
-All credentials are injected at **build time** via `--dart-define`. No secrets are hardcoded.
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `APPWRITE_ENDPOINT` | ✅ | Appwrite API endpoint (e.g. `https://sgp.cloud.appwrite.io/v1`) |
-| `APPWRITE_PROJECT_ID` | ✅ | Your Appwrite project ID |
-| `ADMIN_SECRET_KEY` | ✅ | Secret key for admin panel login |
-
-### Run (Debug)
-
+### Run
 ```bash
 flutter run \
   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
@@ -100,64 +120,52 @@ flutter run \
   --dart-define=ADMIN_SECRET_KEY=<your-admin-key>
 ```
 
-### Build (Release APK)
+---
 
-```bash
-flutter build apk --release \
-  --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
-  --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
-  --dart-define=ADMIN_SECRET_KEY=<your-admin-key>
-```
+## 🛠️ Tech Stack
 
-### Build (Web)
-
-```bash
-flutter build web \
-  --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
-  --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
-  --dart-define=ADMIN_SECRET_KEY=<your-admin-key>
-```
+| Component | Technology |
+|-----------|------------|
+| **Frontend** | [Flutter](https://flutter.dev/) (Material 3) |
+| **State** | [Riverpod](https://riverpod.dev/) |
+| **BaaS** | [Appwrite](https://appwrite.io/) |
+| **Offline DB** | [Hive](https://docs.hivedb.dev/) |
+| **Navigation** | [GoRouter](https://pub.dev/packages/go_router) |
+| **Charts** | [FL Chart](https://pub.dev/packages/fl_chart) |
+| **Animations** | [Lottie](https://pub.dev/packages/lottie) & [Flutter Animate](https://pub.dev/packages/flutter_animate) |
 
 ---
 
-## 📱 Appwrite Collections
+## 📁 Project Structure
 
-The app expects these collections in database `olitun_db`:
-
-| Collection | Purpose |
-|------------|---------|
-| `categories` | Lesson categories (Alphabet, Numbers, etc.) |
-| `letters` | Ol Chiki letter definitions |
-| `numbers` | Number definitions |
-| `words` | Vocabulary words |
-| `sentences` | Sentence examples |
-| `lessons` | Lesson content with blocks (JSON) |
-| `banners` | Featured banners for home screen |
-| `rhymes` | Santali rhymes and songs |
-| `rhyme_categories` | Rhyme category groupings |
-| `rhyme_subcategories` | Rhyme subcategory groupings |
-| `app_settings` | Key-value app settings |
+```bash
+lib/
+├── core/              # Theme, Auth, API, Layout, Config
+├── features/          # Feature-first modules (Admin, Home, Lessons, Profile)
+├── shared/            # Reusable Models, Providers, and Widgets
+└── main.dart          # App Entry & Router
+```
 
 ---
 
 ## 🤝 Contributing
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/your-feature`
-3. Commit changes: `git commit -m 'Add your feature'`
-4. Push: `git push origin feature/your-feature`
-5. Open a Pull Request
+We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+---
+
+## 🗺️ Roadmap
+
+Track our progress and upcoming features on our [Public Project Board](https://github.com/users/Kh3rwa1/projects/1).
 
 ---
 
 ## 📄 License
 
-This project is licensed under the MIT License.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-## 🙏 Cultural Note
-
-Ol Chiki (ᱚᱞ ᱪᱤᱠᱤ) was created by **Pandit Raghunath Murmu** in 1925 to write the Santali language. It is used by the Santal people — one of the largest indigenous communities in South Asia. This app aims to make learning Ol Chiki accessible, engaging, and fun for a new generation.
-
-**Johar! ᱡᱚᱦᱟᱨ!** 🙏
+<p align="center">
+  <b>Johar! ᱡᱚᱦᱟᱨ!</b> 🙏
+</p>

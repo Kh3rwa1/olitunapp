@@ -3,6 +3,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 final lessonsProvider =
@@ -28,8 +29,10 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
   }
 
   final Ref ref;
+  static const String _cacheKey = 'cached_lessons';
 
   static final List<LessonModel> _seedLessons = [
+    // ... (rest of seeds)
     LessonModel(
       id: 'seed_lesson_a1', categoryId: 'seed_alphabet',
       titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱟᱹᱲᱟᱝ', titleLatin: 'Vowels (Part 1)',
@@ -90,6 +93,13 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
   ];
 
   Future<void> _loadLessons() async {
+    // 1. Try to load from Cache first
+    final cached = await CacheService.getList(_cacheKey, (json) => LessonModel.fromJson(json));
+    if (cached != null && cached.isNotEmpty) {
+      state = AsyncValue.data(cached);
+    }
+
+    // 2. Fetch from network
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
@@ -103,13 +113,17 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
         }
         return LessonModel.fromJson(e);
       }).toList();
-      // Only replace seed data if real data was fetched
+      
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);
+        
+        // 3. Save to cache
+        await CacheService.set(_cacheKey, list.map((e) => e.toJson()).toList());
       }
     } catch (e) {
-      debugPrint('❌ _loadLessons FAILED: $e');
-      // Keep existing data (seed or previously loaded) on failure
+      debugPrint('❌ _loadLessons network FAILED: $e');
+      
+      // If we don't have state yet (no cache or network), use seeds
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedLessons);
       }

@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 final lettersProvider =
@@ -15,8 +16,10 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
   }
 
   final Ref ref;
+  static const String _cacheKey = 'cached_letters';
 
   static final List<LetterModel> _seedLetters = [
+    // ... (existing seeds)
     LetterModel(id: 'ᱚ', charOlChiki: 'ᱚ', transliterationLatin: 'La', pronunciation: 'o'),
     LetterModel(id: 'ᱟ', charOlChiki: 'ᱟ', transliterationLatin: 'Aah', pronunciation: 'aa'),
     LetterModel(id: 'ᱤ', charOlChiki: 'ᱤ', transliterationLatin: 'Li', pronunciation: 'i'),
@@ -28,15 +31,31 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
   ];
 
   Future<void> _loadLetters() async {
+    // 1. Try Cache
+    final cached = await CacheService.getList(_cacheKey, (json) => LetterModel.fromJson(json));
+    if (cached != null && cached.isNotEmpty) {
+      state = AsyncValue.data(cached);
+    }
+
+    // 2. Network
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
         'letters',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => LetterModel.fromJson(e)).toList());
+      final list = data.map((e) => LetterModel.fromJson(e)).toList();
+      
+      if (list.isNotEmpty) {
+        state = AsyncValue.data(list);
+        // 3. Save Cache
+        await CacheService.set(_cacheKey, list.map((e) => e.toJson()).toList());
+      }
     } catch (e) {
-      state = AsyncValue.data(_seedLetters);
+      debugPrint('❌ _loadLetters network FAILED: $e');
+      if (!state.hasValue || state.value!.isEmpty) {
+        state = AsyncValue.data(_seedLetters);
+      }
     }
   }
 

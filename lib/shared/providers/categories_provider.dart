@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 final categoriesProvider =
@@ -16,8 +17,10 @@ class CategoriesNotifier
   }
 
   final Ref ref;
+  static const String _cacheKey = 'cached_categories';
 
   static final List<CategoryModel> _seedCategories = [
+    // ... (rest of seeds)
     CategoryModel(
       id: 'seed_alphabet',
       titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
@@ -61,6 +64,13 @@ class CategoriesNotifier
   ];
 
   Future<void> _loadCategories() async {
+    // 1. Try to load from Cache first for instant UI response
+    final cached = await CacheService.getList(_cacheKey, (json) => CategoryModel.fromJson(json));
+    if (cached != null && cached.isNotEmpty) {
+      state = AsyncValue.data(cached);
+    }
+
+    // 2. Fetch from network
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
@@ -68,14 +78,17 @@ class CategoriesNotifier
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
       final list = data.map((e) => CategoryModel.fromJson(e)).toList();
-      debugPrint('✅ _loadCategories: loaded ${list.length} categories');
-      // Only replace seed data if real data was fetched
+      
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);
+        
+        // 3. Save to cache
+        await CacheService.set(_cacheKey, list.map((e) => e.toJson()).toList());
       }
     } catch (e) {
-      debugPrint('❌ _loadCategories FAILED: $e');
-      // Keep existing data (seed or previously loaded) on failure
+      debugPrint('❌ _loadCategories network FAILED: $e');
+      
+      // If we don't have state yet (no cache or network), use seeds
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedCategories);
       }

@@ -1,0 +1,37 @@
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Force HTTPS (Uncomment after SSL is installed)
+  # RewriteCond %{HTTPS} off
+  # RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. Redirect /admin URLs to Flutter hash-based routing (BEFORE directory check)
+  RewriteCond %{REQUEST_URI} ^/admin/?(.*)$ [NC]
+  RewriteCond %{REQUEST_URI} !^/admin-panel [NC]
+  RewriteRule ^admin/?(.*)$ /#/admin/$1 [NE,R=302,L]
+
+  # 3. EXCLUDE admin-panel API from Flutter routing
+  RewriteCond %{REQUEST_URI} ^/admin-panel [NC]
+  RewriteRule .? - [L]
+
+  # 4. Skip rules for actual files or directories
+  RewriteCond %{REQUEST_FILENAME} -f [OR]
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteRule .? - [L]
+
+  # 5. Route all other requests to index.html for Flutter SPA
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
+
+# Disable caching for HTML and JS files to ensure latest build is used
+<IfModule mod_headers.c>
+  <FilesMatch "\.(html|js|json|css)$">
+    Header set Cache-Control "no-cache, no-store, must-revalidate"
+    Header set Pragma "no-cache"
+    Header set Expires 0
+  </FilesMatch>
+</IfModule>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <!--
+    If you are serving your web app in a path other than the root, change the
+    href value below to reflect the base path you are serving from.
+
+    The path provided below has to start and end with a slash "/" in order for
+    it to work correctly.
+
+    For more details:
+    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
+
+    This is a placeholder for base href that will be replaced by the value of
+    the `--base-href` argument provided to `flutter build`.
+  -->
+  <base href="/">
+
+  <meta charset="UTF-8">
+  <meta content="IE=Edge" http-equiv="X-UA-Compatible">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+  <!-- SEO & PWA Meta -->
+  <meta name="description"
+    content="Olitun - Learn the Ol Chiki script and Santali language with interactive lessons, quizzes, and practice exercises.">
+  <meta name="theme-color" content="#10B981">
+  <meta name="color-scheme" content="dark light">
+
+  <!-- Open Graph -->
+  <meta property="og:title" content="Olitun - Learn Ol Chiki">
+  <meta property="og:description"
+    content="Interactive Santali language learning app with lessons, quizzes, and practice.">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://olitun.in">
+
+  <!-- iOS PWA Meta -->
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Olitun">
+  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/png" href="favicon.png" />
+
+  <title>Olitun - Learn Ol Chiki</title>
+  <link rel="manifest" href="manifest.json">
+
+  <!-- Preload critical fonts -->
+  <style>
+    /* Splash screen styling while Flutter loads */
+    body {
+      margin: 0;
+      background-color: #0A0E14;
+      overflow: hidden;
+    }
+
+    #loading-indicator {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #0A0E14, #161B22);
+      z-index: 9999;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: #fff;
+      transition: opacity 0.4s ease;
+    }
+
+    #loading-indicator .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid rgba(16, 185, 129, 0.2);
+      border-top-color: #10B981;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 20px;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    #loading-indicator p {
+      font-size: 14px;
+      opacity: 0.6;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    /* Offline indicator */
+    #offline-indicator {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: #EF4444;
+      color: #fff;
+      text-align: center;
+      padding: 6px;
+      font-size: 13px;
+      font-family: -apple-system, sans-serif;
+      z-index: 100000;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- Loading indicator shown while Flutter initializes -->
+  <div id="loading-indicator">
+    <div class="spinner"></div>
+    <p>Loading Olitun</p>
+  </div>
+
+  <!-- Offline indicator -->
+  <div id="offline-indicator">You are offline. Some features may be unavailable.</div>
+
+  <script src="flutter_bootstrap.js" async></script>
+  <script src="pwa_install.js" defer></script>
+
+  <script>
+    // Remove loading indicator when Flutter is ready
+    window.addEventListener('flutter-first-frame', function() {
+      var loader = document.getElementById('loading-indicator');
+      if (loader) {
+        loader.style.opacity = '0';
+        setTimeout(function() { loader.remove(); }, 400);
+      }
+    });
+
+    // Offline/Online detection
+    window.addEventListener('offline', function() {
+      document.getElementById('offline-indicator').style.display = 'block';
+    });
+    window.addEventListener('online', function() {
+      document.getElementById('offline-indicator').style.display = 'none';
+    });
+  </script>
+</body>
+
+</html>

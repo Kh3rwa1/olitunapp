@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
@@ -183,7 +184,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               ),
             ),
           ),
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => _buildLessonsSkeleton(context),
           error: (e, s) => Center(
             child: Padding(
               padding: const EdgeInsets.all(32),
@@ -205,6 +206,57 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
       ),
     );
   }
+
+  Widget _buildLessonsSkeleton(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return SafeArea(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header skeleton
+            Row(
+              children: [
+                const Skeleton(width: 44, height: 44, borderRadius: 16),
+                const SizedBox(width: 16),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Skeleton(width: 120, height: 12, borderRadius: 4),
+                    const SizedBox(height: 8),
+                    const Skeleton(width: 200, height: 24, borderRadius: 4),
+                  ],
+                ),
+              ],
+            ),
+            const SizedBox(height: 32),
+            // Hero card skeleton
+            const Skeleton(width: double.infinity, height: 220, borderRadius: 32),
+            const SizedBox(height: 32),
+            // Subtitle skeleton
+            const Skeleton(width: 100, height: 12, borderRadius: 4),
+            const SizedBox(height: 16),
+            // Grid skeletons
+            GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: ResponsiveLayout.gridColumns(context, mobile: 2, tablet: 3, desktop: 3),
+                mainAxisSpacing: 16,
+                crossAxisSpacing: 16,
+                childAspectRatio: 1,
+              ),
+              itemCount: 4,
+              itemBuilder: (context, index) => const Skeleton(borderRadius: 28),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+
 }
 
 // ═══════════════ HERO CATEGORY CARD ═══════════════

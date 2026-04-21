@@ -129,20 +129,6 @@ class AuthGate extends ConsumerWidget {
                 ),
               ),
             ),
-
-            const SizedBox(height: 16),
-
-            // Guest note
-            Text(
-              'Continue as Guest on the Home tab',
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: FontWeight.w500,
-                color: isDark
-                    ? AppColors.textTertiaryDark
-                    : AppColors.textTertiaryLight,
-              ),
-            ),
           ],
         ),
       ),

@@ -9,6 +9,7 @@ import '../../../shared/widgets/animated_buttons.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -21,11 +22,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Force refresh categories and lessons from API when home opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(categoriesProvider.notifier).refresh();
-      ref.read(lessonsProvider.notifier).refresh();
-    });
+    // Providers initialize with seed data synchronously.
+    // Network refresh happens automatically in the background via provider init.
   }
 
   Future<void> _onRefresh() async {
@@ -588,7 +586,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               categories: categories,
             );
           },
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => _buildContentSkeleton(cols),
           error: (e, st) => Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -617,6 +615,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
+
+  Widget _buildContentSkeleton(int cols) {
+    const gap = 14.0;
+    return Column(
+      children: [
+        // AI tool skeleton
+        const Skeleton(width: double.infinity, height: 80, borderRadius: 24),
+        const SizedBox(height: gap),
+        // Category grid skeletons
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: cols,
+            crossAxisSpacing: gap,
+            mainAxisSpacing: gap,
+            mainAxisExtent: 140,
+          ),
+          itemCount: 4,
+          itemBuilder: (context, index) => const Skeleton(borderRadius: 24),
+        ),
+      ],
+    );
+  }
+
 }
 
 // ═══════════════════════════════════════════════════════════

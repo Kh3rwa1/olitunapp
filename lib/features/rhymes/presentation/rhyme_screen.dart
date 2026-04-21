@@ -14,6 +14,7 @@ import 'widgets/tilt_card.dart';
 
 import 'widgets/whimsical_background.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
+import '../../../shared/widgets/skeleton.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -188,10 +189,21 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     ),
                   ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.05),
                 ),
-                loading: () =>
-                    const SliverToBoxAdapter(child: SizedBox.shrink()),
-                error: (_, __) =>
-                    const SliverToBoxAdapter(child: SizedBox.shrink()),
+                loading: () => SliverToBoxAdapter(
+                  child: SizedBox(
+                    height: 52,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
+                      itemCount: 5,
+                      itemBuilder: (context, index) => const Padding(
+                        padding: EdgeInsets.only(right: 12),
+                        child: Skeleton(width: 80, height: 44, borderRadius: 24),
+                      ),
+                    ),
+                  ),
+                ),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
               ),
 
               // --- Cascading Subcategory chips ---
@@ -248,10 +260,24 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       ).animate().fadeIn().slideX(begin: 0.1),
                     );
                   },
-                  loading: () =>
-                      const SliverToBoxAdapter(child: SizedBox.shrink()),
-                  error: (_, __) =>
-                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  loading: () => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SizedBox(
+                        height: 40,
+                        child: ListView.builder(
+                          scrollDirection: Axis.horizontal,
+                          padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
+                          itemCount: 3,
+                          itemBuilder: (context, index) => const Padding(
+                            padding: EdgeInsets.only(right: 12),
+                            child: Skeleton(width: 100, height: 32, borderRadius: 20),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
                 ),
 
               const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -271,12 +297,15 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                         )
                       : const SliverToBoxAdapter(child: SizedBox.shrink());
                 },
-                loading: () => const SliverToBoxAdapter(
-                  child: Center(child: CircularProgressIndicator()),
+                loading: () => SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
+                    child: const Skeleton(width: double.infinity, height: 240, borderRadius: 40),
+                  ),
                 ),
-                error: (_, __) =>
-                    const SliverToBoxAdapter(child: SizedBox.shrink()),
+                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
               ),
+
 
               const SliverToBoxAdapter(child: SizedBox(height: 40)),
 

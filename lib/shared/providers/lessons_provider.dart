@@ -23,7 +23,7 @@ final lessonsByCategoryProvider =
     });
 
 class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
-  LessonsNotifier(this.ref) : super(const AsyncValue.loading()) {
+  LessonsNotifier(this.ref) : super(AsyncValue.data(_seedLessons)) {
     _loadLessons();
   }
 
@@ -103,9 +103,13 @@ class LessonsNotifier extends StateNotifier<AsyncValue<List<LessonModel>>> {
         }
         return LessonModel.fromJson(e);
       }).toList();
-      state = AsyncValue.data(list);
+      // Only replace seed data if real data was fetched
+      if (list.isNotEmpty) {
+        state = AsyncValue.data(list);
+      }
     } catch (e, st) {
       debugPrint('❌ _loadLessons FAILED: $e');
+      // Keep existing data (seed or previously loaded) on failure
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedLessons);
       }

@@ -301,41 +301,6 @@ class WelcomeScreen extends ConsumerWidget {
             ),
           ),
         ).animate().fadeIn(delay: 800.ms, duration: 500.ms).slideY(begin: 0.3),
-
-        const SizedBox(height: 14),
-
-        // Guest mode
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.go('/home');
-          },
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(vertical: 16),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.grey.withValues(alpha: 0.08),
-              borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.06),
-              ),
-            ),
-            child: Center(
-              child: Text(
-                'Continue as Guest',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white54 : Colors.black45,
-                ),
-              ),
-            ),
-          ),
-        ).animate().fadeIn(delay: 900.ms, duration: 500.ms),
       ],
     );
   }

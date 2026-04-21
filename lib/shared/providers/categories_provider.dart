@@ -11,7 +11,7 @@ final categoriesProvider =
 
 class CategoriesNotifier
     extends StateNotifier<AsyncValue<List<CategoryModel>>> {
-  CategoriesNotifier(this.ref) : super(const AsyncValue.loading()) {
+  CategoriesNotifier(this.ref) : super(AsyncValue.data(_seedCategories)) {
     _loadCategories();
   }
 
@@ -69,9 +69,13 @@ class CategoriesNotifier
       );
       final list = data.map((e) => CategoryModel.fromJson(e)).toList();
       debugPrint('✅ _loadCategories: loaded ${list.length} categories');
-      state = AsyncValue.data(list);
+      // Only replace seed data if real data was fetched
+      if (list.isNotEmpty) {
+        state = AsyncValue.data(list);
+      }
     } catch (e, st) {
       debugPrint('❌ _loadCategories FAILED: $e');
+      // Keep existing data (seed or previously loaded) on failure
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_seedCategories);
       }

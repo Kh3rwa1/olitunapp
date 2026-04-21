@@ -76,6 +76,28 @@ void main() async {
 // Simple router
 final _router = GoRouter(
   initialLocation: '/splash',
+  redirect: (context, state) async {
+    // Public routes that don't require authentication
+    final publicRoutes = ['/splash', '/welcome', '/auth', '/onboarding'];
+    final isPublic = publicRoutes.contains(state.matchedLocation);
+
+    final container = ProviderScope.containerOf(context);
+    final authRepo = container.read(authRepositoryProvider);
+    final isLoggedIn = await authRepo.isLoggedIn();
+
+    // If not logged in and trying to access a private route, go to welcome
+    if (!isLoggedIn && !isPublic) {
+      return '/welcome';
+    }
+
+    // If logged in and trying to access welcome/auth/splash, go to home
+    // (Except splash which we want to let run its course)
+    if (isLoggedIn && (state.matchedLocation == '/welcome' || state.matchedLocation == '/auth')) {
+      return '/home';
+    }
+
+    return null;
+  },
   routes: [
     GoRoute(path: '/splash', builder: (context, state) => const SplashScreen()),
     GoRoute(
@@ -102,24 +124,10 @@ final _router = GoRouter(
     ),
     GoRoute(
       path: '/profile',
-      redirect: (context, state) async {
-        final container = ProviderScope.containerOf(context);
-        final authRepo = container.read(authRepositoryProvider);
-        final isLoggedIn = await authRepo.isLoggedIn();
-        if (!isLoggedIn) return '/welcome';
-        return null;
-      },
       builder: (context, state) => const ProgressScreen(),
     ),
     GoRoute(
       path: '/settings',
-      redirect: (context, state) async {
-        final container = ProviderScope.containerOf(context);
-        final authRepo = container.read(authRepositoryProvider);
-        final isLoggedIn = await authRepo.isLoggedIn();
-        if (!isLoggedIn) return '/welcome';
-        return null;
-      },
       builder: (context, state) => const SettingsScreen(),
     ),
     GoRoute(

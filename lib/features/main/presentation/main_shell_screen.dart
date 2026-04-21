@@ -12,7 +12,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../shared/providers/providers.dart';
-import '../../../shared/widgets/auth_gate.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
@@ -55,19 +54,8 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
 
   final List<Widget> _screens = [
     const HomeScreen(),
-    const AuthGate(
-      title: 'Unlock Rhymes',
-      subtitle:
-          'Sign in to explore Santali rhymes, songs, and cultural content.',
-      icon: Icons.music_note_rounded,
-      child: RhymeScreen(),
-    ),
-    const AuthGate(
-      title: 'Your Profile',
-      subtitle: 'Sign in to track your learning progress and earn stars.',
-      icon: Icons.person_rounded,
-      child: ProgressScreen(),
-    ),
+    const RhymeScreen(),
+    const ProgressScreen(),
     const SettingsScreen(),
   ];
 

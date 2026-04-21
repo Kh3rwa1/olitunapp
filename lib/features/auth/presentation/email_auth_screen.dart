@@ -118,7 +118,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         },
         (_) {
           if (mounted) {
-            context.go('/home');
+            context.go('/');
           }
         },
       );
@@ -132,7 +132,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
   void _handleSkip() {
     HapticFeedback.lightImpact();
-    context.go('/home');
+    context.go('/');
   }
 
   @override

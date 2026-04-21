@@ -22,8 +22,11 @@ import '../../features/admin/presentation/admin_categories_screen.dart';
 import '../../features/admin/presentation/admin_banners_screen.dart';
 import '../../features/admin/presentation/admin_letters_screen.dart';
 import '../../features/admin/presentation/admin_lessons_screen.dart';
+import '../../features/admin/presentation/admin_lesson_content_screen.dart';
 import '../../features/admin/presentation/admin_quizzes_screen.dart';
 import '../../features/admin/presentation/admin_rhymes_screen.dart';
+import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
+import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
@@ -171,12 +174,27 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) => const AdminLessonsScreen(),
           ),
           GoRoute(
+            path: '/admin/lessons/content/:lessonId',
+            builder: (context, state) {
+              final lessonId = state.pathParameters['lessonId'] ?? '';
+              return AdminLessonContentScreen(lessonId: lessonId);
+            },
+          ),
+          GoRoute(
             path: '/admin/quizzes',
             builder: (context, state) => const AdminQuizzesScreen(),
           ),
           GoRoute(
             path: '/admin/rhymes',
             builder: (context, state) => const AdminRhymesScreen(),
+          ),
+          GoRoute(
+            path: '/admin/rhymes/categories',
+            builder: (context, state) => const AdminRhymeCategoriesScreen(),
+          ),
+          GoRoute(
+            path: '/admin/settings',
+            builder: (context, state) => const AdminSettingsScreen(),
           ),
         ],
       ),

@@ -61,7 +61,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 Icons.close_rounded,
                 color: isDark ? Colors.white : Colors.black,
               ),
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.go('/'),
             ),
             title: Text(
               quiz.title ?? 'Quiz',
@@ -413,7 +413,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
             const SizedBox(height: 32),
             ElevatedButton(
-              onPressed: () => context.go('/home'),
+              onPressed: () => context.go('/'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
@@ -537,7 +537,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               ).animate().fadeIn(delay: 800.ms, duration: 400.ms),
               const Spacer(),
               GestureDetector(
-                    onTap: () => context.go('/home'),
+                    onTap: () => context.go('/'),
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 18),

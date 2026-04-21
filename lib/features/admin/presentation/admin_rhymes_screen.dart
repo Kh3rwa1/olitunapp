@@ -80,7 +80,7 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
             ),
           ),
           ElevatedButton.icon(
-            onPressed: () => context.go('/admin/rhymes/categories'),
+            onPressed: () => context.go('/admin/rhymes'),
             icon: const Icon(Icons.grid_view_rounded, size: 18),
             label: const Text('Manage Categories'),
             style: ElevatedButton.styleFrom(

@@ -33,7 +33,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       final showOnboarding = ref.read(onboardingProvider);
       if (showOnboarding && !isDesktopWeb) {
-        context.go('/onboarding');
+        context.go('/welcome');
         return;
       }
 
@@ -69,7 +69,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
               );
             } catch (_) {}
             if (!mounted) return;
-            context.go('/home');
+            context.go('/');
             return;
           }
         }
@@ -82,7 +82,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
       if (isLoggedIn) {
         if (!mounted) return;
-        context.go('/home');
+        context.go('/');
       } else {
         if (!mounted) return;
         context.go('/welcome');

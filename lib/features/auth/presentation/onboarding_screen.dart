@@ -9,7 +9,7 @@ class OnboardingScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     // Skip onboarding - go directly to home
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.go('/home');
+      context.go('/');
     });
     
     return const Scaffold(

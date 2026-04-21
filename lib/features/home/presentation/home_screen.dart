@@ -337,7 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return AnimatedBentoChild(
       index: index,
       child: GestureDetector(
-        onTap: () => context.push('/lessons'),
+        onTap: () => context.push('/categories'),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(28),
@@ -398,7 +398,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   DuoButton(
                     text: 'RESUME JOURNEY',
                     color: Colors.white,
-                    onPressed: () => context.push('/lessons'),
+                    onPressed: () => context.push('/categories'),
                     width: double.infinity,
                     height: 52,
                     borderRadius: 16,
@@ -948,7 +948,7 @@ class _BentoCategoryCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return GestureDetector(
-      onTap: () => context.push('/lessons/category/${category.id}'),
+      onTap: () => context.push('/lessons/${category.id}'),
       child: BentoCell(
         padding: const EdgeInsets.all(16),
         child: Column(

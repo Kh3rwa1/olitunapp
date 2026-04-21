@@ -182,7 +182,7 @@ class _AdminSidebar extends StatelessWidget {
                   icon: Icons.dashboard_rounded,
                   label: 'Dashboard',
                   isSelected: location == '/admin',
-                  onTap: () => context.go('/admin'),
+                  onTap: () => context.go('/admin/settings'),
                   isCompact: isCompact,
                 ),
                 _NavItem(
@@ -217,7 +217,7 @@ class _AdminSidebar extends StatelessWidget {
                   icon: Icons.music_note_rounded,
                   label: 'Rhymes & Stories',
                   isSelected: location == '/admin/rhymes',
-                  onTap: () => context.go('/admin/rhymes'),
+                  onTap: () => context.go('/admin/rhymes/categories'),
                   isCompact: isCompact,
                 ),
                 _NavItem(
@@ -242,21 +242,21 @@ class _AdminSidebar extends StatelessWidget {
                   icon: Icons.perm_media_rounded,
                   label: 'Media Library',
                   isSelected: location == '/admin/media',
-                  onTap: () => context.go('/admin/media'),
+                  onTap: () => context.go('/admin/settings'),
                   isCompact: isCompact,
                 ),
                 _NavItem(
                   icon: Icons.audiotrack_rounded,
                   label: 'Audio Files',
                   isSelected: location == '/admin/audio',
-                  onTap: () => context.go('/admin/audio'),
+                  onTap: () => context.go('/admin/settings'),
                   isCompact: isCompact,
                 ),
                 _NavItem(
                   icon: Icons.videocam_rounded,
                   label: 'Video Files',
                   isSelected: location == '/admin/video',
-                  onTap: () => context.go('/admin/video'),
+                  onTap: () => context.go('/admin/settings'),
                   isCompact: isCompact,
                 ),
 
@@ -280,7 +280,7 @@ class _AdminSidebar extends StatelessWidget {
               child: Material(
                 color: Colors.transparent,
                 child: InkWell(
-                  onTap: () => context.go('/home'),
+                  onTap: () => context.go('/'),
                   borderRadius: BorderRadius.circular(14),
                   child: Container(
                     padding: const EdgeInsets.all(14),
@@ -316,7 +316,7 @@ class _AdminSidebar extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 16),
               child: IconButton(
-                onPressed: () => context.go('/home'),
+                onPressed: () => context.go('/'),
                 icon: const Icon(Icons.logout_rounded, color: Colors.white),
                 style: IconButton.styleFrom(
                   backgroundColor: AppColors.primary,

@@ -76,7 +76,7 @@ class SettingsScreen extends ConsumerWidget {
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
-          onPressed: () => context.go('/home'),
+          onPressed: () => context.go('/'),
         ),
         title: Text(
           'Settings',

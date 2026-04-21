@@ -39,7 +39,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
   void _completeOnboarding() {
     ref.read(onboardingProvider.notifier).completeOnboarding();
-    context.go('/home');
+    context.go('/');
   }
 
   /// Determine if this is a desktop/wide screen where video onboarding is skipped

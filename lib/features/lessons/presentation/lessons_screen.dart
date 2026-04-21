@@ -55,7 +55,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     Row(
                       children: [
                         GestureDetector(
-                          onTap: () => context.go('/home'),
+                          onTap: () => context.go('/'),
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -115,7 +115,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         index: 0,
                         child: GestureDetector(
                           onTap: () => context.go(
-                            '/lessons/category/${data.first.id}',
+                            '/lessons/${data.first.id}',
                           ),
                           child: _HeroCategoryCard(
                             category: data.first,
@@ -165,7 +165,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             index: index + 1,
                             child: GestureDetector(
                               onTap: () => context.go(
-                                '/lessons/category/${category.id}',
+                                '/lessons/${category.id}',
                               ),
                               child: _BentoCategoryCard(
                                 category: category,

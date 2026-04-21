@@ -68,7 +68,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                         if (context.canPop()) {
                           context.pop();
                         } else {
-                          context.go('/home');
+                          context.go('/');
                         }
                       },
                       child: _GlassIconButton(

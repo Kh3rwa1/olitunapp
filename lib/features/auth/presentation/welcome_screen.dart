@@ -272,7 +272,7 @@ class WelcomeScreen extends ConsumerWidget {
         GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            context.go('/auth');
+            context.go('/login');
           },
           child: Container(
             width: double.infinity,
@@ -340,7 +340,7 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
         },
         (_) {
           if (mounted) {
-            context.go('/home');
+            context.go('/');
           }
         },
       );

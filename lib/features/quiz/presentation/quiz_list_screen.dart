@@ -163,7 +163,7 @@ class QuizListScreen extends ConsumerWidget {
       child: Row(
         children: [
           GestureDetector(
-            onTap: () => context.go('/home'),
+            onTap: () => context.go('/'),
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(

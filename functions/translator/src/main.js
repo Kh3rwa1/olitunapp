@@ -27,10 +27,19 @@ export default async ({ req, res, log, error }) => {
   const to = body?.to || 'sat';
   if (!text) return res.json(err('Missing "text"'), 400);
 
+  // API key comes ONLY from server-side env. We deliberately do NOT trust
+  // the `x-appwrite-key` request header — that would let a caller override
+  // the function's identity by injecting their own key. Configure the key
+  // in the Appwrite Console → Function Settings → Environment.
+  const apiKey = process.env.APPWRITE_API_KEY;
+  if (!apiKey) {
+    error('APPWRITE_API_KEY env var is not set');
+    return res.json(err('Server misconfigured'), 500);
+  }
   const client = new Client()
     .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
     .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
-    .setKey(req.headers['x-appwrite-key'] ?? process.env.APPWRITE_API_KEY);
+    .setKey(apiKey);
   const db = new Databases(client);
 
   const clientIp =

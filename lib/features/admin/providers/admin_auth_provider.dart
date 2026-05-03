@@ -15,10 +15,23 @@ import '../../../core/config/appwrite_config.dart';
 /// The previous client-side `ADMIN_SECRET_KEY` model has been removed —
 /// it provided no real security because the secret was bundled into the
 /// compiled JS/APK and could be extracted by anyone.
+/// Minimal seam over `Teams(client).list()` so unit tests can inject a fake
+/// without depending on a real Appwrite client.
+typedef TeamsListFetcher = Future<List<String>> Function();
+
 class AdminAuthService {
-  AdminAuthService(this._auth);
+  AdminAuthService(this._auth, {TeamsListFetcher? teamsListFetcher})
+      : _teamsListFetcher = teamsListFetcher;
 
   final AppwriteAuthService _auth;
+  final TeamsListFetcher? _teamsListFetcher;
+
+  Future<List<String>> _listTeamIds() async {
+    if (_teamsListFetcher != null) return _teamsListFetcher!();
+    final teams = Teams(_auth.client);
+    final result = await teams.list();
+    return result.teams.map((t) => t.$id).toList();
+  }
 
   /// Returns true if the currently logged-in user is a member of the admin
   /// team. Returns false if there is no session, or membership lookup fails.
@@ -29,10 +42,9 @@ class AdminAuthService {
   /// is intentionally not supported.
   Future<bool> isCurrentUserAdmin() async {
     try {
-      final teams = Teams(_auth.client);
-      final result = await teams.list();
+      final teamIds = await _listTeamIds();
       final adminId = AppwriteConfig.adminTeamId;
-      return result.teams.any((t) => t.$id == adminId);
+      return teamIds.any((id) => id == adminId);
     } catch (e) {
       debugPrint('AdminAuth: membership lookup failed: $e');
       return false;

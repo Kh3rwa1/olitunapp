@@ -5,14 +5,30 @@ import 'package:http/http.dart' as http;
 import 'package:http_parser/http_parser.dart';
 import 'dart:convert';
 
-/// Configuration for Hostinger API
+/// Configuration for the media upload endpoint.
+///
+/// `UPLOAD_BASE_URL` must be supplied at build time via:
+///
+///   --dart-define=UPLOAD_BASE_URL=https://media.example.com
+///
+/// There is no fallback. Calling [uploadEndpoint] without it throws so the
+/// misconfiguration surfaces immediately rather than producing relative
+/// URIs (`/api/upload.php`) that silently break uploads in production.
 class AppConfig {
   static const String uploadBaseUrl = String.fromEnvironment(
     'UPLOAD_BASE_URL',
     defaultValue: '',
   );
 
-  static String get uploadEndpoint => '$uploadBaseUrl/api/upload.php';
+  static String get uploadEndpoint {
+    if (uploadBaseUrl.isEmpty) {
+      throw StateError(
+        'UPLOAD_BASE_URL is not configured. Pass '
+        '--dart-define=UPLOAD_BASE_URL=<https://your-host> at build time.',
+      );
+    }
+    return '$uploadBaseUrl/api/upload.php';
+  }
 }
 
 /// Upload service for Hostinger PHP API

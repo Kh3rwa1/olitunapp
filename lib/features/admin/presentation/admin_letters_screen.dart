@@ -4,12 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/storage/upload_service.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/api/ai_service.dart';
+import 'widgets/admin_empty_state.dart';
+import 'widgets/admin_page_header.dart';
 
 class AdminLettersScreen extends ConsumerWidget {
   const AdminLettersScreen({super.key});
@@ -72,171 +75,51 @@ class AdminLettersScreen extends ConsumerWidget {
   }
 
   Widget _buildBackground(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
-              : [const Color(0xFFF8FAFC), Colors.white],
-        ),
-      ),
-    );
+    return Container(color: AdminTokens.base(isDark));
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (!isWideScreen)
+        if (!isWideScreen) ...[
           GestureDetector(
             onTap: () => context.go('/admin'),
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
+                color: AdminTokens.sunken(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                border: Border.all(color: AdminTokens.border(isDark)),
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
+                color: AdminTokens.textPrimary(isDark),
+                size: 18,
               ),
             ),
           ),
-        if (!isWideScreen) const SizedBox(height: 20),
-        Row(
-          children: [
-            Container(
-              width: 4,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumMint,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Ol Chiki Letters',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.5,
-                    color: isDark
-                        ? AppColors.textPrimaryDark
-                        : AppColors.textPrimaryLight,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Manage alphabet characters',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w500,
-                    color: isDark
-                        ? AppColors.textTertiaryDark
-                        : AppColors.textTertiaryLight,
-                  ),
-                ),
-              ],
-            ),
-          ],
+          const SizedBox(width: 12),
+        ],
+        Expanded(
+          child: AdminPageHeader(
+            title: 'Ol Chiki Letters',
+            subtitle: 'Manage alphabet characters',
+            eyebrow: 'CONTENT · LETTERS',
+          ),
         ),
       ],
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref, bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumMint,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentMint.withValues(alpha: 0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Center(
-              child: Text(
-                'ᱚ',
-                style: TextStyle(
-                  fontSize: 48,
-                  fontWeight: FontWeight.w900,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'No letters yet',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Add Ol Chiki alphabet letters',
-            style: TextStyle(
-              fontSize: 15,
-              color: isDark
-                  ? AppColors.textTertiaryDark
-                  : AppColors.textTertiaryLight,
-            ),
-          ),
-          const SizedBox(height: 28),
-          GestureDetector(
-            onTap: () => _showLetterDialog(context, ref, null),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumMint,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accentMint.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Add Letter',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AdminEmptyState(
+      glyph: 'ᱚ',
+      icon: Icons.abc_rounded,
+      title: 'No letters yet',
+      message: 'Add Ol Chiki alphabet characters to bootstrap the lessons.',
+      actionLabel: 'Add Letter',
+      onAction: () => _showLetterDialog(context, ref, null),
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 

@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_empty_state.dart';
+import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart' hide CategoryModel;
 import '../../categories/domain/entities/category_entity.dart';
@@ -132,139 +135,54 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
   }
 
   Widget _buildBackground(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
-              : [const Color(0xFFF8FAFC), Colors.white],
-        ),
-      ),
-    );
+    return Container(color: AdminTokens.base(isDark));
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
-        if (!isWideScreen)
+        if (!isWideScreen) ...[
           GestureDetector(
             onTap: () => context.go('/admin'),
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.1)
-                    : Colors.black.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(12),
+                color: AdminTokens.sunken(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                border: Border.all(color: AdminTokens.border(isDark)),
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
+                color: AdminTokens.textPrimary(isDark),
+                size: 18,
               ),
             ),
           ),
-        if (!isWideScreen) const SizedBox(height: 20),
-        Row(
-          children: [
-            Container(
-              width: 4,
-              height: 32,
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumPink,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Quizzes',
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      letterSpacing: -1.5,
-                      color: isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    'Create and manage assessments',
-                    style: TextStyle(
-                      fontSize: 15,
-                      fontWeight: FontWeight.w500,
-                      color: isDark
-                          ? AppColors.textTertiaryDark
-                          : AppColors.textTertiaryLight,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
+          const SizedBox(width: 12),
+        ],
+        Expanded(
+          child: AdminPageHeader(
+            title: 'Quizzes',
+            subtitle: 'Create and manage assessments',
+            eyebrow: 'CONTENT · QUIZZES',
+          ),
         ),
       ],
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
-    return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: AppColors.premiumPink,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.quiz_outlined,
-                  size: 50,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'No quizzes found',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Create your first quiz to get started',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: isDark
-                      ? AppColors.textTertiaryDark
-                      : AppColors.textTertiaryLight,
-                ),
-              ),
-            ],
-          ),
-        )
+    return AdminEmptyState(
+      icon: Icons.quiz_outlined,
+      title: 'No quizzes found',
+      message: 'Create your first quiz to assess what learners have mastered.',
+      actionLabel: 'Add Quiz',
+      onAction: () => _showQuizDialog(context, null),
+    )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
-        .scale(begin: const Offset(0.9, 0.9));
+        .scale(begin: const Offset(0.96, 0.96));
   }
 
   Widget _buildQuizzesList(

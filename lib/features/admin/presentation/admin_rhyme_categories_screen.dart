@@ -3,7 +3,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_empty_state.dart';
+import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_category_model.dart';
 
@@ -63,52 +66,22 @@ class _AdminRhymeCategoriesScreenState
 
   Widget _buildHeader(bool isDark, int count) {
     return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Rhyme Categories',
-            style: TextStyle(
-              fontSize: 32,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -1.5,
-              color: isDark ? Colors.white : Colors.black,
-            ),
-          ),
-          Text(
-            'Manage categories & subcategories ($count categories)',
-            style: TextStyle(
-              fontSize: 16,
-              color: isDark ? Colors.white54 : Colors.black54,
-            ),
-          ),
-        ],
+      padding: const EdgeInsets.all(AdminTokens.space7),
+      child: AdminPageHeader(
+        title: 'Rhyme Categories',
+        subtitle: 'Manage categories & subcategories ($count categories)',
+        eyebrow: 'CONTENT · CATEGORIES',
       ),
     );
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.folder_off_rounded,
-            size: 64,
-            color: isDark ? Colors.white24 : Colors.black12,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No categories found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-          ),
-        ],
-      ),
+    return AdminEmptyState(
+      icon: Icons.folder_open_rounded,
+      title: 'No categories yet',
+      message: 'Create a category to start organising your rhymes and stories.',
+      actionLabel: 'Add Category',
+      onAction: () => _showCategoryDialog(null),
     );
   }
 

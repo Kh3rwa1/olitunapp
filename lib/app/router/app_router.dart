@@ -30,6 +30,7 @@ import '../../features/admin/presentation/admin_quizzes_screen.dart';
 import '../../features/admin/presentation/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
+import '../../features/admin/presentation/admin_media_screen.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
@@ -238,6 +239,20 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin/rhymes/categories',
             builder: (context, state) => const AdminRhymeCategoriesScreen(),
+          ),
+          GoRoute(
+            path: '/admin/media',
+            builder: (context, state) => const AdminMediaScreen(),
+          ),
+          GoRoute(
+            path: '/admin/audio',
+            builder: (context, state) =>
+                const AdminMediaScreen(initialType: MediaType.audio),
+          ),
+          GoRoute(
+            path: '/admin/video',
+            builder: (context, state) =>
+                const AdminMediaScreen(initialType: MediaType.video),
           ),
           GoRoute(
             path: '/admin/settings',

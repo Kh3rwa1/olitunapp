@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../core/storage/upload_service.dart';
@@ -101,41 +102,30 @@ class _AdminLessonContentScreenState
 
     if (_isLoading) {
       return Scaffold(
-        backgroundColor: isDark
-            ? AppColors.darkBackground
-            : const Color(0xFFF8FAFC),
+        backgroundColor: AdminTokens.base(isDark),
         body: const Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: isDark
-          ? AppColors.darkBackground
-          : const Color(0xFFF8FAFC),
+      backgroundColor: AdminTokens.base(isDark),
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
               'Manage Content',
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-                color: isDark ? Colors.white : Colors.black,
-              ),
+              style: AdminTokens.cardTitle(isDark),
             ),
             Text(
               _lesson?.titleLatin ?? 'Lesson Content',
-              style: TextStyle(
-                fontSize: 12,
-                color: isDark ? Colors.white70 : Colors.black54,
-              ),
+              style: AdminTokens.label(isDark),
             ),
           ],
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(color: isDark ? Colors.white : Colors.black),
+        leading: BackButton(color: AdminTokens.textPrimary(isDark)),
         actions: [
           if (_hasChanges)
             Padding(

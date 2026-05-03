@@ -4,7 +4,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_empty_state.dart';
+import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_model.dart';
 import 'widgets/admin_upload_field.dart';
@@ -53,44 +56,29 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
 
   Widget _buildHeader(BuildContext context, bool isDark, int count) {
     return Padding(
-      padding: const EdgeInsets.all(32.0),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Rhymes & Stories',
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -1.5,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                Text(
-                  'Manage kid-friendly content ($count items)',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton.icon(
-            onPressed: () => context.go('/admin/rhymes'),
-            icon: const Icon(Icons.grid_view_rounded, size: 18),
+      padding: const EdgeInsets.all(AdminTokens.space7),
+      child: AdminPageHeader(
+        title: 'Rhymes & Stories',
+        subtitle: 'Manage kid-friendly content ($count items)',
+        eyebrow: 'CONTENT · RHYMES',
+        actions: [
+          OutlinedButton.icon(
+            onPressed: () => context.go('/admin/rhymes/categories'),
+            icon: const Icon(Icons.grid_view_rounded, size: 16),
             label: const Text('Manage Categories'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-              foregroundColor: AppColors.primary,
-              elevation: 0,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            style: OutlinedButton.styleFrom(
+              foregroundColor: AdminTokens.accent,
+              side: BorderSide(color: AdminTokens.accentBorder(isDark)),
+              backgroundColor: AdminTokens.accentSoft(isDark),
+              padding:
+                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-                side: BorderSide(color: AppColors.primary.withValues(alpha: 0.2)),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+              ),
+              textStyle: const TextStyle(
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+                letterSpacing: 0.2,
               ),
             ),
           ),
@@ -100,26 +88,12 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.music_off_rounded,
-            size: 64,
-            color: isDark ? Colors.white24 : Colors.black12,
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No rhymes found',
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-          ),
-        ],
-      ),
+    return AdminEmptyState(
+      icon: Icons.music_note_rounded,
+      title: 'No rhymes yet',
+      message: 'Add your first rhyme or story to give learners something to sing along with.',
+      actionLabel: 'Add Rhyme',
+      onAction: () => _showRhymeDialog(context, null),
     );
   }
 

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/admin_auth_provider.dart';
 
@@ -44,7 +45,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     if (!mounted) return;
 
     if (ok) {
-      // Refresh the gating provider so the router guard sees the new state.
       ref.invalidate(adminAuthProvider);
       context.go('/admin');
     } else {
@@ -62,29 +62,32 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
+      backgroundColor: AdminTokens.base(isDark),
       body: Stack(
         children: [
           _buildBackground(isDark),
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  _buildAnimatedIcon(isDark),
-                  const SizedBox(height: 32),
-                  _buildLoginCard(isDark),
-                  const SizedBox(height: 24),
-                  Text(
-                    'ADMIN ACCESS · APPWRITE TEAMS',
-                    style: TextStyle(
-                      letterSpacing: 4,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: isDark ? Colors.white38 : Colors.black26,
-                    ),
-                  ).animate().fadeIn(delay: 1.seconds),
-                ],
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 420),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    _buildBrand(isDark),
+                    const SizedBox(height: 28),
+                    _buildLoginCard(isDark),
+                    const SizedBox(height: 20),
+                    Text(
+                      'PROTECTED BY APPWRITE TEAMS',
+                      style: AdminTokens.eyebrow(isDark).copyWith(
+                        letterSpacing: 3,
+                        fontSize: 10,
+                        color: AdminTokens.textMuted(isDark),
+                      ),
+                    ).animate().fadeIn(delay: 600.ms),
+                  ],
+                ),
               ),
             ),
           ),
@@ -101,236 +104,323 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
           end: Alignment.bottomRight,
           colors: isDark
               ? [
-                  const Color(0xFF0A0E14),
-                  const Color(0xFF1E1E2C),
-                  const Color(0xFF0A0E14),
+                  const Color(0xFF050810),
+                  const Color(0xFF0A1018),
+                  const Color(0xFF050810),
                 ]
               : [
-                  const Color(0xFFF0F4FF),
+                  AdminTokens.neutral50,
                   Colors.white,
-                  const Color(0xFFE6EEFF),
+                  AdminTokens.neutral75,
                 ],
         ),
       ),
       child: Stack(
         children: [
-          _buildBlob(
-            color: AppColors.primary.withValues(alpha: 0.15),
-            top: -50,
-            left: -50,
-            duration: 15.seconds,
+          _blob(
+            color: AppColors.primary
+                .withValues(alpha: isDark ? 0.18 : 0.12),
+            top: -80,
+            left: -60,
+            size: 320,
+            duration: 18.seconds,
           ),
-          _buildBlob(
-            color: AppColors.duoBlue.withValues(alpha: 0.1),
+          _blob(
+            color: AppColors.duoBlue
+                .withValues(alpha: isDark ? 0.12 : 0.08),
             bottom: -100,
             right: -50,
-            duration: 20.seconds,
+            size: 360,
+            duration: 22.seconds,
+          ),
+          // Subtle dot grid for texture.
+          Positioned.fill(
+            child: IgnorePointer(
+              child: Opacity(
+                opacity: isDark ? 0.05 : 0.04,
+                child: CustomPaint(painter: _DotGridPainter(isDark: isDark)),
+              ),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildBlob({
+  Widget _blob({
     required Color color,
     double? top,
     double? left,
     double? bottom,
     double? right,
     required Duration duration,
+    double size = 300,
   }) {
     return Positioned(
       top: top,
       left: left,
       bottom: bottom,
       right: right,
-      child:
-          Container(
-                width: 300,
-                height: 300,
-                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .move(
-                begin: const Offset(0, 0),
-                end: const Offset(50, 50),
-                duration: duration,
-                curve: Curves.easeInOut,
-              )
-              .scale(
-                begin: const Offset(1, 1),
-                end: const Offset(1.2, 1.2),
-                duration: duration,
-                curve: Curves.easeInOut,
-              ),
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+      )
+          .animate(onPlay: (c) => c.repeat(reverse: true))
+          .move(
+            begin: Offset.zero,
+            end: const Offset(40, 40),
+            duration: duration,
+            curve: Curves.easeInOut,
+          )
+          .scale(
+            begin: const Offset(1, 1),
+            end: const Offset(1.18, 1.18),
+            duration: duration,
+            curve: Curves.easeInOut,
+          ),
     );
   }
 
-  Widget _buildAnimatedIcon(bool isDark) {
-    return Container(
-          padding: const EdgeInsets.all(24),
+  Widget _buildBrand(bool isDark) {
+    return Column(
+      children: [
+        Container(
+          width: 76,
+          height: 76,
           decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
-            border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.2),
-              width: 2,
+            borderRadius: BorderRadius.circular(22),
+            boxShadow: AdminTokens.brandGlow(AppColors.primary),
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: Image.asset(
+              'assets/icons/olitun_logo.png',
+              fit: BoxFit.cover,
             ),
           ),
-          child: Icon(
-            Icons.admin_panel_settings_rounded,
-            size: 64,
-            color: AppColors.primary,
-          ),
-        )
-        .animate(onPlay: (c) => c.repeat(reverse: true))
-        .shimmer(duration: 3.seconds, color: Colors.white24)
-        .scale(
-          duration: 2.seconds,
-          begin: const Offset(0.95, 0.95),
-          end: const Offset(1.05, 1.05),
-        );
+        ).animate().scale(
+              duration: 500.ms,
+              curve: Curves.easeOutBack,
+              begin: const Offset(0.7, 0.7),
+            ),
+        const SizedBox(height: 16),
+        Text(
+          'Olitun Studio',
+          style: AdminTokens.pageTitle(isDark).copyWith(fontSize: 28),
+        ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.1, end: 0),
+        const SizedBox(height: 6),
+        Text(
+          'Sign in to manage content',
+          style: AdminTokens.body(isDark),
+        ).animate().fadeIn(delay: 250.ms),
+      ],
+    );
   }
 
   Widget _buildLoginCard(bool isDark) {
     final hasError = _errorMessage != null;
     return Container(
-      width: 400,
-      padding: const EdgeInsets.all(32),
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
       decoration: BoxDecoration(
-        color: isDark
-            ? Colors.white.withValues(alpha: 0.05)
-            : Colors.white.withValues(alpha: 0.7),
-        borderRadius: BorderRadius.circular(32),
-        border: Border.all(
-          color: isDark ? Colors.white12 : Colors.white,
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.1),
-            blurRadius: 30,
-            offset: const Offset(0, 10),
-          ),
-        ],
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
+        border: Border.all(color: AdminTokens.border(isDark)),
+        boxShadow: AdminTokens.overlayShadow(isDark),
       ),
       child: Form(
         key: _formKey,
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            Text(
-              'Admin Sign In',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : AppColors.primaryDark,
-              ),
-            ),
+            _fieldLabel('Email address', isDark),
             const SizedBox(height: 8),
-            Text(
-              'Sign in with an Appwrite account that belongs to the admin team',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: isDark ? Colors.white54 : Colors.black54,
-                fontSize: 13,
-              ),
-            ),
-            const SizedBox(height: 32),
-
             TextFormField(
               controller: _emailController,
               keyboardType: TextInputType.emailAddress,
               autofillHints: const [AutofillHints.email],
               enabled: !_isLoading,
-              decoration: _decoration('admin@example.com', isDark),
+              style: AdminTokens.bodyStrong(isDark),
+              decoration: _decoration(
+                hint: 'admin@example.com',
+                icon: Icons.alternate_email_rounded,
+                isDark: isDark,
+              ),
               validator: (v) =>
                   (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 18),
+            _fieldLabel('Password', isDark),
+            const SizedBox(height: 8),
             TextFormField(
               controller: _passwordController,
               obscureText: true,
               autofillHints: const [AutofillHints.password],
               enabled: !_isLoading,
               onFieldSubmitted: (_) => _handleLogin(),
-              decoration: _decoration('Password', isDark),
+              style: AdminTokens.bodyStrong(isDark),
+              decoration: _decoration(
+                hint: 'Min 8 characters',
+                icon: Icons.lock_outline_rounded,
+                isDark: isDark,
+              ),
               validator: (v) =>
                   (v == null || v.length < 8) ? 'Min 8 characters' : null,
             ).animate(target: hasError ? 1 : 0).shake(duration: 400.ms, hz: 4),
-
             if (hasError) ...[
-              const SizedBox(height: 12),
-              Text(
-                _errorMessage!,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: AppColors.error,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+              const SizedBox(height: 14),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 12),
+                decoration: BoxDecoration(
+                  color: AppColors.error.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                  border: Border.all(
+                    color: AppColors.error.withValues(alpha: 0.3),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.error_outline_rounded,
+                        size: 18, color: AppColors.error),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: AdminTokens.label(isDark).copyWith(
+                          color: AppColors.error,
+                          fontWeight: FontWeight.w600,
+                          fontSize: 12.5,
+                          letterSpacing: 0,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
               ).animate().fadeIn(),
             ],
-
-            const SizedBox(height: 28),
-
+            const SizedBox(height: 24),
             SizedBox(
-              width: double.infinity,
-              height: 56,
+              height: 52,
               child: ElevatedButton(
                 onPressed: _isLoading ? null : _handleLogin,
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
                   elevation: 0,
+                  shadowColor: Colors.transparent,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
                   ),
                 ),
                 child: _isLoading
                     ? const SizedBox(
-                        height: 24,
-                        width: 24,
+                        height: 22,
+                        width: 22,
                         child: CircularProgressIndicator(
                           color: Colors.white,
-                          strokeWidth: 3,
+                          strokeWidth: 2.5,
                         ),
                       )
                     : const Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.lock_open_rounded),
-                          SizedBox(width: 8),
+                          Icon(Icons.lock_open_rounded, size: 18),
+                          SizedBox(width: 10),
                           Text(
-                            'SIGN IN',
+                            'Sign in',
                             style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.2,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 14.5,
+                              letterSpacing: 0.3,
                             ),
                           ),
                         ],
                       ),
               ),
             ),
+            const SizedBox(height: 14),
+            Center(
+              child: Text(
+                'Need access? Ask a team owner to add you in Appwrite.',
+                textAlign: TextAlign.center,
+                style: AdminTokens.label(isDark).copyWith(
+                  color: AdminTokens.textTertiary(isDark),
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w500,
+                  letterSpacing: 0,
+                ),
+              ),
+            ),
           ],
         ),
       ),
-    ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.9, 0.9));
+    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.04, end: 0);
   }
 
-  InputDecoration _decoration(String hint, bool isDark) {
-    return InputDecoration(
-      hintText: hint,
-      filled: true,
-      fillColor:
-          isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.02),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+  Widget _fieldLabel(String text, bool isDark) {
+    return Text(
+      text,
+      style: AdminTokens.label(isDark).copyWith(
+        color: AdminTokens.textPrimary(isDark),
+        fontWeight: FontWeight.w700,
+        letterSpacing: 0,
       ),
     );
   }
+
+  InputDecoration _decoration({
+    required String hint,
+    required IconData icon,
+    required bool isDark,
+  }) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor: AdminTokens.sunken(isDark),
+      hintStyle: AdminTokens.body(isDark)
+          .copyWith(color: AdminTokens.textMuted(isDark)),
+      prefixIcon: Icon(icon,
+          size: 18, color: AdminTokens.textTertiary(isDark)),
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        borderSide: BorderSide(color: AdminTokens.border(isDark)),
+      ),
+      enabledBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        borderSide: BorderSide(color: AdminTokens.border(isDark)),
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+      ),
+      errorBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        borderSide: const BorderSide(color: AppColors.error),
+      ),
+    );
+  }
+}
+
+class _DotGridPainter extends CustomPainter {
+  final bool isDark;
+  _DotGridPainter({required this.isDark});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = isDark ? Colors.white : Colors.black
+      ..style = PaintingStyle.fill;
+    const spacing = 28.0;
+    for (double y = 0; y < size.height; y += spacing) {
+      for (double x = 0; x < size.width; x += spacing) {
+        canvas.drawCircle(Offset(x, y), 0.8, paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }

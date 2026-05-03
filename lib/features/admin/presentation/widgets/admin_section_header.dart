@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import '../../../../core/theme/admin_tokens.dart';
 
+/// Refined page header used at the top of every admin screen.
+///
+/// Composes a subtle eyebrow ("ADMIN · CATEGORIES"), a real display-scale
+/// title, and an optional supporting subtitle. Icon treatment is restrained —
+/// a small accent chip rather than a giant gradient tile — so the title is
+/// clearly the focal point.
 class AdminSectionHeader extends StatelessWidget {
   final String title;
   final String? subtitle;
   final List<Widget>? actions;
   final IconData? icon;
+  final String? eyebrow;
 
   const AdminSectionHeader({
     super.key,
@@ -13,68 +20,85 @@ class AdminSectionHeader extends StatelessWidget {
     this.subtitle,
     this.actions,
     this.icon,
+    this.eyebrow,
   });
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final width = MediaQuery.of(context).size.width;
+    final compact = width < 600;
 
-    // Adaptive sizing
-    final titleSize = (width < 600) ? 28.0 : (width < 1100 ? 32.0 : 40.0);
-    final iconSize = (width < 600) ? 24.0 : 28.0;
+    final titleStyle = compact
+        ? AdminTokens.pageTitle(isDark).copyWith(fontSize: 26)
+        : AdminTokens.display(isDark);
+
+    final eyebrowText = (eyebrow ?? title).toUpperCase();
 
     return Padding(
-      padding: EdgeInsets.only(bottom: width < 600 ? 24 : 32),
+      padding: EdgeInsets.only(bottom: compact ? 20 : 28),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.end,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
+          if (icon != null) ...[
+            Container(
+              width: compact ? 44 : 52,
+              height: compact ? 44 : 52,
+              decoration: BoxDecoration(
+                color: AdminTokens.accentSoft(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                border: Border.all(color: AdminTokens.accentBorder(isDark)),
+              ),
+              child: Icon(
+                icon,
+                color: AdminTokens.accent,
+                size: compact ? 22 : 26,
+              ),
+            ),
+            SizedBox(width: compact ? 14 : 18),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                if (icon != null) ...[
-                  Container(
-                    padding: EdgeInsets.all(width < 600 ? 10 : 12),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: AppColors.primary.withValues(alpha: 0.2),
+                Row(
+                  children: [
+                    Container(
+                      width: 6,
+                      height: 6,
+                      decoration: const BoxDecoration(
+                        color: AdminTokens.accent,
+                        shape: BoxShape.circle,
                       ),
                     ),
-                    child: Icon(icon, color: AppColors.primary, size: iconSize),
-                  ),
-                  SizedBox(height: width < 600 ? 12 : 16),
-                ],
-                Text(
-                  title,
-                  style: TextStyle(
-                    fontSize: titleSize,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: width < 600 ? -0.5 : -1.5,
-                    color: isDark ? Colors.white : AppColors.primaryDark,
-                    height: 1.1,
-                  ),
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'ADMIN · $eyebrowText',
+                        overflow: TextOverflow.ellipsis,
+                        style: AdminTokens.eyebrow(isDark),
+                      ),
+                    ),
+                  ],
                 ),
+                const SizedBox(height: 8),
+                Text(title, style: titleStyle),
                 if (subtitle != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 6),
                   Text(
                     subtitle!,
-                    style: TextStyle(
-                      fontSize: width < 600 ? 14 : 16,
-                      color: isDark ? Colors.white54 : Colors.black54,
-                      fontWeight: FontWeight.w500,
+                    style: AdminTokens.body(isDark).copyWith(
+                      fontSize: compact ? 13 : 15,
                     ),
                   ),
                 ],
               ],
             ),
           ),
-          if (actions != null && actions!.isNotEmpty && width > 400) ...[
+          if (actions != null && actions!.isNotEmpty && width > 480) ...[
             const SizedBox(width: 24),
-            Row(children: actions!),
+            Wrap(spacing: 8, runSpacing: 8, children: actions!),
           ],
         ],
       ),

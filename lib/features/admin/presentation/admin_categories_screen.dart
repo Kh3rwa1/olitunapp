@@ -11,6 +11,7 @@ import '../../categories/presentation/providers/category_notifier.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import 'widgets/admin_glass_card.dart';
 import 'widgets/admin_section_header.dart';
+import 'widgets/admin_empty_state.dart';
 
 class AdminCategoriesScreen extends ConsumerStatefulWidget {
   const AdminCategoriesScreen({super.key});
@@ -40,6 +41,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
             title: 'Categories',
             subtitle: 'Organize your learning modules',
             icon: Icons.category_rounded,
+            eyebrow: 'CONTENT · CATEGORIES',
             actions: isWideScreen ? [] : null,
           ),
 
@@ -64,93 +66,16 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
-    return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                width: 100,
-                height: 100,
-                decoration: BoxDecoration(
-                  gradient: AppColors.premiumGreen,
-                  borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      blurRadius: 30,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: const Icon(
-                  Icons.category_outlined,
-                  size: 50,
-                  color: Colors.white,
-                ),
-              ),
-              const SizedBox(height: 28),
-              Text(
-                'No categories yet',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.w800,
-                  color: isDark
-                      ? AppColors.textPrimaryDark
-                      : AppColors.textPrimaryLight,
-                ),
-              ),
-              const SizedBox(height: 10),
-              Text(
-                'Create your first learning category',
-                style: TextStyle(
-                  fontSize: 15,
-                  color: isDark
-                      ? AppColors.textTertiaryDark
-                      : AppColors.textTertiaryLight,
-                ),
-              ),
-              const SizedBox(height: 28),
-              GestureDetector(
-                onTap: () => _showCategoryDialog(context, null),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 16,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.heroGradient,
-                    borderRadius: BorderRadius.circular(16),
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.primary.withValues(alpha: 0.4),
-                        blurRadius: 20,
-                        offset: const Offset(0, 8),
-                      ),
-                    ],
-                  ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(Icons.add_rounded, color: Colors.white),
-                      SizedBox(width: 10),
-                      Text(
-                        'Create Category',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        )
+    return AdminEmptyState(
+      icon: Icons.category_outlined,
+      title: 'No categories yet',
+      message: 'Create your first learning category to start grouping lessons.',
+      actionLabel: 'Create Category',
+      onAction: () => _showCategoryDialog(context, null),
+    )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
-        .scale(begin: const Offset(0.9, 0.9));
+        .scale(begin: const Offset(0.96, 0.96));
   }
 
   Widget _buildCategoriesList(

@@ -2,7 +2,9 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_page_header.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../core/api/appwrite_db_service.dart';
 import '../../../shared/providers/providers.dart';
@@ -144,30 +146,14 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       backgroundColor: Colors.transparent,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(32),
+          padding: const EdgeInsets.all(AdminTokens.space7),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header
-              Text(
-                'App Settings',
-                style: TextStyle(
-                  fontSize: 36,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -1.5,
-                  color: isDark ? Colors.white : AppColors.primaryDark,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Manage onboarding, defaults, and app configuration',
-                style: TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.w500,
-                  color: isDark
-                      ? AppColors.textTertiaryDark
-                      : AppColors.textTertiaryLight,
-                ),
+              const AdminPageHeader(
+                title: 'App Settings',
+                subtitle: 'Manage onboarding, defaults, and app configuration',
+                eyebrow: 'SYSTEM · SETTINGS',
               ),
               const SizedBox(height: 40),
 

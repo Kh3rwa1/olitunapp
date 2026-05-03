@@ -10,6 +10,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import 'widgets/admin_glass_card.dart';
 import 'widgets/admin_section_header.dart';
+import 'widgets/admin_empty_state.dart';
 
 class AdminBannersScreen extends ConsumerWidget {
   const AdminBannersScreen({super.key});
@@ -33,6 +34,7 @@ class AdminBannersScreen extends ConsumerWidget {
             title: 'Featured Banners',
             subtitle: 'Home screen promotional banners',
             icon: Icons.featured_play_list_rounded,
+            eyebrow: 'CONTENT · BANNERS',
             actions: isWideScreen ? [] : null,
           ),
 
@@ -63,86 +65,12 @@ class AdminBannersScreen extends ConsumerWidget {
   }
 
   Widget _buildEmptyState(BuildContext context, WidgetRef ref, bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumPurple,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentPurple.withValues(alpha: 0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: const Icon(
-              Icons.featured_play_list_outlined,
-              size: 50,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 28),
-          Text(
-            'No banners yet',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Create your first promotional banner',
-            style: TextStyle(
-              fontSize: 15,
-              color: isDark
-                  ? AppColors.textTertiaryDark
-                  : AppColors.textTertiaryLight,
-            ),
-          ),
-          const SizedBox(height: 28),
-          GestureDetector(
-            onTap: () => _showBannerDialog(context, ref, null),
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-              decoration: BoxDecoration(
-                gradient: AppColors.premiumPurple,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.accentPurple.withValues(alpha: 0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, color: Colors.white),
-                  SizedBox(width: 10),
-                  Text(
-                    'Create Banner',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AdminEmptyState(
+      icon: Icons.featured_play_list_outlined,
+      title: 'No banners yet',
+      message: 'Create your first promotional banner to highlight on the home screen.',
+      actionLabel: 'Create Banner',
+      onAction: () => _showBannerDialog(context, ref, null),
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 

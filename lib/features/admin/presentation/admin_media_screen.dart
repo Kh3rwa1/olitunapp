@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_empty_state.dart';
+import 'widgets/admin_page_header.dart';
 import '../../../core/storage/upload_service.dart';
 
 // Media type enum
@@ -216,40 +219,12 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Media Library',
-                              style: TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: -1,
-                                color: isDark
-                                    ? AppColors.textPrimaryDark
-                                    : AppColors.textPrimaryLight,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              'Upload and manage images, audio, and video files',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? AppColors.textTertiaryDark
-                                    : AppColors.textTertiaryLight,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Upload button
-                      _buildUploadButton(isDark),
-                    ],
+                  AdminPageHeader(
+                    title: 'Media Library',
+                    subtitle:
+                        'Upload and manage images, audio, and video files',
+                    eyebrow: 'MEDIA · LIBRARY',
+                    actions: [_buildUploadButton(isDark)],
                   ),
 
                   const SizedBox(height: 24),
@@ -431,73 +406,13 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
   }
 
   Widget _buildEmptyState(bool isDark) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              color: AppColors.primary.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(
-              Icons.cloud_upload_rounded,
-              size: 48,
-              color: AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: 24),
-          Text(
-            'No media files yet',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w700,
-              color: isDark
-                  ? AppColors.textPrimaryDark
-                  : AppColors.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Upload images, audio, or video files to get started',
-            style: TextStyle(
-              fontSize: 14,
-              color: isDark
-                  ? AppColors.textTertiaryDark
-                  : AppColors.textTertiaryLight,
-            ),
-          ),
-          const SizedBox(height: 24),
-          GestureDetector(
-            onTap: _pickAndUploadFile,
-            child: Container(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
-              decoration: BoxDecoration(
-                gradient: AppColors.heroGradient,
-                borderRadius: BorderRadius.circular(14),
-                boxShadow: AppColors.glowShadow(AppColors.primary),
-              ),
-              child: const Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.add_rounded, color: Colors.white),
-                  SizedBox(width: 8),
-                  Text(
-                    'Upload First File',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
+    return AdminEmptyState(
+      icon: Icons.cloud_upload_rounded,
+      title: 'No media files yet',
+      message:
+          'Upload images, audio, or video files to start building your library.',
+      actionLabel: 'Upload File',
+      onAction: _pickAndUploadFile,
     );
   }
 }

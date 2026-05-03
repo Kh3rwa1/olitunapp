@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/observability/crash_reporting.dart';
 import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import '../datasources/category_local_datasource.dart';
@@ -18,6 +19,12 @@ class CategoryRepositoryImpl implements CategoryRepository {
     required this.localDataSource,
     required this.networkInfo,
   });
+
+  ServerFailure _recordedServerFailure(ServerException e, [StackTrace? st]) {
+    final f = ServerFailure(message: e.message, code: e.code);
+    CrashReporting.recordFailure(f, st);
+    return f;
+  }
 
   @override
   Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
@@ -42,7 +49,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
       final cached = await localDataSource.getCategories();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(ServerFailure(message: originalMessage, code: originalCode));
+      return Left(_recordedServerFailure(ServerException(message: originalMessage, code: originalCode)));
     }
   }
 
@@ -53,7 +60,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         final result = await remoteDataSource.getCategoryById(id);
         return Right(result.toEntity());
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -67,7 +74,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         await remoteDataSource.createCategory(CategoryModel.fromEntity(category));
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -81,7 +88,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         await remoteDataSource.updateCategory(CategoryModel.fromEntity(category));
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -95,7 +102,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
         await remoteDataSource.deleteCategory(id);
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());

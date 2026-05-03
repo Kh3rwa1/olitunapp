@@ -2,6 +2,7 @@ import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/network/network_info.dart';
+import '../../../../core/observability/crash_reporting.dart';
 import '../../domain/entities/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
 import '../datasources/lesson_local_datasource.dart';
@@ -18,6 +19,12 @@ class LessonRepositoryImpl implements LessonRepository {
     required this.localDataSource,
     required this.networkInfo,
   });
+
+  ServerFailure _recordedServerFailure(ServerException e, [StackTrace? st]) {
+    final f = ServerFailure(message: e.message, code: e.code);
+    CrashReporting.recordFailure(f, st);
+    return f;
+  }
 
   @override
   Future<Either<Failure, List<LessonEntity>>> getLessons() async {
@@ -42,7 +49,7 @@ class LessonRepositoryImpl implements LessonRepository {
         // We only cache the "all lessons" for now, or we could implement category-specific caching
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       // Fallback to local filtering of all cached lessons
@@ -66,7 +73,7 @@ class LessonRepositoryImpl implements LessonRepository {
       final cached = await localDataSource.getLessons();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(ServerFailure(message: originalMessage, code: originalCode));
+      return Left(_recordedServerFailure(ServerException(message: originalMessage, code: originalCode)));
     }
   }
 
@@ -77,7 +84,7 @@ class LessonRepositoryImpl implements LessonRepository {
         final result = await remoteDataSource.getLessonById(id);
         return Right(result.toEntity());
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -91,7 +98,7 @@ class LessonRepositoryImpl implements LessonRepository {
         await remoteDataSource.createLesson(LessonModel.fromEntity(lesson));
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -105,7 +112,7 @@ class LessonRepositoryImpl implements LessonRepository {
         await remoteDataSource.updateLesson(LessonModel.fromEntity(lesson));
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());
@@ -119,7 +126,7 @@ class LessonRepositoryImpl implements LessonRepository {
         await remoteDataSource.deleteLesson(id);
         return const Right(null);
       } on ServerException catch (e) {
-        return Left(ServerFailure(message: e.message, code: e.code));
+        return Left(_recordedServerFailure(e));
       }
     } else {
       return const Left(NetworkFailure());

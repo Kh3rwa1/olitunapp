@@ -17,6 +17,10 @@ Admin access is gated server-side by membership in the Appwrite Team named
   build flag has been removed because any value bundled into the compiled
   Flutter Web JS or Android APK is trivially extractable and therefore not a
   secret.
+- Admin team membership is matched against the team's **immutable Appwrite
+  team ID** only. Matching by team name is deliberately not supported,
+  because any user with team-create permission could otherwise escalate by
+  creating a team named `admins`.
 - The `/admin/*` routes are protected by two layers:
   1. The GoRouter redirect awaits `Teams(client).list()` and bounces
      non-members to `/admin/login`.

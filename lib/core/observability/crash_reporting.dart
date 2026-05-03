@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
+import '../error/failures.dart';
 
 /// Thin wrapper around Sentry so the rest of the codebase doesn't depend on
 /// the SDK directly. If `SENTRY_DSN` is not provided at build time, the
@@ -40,5 +41,19 @@ class CrashReporting {
   static void recordFlutterError(FlutterErrorDetails details) {
     if (!isEnabled) return;
     Sentry.captureException(details.exception, stackTrace: details.stack);
+  }
+
+  /// Record a domain-layer [Failure] returned from a repository. Network and
+  /// validation failures are intentionally skipped — they are user-facing
+  /// expected outcomes, not bugs. Server/auth/cache failures are reported.
+  static void recordFailure(Failure failure, [StackTrace? stack]) {
+    if (!isEnabled) return;
+    if (failure is NetworkFailure || failure is ValidationFailure) return;
+    Sentry.captureMessage(
+      '${failure.runtimeType}: ${failure.message}'
+      '${failure.code != null ? ' (code ${failure.code})' : ''}',
+      level: SentryLevel.error,
+      stackTrace: stack,
+    );
   }
 }

@@ -5,17 +5,25 @@ import 'package:flutter/foundation.dart';
 
 /// Translation API configuration.
 ///
-/// Set the URL of the deployed Appwrite Function via build flags. There is
-/// no default value — calling [AiService.translate] without a configured URL
-/// will throw at request time, surfacing the misconfiguration rather than
-/// silently leaking traffic to an undeclared host.
+/// Set the URL of the deployed Appwrite Function via build flag. There is
+/// no default value — calling [AiService.translate] without a configured
+/// URL will throw at request time, surfacing the misconfiguration rather
+/// than silently leaking traffic to an undeclared host.
 ///
 ///   --dart-define=TRANSLATE_URL=https://<region>.appwrite.network/v1/functions/<id>/executions
-///   --dart-define=REVERSE_TRANSLATE_URL=...
+///
+/// Reverse translation uses the same function by default; only set
+/// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
+/// separate deployment.
 class AiConfig {
   static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
-  static const String reverseTranslateUrl =
+  static const String _reverseOverride =
       String.fromEnvironment('REVERSE_TRANSLATE_URL');
+
+  /// Reverse-translate URL — defaults to [translateUrl] so a single
+  /// function deployment serves both directions.
+  static String get reverseTranslateUrl =>
+      _reverseOverride.isNotEmpty ? _reverseOverride : translateUrl;
 }
 
 /// Translation service — talks to the Appwrite Function deployed under

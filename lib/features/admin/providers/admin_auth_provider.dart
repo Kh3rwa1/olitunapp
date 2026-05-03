@@ -22,14 +22,17 @@ class AdminAuthService {
 
   /// Returns true if the currently logged-in user is a member of the admin
   /// team. Returns false if there is no session, or membership lookup fails.
+  ///
+  /// Membership is matched against the team's **immutable ID** only.
+  /// Matching by team name would let any user with team-create permission
+  /// escalate to admin by creating a team called `admins`, so name matching
+  /// is intentionally not supported.
   Future<bool> isCurrentUserAdmin() async {
     try {
       final teams = Teams(_auth.client);
       final result = await teams.list();
-      final adminId = AppwriteConfig.adminTeamId.toLowerCase();
-      return result.teams.any(
-        (t) => t.$id.toLowerCase() == adminId || t.name.toLowerCase() == adminId,
-      );
+      final adminId = AppwriteConfig.adminTeamId;
+      return result.teams.any((t) => t.$id == adminId);
     } catch (e) {
       debugPrint('AdminAuth: membership lookup failed: $e');
       return false;

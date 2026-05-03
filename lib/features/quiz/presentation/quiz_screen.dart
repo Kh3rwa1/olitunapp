@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import '../../../core/motion/confetti_overlay.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 
@@ -349,15 +350,24 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
   }
 
   void _selectAnswer(int index) {
-    HapticFeedback.lightImpact();
     setState(() {
       _selectedAnswer = index;
       _isAnswered = true;
       final quizzes = ref.read(quizzesProvider);
       quizzes.whenData((data) {
         final quiz = data.firstWhere((q) => q.id == widget.quizId);
-        if (index == quiz.questions[_currentQuestion].correctIndex) {
+        final isCorrect =
+            index == quiz.questions[_currentQuestion].correctIndex;
+        if (isCorrect) {
           _score++;
+          // Crisp double-tap haptic for "right answer" satisfaction.
+          HapticFeedback.mediumImpact();
+          Future.delayed(const Duration(milliseconds: 90), () {
+            HapticFeedback.lightImpact();
+          });
+        } else {
+          // Heavier single thump signals "wrong" without being punitive.
+          HapticFeedback.heavyImpact();
         }
       });
     });
@@ -443,7 +453,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      body: SafeArea(
+      body: Stack(
+        children: [
+          SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(20),
           child: Column(
@@ -570,6 +582,13 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ],
           ),
         ),
+      ),
+          // Confetti burst on the celebratory completion screen.
+          // Only painted when the user actually passed — the
+          // "keep practicing" state stays calm.
+          if (isPassing)
+            const Positioned.fill(child: ConfettiBurst()),
+        ],
       ),
     );
   }

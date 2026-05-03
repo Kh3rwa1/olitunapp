@@ -127,9 +127,9 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
               children: [
                 _buildPremiumBackground(isDark),
                 SafeArea(
-                  child: IndexedStack(
+                  child: _ShellTabSwitcher(
                     index: _selectedIndex,
-                    children: _screens,
+                    screens: _screens,
                   ),
                 ),
               ],
@@ -156,7 +156,10 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
         _buildPremiumBackground(isDark),
         SafeArea(
           bottom: false,
-          child: IndexedStack(index: _selectedIndex, children: _screens),
+          child: _ShellTabSwitcher(
+            index: _selectedIndex,
+            screens: _screens,
+          ),
         ),
         Positioned(
           left: 0,
@@ -863,6 +866,49 @@ class _RightPanelStatState extends State<_RightPanelStat> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Cross-fade tab switcher used in place of the bare [IndexedStack] to
+/// give the bottom-nav / sidebar tab swap a smooth M3 fade-through.
+///
+/// Critically, every tab subtree is kept mounted (via [Offstage] +
+/// [TickerMode] off when inactive) so full widget state — scroll
+/// positions, controllers, riverpod-bound form fields — is preserved
+/// exactly as it was with the original [IndexedStack]. Only the
+/// visible child's opacity is animated, which is what makes the swap
+/// feel like a fade rather than a hard cut.
+class _ShellTabSwitcher extends StatelessWidget {
+  const _ShellTabSwitcher({required this.index, required this.screens});
+
+  final int index;
+  final List<Widget> screens;
+
+  @override
+  Widget build(BuildContext context) {
+    final reduce =
+        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final dur = Duration(milliseconds: reduce ? 1 : 220);
+    return Stack(
+      children: List.generate(screens.length, (i) {
+        final active = i == index;
+        return Offstage(
+          offstage: !active,
+          child: TickerMode(
+            enabled: active,
+            child: AnimatedOpacity(
+              duration: dur,
+              curve: Curves.easeOutCubic,
+              opacity: active ? 1.0 : 0.0,
+              child: KeyedSubtree(
+                key: PageStorageKey<int>('shell-tab-$i'),
+                child: screens[i],
+              ),
+            ),
+          ),
+        );
+      }),
     );
   }
 }

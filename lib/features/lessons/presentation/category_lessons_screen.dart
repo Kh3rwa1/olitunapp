@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
@@ -187,12 +187,15 @@ class _LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          child: GestureDetector(
-            onTap: () {
-              HapticFeedback.lightImpact();
-              onTap();
-            },
-            child: Container(
+          // PressableScale gives a consistent press-down feedback +
+          // light haptic, replacing the legacy GestureDetector that
+          // had no visible reaction. Hero pairs the card visually with
+          // the lesson detail header on push.
+          child: PressableScale(
+            onTap: onTap,
+            child: Hero(
+              tag: MotionTokens.heroTag('lesson', lesson.id),
+              child: Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
                 color: isDark
@@ -282,6 +285,7 @@ class _LessonCard extends StatelessWidget {
                   ),
                 ],
               ),
+            ),
             ),
           ),
         )

@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../presentation/providers/auth_providers.dart';
 
@@ -268,12 +269,11 @@ class WelcomeScreen extends ConsumerWidget {
 
         const SizedBox(height: 14),
 
-        // Email Sign-In Button
-        GestureDetector(
-          onTap: () {
-            HapticFeedback.lightImpact();
-            context.go('/login');
-          },
+        // Email Sign-In Button — PressableScale gives the same scale +
+        // haptic feedback as the rest of the app's primary CTAs.
+        PressableScale(
+          onTap: () => context.go('/login'),
+          haptic: HapticIntensity.medium,
           child: Container(
             width: double.infinity,
             padding: const EdgeInsets.symmetric(vertical: 18),

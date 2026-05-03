@@ -696,13 +696,34 @@ class _BentoStatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: isHero ? 28 : 22,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : Colors.black,
-                letterSpacing: -0.5,
+            // Cross-fade + scale-pulse whenever the value text changes,
+            // so a streak/star bump *feels* like an event instead of a
+            // silent number swap. Driven by motion tokens.
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 360),
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeIn,
+              transitionBuilder: (child, anim) => FadeTransition(
+                opacity: anim,
+                child: ScaleTransition(
+                  scale: Tween<double>(begin: 0.85, end: 1.0).animate(
+                    CurvedAnimation(
+                      parent: anim,
+                      curve: const Cubic(0.34, 1.56, 0.64, 1.0),
+                    ),
+                  ),
+                  child: child,
+                ),
+              ),
+              child: Text(
+                value,
+                key: ValueKey<String>('stat-$label-$value'),
+                style: TextStyle(
+                  fontSize: isHero ? 28 : 22,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : Colors.black,
+                  letterSpacing: -0.5,
+                ),
               ),
             ),
             const SizedBox(height: 2),

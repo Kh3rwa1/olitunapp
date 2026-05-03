@@ -8,6 +8,7 @@ import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
 import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../shared/widgets/lottie_display.dart';
+import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 
@@ -98,8 +99,13 @@ class LessonDetailScreen extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // Hero header card
-                Container(
+                // Hero header card — paired with the lesson card on
+                // the previous screen via shared element transition.
+                Hero(
+                  tag: MotionTokens.heroTag('lesson', lesson.id),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.all(24),
                   decoration: BoxDecoration(
@@ -145,6 +151,8 @@ class LessonDetailScreen extends ConsumerWidget {
                         ],
                       ),
                     ],
+                  ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 24),

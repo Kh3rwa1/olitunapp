@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../core/motion/page_transitions.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/email_auth_screen.dart';
@@ -32,117 +35,161 @@ import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
 
+/// Convenience: builds a GoRoute whose `pageBuilder` wraps the screen
+/// in our shared-axis Z transition. Used for content "drill-in" routes
+/// (lesson, letter, word, number, sentence, quiz, practice).
+GoRoute _drillRoute({
+  required String path,
+  String? name,
+  required Widget Function(BuildContext, GoRouterState) child,
+}) {
+  return GoRoute(
+    path: path,
+    name: name,
+    pageBuilder: (context, state) => AppPageTransitions.sharedAxisZ(
+      key: state.pageKey,
+      child: child(context, state),
+    ),
+  );
+}
+
+/// Lateral / shell-level routes get the fade-through pattern.
+GoRoute _peerRoute({
+  required String path,
+  String? name,
+  required Widget Function(BuildContext, GoRouterState) child,
+  FutureOr<String?> Function(BuildContext, GoRouterState)? redirect,
+}) {
+  return GoRoute(
+    path: path,
+    name: name,
+    redirect: redirect,
+    pageBuilder: (context, state) => AppPageTransitions.fadeThrough(
+      key: state.pageKey,
+      child: child(context, state),
+    ),
+  );
+}
+
+/// Modal-style: translator, login. Slide-up + fade-in.
+GoRoute _modalRoute({
+  required String path,
+  String? name,
+  required Widget Function(BuildContext, GoRouterState) child,
+}) {
+  return GoRoute(
+    path: path,
+    name: name,
+    pageBuilder: (context, state) => AppPageTransitions.fadeUp(
+      key: state.pageKey,
+      child: child(context, state),
+    ),
+  );
+}
+
 final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
     routes: [
-      GoRoute(
+      _peerRoute(
         path: '/splash',
         name: RouteNames.splash,
-        builder: (context, state) => const SplashScreen(),
+        child: (_, __) => const SplashScreen(),
       ),
-      GoRoute(
+      _peerRoute(
         path: '/welcome',
         name: RouteNames.welcome,
-        builder: (context, state) => const WelcomeScreen(),
+        child: (_, __) => const WelcomeScreen(),
       ),
-      GoRoute(
+      _modalRoute(
         path: '/login',
         name: RouteNames.login,
-        builder: (context, state) => const EmailAuthScreen(),
+        child: (_, __) => const EmailAuthScreen(),
       ),
-      GoRoute(
+      _peerRoute(
         path: '/',
         name: RouteNames.home,
-        builder: (context, state) => const MainShellScreen(),
+        child: (_, __) => const MainShellScreen(),
       ),
-      GoRoute(
+      _peerRoute(
         path: '/categories',
         name: RouteNames.categories,
-        builder: (context, state) => const MainShellScreen(),
+        child: (_, __) => const MainShellScreen(),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/quizzes',
-        builder: (context, state) => const QuizListScreen(),
+        child: (_, __) => const QuizListScreen(),
       ),
-      GoRoute(
+      _peerRoute(
         path: '/profile',
         name: RouteNames.profile,
-        builder: (context, state) => const MainShellScreen(),
+        child: (_, __) => const MainShellScreen(),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/lessons/:categoryId',
         name: RouteNames.lessons,
-        builder: (context, state) {
-          final categoryId = state.pathParameters['categoryId'] ?? '';
-          return CategoryLessonsScreen(categoryId: categoryId);
-        },
+        child: (_, state) => CategoryLessonsScreen(
+          categoryId: state.pathParameters['categoryId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/lesson/:lessonId',
         name: RouteNames.lessonDetail,
-        builder: (context, state) {
-          final lessonId = state.pathParameters['lessonId'] ?? '';
-          return LessonDetailScreen(lessonId: lessonId);
-        },
+        child: (_, state) => LessonDetailScreen(
+          lessonId: state.pathParameters['lessonId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/letter/:lessonId/:letterId',
-        builder: (context, state) {
-          final lessonId = state.pathParameters['lessonId'] ?? '';
-          final letterId = state.pathParameters['letterId'] ?? '';
-          return LetterDetailScreen(lessonId: lessonId, letterId: letterId);
-        },
+        child: (_, state) => LetterDetailScreen(
+          lessonId: state.pathParameters['lessonId'] ?? '',
+          letterId: state.pathParameters['letterId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/word/:lessonId/:wordId',
-        builder: (context, state) {
-          final lessonId = state.pathParameters['lessonId'] ?? '';
-          final wordId = state.pathParameters['wordId'] ?? '';
-          return WordDetailScreen(lessonId: lessonId, wordId: wordId);
-        },
+        child: (_, state) => WordDetailScreen(
+          lessonId: state.pathParameters['lessonId'] ?? '',
+          wordId: state.pathParameters['wordId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/number/:lessonId/:numberId',
-        builder: (context, state) {
-          final lessonId = state.pathParameters['lessonId'] ?? '';
-          final numberId = state.pathParameters['numberId'] ?? '';
-          return NumberDetailScreen(lessonId: lessonId, numberId: numberId);
-        },
+        child: (_, state) => NumberDetailScreen(
+          lessonId: state.pathParameters['lessonId'] ?? '',
+          numberId: state.pathParameters['numberId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/sentence/:lessonId/:sentenceId',
-        builder: (context, state) {
-          final lessonId = state.pathParameters['lessonId'] ?? '';
-          final sentenceId = state.pathParameters['sentenceId'] ?? '';
-          return SentenceDetailScreen(lessonId: lessonId, sentenceId: sentenceId);
-        },
+        child: (_, state) => SentenceDetailScreen(
+          lessonId: state.pathParameters['lessonId'] ?? '',
+          sentenceId: state.pathParameters['sentenceId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/practice/:char/:name',
-        builder: (context, state) {
-          final char = state.pathParameters['char'] ?? '';
-          final name = state.pathParameters['name'] ?? '';
-          return PracticeScreen(letterChar: char, letterName: name);
-        },
+        child: (_, state) => PracticeScreen(
+          letterChar: state.pathParameters['char'] ?? '',
+          letterName: state.pathParameters['name'] ?? '',
+        ),
       ),
-      GoRoute(
+      _modalRoute(
         path: '/translate',
-        builder: (context, state) => const AiTranslatorScreen(),
+        child: (_, __) => const AiTranslatorScreen(),
       ),
-      GoRoute(
+      _drillRoute(
         path: '/quiz/:quizId',
         name: RouteNames.quiz,
-        builder: (context, state) {
-          final quizId = state.pathParameters['quizId'] ?? '';
-          return QuizScreen(quizId: quizId);
-        },
+        child: (_, state) => QuizScreen(
+          quizId: state.pathParameters['quizId'] ?? '',
+        ),
       ),
-      GoRoute(
+      _modalRoute(
         path: '/admin/login',
         name: RouteNames.adminLogin,
-        builder: (context, state) => const AdminLoginScreen(),
+        child: (_, __) => const AdminLoginScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => AdminShell(child: child),

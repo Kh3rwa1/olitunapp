@@ -53,6 +53,31 @@ Admin access is enforced server-side by Appwrite Team membership — the previou
 ## Deployment
 Configured as a **static** deployment serving `build/web/`.
 
+## Motion system (Task #5)
+A unified motion vocabulary lives under `lib/core/motion/` and is the
+single source of truth for animations across the app. Pull from it
+instead of hand-tuning new durations/curves per surface:
+- `motion_tokens.dart` — durations, curves, hero-tag generator,
+  `RespectMotion` helper for OS reduce-motion.
+- `pressable_scale.dart` — drop-in tap wrapper with scale + haptic.
+  Use this in place of bare `GestureDetector` for any tappable surface.
+- `animated_counter.dart` — tween + scale-pulse for stat changes.
+- `page_transitions.dart` — GoRouter `CustomTransitionPage` builders
+  (`sharedAxisZ`, `fadeThrough`, `fadeUp`). Wired in `app_router.dart`.
+- `confetti_overlay.dart` — `CustomPainter` confetti burst (no asset).
+- `branded_refresh.dart` — `RefreshIndicator` wrapper drawing a spinning
+  Ol Chiki glyph behind the standard spinner.
+- `focus_glow_field.dart` — focus-glow border + imperative `shake()`
+  for forms.
+- `motion.dart` — single barrel import.
+
+Hero tags follow `MotionTokens.heroTag(namespace, id)` (e.g. `lesson`,
+`category`, `letter`, `word`, `number`, `sentence`, `quiz`). Currently
+wired between `category_lessons_screen` cards and `lesson_detail_screen`.
+The main shell uses an `AnimatedSwitcher` cross-fade in place of
+`IndexedStack` for tab swaps. Quiz answers fire crisp/heavy haptics on
+correct/wrong and a confetti burst on celebratory completion.
+
 ## Recent quality work (Task #1)
 - Removed hardcoded Appwrite project ID fallback; `AppwriteConfig.validate()` at boot.
 - Replaced client-side admin secret with Appwrite Teams membership check; double-gated via router redirect and `AdminShell`.

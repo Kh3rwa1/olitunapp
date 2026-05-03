@@ -20,3 +20,4 @@ export '../../features/lessons/presentation/providers/lesson_providers.dart';
 export 'quizzes_provider.dart';
 export 'rhymes_providers.dart';
 export 'seed_provider.dart';
+export 'dashboard_metrics_provider.dart';

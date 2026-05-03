@@ -27,6 +27,10 @@ class AppwriteDbService {
     return result.rows.map((row) {
       final data = Map<String, dynamic>.from(row.data);
       data['id'] = row.$id;
+      // Preserve Appwrite system timestamps for downstream consumers
+      // (e.g. admin dashboard activity feed / engagement chart).
+      data[r'$createdAt'] = row.$createdAt;
+      data[r'$updatedAt'] = row.$updatedAt;
       return data;
     }).toList();
   }

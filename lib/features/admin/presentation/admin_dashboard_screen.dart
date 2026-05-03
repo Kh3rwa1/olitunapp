@@ -134,6 +134,7 @@ class _Header extends ConsumerWidget {
               onTap: () {
                 ref.invalidate(categoryNotifierProvider);
                 ref.invalidate(lessonNotifierProvider);
+                ref.invalidate(dashboardMetricsProvider);
               },
             ),
             const SizedBox(width: 10),
@@ -322,6 +323,9 @@ class _BentoGrid extends ConsumerWidget {
       ),
     ];
 
+    final metricsAsync = ref.watch(dashboardMetricsProvider);
+    final delta = metricsAsync.valueOrNull?.weekOverWeekDelta;
+
     if (isWide) {
       return Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -332,6 +336,7 @@ class _BentoGrid extends ConsumerWidget {
               isDark: isDark,
               total: totalContent,
               isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
+              weekDelta: delta,
             ),
           ),
           const SizedBox(width: 20),
@@ -358,6 +363,7 @@ class _BentoGrid extends ConsumerWidget {
           isDark: isDark,
           total: totalContent,
           isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
+          weekDelta: delta,
         ),
         const SizedBox(height: 16),
         GridView.count(
@@ -399,10 +405,12 @@ class _HeroMetric extends StatelessWidget {
   final bool isDark;
   final int total;
   final bool isLoading;
+  final double? weekDelta;
   const _HeroMetric({
     required this.isDark,
     required this.total,
     required this.isLoading,
+    this.weekDelta,
   });
 
   @override
@@ -522,13 +530,20 @@ class _HeroMetric extends StatelessWidget {
               const SizedBox(height: 22),
               Row(
                 children: [
-                  _HeroPill(
-                    isDark: isDark,
-                    icon: Icons.trending_up_rounded,
-                    label: '+12% wk',
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
+                  if (weekDelta != null) ...[
+                    _HeroPill(
+                      isDark: isDark,
+                      icon: weekDelta! >= 0
+                          ? Icons.trending_up_rounded
+                          : Icons.trending_down_rounded,
+                      label:
+                          '${weekDelta! >= 0 ? '+' : ''}${weekDelta!.toStringAsFixed(0)}% wk',
+                      color: weekDelta! >= 0
+                          ? AppColors.primary
+                          : AppColors.duoOrange,
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                   _HeroPill(
                     isDark: isDark,
                     icon: Icons.history_rounded,
@@ -651,12 +666,14 @@ class _KpiCard extends StatelessWidget {
   }
 }
 
-class _AnalyticsPanel extends StatelessWidget {
+class _AnalyticsPanel extends ConsumerWidget {
   final bool isDark;
   const _AnalyticsPanel({required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final metricsAsync = ref.watch(dashboardMetricsProvider);
+
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -675,12 +692,12 @@ class _AnalyticsPanel extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    'ENGAGEMENT',
+                    'CONTENT ACTIVITY',
                     style: AdminTokens.eyebrow(isDark)
                         .copyWith(color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
-                  Text('Daily activity', style: AdminTokens.sectionTitle(isDark)),
+                  Text('Last 7 days', style: AdminTokens.sectionTitle(isDark)),
                 ],
               ),
               Wrap(
@@ -693,7 +710,7 @@ class _AnalyticsPanel extends StatelessWidget {
                   ),
                   _LegendDot(
                     color: AppColors.duoBlue,
-                    label: 'Quizzes',
+                    label: 'Vocabulary',
                     isDark: isDark,
                   ),
                 ],
@@ -701,10 +718,77 @@ class _AnalyticsPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 28),
-          SizedBox(height: 230, child: _Chart(isDark: isDark)),
+          SizedBox(
+            height: 230,
+            child: metricsAsync.when(
+              loading: () => const Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              error: (_, __) => _ChartEmpty(
+                isDark: isDark,
+                icon: Icons.cloud_off_rounded,
+                message: 'Couldn\'t load engagement data',
+              ),
+              data: (m) {
+                final hasData = m.lessonsSeries.any((v) => v > 0) ||
+                    m.vocabularySeries.any((v) => v > 0);
+                if (!hasData) {
+                  return _ChartEmpty(
+                    isDark: isDark,
+                    icon: Icons.show_chart_rounded,
+                    message: 'No activity in the last 7 days',
+                  );
+                }
+                return _Chart(
+                  isDark: isDark,
+                  lessons: m.lessonsSeries,
+                  vocabulary: m.vocabularySeries,
+                  dayLabels: m.dayLabels,
+                );
+              },
+            ),
+          ),
         ],
       ),
     ).animate().fadeIn(delay: 150.ms);
+  }
+}
+
+class _ChartEmpty extends StatelessWidget {
+  final bool isDark;
+  final IconData icon;
+  final String message;
+  const _ChartEmpty({
+    required this.isDark,
+    required this.icon,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 28, color: AdminTokens.textMuted(isDark)),
+          const SizedBox(height: 10),
+          Text(
+            message,
+            style: AdminTokens.body(isDark).copyWith(
+              fontSize: 13,
+              color: AdminTokens.textTertiary(isDark),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }
 
@@ -744,7 +828,15 @@ class _LegendDot extends StatelessWidget {
 
 class _Chart extends StatelessWidget {
   final bool isDark;
-  const _Chart({required this.isDark});
+  final List<int> lessons;
+  final List<int> vocabulary;
+  final List<String> dayLabels;
+  const _Chart({
+    required this.isDark,
+    required this.lessons,
+    required this.vocabulary,
+    required this.dayLabels,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -752,13 +844,22 @@ class _Chart extends StatelessWidget {
         isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12;
     final axisColor = AdminTokens.textMuted(isDark);
 
+    final maxValue = [
+      ...lessons,
+      ...vocabulary,
+    ].fold<int>(0, (m, v) => v > m ? v : m);
+    final yMax = (maxValue < 4 ? 4 : maxValue + 1).toDouble();
+    final rawInterval = (yMax / 4).ceilToDouble();
+    final yInterval = rawInterval < 1.0 ? 1.0 : rawInterval;
+
     return LineChart(
       LineChartData(
         minY: 0,
+        maxY: yMax,
         gridData: FlGridData(
           show: true,
           drawVerticalLine: false,
-          horizontalInterval: 2,
+          horizontalInterval: yInterval,
           getDrawingHorizontalLine: (_) => FlLine(color: gridColor, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
@@ -766,7 +867,7 @@ class _Chart extends StatelessWidget {
             sideTitles: SideTitles(
               showTitles: true,
               reservedSize: 28,
-              interval: 2,
+              interval: yInterval,
               getTitlesWidget: (value, meta) => Padding(
                 padding: const EdgeInsets.only(right: 4),
                 child: Text(
@@ -791,13 +892,14 @@ class _Chart extends StatelessWidget {
               reservedSize: 28,
               interval: 1,
               getTitlesWidget: (value, meta) {
-                const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
                 final i = value.toInt();
-                if (i < 0 || i >= days.length) return const SizedBox.shrink();
+                if (i < 0 || i >= dayLabels.length) {
+                  return const SizedBox.shrink();
+                }
                 return Padding(
                   padding: const EdgeInsets.only(top: 8),
                   child: Text(
-                    days[i],
+                    dayLabels[i],
                     style: TextStyle(
                       fontFamily: 'Poppins',
                       color: axisColor,
@@ -835,13 +937,13 @@ class _Chart extends StatelessWidget {
         ),
         lineBarsData: [
           _series(
-            const [3, 4, 3.5, 5, 4, 6, 5.5],
+            lessons.map((e) => e.toDouble()).toList(),
             color: AppColors.primary,
             fillTop: 0.18,
             fillBottom: 0.0,
           ),
           _series(
-            const [2, 2.5, 2.2, 3, 3.5, 3, 4],
+            vocabulary.map((e) => e.toDouble()).toList(),
             color: AppColors.duoBlue,
             fillTop: 0.10,
             fillBottom: 0.0,
@@ -898,22 +1000,13 @@ class _Chart extends StatelessWidget {
   }
 }
 
-class _ActivityPanel extends StatelessWidget {
+class _ActivityPanel extends ConsumerWidget {
   final bool isDark;
   const _ActivityPanel({required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
-    final items = [
-      ('New lesson published', 'Numbers · 1–10', Icons.school_rounded,
-          AppColors.duoBlue),
-      ('Category updated', 'Animals (3 items)', Icons.category_rounded,
-          AppColors.duoGreen),
-      ('Quiz created', 'Letters Pop Quiz', Icons.quiz_rounded,
-          AppColors.duoPurple),
-      ('Banner replaced', 'Home featured', Icons.featured_play_list_rounded,
-          AppColors.duoOrange),
-    ];
+  Widget build(BuildContext context, WidgetRef ref) {
+    final metricsAsync = ref.watch(dashboardMetricsProvider);
 
     return Container(
       padding: const EdgeInsets.all(24),
@@ -951,7 +1044,7 @@ class _ActivityPanel extends StatelessWidget {
                   border: Border.all(color: AdminTokens.border(isDark)),
                 ),
                 child: Text(
-                  'Last 24h',
+                  'Latest',
                   style: AdminTokens.label(isDark).copyWith(
                     fontSize: 10.5,
                     letterSpacing: 0.4,
@@ -962,23 +1055,103 @@ class _ActivityPanel extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 18),
-          for (var i = 0; i < items.length; i++) ...[
-            _ActivityRow(
-              isDark: isDark,
-              title: items[i].$1,
-              subtitle: items[i].$2,
-              icon: items[i].$3,
-              color: items[i].$4,
-            ),
-            if (i < items.length - 1)
-              Divider(
-                color: AdminTokens.divider(isDark),
-                height: 18,
+          metricsAsync.when(
+            loading: () => const Padding(
+              padding: EdgeInsets.symmetric(vertical: 28),
+              child: Center(
+                child: SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2.4,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
-          ],
+            ),
+            error: (_, __) => _ActivityEmpty(
+              isDark: isDark,
+              icon: Icons.cloud_off_rounded,
+              message: 'Couldn\'t load recent activity',
+            ),
+            data: (m) {
+              final items = m.recentActivity;
+              if (items.isEmpty) {
+                return _ActivityEmpty(
+                  isDark: isDark,
+                  icon: Icons.inbox_rounded,
+                  message: 'No recent changes yet',
+                );
+              }
+              return Column(
+                children: [
+                  for (var i = 0; i < items.length; i++) ...[
+                    _ActivityRow(
+                      isDark: isDark,
+                      title: items[i].title,
+                      subtitle:
+                          '${items[i].subtitle} · ${_formatRelative(items[i].timestamp)}',
+                      icon: items[i].icon,
+                      color: items[i].color,
+                    ),
+                    if (i < items.length - 1)
+                      Divider(
+                        color: AdminTokens.divider(isDark),
+                        height: 18,
+                      ),
+                  ],
+                ],
+              );
+            },
+          ),
         ],
       ),
     ).animate().fadeIn(delay: 220.ms);
+  }
+}
+
+String _formatRelative(DateTime ts) {
+  final diff = DateTime.now().difference(ts);
+  if (diff.inSeconds < 60) return 'just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  if (diff.inDays < 7) return '${diff.inDays}d ago';
+  if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
+  if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}mo ago';
+  return '${(diff.inDays / 365).floor()}y ago';
+}
+
+class _ActivityEmpty extends StatelessWidget {
+  final bool isDark;
+  final IconData icon;
+  final String message;
+  const _ActivityEmpty({
+    required this.isDark,
+    required this.icon,
+    required this.message,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 28),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 26, color: AdminTokens.textMuted(isDark)),
+            const SizedBox(height: 10),
+            Text(
+              message,
+              style: AdminTokens.body(isDark).copyWith(
+                fontSize: 13,
+                color: AdminTokens.textTertiary(isDark),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 
@@ -1105,4 +1278,5 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await ref.read(lessonNotifierProvider.notifier).seed();
   await ref.read(numbersProvider.notifier).seed();
   await ref.read(wordsProvider.notifier).seed();
+  ref.invalidate(dashboardMetricsProvider);
 }

@@ -61,12 +61,19 @@ class FocusGlowFieldState extends State<FocusGlowField>
   }
 
   /// 3-cycle damped horizontal shake. Call after validation failure.
+  /// Skips the animation when reduce-motion is on (caller's validator
+  /// state still updates as usual).
   void shake() {
+    if (!mounted) return;
+    if (RespectMotion.of(context)) return;
     _shakeCtl.forward(from: 0);
   }
 
   @override
   Widget build(BuildContext context) {
+    if (RespectMotion.of(context)) {
+      return Padding(padding: widget.padding, child: widget.child);
+    }
     final glow = widget.glowColor ?? Theme.of(context).colorScheme.primary;
     return AnimatedBuilder(
       animation: Listenable.merge([_glowCtl, _shakeCtl]),

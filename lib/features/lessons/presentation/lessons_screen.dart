@@ -54,8 +54,9 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     // --- Back + Header ---
                     Row(
                       children: [
-                        GestureDetector(
+                        PressableScale(
                           onTap: () => context.go('/'),
+                          haptic: HapticIntensity.selection,
                           child: Container(
                             padding: const EdgeInsets.all(12),
                             decoration: BoxDecoration(
@@ -113,13 +114,19 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     if (data.isNotEmpty)
                       AnimatedBentoChild(
                         index: 0,
-                        child: GestureDetector(
+                        child: PressableScale(
                           onTap: () => context.go(
                             '/lessons/${data.first.id}',
                           ),
-                          child: _HeroCategoryCard(
-                            category: data.first,
-                            isDark: isDark,
+                          child: Hero(
+                            tag: MotionTokens.heroTag(
+                              'category',
+                              data.first.id,
+                            ),
+                            child: _HeroCategoryCard(
+                              category: data.first,
+                              isDark: isDark,
+                            ),
                           ),
                         ),
                       ),
@@ -163,14 +170,20 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           final category = data[index + 1];
                           return AnimatedBentoChild(
                             index: index + 1,
-                            child: GestureDetector(
+                            child: PressableScale(
                               onTap: () => context.go(
                                 '/lessons/${category.id}',
                               ),
-                              child: _BentoCategoryCard(
-                                category: category,
-                                index: index,
-                                isDark: isDark,
+                              child: Hero(
+                                tag: MotionTokens.heroTag(
+                                  'category',
+                                  category.id,
+                                ),
+                                child: _BentoCategoryCard(
+                                  category: category,
+                                  index: index,
+                                  isDark: isDark,
+                                ),
                               ),
                             ),
                           );

@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'motion_tokens.dart';
 
-/// One-shot confetti burst (CustomPainter, no asset/package).
+/// One-shot confetti burst (CustomPainter, no asset/package). Renders
+/// nothing when reduce-motion is on.
 class ConfettiBurst extends StatefulWidget {
   const ConfettiBurst({
     super.key,
@@ -56,6 +58,9 @@ class _ConfettiBurstState extends State<ConfettiBurst>
 
   @override
   Widget build(BuildContext context) {
+    if (RespectMotion.of(context)) {
+      return const SizedBox.shrink();
+    }
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctl,

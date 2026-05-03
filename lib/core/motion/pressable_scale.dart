@@ -95,21 +95,24 @@ class _PressableScaleState extends State<PressableScale>
 
   @override
   Widget build(BuildContext context) {
+    final reduce = RespectMotion.of(context);
     return GestureDetector(
       behavior: widget.behavior,
-      onTapDown: _interactive ? (_) => _press() : null,
-      onTapUp: _interactive ? (_) => _release() : null,
-      onTapCancel: _interactive ? _release : null,
+      onTapDown: _interactive && !reduce ? (_) => _press() : null,
+      onTapUp: _interactive && !reduce ? (_) => _release() : null,
+      onTapCancel: _interactive && !reduce ? _release : null,
       onTap: _interactive ? _commit : null,
       onLongPress: _interactive && widget.onLongPress != null
           ? _commitLong
           : null,
-      child: AnimatedBuilder(
-        animation: _scaleAnim,
-        builder: (_, child) =>
-            Transform.scale(scale: _scaleAnim.value, child: child),
-        child: widget.child,
-      ),
+      child: reduce
+          ? widget.child
+          : AnimatedBuilder(
+              animation: _scaleAnim,
+              builder: (_, child) =>
+                  Transform.scale(scale: _scaleAnim.value, child: child),
+              child: widget.child,
+            ),
     );
   }
 }

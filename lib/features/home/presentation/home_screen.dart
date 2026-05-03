@@ -337,7 +337,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildHeroJourneyCard(BuildContext context, bool isDark, int index) {
     return AnimatedBentoChild(
       index: index,
-      child: GestureDetector(
+      child: PressableScale(
         onTap: () => context.push('/categories'),
         child: Container(
           width: double.infinity,
@@ -417,7 +417,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildQuizBannerCard(BuildContext context, bool isDark, int index) {
     return AnimatedBentoChild(
       index: index,
-      child: GestureDetector(
+      child: PressableScale(
         onTap: () => context.push('/quizzes'),
         child: Container(
           width: double.infinity,
@@ -753,7 +753,7 @@ class _BentoContentGrid extends StatelessWidget {
   Widget _buildAITranslateCard(BuildContext context) {
     return AnimatedBentoChild(
       index: 6,
-      child: GestureDetector(
+      child: PressableScale(
         onTap: () => context.push('/translate'),
         child: BentoCell(
           gradient: const LinearGradient(
@@ -952,7 +952,7 @@ class _BentoCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
+    return PressableScale(
       onTap: () => context.push('/lessons/${category.id}'),
       child: BentoCell(
         padding: const EdgeInsets.all(16),

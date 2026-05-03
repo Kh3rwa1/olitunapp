@@ -55,11 +55,17 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               (c) => c.id == widget.categoryId,
               orElse: () => data.first,
             );
-            return Text(
-              category.titleLatin,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : Colors.black,
+            return Hero(
+              tag: MotionTokens.heroTag('category', category.id),
+              child: Material(
+                color: Colors.transparent,
+                child: Text(
+                  category.titleLatin,
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
               ),
             );
           },

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/motion/motion.dart';
 import 'providers/auth_providers.dart';
 
 class EmailAuthScreen extends ConsumerStatefulWidget {
@@ -17,6 +18,10 @@ class EmailAuthScreen extends ConsumerStatefulWidget {
 class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
   final _emailController = TextEditingController();
   final _otpController = TextEditingController();
+  final _emailFocus = FocusNode();
+  final _otpFocus = FocusNode();
+  final _emailFieldKey = GlobalKey<FocusGlowFieldState>();
+  final _otpFieldKey = GlobalKey<FocusGlowFieldState>();
   bool _isLoading = false;
   bool _codeSent = false;
   String? _errorMessage;
@@ -31,6 +36,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
   void dispose() {
     _emailController.dispose();
     _otpController.dispose();
+    _emailFocus.dispose();
+    _otpFocus.dispose();
     _resendTimer?.cancel();
     super.dispose();
   }
@@ -50,6 +57,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     final email = _emailController.text.trim();
     if (email.isEmpty || !email.contains('@')) {
       setState(() => _errorMessage = 'Please enter a valid email address');
+      _emailFieldKey.currentState?.shake();
       return;
     }
 
@@ -92,6 +100,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     final code = _otpController.text.trim();
     if (code.isEmpty) {
       setState(() => _errorMessage = 'Please enter the verification code');
+      _otpFieldKey.currentState?.shake();
       return;
     }
 
@@ -241,6 +250,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         // Email field
         _buildTextField(
           controller: _emailController,
+          focusNode: _emailFocus,
+          glowKey: _emailFieldKey,
           label: 'Email Address',
           hint: 'learner@example.com',
           icon: Icons.email_outlined,
@@ -351,6 +362,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         // OTP field
         _buildTextField(
           controller: _otpController,
+          focusNode: _otpFocus,
+          glowKey: _otpFieldKey,
           label: 'Verification Code',
           hint: 'Enter code from email',
           icon: Icons.pin_rounded,
@@ -530,7 +543,48 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     required bool isDark,
+    FocusNode? focusNode,
+    Key? glowKey,
   }) {
+    final field = TextField(
+      controller: controller,
+      focusNode: focusNode,
+      keyboardType: keyboardType,
+      style: TextStyle(
+        color: isDark ? Colors.white : Colors.black,
+        fontSize: 16,
+        letterSpacing: keyboardType == TextInputType.number ? 8 : 0,
+      ),
+      decoration: InputDecoration(
+        hintText: hint,
+        hintStyle: TextStyle(
+          color: isDark ? Colors.white24 : Colors.black26,
+          fontSize: 15,
+          letterSpacing: 0,
+        ),
+        prefixIcon: Icon(
+          icon,
+          color: isDark ? Colors.white38 : Colors.black38,
+          size: 22,
+        ),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(vertical: 18),
+      ),
+    );
+    final wrapped = Container(
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.grey.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.1)
+              : Colors.black.withValues(alpha: 0.05),
+        ),
+      ),
+      child: field,
+    );
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -544,44 +598,17 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           ),
         ),
         const SizedBox(height: 10),
-        Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.grey.withValues(alpha: 0.05),
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05),
-            ),
-          ),
-          child: TextField(
-            controller: controller,
-            keyboardType: keyboardType,
-            style: TextStyle(
-              color: isDark ? Colors.white : Colors.black,
-              fontSize: 16,
-              letterSpacing: keyboardType == TextInputType.number ? 8 : 0,
-            ),
-            decoration: InputDecoration(
-              hintText: hint,
-              hintStyle: TextStyle(
-                color: isDark ? Colors.white24 : Colors.black26,
-                fontSize: 15,
-                letterSpacing: 0,
-              ),
-              prefixIcon: Icon(
-                icon,
-                color: isDark ? Colors.white38 : Colors.black38,
-                size: 22,
-              ),
-              border: InputBorder.none,
-              contentPadding: const EdgeInsets.symmetric(vertical: 18),
-            ),
-          ),
-        ),
+        if (focusNode != null)
+          FocusGlowField(
+            key: glowKey,
+            focusNode: focusNode,
+            glowColor: AppColors.primary,
+            child: wrapped,
+          )
+        else
+          wrapped,
       ],
     );
   }
+
 }

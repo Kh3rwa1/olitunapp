@@ -5,7 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
-import '../../../core/motion/confetti_overlay.dart';
+import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 
@@ -195,7 +195,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 12),
-                              child: GestureDetector(
+                              child: PressableScale(
+                                enabled: !_isAnswered,
+                                haptic: HapticIntensity.none,
                                 onTap: _isAnswered
                                     ? null
                                     : () => _selectAnswer(index),
@@ -300,10 +302,57 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                                   ),
                                 ),
                               ),
-                            ).animate().fadeIn(
-                              delay: (index * 80).ms,
-                              duration: 300.ms,
-                            );
+                            )
+                                .animate(
+                                  key: ValueKey(
+                                    'opt-$_currentQuestion-$index-$_isAnswered',
+                                  ),
+                                )
+                                .fadeIn(
+                                  delay: _isAnswered
+                                      ? Duration.zero
+                                      : (index * 80).ms,
+                                  duration: 300.ms,
+                                )
+                                .then()
+                                .swap(
+                                  builder: (context, child) {
+                                    if (!_isAnswered) return child;
+                                    if (isCorrect) {
+                                      // Brief scale pulse on the right answer.
+                                      return child
+                                          .animate()
+                                          .scaleXY(
+                                            begin: 1.0,
+                                            end: 1.04,
+                                            duration: 180.ms,
+                                            curve: const Cubic(
+                                              0.34,
+                                              1.56,
+                                              0.64,
+                                              1.0,
+                                            ),
+                                          )
+                                          .then()
+                                          .scaleXY(
+                                            begin: 1.0,
+                                            end: 1 / 1.04,
+                                            duration: 220.ms,
+                                          );
+                                    }
+                                    if (isSelected && !isCorrect) {
+                                      // Damped horizontal shake on wrong.
+                                      return child
+                                          .animate()
+                                          .shakeX(
+                                            hz: 6,
+                                            amount: 4,
+                                            duration: 360.ms,
+                                          );
+                                    }
+                                    return child;
+                                  },
+                                );
                           },
                         ),
                       ),
@@ -313,8 +362,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
                 // Continue button
                 if (_isAnswered)
-                  GestureDetector(
+                  PressableScale(
                     onTap: _nextQuestion,
+                    haptic: HapticIntensity.selection,
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(vertical: 18),
@@ -366,8 +416,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             HapticFeedback.lightImpact();
           });
         } else {
-          // Heavier single thump signals "wrong" without being punitive.
-          HapticFeedback.heavyImpact();
+          // Medium single thump for "wrong" — firm but not punitive.
+          HapticFeedback.mediumImpact();
         }
       });
     });

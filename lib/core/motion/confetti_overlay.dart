@@ -1,9 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 
-/// A lightweight confetti burst built with [CustomPainter] — no asset
-/// or external package. Drop it on top of any celebratory moment
-/// (e.g. quiz complete) and it will animate once and dispose.
+/// One-shot confetti burst (CustomPainter, no asset/package).
 class ConfettiBurst extends StatefulWidget {
   const ConfettiBurst({
     super.key,

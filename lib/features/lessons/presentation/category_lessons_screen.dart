@@ -70,9 +70,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       body: lessons.when(
         data: (data) => data.isEmpty
             ? _buildEmptyState(isDark)
-            : RefreshIndicator(
+            : BrandedRefreshIndicator(
                 onRefresh: _onRefresh,
-                color: AppColors.primary,
                 child: ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
@@ -187,10 +186,6 @@ class _LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
           padding: const EdgeInsets.only(bottom: 14),
-          // PressableScale gives a consistent press-down feedback +
-          // light haptic, replacing the legacy GestureDetector that
-          // had no visible reaction. Hero pairs the card visually with
-          // the lesson detail header on push.
           child: PressableScale(
             onTap: onTap,
             child: Hero(

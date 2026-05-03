@@ -2,12 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'motion_tokens.dart';
 
-/// A tap wrapper that gives any child consistent press-down feedback:
-/// a quick scale-down on press, smooth release with a subtle spring,
-/// and a configurable haptic on commit.
-///
-/// Use this everywhere a `GestureDetector` or bare `InkWell` would be
-/// used to make a surface "tappable" — it guarantees no dead taps.
+/// Tap wrapper: press-down scale + release spring + commit haptic.
 class PressableScale extends StatefulWidget {
   const PressableScale({
     super.key,

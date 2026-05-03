@@ -2,11 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'motion_tokens.dart';
 
-/// A widget that tweens an integer from its previous value to the new
-/// one whenever [value] changes. On every change it also briefly
-/// scale-pulses to draw the eye and (optionally) fires a light haptic,
-/// so a stat going up *feels* like an event rather than a silent
-/// number swap.
+/// Tweens an int from previous to new value with a scale-pulse +
+/// optional light haptic on increase.
 class AnimatedCounter extends StatefulWidget {
   const AnimatedCounter({
     super.key,

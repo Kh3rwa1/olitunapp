@@ -870,15 +870,10 @@ class _RightPanelStatState extends State<_RightPanelStat> {
   }
 }
 
-/// Cross-fade tab switcher used in place of the bare [IndexedStack] to
-/// give the bottom-nav / sidebar tab swap a smooth M3 fade-through.
-///
-/// Critically, every tab subtree is kept mounted (via [Offstage] +
-/// [TickerMode] off when inactive) so full widget state — scroll
-/// positions, controllers, riverpod-bound form fields — is preserved
-/// exactly as it was with the original [IndexedStack]. Only the
-/// visible child's opacity is animated, which is what makes the swap
-/// feel like a fade rather than a hard cut.
+/// Cross-fade switcher: all tabs stay mounted (so scroll/form state
+/// is preserved per [IndexedStack] semantics); active tab fades in
+/// while previous fades out. Inactive tabs ignore pointers. Honors
+/// reduce-motion.
 class _ShellTabSwitcher extends StatelessWidget {
   const _ShellTabSwitcher({required this.index, required this.screens});
 
@@ -893,18 +888,15 @@ class _ShellTabSwitcher extends StatelessWidget {
     return Stack(
       children: List.generate(screens.length, (i) {
         final active = i == index;
-        return Offstage(
-          offstage: !active,
-          child: TickerMode(
-            enabled: active,
-            child: AnimatedOpacity(
-              duration: dur,
-              curve: Curves.easeOutCubic,
-              opacity: active ? 1.0 : 0.0,
-              child: KeyedSubtree(
-                key: PageStorageKey<int>('shell-tab-$i'),
-                child: screens[i],
-              ),
+        return IgnorePointer(
+          ignoring: !active,
+          child: AnimatedOpacity(
+            duration: dur,
+            curve: Curves.easeOutCubic,
+            opacity: active ? 1.0 : 0.0,
+            child: KeyedSubtree(
+              key: PageStorageKey<int>('shell-tab-$i'),
+              child: screens[i],
             ),
           ),
         );

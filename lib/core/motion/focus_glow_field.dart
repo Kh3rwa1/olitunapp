@@ -2,13 +2,9 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'motion_tokens.dart';
 
-/// Wraps any input widget with an animated focus-glow border and an
-/// imperative shake() on validation error. Use it for translator
-/// inputs, profile-edit dialogs, and login screens to make form
-/// state changes feel alive instead of inert.
-///
-/// Wire shake by holding a `GlobalKey<FocusGlowFieldState>` and
-/// calling `key.currentState?.shake()` from your validator.
+/// Input wrapper: animated focus-glow + imperative shake() for
+/// validation errors. Hold a `GlobalKey<FocusGlowFieldState>` and call
+/// `key.currentState?.shake()` from your validator.
 class FocusGlowField extends StatefulWidget {
   const FocusGlowField({
     super.key,
@@ -64,8 +60,7 @@ class FocusGlowFieldState extends State<FocusGlowField>
     }
   }
 
-  /// Triggers a 3-cycle damped horizontal shake. Call from validators
-  /// after submit-failed.
+  /// 3-cycle damped horizontal shake. Call after validation failure.
   void shake() {
     _shakeCtl.forward(from: 0);
   }

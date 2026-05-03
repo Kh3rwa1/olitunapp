@@ -3,9 +3,7 @@ import 'package:flutter/material.dart';
 import '../theme/app_colors.dart';
 import 'motion_tokens.dart';
 
-/// A drop-in [RefreshIndicator] replacement that keeps the standard
-/// pull-to-refresh ergonomics but draws a branded Ol Chiki "ᱚ" glyph
-/// spinning inside a soft glow instead of the stock material spinner.
+/// [RefreshIndicator] with an Ol Chiki "ᱚ" glyph spinning behind it.
 class BrandedRefreshIndicator extends StatelessWidget {
   const BrandedRefreshIndicator({
     super.key,
@@ -32,9 +30,6 @@ class BrandedRefreshIndicator extends StatelessWidget {
   }
 }
 
-/// Allows wrapping any RefreshIndicator usage to add the branded
-/// glyph behind the spinner. Kept as an extension to avoid disturbing
-/// the standard layout that callers already depend on.
 extension _GlyphRefreshExt on Widget {
   Widget withGlyphRefresh({required Color tint}) {
     return Stack(children: [

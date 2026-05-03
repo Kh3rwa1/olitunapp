@@ -583,9 +583,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           ),
         ),
       ),
-          // Confetti burst on the celebratory completion screen.
-          // Only painted when the user actually passed — the
-          // "keep practicing" state stays calm.
           if (isPassing)
             const Positioned.fill(child: ConfettiBurst()),
         ],

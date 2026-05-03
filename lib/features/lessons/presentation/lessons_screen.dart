@@ -8,6 +8,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/widgets/shimmer_loading.dart';
+import '../../../core/motion/motion.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
@@ -39,12 +40,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
           : AppColors.lightBackground,
       body: SafeArea(
         child: categories.when(
-          data: (data) => RefreshIndicator(
+          data: (data) => BrandedRefreshIndicator(
             onRefresh: () async {
               await ref.read(categoryNotifierProvider.notifier).refresh();
               await ref.read(lessonNotifierProvider.notifier).refresh();
             },
-            color: AppColors.primary,
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),
               child: ResponsivePageContainer(

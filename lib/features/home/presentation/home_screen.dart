@@ -12,6 +12,7 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../../lessons/presentation/providers/lesson_notifier.dart';
+import '../../../core/motion/motion.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -59,9 +60,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           : isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
-      body: RefreshIndicator(
+      body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
-        color: AppColors.primary,
         child: Stack(
           children: [
             // Background Mesh/Glow — skip on desktop (shell already provides it)
@@ -241,13 +241,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // 4-column bento on tablet
       return Row(
         children: [
-          Expanded(child: _BentoStatCard(icon: Icons.local_fire_department_rounded, value: '$streak', label: 'Day Streak', color: AppColors.duoOrange, index: 0)),
+          Expanded(child: _BentoStatCard(icon: Icons.local_fire_department_rounded, value: streak, label: 'Day Streak', color: AppColors.duoOrange, index: 0)),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.star_rounded, value: '$stars', label: 'Stars', color: AppColors.duoYellow, index: 1)),
+          Expanded(child: _BentoStatCard(icon: Icons.star_rounded, value: stars, label: 'Stars', color: AppColors.duoYellow, index: 1)),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.emoji_events_rounded, value: '$lessonsCompleted', label: 'Milestones', color: AppColors.primary, index: 2)),
+          Expanded(child: _BentoStatCard(icon: Icons.emoji_events_rounded, value: lessonsCompleted, label: 'Milestones', color: AppColors.primary, index: 2)),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.timer_rounded, value: '${learningTime}m', label: 'Time', color: AppColors.duoBlue, index: 3)),
+          Expanded(child: _BentoStatCard(icon: Icons.timer_rounded, value: learningTime, suffix: 'm', label: 'Time', color: AppColors.duoBlue, index: 3)),
         ],
       );
     }
@@ -262,7 +262,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               flex: 3,
               child: _BentoStatCard(
                 icon: Icons.local_fire_department_rounded,
-                value: '$streak',
+                value: streak,
                 label: 'Day Streak',
                 color: AppColors.duoOrange,
                 index: 0,
@@ -274,7 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               flex: 2,
               child: _BentoStatCard(
                 icon: Icons.star_rounded,
-                value: '$stars',
+                value: stars,
                 label: 'Stars',
                 color: AppColors.duoYellow,
                 index: 1,
@@ -290,7 +290,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               flex: 2,
               child: _BentoStatCard(
                 icon: Icons.emoji_events_rounded,
-                value: '$lessonsCompleted',
+                value: lessonsCompleted,
                 label: 'Milestones',
                 color: AppColors.primary,
                 index: 2,
@@ -301,7 +301,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               flex: 3,
               child: _BentoStatCard(
                 icon: Icons.timer_rounded,
-                value: '${learningTime}m',
+                value: learningTime,
+                suffix: 'm',
                 label: 'Learning Time',
                 color: AppColors.duoBlue,
                 index: 3,
@@ -645,7 +646,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 // ═══════════════════════════════════════════════════════════
 class _BentoStatCard extends StatelessWidget {
   final IconData icon;
-  final String value;
+  final int value;
+  final String suffix;
   final String label;
   final Color color;
   final int index;
@@ -657,6 +659,7 @@ class _BentoStatCard extends StatelessWidget {
     required this.label,
     required this.color,
     required this.index,
+    this.suffix = '',
     this.isHero = false,
   });
 
@@ -696,34 +699,15 @@ class _BentoStatCard extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            // Cross-fade + scale-pulse whenever the value text changes,
-            // so a streak/star bump *feels* like an event instead of a
-            // silent number swap. Driven by motion tokens.
-            AnimatedSwitcher(
-              duration: const Duration(milliseconds: 360),
-              switchInCurve: Curves.easeOutCubic,
-              switchOutCurve: Curves.easeIn,
-              transitionBuilder: (child, anim) => FadeTransition(
-                opacity: anim,
-                child: ScaleTransition(
-                  scale: Tween<double>(begin: 0.85, end: 1.0).animate(
-                    CurvedAnimation(
-                      parent: anim,
-                      curve: const Cubic(0.34, 1.56, 0.64, 1.0),
-                    ),
-                  ),
-                  child: child,
-                ),
-              ),
-              child: Text(
-                value,
-                key: ValueKey<String>('stat-$label-$value'),
-                style: TextStyle(
-                  fontSize: isHero ? 28 : 22,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black,
-                  letterSpacing: -0.5,
-                ),
+            // Numeric tween + scale-pulse on change.
+            AnimatedCounter(
+              value: value,
+              suffix: suffix,
+              style: TextStyle(
+                fontSize: isHero ? 28 : 22,
+                fontWeight: FontWeight.w900,
+                color: isDark ? Colors.white : Colors.black,
+                letterSpacing: -0.5,
               ),
             ),
             const SizedBox(height: 2),

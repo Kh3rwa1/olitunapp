@@ -2,15 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'motion_tokens.dart';
 
-/// Page-transition helpers for GoRouter. Replaces hard cuts with the
-/// Material 3 "shared axis" / "fade through" patterns so navigation
-/// reads as a continuous spatial flow.
+/// GoRouter page-transition helpers (M3 shared-axis / fade-through).
+/// All transitions collapse to a no-op when the OS reduce-motion
+/// setting is on, via [RespectMotion].
 class AppPageTransitions {
   AppPageTransitions._();
 
-  /// Forward shared-axis Z transition: outgoing scales down + fades
-  /// out, incoming scales up + fades in. Default for detail routes
-  /// (lesson, letter, word, number, sentence, quiz).
+  /// Forward shared-axis Z: outgoing scales/fades out, incoming
+  /// scales/fades in. Default for drill-in routes.
   static CustomTransitionPage<T> sharedAxisZ<T>({
     required LocalKey? key,
     required Widget child,
@@ -25,6 +24,7 @@ class AppPageTransitions {
       transitionDuration: MotionTokens.medium,
       reverseTransitionDuration: MotionTokens.short,
       transitionsBuilder: (context, animation, secondary, child) {
+        if (RespectMotion.of(context)) return child;
         final fadeIn = CurvedAnimation(
           parent: animation,
           curve: const Interval(0.3, 1.0, curve: MotionTokens.emphasized),
@@ -55,9 +55,7 @@ class AppPageTransitions {
     );
   }
 
-  /// Fade-through: outgoing fades out fully before incoming fades in.
-  /// Best for lateral / peer navigations like switching tabs or top
-  /// shell routes.
+  /// Fade-through for lateral / peer navigations.
   static CustomTransitionPage<T> fadeThrough<T>({
     required LocalKey? key,
     required Widget child,
@@ -72,6 +70,7 @@ class AppPageTransitions {
       transitionDuration: MotionTokens.medium,
       reverseTransitionDuration: MotionTokens.short,
       transitionsBuilder: (context, animation, secondary, child) {
+        if (RespectMotion.of(context)) return child;
         final fadeIn = CurvedAnimation(
           parent: animation,
           curve: const Interval(0.35, 1.0, curve: MotionTokens.standard),
@@ -88,8 +87,7 @@ class AppPageTransitions {
     );
   }
 
-  /// Modal-style fade-up: incoming slides up slightly while fading in.
-  /// Use for translator, login, modal-feeling routes.
+  /// Modal-style fade-up for translator/login routes.
   static CustomTransitionPage<T> fadeUp<T>({
     required LocalKey? key,
     required Widget child,
@@ -104,6 +102,7 @@ class AppPageTransitions {
       transitionDuration: MotionTokens.medium,
       reverseTransitionDuration: MotionTokens.short,
       transitionsBuilder: (context, animation, secondary, child) {
+        if (RespectMotion.of(context)) return child;
         final slide = Tween<Offset>(
           begin: const Offset(0, 0.06),
           end: Offset.zero,

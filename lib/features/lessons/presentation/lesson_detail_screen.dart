@@ -11,6 +11,7 @@ import '../../../shared/widgets/lottie_display.dart';
 import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
+import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 
 class LessonDetailScreen extends ConsumerWidget {
   final String lessonId;
@@ -76,160 +77,111 @@ class LessonDetailScreen extends ConsumerWidget {
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: Icon(
-                Icons.arrow_back_rounded,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-              onPressed: () => context.pop(),
+          body: CustomScrollView(
+            physics: const BouncingScrollPhysics(
+              parent: AlwaysScrollableScrollPhysics(),
             ),
-            title: Text(
-              lesson.titleLatin,
-              style: TextStyle(
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-          ),
-          body: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Hero header card — paired with the lesson card on
-                // the previous screen via shared element transition.
-                Hero(
-                  tag: MotionTokens.heroTag('lesson', lesson.id),
-                  child: Material(
-                    color: Colors.transparent,
-                    child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    gradient: AppColors.heroGradient,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        lesson.titleLatin,
-                        style: const TextStyle(
-                          fontSize: 32,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          letterSpacing: -1.0,
-                        ),
-                      ),
-
-                      if (lesson.titleOlChiki.isNotEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            lesson.titleOlChiki,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                          ),
-                        ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          _buildChip(
-                            Icons.timer_rounded,
-                            '${lesson.estimatedMinutes} min',
-                          ),
-                          const SizedBox(width: 12),
-                          _buildChip(
-                            Icons.signal_cellular_alt_rounded,
-                            'Beginner',
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                    ),
-                  ),
+            slivers: [
+              // Hero header — paired with the lesson card on the previous
+              // screen via shared element transition. Parallax-scrolls the
+              // gradient + Ol Chiki glyph behind the title as the user
+              // scrolls.
+              ParallaxHeroSliverAppBar(
+                gradient: AppColors.heroGradient,
+                heroTag: MotionTokens.heroTag('lesson', lesson.id),
+                glyph: lesson.titleOlChiki.isNotEmpty
+                    ? lesson.titleOlChiki.characters.first
+                    : null,
+                leading: IconButton(
+                  icon: const Icon(Icons.arrow_back_rounded),
+                  onPressed: () => context.pop(),
                 ),
-                const SizedBox(height: 24),
+                title: Text(lesson.titleLatin),
+                expandedHeight: 280,
+                heroChild: _LessonHeroSummary(
+                  lesson: lesson,
+                  buildChip: _buildChip,
+                ),
+              ),
 
-                // Description section
-                if (lesson.description != null &&
-                    lesson.description!.isNotEmpty) ...[
-                  Text(
-                    'About this lesson',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    lesson.description!,
-                    style: TextStyle(
-                      fontSize: 15,
-                      height: 1.6,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                ],
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
+                sliver: SliverList(
+                  delegate: SliverChildListDelegate.fixed([
+                    // Description section
+                    if (lesson.description != null &&
+                        lesson.description!.isNotEmpty) ...[
+                      Text(
+                        'About this lesson',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        lesson.description!,
+                        style: TextStyle(
+                          fontSize: 15,
+                          height: 1.6,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                        ),
+                      ),
+                      const SizedBox(height: 24),
+                    ],
 
-                // Content section based on category
-                FadeInSlide(
-                  duration: const Duration(milliseconds: 800),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                    // Content section based on category
+                    FadeInSlide(
+                      duration: const Duration(milliseconds: 800),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            _getSectionTitle(lesson.categoryId),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          Tooltip(
-                            message: countsString,
-                            child: Container(
-                              width: 10,
-                              height: 10,
-                              decoration: BoxDecoration(
-                                color: allLoaded ? Colors.green : Colors.red,
-                                shape: BoxShape.circle,
-                                border: Border.all(
-                                  color: Colors.white,
-                                  width: 1,
+                          Row(
+                            children: [
+                              Text(
+                                _getSectionTitle(lesson.categoryId),
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : Colors.black,
                                 ),
                               ),
-                            ),
+                              Tooltip(
+                                message: countsString,
+                                child: Container(
+                                  width: 10,
+                                  height: 10,
+                                  decoration: BoxDecoration(
+                                    color: allLoaded
+                                        ? Colors.green
+                                        : Colors.red,
+                                    shape: BoxShape.circle,
+                                    border: Border.all(
+                                      color: Colors.white,
+                                      width: 1,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          // Build content based on category
+                          _buildContent(
+                            context,
+                            ref,
+                            lesson.categoryId,
+                            lesson.id,
+                            isDark,
                           ),
                         ],
                       ),
-                      const SizedBox(height: 16),
-                      // Build content based on category
-                      _buildContent(
-                        context,
-                        ref,
-                        lesson.categoryId,
-                        lesson.id,
-                        isDark,
-                      ),
-                    ],
-                  ),
+                    ),
+                  ]),
                 ),
-
-                const SizedBox(height: 80),
-                const SizedBox(height: 32),
-              ],
-            ),
+              ),
+            ],
           ),
           floatingActionButton: Container(
             margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
@@ -1120,6 +1072,44 @@ class LessonDetailScreen extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// Centered hero summary shown inside the expanded sliver header on
+/// the lesson detail screen.
+class _LessonHeroSummary extends StatelessWidget {
+  const _LessonHeroSummary({required this.lesson, required this.buildChip});
+
+  final LessonEntity lesson;
+  final Widget Function(IconData, String) buildChip;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        if (lesson.titleOlChiki.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 6),
+            child: Text(
+              lesson.titleOlChiki,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: Colors.white.withValues(alpha: 0.92),
+              ),
+            ),
+          ),
+        Row(
+          children: [
+            buildChip(Icons.timer_rounded, '${lesson.estimatedMinutes} min'),
+            const SizedBox(width: 12),
+            buildChip(Icons.signal_cellular_alt_rounded, 'Beginner'),
+          ],
+        ),
+      ],
     );
   }
 }

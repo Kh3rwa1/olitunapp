@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
+import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
@@ -116,7 +117,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   Widget build(BuildContext context) {
     final numbersAsync = ref.watch(numbersProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return numbersAsync.when(
       loading: () => Scaffold(
@@ -166,7 +166,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
 
         return Scaffold(
           backgroundColor: bgColor,
-          extendBodyBehindAppBar: true,
           extendBody: true,
           body: Stack(
             children: [
@@ -177,48 +176,21 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final number = numbers[index];
-                  return _buildNumberPage(
-                    number,
-                    index,
-                    isDark,
-                    statusBarHeight,
-                  );
+                  return _buildNumberPage(number, index, isDark);
                 },
               ),
-
-              // Floating back button
-              Positioned(
-                top: statusBarHeight + 8,
-                left: 16,
-                child: _buildFloatingButton(
-                  icon: Icons.arrow_back_rounded,
-                  color: accentColor,
-                  onTap: () => context.pop(),
-                ),
-              ),
-
-              // Floating audio button
-              if (numbers[_currentIndex].audioUrl != null)
-                Positioned(
-                  top: statusBarHeight + 8,
-                  right: 16,
-                  child: _buildFloatingButton(
-                    icon: Icons.volume_up_rounded,
-                    color: accentColor,
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      ref
-                          .read(audioServiceProvider)
-                          .playUrl(numbers[_currentIndex].audioUrl!);
-                    },
-                  ),
-                ),
 
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom + 24,
                 left: 0,
                 right: 0,
-                child: _buildPageIndicator(numbers.length, accentColor, isDark),
+                child: IgnorePointer(
+                  child: _buildPageIndicator(
+                    numbers.length,
+                    accentColor,
+                    isDark,
+                  ),
+                ),
               ),
             ],
           ),
@@ -236,32 +208,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         );
       },
     );
-  }
-
-  Widget _buildFloatingButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return PressableScale(
-      onTap: onTap,
-      haptic: HapticIntensity.selection,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: color, size: 24),
-      ),
-    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
   }
 
   Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
@@ -295,117 +241,118 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     );
   }
 
-  Widget _buildNumberPage(
-    NumberModel number,
-    int index,
-    bool isDark,
-    double statusBarHeight,
-  ) {
+  Widget _buildNumberPage(NumberModel number, int index, bool isDark) {
     final accentColor = _getAccentColor(index);
     final emoji = _numberEmojis[number.numeral] ?? '🔢';
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, statusBarHeight + 70, 24, 100),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-
-          // Hero illustration
-          SizedBox(
-            width: double.infinity,
-            child: Column(
-              children: [
-                Hero(
-                  tag: MotionTokens.heroTag('number', number.id),
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.94, end: 1.0),
-                  duration: const Duration(milliseconds: 1200),
-                  curve: Curves.easeInOut,
-                  builder: (context, scale, child) {
-                    return Transform.scale(scale: scale, child: child);
-                  },
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: -0.06, end: 0.06),
-                    duration: const Duration(milliseconds: 1700),
-                    curve: Curves.easeInOut,
-                    builder: (context, turn, child) {
-                      return Transform.rotate(angle: turn, child: child);
-                    },
-                    onEnd: () {
-                      if (mounted) setState(() {});
-                    },
-                    child:
-                        number.animationUrl != null &&
-                            number.animationUrl!.isNotEmpty
-                        ? LottieDisplay(
-                            url: number.animationUrl!,
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.contain,
-                          )
-                        : number.imageUrl != null && number.imageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              number.imageUrl!,
-                              width: 180,
-                              height: 180,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, _, __) => Image.network(
-                                _emojiToPngUrl(emoji),
-                                width: 180,
-                                height: 180,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          )
-                        : Image.network(
-                            _emojiToPngUrl(emoji),
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                            errorBuilder: (context, _, __) => Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 100),
-                            ),
-                          ),
-                  ),
+    final heroIllustration = Hero(
+      tag: MotionTokens.heroTag('number', number.id),
+      child: Material(
+        type: MaterialType.transparency,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.94, end: 1.0),
+          duration: const Duration(milliseconds: 1200),
+          curve: Curves.easeInOut,
+          builder: (context, scale, child) {
+            return Transform.scale(scale: scale, child: child);
+          },
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: -0.06, end: 0.06),
+            duration: const Duration(milliseconds: 1700),
+            curve: Curves.easeInOut,
+            builder: (context, turn, child) {
+              return Transform.rotate(angle: turn, child: child);
+            },
+            onEnd: () {
+              if (mounted) setState(() {});
+            },
+            child:
+                number.animationUrl != null && number.animationUrl!.isNotEmpty
+                ? LottieDisplay(
+                    url: number.animationUrl!,
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  )
+                : number.imageUrl != null && number.imageUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      number.imageUrl!,
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, _, __) => Image.network(
+                        _emojiToPngUrl(emoji),
+                        width: 150,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  )
+                : Image.network(
+                    _emojiToPngUrl(emoji),
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, _, __) => Text(
+                      emoji,
+                      style: const TextStyle(fontSize: 100),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
+          ),
+        ),
+      ),
+    );
 
-                // Name with animation
-                Animate(
-                  child: Text(
-                    number.nameLatin,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: accentColor,
-                      letterSpacing: -1.0,
-                    ),
-                  ),
-                ).fadeIn(delay: 400.ms).slideY(begin: 0.2, end: 0),
-
-                Text(
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      slivers: [
+        ParallaxHeroSliverAppBar(
+          gradient: LinearGradient(
+            colors: [accentColor, accentColor.withValues(alpha: 0.78)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          glyph: number.numeral,
+          title: Text(number.nameLatin),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            if (number.audioUrl != null)
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(audioServiceProvider).playUrl(number.audioUrl!);
+                },
+              ),
+          ],
+          expandedHeight: 300,
+          heroChild: heroIllustration,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              Center(
+                child: Text(
                   'Number ${number.value}',
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white54 : Colors.grey[500],
                   ),
                 ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 32),
+              ),
+              const SizedBox(height: 24),
 
-          // Large Ol Chiki number
+              // Large Ol Chiki number
           Container(
             width: 160,
             height: 160,
@@ -625,8 +572,10 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               ],
             ),
           ),
-        ],
-      ),
+            ]),
+          ),
+        ),
+      ],
     );
   }
 }

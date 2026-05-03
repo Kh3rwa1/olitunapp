@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
+import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
@@ -114,7 +115,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
   Widget build(BuildContext context) {
     final wordsAsync = ref.watch(wordsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final statusBarHeight = MediaQuery.of(context).padding.top;
 
     return wordsAsync.when(
       loading: () => Scaffold(
@@ -161,7 +161,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
 
         return Scaffold(
           backgroundColor: bgColor,
-          extendBodyBehindAppBar: true,
           extendBody: true,
           body: Stack(
             children: [
@@ -172,44 +171,22 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                 physics: const BouncingScrollPhysics(),
                 itemBuilder: (context, index) {
                   final word = words[index];
-                  return _buildWordPage(word, index, isDark, statusBarHeight);
+                  return _buildWordPage(word, index, isDark);
                 },
               ),
-
-              // Back button
-              Positioned(
-                top: statusBarHeight + 8,
-                left: 16,
-                child: _buildFloatingButton(
-                  icon: Icons.arrow_back_rounded,
-                  color: accentColor,
-                  onTap: () => context.pop(),
-                ),
-              ),
-
-              // Audio button
-              if (words[_currentIndex].audioUrl != null)
-                Positioned(
-                  top: statusBarHeight + 8,
-                  right: 16,
-                  child: _buildFloatingButton(
-                    icon: Icons.volume_up_rounded,
-                    color: accentColor,
-                    onTap: () {
-                      HapticFeedback.mediumImpact();
-                      ref
-                          .read(audioServiceProvider)
-                          .playUrl(words[_currentIndex].audioUrl!);
-                    },
-                  ),
-                ),
 
               // Page indicator
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom + 24,
                 left: 0,
                 right: 0,
-                child: _buildPageIndicator(words.length, accentColor, isDark),
+                child: IgnorePointer(
+                  child: _buildPageIndicator(
+                    words.length,
+                    accentColor,
+                    isDark,
+                  ),
+                ),
               ),
             ],
           ),
@@ -227,32 +204,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         );
       },
     );
-  }
-
-  Widget _buildFloatingButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-  }) {
-    return PressableScale(
-      onTap: onTap,
-      haptic: HapticIntensity.selection,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: Colors.white.withValues(alpha: 0.95),
-          borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.1),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
-        ),
-        child: Icon(icon, color: color, size: 24),
-      ),
-    ).animate().fadeIn(duration: 300.ms).scale(begin: const Offset(0.8, 0.8));
   }
 
   Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
@@ -286,133 +237,130 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
     );
   }
 
-  Widget _buildWordPage(
-    WordModel word,
-    int index,
-    bool isDark,
-    double statusBarHeight,
-  ) {
+  Widget _buildWordPage(WordModel word, int index, bool isDark) {
     final accentColor = _getAccentColor(index);
     final emoji = _wordEmojis[word.wordOlChiki] ?? '📖';
 
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(24, statusBarHeight + 70, 24, 100),
-      physics: const BouncingScrollPhysics(),
-      child: Column(
-        children: [
-          const SizedBox(height: 20),
-
-          // Hero illustration
-          SizedBox(
-            width: double.infinity,
-            child: Column(
-              children: [
-                Hero(
-                  tag: MotionTokens.heroTag('word', word.id),
-                  child: Material(
-                    type: MaterialType.transparency,
-                    child: TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.94, end: 1.0),
-                  duration: const Duration(milliseconds: 1200),
-                  curve: Curves.easeInOut,
-                  builder: (context, scale, child) {
-                    return Transform.scale(scale: scale, child: child);
-                  },
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: -0.06, end: 0.06),
-                    duration: const Duration(milliseconds: 1700),
-                    curve: Curves.easeInOut,
-                    builder: (context, turn, child) {
-                      return Transform.rotate(angle: turn, child: child);
-                    },
-                    onEnd: () {
-                      if (mounted) setState(() {});
-                    },
-                    child:
-                        word.animationUrl != null &&
-                            word.animationUrl!.isNotEmpty
-                        ? LottieDisplay(
-                            url: word.animationUrl!,
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.contain,
-                          )
-                        : word.imageUrl != null && word.imageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              word.imageUrl!,
-                              width: 180,
-                              height: 180,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, _, __) => Image.network(
-                                _emojiToPngUrl(emoji),
-                                width: 180,
-                                height: 180,
-                                fit: BoxFit.contain,
-                              ),
-                            ),
-                          )
-                        : Image.network(
-                            _emojiToPngUrl(emoji),
-                            width: 180,
-                            height: 180,
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                            errorBuilder: (context, _, __) => Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 100),
-                            ),
-                          ),
+    final heroIllustration = Hero(
+      tag: MotionTokens.heroTag('word', word.id),
+      child: Material(
+        type: MaterialType.transparency,
+        child: TweenAnimationBuilder<double>(
+          tween: Tween(begin: 0.94, end: 1.0),
+          duration: const Duration(milliseconds: 1200),
+          curve: Curves.easeInOut,
+          builder: (context, scale, child) {
+            return Transform.scale(scale: scale, child: child);
+          },
+          child: TweenAnimationBuilder<double>(
+            tween: Tween(begin: -0.06, end: 0.06),
+            duration: const Duration(milliseconds: 1700),
+            curve: Curves.easeInOut,
+            builder: (context, turn, child) {
+              return Transform.rotate(angle: turn, child: child);
+            },
+            onEnd: () {
+              if (mounted) setState(() {});
+            },
+            child: word.animationUrl != null && word.animationUrl!.isNotEmpty
+                ? LottieDisplay(
+                    url: word.animationUrl!,
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                  )
+                : word.imageUrl != null && word.imageUrl!.isNotEmpty
+                ? ClipRRect(
+                    borderRadius: BorderRadius.circular(20),
+                    child: Image.network(
+                      word.imageUrl!,
+                      width: 150,
+                      height: 150,
+                      fit: BoxFit.contain,
+                      errorBuilder: (context, _, __) => Image.network(
+                        _emojiToPngUrl(emoji),
+                        width: 150,
+                        height: 150,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                  )
+                : Image.network(
+                    _emojiToPngUrl(emoji),
+                    width: 150,
+                    height: 150,
+                    fit: BoxFit.contain,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, _, __) => Text(
+                      emoji,
+                      style: const TextStyle(fontSize: 100),
+                    ),
                   ),
+          ),
+        ),
+      ),
+    );
+
+    return CustomScrollView(
+      physics: const BouncingScrollPhysics(
+        parent: AlwaysScrollableScrollPhysics(),
+      ),
+      slivers: [
+        ParallaxHeroSliverAppBar(
+          gradient: LinearGradient(
+            colors: [accentColor, accentColor.withValues(alpha: 0.78)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          glyph: word.wordOlChiki.characters.isNotEmpty
+              ? word.wordOlChiki.characters.first
+              : null,
+          title: Text(word.meaning),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back_rounded),
+            onPressed: () => context.pop(),
+          ),
+          actions: [
+            if (word.audioUrl != null)
+              IconButton(
+                icon: const Icon(Icons.volume_up_rounded),
+                onPressed: () {
+                  HapticFeedback.mediumImpact();
+                  ref.read(audioServiceProvider).playUrl(word.audioUrl!);
+                },
+              ),
+          ],
+          expandedHeight: 300,
+          heroChild: heroIllustration,
+        ),
+        SliverPadding(
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              if (word.category != null && word.category!.isNotEmpty)
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      word.category!,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                        color: accentColor,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+              const SizedBox(height: 16),
 
-                // Meaning
-                Animate(
-                  child: Text(
-                    word.meaning,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 32,
-                      fontWeight: FontWeight.w900,
-                      color: accentColor,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                ).fadeIn(delay: 300.ms).scale(),
-
-                // Category badge
-                if (word.category != null && word.category!.isNotEmpty)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 14,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accentColor.withValues(alpha: 0.12),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Text(
-                        word.category!,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w600,
-                          color: accentColor,
-                        ),
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Ol Chiki word card with inline audio
+              // Ol Chiki word card with inline audio
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -612,8 +560,10 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                 ],
               ),
             ),
-        ],
-      ),
+            ]),
+          ),
+        ),
+      ],
     );
   }
 }

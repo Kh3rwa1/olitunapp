@@ -14,38 +14,44 @@ class AdminLoginScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
-  final _keyController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
-  bool _isError = false;
+  String? _errorMessage;
 
   @override
   void dispose() {
-    _keyController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
-  void _handleLogin() async {
+  Future<void> _handleLogin() async {
     if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
-      _isError = false;
+      _errorMessage = null;
     });
 
-    // Simulate network delay for "security check" feel
-    await Future.delayed(const Duration(milliseconds: 1200));
+    final svc = ref.read(adminAuthServiceProvider);
+    final ok = await svc.signInAsAdmin(
+      email: _emailController.text,
+      password: _passwordController.text,
+    );
 
-    final success = ref
-        .read(adminAuthProvider.notifier)
-        .login(_keyController.text);
+    if (!mounted) return;
 
-    if (success) {
-      if (mounted) context.go('/admin');
+    if (ok) {
+      // Refresh the gating provider so the router guard sees the new state.
+      ref.invalidate(adminAuthProvider);
+      context.go('/admin');
     } else {
       setState(() {
         _isLoading = false;
-        _isError = true;
+        _errorMessage =
+            'Sign-in failed, or this account is not in the admin team.';
       });
       HapticFeedback.heavyImpact();
     }
@@ -58,27 +64,19 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Animated Abstract Background
           _buildBackground(isDark),
-
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo / Icon
                   _buildAnimatedIcon(isDark),
                   const SizedBox(height: 32),
-
-                  // Glassmorphism Card
                   _buildLoginCard(isDark),
-
                   const SizedBox(height: 24),
-
-                  // Footer info
                   Text(
-                    'SECURITY LEVEL: MAXIMUM',
+                    'ADMIN ACCESS · APPWRITE TEAMS',
                     style: TextStyle(
                       letterSpacing: 4,
                       fontSize: 10,
@@ -116,7 +114,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       ),
       child: Stack(
         children: [
-          // Moving blurred blobs
           _buildBlob(
             color: AppColors.primary.withValues(alpha: 0.15),
             top: -50,
@@ -196,6 +193,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   }
 
   Widget _buildLoginCard(bool isDark) {
+    final hasError = _errorMessage != null;
     return Container(
       width: 400,
       padding: const EdgeInsets.all(32),
@@ -221,7 +219,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         child: Column(
           children: [
             Text(
-              'Restricted Access',
+              'Admin Sign In',
               style: TextStyle(
                 fontSize: 24,
                 fontWeight: FontWeight.w900,
@@ -230,66 +228,51 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Enter your secret administrative key',
+              'Sign in with an Appwrite account that belongs to the admin team',
+              textAlign: TextAlign.center,
               style: TextStyle(
                 color: isDark ? Colors.white54 : Colors.black54,
-                fontSize: 14,
+                fontSize: 13,
               ),
             ),
             const SizedBox(height: 32),
 
-            // Password Field
             TextFormField(
-              controller: _keyController,
+              controller: _emailController,
+              keyboardType: TextInputType.emailAddress,
+              autofillHints: const [AutofillHints.email],
+              enabled: !_isLoading,
+              decoration: _decoration('admin@example.com', isDark),
+              validator: (v) =>
+                  (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
+            ),
+            const SizedBox(height: 16),
+            TextFormField(
+              controller: _passwordController,
               obscureText: true,
-              style: const TextStyle(letterSpacing: 8, fontSize: 18),
-              textAlign: TextAlign.center,
+              autofillHints: const [AutofillHints.password],
               enabled: !_isLoading,
               onFieldSubmitted: (_) => _handleLogin(),
-              decoration: InputDecoration(
-                hintText: '••••••••',
-                hintStyle: TextStyle(
-                  color: isDark ? Colors.white10 : Colors.black12,
-                  letterSpacing: 8,
-                ),
-                filled: true,
-                fillColor: isDark
-                    ? Colors.black26
-                    : Colors.black.withValues(alpha: 0.02),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: BorderSide.none,
-                ),
-                focusedBorder: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(16),
-                  borderSide: const BorderSide(
-                    color: AppColors.primary,
-                    width: 2,
-                  ),
-                ),
-                errorStyle: const TextStyle(
-                  height: 0,
-                ), // Hide text error to handle it better
-              ),
-              validator: (v) => v?.isEmpty ?? true ? 'Required' : null,
-            ).animate(target: _isError ? 1 : 0).shake(duration: 400.ms, hz: 4),
+              decoration: _decoration('Password', isDark),
+              validator: (v) =>
+                  (v == null || v.length < 8) ? 'Min 8 characters' : null,
+            ).animate(target: hasError ? 1 : 0).shake(duration: 400.ms, hz: 4),
 
-            if (_isError) ...[
+            if (hasError) ...[
               const SizedBox(height: 12),
               Text(
-                'INVALID ACCESS KEY',
+                _errorMessage!,
+                textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.error,
                   fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 1.2,
+                  fontWeight: FontWeight.w600,
                 ),
               ).animate().fadeIn(),
             ],
 
-            const SizedBox(height: 32),
+            const SizedBox(height: 28),
 
-            // Submit Button
             SizedBox(
               width: double.infinity,
               height: 56,
@@ -318,7 +301,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           Icon(Icons.lock_open_rounded),
                           SizedBox(width: 8),
                           Text(
-                            'UNLOCK DASHBOARD',
+                            'SIGN IN',
                             style: TextStyle(
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.2,
@@ -332,5 +315,22 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
         ),
       ),
     ).animate().fadeIn(duration: 600.ms).scale(begin: const Offset(0.9, 0.9));
+  }
+
+  InputDecoration _decoration(String hint, bool isDark) {
+    return InputDecoration(
+      hintText: hint,
+      filled: true,
+      fillColor:
+          isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.02),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(16),
+        borderSide: const BorderSide(color: AppColors.primary, width: 2),
+      ),
+    );
   }
 }

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:go_router/go_router.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../providers/admin_auth_provider.dart';
@@ -132,7 +133,11 @@ class AdminDashboardScreen extends ConsumerWidget {
           children: [
             _buildHeaderAction(
               icon: Icons.logout_rounded,
-              onTap: () => ref.read(adminAuthProvider.notifier).logout(),
+              onTap: () async {
+                await ref.read(adminAuthServiceProvider).signOut();
+                ref.invalidate(adminAuthProvider);
+                if (context.mounted) context.go('/admin/login');
+              },
               isDark: isDark,
               tooltip: 'Sign Out',
             ),

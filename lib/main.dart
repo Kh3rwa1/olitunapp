@@ -1,46 +1,60 @@
+import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'app/router/app_router.dart';
+import 'core/config/appwrite_config.dart';
+import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'features/admin/providers/admin_auth_provider.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
+Future<void> main() async {
+  // Fail fast if Appwrite config is missing — don't ship a build that
+  // silently points at the wrong project or no project at all.
+  AppwriteConfig.validate();
 
-  // Initialize Storage (Hive & SharedPrefs)
-  await initStorage();
+  await runZonedGuarded(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  // Set system UI to edge-to-edge
-  SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    FlutterError.onError = (details) {
+      FlutterError.presentError(details);
+      CrashReporting.recordFlutterError(details);
+    };
 
-  // Set system UI overlay style
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: Colors.transparent,
-      systemNavigationBarIconBrightness: Brightness.dark,
-    ),
-  );
+    await initStorage();
 
-  // Lock orientation
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-    DeviceOrientation.portraitDown,
-  ]);
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+        systemNavigationBarColor: Colors.transparent,
+        systemNavigationBarIconBrightness: Brightness.dark,
+      ),
+    );
 
-  runApp(
-    ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-      ],
-      child: const OlitunApp(),
-    ),
-  );
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
+    await CrashReporting.init();
+
+    runApp(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+        ],
+        child: const OlitunApp(),
+      ),
+    );
+  }, (error, stack) {
+    debugPrint('Uncaught zone error: $error');
+    CrashReporting.recordError(error, stack);
+  });
 }
 
 class OlitunApp extends ConsumerWidget {

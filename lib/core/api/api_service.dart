@@ -3,9 +3,23 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
-/// Configuration for API
+/// Configuration for the legacy REST API.
+///
+/// Provide the base URL via build flag — there is no hardcoded default so a
+/// missing config fails loudly instead of silently calling a stale host.
+///
+///   --dart-define=API_BASE_URL=https://your-host/api/v1
 class ApiConfig {
-  static const String baseUrl = 'https://olitun.in/admin-panel/api/v1';
+  static const String baseUrl = String.fromEnvironment('API_BASE_URL');
+
+  static void _ensureConfigured() {
+    if (baseUrl.isEmpty) {
+      throw StateError(
+        'ApiService called without API_BASE_URL configured. '
+        'Build with --dart-define=API_BASE_URL=<your-api-base>.',
+      );
+    }
+  }
 }
 
 /// Centralized API Service for handling HTTP requests
@@ -14,6 +28,7 @@ class ApiService {
 
   /// GET Request
   Future<dynamic> get(String endpoint, {Map<String, String>? params}) async {
+    ApiConfig._ensureConfigured();
     try {
       final uri = Uri.parse(
         '${ApiConfig.baseUrl}$endpoint',
@@ -28,6 +43,7 @@ class ApiService {
 
   /// POST Request
   Future<dynamic> post(String endpoint, dynamic data) async {
+    ApiConfig._ensureConfigured();
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
       final response = await _client.post(
@@ -43,6 +59,7 @@ class ApiService {
 
   /// PUT Request
   Future<dynamic> put(String endpoint, dynamic data) async {
+    ApiConfig._ensureConfigured();
     try {
       final uri = Uri.parse('${ApiConfig.baseUrl}$endpoint');
       final response = await _client.put(
@@ -58,6 +75,7 @@ class ApiService {
 
   /// DELETE Request
   Future<dynamic> delete(String endpoint, {Map<String, String>? params}) async {
+    ApiConfig._ensureConfigured();
     try {
       final uri = Uri.parse(
         '${ApiConfig.baseUrl}$endpoint',

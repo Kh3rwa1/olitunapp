@@ -33,9 +33,11 @@ jobs:
           file: coverage/lcov.info
           fail_ci_if_error: false
 
-      - name: Build web (verify)
+      - name: Build web (verify required dart-defines)
         run: |
           flutter build web \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
-            --dart-define=APPWRITE_PROJECT_ID=test \
-            --dart-define=ADMIN_SECRET_KEY=test
+            --dart-define=APPWRITE_PROJECT_ID=ci-test-project \
+            --dart-define=ADMIN_TEAM_ID=admins \
+            --dart-define=TRANSLATE_URL=https://example.com/fn \
+            --dart-define=API_BASE_URL=https://example.com/api/v1

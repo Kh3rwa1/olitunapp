@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../providers/admin_auth_provider.dart';
 
 class AdminShell extends ConsumerWidget {
   final Widget child;
@@ -17,8 +18,29 @@ class AdminShell extends ConsumerWidget {
     final isDesktop = width > 1100;
     final isTablet = width > 600 && width <= 1100;
 
-    // TEMPORARILY BYPASS AUTH CHECK FOR PREVIEW
-    // TODO: Re-enable isAdminProvider check before production
+    // Server-side admin gate — verified against Appwrite Teams membership.
+    // This is in addition to the router redirect, so direct widget mounting
+    // (e.g. tests, deep links bypassing the redirect) is also protected.
+    final adminAsync = ref.watch(adminAuthProvider);
+    if (adminAsync.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+    if (adminAsync.value != true) {
+      return Scaffold(
+        body: Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: const [
+              Icon(Icons.lock_outline_rounded, size: 56),
+              SizedBox(height: 12),
+              Text('Admin access required'),
+            ],
+          ),
+        ),
+      );
+    }
 
     if (isDesktop || isTablet) {
       // Web/Desktop/Tablet layout with sidebar

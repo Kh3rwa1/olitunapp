@@ -150,9 +150,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/admin',
             name: RouteNames.admin,
-            redirect: (context, state) {
-              final isAuthenticated = ref.read(adminAuthProvider);
-              if (!isAuthenticated) return '/admin/login';
+            redirect: (context, state) async {
+              final isAdmin = await ref.read(adminAuthProvider.future);
+              if (!isAdmin) return '/admin/login';
               return null;
             },
             builder: (context, state) => const AdminDashboardScreen(),

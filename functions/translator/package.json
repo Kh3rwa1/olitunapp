@@ -1,0 +1,10 @@
+{
+  "name": "olitun-translator",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/main.js",
+  "dependencies": {
+    "@vitalets/google-translate-api": "^9.2.0",
+    "node-appwrite": "^14.0.0"
+  }
+}

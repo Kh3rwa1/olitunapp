@@ -63,6 +63,9 @@ dependencies:
   connectivity_plus: ^6.1.1
   equatable: ^2.0.7
 
+  # Crash & error reporting
+  sentry_flutter: ^8.10.0
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -70,6 +73,7 @@ dev_dependencies:
   riverpod_generator: ^2.6.3
   build_runner: ^2.4.15
   json_serializable: ^6.9.4
+  mocktail: ^1.0.4
 
 flutter:
   generate: true

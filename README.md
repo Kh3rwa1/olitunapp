@@ -10,7 +10,7 @@
 
 <p align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/Kh3rwa1/olitunapp/ci.yml?branch=main&style=for-the-badge&label=CI" />
-  <img src="https://img.shields.io/badge/coverage-87%25-brightgreen?style=for-the-badge" />
+  <img src="https://img.shields.io/codecov/c/github/Kh3rwa1/olitunapp?style=for-the-badge&label=coverage" />
   <img src="https://img.shields.io/badge/Flutter-3.24-02569B?style=for-the-badge&logo=flutter" />
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web-blue?style=for-the-badge" />
   <img src="https://img.shields.io/github/license/Kh3rwa1/olitunapp?style=for-the-badge" />
@@ -117,8 +117,16 @@ dart run build_runner build
 flutter run \
   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
   --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
-  --dart-define=ADMIN_SECRET_KEY=<your-admin-key>
+  --dart-define=ADMIN_TEAM_ID=admins \
+  --dart-define=TRANSLATE_URL=<appwrite-function-execution-url> \
+  --dart-define=API_BASE_URL=<your-api-base-url> \
+  --dart-define=SENTRY_DSN=<your-sentry-dsn>
 ```
+
+The app will refuse to boot if `APPWRITE_ENDPOINT` or `APPWRITE_PROJECT_ID`
+is missing — there are no hardcoded fallbacks. Admin access is granted by
+membership in the Appwrite Team named by `ADMIN_TEAM_ID` (default `admins`);
+see [SECURITY.md](SECURITY.md) for the full model.
 
 ---
 

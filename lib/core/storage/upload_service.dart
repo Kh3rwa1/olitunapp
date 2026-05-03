@@ -9,7 +9,7 @@ import 'dart:convert';
 class AppConfig {
   static const String uploadBaseUrl = String.fromEnvironment(
     'UPLOAD_BASE_URL',
-    defaultValue: 'https://olitun.in/admin-panel',
+    defaultValue: '',
   );
 
   static String get uploadEndpoint => '$uploadBaseUrl/api/upload.php';

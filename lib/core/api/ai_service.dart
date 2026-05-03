@@ -4,87 +4,65 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
 
 /// Translation API configuration.
-/// Set TRANSLATE_URL via --dart-define to use Appwrite Function.
-/// Falls back to legacy PHP proxy if not provided.
+///
+/// Set the URL of the deployed Appwrite Function via build flags. There is
+/// no default value — calling [AiService.translate] without a configured URL
+/// will throw at request time, surfacing the misconfiguration rather than
+/// silently leaking traffic to an undeclared host.
+///
+///   --dart-define=TRANSLATE_URL=https://<region>.appwrite.network/v1/functions/<id>/executions
+///   --dart-define=REVERSE_TRANSLATE_URL=...
 class AiConfig {
-  static const String _legacyBaseUrl =
-      'https://olitun.in/admin-panel/api/v1';
-
-  /// Appwrite Function URL (or legacy PHP proxy base)
-  static const String translateUrl = String.fromEnvironment(
-    'TRANSLATE_URL',
-    defaultValue: '$_legacyBaseUrl/translate.php',
-  );
-
-  static const String reverseTranslateUrl = String.fromEnvironment(
-    'REVERSE_TRANSLATE_URL',
-    defaultValue: '$_legacyBaseUrl/translate_from_olchiki.php',
-  );
+  static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+  static const String reverseTranslateUrl =
+      String.fromEnvironment('REVERSE_TRANSLATE_URL');
 }
 
-/// Translation service — Google Translate via server proxy
+/// Translation service — talks to the Appwrite Function deployed under
+/// `functions/translator/`. The function wraps Google Translate with
+/// caching + rate limiting (see that directory's README).
 class AiService {
-  final http.Client _client = http.Client();
+  AiService({http.Client? client}) : _client = client ?? http.Client();
 
-  /// Translates text to Ol Chiki (Santali) or any target language.
-  /// [from] defaults to 'auto' (auto-detect source language).
-  /// [to] defaults to 'sat' (Santali / Ol Chiki).
+  final http.Client _client;
+
   Future<TranslateResult?> translate(
     String text, {
     String from = 'auto',
     String to = 'sat',
-  }) async {
-    try {
-      final response = await _client.post(
-        Uri.parse(AiConfig.translateUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'text': text, 'from': from, 'to': to}),
+  }) =>
+      _post(
+        AiConfig.translateUrl,
+        {'text': text, 'from': from, 'to': to},
+        endpointName: 'translate',
       );
 
-      if (response.statusCode == 429) {
-        debugPrint('Translation rate limited');
-        return TranslateResult(
-          translation: 'Rate limit reached. Try again later.',
-          isError: true,
-        );
-      }
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && data['data'] != null) {
-          final d = data['data'];
-          debugPrint(
-            'Translate: "$text" → "${d['translation']}" '
-            '(lang: ${d['detectedLanguage']}, cached: ${d['cached']})',
-          );
-          return TranslateResult(
-            translation: d['translation'] ?? '',
-            detectedLanguage: d['detectedLanguage'] ?? from,
-            cached: d['cached'] == true,
-          );
-        }
-        debugPrint('Translation API error: ${data['message']}');
-        return null;
-      } else {
-        debugPrint('Translation HTTP ${response.statusCode}: ${response.body}');
-        return null;
-      }
-    } catch (e) {
-      debugPrint('Translation error: $e');
-      return null;
-    }
-  }
-
-  /// Translates Ol Chiki text to any target language.
   Future<TranslateResult?> translateFromOlChiki(
     String text, {
     String to = 'en',
+  }) =>
+      _post(
+        AiConfig.reverseTranslateUrl,
+        {'text': text, 'to': to},
+        endpointName: 'reverseTranslate',
+      );
+
+  Future<TranslateResult?> _post(
+    String url,
+    Map<String, dynamic> body, {
+    required String endpointName,
   }) async {
+    if (url.isEmpty) {
+      throw StateError(
+        'AiService.$endpointName called without a configured URL. '
+        'Build with --dart-define=TRANSLATE_URL=<appwrite-function-execution-url>.',
+      );
+    }
     try {
       final response = await _client.post(
-        Uri.parse(AiConfig.reverseTranslateUrl),
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({'text': text, 'to': to}),
+        Uri.parse(url),
+        headers: const {'Content-Type': 'application/json'},
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 429) {
@@ -93,32 +71,29 @@ class AiService {
           isError: true,
         );
       }
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        if (data['success'] == true && data['data'] != null) {
-          final d = data['data'];
-          debugPrint('Reverse: "$text" → "${d['translation']}"');
-          return TranslateResult(
-            translation: d['translation'] ?? '',
-            cached: d['cached'] == true,
-          );
-        }
-        return null;
-      } else {
-        debugPrint(
-          'Reverse translate HTTP ${response.statusCode}: ${response.body}',
-        );
+      if (response.statusCode != 200) {
+        debugPrint('AiService HTTP ${response.statusCode}: ${response.body}');
         return null;
       }
+
+      final data = jsonDecode(response.body) as Map<String, dynamic>;
+      if (data['success'] != true || data['data'] == null) {
+        debugPrint('AiService API error: ${data['message']}');
+        return null;
+      }
+      final d = data['data'] as Map<String, dynamic>;
+      return TranslateResult(
+        translation: (d['translation'] as String?) ?? '',
+        detectedLanguage: d['detectedLanguage'] as String?,
+        cached: d['cached'] == true,
+      );
     } catch (e) {
-      debugPrint('Reverse translate error: $e');
+      debugPrint('AiService error: $e');
       return null;
     }
   }
 }
 
-/// Result of a translation call
 class TranslateResult {
   final String translation;
   final String? detectedLanguage;

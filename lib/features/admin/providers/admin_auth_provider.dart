@@ -1,40 +1,87 @@
+import 'package:appwrite/appwrite.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/config/appwrite_config.dart';
 
-class AdminAuthNotifier extends StateNotifier<bool> {
-  final SharedPreferences _prefs;
-  static const _authKey = 'is_admin_authenticated';
+/// Server-side admin authorization.
+///
+/// Admin rights are granted by membership in the Appwrite Team configured
+/// via [AppwriteConfig.adminTeamId]. There is NO client-side secret. A user
+/// must (a) have a valid Appwrite session and (b) be a member of the admin
+/// team, both of which are verified server-side by Appwrite.
+///
+/// The previous client-side `ADMIN_SECRET_KEY` model has been removed —
+/// it provided no real security because the secret was bundled into the
+/// compiled JS/APK and could be extracted by anyone.
+class AdminAuthService {
+  AdminAuthService(this._auth);
 
-  /// Admin secret — must be injected at build time:
-  /// --dart-define=ADMIN_SECRET_KEY=`your-secure-key`
-  /// If empty, admin login is disabled (production fail-safe).
-  static const String _secretKey = String.fromEnvironment('ADMIN_SECRET_KEY');
+  final AppwriteAuthService _auth;
 
-  AdminAuthNotifier(this._prefs) : super(_prefs.getBool(_authKey) ?? false);
-
-  bool login(String key) {
-    // Reject login entirely if no secret key was injected at build time
-    if (_secretKey.isEmpty) return false;
-    if (key == _secretKey) {
-      state = true;
-      _prefs.setBool(_authKey, true);
-      return true;
+  /// Returns true if the currently logged-in user is a member of the admin
+  /// team. Returns false if there is no session, or membership lookup fails.
+  Future<bool> isCurrentUserAdmin() async {
+    try {
+      final teams = Teams(_auth.client);
+      final result = await teams.list();
+      final adminId = AppwriteConfig.adminTeamId.toLowerCase();
+      return result.teams.any(
+        (t) => t.$id.toLowerCase() == adminId || t.name.toLowerCase() == adminId,
+      );
+    } catch (e) {
+      debugPrint('AdminAuth: membership lookup failed: $e');
+      return false;
     }
-    return false;
   }
 
-  void logout() {
-    state = false;
-    _prefs.setBool(_authKey, false);
+  /// Sign the user in via email + password and verify admin team membership.
+  /// Returns true only if the session is created AND the account belongs to
+  /// the admin team. On failure, any partial session is cleaned up.
+  Future<bool> signInAsAdmin({
+    required String email,
+    required String password,
+  }) async {
+    try {
+      // Make sure no stale session is in the way
+      try {
+        await _auth.account.deleteSession(sessionId: 'current');
+      } catch (_) {}
+
+      await _auth.account.createEmailPasswordSession(
+        email: email.trim(),
+        password: password,
+      );
+
+      final isAdmin = await isCurrentUserAdmin();
+      if (!isAdmin) {
+        // Clean up — non-admin should not be left with a session created here.
+        await _auth.signOut();
+      }
+      return isAdmin;
+    } catch (e) {
+      debugPrint('AdminAuth: sign-in failed: $e');
+      return false;
+    }
   }
+
+  Future<void> signOut() => _auth.signOut();
 }
 
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  // This will be overridden in Main
-  throw UnimplementedError();
+final adminAuthServiceProvider = Provider<AdminAuthService>((ref) {
+  return AdminAuthService(ref.watch(appwriteAuthServiceProvider));
 });
 
-final adminAuthProvider = StateNotifierProvider<AdminAuthNotifier, bool>((ref) {
-  final prefs = ref.watch(sharedPreferencesProvider);
-  return AdminAuthNotifier(prefs);
+/// Async source of truth for whether the current user is an admin.
+/// Watch this in router guards and admin screens.
+final adminAuthProvider = FutureProvider<bool>((ref) async {
+  final svc = ref.watch(adminAuthServiceProvider);
+  return svc.isCurrentUserAdmin();
+});
+
+/// Kept for legacy `sharedPreferencesProvider` consumers — DO NOT use this
+/// for admin auth decisions. The override is set in main.dart.
+final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
+  throw UnimplementedError('sharedPreferencesProvider must be overridden');
 });

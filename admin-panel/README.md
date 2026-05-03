@@ -16,15 +16,19 @@ and posts to an Appwrite Function. Source lives at
 `functions/translator/`.
 
 ### One-time Appwrite setup
-1. In the Appwrite Console → **Databases**, in the `olitun_db` database,
-   create two collections used by the function:
-   - `translation_cache` — attributes: `cacheKey` (string, indexed,
-     unique), `translation` (string), `detectedLanguage` (string),
-     `targetLang` (string).
+1. Provision the database, collections, admin team, and storage buckets
+   in one shot by running `node scripts/appwrite_setup.mjs` from the repo
+   root (see the **Provisioning Appwrite** section in the top-level
+   [README.md](../README.md)). The script creates:
+   - `translation_cache` — attributes: `cacheKey` (string, unique index),
+     `translation` (string), `detectedLanguage` (string), `targetLang`
+     (string).
    - `rate_limits` — attributes: `clientIp` (string, indexed), `count`
      (integer), `windowStart` (integer).
+   - the `admins` team (override via `ADMIN_TEAM_ID=<id>`).
 2. Create a server **API key** with `databases.read` and
-   `databases.write` scopes. Keep it server-side only.
+   `databases.write` scopes. Keep it server-side only — it will be set
+   as the function's `APPWRITE_API_KEY` env var below.
 
 ### Deploy the function
 ```bash

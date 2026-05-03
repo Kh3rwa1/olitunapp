@@ -11,6 +11,11 @@ const API_KEY = process.env.APPWRITE_API_KEY || 'YOUR_API_KEY_HERE';
 const DATABASE_ID = 'olitun_db';
 const DATABASE_NAME = 'Olitun Database';
 
+// Admin team — must match `--dart-define=ADMIN_TEAM_ID` at build time.
+// The ID is matched server-side by `AdminAuthService`; team name is ignored.
+const ADMIN_TEAM_ID = process.env.ADMIN_TEAM_ID || 'admins';
+const ADMIN_TEAM_NAME = 'Olitun Admins';
+
 const headers = {
   'Content-Type': 'application/json',
   'X-Appwrite-Project': PROJECT_ID,
@@ -228,6 +233,33 @@ const collections = [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
     ],
   },
+  // ── Translator function support collections ──
+  // Used by `functions/translator/src/main.js` for cache + per-IP rate limit.
+  {
+    id: 'translation_cache',
+    name: 'Translation Cache',
+    attrs: [
+      { type: 'string', key: 'cacheKey', size: 1024, required: true },
+      { type: 'string', key: 'translation', size: 10000, required: true },
+      { type: 'string', key: 'detectedLanguage', size: 16, required: false },
+      { type: 'string', key: 'targetLang', size: 16, required: false },
+    ],
+    indexes: [
+      { key: 'idx_cache_key', type: 'unique', attributes: ['cacheKey'] },
+    ],
+  },
+  {
+    id: 'rate_limits',
+    name: 'Translator Rate Limits',
+    attrs: [
+      { type: 'string', key: 'clientIp', size: 64, required: true },
+      { type: 'integer', key: 'count', required: true, default: 0 },
+      { type: 'integer', key: 'windowStart', required: true, default: 0 },
+    ],
+    indexes: [
+      { key: 'idx_client_ip', type: 'key', attributes: ['clientIp'] },
+    ],
+  },
   {
     id: 'app_settings',
     name: 'App Settings',
@@ -347,7 +379,16 @@ async function main() {
     console.log(`  ✅ Done: ${col.name}\n`);
   }
 
-  // 3. Create Storage Buckets
+  // 3. Create the admin Team (idempotent — 409 = already exists)
+  console.log('👥 Creating admin team...');
+  await api('POST', '/teams', {
+    teamId: ADMIN_TEAM_ID,
+    name: ADMIN_TEAM_NAME,
+  });
+  console.log(`  ✅ Team: ${ADMIN_TEAM_NAME} (${ADMIN_TEAM_ID})`);
+  console.log(`     Add admins via Console → Auth → Teams → "${ADMIN_TEAM_NAME}" → Add member.\n`);
+
+  // 4. Create Storage Buckets
   console.log('🗂️  Creating storage buckets...');
   for (const bucket of buckets) {
     console.log(`  📁 Bucket: ${bucket.name} (${bucket.id})`);
@@ -372,6 +413,7 @@ async function main() {
   console.log(`\n📊 Summary:`);
   console.log(`   Database: ${DATABASE_NAME} (${DATABASE_ID})`);
   console.log(`   Collections: ${collections.length}`);
+  console.log(`   Admin Team: ${ADMIN_TEAM_NAME} (${ADMIN_TEAM_ID})`);
   console.log(`   Storage Buckets: ${buckets.length}`);
   console.log(`\n💡 Next: Run the data migration script to import your existing data.`);
 }

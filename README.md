@@ -128,6 +128,45 @@ is missing — there are no hardcoded fallbacks. Admin access is granted by
 membership in the Appwrite Team named by `ADMIN_TEAM_ID` (default `admins`);
 see [SECURITY.md](SECURITY.md) for the full model.
 
+### Provisioning Appwrite (one-time)
+
+Set `APPWRITE_API_KEY` to a server key with `databases.write`, `collections.write`,
+`teams.write`, and `buckets.write` scopes, then run:
+
+```bash
+node scripts/appwrite_setup.mjs
+```
+
+This script is idempotent (existing resources return `409` and are skipped) and
+creates:
+- the `olitun_db` database, every content collection, and the
+  `translation_cache` / `rate_limits` collections used by the translator function,
+- the storage buckets, and
+- the admin team whose **team ID** matches `ADMIN_TEAM_ID` (default `admins`).
+  Override via `ADMIN_TEAM_ID=<id> node scripts/appwrite_setup.mjs`.
+
+Then deploy the translator function (see
+[`functions/translator/README.md`](functions/translator/README.md) and
+[`admin-panel/README.md`](admin-panel/README.md)) and pass its execution URL to
+the Flutter build via `--dart-define=TRANSLATE_URL=…`.
+
+### Managing admins
+
+Admin access is purely team membership — there is no client-side secret.
+
+1. Open the **Appwrite Console** → **Auth** → **Teams** → select the team whose
+   ID matches `ADMIN_TEAM_ID` (default `admins`).
+2. **Add an admin:** click **Add member**, enter the user's email. They must
+   already have an Appwrite account; once accepted they can sign in at
+   `/admin/login` in the Flutter app.
+3. **Remove an admin:** open the team, find the member, click **Remove**.
+   The next call to `Teams.list()` from their session will return without the
+   admin team and the `/admin/*` router guard will bounce them to login.
+4. **Rotating the admin team:** create a new team in the Console, rebuild the
+   app with `--dart-define=ADMIN_TEAM_ID=<new-team-id>`, and delete the old
+   team. The match is on the immutable team ID, never the name, so renaming a
+   team does not grant or revoke access.
+
 ---
 
 ## 🛠️ Tech Stack

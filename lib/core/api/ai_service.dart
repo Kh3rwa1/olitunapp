@@ -10,7 +10,17 @@ import 'package:flutter/foundation.dart';
 /// URL will throw at request time, surfacing the misconfiguration rather
 /// than silently leaking traffic to an undeclared host.
 ///
-///   --dart-define=TRANSLATE_URL=https://<region>.appwrite.network/v1/functions/<id>/executions
+/// Two URL shapes are supported:
+///
+/// 1. **Function HTTP endpoint** (recommended; returns the function's body
+///    directly with status 200):
+///      https://<id>.<region>.appwrite.run/
+///
+/// 2. **Executions REST API** (returns 201 + an Execution object whose
+///    `responseBody` field is the actual function response):
+///      https://<region>.cloud.appwrite.io/v1/functions/<id>/executions
+///
+/// [_post] auto-detects the wrapper shape and parses both correctly.
 ///
 /// Reverse translation uses the same function by default; only set
 /// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
@@ -79,17 +89,20 @@ class AiService {
           isError: true,
         );
       }
-      if (response.statusCode != 200) {
+      // Function HTTP endpoint returns 200; the Executions REST API
+      // returns 201 with an Execution object wrapping the body.
+      if (response.statusCode != 200 && response.statusCode != 201) {
         debugPrint('AiService HTTP ${response.statusCode}: ${response.body}');
         return null;
       }
 
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      if (data['success'] != true || data['data'] == null) {
-        debugPrint('AiService API error: ${data['message']}');
+      final parsed = _unwrapAppwriteExecution(response.body);
+      if (parsed == null) return null;
+      if (parsed['success'] != true || parsed['data'] == null) {
+        debugPrint('AiService API error: ${parsed['message']}');
         return null;
       }
-      final d = data['data'] as Map<String, dynamic>;
+      final d = parsed['data'] as Map<String, dynamic>;
       return TranslateResult(
         translation: (d['translation'] as String?) ?? '',
         detectedLanguage: d['detectedLanguage'] as String?,
@@ -99,6 +112,34 @@ class AiService {
       debugPrint('AiService error: $e');
       return null;
     }
+  }
+
+  /// If the response body is an Appwrite Execution object (created by the
+  /// `/v1/functions/<id>/executions` endpoint), returns the inner JSON
+  /// response that the function itself produced. Otherwise returns the
+  /// body parsed as JSON.
+  @visibleForTesting
+  static Map<String, dynamic>? unwrapAppwriteExecution(String body) =>
+      _unwrapAppwriteExecution(body);
+}
+
+Map<String, dynamic>? _unwrapAppwriteExecution(String body) {
+  try {
+    final raw = jsonDecode(body);
+    if (raw is! Map<String, dynamic>) return null;
+    // An Appwrite Execution has $id + status + responseBody fields.
+    if (raw.containsKey('responseBody') && raw.containsKey('status')) {
+      final inner = raw['responseBody'];
+      if (inner is String && inner.isNotEmpty) {
+        final innerJson = jsonDecode(inner);
+        return innerJson is Map<String, dynamic> ? innerJson : null;
+      }
+      return null;
+    }
+    return raw;
+  } catch (e) {
+    debugPrint('AiService: response parse failed: $e');
+    return null;
   }
 }
 

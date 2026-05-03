@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../core/motion/motion.dart';
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../providers/admin_auth_provider.dart';
@@ -18,6 +19,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _emailFocus = FocusNode();
+  final _passwordFocus = FocusNode();
+  final _emailGlowKey = GlobalKey<FocusGlowFieldState>();
+  final _passwordGlowKey = GlobalKey<FocusGlowFieldState>();
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -25,11 +30,23 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _emailFocus.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
   Future<void> _handleLogin() async {
-    if (!_formKey.currentState!.validate()) return;
+    final email = _emailController.text;
+    final password = _passwordController.text;
+    final emailInvalid = !email.contains('@');
+    final passwordInvalid = password.length < 8;
+    if (emailInvalid || passwordInvalid) {
+      if (emailInvalid) _emailGlowKey.currentState?.shake();
+      if (passwordInvalid) _passwordGlowKey.currentState?.shake();
+      HapticFeedback.heavyImpact();
+      _formKey.currentState?.validate();
+      return;
+    }
 
     setState(() {
       _isLoading = true;
@@ -219,7 +236,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   }
 
   Widget _buildLoginCard(bool isDark) {
-    final hasError = _errorMessage != null;
     return Container(
       padding: const EdgeInsets.fromLTRB(28, 28, 28, 24),
       decoration: BoxDecoration(
@@ -235,39 +251,54 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
           children: [
             _fieldLabel('Email address', isDark),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _emailController,
-              keyboardType: TextInputType.emailAddress,
-              autofillHints: const [AutofillHints.email],
-              enabled: !_isLoading,
-              style: AdminTokens.bodyStrong(isDark),
-              decoration: _decoration(
-                hint: 'admin@example.com',
-                icon: Icons.alternate_email_rounded,
-                isDark: isDark,
+            FocusGlowField(
+              key: _emailGlowKey,
+              focusNode: _emailFocus,
+              glowColor: AppColors.primary,
+              borderRadius: AdminTokens.radiusMd,
+              child: TextFormField(
+                controller: _emailController,
+                focusNode: _emailFocus,
+                keyboardType: TextInputType.emailAddress,
+                autofillHints: const [AutofillHints.email],
+                enabled: !_isLoading,
+                style: AdminTokens.bodyStrong(isDark),
+                decoration: _decoration(
+                  hint: 'admin@example.com',
+                  icon: Icons.alternate_email_rounded,
+                  isDark: isDark,
+                ),
+                validator: (v) => (v == null || !v.contains('@'))
+                    ? 'Enter a valid email'
+                    : null,
               ),
-              validator: (v) =>
-                  (v == null || !v.contains('@')) ? 'Enter a valid email' : null,
             ),
             const SizedBox(height: 18),
             _fieldLabel('Password', isDark),
             const SizedBox(height: 8),
-            TextFormField(
-              controller: _passwordController,
-              obscureText: true,
-              autofillHints: const [AutofillHints.password],
-              enabled: !_isLoading,
-              onFieldSubmitted: (_) => _handleLogin(),
-              style: AdminTokens.bodyStrong(isDark),
-              decoration: _decoration(
-                hint: 'Min 8 characters',
-                icon: Icons.lock_outline_rounded,
-                isDark: isDark,
+            FocusGlowField(
+              key: _passwordGlowKey,
+              focusNode: _passwordFocus,
+              glowColor: AppColors.primary,
+              borderRadius: AdminTokens.radiusMd,
+              child: TextFormField(
+                controller: _passwordController,
+                focusNode: _passwordFocus,
+                obscureText: true,
+                autofillHints: const [AutofillHints.password],
+                enabled: !_isLoading,
+                onFieldSubmitted: (_) => _handleLogin(),
+                style: AdminTokens.bodyStrong(isDark),
+                decoration: _decoration(
+                  hint: 'Min 8 characters',
+                  icon: Icons.lock_outline_rounded,
+                  isDark: isDark,
+                ),
+                validator: (v) =>
+                    (v == null || v.length < 8) ? 'Min 8 characters' : null,
               ),
-              validator: (v) =>
-                  (v == null || v.length < 8) ? 'Min 8 characters' : null,
-            ).animate(target: hasError ? 1 : 0).shake(duration: 400.ms, hz: 4),
-            if (hasError) ...[
+            ),
+            if (_errorMessage != null) ...[
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(

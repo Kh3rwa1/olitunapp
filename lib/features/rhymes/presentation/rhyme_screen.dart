@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/glass_card.dart';
@@ -63,7 +64,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       backgroundColor: Colors.transparent,
       body: WhimsicalBackground(
         child: SafeArea(
-          child: CustomScrollView(
+          child: BrandedRefreshIndicator(
+            onRefresh: () async {
+              ref.invalidate(rhymesProvider);
+              ref.invalidate(rhymeCategoriesProvider);
+              ref.invalidate(rhymeSubcategoriesProvider);
+              await ref.read(rhymesProvider.future);
+            },
+            child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
             slivers: [
               // --- Premium Layered Header ---
@@ -486,6 +494,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
               const SliverToBoxAdapter(child: SizedBox(height: 120)),
             ],
+          ),
           ),
         ),
       ),

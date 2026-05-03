@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/api/ai_service.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 
@@ -17,17 +19,25 @@ class AiTranslatorScreen extends ConsumerStatefulWidget {
 
 class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _focusNode = FocusNode();
+  final GlobalKey<FocusGlowFieldState> _glowKey =
+      GlobalKey<FocusGlowFieldState>();
   String _result = '';
   bool _isLoading = false;
 
   @override
   void dispose() {
     _controller.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
   Future<void> _translate() async {
-    if (_controller.text.trim().isEmpty) return;
+    if (_controller.text.trim().isEmpty) {
+      HapticFeedback.heavyImpact();
+      _glowKey.currentState?.shake();
+      return;
+    }
 
     setState(() => _isLoading = true);
 
@@ -118,7 +128,12 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                   const SizedBox(height: 50),
 
                   // Input Field with Glassmorphism
-                  Container(
+                  FocusGlowField(
+                    key: _glowKey,
+                    focusNode: _focusNode,
+                    borderRadius: 32,
+                    glowColor: AppColors.primary,
+                    child: Container(
                     padding: const EdgeInsets.all(24),
                     decoration: BoxDecoration(
                       color: (isDark ? Colors.white : Colors.black).withValues(
@@ -132,6 +147,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                     ),
                     child: TextField(
                       controller: _controller,
+                      focusNode: _focusNode,
                       maxLines: null,
                       style: GoogleFonts.inter(
                         fontSize: 24,
@@ -151,6 +167,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         contentPadding: EdgeInsets.zero,
                       ),
                     ),
+                  ),
                   ).animate().fadeIn(delay: 400.ms, duration: 800.ms),
 
                   const SizedBox(height: 32),

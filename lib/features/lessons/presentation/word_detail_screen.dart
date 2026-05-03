@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
+import '../../../core/motion/motion.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
@@ -233,8 +234,9 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
+      haptic: HapticIntensity.selection,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -305,7 +307,11 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
             width: double.infinity,
             child: Column(
               children: [
-                TweenAnimationBuilder<double>(
+                Hero(
+                  tag: MotionTokens.heroTag('word', word.id),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: TweenAnimationBuilder<double>(
                   tween: Tween(begin: 0.94, end: 1.0),
                   duration: const Duration(milliseconds: 1200),
                   curve: Curves.easeInOut,
@@ -358,6 +364,8 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                               style: const TextStyle(fontSize: 100),
                             ),
                           ),
+                  ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),
@@ -466,9 +474,9 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                     ),
                     if (word.audioUrl != null) ...[
                       const SizedBox(width: 12),
-                      GestureDetector(
+                      PressableScale(
+                        haptic: HapticIntensity.light,
                         onTap: () {
-                          HapticFeedback.lightImpact();
                           ref
                               .read(audioServiceProvider)
                               .playUrl(word.audioUrl!);

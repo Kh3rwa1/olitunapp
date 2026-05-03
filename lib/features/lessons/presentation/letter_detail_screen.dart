@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
+import '../../../core/motion/motion.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
@@ -266,8 +267,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
+    return PressableScale(
       onTap: onTap,
+      haptic: HapticIntensity.selection,
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
@@ -338,61 +340,67 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             width: double.infinity,
             child: Column(
               children: [
-                TweenAnimationBuilder<double>(
-                  tween: Tween(begin: 0.94, end: 1.0),
-                  duration: const Duration(milliseconds: 1200),
-                  curve: Curves.easeInOut,
-                  builder: (context, scale, child) {
-                    return Transform.scale(scale: scale, child: child);
-                  },
-                  child: TweenAnimationBuilder<double>(
-                    tween: Tween(begin: -0.06, end: 0.06),
-                    duration: const Duration(milliseconds: 1700),
-                    curve: Curves.easeInOut,
-                    builder: (context, turn, child) {
-                      return Transform.rotate(angle: turn, child: child);
-                    },
-                    onEnd: () {
-                      if (mounted) setState(() {});
-                    },
-                    // Use animationUrl first, then imageUrl, otherwise fallback to emoji
-                    child:
-                        letter.animationUrl != null &&
-                            letter.animationUrl!.isNotEmpty
-                        ? LottieDisplay(
-                            url: letter.animationUrl!,
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.contain,
-                          )
-                        : letter.imageUrl != null && letter.imageUrl!.isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(20),
-                            child: Image.network(
-                              letter.imageUrl!,
-                              width: 200,
-                              height: 200,
-                              fit: BoxFit.contain,
-                              filterQuality: FilterQuality.high,
-                              errorBuilder: (context, _, __) => Image.network(
+                Hero(
+                  tag: MotionTokens.heroTag('letter', letter.id),
+                  child: Material(
+                    type: MaterialType.transparency,
+                    child: TweenAnimationBuilder<double>(
+                      tween: Tween(begin: 0.94, end: 1.0),
+                      duration: const Duration(milliseconds: 1200),
+                      curve: Curves.easeInOut,
+                      builder: (context, scale, child) {
+                        return Transform.scale(scale: scale, child: child);
+                      },
+                      child: TweenAnimationBuilder<double>(
+                        tween: Tween(begin: -0.06, end: 0.06),
+                        duration: const Duration(milliseconds: 1700),
+                        curve: Curves.easeInOut,
+                        builder: (context, turn, child) {
+                          return Transform.rotate(angle: turn, child: child);
+                        },
+                        onEnd: () {
+                          if (mounted) setState(() {});
+                        },
+                        // Use animationUrl first, then imageUrl, otherwise fallback to emoji
+                        child:
+                            letter.animationUrl != null &&
+                                letter.animationUrl!.isNotEmpty
+                            ? LottieDisplay(
+                                url: letter.animationUrl!,
+                                width: 200,
+                                height: 200,
+                                fit: BoxFit.contain,
+                              )
+                            : letter.imageUrl != null && letter.imageUrl!.isNotEmpty
+                            ? ClipRRect(
+                                borderRadius: BorderRadius.circular(20),
+                                child: Image.network(
+                                  letter.imageUrl!,
+                                  width: 200,
+                                  height: 200,
+                                  fit: BoxFit.contain,
+                                  filterQuality: FilterQuality.high,
+                                  errorBuilder: (context, _, __) => Image.network(
+                                    _emojiToPngUrl(emoji),
+                                    width: 200,
+                                    height: 200,
+                                    fit: BoxFit.contain,
+                                  ),
+                                ),
+                              )
+                            : Image.network(
                                 _emojiToPngUrl(emoji),
                                 width: 200,
                                 height: 200,
                                 fit: BoxFit.contain,
+                                filterQuality: FilterQuality.high,
+                                errorBuilder: (context, _, __) => Text(
+                                  emoji,
+                                  style: const TextStyle(fontSize: 100),
+                                ),
                               ),
-                            ),
-                          )
-                        : Image.network(
-                            _emojiToPngUrl(emoji),
-                            width: 200,
-                            height: 200,
-                            fit: BoxFit.contain,
-                            filterQuality: FilterQuality.high,
-                            errorBuilder: (context, _, __) => Text(
-                              emoji,
-                              style: const TextStyle(fontSize: 100),
-                            ),
-                          ),
+                      ),
+                    ),
                   ),
                 ),
                 const SizedBox(height: 16),

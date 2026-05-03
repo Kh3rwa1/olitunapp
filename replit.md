@@ -65,18 +65,32 @@ instead of hand-tuning new durations/curves per surface:
 - `page_transitions.dart` — GoRouter `CustomTransitionPage` builders
   (`sharedAxisZ`, `fadeThrough`, `fadeUp`). Wired in `app_router.dart`.
 - `confetti_overlay.dart` — `CustomPainter` confetti burst (no asset).
-- `branded_refresh.dart` — `RefreshIndicator` wrapper drawing a spinning
-  Ol Chiki glyph behind the standard spinner.
+- `branded_refresh.dart` — thin `RefreshIndicator` wrapper styled in the
+  app's primary color (state-driven; spinner only appears during pull).
 - `focus_glow_field.dart` — focus-glow border + imperative `shake()`
-  for forms.
+  for forms (both bypass when reduce-motion is on).
 - `motion.dart` — single barrel import.
 
-Hero tags follow `MotionTokens.heroTag(namespace, id)` (e.g. `lesson`,
-`category`, `letter`, `word`, `number`, `sentence`, `quiz`). Currently
-wired between `category_lessons_screen` cards and `lesson_detail_screen`.
-The main shell uses an `AnimatedSwitcher` cross-fade in place of
-`IndexedStack` for tab swaps. Quiz answers fire crisp/heavy haptics on
-correct/wrong and a confetti burst on celebratory completion.
+All primitives (page transitions, `PressableScale`, `ConfettiBurst`,
+`FocusGlowField`) honor the OS reduce-motion setting via
+`RespectMotion.of(context)`.
+
+Hero tags follow `MotionTokens.heroTag(namespace, id)` (namespaces in
+use: `lesson`, `category`). Lesson cards pair with the lesson-detail
+header; category cards on `lessons_screen` pair with the
+`category_lessons_screen` AppBar title.
+
+The main shell cross-fades tabs via a `Stack` + `IgnorePointer` +
+`AnimatedOpacity` switcher (all tabs stay mounted, so per-tab state is
+preserved). Quiz answers fire a crisp double-tap haptic on correct and
+a single medium thump on wrong; correct options pulse-scale and wrong
+options shake horizontally; the completion screen bursts confetti when
+score >= 70%. Email auth fields glow on focus and shake on validation
+failure.
+
+Out of scope for this pass and tracked as follow-ups: broader
+press-feedback / Hero coverage for letters/words/numbers/sentences/quizzes/rhymes
+(#7), and sliver parallax detail headers + splash→onboarding chain (#8).
 
 ## Recent quality work (Task #1)
 - Removed hardcoded Appwrite project ID fallback; `AppwriteConfig.validate()` at boot.

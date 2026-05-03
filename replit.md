@@ -23,7 +23,8 @@ lib/
 functions/translator/          # Appwrite Function (Node.js) replacing the
                                # legacy PHP translate proxy
 build/web/                     # Pre-built Flutter web output (served by server.js)
-admin-panel/                   # Legacy PHP admin (being phased out)
+admin-panel/                   # Retired PHP admin (Task #4) — only
+                               # api/upload.php remains; see its README
 web/                           # Flutter web source (index.html, manifest, …)
 test/                          # Dart tests (mocktail-based repo tests, model tests)
 ```
@@ -41,8 +42,8 @@ Required:
 Optional:
 - `ADMIN_TEAM_ID` — Appwrite Team granting admin access (default: `admins`)
 - `TRANSLATE_URL` / `REVERSE_TRANSLATE_URL` — execution URL of `functions/translator`
-- `API_BASE_URL` — base URL for the legacy REST API (`ApiService`)
-- `UPLOAD_BASE_URL` — base URL for the upload endpoint
+- `UPLOAD_BASE_URL` — base URL for the legacy `api/upload.php` endpoint
+  (only remaining PHP dependency — see `admin-panel/README.md`)
 - `SENTRY_DSN`, `SENTRY_ENV` — crash reporting
 
 There are **no hardcoded fallbacks** for endpoint/project ID, translator URLs, or the API base URL. Builds without them will throw `StateError` at startup or at first call.

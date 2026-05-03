@@ -40,4 +40,4 @@ jobs:
             --dart-define=APPWRITE_PROJECT_ID=ci-test-project \
             --dart-define=ADMIN_TEAM_ID=admins \
             --dart-define=TRANSLATE_URL=https://example.com/fn \
-            --dart-define=API_BASE_URL=https://example.com/api/v1
+            --dart-define=UPLOAD_BASE_URL=https://example.com

@@ -14,6 +14,13 @@ import 'dart:convert';
 /// There is no fallback. Calling [uploadEndpoint] without it throws so the
 /// misconfiguration surfaces immediately rather than producing relative
 /// URIs (`/api/upload.php`) that silently break uploads in production.
+///
+/// **Legacy notice (Task #4):** this is the *only* surviving dependency on
+/// the retired PHP admin panel. The rest of `admin-panel/` has been
+/// removed; `api/upload.php` is documented in `admin-panel/README.md` as
+/// owned by the admin-tooling maintainers and is tracked for migration to
+/// Appwrite Storage. Do not add new consumers — port new upload flows
+/// straight to Appwrite Storage.
 class AppConfig {
   static const String uploadBaseUrl = String.fromEnvironment(
     'UPLOAD_BASE_URL',

@@ -35,7 +35,8 @@ Admin access is gated server-side by membership in the Appwrite Team named
 The app refuses to boot without `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID`
 build flags (`AppwriteConfig.validate`). There are no hardcoded fallback
 project IDs in the codebase. The same applies to the translation function URL
-(`TRANSLATE_URL`) and the legacy REST API base (`API_BASE_URL`).
+(`TRANSLATE_URL`) and the legacy upload endpoint base (`UPLOAD_BASE_URL`,
+the only surviving PHP dependency — see `admin-panel/README.md`).
 
 ### Translation function
 

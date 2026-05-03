@@ -1,6 +1,11 @@
 # ADR-004: PHP Translation Proxy
 
-**Status:** Accepted
+**Status:** Superseded (May 2026) — replaced by the Appwrite Function in
+`functions/translator/`. The PHP files described below
+(`admin-panel/api/v1/translate.php`,
+`admin-panel/api/v1/translate_from_olchiki.php`) were removed from the
+repo as part of Task #4 ("Retire the legacy PHP admin panel"). See
+`admin-panel/README.md` for the decommissioning checklist.
 **Date:** 2025-03-01
 
 ## Context

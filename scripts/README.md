@@ -8,10 +8,15 @@ Developer scripts for database setup, data migration, and seeding.
 |--------|----------|---------|
 | `appwrite_setup.mjs` | Node.js | Creates Appwrite database, collections, attributes, indexes, and storage buckets |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
-| `appwrite_import.mjs` | Node.js | Migrates MySQL data (exported as JSON) into Appwrite collections with field mapping |
-| `export_data.php` | PHP | Exports all MySQL tables from Hostinger as a single JSON file |
+| `appwrite_import.mjs` | Node.js | Migrates legacy MySQL data (from a JSON dump) into Appwrite collections with field mapping |
 | `seed_data.py` | Python | **Legacy** — Seeds data into Firebase/Firestore (pre-Appwrite migration) |
-| `seed_via_api.sh` | Bash | Bulk seed via curl API calls |
+| `post-merge.sh` | Bash | Post-merge setup hook |
+
+> The PHP exporter (`export_data.php`) and the bash bulk seeder
+> (`seed_via_api.sh`) were removed in Task #4 along with the rest of
+> `admin-panel/api/`. The `appwrite_import.mjs` script still works
+> against any existing `scripts/exported_data.json` snapshot, but the
+> live PHP export endpoint no longer exists.
 
 ## Prerequisites
 
@@ -38,17 +43,18 @@ Populates collections with initial content (4 categories, 30 letters, 10 numbers
 APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_seed.mjs
 ```
 
-### 3. Migrate from MySQL
+### 3. Re-run the MySQL → Appwrite Migration
 
-Two-step process to move data from the old Hostinger MySQL database to Appwrite:
+The original migration ran once against a JSON snapshot of the
+Hostinger MySQL database. To re-run it, place that snapshot at
+`scripts/exported_data.json` and:
 
 ```bash
-# Step 1: Export from MySQL (run on Hostinger or via curl)
-curl "https://olitun.in/admin-panel/api/export_data.php?key=olitun_export_2025" > scripts/exported_data.json
-
-# Step 2: Import into Appwrite
 APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_import.mjs
 ```
+
+(There is no longer a live PHP endpoint to fetch the snapshot from —
+generate it from the MySQL backup directly.)
 
 ### 4. Legacy Firebase Seed (Deprecated)
 
@@ -57,17 +63,3 @@ APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_import.mjs
 pip install firebase-admin==7.1.0
 python3 scripts/seed_data.py
 ```
-
-## Environment Variables
-
-| Variable | Required By | Description |
-|----------|-------------|-------------|
-| `APPWRITE_API_KEY` | All `.mjs` scripts | Server API key from Appwrite Console → API Keys |
-| `EXPORT_API_KEY` | `export_data.php` | Auth key for the export endpoint |
-| `DB_PASSWORD` | `export_data.php` | MySQL password on Hostinger |
-
-## Notes
-
-- All `.mjs` scripts use `fetch()` (Node.js 18+) — no external HTTP dependencies
-- Scripts are idempotent — re-running skips existing documents (409 conflict → skip)
-- The `exported_data.json` file is gitignored and should not be committed

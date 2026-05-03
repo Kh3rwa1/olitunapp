@@ -7,7 +7,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/storage/hive_service.dart' as hive_service;
-import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
@@ -65,6 +64,30 @@ void main() {
     });
   });
 
+  test('getUserStats maps malformed stored JSON to CacheFailure', () async {
+    await hive_service.prefs.setString('user_progress_data', '{not json');
+
+    final result = await repo.getUserStats();
+    result.match(
+      (failure) => expect(failure, isA<CacheFailure>()),
+      (_) => fail('should be left'),
+    );
+  });
+
+  test('getUserStats maps structurally-invalid JSON to CacheFailure',
+      () async {
+    await hive_service.prefs.setString(
+      'user_progress_data',
+      jsonEncode({'totalStars': 'not-an-int'}),
+    );
+
+    final result = await repo.getUserStats();
+    result.match(
+      (failure) => expect(failure, isA<CacheFailure>()),
+      (_) => fail('should be left'),
+    );
+  });
+
   test('updateUserStats persists data and returns Right(null)', () async {
     const stats = UserStatsEntity(
       practicedLetters: {'x'},
@@ -90,15 +113,24 @@ void main() {
     expect(hive_service.prefs.getInt('user_avatar_color'), 3);
   });
 
-  test('updateDisplayName writes name and respects auth state', () async {
+  test('updateDisplayName writes name and returns Right when not logged in',
+      () async {
     final res = await repo.updateDisplayName('Sido');
     expect(res.isRight(), isTrue);
     expect(hive_service.prefs.getString('user_name'), 'Sido');
   });
 
-  // The User entity import keeps the auth domain compile-time linked.
-  test('AuthRepository contract is wired (smoke)', () {
-    final u = UserEntity(id: 'x', email: 'e');
-    expect(u.id, 'x');
+  test('updateDisplayName surfaces Left when auth.isLoggedIn returns Left',
+      () async {
+    when(() => auth.isLoggedIn())
+        .thenAnswer((_) async => const Left(NetworkFailure()));
+
+    final res = await repo.updateDisplayName('Kanhu');
+    expect(res.isLeft(), isTrue);
+    res.match(
+      (failure) => expect(failure, isA<NetworkFailure>()),
+      (_) => fail('should be left'),
+    );
+    expect(hive_service.prefs.getString('user_name'), 'Kanhu');
   });
 }

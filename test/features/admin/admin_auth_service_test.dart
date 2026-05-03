@@ -17,64 +17,72 @@ class _FakeAuthService implements AppwriteAuthService {
 
 class _MockClient extends Mock implements Client {}
 
+class _FakeTeam {
+  _FakeTeam({required this.id, required this.name});
+  final String id;
+  final String name;
+}
+
+abstract class _TeamsApi {
+  Future<List<_FakeTeam>> list();
+}
+
+class _MockTeamsApi extends Mock implements _TeamsApi {}
+
+AdminAuthService _serviceFor(_TeamsApi teams) => AdminAuthService(
+      _FakeAuthService(_MockClient()),
+      teamsListFetcher: () async =>
+          (await teams.list()).map((t) => t.id).toList(),
+    );
+
 void main() {
-  group('AdminAuthService.isCurrentUserAdmin', () {
-    test('returns true when the configured admin team ID is in the list',
+  group('AdminAuthService.isCurrentUserAdmin (Teams.list mocked)', () {
+    test('returns true when a team ID matches the configured admin ID',
         () async {
-      final svc = AdminAuthService(
-        _FakeAuthService(_MockClient()),
-        teamsListFetcher: () async => [AppwriteConfig.adminTeamId, 'other'],
-      );
-      expect(await svc.isCurrentUserAdmin(), isTrue);
+      final teams = _MockTeamsApi();
+      when(() => teams.list()).thenAnswer((_) async => [
+            _FakeTeam(id: 'random', name: 'random_team'),
+            _FakeTeam(id: AppwriteConfig.adminTeamId, name: 'whatever'),
+          ]);
+
+      expect(await _serviceFor(teams).isCurrentUserAdmin(), isTrue);
+      verify(() => teams.list()).called(1);
     });
 
-    test('returns false when no team matches the admin ID', () async {
-      final svc = AdminAuthService(
-        _FakeAuthService(_MockClient()),
-        teamsListFetcher: () async => ['random', 'team_x'],
-      );
-      expect(await svc.isCurrentUserAdmin(), isFalse);
+    test('returns false when no team ID matches', () async {
+      final teams = _MockTeamsApi();
+      when(() => teams.list()).thenAnswer((_) async => [
+            _FakeTeam(id: 'team_a', name: 'A'),
+            _FakeTeam(id: 'team_b', name: 'B'),
+          ]);
+
+      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
     });
 
-    test('returns false when the fetcher throws (no session, network, etc.)',
+    test('rejects a team whose NAME equals the admin ID but whose ID differs',
         () async {
-      final svc = AdminAuthService(
-        _FakeAuthService(_MockClient()),
-        teamsListFetcher: () async => throw Exception('401 unauthorized'),
-      );
-      expect(await svc.isCurrentUserAdmin(), isFalse);
+      final teams = _MockTeamsApi();
+      when(() => teams.list()).thenAnswer((_) async => [
+            _FakeTeam(id: 'spoof_id', name: AppwriteConfig.adminTeamId),
+          ]);
+
+      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
     });
 
-    test(
-        'rejects a team whose NAME matches admin id but whose ID does not — '
-        'closes the privilege-escalation hole', () async {
-      // The fetcher only returns IDs (matching the production code path).
-      // A team with a misleading name like "admins" but a different ID
-      // would never even reach the comparison. This test pins that
-      // contract: name-only data must NOT be accepted by the service.
-      final svc = AdminAuthService(
-        _FakeAuthService(_MockClient()),
-        teamsListFetcher: () async => ['team_random_xyz'],
-      );
-      expect(await svc.isCurrentUserAdmin(), isFalse);
+    test('returns false when Teams.list throws', () async {
+      final teams = _MockTeamsApi();
+      when(() => teams.list()).thenThrow(Exception('401 unauthorized'));
+
+      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
     });
   });
 
   group('AdminAuthService.signInAsAdmin', () {
-    test('returns false when isCurrentUserAdmin returns false even after '
-        'session creation succeeds', () async {
-      // We cannot mock Appwrite's Account easily without DI, so we exercise
-      // the public outcome: when the team check fails, signInAsAdmin must
-      // return false. Here we force the membership check to fail by
-      // returning an empty list from the fetcher.
-      // The service's session-creation path will throw against a mock
-      // Client, which is caught and surfaces as `false` — the same outcome
-      // a real "wrong password" event would produce.
-      final svc = AdminAuthService(
-        _FakeAuthService(_MockClient()),
-        teamsListFetcher: () async => const [],
-      );
-      final result = await svc.signInAsAdmin(
+    test('returns false when the membership check fails', () async {
+      final teams = _MockTeamsApi();
+      when(() => teams.list()).thenAnswer((_) async => const []);
+
+      final result = await _serviceFor(teams).signInAsAdmin(
         email: 'x@example.com',
         password: 'nope',
       );

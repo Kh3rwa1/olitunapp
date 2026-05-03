@@ -3,16 +3,19 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/theme/app_theme.dart';
 
 void main() {
-  group('AppTheme', () {
-    test('exposes a non-null light and dark theme', () {
-      expect(AppTheme.lightTheme, isA<ThemeData>());
-      expect(AppTheme.darkTheme, isA<ThemeData>());
-      expect(AppTheme.lightTheme.brightness, Brightness.light);
-      expect(AppTheme.darkTheme.brightness, Brightness.dark);
-    });
+  testWidgets('AppTheme.light builds a valid Material 3 theme', (tester) async {
+    final theme = AppTheme.lightTheme;
+    expect(theme.useMaterial3, isTrue);
+    expect(theme.colorScheme.brightness, Brightness.light);
   });
 
-  testWidgets('MaterialApp boots with the light theme', (tester) async {
+  testWidgets('AppTheme.dark builds a valid Material 3 theme', (tester) async {
+    final theme = AppTheme.darkTheme;
+    expect(theme.useMaterial3, isTrue);
+    expect(theme.colorScheme.brightness, Brightness.dark);
+  });
+
+  testWidgets('MaterialApp boots cleanly with AppTheme.light', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.lightTheme,
@@ -20,5 +23,18 @@ void main() {
       ),
     );
     expect(find.text('Olitun'), findsOneWidget);
+  });
+
+  testWidgets('Dark theme renders without throwing', (tester) async {
+    await tester.pumpWidget(
+      MaterialApp(
+        theme: AppTheme.darkTheme,
+        home: const Scaffold(
+          appBar: null,
+          body: SafeArea(child: Text('dark')),
+        ),
+      ),
+    );
+    expect(find.text('dark'), findsOneWidget);
   });
 }

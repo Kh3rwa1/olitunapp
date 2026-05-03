@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/observability/crash_reporting.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/entities/user_stats_entity.dart';
@@ -12,6 +13,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
   static const _statsKey = 'user_progress_data';
 
   ProfileRepositoryImpl(this._authRepository);
+
+  CacheFailure _recordedCacheFailure(Object e, [StackTrace? st]) {
+    final f = CacheFailure(message: e.toString());
+    CrashReporting.recordFailure(f, st);
+    return f;
+  }
 
   @override
   Future<Either<Failure, UserStatsEntity>> getUserStats() async {
@@ -32,7 +39,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
         totalStars: 0,
       ));
     } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
+      return Left(_recordedCacheFailure(e));
     }
   }
 
@@ -56,7 +63,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
       
       return const Right(null);
     } catch (e) {
-      return Left(CacheFailure(message: e.toString()));
+      return Left(_recordedCacheFailure(e));
     }
   }
 

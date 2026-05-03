@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_form_widgets.dart';
 import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
@@ -250,8 +251,8 @@ class _AdminLessonContentScreenState
     }
 
     return GamifiedCard(
-      borderRadius: 16,
-      color: isDark ? const Color(0xFF1E293B) : Colors.white,
+      borderRadius: AdminTokens.radiusLg,
+      color: AdminTokens.raised(isDark),
       padding: const EdgeInsets.all(0),
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -308,8 +309,11 @@ class _AdminLessonContentScreenState
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            color: AdminTokens.overlay(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AdminTokens.radius2xl),
+            ),
+            boxShadow: AdminTokens.overlayShadow(isDark),
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -436,8 +440,11 @@ class _AdminLessonContentScreenState
           height: MediaQuery.of(context).size.height * 0.75,
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            color: AdminTokens.overlay(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AdminTokens.radius2xl),
+            ),
+            boxShadow: AdminTokens.overlayShadow(isDark),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -652,39 +659,11 @@ class _AdminLessonContentScreenState
     bool isDark, {
     int maxLines = 1,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black87,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white30 : Colors.black38,
-            ),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.grey[100],
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: BorderSide.none,
-            ),
-            contentPadding: const EdgeInsets.all(16),
-          ),
-        ),
-      ],
+    return AdminTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      maxLines: maxLines,
     );
   }
 
@@ -698,32 +677,40 @@ class _AdminLessonContentScreenState
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black87,
-            fontSize: 14,
-          ),
-        ),
-        const SizedBox(height: 8),
+        Text(label, style: AdminTokens.label(isDark)),
+        const SizedBox(height: AdminTokens.space2),
         Row(
           children: [
             Expanded(
               child: TextField(
                 controller: controller,
-                style: TextStyle(color: isDark ? Colors.white : Colors.black),
+                style: AdminTokens.bodyStrong(isDark),
                 decoration: InputDecoration(
                   hintText: 'https://...',
-                  filled: true,
-                  fillColor: isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.grey[100],
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide.none,
+                  hintStyle: AdminTokens.body(isDark).copyWith(
+                    color: AdminTokens.textTertiary(isDark),
                   ),
-                  contentPadding: const EdgeInsets.all(16),
+                  filled: true,
+                  fillColor: AdminTokens.sunken(isDark),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide: BorderSide(color: AdminTokens.border(isDark)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide: const BorderSide(
+                      color: AdminTokens.accent,
+                      width: 1.5,
+                    ),
+                  ),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide: BorderSide(color: AdminTokens.border(isDark)),
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                 ),
               ),
             ),

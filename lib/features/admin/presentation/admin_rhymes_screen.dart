@@ -11,6 +11,7 @@ import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_model.dart';
 import 'widgets/admin_upload_field.dart';
+import 'widgets/admin_form_widgets.dart';
 
 class AdminRhymesScreen extends ConsumerStatefulWidget {
   const AdminRhymesScreen({super.key});
@@ -39,8 +40,11 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, st) => Center(child: Text('Error: $e')),
+        loading: () => const AdminLoadingState(label: 'Loading rhymes…'),
+        error: (e, st) => AdminErrorState(
+          message: '$e',
+          onRetry: () => ref.invalidate(rhymesProvider),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showRhymeDialog(context, null),
@@ -99,49 +103,49 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
 
   Widget _buildRhymesList(List<RhymeModel> rhymes, bool isDark) {
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 32),
+      padding: const EdgeInsets.fromLTRB(32, 0, 32, 100),
       itemCount: rhymes.length,
       itemBuilder: (context, index) {
         final rhyme = rhymes[index];
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-            ),
+            color: AdminTokens.raised(isDark),
+            borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
+            border: Border.all(color: AdminTokens.border(isDark)),
+            boxShadow: AdminTokens.raisedShadow(isDark),
           ),
           child: ListTile(
             contentPadding: const EdgeInsets.all(16),
             leading: Container(
-              width: 50,
-              height: 50,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+                color: AdminTokens.accentSoft(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                border: Border.all(color: AdminTokens.accentBorder(isDark)),
               ),
               child: Icon(
                 _getIconForCategory(rhyme.category),
-                color: AppColors.primary,
+                color: AdminTokens.accent,
               ),
             ),
             title: Text(
               rhyme.titleLatin,
-              style: const TextStyle(fontWeight: FontWeight.w700),
+              style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 16),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(rhyme.titleOlChiki, style: const TextStyle(fontSize: 12)),
-                const SizedBox(height: 4),
+                Text(rhyme.titleOlChiki, style: AdminTokens.label(isDark)),
+                const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
                   children: [
                     if (rhyme.category != null)
-                      _buildChip(rhyme.category!, AppColors.primary),
+                      _buildChip(rhyme.category!, isDark),
                     if (rhyme.subcategory != null)
-                      _buildChip(rhyme.subcategory!, AppColors.duoBlue),
+                      _buildChip(rhyme.subcategory!, isDark),
                   ],
                 ),
               ],
@@ -149,17 +153,17 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.edit_rounded, size: 20),
-                  onPressed: () => _showRhymeDialog(context, rhyme),
+                AdminIconAction(
+                  icon: Icons.edit_rounded,
+                  tooltip: 'Edit',
+                  onTap: () => _showRhymeDialog(context, rhyme),
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 20,
-                    color: Colors.red,
-                  ),
-                  onPressed: () => _confirmDelete(rhyme),
+                const SizedBox(width: 6),
+                AdminIconAction(
+                  icon: Icons.delete_outline_rounded,
+                  tooltip: 'Delete',
+                  destructive: true,
+                  onTap: () => _confirmDelete(rhyme),
                 ),
               ],
             ),
@@ -169,20 +173,21 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     );
   }
 
-  Widget _buildChip(String label, Color color) {
+  Widget _buildChip(String label, bool isDark) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.1),
+        color: AdminTokens.accentSoft(isDark),
         borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        border: Border.all(color: AdminTokens.accentBorder(isDark)),
       ),
       child: Text(
         label,
-        style: TextStyle(
+        style: const TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w600,
-          color: color,
+          fontWeight: FontWeight.w700,
+          color: AdminTokens.accent,
+          letterSpacing: 0.3,
         ),
       ),
     );
@@ -389,26 +394,15 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     );
   }
 
-  void _confirmDelete(RhymeModel rhyme) {
-    showDialog(
+  Future<void> _confirmDelete(RhymeModel rhyme) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Rhyme?'),
-        content: Text('Are you sure you want to delete "${rhyme.titleLatin}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(rhymesProvider.notifier).deleteRhyme(rhyme.id);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: 'Delete Rhyme',
+      message:
+          'Are you sure you want to delete "${rhyme.titleLatin}"? This action cannot be undone.',
     );
+    if (ok == true) {
+      ref.read(rhymesProvider.notifier).deleteRhyme(rhyme.id);
+    }
   }
 }

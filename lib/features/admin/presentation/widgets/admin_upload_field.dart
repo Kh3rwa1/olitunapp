@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../../core/storage/upload_service.dart';
+import '../../../../core/theme/admin_tokens.dart';
 
 /// Reusable upload field widget for admin panel.
 /// Provides a text field with an upload button that picks a file,
@@ -144,15 +145,8 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          widget.label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
+        Text(widget.label, style: AdminTokens.label(isDark)),
+        const SizedBox(height: AdminTokens.space2),
 
         // Preview when URL is set
         if (hasUrl && widget.uploadType == AdminUploadType.image)
@@ -161,13 +155,11 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
             height: 80,
             width: double.infinity,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: isDark ? Colors.white12 : Colors.black12,
-              ),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(color: AdminTokens.border(isDark)),
             ),
             child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
               child: Stack(
                 children: [
                   Image.network(
@@ -215,32 +207,35 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
             Expanded(
               child: TextField(
                 controller: widget.controller,
-                style: TextStyle(
-                  color: isDark ? Colors.white : Colors.black,
-                  fontWeight: FontWeight.w500,
-                  fontSize: 13,
-                ),
+                style: AdminTokens.bodyStrong(isDark),
                 decoration: InputDecoration(
                   hintText: 'Upload or paste URL...',
-                  hintStyle: TextStyle(
-                    color: isDark ? Colors.white30 : Colors.black38,
+                  hintStyle: AdminTokens.body(isDark).copyWith(
+                    color: AdminTokens.textTertiary(isDark),
                   ),
                   filled: true,
-                  fillColor: isDark
-                      ? Colors.white.withValues(alpha: 0.08)
-                      : Colors.black.withValues(alpha: 0.04),
+                  fillColor: AdminTokens.sunken(isDark),
                   border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(14),
-                    borderSide: BorderSide.none,
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide: BorderSide(color: AdminTokens.border(isDark)),
+                  ),
+                  enabledBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide: BorderSide(color: AdminTokens.border(isDark)),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    borderSide:
+                        const BorderSide(color: AdminTokens.accent, width: 1.5),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 16,
+                    horizontal: 16,
+                    vertical: 14,
                   ),
                   prefixIcon: Icon(
                     widget.icon,
                     size: 20,
-                    color: isDark ? Colors.white38 : Colors.black38,
+                    color: AdminTokens.textTertiary(isDark),
                   ),
                 ),
               ),

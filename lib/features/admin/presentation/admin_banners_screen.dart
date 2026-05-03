@@ -4,8 +4,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
+import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/upload_service.dart';
+import 'widgets/admin_form_widgets.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import 'widgets/admin_glass_card.dart';
@@ -132,29 +134,21 @@ class AdminBannersScreen extends ConsumerWidget {
         builder: (context, setDialogState) => Container(
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
-            color: isDark
-                ? const Color(0xFF0F172A).withValues(alpha: 0.95)
-                : Colors.white.withValues(alpha: 0.95),
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.3),
-                blurRadius: 40,
-                spreadRadius: 10,
-              ),
-            ],
+            color: AdminTokens.overlay(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AdminTokens.radius2xl),
+            ),
+            boxShadow: AdminTokens.overlayShadow(isDark),
           ),
           child: Column(
             children: [
               // Drag Handle
               Container(
                 margin: const EdgeInsets.only(top: 12),
-                width: 40,
+                width: 44,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white10
-                      : Colors.black.withValues(alpha: 0.05),
+                  color: AdminTokens.borderStrong(isDark),
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -416,48 +410,10 @@ class AdminBannersScreen extends ConsumerWidget {
     required String hint,
     required bool isDark,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppColors.accentPurple, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 16,
-            ),
-          ),
-        ),
-      ],
+    return AdminTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
     );
   }
 

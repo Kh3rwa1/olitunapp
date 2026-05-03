@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'widgets/admin_form_widgets.dart';
 import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
@@ -42,15 +43,23 @@ class _AdminRhymeCategoriesScreenState
                         subcategories,
                         isDark,
                       ),
-                      loading: () =>
-                          const Center(child: CircularProgressIndicator()),
-                      error: (e, _) => Center(child: Text('Error: $e')),
+                      loading: () => const AdminLoadingState(
+                        label: 'Loading subcategories…',
+                      ),
+                      error: (e, _) => AdminErrorState(
+                        message: '$e',
+                        onRetry: () =>
+                            ref.invalidate(rhymeSubcategoriesProvider),
+                      ),
                     ),
             ),
           ],
         ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, _) => Center(child: Text('Error: $e')),
+        loading: () => const AdminLoadingState(label: 'Loading categories…'),
+        error: (e, _) => AdminErrorState(
+          message: '$e',
+          onRetry: () => ref.invalidate(rhymeCategoriesProvider),
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showCategoryDialog(null),
@@ -100,114 +109,136 @@ class _AdminRhymeCategoriesScreenState
             .toList();
 
         return Container(
-          margin: const EdgeInsets.only(bottom: 16),
+          margin: const EdgeInsets.only(bottom: 14),
           decoration: BoxDecoration(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-            borderRadius: BorderRadius.circular(16),
-            border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
-            ),
+            color: AdminTokens.raised(isDark),
+            borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
+            border: Border.all(color: AdminTokens.border(isDark)),
+            boxShadow: AdminTokens.raisedShadow(isDark),
           ),
-          child: ExpansionTile(
-            tilePadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 8,
-            ),
-            leading: Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(12),
+          child: Theme(
+            data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
+            child: ExpansionTile(
+              tilePadding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
               ),
-              child: Icon(
-                _getIconFromName(cat.iconName),
-                color: AppColors.primary,
+              leading: Container(
+                width: 46,
+                height: 46,
+                decoration: BoxDecoration(
+                  color: AdminTokens.accentSoft(isDark),
+                  borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                  border: Border.all(color: AdminTokens.accentBorder(isDark)),
+                ),
+                child: Icon(
+                  _getIconFromName(cat.iconName),
+                  color: AdminTokens.accent,
+                ),
               ),
-            ),
-            title: Text(
-              cat.nameLatin,
-              style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 16),
-            ),
-            subtitle: Text(
-              '${cat.nameOlChiki} · ${subcats.length} subcategories',
-              style: const TextStyle(fontSize: 12),
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.add_circle_outline_rounded, size: 20),
-                  tooltip: 'Add Subcategory',
-                  onPressed: () => _showSubcategoryDialog(cat.id, null),
+              title: Text(cat.nameLatin, style: AdminTokens.cardTitle(isDark)),
+              subtitle: Padding(
+                padding: const EdgeInsets.only(top: 2),
+                child: Text(
+                  '${cat.nameOlChiki} · ${subcats.length} subcategories',
+                  style: AdminTokens.label(isDark),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.edit_rounded, size: 20),
-                  onPressed: () => _showCategoryDialog(cat),
-                ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 20,
-                    color: Colors.red,
+              ),
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  AdminIconAction(
+                    icon: Icons.add_circle_outline_rounded,
+                    tooltip: 'Add subcategory',
+                    onTap: () => _showSubcategoryDialog(cat.id, null),
                   ),
-                  onPressed: () => _confirmDeleteCategory(cat),
-                ),
-              ],
-            ),
-            children: subcats.isEmpty
-                ? [
-                    Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        'No subcategories yet. Tap + to add.',
-                        style: TextStyle(
-                          color: isDark ? Colors.white38 : Colors.black38,
+                  const SizedBox(width: 6),
+                  AdminIconAction(
+                    icon: Icons.edit_rounded,
+                    tooltip: 'Edit',
+                    onTap: () => _showCategoryDialog(cat),
+                  ),
+                  const SizedBox(width: 6),
+                  AdminIconAction(
+                    icon: Icons.delete_outline_rounded,
+                    tooltip: 'Delete',
+                    destructive: true,
+                    onTap: () => _confirmDeleteCategory(cat),
+                  ),
+                ],
+              ),
+              children: subcats.isEmpty
+                  ? [
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(72, 0, 16, 16),
+                        child: Text(
+                          'No subcategories yet. Tap + to add.',
+                          style: AdminTokens.label(isDark).copyWith(
+                            color: AdminTokens.textTertiary(isDark),
+                          ),
                         ),
                       ),
-                    ),
-                  ]
-                : subcats
-                      .map(
-                        (sub) => ListTile(
-                          contentPadding: const EdgeInsets.only(
-                            left: 72,
-                            right: 16,
-                          ),
-                          leading: Icon(
-                            Icons.subdirectory_arrow_right_rounded,
-                            size: 18,
-                            color: isDark ? Colors.white24 : Colors.black26,
-                          ),
-                          title: Text(
-                            sub.nameLatin,
-                            style: const TextStyle(fontSize: 14),
-                          ),
-                          subtitle: Text(
-                            sub.nameOlChiki,
-                            style: const TextStyle(fontSize: 11),
-                          ),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              IconButton(
-                                icon: const Icon(Icons.edit_rounded, size: 18),
-                                onPressed: () =>
-                                    _showSubcategoryDialog(cat.id, sub),
+                    ]
+                  : subcats
+                        .map(
+                          (sub) => Container(
+                            margin: const EdgeInsets.fromLTRB(64, 0, 16, 8),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AdminTokens.sunken(isDark),
+                              borderRadius: BorderRadius.circular(
+                                AdminTokens.radiusSm,
                               ),
-                              IconButton(
-                                icon: const Icon(
-                                  Icons.delete_outline_rounded,
-                                  size: 18,
-                                  color: Colors.red,
+                              border: Border.all(
+                                color: AdminTokens.border(isDark),
+                              ),
+                            ),
+                            child: Row(
+                              children: [
+                                Icon(
+                                  Icons.subdirectory_arrow_right_rounded,
+                                  size: 16,
+                                  color: AdminTokens.textTertiary(isDark),
                                 ),
-                                onPressed: () => _confirmDeleteSubcategory(sub),
-                              ),
-                            ],
+                                const SizedBox(width: 10),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        sub.nameLatin,
+                                        style: AdminTokens.bodyStrong(isDark),
+                                      ),
+                                      Text(
+                                        sub.nameOlChiki,
+                                        style: AdminTokens.label(isDark),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                AdminIconAction(
+                                  icon: Icons.edit_rounded,
+                                  tooltip: 'Edit',
+                                  onTap: () =>
+                                      _showSubcategoryDialog(cat.id, sub),
+                                ),
+                                const SizedBox(width: 6),
+                                AdminIconAction(
+                                  icon: Icons.delete_outline_rounded,
+                                  tooltip: 'Delete',
+                                  destructive: true,
+                                  onTap: () => _confirmDeleteSubcategory(sub),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                      )
-                      .toList(),
+                        )
+                        .toList(),
+            ),
           ),
         ).animate().fadeIn(delay: (index * 50).ms).slideX(begin: 0.1);
       },
@@ -238,109 +269,134 @@ class _AdminRhymeCategoriesScreenState
 
     final iconOptions = ['pets', 'nature', 'auto_awesome', 'child_care'];
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
       builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) => AlertDialog(
-          title: Text(cat == null ? 'Add Category' : 'Edit Category'),
-          content: SingleChildScrollView(
+        builder: (context, setDialogState) {
+          return AdminModalSheet(
+            title: cat == null ? 'Add Category' : 'Edit Category',
+            subtitle: 'Organise rhymes into top-level groups',
+            icon: Icons.folder_rounded,
+            primaryLabel: cat == null ? 'Create Category' : 'Save Changes',
+            heightFactor: 0.7,
+            onPrimary: () {
+              final categories =
+                  ref.read(rhymeCategoriesProvider).value ?? [];
+              final item = RhymeCategoryModel(
+                id: cat?.id ?? 'rcat_${const Uuid().v4().substring(0, 8)}',
+                nameOlChiki: nameOlChikiCtrl.text,
+                nameLatin: nameLatinCtrl.text,
+                iconName: iconName,
+                order: cat?.order ?? categories.length,
+              );
+              if (cat == null) {
+                ref.read(rhymeCategoriesProvider.notifier).add(item);
+              } else {
+                ref.read(rhymeCategoriesProvider.notifier).update(item);
+              }
+              Navigator.pop(context);
+            },
             child: Column(
-              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                TextField(
+                AdminTextField(
                   controller: nameLatinCtrl,
-                  decoration: const InputDecoration(labelText: 'Name (Latin)'),
+                  label: 'Name (Latin)',
+                  hint: 'e.g. Animals',
                 ),
-                TextField(
+                const SizedBox(height: AdminTokens.space5),
+                AdminTextField(
                   controller: nameOlChikiCtrl,
-                  decoration: const InputDecoration(
-                    labelText: 'Name (Ol Chiki)',
+                  label: 'Name (Ol Chiki)',
+                  hint: 'ᱡᱟᱱᱣᱟᱨ',
+                ),
+                const SizedBox(height: AdminTokens.space5),
+                Text(
+                  'Icon',
+                  style: AdminTokens.label(
+                    Theme.of(context).brightness == Brightness.dark,
                   ),
                 ),
-                const SizedBox(height: 12),
-                DropdownButtonFormField<String>(
-                  initialValue: iconName,
-                  items: iconOptions
-                      .map(
-                        (e) => DropdownMenuItem(
-                          value: e,
-                          child: Row(
-                            children: [
-                              Icon(_getIconFromName(e), size: 20),
-                              const SizedBox(width: 8),
-                              Text(e),
-                            ],
+                const SizedBox(height: AdminTokens.space2),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: iconOptions.map((e) {
+                    final isDark =
+                        Theme.of(context).brightness == Brightness.dark;
+                    final selected = iconName == e;
+                    return GestureDetector(
+                      onTap: () => setDialogState(() => iconName = e),
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 180),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
+                        decoration: BoxDecoration(
+                          color: selected
+                              ? AdminTokens.accentSoft(isDark)
+                              : AdminTokens.sunken(isDark),
+                          borderRadius:
+                              BorderRadius.circular(AdminTokens.radiusMd),
+                          border: Border.all(
+                            color: selected
+                                ? AdminTokens.accentBorder(isDark)
+                                : AdminTokens.border(isDark),
                           ),
                         ),
-                      )
-                      .toList(),
-                  onChanged: (val) {
-                    setDialogState(() => iconName = val!);
-                  },
-                  decoration: const InputDecoration(labelText: 'Icon'),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              _getIconFromName(e),
+                              size: 18,
+                              color: selected
+                                  ? AdminTokens.accent
+                                  : AdminTokens.textSecondary(isDark),
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              e,
+                              style: AdminTokens.label(isDark).copyWith(
+                                color: selected
+                                    ? AdminTokens.accent
+                                    : AdminTokens.textSecondary(isDark),
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }).toList(),
                 ),
               ],
             ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final categories =
-                    ref.read(rhymeCategoriesProvider).value ?? [];
-                final item = RhymeCategoryModel(
-                  id: cat?.id ?? 'rcat_${const Uuid().v4().substring(0, 8)}',
-                  nameOlChiki: nameOlChikiCtrl.text,
-                  nameLatin: nameLatinCtrl.text,
-                  iconName: iconName,
-                  order: cat?.order ?? categories.length,
-                );
-                if (cat == null) {
-                  ref.read(rhymeCategoriesProvider.notifier).add(item);
-                } else {
-                  ref.read(rhymeCategoriesProvider.notifier).update(item);
-                }
-                Navigator.pop(context);
-              },
-              child: const Text('Save'),
-            ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
 
-  void _confirmDeleteCategory(RhymeCategoryModel cat) {
-    showDialog(
+  Future<void> _confirmDeleteCategory(RhymeCategoryModel cat) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Category?'),
-        content: Text('Delete "${cat.nameLatin}" and all its subcategories?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              // Delete subcategories first
-              final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
-              for (final sub in subcats) {
-                if (sub.categoryId == cat.id) {
-                  ref.read(rhymeSubcategoriesProvider.notifier).delete(sub.id);
-                }
-              }
-              ref.read(rhymeCategoriesProvider.notifier).delete(cat.id);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: 'Delete Category',
+      message:
+          'Delete "${cat.nameLatin}" and all of its subcategories? This action cannot be undone.',
     );
+    if (ok == true) {
+      final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
+      for (final sub in subcats) {
+        if (sub.categoryId == cat.id) {
+          ref.read(rhymeSubcategoriesProvider.notifier).delete(sub.id);
+        }
+      }
+      ref.read(rhymeCategoriesProvider.notifier).delete(cat.id);
+    }
   }
 
   // ─── Subcategory CRUD dialogs ───
@@ -349,77 +405,62 @@ class _AdminRhymeCategoriesScreenState
     final nameLatinCtrl = TextEditingController(text: sub?.nameLatin);
     final nameOlChikiCtrl = TextEditingController(text: sub?.nameOlChiki);
 
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text(sub == null ? 'Add Subcategory' : 'Edit Subcategory'),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              TextField(
-                controller: nameLatinCtrl,
-                decoration: const InputDecoration(labelText: 'Name (Latin)'),
-              ),
-              TextField(
-                controller: nameOlChikiCtrl,
-                decoration: const InputDecoration(labelText: 'Name (Ol Chiki)'),
-              ),
-            ],
-          ),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (context) => AdminModalSheet(
+        title: sub == null ? 'Add Subcategory' : 'Edit Subcategory',
+        subtitle: 'A child group nested under a category',
+        icon: Icons.subdirectory_arrow_right_rounded,
+        primaryLabel: sub == null ? 'Create Subcategory' : 'Save Changes',
+        heightFactor: 0.55,
+        onPrimary: () {
+          final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
+          final catSubs =
+              subcats.where((s) => s.categoryId == categoryId).toList();
+          final item = RhymeSubcategoryModel(
+            id: sub?.id ?? 'rsub_${const Uuid().v4().substring(0, 8)}',
+            categoryId: categoryId,
+            nameOlChiki: nameOlChikiCtrl.text,
+            nameLatin: nameLatinCtrl.text,
+            order: sub?.order ?? catSubs.length,
+          );
+          if (sub == null) {
+            ref.read(rhymeSubcategoriesProvider.notifier).add(item);
+          } else {
+            ref.read(rhymeSubcategoriesProvider.notifier).update(item);
+          }
+          Navigator.pop(context);
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            AdminTextField(
+              controller: nameLatinCtrl,
+              label: 'Name (Latin)',
+              hint: 'e.g. Tigers',
+            ),
+            const SizedBox(height: AdminTokens.space5),
+            AdminTextField(
+              controller: nameOlChikiCtrl,
+              label: 'Name (Ol Chiki)',
+              hint: 'ᱠᱩᱞ',
+            ),
+          ],
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
-              final catSubs = subcats
-                  .where((s) => s.categoryId == categoryId)
-                  .toList();
-              final item = RhymeSubcategoryModel(
-                id: sub?.id ?? 'rsub_${const Uuid().v4().substring(0, 8)}',
-                categoryId: categoryId,
-                nameOlChiki: nameOlChikiCtrl.text,
-                nameLatin: nameLatinCtrl.text,
-                order: sub?.order ?? catSubs.length,
-              );
-              if (sub == null) {
-                ref.read(rhymeSubcategoriesProvider.notifier).add(item);
-              } else {
-                ref.read(rhymeSubcategoriesProvider.notifier).update(item);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Save'),
-          ),
-        ],
       ),
     );
   }
 
-  void _confirmDeleteSubcategory(RhymeSubcategoryModel sub) {
-    showDialog(
+  Future<void> _confirmDeleteSubcategory(RhymeSubcategoryModel sub) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete Subcategory?'),
-        content: Text('Delete "${sub.nameLatin}"?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              ref.read(rhymeSubcategoriesProvider.notifier).delete(sub.id);
-              Navigator.pop(context);
-            },
-            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
+      title: 'Delete Subcategory',
+      message: 'Delete "${sub.nameLatin}"? This action cannot be undone.',
     );
+    if (ok == true) {
+      ref.read(rhymeSubcategoriesProvider.notifier).delete(sub.id);
+    }
   }
 }

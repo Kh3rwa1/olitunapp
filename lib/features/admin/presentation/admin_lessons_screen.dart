@@ -15,6 +15,7 @@ import '../../../shared/widgets/gamified_card.dart';
 import 'widgets/admin_upload_field.dart';
 import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
+import 'widgets/admin_form_widgets.dart';
 
 class AdminLessonsScreen extends ConsumerStatefulWidget {
   const AdminLessonsScreen({super.key});
@@ -126,9 +127,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showLessonDialog(context, null),
-        backgroundColor: AppColors
-            .primaryCyan, // Fixed: use primary color not gradient preset
-
+        backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
           'Add Lesson',
@@ -252,10 +251,11 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           builder: (context, setDialogState) => Container(
             height: MediaQuery.of(context).size.height * 0.86,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161B22) : Colors.white,
+              color: AdminTokens.overlay(isDark),
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(28),
+                top: Radius.circular(AdminTokens.radius2xl),
               ),
+              boxShadow: AdminTokens.overlayShadow(isDark),
             ),
             child: Column(
               children: [
@@ -264,7 +264,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.black12,
+                    color: AdminTokens.borderStrong(isDark),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -503,27 +503,19 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, LessonEntity lesson) {
-    showDialog(
+  Future<void> _showDeleteDialog(
+    BuildContext context,
+    LessonEntity lesson,
+  ) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete lesson?'),
-        content: Text('This will permanently delete "${lesson.titleLatin}".'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete Lesson',
+      message:
+          'This will permanently delete "${lesson.titleLatin}". This action cannot be undone.',
     );
+    if (ok == true) {
+      await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+    }
   }
 
   Widget _buildTextField({
@@ -533,38 +525,11 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     required bool isDark,
     int maxLines = 1,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
+    return AdminTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
+      maxLines: maxLines,
     );
   }
 }
@@ -584,42 +549,10 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AdminFilterChip(
+      label: label,
+      selected: isSelected,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.premiumCyan.colors.first
-              : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : (isDark ? Colors.white10 : Colors.black12),
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.premiumCyan.colors.first.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected
-                ? Colors.white
-                : (isDark ? Colors.white70 : Colors.black87),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -640,83 +573,61 @@ class _LessonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.only(bottom: 14),
       child: GamifiedCard(
-        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-        borderRadius: 20,
+        color: AdminTokens.raised(isDark),
+        borderRadius: AdminTokens.radiusXl,
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 56,
-              height: 56,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                gradient: AppColors.premiumCyan,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppColors.primary.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+                color: AdminTokens.accentSoft(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                border: Border.all(color: AdminTokens.accentBorder(isDark)),
               ),
               child: const Icon(
                 Icons.school_rounded,
-                color: Colors.white,
-                size: 28,
+                color: AdminTokens.accent,
+                size: 26,
               ),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     lesson.titleOlChiki,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                    style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 17),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${lesson.blocks.length} CONTENT BLOCKS',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 0.5,
-                      color: isDark ? Colors.white38 : Colors.black38,
-                    ),
+                    '${lesson.blocks.length} content blocks',
+                    style: AdminTokens.label(isDark),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onEdit,
-              icon: Icon(
-                Icons.edit_note_rounded,
-                color: isDark ? Colors.white54 : Colors.black45,
-              ),
+            AdminIconAction(
+              icon: Icons.edit_note_rounded,
               tooltip: 'Edit Details',
+              onTap: onEdit,
             ),
-            IconButton(
-              onPressed: () =>
-                  context.go('/admin/lessons/content/${lesson.id}'),
-              icon: Icon(
-                Icons.playlist_add_rounded,
-                color: isDark ? Colors.white70 : Colors.black54,
-              ),
+            const SizedBox(width: 6),
+            AdminIconAction(
+              icon: Icons.playlist_add_rounded,
               tooltip: 'Edit Content',
+              onTap: () => context.go('/admin/lessons/content/${lesson.id}'),
             ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(
-                Icons.delete_outline_rounded,
-                color: AppColors.error,
-              ),
+            const SizedBox(width: 6),
+            AdminIconAction(
+              icon: Icons.delete_outline_rounded,
               tooltip: 'Delete',
+              destructive: true,
+              onTap: onDelete,
             ),
           ],
         ),

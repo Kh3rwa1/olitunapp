@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
+import 'widgets/admin_form_widgets.dart';
 import '../../../core/storage/upload_service.dart';
 
 // Media type enum
@@ -246,26 +246,26 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
                         const SizedBox(
                           width: 20,
                           height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2,
+                            valueColor: AlwaysStoppedAnimation<Color>(
+                              AdminTokens.accent,
+                            ),
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Text(
-                          'Uploading... ${(_uploadProgress * 100).toInt()}%',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppColors.textPrimaryDark
-                                : AppColors.textPrimaryLight,
-                          ),
+                          'Uploading… ${(_uploadProgress * 100).toInt()}%',
+                          style: AdminTokens.bodyStrong(isDark),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     LinearProgressIndicator(
                       value: _uploadProgress,
-                      backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                      valueColor: AlwaysStoppedAnimation<Color>(
-                        AppColors.primary,
+                      backgroundColor: AdminTokens.accentSoft(isDark),
+                      valueColor: const AlwaysStoppedAnimation<Color>(
+                        AdminTokens.accent,
                       ),
                       borderRadius: BorderRadius.circular(4),
                     ),
@@ -323,82 +323,48 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
   }
 
   Widget _buildUploadButton(bool isDark) {
-    return GestureDetector(
-      onTap: _isUploading ? null : _pickAndUploadFile,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-        decoration: BoxDecoration(
-          gradient: _isUploading ? null : AppColors.heroGradient,
-          color: _isUploading ? Colors.grey : null,
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: _isUploading
-              ? null
-              : AppColors.glowShadow(AppColors.primary),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(
-              _isUploading
-                  ? Icons.hourglass_top_rounded
-                  : Icons.cloud_upload_rounded,
-              color: Colors.white,
-              size: 20,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              _isUploading ? 'Uploading...' : 'Upload Files',
-              style: const TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: Colors.white,
-              ),
-            ),
-          ],
-        ),
-      ),
+    return AdminPrimaryButton(
+      label: _isUploading ? 'Uploading…' : 'Upload Files',
+      icon: _isUploading
+          ? Icons.hourglass_top_rounded
+          : Icons.cloud_upload_rounded,
+      onTap: _isUploading ? () {} : _pickAndUploadFile,
     );
   }
 
   Widget _buildFilterTabs(bool isDark, MediaType selectedType) {
+    void setType(MediaType t) =>
+        ref.read(selectedMediaTypeProvider.notifier).state = t;
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
         children: [
-          _FilterTab(
+          AdminFilterChip(
             label: 'All',
             icon: Icons.grid_view_rounded,
-            isSelected: selectedType == MediaType.all,
-            onTap: () => ref.read(selectedMediaTypeProvider.notifier).state =
-                MediaType.all,
-            isDark: isDark,
+            selected: selectedType == MediaType.all,
+            onTap: () => setType(MediaType.all),
           ),
           const SizedBox(width: 8),
-          _FilterTab(
+          AdminFilterChip(
             label: 'Images',
             icon: Icons.image_rounded,
-            isSelected: selectedType == MediaType.image,
-            onTap: () => ref.read(selectedMediaTypeProvider.notifier).state =
-                MediaType.image,
-            isDark: isDark,
+            selected: selectedType == MediaType.image,
+            onTap: () => setType(MediaType.image),
           ),
           const SizedBox(width: 8),
-          _FilterTab(
+          AdminFilterChip(
             label: 'Audio',
             icon: Icons.audiotrack_rounded,
-            isSelected: selectedType == MediaType.audio,
-            onTap: () => ref.read(selectedMediaTypeProvider.notifier).state =
-                MediaType.audio,
-            isDark: isDark,
+            selected: selectedType == MediaType.audio,
+            onTap: () => setType(MediaType.audio),
           ),
           const SizedBox(width: 8),
-          _FilterTab(
+          AdminFilterChip(
             label: 'Video',
             icon: Icons.videocam_rounded,
-            isSelected: selectedType == MediaType.video,
-            onTap: () => ref.read(selectedMediaTypeProvider.notifier).state =
-                MediaType.video,
-            isDark: isDark,
+            selected: selectedType == MediaType.video,
+            onTap: () => setType(MediaType.video),
           ),
         ],
       ),
@@ -413,73 +379,6 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
           'Upload images, audio, or video files to start building your library.',
       actionLabel: 'Upload File',
       onAction: _pickAndUploadFile,
-    );
-  }
-}
-
-class _FilterTab extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final bool isDark;
-
-  const _FilterTab({
-    required this.label,
-    required this.icon,
-    required this.isSelected,
-    required this.onTap,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.15)
-              : (isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.03)),
-          borderRadius: BorderRadius.circular(10),
-          border: Border.all(
-            color: isSelected
-                ? AppColors.primary.withValues(alpha: 0.4)
-                : (isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.05)),
-          ),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              icon,
-              size: 18,
-              color: isSelected
-                  ? AppColors.primary
-                  : (isDark
-                        ? AppColors.textSecondaryDark
-                        : AppColors.textSecondaryLight),
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 13,
-                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                color: isSelected
-                    ? AppColors.primary
-                    : (isDark
-                          ? AppColors.textPrimaryDark
-                          : AppColors.textPrimaryLight),
-              ),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
@@ -513,7 +412,7 @@ class _MediaCard extends StatelessWidget {
   Color _getColor() {
     switch (item.type) {
       case MediaType.image:
-        return AppColors.primary;
+        return AdminTokens.accent;
       case MediaType.audio:
         return AppColors.accentPurple;
       case MediaType.video:
@@ -534,149 +433,122 @@ class _MediaCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(20),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.06)
-                : Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.1)
-                  : Colors.black.withValues(alpha: 0.05),
-            ),
-            boxShadow: isDark ? null : AppColors.subtleShadow,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Preview area
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: _getColor().withValues(alpha: 0.1),
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(20),
-                    ),
-                  ),
-                  child: Stack(
-                    children: [
-                      // Icon/Preview
-                      Center(
-                        child: item.type == MediaType.image
-                            ? Icon(_getIcon(), size: 48, color: _getColor())
-                            : Container(
-                                width: 64,
-                                height: 64,
-                                decoration: BoxDecoration(
-                                  color: _getColor().withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(16),
-                                ),
-                                child: Icon(
-                                  _getIcon(),
-                                  size: 32,
-                                  color: _getColor(),
-                                ),
-                              ),
-                      ),
-                      // Actions menu
-                      Positioned(
-                        top: 8,
-                        right: 8,
-                        child: PopupMenuButton<String>(
-                          icon: Container(
-                            padding: const EdgeInsets.all(6),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? Colors.black.withValues(alpha: 0.4)
-                                  : Colors.white.withValues(alpha: 0.9),
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                            child: Icon(
-                              Icons.more_vert_rounded,
-                              size: 16,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                          onSelected: (value) {
-                            if (value == 'copy') onCopyUrl();
-                            if (value == 'delete') onDelete();
-                          },
-                          itemBuilder: (context) => [
-                            const PopupMenuItem(
-                              value: 'copy',
-                              child: Row(
-                                children: [
-                                  Icon(Icons.link_rounded, size: 18),
-                                  SizedBox(width: 8),
-                                  Text('Copy URL'),
-                                ],
-                              ),
-                            ),
-                            const PopupMenuItem(
-                              value: 'delete',
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.delete_rounded,
-                                    size: 18,
-                                    color: Colors.red,
-                                  ),
-                                  SizedBox(width: 8),
-                                  Text(
-                                    'Delete',
-                                    style: TextStyle(color: Colors.red),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+    final accent = _getColor();
+    return Container(
+      decoration: BoxDecoration(
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
+        border: Border.all(color: AdminTokens.border(isDark)),
+        boxShadow: AdminTokens.raisedShadow(isDark),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(
+            child: Container(
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: accent.withValues(alpha: isDark ? 0.14 : 0.10),
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(AdminTokens.radiusLg),
+                ),
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        color: accent.withValues(alpha: 0.18),
+                        borderRadius:
+                            BorderRadius.circular(AdminTokens.radiusMd),
+                        border: Border.all(
+                          color: accent.withValues(alpha: 0.32),
                         ),
                       ),
-                    ],
+                      child: Icon(_getIcon(), size: 30, color: accent),
+                    ),
                   ),
-                ),
-              ),
-              // Info
-              Padding(
-                padding: const EdgeInsets.all(14),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      item.name,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: PopupMenuButton<String>(
+                      icon: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: AdminTokens.overlay(isDark),
+                          borderRadius:
+                              BorderRadius.circular(AdminTokens.radiusXs),
+                          border:
+                              Border.all(color: AdminTokens.border(isDark)),
+                        ),
+                        child: Icon(
+                          Icons.more_vert_rounded,
+                          size: 16,
+                          color: AdminTokens.textSecondary(isDark),
+                        ),
                       ),
+                      color: AdminTokens.overlay(isDark),
+                      onSelected: (value) {
+                        if (value == 'copy') onCopyUrl();
+                        if (value == 'delete') onDelete();
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: 'copy',
+                          child: Row(
+                            children: [
+                              Icon(Icons.link_rounded, size: 18),
+                              SizedBox(width: 8),
+                              Text('Copy URL'),
+                            ],
+                          ),
+                        ),
+                        PopupMenuItem(
+                          value: 'delete',
+                          child: Row(
+                            children: [
+                              Icon(
+                                Icons.delete_rounded,
+                                size: 18,
+                                color: AppColors.error,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Delete',
+                                style: TextStyle(color: AppColors.error),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 4),
-                    Text(
-                      _formatFileSize(item.size),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                        color: isDark
-                            ? AppColors.textTertiaryDark
-                            : AppColors.textTertiaryLight,
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
+          Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  item.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AdminTokens.bodyStrong(isDark),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _formatFileSize(item.size),
+                  style: AdminTokens.label(isDark),
+                ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

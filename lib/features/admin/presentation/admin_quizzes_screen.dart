@@ -5,6 +5,7 @@ import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/admin_tokens.dart';
+import 'widgets/admin_form_widgets.dart';
 import '../../../core/theme/app_colors.dart';
 import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
@@ -122,9 +123,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showQuizDialog(context, null),
-        backgroundColor: AppColors
-            .accentPink, // Fixed: use primary color not gradient preset
-
+        backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
           'Create Quiz',
@@ -230,8 +229,11 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
           builder: (context, setDialogState) => Container(
             height: MediaQuery.of(context).size.height * 0.78,
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF161B22) : Colors.white,
-              borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+              color: AdminTokens.overlay(isDark),
+              borderRadius: const BorderRadius.vertical(
+                top: Radius.circular(AdminTokens.radius2xl),
+              ),
+              boxShadow: AdminTokens.overlayShadow(isDark),
             ),
             child: Column(
               children: [
@@ -240,7 +242,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: isDark ? Colors.white24 : Colors.black12,
+                    color: AdminTokens.borderStrong(isDark),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -414,27 +416,19 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
     );
   }
 
-  void _showDeleteDialog(BuildContext context, QuizModel quiz) {
-    showDialog(
+  Future<void> _showDeleteDialog(
+    BuildContext context,
+    QuizModel quiz,
+  ) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Delete quiz?'),
-        content: Text('This will permanently delete "${quiz.title ?? 'Untitled Quiz'}".'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () async {
-              await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
-              if (dialogContext.mounted) Navigator.pop(dialogContext);
-            },
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete Quiz',
+      message:
+          'This will permanently delete "${quiz.title ?? 'Untitled Quiz'}". This action cannot be undone.',
     );
+    if (ok == true) {
+      await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
+    }
   }
 
   Widget _dialogTextField({
@@ -443,43 +437,10 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
     required String hint,
     required bool isDark,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w500,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(color: isDark ? Colors.white38 : Colors.black38),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppColors.primary, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
-          ),
-        ),
-      ],
+    return AdminTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
     );
   }
 }
@@ -499,44 +460,10 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
+    return AdminFilterChip(
+      label: label,
+      selected: isSelected,
       onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-        decoration: BoxDecoration(
-          color: isSelected
-              ? AppColors.premiumPink.colors.first
-              : (isDark
-                    ? Colors.white10
-                    : Colors.black.withValues(alpha: 0.05)),
-          borderRadius: BorderRadius.circular(30),
-          border: Border.all(
-            color: isSelected
-                ? Colors.transparent
-                : (isDark ? Colors.white10 : Colors.black12),
-          ),
-          boxShadow: isSelected
-              ? [
-                  BoxShadow(
-                    color: AppColors.premiumPink.colors.first.withValues(alpha: 0.3),
-                    blurRadius: 12,
-                    offset: const Offset(0, 4),
-                  ),
-                ]
-              : null,
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected
-                ? Colors.white
-                : (isDark ? Colors.white70 : Colors.black87),
-          ),
-        ),
-      ),
     );
   }
 }
@@ -559,73 +486,57 @@ class _QuizCard extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Container(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isDark
-                ? Colors.white10
-                : Colors.black.withValues(alpha: 0.05),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          color: AdminTokens.raised(isDark),
+          borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
+          border: Border.all(color: AdminTokens.border(isDark)),
+          boxShadow: AdminTokens.raisedShadow(isDark),
         ),
         child: Row(
           children: [
             Container(
-              width: 60,
-              height: 60,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
-                gradient: AppColors.premiumPink,
-                borderRadius: BorderRadius.circular(16),
+                color: AdminTokens.accentSoft(isDark),
+                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                border: Border.all(color: AdminTokens.accentBorder(isDark)),
               ),
               child: const Icon(
                 Icons.quiz_rounded,
-                color: Colors.white,
-                size: 28,
+                color: AdminTokens.accent,
+                size: 26,
               ),
             ),
-            const SizedBox(width: 20),
+            const SizedBox(width: 16),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    quiz.title ?? 'Untitled Quiz', // Fixed: title is nullable
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
+                    quiz.title ?? 'Untitled Quiz',
+                    style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 17),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 4),
                   Text(
                     '${quiz.questions.length} questions',
-                    style: TextStyle(
-                      fontSize: 14,
-                      color: isDark ? Colors.white54 : Colors.black54,
-                    ),
+                    style: AdminTokens.label(isDark),
                   ),
                 ],
               ),
             ),
-            IconButton(
-              onPressed: onEdit,
-              icon: const Icon(Icons.edit_rounded, size: 20),
+            AdminIconAction(
+              icon: Icons.edit_rounded,
+              tooltip: 'Edit',
+              onTap: onEdit,
             ),
-            IconButton(
-              onPressed: onDelete,
-              icon: const Icon(
-                Icons.delete_outline_rounded,
-                size: 20,
-                color: AppColors.error,
-              ),
+            const SizedBox(width: 6),
+            AdminIconAction(
+              icon: Icons.delete_outline_rounded,
+              tooltip: 'Delete',
+              destructive: true,
+              onTap: onDelete,
             ),
           ],
         ),

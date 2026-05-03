@@ -13,6 +13,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../core/api/ai_service.dart';
 import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
+import 'widgets/admin_form_widgets.dart';
 
 class AdminLettersScreen extends ConsumerWidget {
   const AdminLettersScreen({super.key});
@@ -192,8 +193,11 @@ class AdminLettersScreen extends ConsumerWidget {
         return Container(
           height: MediaQuery.of(context).size.height * 0.85,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF161B22) : Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+            color: AdminTokens.overlay(isDark),
+            borderRadius: const BorderRadius.vertical(
+              top: Radius.circular(AdminTokens.radius2xl),
+            ),
+            boxShadow: AdminTokens.overlayShadow(isDark),
           ),
           child: StatefulBuilder(
             builder: (context, setDialogState) {
@@ -252,10 +256,10 @@ class AdminLettersScreen extends ConsumerWidget {
                 children: [
                   Container(
                     margin: const EdgeInsets.only(top: 12),
-                    width: 40,
+                    width: 44,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : Colors.black12,
+                      color: AdminTokens.borderStrong(isDark),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -295,11 +299,7 @@ class AdminLettersScreen extends ConsumerWidget {
                       ],
                     ),
                   ),
-                  Divider(
-                    color: isDark
-                        ? Colors.white10
-                        : Colors.black.withValues(alpha: 0.06),
-                  ),
+                  Divider(height: 1, color: AdminTokens.divider(isDark)),
                   Expanded(
                     child: SingleChildScrollView(
                       padding: const EdgeInsets.all(24),
@@ -779,107 +779,62 @@ class AdminLettersScreen extends ConsumerWidget {
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.all(24),
+                    padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? const Color(0xFF0D1117)
-                          : const Color(0xFFF8FAFC),
+                      color: AdminTokens.baseTint(isDark),
                       border: Border(
-                        top: BorderSide(
-                          color: isDark
-                              ? Colors.white10
-                              : Colors.black.withValues(alpha: 0.06),
-                        ),
+                        top: BorderSide(color: AdminTokens.divider(isDark)),
                       ),
                     ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.pop(context),
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                color: isDark
-                                    ? Colors.white10
-                                    : Colors.black.withValues(alpha: 0.05),
-                                borderRadius: BorderRadius.circular(14),
-                              ),
-                              child: Center(
-                                child: Text(
-                                  'Cancel',
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white70
-                                        : Colors.black54,
-                                  ),
-                                ),
-                              ),
+                    child: SafeArea(
+                      top: false,
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: AdminSecondaryButton(
+                              label: 'Cancel',
+                              onTap: () => Navigator.pop(context),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          flex: 2,
-                          child: GestureDetector(
-                            onTap: () {
-                              HapticFeedback.lightImpact();
-                              final newLetter = LetterModel(
-                                id: letter?.id ?? const Uuid().v4(),
-                                charOlChiki: charController.text,
-                                transliterationLatin: romanController.text,
-                                pronunciation:
-                                    pronunciationController.text.isNotEmpty
-                                    ? pronunciationController.text
-                                    : null,
-                                order: letter?.order ?? 0,
-                                isActive: true,
-                                audioUrl: audioUrl,
-                                imageUrl: imageUrl,
-                                animationUrl: animationUrl,
-                              );
-                              if (isEditing) {
-                                ref
-                                    .read(lettersProvider.notifier)
-                                    .updateLetter(newLetter);
-                              } else {
-                                ref
-                                    .read(lettersProvider.notifier)
-                                    .addLetter(newLetter);
-                              }
-                              Navigator.pop(context);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(vertical: 16),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.premiumMint,
-                                borderRadius: BorderRadius.circular(14),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: AppColors.accentMint.withValues(
-                                      alpha: 0.4,
-                                    ),
-                                    blurRadius: 15,
-                                    offset: const Offset(0, 6),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  isEditing ? 'Save Changes' : 'Add Letter',
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            flex: 2,
+                            child: AdminPrimaryButton(
+                              label: isEditing ? 'Save Changes' : 'Add Letter',
+                              icon: isEditing
+                                  ? Icons.save_rounded
+                                  : Icons.add_rounded,
+                              onTap: () {
+                                HapticFeedback.lightImpact();
+                                final newLetter = LetterModel(
+                                  id: letter?.id ?? const Uuid().v4(),
+                                  charOlChiki: charController.text,
+                                  transliterationLatin: romanController.text,
+                                  pronunciation:
+                                      pronunciationController.text.isNotEmpty
+                                      ? pronunciationController.text
+                                      : null,
+                                  order: letter?.order ?? 0,
+                                  isActive: true,
+                                  audioUrl: audioUrl,
+                                  imageUrl: imageUrl,
+                                  animationUrl: animationUrl,
+                                );
+                                if (isEditing) {
+                                  ref
+                                      .read(lettersProvider.notifier)
+                                      .updateLetter(newLetter);
+                                } else {
+                                  ref
+                                      .read(lettersProvider.notifier)
+                                      .addLetter(newLetter);
+                                }
+                                Navigator.pop(context);
+                              },
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ],
@@ -897,107 +852,28 @@ class AdminLettersScreen extends ConsumerWidget {
     required String hint,
     required bool isDark,
   }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          style: TextStyle(
-            color: isDark ? Colors.white : Colors.black,
-            fontWeight: FontWeight.w500,
-            fontSize: 18,
-          ),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white38 : Colors.black38,
-            ),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide(color: AppColors.accentMint, width: 2),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 18,
-              vertical: 16,
-            ),
-          ),
-        ),
-      ],
+    return AdminTextField(
+      controller: controller,
+      label: label,
+      hint: hint,
     );
   }
 
-  void _showDeleteDialog(
+  Future<void> _showDeleteDialog(
     BuildContext context,
     WidgetRef ref,
     LetterModel letter,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showDialog(
+  ) async {
+    final ok = await showAdminConfirmDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Row(
-          children: [
-            Container(
-              width: 44,
-              height: 44,
-              decoration: BoxDecoration(
-                color: AppColors.error.withValues(alpha: 0.15),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: const Icon(
-                Icons.delete_outline_rounded,
-                color: AppColors.error,
-              ),
-            ),
-            const SizedBox(width: 14),
-            const Text('Delete Letter'),
-          ],
-        ),
-        content: Text(
-          'Are you sure you want to delete "${letter.charOlChiki}"?',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancel'),
-          ),
-          ElevatedButton(
-            onPressed: () {
-              HapticFeedback.mediumImpact();
-              ref.read(lettersProvider.notifier).deleteLetter(letter.id);
-              Navigator.pop(context);
-            },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.error,
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete Letter',
+      message:
+          'Are you sure you want to delete "${letter.charOlChiki}"? This action cannot be undone.',
     );
+    if (ok == true) {
+      HapticFeedback.mediumImpact();
+      ref.read(lettersProvider.notifier).deleteLetter(letter.id);
+    }
   }
 }
 

@@ -1,10 +1,10 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import 'widgets/admin_page_header.dart';
+import 'widgets/admin_form_widgets.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../core/api/appwrite_db_service.dart';
 import '../../../shared/providers/providers.dart';
@@ -165,11 +165,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                 subtitle:
                     'Upload a custom onboarding video or use the default bundled asset. Disabled on desktop/web.',
                 child: _isLoading
-                    ? const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(32),
-                          child: CircularProgressIndicator(),
-                        ),
+                    ? const Padding(
+                        padding: EdgeInsets.all(32),
+                        child: AdminLoadingState(label: 'Loading settings…'),
                       )
                     : _buildVideoSection(isDark),
               ),
@@ -190,26 +188,24 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       Container(
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: AppColors.success.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
+                          color: AppColors.success.withValues(alpha: 0.12),
+                          borderRadius:
+                              BorderRadius.circular(AdminTokens.radiusMd),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.28),
+                          ),
                         ),
-                        child: Icon(
+                        child: const Icon(
                           Icons.check_circle_rounded,
                           color: AppColors.success,
-                          size: 24,
+                          size: 22,
                         ),
                       ),
                       const SizedBox(width: 16),
                       Expanded(
                         child: Text(
                           'Desktop skip is active. No user action needed.',
-                          style: TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
-                            color: isDark
-                                ? AppColors.textSecondaryDark
-                                : AppColors.textSecondaryLight,
-                          ),
+                          style: AdminTokens.bodyStrong(isDark),
                         ),
                       ),
                     ],
@@ -229,20 +225,13 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Current status
           Container(
             width: double.infinity,
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.03)
-                  : Colors.black.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
+              color: AdminTokens.sunken(isDark),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(color: AdminTokens.border(isDark)),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -256,7 +245,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                         shape: BoxShape.circle,
                         color: _currentVideoUrl != null
                             ? AppColors.success
-                            : AppColors.primary,
+                            : AdminTokens.accent,
                       ),
                     ),
                     const SizedBox(width: 10),
@@ -264,13 +253,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       _currentVideoUrl != null
                           ? 'Custom Video Active'
                           : 'Using Default Bundled Video',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isDark
-                            ? AppColors.textPrimaryDark
-                            : AppColors.textPrimaryLight,
-                      ),
+                      style: AdminTokens.bodyStrong(isDark),
                     ),
                   ],
                 ),
@@ -279,22 +262,18 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                   Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 12,
-                      vertical: 8,
+                      vertical: 10,
                     ),
                     decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : Colors.black.withValues(alpha: 0.03),
-                      borderRadius: BorderRadius.circular(8),
+                      color: AdminTokens.base(isDark),
+                      borderRadius:
+                          BorderRadius.circular(AdminTokens.radiusXs),
+                      border: Border.all(color: AdminTokens.border(isDark)),
                     ),
                     child: Text(
                       _currentVideoUrl!,
-                      style: TextStyle(
-                        fontSize: 12,
+                      style: AdminTokens.label(isDark).copyWith(
                         fontFamily: 'monospace',
-                        color: isDark
-                            ? AppColors.textTertiaryDark
-                            : AppColors.textTertiaryLight,
                       ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
@@ -304,101 +283,40 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
               ],
             ),
           ),
-
           const SizedBox(height: 20),
-
-          // Action buttons
           Row(
             children: [
               Expanded(
-                child: _buildActionButton(
-                  onTap: _isUploading ? null : _uploadOnboardingVideo,
+                child: AdminPrimaryButton(
+                  label: _isUploading ? 'Uploading…' : 'Upload Video',
                   icon: _isUploading
                       ? Icons.hourglass_top_rounded
                       : Icons.cloud_upload_rounded,
-                  label: _isUploading ? 'Uploading...' : 'Upload Video',
-                  isPrimary: true,
-                  isDark: isDark,
+                  onTap: _isUploading ? () {} : _uploadOnboardingVideo,
                 ),
               ),
               if (_currentVideoUrl != null) ...[
                 const SizedBox(width: 12),
-                _buildActionButton(
-                  onTap: _resetToDefault,
-                  icon: Icons.restore_rounded,
+                AdminSecondaryButton(
                   label: 'Reset',
-                  isPrimary: false,
-                  isDark: isDark,
+                  icon: Icons.restore_rounded,
+                  onTap: _resetToDefault,
                 ),
               ],
             ],
           ),
-
           if (_isUploading)
             Padding(
               padding: const EdgeInsets.only(top: 16),
               child: LinearProgressIndicator(
-                backgroundColor: AppColors.primary.withValues(alpha: 0.2),
-                valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                backgroundColor: AdminTokens.accentSoft(isDark),
+                valueColor: const AlwaysStoppedAnimation<Color>(
+                  AdminTokens.accent,
+                ),
                 borderRadius: BorderRadius.circular(4),
               ),
             ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton({
-    required VoidCallback? onTap,
-    required IconData icon,
-    required String label,
-    required bool isPrimary,
-    required bool isDark,
-  }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-        decoration: BoxDecoration(
-          gradient: isPrimary ? AppColors.heroGradient : null,
-          color: isPrimary
-              ? null
-              : (isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.black.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(14),
-          boxShadow: isPrimary ? AppColors.glowShadow(AppColors.primary) : null,
-          border: isPrimary
-              ? null
-              : Border.all(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.1)
-                      : Colors.black.withValues(alpha: 0.08),
-                ),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              icon,
-              color: isPrimary
-                  ? Colors.white
-                  : (isDark ? Colors.white70 : Colors.black54),
-              size: 18,
-            ),
-            const SizedBox(width: 8),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w700,
-                color: isPrimary
-                    ? Colors.white
-                    : (isDark ? Colors.white70 : Colors.black54),
-              ),
-            ),
-          ],
-        ),
       ),
     );
   }
@@ -410,82 +328,53 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     required String subtitle,
     required Widget child,
   }) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-        child: Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.04)
-                : Colors.white.withValues(alpha: 0.9),
-            borderRadius: BorderRadius.circular(28),
-            border: Border.all(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.08)
-                  : Colors.black.withValues(alpha: 0.05),
-            ),
-            boxShadow: isDark ? null : AppColors.subtleShadow,
-          ),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Section header
-              Padding(
-                padding: const EdgeInsets.all(24),
-                child: Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(icon, color: AppColors.primary, size: 22),
+    return Container(
+      decoration: BoxDecoration(
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
+        border: Border.all(color: AdminTokens.border(isDark)),
+        boxShadow: AdminTokens.raisedShadow(isDark),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(24),
+            child: Row(
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AdminTokens.accentSoft(isDark),
+                    borderRadius:
+                        BorderRadius.circular(AdminTokens.radiusMd),
+                    border: Border.all(
+                      color: AdminTokens.accentBorder(isDark),
                     ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            title,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.5,
-                              color: isDark
-                                  ? AppColors.textPrimaryDark
-                                  : AppColors.textPrimaryLight,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            subtitle,
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w500,
-                              color: isDark
-                                  ? AppColors.textTertiaryDark
-                                  : AppColors.textTertiaryLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                  child: Icon(icon, color: AdminTokens.accent, size: 22),
                 ),
-              ),
-              Divider(
-                height: 1,
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
-              child,
-            ],
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AdminTokens.sectionTitle(isDark)),
+                      const SizedBox(height: 4),
+                      Text(
+                        subtitle,
+                        style: AdminTokens.body(isDark),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           ),
-        ),
+          Divider(height: 1, color: AdminTokens.divider(isDark)),
+          child,
+        ],
       ),
     );
   }

@@ -1,3 +1,4 @@
+import 'dart:convert';
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/config/appwrite_config.dart';
@@ -30,7 +31,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to load lessons', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to load lessons',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -52,7 +56,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to load lessons by category', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to load lessons by category',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -68,7 +75,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       );
       return LessonModel.fromJson(doc.data, doc.$id);
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to get lesson', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to get lesson',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -80,9 +90,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       final data = lesson.toJson()..remove('id');
       // Appwrite expects blocks as a JSON string in some cases, or we can use relationships.
       // Based on current implementation, it seems we use JSON string for blocks.
-      data['blocks'] = data['blocks'].toString(); 
+      data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
-      
+
       await databases.createDocument(
         databaseId: AppwriteConfig.databaseId,
         collectionId: 'lessons',
@@ -90,7 +100,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
         data: data,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to create lesson', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to create lesson',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -100,9 +113,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   Future<void> updateLesson(LessonModel lesson) async {
     try {
       final data = lesson.toJson()..remove('id');
-      data['blocks'] = data['blocks'].toString();
+      data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
-      
+
       await databases.updateDocument(
         databaseId: AppwriteConfig.databaseId,
         collectionId: 'lessons',
@@ -110,7 +123,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
         data: data,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to update lesson', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to update lesson',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -125,7 +141,10 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
         documentId: id,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to delete lesson', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to delete lesson',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }

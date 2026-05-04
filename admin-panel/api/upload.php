@@ -39,6 +39,24 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     exit();
 }
 
+
+// Require upload token.
+// IMPORTANT: Set UPLOAD_API_TOKEN in hosting environment.
+// This is a temporary hardening layer until uploads are moved to Appwrite Storage.
+$expectedToken = getenv('UPLOAD_API_TOKEN') ?: '';
+$authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+
+$providedToken = '';
+if (preg_match('/Bearer\s+(.+)/', $authHeader, $matches)) {
+    $providedToken = trim($matches[1]);
+}
+
+if ($expectedToken === '' || $providedToken === '' || !hash_equals($expectedToken, $providedToken)) {
+    http_response_code(401);
+    echo json_encode(['success' => false, 'error' => 'Unauthorized']);
+    exit();
+}
+
 // Configuration
 $uploadDir = '../audio/';
 $allowedMimeByExtension = [
@@ -54,7 +72,7 @@ $allowedMimeByExtension = [
     'png' => ['image/png'],
     'gif' => ['image/gif'],
     'webp' => ['image/webp'],
-    'svg' => ['image/svg+xml', 'text/plain'],
+    // SVG disabled for security. Use PNG/WebP instead.
     // Video
     'mp4' => ['video/mp4'],
     'webm' => ['video/webm'],

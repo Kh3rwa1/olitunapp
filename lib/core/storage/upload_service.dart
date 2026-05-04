@@ -22,8 +22,13 @@ import 'dart:convert';
 /// Appwrite Storage. Do not add new consumers — port new upload flows
 /// straight to Appwrite Storage.
 class AppConfig {
-  static const String uploadBaseUrl = String.fromEnvironment(
-    'UPLOAD_BASE_URL',
+  static const String uploadBaseUrl = String.fromEnvironment('UPLOAD_BASE_URL');
+
+  /// Temporary legacy PHP upload token.
+  /// NOTE: This is not a perfect secret in Flutter Web/APK builds.
+  /// Long-term 10/10 fix: migrate uploads fully to Appwrite Storage.
+  static const String uploadApiToken = String.fromEnvironment(
+    'UPLOAD_API_TOKEN',
   );
 
   static String get uploadEndpoint {
@@ -85,6 +90,15 @@ class HostingerUploadService {
 
       final uri = Uri.parse(AppConfig.uploadEndpoint);
       final request = http.MultipartRequest('POST', uri);
+
+      if (AppConfig.uploadApiToken.isEmpty) {
+        throw StateError(
+          'UPLOAD_API_TOKEN is not configured. Pass '
+          '--dart-define=UPLOAD_API_TOKEN=<token> at build time.',
+        );
+      }
+
+      request.headers['Authorization'] = 'Bearer ${AppConfig.uploadApiToken}';
 
       // Determine content type from extension
       final contentType = _getMimeType(file.name);

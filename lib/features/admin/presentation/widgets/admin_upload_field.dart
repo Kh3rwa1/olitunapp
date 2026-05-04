@@ -7,7 +7,7 @@ import '../../../../core/theme/admin_tokens.dart';
 
 /// Reusable upload field widget for admin panel.
 /// Provides a text field with an upload button that picks a file,
-/// uploads it via HostingerUploadService, and sets the URL.
+/// uploads it via Appwrite Storage, and sets the URL.
 class AdminUploadField extends ConsumerStatefulWidget {
   final TextEditingController controller;
   final String label;
@@ -210,9 +210,9 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
                 style: AdminTokens.bodyStrong(isDark),
                 decoration: InputDecoration(
                   hintText: 'Upload or paste URL...',
-                  hintStyle: AdminTokens.body(isDark).copyWith(
-                    color: AdminTokens.textTertiary(isDark),
-                  ),
+                  hintStyle: AdminTokens.body(
+                    isDark,
+                  ).copyWith(color: AdminTokens.textTertiary(isDark)),
                   filled: true,
                   fillColor: AdminTokens.sunken(isDark),
                   border: OutlineInputBorder(
@@ -225,8 +225,10 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                    borderSide:
-                        const BorderSide(color: AdminTokens.accent, width: 1.5),
+                    borderSide: const BorderSide(
+                      color: AdminTokens.accent,
+                      width: 1.5,
+                    ),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,

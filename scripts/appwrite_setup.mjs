@@ -296,7 +296,7 @@ const buckets = [
   {
     id: 'videos',
     name: 'Videos',
-    allowedExtensions: ['mp4', 'webm'],
+    allowedExtensions: ['mp4', 'webm', 'mov'],
     maxFileSize: 104857600, // 100MB
   },
 ];

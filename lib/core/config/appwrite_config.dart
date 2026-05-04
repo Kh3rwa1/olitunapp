@@ -9,7 +9,6 @@
 /// Optional:
 ///   --dart-define=ADMIN_TEAM_ID=admins         (default: "admins")
 ///   --dart-define=TRANSLATE_URL=[appwrite-fn-url]
-///   --dart-define=UPLOAD_BASE_URL=[legacy-upload-host]
 ///   --dart-define=SENTRY_DSN=[sentry-dsn]
 class AppwriteConfig {
   AppwriteConfig._();

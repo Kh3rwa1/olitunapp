@@ -35,6 +35,14 @@ import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
 final _rootNavigatorKey = GlobalKey<NavigatorState>();
+const _adminHost = 'admin.olitun.in';
+
+@visibleForTesting
+String? adminHostRedirectFor(String host, String path) {
+  if (host.toLowerCase() != _adminHost) return null;
+  if (path == '/admin' || path.startsWith('/admin/')) return null;
+  return '/admin';
+}
 
 /// Convenience: builds a GoRoute whose `pageBuilder` wraps the screen
 /// in our shared-axis Z transition. Used for content "drill-in" routes
@@ -92,6 +100,8 @@ final routerProvider = Provider<GoRouter>((ref) {
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
+    redirect: (context, state) =>
+        adminHostRedirectFor(Uri.base.host, state.uri.path),
     routes: [
       _peerRoute(
         path: '/splash',
@@ -118,10 +128,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: RouteNames.categories,
         child: (_, __) => const MainShellScreen(),
       ),
-      _drillRoute(
-        path: '/quizzes',
-        child: (_, __) => const QuizListScreen(),
-      ),
+      _drillRoute(path: '/quizzes', child: (_, __) => const QuizListScreen()),
       _peerRoute(
         path: '/profile',
         name: RouteNames.profile,
@@ -183,9 +190,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       _drillRoute(
         path: '/quiz/:quizId',
         name: RouteNames.quiz,
-        child: (_, state) => QuizScreen(
-          quizId: state.pathParameters['quizId'] ?? '',
-        ),
+        child: (_, state) =>
+            QuizScreen(quizId: state.pathParameters['quizId'] ?? ''),
       ),
       _modalRoute(
         path: '/admin/login',

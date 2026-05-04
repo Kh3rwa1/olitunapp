@@ -1,82 +1,36 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:http/http.dart' as http;
-import 'package:http_parser/http_parser.dart';
-import 'dart:convert';
 
-/// Configuration for the media upload endpoint.
-///
-/// `UPLOAD_BASE_URL` must be supplied at build time via:
-///
-///   --dart-define=UPLOAD_BASE_URL=https://media.example.com
-///
-/// There is no fallback. Calling [uploadEndpoint] without it throws so the
-/// misconfiguration surfaces immediately rather than producing relative
-/// URIs (`/api/upload.php`) that silently break uploads in production.
-///
-/// **Legacy notice (Task #4):** this is the *only* surviving dependency on
-/// the retired PHP admin panel. The rest of `admin-panel/` has been
-/// removed; `api/upload.php` is documented in `admin-panel/README.md` as
-/// owned by the admin-tooling maintainers and is tracked for migration to
-/// Appwrite Storage. Do not add new consumers — port new upload flows
-/// straight to Appwrite Storage.
-class AppConfig {
-  static const String uploadBaseUrl = String.fromEnvironment('UPLOAD_BASE_URL');
+import '../auth/appwrite_auth_service.dart';
+import '../config/appwrite_config.dart';
 
-  /// Temporary legacy PHP upload token.
-  /// NOTE: This is not a perfect secret in Flutter Web/APK builds.
-  /// Long-term 10/10 fix: migrate uploads fully to Appwrite Storage.
-  static const String uploadApiToken = String.fromEnvironment(
-    'UPLOAD_API_TOKEN',
-  );
+class AppwriteStorageUploadService {
+  AppwriteStorageUploadService(this._client) : _storage = Storage(_client);
 
-  static String get uploadEndpoint {
-    if (uploadBaseUrl.isEmpty) {
-      throw StateError(
-        'UPLOAD_BASE_URL is not configured. Pass '
-        '--dart-define=UPLOAD_BASE_URL=<https://your-host> at build time.',
-      );
-    }
-    return '$uploadBaseUrl/api/upload.php';
-  }
-}
+  final Client _client;
+  final Storage _storage;
 
-/// Upload service for Hostinger PHP API
-class HostingerUploadService {
-  static const int _maxUploadBytes = 50 * 1024 * 1024; // 50MB
-  /// Maps file extension to proper MIME type
-  static MediaType? _getMimeType(String filename) {
-    final ext = filename.split('.').last.toLowerCase();
-    const mimeMap = {
-      'json': 'application/json',
-      'webp': 'image/webp',
-      'webm': 'video/webm',
-      'png': 'image/png',
-      'jpg': 'image/jpeg',
-      'jpeg': 'image/jpeg',
-      'gif': 'image/gif',
-      'svg': 'image/svg+xml',
-      'mp3': 'audio/mpeg',
-      'wav': 'audio/wav',
-      'ogg': 'audio/ogg',
-      'aac': 'audio/aac',
-      'm4a': 'audio/mp4',
-      'mp4': 'video/mp4',
-      'mov': 'video/quicktime',
-    };
-    final mime = mimeMap[ext];
-    if (mime != null) {
-      final parts = mime.split('/');
-      return MediaType(parts[0], parts[1]);
-    }
-    return null;
-  }
+  static const Map<String, UploadTarget> _targetsByExtension = {
+    'mp3': UploadTarget('audio', 'audio/mpeg', 50 * 1024 * 1024),
+    'wav': UploadTarget('audio', 'audio/wav', 50 * 1024 * 1024),
+    'ogg': UploadTarget('audio', 'audio/ogg', 50 * 1024 * 1024),
+    'aac': UploadTarget('audio', 'audio/aac', 50 * 1024 * 1024),
+    'm4a': UploadTarget('audio', 'audio/mp4', 50 * 1024 * 1024),
+    'png': UploadTarget('images', 'image/png', 10 * 1024 * 1024),
+    'jpg': UploadTarget('images', 'image/jpeg', 10 * 1024 * 1024),
+    'jpeg': UploadTarget('images', 'image/jpeg', 10 * 1024 * 1024),
+    'gif': UploadTarget('images', 'image/gif', 10 * 1024 * 1024),
+    'webp': UploadTarget('images', 'image/webp', 10 * 1024 * 1024),
+    'svg': UploadTarget('images', 'image/svg+xml', 10 * 1024 * 1024),
+    'json': UploadTarget('animations', 'application/json', 5 * 1024 * 1024),
+    'lottie': UploadTarget('animations', 'application/json', 5 * 1024 * 1024),
+    'mp4': UploadTarget('videos', 'video/mp4', 100 * 1024 * 1024),
+    'webm': UploadTarget('videos', 'video/webm', 100 * 1024 * 1024),
+    'mov': UploadTarget('videos', 'video/quicktime', 100 * 1024 * 1024),
+  };
 
-  /// Uploads a file to Hostinger server
-  /// [file] - The file to upload
-  /// [folder] - Subfolder name (e.g., 'letters', 'lessons', 'video')
-  /// Returns the public URL on success, null on failure
   Future<String?> uploadMedia(PlatformFile file, String folder) async {
     try {
       if (file.bytes == null && file.path == null) {
@@ -84,82 +38,102 @@ class HostingerUploadService {
           'File data is missing. Ensure bytes or path is available.',
         );
       }
-      if (file.size <= 0 || file.size > _maxUploadBytes) {
-        throw Exception('File must be between 1 byte and 50MB.');
-      }
 
-      final uri = Uri.parse(AppConfig.uploadEndpoint);
-      final request = http.MultipartRequest('POST', uri);
-
-      if (AppConfig.uploadApiToken.isEmpty) {
-        throw StateError(
-          'UPLOAD_API_TOKEN is not configured. Pass '
-          '--dart-define=UPLOAD_API_TOKEN=<token> at build time.',
-        );
-      }
-
-      request.headers['Authorization'] = 'Bearer ${AppConfig.uploadApiToken}';
-
-      // Determine content type from extension
-      final contentType = _getMimeType(file.name);
-      if (contentType == null) {
-        throw Exception('Unsupported file type: ${file.name}');
-      }
-      debugPrint(
-        'Upload: ${file.name} (${file.size} bytes) → $contentType → folder: $folder',
-      );
-
-      // Add file data with proper content type
-      if (file.bytes != null) {
-        request.files.add(
-          http.MultipartFile.fromBytes(
-            'file',
-            file.bytes!,
-            filename: file.name,
-            contentType: contentType,
-          ),
-        );
-      } else {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'file',
-            file.path!,
-            filename: file.name,
-            contentType: contentType,
-          ),
-        );
-      }
-
-      // Add folder parameter
-      request.fields['folder'] = folder;
-
-      // Increase timeout for larger files (e.g., videos)
-      final streamedResponse = await request.send().timeout(
-        const Duration(minutes: 5),
-      );
-
-      final response = await http.Response.fromStream(streamedResponse);
-      debugPrint('Upload response: ${response.statusCode} ${response.body}');
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        if (data['success'] == true) {
-          return data['url'];
-        } else {
-          final errorMessage = data['error'] ?? 'Unknown API error';
-          throw Exception('Upload failed: $errorMessage');
-        }
-      } else {
+      final target = targetForFilename(file.name);
+      if (file.size <= 0 || file.size > target.maxBytes) {
         throw Exception(
-          'Server error ${response.statusCode}: ${response.body}',
+          'File must be between 1 byte and ${target.maxBytes ~/ (1024 * 1024)}MB.',
         );
       }
+
+      final filename = _storageFilename(file.name, folder);
+      final inputFile = file.bytes != null
+          ? InputFile.fromBytes(
+              bytes: file.bytes!,
+              filename: filename,
+              contentType: target.contentType,
+            )
+          : InputFile.fromPath(
+              path: file.path!,
+              filename: filename,
+              contentType: target.contentType,
+            );
+
+      debugPrint(
+        'Appwrite upload: ${file.name} (${file.size} bytes) '
+        '→ ${target.bucketId}/$filename',
+      );
+
+      final uploaded = await _storage.createFile(
+        bucketId: target.bucketId,
+        fileId: ID.unique(),
+        file: inputFile,
+        permissions: [Permission.read(Role.any())],
+      );
+
+      return fileViewUrl(target.bucketId, uploaded.$id);
     } catch (e) {
-      debugPrint('HostingerUploadService error: $e');
+      debugPrint('AppwriteStorageUploadService error: $e');
       rethrow;
     }
   }
+
+  @visibleForTesting
+  static UploadTarget targetForFilename(String filename) {
+    final ext = filename.split('.').last.toLowerCase();
+    final target = _targetsByExtension[ext];
+    if (target == null) {
+      throw Exception('Unsupported file type: $filename');
+    }
+    return target;
+  }
+
+  @visibleForTesting
+  static String sanitizeFolder(String folder) {
+    final sanitized = folder
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'[^a-z0-9_-]+'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+    return sanitized.isEmpty ? 'admin' : sanitized;
+  }
+
+  @visibleForTesting
+  static String sanitizeFilename(String filename) {
+    final basename = filename.split(RegExp(r'[/\\]+')).last;
+    final sanitized = basename
+        .trim()
+        .replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '-')
+        .replaceAll(RegExp(r'-+'), '-')
+        .replaceAll(RegExp(r'^-|-$'), '');
+    return sanitized.isEmpty ? 'upload' : sanitized;
+  }
+
+  @visibleForTesting
+  static String storageFilename(String filename, String folder) =>
+      _storageFilename(filename, folder);
+
+  static String _storageFilename(String filename, String folder) {
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    return '${sanitizeFolder(folder)}-$timestamp-${sanitizeFilename(filename)}';
+  }
+
+  String fileViewUrl(String bucketId, String fileId) {
+    return '${_client.endPoint}/storage/buckets/$bucketId/files/$fileId/view'
+        '?project=${AppwriteConfig.projectId}';
+  }
 }
 
-/// Provider for upload service
-final uploadServiceProvider = Provider((ref) => HostingerUploadService());
+class UploadTarget {
+  const UploadTarget(this.bucketId, this.contentType, this.maxBytes);
+
+  final String bucketId;
+  final String contentType;
+  final int maxBytes;
+}
+
+final uploadServiceProvider = Provider((ref) {
+  final authService = ref.watch(appwriteAuthServiceProvider);
+  return AppwriteStorageUploadService(authService.client);
+});

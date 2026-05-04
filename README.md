@@ -119,7 +119,6 @@ flutter run \
   --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
   --dart-define=ADMIN_TEAM_ID=admins \
   --dart-define=TRANSLATE_URL=<appwrite-function-execution-url> \
-  --dart-define=UPLOAD_BASE_URL=<legacy-upload-host> \
   --dart-define=SENTRY_DSN=<your-sentry-dsn>
 ```
 

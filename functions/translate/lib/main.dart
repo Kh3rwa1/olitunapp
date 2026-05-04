@@ -3,7 +3,6 @@ import 'dart:io';
 
 /// Olitun Translate — Appwrite Function
 ///
-/// Replaces the PHP proxy at olitun.in/admin-panel/api/v1/translate.php
 /// Uses Google Translate's free API via HTTP.
 ///
 /// Deploy: appwrite functions createDeployment \
@@ -66,7 +65,10 @@ Future<dynamic> main(final context) async {
 
     if (response.statusCode != 200) {
       return context.res.json(
-        {'success': false, 'message': 'Google API error: ${response.statusCode}'},
+        {
+          'success': false,
+          'message': 'Google API error: ${response.statusCode}',
+        },
         502,
         _corsHeaders(),
       );
@@ -76,16 +78,20 @@ Future<dynamic> main(final context) async {
     final translation = _extractTranslation(parsed);
     final detectedLang = parsed[2]?.toString() ?? from;
 
-    return context.res.json({
-      'success': true,
-      'data': {
-        'translation': translation,
-        'detectedLanguage': detectedLang,
-        'from': from,
-        'to': to,
-        'cached': false,
+    return context.res.json(
+      {
+        'success': true,
+        'data': {
+          'translation': translation,
+          'detectedLanguage': detectedLang,
+          'from': from,
+          'to': to,
+          'cached': false,
+        },
       },
-    }, 200, _corsHeaders());
+      200,
+      _corsHeaders(),
+    );
   } catch (e) {
     context.error('Translate error: $e');
     return context.res.json(

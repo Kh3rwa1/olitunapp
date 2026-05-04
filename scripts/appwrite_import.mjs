@@ -2,16 +2,12 @@
 
 /**
  * Olitun Data Import Script
- * Imports MySQL data (previously exported as JSON) into Appwrite
- * collections.
+ * Imports a MySQL JSON snapshot into Appwrite collections.
  *
- * NOTE (Task #4, May 2026): the PHP exporter that produced
- * `scripts/exported_data.json` (`admin-panel/api/export_data.php`) has
- * been retired along with the rest of the PHP admin panel. This script
- * is kept only for re-running the one-time MySQL → Appwrite migration
- * against an existing JSON snapshot. It expects
+ * This script is kept for re-running the one-time MySQL to Appwrite
+ * migration against an existing JSON snapshot. It expects
  * `scripts/exported_data.json` to already be on disk; produce a fresh
- * dump directly from the MySQL backup if you ever need to re-migrate.
+ * dump directly from a database backup if you ever need to re-migrate.
  *
  * Usage:
  *   APPWRITE_API_KEY=your_key node scripts/appwrite_import.mjs
@@ -214,8 +210,7 @@ async function main() {
     rawData = readFileSync(dataPath, 'utf-8');
   } catch {
     console.error(`❌ File not found: ${dataPath}`);
-    console.error('   Run this first:');
-    console.error('   (export_data.php was retired in Task #4 — supply a JSON dump produced from the MySQL backup directly.)');
+    console.error('   Supply a JSON dump produced from a database backup.');
     process.exit(1);
   }
 

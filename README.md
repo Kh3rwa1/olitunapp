@@ -145,8 +145,7 @@ creates:
   Override via `ADMIN_TEAM_ID=<id> node scripts/appwrite_setup.mjs`.
 
 Then deploy the translator function (see
-[`functions/translator/README.md`](functions/translator/README.md) and
-[`admin-panel/README.md`](admin-panel/README.md)) and pass its execution URL to
+[`functions/translator/README.md`](functions/translator/README.md)) and pass its execution URL to
 the Flutter build via `--dart-define=TRANSLATE_URL=…`.
 
 ### Managing admins

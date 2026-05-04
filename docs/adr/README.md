@@ -9,7 +9,6 @@ This directory contains Architecture Decision Records (ADRs) for the Olitun proj
 | [001](001-appwrite-over-firebase.md) | Appwrite over Firebase | Accepted | 2025-02 |
 | [002](002-riverpod-state-management.md) | Riverpod for State Management | Accepted | 2025-02 |
 | [003](003-dart-define-secrets.md) | Build-time Secret Injection | Accepted | 2026-04 |
-| [004](004-php-translate-proxy.md) | PHP Translation Proxy | Accepted | 2025-03 |
 
 ## Format
 

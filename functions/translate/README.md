@@ -1,6 +1,6 @@
 # Olitun Translate — Appwrite Function
 
-Replaces the PHP proxy at `olitun.in/admin-panel/api/v1/translate.php`.
+Appwrite Function entrypoint for translation.
 
 ## Deploy
 
@@ -18,7 +18,7 @@ appwrite functions createDeployment \
   --code=.
 ```
 
-3. Update the Flutter app to point to the new endpoint:
+3. Update the Flutter app to point to the function endpoint:
 ```dart
 // In lib/core/api/ai_service.dart, change AiConfig:
 static const String apiBaseUrl = String.fromEnvironment(
@@ -48,4 +48,4 @@ static const String apiBaseUrl = String.fromEnvironment(
 }
 ```
 
-Same contract as `translate.php` — no client changes needed beyond the URL.
+The Flutter app reads the endpoint from `TRANSLATE_URL`.

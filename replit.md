@@ -20,11 +20,8 @@ lib/
 ├── shared/                    # Shared models, providers, widgets
 └── main.dart                  # App entry point + crash zone
 
-functions/translator/          # Appwrite Function (Node.js) replacing the
-                               # legacy PHP translate proxy
+functions/translator/          # Appwrite Function (Node.js) for translation
 build/web/                     # Pre-built Flutter web output (served by server.js)
-admin-panel/                   # Retired PHP admin (Task #4) — only
-                               # api/upload.php remains; see its README
 web/                           # Flutter web source (index.html, manifest, …)
 test/                          # Dart tests (mocktail-based repo tests, model tests)
 ```
@@ -42,11 +39,9 @@ Required:
 Optional:
 - `ADMIN_TEAM_ID` — Appwrite Team granting admin access (default: `admins`)
 - `TRANSLATE_URL` / `REVERSE_TRANSLATE_URL` — execution URL of `functions/translator`
-- `UPLOAD_BASE_URL` — base URL for the legacy `api/upload.php` endpoint
-  (only remaining PHP dependency — see `admin-panel/README.md`)
 - `SENTRY_DSN`, `SENTRY_ENV` — crash reporting
 
-There are **no hardcoded fallbacks** for endpoint/project ID, translator URLs, or the API base URL. Builds without them will throw `StateError` at startup or at first call.
+There are **no hardcoded fallbacks** for endpoint/project ID or translator URLs. Builds without them will throw `StateError` at startup or at first call.
 
 ## Security model
 Admin access is enforced server-side by Appwrite Team membership — the previous client-side `ADMIN_SECRET_KEY` model has been removed. See [SECURITY.md](SECURITY.md).
@@ -96,7 +91,7 @@ press-feedback / Hero coverage for letters/words/numbers/sentences/quizzes/rhyme
 ## Recent quality work (Task #1)
 - Removed hardcoded Appwrite project ID fallback; `AppwriteConfig.validate()` at boot.
 - Replaced client-side admin secret with Appwrite Teams membership check; double-gated via router redirect and `AdminShell`.
-- Removed PHP-proxy fallback URLs in `AiService` / `ApiService`; both now require build flags.
+- Removed translation fallback URLs in `AiService` / `ApiService`; both now require build flags.
 - Replaced `cache_service_legacy.dart` with `cache_service.dart` (kept clean, updated consumers).
 - Added Sentry crash reporting (`lib/core/observability/crash_reporting.dart`), wired through `runZonedGuarded`.
 - Wrote real tests: repository (mocktail), AI config fail-fast, Appwrite config fail-fast, theme widget test.

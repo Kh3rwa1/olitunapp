@@ -8,15 +8,13 @@ Developer scripts for database setup, data migration, and seeding.
 |--------|----------|---------|
 | `appwrite_setup.mjs` | Node.js | Creates Appwrite database, collections, attributes, indexes, and storage buckets |
 | `appwrite_seed.mjs` | Node.js | Imports seed data (categories, letters, numbers, rhyme categories) into Appwrite |
-| `appwrite_import.mjs` | Node.js | Migrates legacy MySQL data (from a JSON dump) into Appwrite collections with field mapping |
+| `appwrite_import.mjs` | Node.js | Imports a MySQL JSON snapshot into Appwrite collections with field mapping |
 | `seed_data.py` | Python | **Legacy** — Seeds data into Firebase/Firestore (pre-Appwrite migration) |
 | `post-merge.sh` | Bash | Post-merge setup hook |
 
-> The PHP exporter (`export_data.php`) and the bash bulk seeder
-> (`seed_via_api.sh`) were removed in Task #4 along with the rest of
-> `admin-panel/api/`. The `appwrite_import.mjs` script still works
-> against any existing `scripts/exported_data.json` snapshot, but the
-> live PHP export endpoint no longer exists.
+> The import script works against an existing `scripts/exported_data.json`
+> snapshot. Generate any fresh snapshot directly from a database backup before
+> re-running it.
 
 ## Prerequisites
 
@@ -43,18 +41,15 @@ Populates collections with initial content (4 categories, 30 letters, 10 numbers
 APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_seed.mjs
 ```
 
-### 3. Re-run the MySQL → Appwrite Migration
+### 3. Re-run the MySQL to Appwrite Import
 
-The original migration ran once against a JSON snapshot of the
-Hostinger MySQL database. To re-run it, place that snapshot at
-`scripts/exported_data.json` and:
+Place the JSON snapshot at `scripts/exported_data.json` and:
 
 ```bash
 APPWRITE_API_KEY=your_server_api_key node scripts/appwrite_import.mjs
 ```
 
-(There is no longer a live PHP endpoint to fetch the snapshot from —
-generate it from the MySQL backup directly.)
+Generate fresh data from a database backup before running this command.
 
 ### 4. Legacy Firebase Seed (Deprecated)
 

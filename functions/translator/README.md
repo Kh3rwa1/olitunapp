@@ -1,9 +1,8 @@
 # Translator (Appwrite Function)
 
-Replacement for the legacy `admin-panel/api/v1/translate.php` PHP proxy.
-Wraps Google Translate with per-IP rate limiting and a key/value cache,
-exactly like the PHP version, but runs on Appwrite Functions so the rest
-of the platform (auth, secrets, deployment, observability) is unified.
+Wraps Google Translate with per-IP rate limiting and a key/value cache. It
+runs on Appwrite Functions so the platform uses one deployment and secret
+management model.
 
 ## Endpoints
 
@@ -59,12 +58,10 @@ Successful response:
 - `APPWRITE_API_KEY` — server key with database read/write
 - `RATE_LIMIT_PER_HOUR` — optional, defaults to `20`
 
-## Why this replaces the PHP proxy
+## Why this runs on Appwrite
 
-The PHP proxy ran on shared Hostinger hosting with its own MySQL DB and a
-separate deployment story. Moving to an Appwrite Function:
+Running translation as an Appwrite Function:
 
-- removes the Hostinger dependency,
 - centralises secrets in Appwrite,
 - applies Appwrite's auth and rate-limit layers on top of the function's
   own per-IP limiter,

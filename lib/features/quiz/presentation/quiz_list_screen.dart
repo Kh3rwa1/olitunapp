@@ -114,9 +114,6 @@ class QuizListScreen extends ConsumerWidget {
                                 crossAxisCount:
                                     ResponsiveLayout.gridColumns(
                                   context,
-                                  mobile: 2,
-                                  tablet: 3,
-                                  desktop: 3,
                                 ),
                                 mainAxisSpacing: 16,
                                 crossAxisSpacing: 16,
@@ -290,7 +287,7 @@ class _HeroQuizCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BentoCell(
-      gradient: LinearGradient(
+      gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
         colors: [
@@ -410,12 +407,12 @@ class _HeroQuizCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: Row(
+                child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Icon(Icons.play_arrow_rounded,
                         color: AppColors.duoOrangeDark, size: 20),
-                    const SizedBox(width: 8),
+                    SizedBox(width: 8),
                     Text(
                       'START QUIZ',
                       style: TextStyle(
@@ -475,7 +472,6 @@ class _BentoQuizCard extends StatelessWidget {
     final icon = _icons[index % 4];
 
     return BentoCell(
-      borderRadius: 28,
       padding: const EdgeInsets.all(16),
       color: isDark
           ? Colors.white.withValues(alpha: 0.04)

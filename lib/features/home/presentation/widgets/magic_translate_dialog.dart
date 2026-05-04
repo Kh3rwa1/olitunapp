@@ -25,8 +25,6 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
     final aiService = ref.read(aiServiceProvider);
     final result = await aiService.translate(
       _controller.text.trim(),
-      from: 'auto',
-      to: 'sat',
     );
 
     if (mounted) {
@@ -136,11 +134,9 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             ],
             DuoButton(
               text: _isLoading ? 'MAGIC IN PROGRESS...' : 'TRANSLATE MAGIC',
-              color: AppColors.primary,
               isLoading: _isLoading,
               onPressed: _translate,
               width: double.infinity,
-              height: 56,
             ),
             const SizedBox(height: 12),
             Center(

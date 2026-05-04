@@ -57,7 +57,6 @@ class ParallaxHeroSliverAppBar extends StatelessWidget {
     final reduce = RespectMotion.of(context);
 
     return SliverAppBar.large(
-      pinned: true,
       stretch: !reduce,
       expandedHeight: expandedHeight,
       backgroundColor: gradient is LinearGradient

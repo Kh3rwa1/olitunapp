@@ -92,7 +92,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               Positioned.fill(
                 child: VideoPlayerWidget(
                   assetPath: videoPath,
-                  fit: BoxFit.cover,
                 ),
               ),
 
@@ -119,8 +118,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               child: EnchantedVisualizer(
                 isPlaying: true,
                 color: slide.accentColor.withValues(alpha: 0.5),
-                showWaves: true,
-                showParticles: true,
                 height: MediaQuery.of(context).size.height,
               ),
             ),

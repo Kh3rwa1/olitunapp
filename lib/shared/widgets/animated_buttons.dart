@@ -795,7 +795,6 @@ class _DuoButtonState extends State<DuoButton>
                   borderRadius: BorderRadius.circular(widget.borderRadius),
                   border: Border.all(
                     color: Colors.white.withValues(alpha: 0.1),
-                    width: 1,
                   ),
                 ),
                 child: Center(

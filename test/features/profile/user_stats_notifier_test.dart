@@ -4,7 +4,7 @@ import 'package:mocktail/mocktail.dart';
 
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
-import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
@@ -62,7 +62,6 @@ void main() {
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
-
       expect(notifier.state.hasError, isTrue);
     });
 

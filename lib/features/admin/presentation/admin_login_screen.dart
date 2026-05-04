@@ -255,7 +255,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               key: _emailGlowKey,
               focusNode: _emailFocus,
               glowColor: AppColors.primary,
-              borderRadius: AdminTokens.radiusMd,
               child: TextFormField(
                 controller: _emailController,
                 focusNode: _emailFocus,
@@ -280,7 +279,6 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               key: _passwordGlowKey,
               focusNode: _passwordFocus,
               glowColor: AppColors.primary,
-              borderRadius: AdminTokens.radiusMd,
               child: TextFormField(
                 controller: _passwordController,
                 focusNode: _passwordFocus,

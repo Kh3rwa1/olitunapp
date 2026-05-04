@@ -6,7 +6,7 @@ import '../models/content_models.dart';
 
 final wordsProvider =
     StateNotifierProvider<WordsNotifier, AsyncValue<List<WordModel>>>(
-      (ref) => WordsNotifier(ref),
+      WordsNotifier.new,
     );
 
 class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
@@ -28,7 +28,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
         'words',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => WordModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(WordModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.data(_seedWords);
     }

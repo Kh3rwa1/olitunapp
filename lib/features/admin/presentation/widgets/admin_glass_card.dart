@@ -79,7 +79,6 @@ class AdminGlassCard extends StatelessWidget {
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.08)
                           : Colors.white.withValues(alpha: 0.85),
-                      width: 1,
                     ),
               ),
               child: child,
@@ -115,7 +114,7 @@ class AdminGlassCard extends StatelessWidget {
               )
             : null,
         border: border ??
-            Border.all(color: AdminTokens.border(isDark), width: 1),
+            Border.all(color: AdminTokens.border(isDark)),
         boxShadow: boxShadow ?? AdminTokens.raisedShadow(isDark),
       ),
       child: child,

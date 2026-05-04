@@ -31,7 +31,7 @@ class ProgressScreen extends ConsumerWidget {
         final stars = stats.totalStars;
         final quizzesCompleted = stats.quizzesCompletedCount;
         final avatarColors = [AppColors.primary, AppColors.primaryDark];
-        final memberSince = 'April 2024';
+        const memberSince = 'April 2024';
         final learningTime = stats.totalLearningMinutes;
 
         return Scaffold(
@@ -41,7 +41,6 @@ class ProgressScreen extends ConsumerWidget {
           body: BrandedRefreshIndicator(
             onRefresh: () async {
               ref.invalidate(userStatsProvider);
-              await ref.read(userStatsProvider.future);
             },
             child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -49,7 +48,6 @@ class ProgressScreen extends ConsumerWidget {
               // Minimal app bar
               SliverAppBar(
                 expandedHeight: 0,
-                floating: false,
                 pinned: true,
                 backgroundColor: isDark
                     ? AppColors.darkBackground
@@ -1044,7 +1042,7 @@ class _ProfileHeroCard extends StatelessWidget {
                     backgroundColor: isDark
                         ? Colors.white.withValues(alpha: 0.06)
                         : Colors.black.withValues(alpha: 0.06),
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primary,
                     ),
                   ),
@@ -1250,7 +1248,7 @@ class _QuizPerformanceCard extends StatelessWidget {
     return Container(
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [AppColors.duoBlue, AppColors.duoBlueDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,

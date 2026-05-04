@@ -16,12 +16,8 @@ class AppTheme {
         secondary: AppColors.duoBlue,
         secondaryContainer: AppColors.duoBlueDark,
         tertiary: AppColors.duoYellow,
-        surface: AppColors.lightSurface,
         error: AppColors.error,
-        onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: AppColors.textPrimaryLight,
-        onError: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.lightBackground,
       fontFamily: 'Poppins',
@@ -119,7 +115,7 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,
@@ -184,11 +180,9 @@ class AppTheme {
         secondary: AppColors.duoBlue,
         secondaryContainer: AppColors.duoBlueDark,
         tertiary: AppColors.duoYellow,
-        surface: AppColors.darkSurface,
         error: AppColors.error,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
-        onSurface: AppColors.textPrimaryDark,
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
@@ -275,7 +269,7 @@ class AppTheme {
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(16),
-          borderSide: const BorderSide(color: AppColors.error, width: 1),
+          borderSide: const BorderSide(color: AppColors.error),
         ),
         contentPadding: const EdgeInsets.symmetric(
           horizontal: 20,

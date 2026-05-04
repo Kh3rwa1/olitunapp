@@ -69,7 +69,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               ref.invalidate(rhymesProvider);
               ref.invalidate(rhymeCategoriesProvider);
               ref.invalidate(rhymeSubcategoriesProvider);
-              await ref.read(rhymesProvider.future);
             },
             child: CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -87,7 +86,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -399,9 +397,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                         crossAxisCount: ResponsiveLayout.gridColumns(
                           context,
-                          mobile: 2,
-                          tablet: 3,
-                          desktop: 3,
                         ),
                         mainAxisSpacing: 16,
                         crossAxisSpacing: 16,
@@ -584,7 +579,7 @@ class _AnimatedMusicIcon extends StatelessWidget {
               ),
               child: Transform.rotate(
                 angle: math.sin(controller.value * 2 * math.pi) * 0.15,
-                child: Icon(
+                child: const Icon(
                   Icons.music_note_rounded,
                   color: AppColors.primary,
                   size: 28,
@@ -633,7 +628,6 @@ class _AnimatedFilterChipState extends State<_AnimatedFilterChip>
       vsync: this,
       duration: const Duration(milliseconds: 150),
       lowerBound: 0.92,
-      upperBound: 1.0,
       value: 1.0,
     );
   }

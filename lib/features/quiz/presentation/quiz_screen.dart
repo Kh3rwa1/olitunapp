@@ -4,8 +4,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
@@ -85,7 +83,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                 ),
                 child: Text(
                   '${_currentQuestion + 1}/$totalQuestions',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,
@@ -104,7 +102,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   child: LinearProgressIndicator(
                     value: (_currentQuestion + 1) / totalQuestions,
                     backgroundColor: isDark ? Colors.white12 : Colors.black12,
-                    valueColor: AlwaysStoppedAnimation<Color>(
+                    valueColor: const AlwaysStoppedAnimation<Color>(
                       AppColors.primary,
                     ),
                     minHeight: 8,
@@ -317,7 +315,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                                 )
                                 .then()
                                 .swap(
-                                  builder: (context, child) {
+                                  builder: (context, childWidget) {
+                                    final child = childWidget ?? const SizedBox.shrink();
                                     if (!_isAnswered) return child;
                                     if (isCorrect) {
                                       // Brief scale pulse on the right answer.
@@ -408,9 +407,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           _score++;
           // Crisp double-tap haptic for "right answer" satisfaction.
           HapticFeedback.mediumImpact();
-          Future.delayed(const Duration(milliseconds: 90), () {
-            HapticFeedback.lightImpact();
-          });
+          Future.delayed(const Duration(milliseconds: 90), HapticFeedback.lightImpact);
         } else {
           // Medium single thump for "wrong" — firm but not punitive.
           HapticFeedback.mediumImpact();
@@ -584,7 +581,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     const SizedBox(width: 8),
                     Text(
                       '+${_score * 5} Stars',
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,

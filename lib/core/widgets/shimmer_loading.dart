@@ -26,7 +26,6 @@ class Skeleton extends StatelessWidget {
       highlightColor: isDark
           ? Colors.white.withValues(alpha: 0.1)
           : Colors.black.withValues(alpha: 0.1),
-      period: const Duration(milliseconds: 1500),
       child:
           child ??
           Container(
@@ -99,16 +98,16 @@ class SkeletonGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Expanded(
+        Expanded(
           child: Skeleton(width: double.infinity, borderRadius: 20),
         ),
-        const SizedBox(height: 12),
-        const Skeleton(width: 80, height: 16, borderRadius: 4),
-        const SizedBox(height: 6),
-        const Skeleton(width: 40, height: 12, borderRadius: 4),
+        SizedBox(height: 12),
+        Skeleton(width: 80, height: 16, borderRadius: 4),
+        SizedBox(height: 6),
+        Skeleton(width: 40, height: 12, borderRadius: 4),
       ],
     );
   }

@@ -72,7 +72,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
     await prefs.setString('user_name', name);
     final result = await _authRepository.isLoggedIn();
     return await result.fold(
-      (failure) => Left(failure),
+      Left.new,
       (isLoggedIn) async {
         if (isLoggedIn) {
           // We need updateDisplayName in AuthRepository

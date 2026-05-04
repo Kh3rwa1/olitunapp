@@ -42,7 +42,7 @@ class WelcomeScreen extends ConsumerWidget {
 
                   // Title
                   ShaderMask(
-                    shaderCallback: (bounds) => LinearGradient(
+                    shaderCallback: (bounds) => const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryLight],
                     ).createShader(bounds),
                     child: const Text(

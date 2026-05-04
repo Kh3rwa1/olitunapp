@@ -53,7 +53,7 @@ class AdminLettersScreen extends ConsumerWidget {
                     error: (error, stack) => Center(
                       child: SelectableText(
                         'Error loading letters: $error',
-                        style: TextStyle(color: AppColors.error),
+                        style: const TextStyle(color: AppColors.error),
                       ),
                     ),
                   ),
@@ -81,7 +81,6 @@ class AdminLettersScreen extends ConsumerWidget {
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (!isWideScreen) ...[
           GestureDetector(
@@ -102,7 +101,7 @@ class AdminLettersScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
         ],
-        Expanded(
+        const Expanded(
           child: AdminPageHeader(
             title: 'Ol Chiki Letters',
             subtitle: 'Manage alphabet characters',
@@ -344,7 +343,6 @@ class AdminLettersScreen extends ConsumerWidget {
                                                   .read(aiServiceProvider)
                                                   .translateFromOlChiki(
                                                     charController.text.trim(),
-                                                    to: 'en',
                                                   );
                                               if (result != null) {
                                                 romanController.text = result
@@ -409,7 +407,6 @@ class AdminLettersScreen extends ConsumerWidget {
                                                   .read(aiServiceProvider)
                                                   .translateFromOlChiki(
                                                     charController.text.trim(),
-                                                    to: 'en',
                                                   );
                                               if (result != null) {
                                                 pronunciationController.text =
@@ -815,7 +812,6 @@ class AdminLettersScreen extends ConsumerWidget {
                                       ? pronunciationController.text
                                       : null,
                                   order: letter?.order ?? 0,
-                                  isActive: true,
                                   audioUrl: audioUrl,
                                   imageUrl: imageUrl,
                                   animationUrl: animationUrl,

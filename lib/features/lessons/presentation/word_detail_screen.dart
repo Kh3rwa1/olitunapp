@@ -3,7 +3,6 @@ import '../../../core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
@@ -267,7 +266,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                     url: word.animationUrl!,
                     width: 150,
                     height: 150,
-                    fit: BoxFit.contain,
                   )
                 : word.imageUrl != null && word.imageUrl!.isNotEmpty
                 ? ClipRRect(
@@ -423,7 +421,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                     if (word.audioUrl != null) ...[
                       const SizedBox(width: 12),
                       PressableScale(
-                        haptic: HapticIntensity.light,
                         onTap: () {
                           ref
                               .read(audioServiceProvider)

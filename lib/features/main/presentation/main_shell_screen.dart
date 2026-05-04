@@ -202,7 +202,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
             isPlaying: shouldAnimate,
             color: AppColors.primary,
             showWaves: false,
-            showParticles: true,
             height: 400,
           ),
         ),
@@ -356,7 +355,7 @@ class _DesktopSidebar extends ConsumerWidget {
                   width: 44,
                   height: 44,
                   decoration: BoxDecoration(
-                    gradient: LinearGradient(
+                    gradient: const LinearGradient(
                       colors: [AppColors.primary, AppColors.primaryDark],
                     ),
                     borderRadius: BorderRadius.circular(14),
@@ -570,7 +569,7 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
                   Container(
                     width: 6,
                     height: 6,
-                    decoration: BoxDecoration(
+                    decoration: const BoxDecoration(
                       color: AppColors.primary,
                       shape: BoxShape.circle,
                     ),
@@ -730,7 +729,7 @@ class _DesktopRightPanel extends ConsumerWidget {
                 children: [
                   Row(
                     children: [
-                      Icon(
+                      const Icon(
                         Icons.flag_rounded,
                         size: 18,
                         color: AppColors.primary,
@@ -755,7 +754,7 @@ class _DesktopRightPanel extends ConsumerWidget {
                       backgroundColor: isDark
                           ? Colors.white.withValues(alpha: 0.06)
                           : Colors.black.withValues(alpha: 0.06),
-                      valueColor: AlwaysStoppedAnimation<Color>(
+                      valueColor: const AlwaysStoppedAnimation<Color>(
                         AppColors.primary,
                       ),
                     ),
@@ -895,7 +894,7 @@ class _ShellTabSwitcher extends StatelessWidget {
             curve: Curves.easeOutCubic,
             opacity: active ? 1.0 : 0.0,
             child: KeyedSubtree(
-              key: PageStorageKey<int>('shell-tab-$i'),
+              key: PageStorageKey<String>('shell-tab-$i'),
               child: screens[i],
             ),
           ),

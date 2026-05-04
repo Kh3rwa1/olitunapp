@@ -857,7 +857,6 @@ class _Chart extends StatelessWidget {
         minY: 0,
         maxY: yMax,
         gridData: FlGridData(
-          show: true,
           drawVerticalLine: false,
           horizontalInterval: yInterval,
           getDrawingHorizontalLine: (_) => FlLine(color: gridColor, strokeWidth: 1),
@@ -883,9 +882,9 @@ class _Chart extends StatelessWidget {
             ),
           ),
           rightTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              const AxisTitles(),
           topTitles:
-              const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+              const AxisTitles(),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -940,14 +939,11 @@ class _Chart extends StatelessWidget {
             lessons.map((e) => e.toDouble()).toList(),
             color: AppColors.primary,
             fillTop: 0.18,
-            fillBottom: 0.0,
           ),
           _series(
             vocabulary.map((e) => e.toDouble()).toList(),
             color: AppColors.duoBlue,
             fillTop: 0.10,
-            fillBottom: 0.0,
-            isDashed: false,
             barWidth: 3,
           ),
         ],
@@ -973,7 +969,6 @@ class _Chart extends StatelessWidget {
       barWidth: barWidth,
       isStrokeCapRound: true,
       dotData: FlDotData(
-        show: true,
         getDotPainter: (spot, percent, bar, index) =>
             FlDotCirclePainter(
           radius: 3.5,

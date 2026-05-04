@@ -139,7 +139,6 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (!isWideScreen) ...[
           GestureDetector(
@@ -160,7 +159,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
           ),
           const SizedBox(width: 12),
         ],
-        Expanded(
+        const Expanded(
           child: AdminPageHeader(
             title: 'Quizzes',
             subtitle: 'Create and manage assessments',

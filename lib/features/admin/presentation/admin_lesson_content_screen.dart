@@ -189,7 +189,7 @@ class _AdminLessonContentScreenState
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showAddBlockDialog(),
+        onPressed: _showAddBlockDialog,
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
@@ -507,7 +507,6 @@ class _AdminLessonContentScreenState
                                               .read(aiServiceProvider)
                                               .translateFromOlChiki(
                                                 olChikiCtrl.text.trim(),
-                                                to: 'en',
                                               );
                                           if (result != null) {
                                             latinCtrl.text = result.translation;

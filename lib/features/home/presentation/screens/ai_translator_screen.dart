@@ -45,8 +45,6 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
       final aiService = ref.read(aiServiceProvider);
       final result = await aiService.translate(
         _controller.text.trim(),
-        from: 'auto',
-        to: 'sat',
       );
 
       if (mounted) {
@@ -116,7 +114,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 children: [
                   const SizedBox(height: 40),
                   Text(
-                    "Speak With\nConfidence",
+                    'Speak With\nConfidence',
                     style: GoogleFonts.fredoka(
                       fontSize: 44,
                       fontWeight: FontWeight.w900,
@@ -156,7 +154,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       ),
                       cursorColor: AppColors.primary,
                       decoration: InputDecoration(
-                        hintText: "Type anything in English...",
+                        hintText: 'Type anything in English...',
                         hintStyle: GoogleFonts.inter(
                           color: (isDark ? Colors.white : Colors.black)
                               .withValues(alpha: 0.3),
@@ -174,7 +172,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
 
                   if (_isLoading)
                     Center(
-                      child: CircularProgressIndicator(
+                      child: const CircularProgressIndicator(
                         color: AppColors.primary,
                       ).animate().scale(duration: 400.ms),
                     )
@@ -198,7 +196,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            "SANTALI (OL CHIKI)",
+                            'SANTALI (OL CHIKI)',
                             style: GoogleFonts.inter(
                               color: AppColors.primary,
                               fontSize: 12,
@@ -236,8 +234,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
             left: 24,
             right: 24,
             child: DuoButton(
-              text: _isLoading ? "MAGIC IN PROGRESS..." : "TRANSLATE MAGIC",
-              color: AppColors.primary,
+              text: _isLoading ? 'MAGIC IN PROGRESS...' : 'TRANSLATE MAGIC',
               onPressed: _translate,
               height: 64,
               borderRadius: 20,
@@ -273,12 +270,11 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
             ),
           ),
         ),
-        Positioned.fill(
+        const Positioned.fill(
           child: EnchantedVisualizer(
             isPlaying: true,
             color: AppColors.primary,
             showWaves: false,
-            showParticles: true,
             height: 400,
           ),
         ),

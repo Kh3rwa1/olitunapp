@@ -6,9 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../categories/presentation/providers/category_notifier.dart';
 import '../../categories/domain/entities/category_entity.dart';
-import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/gamified_card.dart';
@@ -143,7 +141,6 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         if (!isWideScreen) ...[
           GestureDetector(
@@ -164,7 +161,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           ),
           const SizedBox(width: 12),
         ],
-        Expanded(
+        const Expanded(
           child: AdminPageHeader(
             title: 'Lessons',
             subtitle: 'Create and manage learning content',
@@ -325,7 +322,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: selectedCategoryId,
+                        initialValue: selectedCategoryId,
                         items: categories
                             .map(
                               (c) => DropdownMenuItem(
@@ -380,7 +377,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       ),
                       const SizedBox(height: 10),
                       DropdownButtonFormField<String>(
-                        value: level,
+                        initialValue: level,
                         items: const [
                           DropdownMenuItem(
                             value: 'beginner',
@@ -418,7 +415,6 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                         icon: Icons.image_rounded,
                         isDark: isDark,
                         folder: 'lesson-thumbnails',
-                        uploadType: AdminUploadType.image,
                         dialogSetState: setDialogState,
                       ),
                       const SizedBox(height: 12),

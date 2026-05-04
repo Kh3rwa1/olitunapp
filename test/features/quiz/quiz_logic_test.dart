@@ -76,10 +76,6 @@ void main() {
         id: 'q1',
         categoryId: 'alphabets',
         title: 'Test Quiz',
-        level: 'beginner',
-        order: 0,
-        isActive: true,
-        passingScore: 70,
         questions: [
           QuizQuestion(
             promptOlChiki: 'ᱚ',

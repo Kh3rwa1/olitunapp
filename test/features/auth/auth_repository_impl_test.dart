@@ -24,7 +24,7 @@ void main() {
     repo = AuthRepositoryImpl(remoteDataSource: remote, networkInfo: network);
   });
 
-  final user = UserModel(
+  const user = UserModel(
     id: 'u1',
     email: 'a@b.co',
     name: 'A',

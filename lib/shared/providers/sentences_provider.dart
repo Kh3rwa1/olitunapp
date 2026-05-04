@@ -6,7 +6,7 @@ import '../models/content_models.dart';
 
 final sentencesProvider =
     StateNotifierProvider<SentencesNotifier, AsyncValue<List<SentenceModel>>>(
-      (ref) => SentencesNotifier(ref),
+      SentencesNotifier.new,
     );
 
 class SentencesNotifier
@@ -43,7 +43,7 @@ class SentencesNotifier
         'sentences',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => SentenceModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(SentenceModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.data(_seedSentences);
     }

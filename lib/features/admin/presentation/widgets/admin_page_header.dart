@@ -25,7 +25,6 @@ class AdminPageHeader extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Row(
-      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Container(
           width: 4,

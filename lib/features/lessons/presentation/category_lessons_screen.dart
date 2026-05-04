@@ -146,7 +146,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: Icon(
+            child: const Icon(
               Icons.school_outlined,
               size: 40,
               color: AppColors.primary,
@@ -279,7 +279,7 @@ class _LessonCard extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Icon(
+                  const Icon(
                     Icons.play_circle_rounded,
                     color: AppColors.primary,
                     size: 32,

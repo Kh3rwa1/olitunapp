@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
@@ -205,7 +204,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                     url: sentence.animationUrl!,
                     width: 130,
                     height: 130,
-                    fit: BoxFit.contain,
                   )
                 : sentence.imageUrl != null && sentence.imageUrl!.isNotEmpty
                 ? ClipRRect(
@@ -252,7 +250,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                 },
               ),
           ],
-          expandedHeight: 280,
           heroChild: heroIllustration,
         ),
         SliverPadding(
@@ -367,7 +364,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                     if (sentence.audioUrl != null) ...[
                       const SizedBox(width: 12),
                       PressableScale(
-                        haptic: HapticIntensity.light,
                         onTap: () {
                           ref
                               .read(audioServiceProvider)

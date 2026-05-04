@@ -40,18 +40,18 @@ void main() {
     test('returns true when a team ID matches the configured admin ID',
         () async {
       final teams = _MockTeamsApi();
-      when(() => teams.list()).thenAnswer((_) async => [
+      when(teams.list).thenAnswer((_) async => [
             _FakeTeam(id: 'random', name: 'random_team'),
             _FakeTeam(id: AppwriteConfig.adminTeamId, name: 'whatever'),
           ]);
 
       expect(await _serviceFor(teams).isCurrentUserAdmin(), isTrue);
-      verify(() => teams.list()).called(1);
+      verify(teams.list).called(1);
     });
 
     test('returns false when no team ID matches', () async {
       final teams = _MockTeamsApi();
-      when(() => teams.list()).thenAnswer((_) async => [
+      when(teams.list).thenAnswer((_) async => [
             _FakeTeam(id: 'team_a', name: 'A'),
             _FakeTeam(id: 'team_b', name: 'B'),
           ]);
@@ -62,7 +62,7 @@ void main() {
     test('rejects a team whose NAME equals the admin ID but whose ID differs',
         () async {
       final teams = _MockTeamsApi();
-      when(() => teams.list()).thenAnswer((_) async => [
+      when(teams.list).thenAnswer((_) async => [
             _FakeTeam(id: 'spoof_id', name: AppwriteConfig.adminTeamId),
           ]);
 
@@ -71,7 +71,7 @@ void main() {
 
     test('returns false when Teams.list throws', () async {
       final teams = _MockTeamsApi();
-      when(() => teams.list()).thenThrow(Exception('401 unauthorized'));
+      when(teams.list).thenThrow(Exception('401 unauthorized'));
 
       expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
     });
@@ -80,7 +80,7 @@ void main() {
   group('AdminAuthService.signInAsAdmin', () {
     test('returns false when the membership check fails', () async {
       final teams = _MockTeamsApi();
-      when(() => teams.list()).thenAnswer((_) async => const []);
+      when(teams.list).thenAnswer((_) async => const []);
 
       final result = await _serviceFor(teams).signInAsAdmin(
         email: 'x@example.com',

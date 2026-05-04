@@ -6,7 +6,7 @@ import '../models/content_models.dart';
 
 final bannersProvider =
     StateNotifierProvider<BannersNotifier, AsyncValue<List<FeaturedBannerModel>>>(
-      (ref) => BannersNotifier(ref),
+      BannersNotifier.new,
     );
 
 // Alias for backward compatibility
@@ -28,7 +28,7 @@ class BannersNotifier
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
       state = AsyncValue.data(
-        data.map((e) => FeaturedBannerModel.fromJson(e)).toList(),
+        data.map(FeaturedBannerModel.fromJson).toList(),
       );
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);

@@ -10,8 +10,6 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
-import '../../categories/presentation/providers/category_notifier.dart';
-import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 
@@ -82,12 +80,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           children: [
             // Background Mesh/Glow — skip on desktop (shell already provides it)
             if (!isDesktop) ...[
-              Positioned.fill(
+              const Positioned.fill(
                 child: EnchantedVisualizer(
                   isPlaying: true,
                   color: AppColors.primary,
                   showWaves: false,
-                  showParticles: true,
                   height: 300,
                 ),
               ),
@@ -150,7 +147,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     border: Border.all(
                                       color: AppColors.glass(
                                         context,
-                                        opacity: 0.1,
                                       ),
                                     ),
                                   ),
@@ -212,11 +208,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                         // Row 2: Hero Journey + Quiz Banner (side-by-side on tablet/desktop)
                         if (isTablet || isDesktop)
-                          _buildHeroBentoRow(context, isDark)
+                          _buildHeroBentoRow(context, isDark, heroTitle, quizCount)
                         else ...[
-                          _buildHeroJourneyCard(context, isDark, 0),
+                          _buildHeroJourneyCard(context, isDark, 0, heroTitle),
                           const SizedBox(height: 16),
-                          _buildQuizBannerCard(context, isDark, 1),
+                          _buildQuizBannerCard(context, isDark, 1, quizCount),
                         ],
 
                         const SizedBox(height: 20),
@@ -332,25 +328,25 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── BENTO: Hero + Quiz side-by-side (tablet/desktop) ──
-  Widget _buildHeroBentoRow(BuildContext context, bool isDark) {
+  Widget _buildHeroBentoRow(BuildContext context, bool isDark, String heroTitle, int quizCount) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Expanded(
           flex: 3,
-          child: _buildHeroJourneyCard(context, isDark, 4),
+          child: _buildHeroJourneyCard(context, isDark, 4, heroTitle),
         ),
         const SizedBox(width: 16),
         Expanded(
           flex: 2,
-          child: _buildQuizBannerCard(context, isDark, 5),
+          child: _buildQuizBannerCard(context, isDark, 5, quizCount),
         ),
       ],
     );
   }
 
   // ─── BENTO: Hero Journey Card ──────────────────────────
-  Widget _buildHeroJourneyCard(BuildContext context, bool isDark, int index) {
+  Widget _buildHeroJourneyCard(BuildContext context, bool isDark, int index, String heroTitle) {
     return AnimatedBentoChild(
       index: index,
       child: PressableScale(
@@ -360,7 +356,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.all(28),
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -420,7 +416,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     onPressed: () => context.push('/categories'),
                     width: double.infinity,
                     height: 52,
-                    borderRadius: 16,
                   ),
                 ],
               ),
@@ -432,7 +427,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── BENTO: Quiz Banner Card ───────────────────────────
-  Widget _buildQuizBannerCard(BuildContext context, bool isDark, int index) {
+  Widget _buildQuizBannerCard(BuildContext context, bool isDark, int index, int quizCount) {
     return AnimatedBentoChild(
       index: index,
       child: PressableScale(
@@ -442,7 +437,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           padding: const EdgeInsets.all(24),
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
+            gradient: const LinearGradient(
               colors: [AppColors.primaryLight, AppColors.primary],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
@@ -522,11 +517,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(Icons.play_arrow_rounded, color: AppColors.primary, size: 20),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           'START',
                           style: TextStyle(
@@ -880,7 +875,6 @@ class _BentoContentGrid extends StatelessWidget {
                   child: _buildAITranslateCard(context),
                 ),
                 ...firstRowCats.map((card) => Expanded(
-                  flex: 1,
                   child: Padding(
                     padding: const EdgeInsets.only(left: gap),
                     child: card,

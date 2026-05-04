@@ -32,7 +32,6 @@ void main() {
       categoryId: 'alphabets',
       titleOlChiki: 'ᱚᱠᱷᱚᱨ',
       titleLatin: 'Vowels',
-      order: 0,
     ),
     const LessonEntity(
       id: 'l2',
@@ -137,6 +136,8 @@ void main() {
         overrides: [
           lessonNotifierProvider.overrideWith(
             (ref) {
+              when(() => mockRepo.getLessons())
+                  .thenAnswer((_) async => Right(sampleLessons));
               final n = LessonNotifier(mockRepo);
               // Manually set state to avoid async init.
               n.state = AsyncValue.data(sampleLessons);

@@ -9,7 +9,6 @@ void main() {
         titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
         titleLatin: 'Alphabets',
         iconName: 'alphabet',
-        order: 0,
       );
 
       final json = original.toJson();
@@ -53,7 +52,6 @@ void main() {
         transliterationLatin: 'a',
         exampleWordOlChiki: 'ᱚᱛ',
         exampleWordLatin: 'at',
-        order: 0,
       );
 
       final json = original.toJson();
@@ -188,7 +186,6 @@ void main() {
         id: 'q1',
         categoryId: 'alphabets',
         title: 'Test Quiz',
-        level: 'beginner',
         passingScore: 80,
         questions: [
           QuizQuestion(
@@ -215,7 +212,6 @@ void main() {
       final original = QuizModel(
         id: 'q1',
         title: 'Before',
-        passingScore: 70,
       );
       final copy = original.copyWith(title: 'After', passingScore: 85);
       expect(copy.title, 'After');

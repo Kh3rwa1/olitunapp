@@ -99,7 +99,7 @@ void main() {
       });
 
       test('brandGlow respects strength', () {
-        final full = AdminTokens.brandGlow(Colors.green, strength: 1);
+        final full = AdminTokens.brandGlow(Colors.green);
         final half = AdminTokens.brandGlow(Colors.green, strength: 0.5);
         expect(full.first.blurRadius, greaterThan(half.first.blurRadius));
       });

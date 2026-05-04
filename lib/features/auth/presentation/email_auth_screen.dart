@@ -209,7 +209,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
                 color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.email_outlined,
                 color: AppColors.primary,
                 size: 36,
@@ -310,7 +310,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
                 color: AppColors.primary.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(22),
               ),
-              child: Icon(
+              child: const Icon(
                 Icons.verified_rounded,
                 color: AppColors.primary,
                 size: 36,
@@ -348,7 +348,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             children: [
               TextSpan(
                 text: _emailController.text.trim(),
-                style: TextStyle(
+                style: const TextStyle(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w700,
                 ),
@@ -367,7 +367,6 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           label: 'Verification Code',
           hint: 'Enter code from email',
           icon: Icons.pin_rounded,
-          keyboardType: TextInputType.text,
           isDark: isDark,
         ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.1),
 

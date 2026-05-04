@@ -16,7 +16,7 @@ final lessonsByCategoryProvider =
       lessons.where((l) => l.categoryId == categoryId).toList(),
     ),
     loading: () => const AsyncValue.loading(),
-    error: (e, st) => AsyncValue.error(e, st),
+    error: AsyncValue.error,
   );
 });
 

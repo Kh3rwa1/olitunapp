@@ -24,21 +24,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
+    debugPrint('Splash: starting _navigateToNext');
     // Wait for animation and pre-fetching
-    await Future.delayed(2.seconds);
+    await Future.delayed(const Duration(seconds: 2));
+    debugPrint('Splash: delay finished');
 
     if (mounted) {
       // Desktop/web wide screens skip onboarding entirely
       final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
+      debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
 
       final showOnboarding = ref.read(onboardingProvider);
+      debugPrint('Splash: showOnboarding = $showOnboarding');
       if (showOnboarding && !isDesktopWeb) {
+        debugPrint('Splash: navigating to /welcome');
         context.go('/welcome');
         return;
       }
 
       // If desktop skipped onboarding, mark it as done
       if (showOnboarding && isDesktopWeb) {
+        debugPrint('Splash: marking onboarding complete for desktop');
         ref.read(onboardingProvider.notifier).completeOnboarding();
       }
 
@@ -76,15 +82,19 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
 
       // Check authentication status
+      debugPrint('Splash: checking auth status...');
       final authRepo = ref.read(authRepositoryProvider);
       final isLoggedInResult = await authRepo.isLoggedIn();
       final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
+      debugPrint('Splash: isLoggedIn = $isLoggedIn');
 
       if (isLoggedIn) {
         if (!mounted) return;
+        debugPrint('Splash: navigating to /');
         context.go('/');
       } else {
         if (!mounted) return;
+        debugPrint('Splash: navigating to /welcome (not logged in)');
         context.go('/welcome');
       }
     }

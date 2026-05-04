@@ -14,11 +14,11 @@ import 'package:flutter/foundation.dart';
 ///
 /// 1. **Function HTTP endpoint** (recommended; returns the function's body
 ///    directly with status 200):
-///      https://<id>.<region>.appwrite.run/
+///      https://[id].[region].appwrite.run/
 ///
 /// 2. **Executions REST API** (returns 201 + an Execution object whose
 ///    `responseBody` field is the actual function response):
-///      https://<region>.cloud.appwrite.io/v1/functions/<id>/executions
+///      https://[region].cloud.appwrite.io/v1/functions/[id]/executions
 ///
 /// [_post] auto-detects the wrapper shape and parses both correctly.
 ///
@@ -73,7 +73,7 @@ class AiService {
     if (url.isEmpty) {
       throw StateError(
         'AiService.$endpointName called without a configured URL. '
-        'Build with --dart-define=TRANSLATE_URL=<appwrite-function-execution-url>.',
+        'Build with --dart-define=TRANSLATE_URL=[appwrite-function-execution-url].',
       );
     }
     try {
@@ -115,7 +115,7 @@ class AiService {
   }
 
   /// If the response body is an Appwrite Execution object (created by the
-  /// `/v1/functions/<id>/executions` endpoint), returns the inner JSON
+  /// `/v1/functions/[id]/executions` endpoint), returns the inner JSON
   /// response that the function itself produced. Otherwise returns the
   /// body parsed as JSON.
   @visibleForTesting

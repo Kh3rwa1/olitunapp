@@ -38,7 +38,6 @@ class AdminSectionHeader extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.only(bottom: compact ? 20 : 28),
       child: Row(
-        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (icon != null) ...[
             Container(

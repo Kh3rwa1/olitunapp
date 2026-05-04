@@ -7,7 +7,7 @@ void main() {
     test('primary color is Olitun green', () {
       expect(AppColors.primary, isA<Color>());
       // Signature green #1EE088.
-      expect(AppColors.primary.value, equals(const Color(0xFF1EE088).value));
+      expect(AppColors.primary, equals(const Color(0xFF1EE088)));
     });
 
     test('avatarPalettes has at least 4 entries', () {

@@ -6,7 +6,7 @@ import '../models/content_models.dart';
 
 final numbersProvider =
     StateNotifierProvider<NumbersNotifier, AsyncValue<List<NumberModel>>>(
-      (ref) => NumbersNotifier(ref),
+      NumbersNotifier.new,
     );
 
 class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
@@ -31,7 +31,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
         'numbers',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => NumberModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(NumberModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.data(_seedNumbers);
     }

@@ -51,7 +51,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
 
   Future<void> _uploadOnboardingVideo() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: ['mp4', 'mov', 'webm'],
       );

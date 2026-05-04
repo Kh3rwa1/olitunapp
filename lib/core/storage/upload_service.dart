@@ -24,7 +24,6 @@ import 'dart:convert';
 class AppConfig {
   static const String uploadBaseUrl = String.fromEnvironment(
     'UPLOAD_BASE_URL',
-    defaultValue: '',
   );
 
   static String get uploadEndpoint {

@@ -117,7 +117,7 @@ class AdminShell extends ConsumerWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            _BrandMark(size: 28),
+            const _BrandMark(size: 28),
             const SizedBox(width: 10),
             Text(
               'Olitun CMS',

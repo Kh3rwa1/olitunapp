@@ -24,7 +24,7 @@ class StrokeSegment {
 final Map<String, List<StrokeSegment>> olChikiStrokes = {
   // ᱚ - La (a) - Circular shape with tail
   'ᱚ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.50, 0.20), // start top center
@@ -33,7 +33,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.50, 0.80), // end bottom center
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.50, 0.80), // start bottom center
@@ -42,7 +42,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.50, 0.20), // end top center
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.50, 0.50), // center
@@ -53,7 +53,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱟ - Aah (aa) - Open circular with hook
   'ᱟ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.70, 0.25), // start top right
@@ -62,7 +62,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.50, 0.80), // end bottom center
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.50, 0.80), // start bottom center
@@ -75,14 +75,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱤ - Li (i) - Vertical with curves
   'ᱤ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.50, 0.18), // top
         Offset(0.50, 0.82), // bottom
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.30, 0.35), // left curve start
@@ -95,7 +95,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱩ - Lu (u) - U shape with extension
   'ᱩ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.25, 0.20), // start top left
@@ -104,7 +104,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.75, 0.20), // end top right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.50, 0.70), // bottom center
@@ -115,28 +115,28 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱮ - E vowel - Angular E shape
   'ᱮ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.20), // top left
         Offset(0.30, 0.80), // bottom left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.20), // top left
         Offset(0.70, 0.20), // top right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.50), // mid left
         Offset(0.60, 0.50), // mid right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.80), // bottom left
@@ -147,7 +147,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱳ - O vowel - Oval shape
   'ᱳ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.50, 0.18), // top center
@@ -156,7 +156,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.50, 0.82), // bottom center
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.50, 0.82), // bottom center
@@ -169,21 +169,21 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱠ - Ok (k) - Angular K shape
   'ᱠ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.20), // top left
         Offset(0.30, 0.80), // bottom left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.50), // mid left
         Offset(0.70, 0.20), // top right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.50), // mid left
@@ -194,7 +194,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱜ - Ol (g) - Curved G shape
   'ᱜ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.75, 0.30), // start upper right
@@ -203,7 +203,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.25, 0.50), // mid left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.25, 0.50), // mid left
@@ -212,7 +212,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.75, 0.55), // mid right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.75, 0.55), // mid right
@@ -223,7 +223,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱝ - Ong (ng) - Nasal marker
   'ᱝ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.25, 0.35), // start left
@@ -232,7 +232,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.75, 0.35), // end right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.50, 0.50), // center
@@ -243,7 +243,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱪ - Uc (c) - C shape
   'ᱪ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.70, 0.25), // top right
@@ -256,14 +256,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱡ - Oj (j) - J shape with curve
   'ᱡ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.55, 0.20), // top
         Offset(0.55, 0.65), // mid down
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.55, 0.65), // mid
@@ -276,14 +276,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱴ - Ot (t) - T shape
   'ᱴ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.25, 0.25), // top left
         Offset(0.75, 0.25), // top right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.50, 0.25), // top center
@@ -294,14 +294,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱰ - Od (d) - D shape
   'ᱰ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.20), // top left
         Offset(0.30, 0.80), // bottom left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.30, 0.20), // top left
@@ -314,14 +314,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱱ - On (n) - N bridge shape
   'ᱱ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.25, 0.75), // bottom left
         Offset(0.25, 0.30), // top left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.25, 0.30), // top left
@@ -330,7 +330,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.75, 0.30), // top right
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.75, 0.30), // top right
@@ -341,14 +341,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱯ - Op (p) - P shape
   'ᱯ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.80), // bottom
         Offset(0.30, 0.20), // top
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.30, 0.20), // top left
@@ -361,14 +361,14 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
 
   // ᱵ - Ob (b) - B shape
   'ᱵ': [
-    StrokeSegment(
+    const StrokeSegment(
       type: 'line',
       points: [
         Offset(0.30, 0.20), // top
         Offset(0.30, 0.80), // bottom
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.30, 0.20), // top left
@@ -377,7 +377,7 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
         Offset(0.30, 0.48), // mid left
       ],
     ),
-    StrokeSegment(
+    const StrokeSegment(
       type: 'cubic',
       points: [
         Offset(0.30, 0.52), // mid left

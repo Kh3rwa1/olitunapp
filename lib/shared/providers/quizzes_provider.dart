@@ -25,8 +25,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         final defaultQuizzes = [
           QuizModel(
             id: 'quiz_alphabets_basics', categoryId: 'alphabets',
-            title: 'Alphabet Basics', level: 'beginner', order: 0,
-            isActive: true, passingScore: 70,
+            title: 'Alphabet Basics',
             questions: [
               QuizQuestion(
                 promptOlChiki: 'ᱚ', promptLatin: 'Which sound does this letter make?',
@@ -42,8 +41,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
           ),
           QuizModel(
             id: 'quiz_numbers_1to10', categoryId: 'numbers',
-            title: 'Numbers 1-10', level: 'beginner', order: 1,
-            isActive: true, passingScore: 70,
+            title: 'Numbers 1-10', order: 1,
             questions: [
               QuizQuestion(
                 promptOlChiki: '᱑', promptLatin: 'What number is this?',
@@ -59,8 +57,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
           ),
           QuizModel(
             id: 'quiz_vowels', categoryId: 'alphabets',
-            title: 'Master the Vowels', level: 'intermediate', order: 2,
-            isActive: true, passingScore: 80,
+            title: 'Master the Vowels', level: 'intermediate', order: 2, passingScore: 80,
             questions: [
               QuizQuestion(
                 promptOlChiki: 'ᱤ', promptLatin: 'This is the vowel for:',
@@ -79,7 +76,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         _saveQuizzes(defaultQuizzes);
       }
     } catch (e) {
-      state = AsyncValue.data([]);
+      state = const AsyncValue.data([]);
     }
   }
 

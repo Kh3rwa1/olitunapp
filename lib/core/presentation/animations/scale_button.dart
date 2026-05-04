@@ -34,8 +34,6 @@ class _ScaleButtonState extends State<ScaleButton>
     _controller = AnimationController(
       vsync: this,
       duration: widget.duration,
-      lowerBound: 0.0,
-      upperBound: 1.0,
     );
     _scaleAnimation = Tween<double>(
       begin: 1.0,

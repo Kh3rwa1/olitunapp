@@ -27,7 +27,7 @@ class AdminAuthService {
   final TeamsListFetcher? _teamsListFetcher;
 
   Future<List<String>> _listTeamIds() async {
-    if (_teamsListFetcher != null) return _teamsListFetcher!();
+    if (_teamsListFetcher != null) return _teamsListFetcher();
     final teams = Teams(_auth.client);
     final result = await teams.list();
     return result.teams.map((t) => t.$id).toList();
@@ -43,7 +43,7 @@ class AdminAuthService {
   Future<bool> isCurrentUserAdmin() async {
     try {
       final teamIds = await _listTeamIds();
-      final adminId = AppwriteConfig.adminTeamId;
+      const adminId = AppwriteConfig.adminTeamId;
       return teamIds.any((id) => id == adminId);
     } catch (e) {
       debugPrint('AdminAuth: membership lookup failed: $e');

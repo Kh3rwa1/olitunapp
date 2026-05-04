@@ -30,7 +30,6 @@ void main() {
       MaterialApp(
         theme: AppTheme.darkTheme,
         home: const Scaffold(
-          appBar: null,
           body: SafeArea(child: Text('dark')),
         ),
       ),

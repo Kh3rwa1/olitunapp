@@ -7,7 +7,7 @@ import '../error/failures.dart';
 /// init/recording calls become no-ops (still safe to call).
 ///
 /// Configure via:
-///   --dart-define=SENTRY_DSN=<your-dsn>
+///   --dart-define=SENTRY_DSN=[your-dsn]
 ///   --dart-define=SENTRY_ENV=production|staging|development
 class CrashReporting {
   CrashReporting._();
@@ -53,7 +53,6 @@ class CrashReporting {
       '${failure.runtimeType}: ${failure.message}'
       '${failure.code != null ? ' (code ${failure.code})' : ''}',
       level: SentryLevel.error,
-      stackTrace: stack,
     );
   }
 }

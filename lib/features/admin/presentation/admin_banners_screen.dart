@@ -56,7 +56,7 @@ class AdminBannersScreen extends ConsumerWidget {
               error: (error, stack) => Center(
                 child: SelectableText(
                   'Error loading banners: $error',
-                  style: TextStyle(color: AppColors.error),
+                  style: const TextStyle(color: AppColors.error),
                 ),
               ),
             ),
@@ -363,7 +363,6 @@ class AdminBannersScreen extends ConsumerWidget {
                                 ? targetRouteController.text
                                 : null,
                             order: banner?.order ?? 0,
-                            isActive: true,
                           );
                           if (isEditing) {
                             ref

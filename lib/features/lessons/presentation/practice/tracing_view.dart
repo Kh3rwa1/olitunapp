@@ -88,7 +88,7 @@ class _TracingViewState extends State<TracingView>
 
   void _recalculateProgressForUndo() {
     // Use a default size that will be overwritten by LayoutBuilder
-    final size = Size.square(300);
+    const size = Size.square(300);
     final guidePath = buildPracticeGuidePath(size, widget.letterChar);
     final guidePoints = samplePath(guidePath, samplesPerMetric: 64);
 

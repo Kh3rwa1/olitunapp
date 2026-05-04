@@ -155,9 +155,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: ResponsiveLayout.gridColumns(
                             context,
-                            mobile: 2,
-                            tablet: 3,
-                            desktop: 3,
                           ),
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
@@ -228,16 +225,16 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Header skeleton
-            Row(
+            const Row(
               children: [
-                const Skeleton(width: 44, height: 44, borderRadius: 16),
-                const SizedBox(width: 16),
+                Skeleton(width: 44, height: 44, borderRadius: 16),
+                SizedBox(width: 16),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Skeleton(width: 120, height: 12, borderRadius: 4),
-                    const SizedBox(height: 8),
-                    const Skeleton(width: 200, height: 24, borderRadius: 4),
+                    Skeleton(width: 120, height: 12, borderRadius: 4),
+                    SizedBox(height: 8),
+                    Skeleton(width: 200, height: 24, borderRadius: 4),
                   ],
                 ),
               ],
@@ -254,10 +251,9 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: ResponsiveLayout.gridColumns(context, mobile: 2, tablet: 3, desktop: 3),
+                crossAxisCount: ResponsiveLayout.gridColumns(context),
                 mainAxisSpacing: 16,
                 crossAxisSpacing: 16,
-                childAspectRatio: 1,
               ),
               itemCount: 4,
               itemBuilder: (context, index) => const Skeleton(borderRadius: 28),
@@ -522,7 +518,6 @@ class _BentoCategoryCard extends StatelessWidget {
     final gradient = _gradients[index % _gradients.length];
 
     return BentoCell(
-      borderRadius: 28,
       padding: const EdgeInsets.all(20),
       color: isDark
           ? Colors.white.withValues(alpha: 0.04)

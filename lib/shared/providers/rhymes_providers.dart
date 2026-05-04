@@ -9,7 +9,7 @@ import '../../features/rhymes/domain/rhyme_category_model.dart';
 
 final rhymesProvider =
     StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>(
-      (ref) => RhymesNotifier(ref),
+      RhymesNotifier.new,
     );
 
 class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
@@ -36,7 +36,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments('rhymes', queries: [Query.limit(500)]);
-      state = AsyncValue.data(data.map((e) => RhymeModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(RhymeModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.data(_seedRhymes);
     }
@@ -77,7 +77,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
 
 final rhymeCategoriesProvider =
     StateNotifierProvider<RhymeCategoriesNotifier, AsyncValue<List<RhymeCategoryModel>>>(
-      (ref) => RhymeCategoriesNotifier(ref),
+      RhymeCategoriesNotifier.new,
     );
 
 class RhymeCategoriesNotifier
@@ -94,7 +94,7 @@ class RhymeCategoriesNotifier
       final data = await db.listDocuments(
         'rhyme_categories', queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => RhymeCategoryModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(RhymeCategoryModel.fromJson).toList());
     } catch (e, st) {
       debugPrint('Error loading rhyme categories: $e');
       state = AsyncValue.error(e, st);
@@ -130,7 +130,7 @@ class RhymeCategoriesNotifier
 
 final rhymeSubcategoriesProvider =
     StateNotifierProvider<RhymeSubcategoriesNotifier, AsyncValue<List<RhymeSubcategoryModel>>>(
-      (ref) => RhymeSubcategoriesNotifier(ref),
+      RhymeSubcategoriesNotifier.new,
     );
 
 class RhymeSubcategoriesNotifier
@@ -147,7 +147,7 @@ class RhymeSubcategoriesNotifier
       final data = await db.listDocuments(
         'rhyme_subcategories', queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map((e) => RhymeSubcategoryModel.fromJson(e)).toList());
+      state = AsyncValue.data(data.map(RhymeSubcategoryModel.fromJson).toList());
     } catch (e, st) {
       debugPrint('Error loading rhyme subcategories: $e');
       state = AsyncValue.error(e, st);
@@ -188,6 +188,6 @@ final rhymeSubcategoriesByCategoryProvider =
           subcats.where((s) => s.categoryId == categoryId).toList(),
         ),
         loading: () => const AsyncValue.loading(),
-        error: (e, st) => AsyncValue.error(e, st),
+        error: AsyncValue.error,
       );
     });

@@ -74,7 +74,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<bool> isLoggedIn() async {
     try {
-      await account.getSession(sessionId: 'current');
+      await account.getSession(sessionId: 'current').timeout(const Duration(seconds: 3));
       return true;
     } catch (_) {
       return false;

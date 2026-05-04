@@ -57,7 +57,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
               error: (error, stack) => Center(
                 child: SelectableText(
                   'Error loading categories: $error',
-                  style: TextStyle(color: AppColors.error),
+                  style: const TextStyle(color: AppColors.error),
                 ),
               ),
             ),
@@ -416,7 +416,6 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                             gradientPreset: selectedGradient,
                             iconName: selectedIcon,
                             order: category?.order ?? 0,
-                            isActive: true,
                           );
 
                           if (isEditing) {
@@ -554,7 +553,6 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
       // Use FileType.any and validate client-side instead
       final result = await FilePicker.platform.pickFiles(
         withData: true,
-        type: FileType.any,
       );
 
       if (result != null && result.files.isNotEmpty) {
@@ -617,7 +615,6 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
       // On web, FileType.custom throws PlatformException — use FileType.any
       final result = await FilePicker.platform.pickFiles(
         withData: true,
-        type: FileType.any,
       );
 
       if (result != null && result.files.isNotEmpty) {

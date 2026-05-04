@@ -4,8 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
-import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 
@@ -318,9 +316,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: AppColors.quizBackground,
-        body: const Center(child: CircularProgressIndicator()),
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
@@ -559,7 +557,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     final letter = String.fromCharCode(65 + index);
 
     Color cardBg = _cardColors[index % 4];
-    Color badgeColor = _badgeColors[index % 4];
+    final Color badgeColor = _badgeColors[index % 4];
     Color borderColor = Colors.transparent;
 
     if (_answered) {

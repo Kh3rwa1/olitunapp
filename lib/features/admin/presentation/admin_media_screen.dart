@@ -88,7 +88,7 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
 
   Future<void> _pickAndUploadFile() async {
     try {
-      FilePickerResult? result = await FilePicker.platform.pickFiles(
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
         type: FileType.custom,
         allowedExtensions: [
           'png',
@@ -284,7 +284,6 @@ class _AdminMediaScreenState extends ConsumerState<AdminMediaScreen> {
                         crossAxisCount: isWideScreen ? 4 : 2,
                         crossAxisSpacing: 16,
                         mainAxisSpacing: 16,
-                        childAspectRatio: 1,
                       ),
                       itemCount: filteredItems.length,
                       itemBuilder: (context, index) {
@@ -505,7 +504,7 @@ class _MediaCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        PopupMenuItem(
+                        const PopupMenuItem(
                           value: 'delete',
                           child: Row(
                             children: [
@@ -514,7 +513,7 @@ class _MediaCard extends StatelessWidget {
                                 size: 18,
                                 color: AppColors.error,
                               ),
-                              const SizedBox(width: 8),
+                              SizedBox(width: 8),
                               Text(
                                 'Delete',
                                 style: TextStyle(color: AppColors.error),

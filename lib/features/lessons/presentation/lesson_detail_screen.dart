@@ -3,10 +3,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
-import 'providers/lesson_notifier.dart';
 import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
-import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../shared/widgets/lottie_display.dart';
 import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/scale_button.dart';
@@ -108,7 +106,6 @@ class LessonDetailScreen extends ConsumerWidget {
                   onPressed: () => context.pop(),
                 ),
                 title: Text(lesson.titleLatin),
-                expandedHeight: 280,
                 heroChild: _LessonHeroSummary(
                   lesson: lesson,
                   buildChip: _buildChip,
@@ -558,7 +555,6 @@ class LessonDetailScreen extends ConsumerWidget {
                     url: animationUrl,
                     width: double.infinity,
                     height: 200,
-                    fit: BoxFit.contain,
                   ),
                 ),
               if (block.textLatin != null) ...[

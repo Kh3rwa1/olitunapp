@@ -12,7 +12,7 @@ class AppwriteAuthService {
     _client = Client()
       .setEndpoint(AppwriteConfig.endpoint)
       .setProject(AppwriteConfig.projectId)
-      .setSelfSigned(status: kDebugMode);
+      .setSelfSigned();
 
     _account = Account(_client);
   }

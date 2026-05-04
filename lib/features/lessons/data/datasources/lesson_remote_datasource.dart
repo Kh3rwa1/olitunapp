@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';

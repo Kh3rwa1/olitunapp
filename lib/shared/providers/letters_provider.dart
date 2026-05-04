@@ -7,7 +7,7 @@ import '../models/content_models.dart';
 
 final lettersProvider =
     StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>(
-      (ref) => LettersNotifier(ref),
+      LettersNotifier.new,
     );
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
@@ -32,7 +32,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
 
   Future<void> _loadLetters() async {
     // 1. Try Cache
-    final cached = await CacheService.getList(_cacheKey, (json) => LetterModel.fromJson(json));
+    final cached = await CacheService.getList(_cacheKey, LetterModel.fromJson);
     if (cached != null && cached.isNotEmpty) {
       state = AsyncValue.data(cached);
     }
@@ -44,7 +44,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         'letters',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      final list = data.map((e) => LetterModel.fromJson(e)).toList();
+      final list = data.map(LetterModel.fromJson).toList();
       
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);

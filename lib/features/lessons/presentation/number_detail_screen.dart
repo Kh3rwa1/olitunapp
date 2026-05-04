@@ -272,7 +272,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                     url: number.animationUrl!,
                     width: 150,
                     height: 150,
-                    fit: BoxFit.contain,
                   )
                 : number.imageUrl != null && number.imageUrl!.isNotEmpty
                 ? ClipRRect(
@@ -419,7 +418,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                 if (number.audioUrl != null) ...[
                   const SizedBox(width: 12),
                   PressableScale(
-                    haptic: HapticIntensity.light,
                     onTap: () {
                       ref.read(audioServiceProvider).playUrl(number.audioUrl!);
                     },

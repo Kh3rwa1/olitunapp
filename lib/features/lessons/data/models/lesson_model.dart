@@ -16,7 +16,7 @@ class LessonModel extends LessonEntity {
   });
 
   factory LessonModel.fromJson(Map<String, dynamic> json, [String? docId]) {
-    dynamic rawBlocks = json['blocks'];
+    final dynamic rawBlocks = json['blocks'];
     List<dynamic> blocksJson = [];
     if (rawBlocks is String && rawBlocks.isNotEmpty) {
       blocksJson = jsonDecode(rawBlocks);
@@ -80,7 +80,7 @@ class LessonModel extends LessonEntity {
       estimatedMinutes: entity.estimatedMinutes,
       isActive: entity.isActive,
       data: entity.data,
-      blocks: entity.blocks.map((e) => LessonBlockModel.fromEntity(e)).toList(),
+      blocks: entity.blocks.map(LessonBlockModel.fromEntity).toList(),
     );
   }
 }

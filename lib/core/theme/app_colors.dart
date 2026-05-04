@@ -81,8 +81,6 @@ class AppColors {
 
   // Next button gradient
   static const LinearGradient quizNextButton = LinearGradient(
-    begin: Alignment.centerLeft,
-    end: Alignment.centerRight,
     colors: [Color(0xFFFF8C5A), Color(0xFFFF6B4B)],
   );
 
@@ -327,7 +325,6 @@ class AppColors {
       color: Colors.black.withValues(alpha: 0.08),
       blurRadius: 20,
       offset: const Offset(0, 4),
-      spreadRadius: 0,
     ),
   ];
 

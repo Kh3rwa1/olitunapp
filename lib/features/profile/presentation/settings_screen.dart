@@ -802,7 +802,7 @@ class _ThemeOption extends StatelessWidget {
         ),
       ),
       trailing: isSelected
-          ? Icon(Icons.check_circle_rounded, color: AppColors.primary)
+          ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
           : null,
       onTap: () {
         updateThemeMode(ref, value);
@@ -839,7 +839,7 @@ class _ScriptOption extends StatelessWidget {
         ),
       ),
       trailing: isSelected
-          ? Icon(Icons.check_circle_rounded, color: AppColors.primary)
+          ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
           : null,
       onTap: () {
         updateScriptMode(ref, value);

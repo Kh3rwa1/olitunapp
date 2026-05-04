@@ -89,8 +89,6 @@ class _GamifiedCardState extends State<GamifiedCard>
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.05)
                     : Colors.black.withValues(alpha: 0.02),
-
-                width: 1,
               ),
             ),
             child: widget.child,

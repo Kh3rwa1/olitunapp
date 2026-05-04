@@ -58,7 +58,7 @@ class GlassCard extends StatelessWidget {
             color: gradient == null ? (backgroundColor ?? defaultBgColor) : null,
             gradient: gradient,
             borderRadius: BorderRadius.circular(borderRadius),
-            border: showBorder ? Border.all(color: borderColor, width: 1) : null,
+            border: showBorder ? Border.all(color: borderColor) : null,
             boxShadow: elevated && !isDark ? AppColors.softShadow : null,
           ),
           child: child,

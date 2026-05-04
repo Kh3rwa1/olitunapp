@@ -82,7 +82,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> practiceLetter(String letter) async {
-    final current = state.value;
+    final current = state.valueOrNull;
     if (current == null) return;
     
     final updatedLetters = Set<String>.from(current.practicedLetters)..add(letter);
@@ -91,7 +91,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> addStars(int count) async {
-    final current = state.value;
+    final current = state.valueOrNull;
     if (current == null) return;
     
     final updated = current.copyWith(totalStars: current.totalStars + count);
@@ -99,7 +99,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> completeLesson(String lessonId) async {
-    final current = state.value;
+    final current = state.valueOrNull;
     if (current == null) return;
     
     final updatedLessons = Set<String>.from(current.completedLessons)..add(lessonId);
@@ -108,7 +108,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> saveQuizResult(QuizResultEntity result) async {
-    final current = state.value;
+    final current = state.valueOrNull;
     if (current == null) return;
     
     final updatedHistory = Map<String, QuizResultEntity>.from(current.quizHistory)

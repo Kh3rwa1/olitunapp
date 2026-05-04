@@ -16,9 +16,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
     titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
     titleLatin: 'Alphabets',
     iconName: 'alphabet',
-    gradientPreset: 'skyBlue',
-    order: 0,
-    isActive: true,
     totalLessons: 5,
   ));
 
@@ -35,7 +32,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
       charOlChiki: letters[i][0],
       transliterationLatin: letters[i][1],
       order: i,
-      isActive: true,
     ));
   }
 
@@ -53,7 +49,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
       titleOlChiki: 'ᱯᱟᱹᱴ $i',
       titleLatin: lessonTitles[i],
       order: i,
-      estimatedMinutes: 5,
       blocks: const [],
     ));
   }
@@ -65,7 +60,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
     iconName: 'numbers',
     gradientPreset: 'peach',
     order: 1,
-    isActive: true,
     totalLessons: 3,
   ));
 
@@ -76,7 +70,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
     iconName: 'words',
     gradientPreset: 'mint',
     order: 2,
-    isActive: true,
     totalLessons: 4,
   ));
 
@@ -86,7 +79,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
     id: quizId,
     categoryId: alphabetsId,
     title: 'Basics Quiz',
-    level: 'beginner',
     questions: [
       QuizQuestion(
         promptOlChiki: 'Which letter is "La"?',

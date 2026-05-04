@@ -4,13 +4,13 @@
 /// either of these is missing. There are no hardcoded fallbacks.
 ///
 ///   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1
-///   --dart-define=APPWRITE_PROJECT_ID=<your-project-id>
+///   --dart-define=APPWRITE_PROJECT_ID=[your-project-id]
 ///
 /// Optional:
 ///   --dart-define=ADMIN_TEAM_ID=admins         (default: "admins")
-///   --dart-define=TRANSLATE_URL=<appwrite-fn-url>
-///   --dart-define=UPLOAD_BASE_URL=<legacy-upload-host>
-///   --dart-define=SENTRY_DSN=<sentry-dsn>
+///   --dart-define=TRANSLATE_URL=[appwrite-fn-url]
+///   --dart-define=UPLOAD_BASE_URL=[legacy-upload-host]
+///   --dart-define=SENTRY_DSN=[sentry-dsn]
 class AppwriteConfig {
   AppwriteConfig._();
 
@@ -39,13 +39,13 @@ class AppwriteConfig {
     if (_envEndpoint.isEmpty) {
       throw StateError(
         '\n\nAPPWRITE_ENDPOINT is not set.\n'
-        'Build with: --dart-define=APPWRITE_ENDPOINT=https://<region>.cloud.appwrite.io/v1\n',
+        'Build with: --dart-define=APPWRITE_ENDPOINT=https://[region].cloud.appwrite.io/v1\n',
       );
     }
     if (_envProjectId.isEmpty) {
       throw StateError(
         '\n\nAPPWRITE_PROJECT_ID is not set.\n'
-        'Build with: --dart-define=APPWRITE_PROJECT_ID=<your-project-id>\n',
+        'Build with: --dart-define=APPWRITE_PROJECT_ID=[your-project-id]\n',
       );
     }
   }

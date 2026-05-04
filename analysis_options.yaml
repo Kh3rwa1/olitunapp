@@ -23,6 +23,9 @@ linter:
     avoid_redundant_argument_values: true
 
 analyzer:
+  exclude:
+    - "flutter/**"
+    - "build/**"
   errors:
     avoid_print: warning
 

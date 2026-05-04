@@ -61,10 +61,7 @@ class AdminDashboardScreen extends ConsumerWidget {
                       ],
                     ),
             ],
-          )
-              .animate()
-              .fadeIn(duration: 350.ms)
-              .slideY(begin: 0.015, end: 0),
+          ).animate().fadeIn(duration: 350.ms).slideY(begin: 0.015, end: 0),
         ),
       ),
     );
@@ -105,16 +102,18 @@ class _Header extends ConsumerWidget {
                   const SizedBox(width: 10),
                   Text(
                     'OVERVIEW · LIVE',
-                    style: AdminTokens.eyebrow(isDark)
-                        .copyWith(color: AppColors.primary),
+                    style: AdminTokens.eyebrow(
+                      isDark,
+                    ).copyWith(color: AppColors.primary),
                   ),
                 ],
               ),
               const SizedBox(height: 10),
               Text(
                 '$greeting, Admin',
-                style: AdminTokens.display(isDark)
-                    .copyWith(fontSize: compact ? 28 : 36),
+                style: AdminTokens.display(
+                  isDark,
+                ).copyWith(fontSize: compact ? 28 : 36),
               ),
               const SizedBox(height: 6),
               Text(
@@ -227,15 +226,13 @@ class _PrimaryAction extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
         child: Container(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [AppColors.primary, AppColors.primaryDark],
             ),
             borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-            boxShadow:
-                AdminTokens.brandGlow(AppColors.primary, strength: 0.7),
+            boxShadow: AdminTokens.brandGlow(AppColors.primary, strength: 0.7),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -274,10 +271,14 @@ class _BentoGrid extends ConsumerWidget {
     final numbersAsync = ref.watch(numbersProvider);
     final quizzesAsync = ref.watch(quizzesProvider);
 
-    int countOf(AsyncValue v) =>
-        v.when(data: (l) => (l as List).length, loading: () => 0, error: (_, __) => 0);
+    int countOf(AsyncValue v) => v.when(
+      data: (l) => (l as List).length,
+      loading: () => 0,
+      error: (_, __) => 0,
+    );
 
-    final totalContent = countOf(categoriesAsync) +
+    final totalContent =
+        countOf(categoriesAsync) +
         countOf(lettersAsync) +
         countOf(lessonsAsync) +
         countOf(wordsAsync) +
@@ -328,7 +329,7 @@ class _BentoGrid extends ConsumerWidget {
 
     if (isWide) {
       return Row(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Expanded(
             flex: 5,
@@ -382,10 +383,10 @@ class _BentoGrid extends ConsumerWidget {
   }
 
   String _txt(AsyncValue v) => v.when(
-        data: (l) => (l as List).length.toString(),
-        loading: () => '—',
-        error: (_, __) => '0',
-      );
+    data: (l) => (l as List).length.toString(),
+    loading: () => '—',
+    error: (_, __) => '0',
+  );
 }
 
 class _Kpi {
@@ -423,22 +424,15 @@ class _HeroMetric extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [
-                  const Color(0xFF0E1A14),
-                  const Color(0xFF0A0F0C),
-                ]
-              : [
-                  const Color(0xFFE8FFF3),
-                  const Color(0xFFFAFFFC),
-                ],
+              ? [const Color(0xFF0E1A14), const Color(0xFF0A0F0C)]
+              : [const Color(0xFFE8FFF3), const Color(0xFFFAFFFC)],
         ),
         border: Border.all(
           color: AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.18),
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary
-                .withValues(alpha: isDark ? 0.18 : 0.10),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.10),
             blurRadius: 40,
             offset: const Offset(0, 18),
             spreadRadius: -10,
@@ -455,8 +449,9 @@ class _HeroMetric extends StatelessWidget {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary
-                    .withValues(alpha: isDark ? 0.10 : 0.07),
+                color: AppColors.primary.withValues(
+                  alpha: isDark ? 0.10 : 0.07,
+                ),
               ),
             ),
           ),
@@ -468,8 +463,9 @@ class _HeroMetric extends StatelessWidget {
               height: 120,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.primary
-                    .withValues(alpha: isDark ? 0.06 : 0.05),
+                color: AppColors.primary.withValues(
+                  alpha: isDark ? 0.06 : 0.05,
+                ),
               ),
             ),
           ),
@@ -479,7 +475,9 @@ class _HeroMetric extends StatelessWidget {
             children: [
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 10, vertical: 5),
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(999),
@@ -515,17 +513,16 @@ class _HeroMetric extends StatelessWidget {
               const SizedBox(height: 18),
               Text(
                 isLoading ? '—' : total.toString(),
-                style: AdminTokens.display(isDark).copyWith(
-                  fontSize: 64,
-                  height: 1,
-                  letterSpacing: -2,
-                ),
+                style: AdminTokens.display(
+                  isDark,
+                ).copyWith(fontSize: 64, height: 1, letterSpacing: -2),
               ),
               const SizedBox(height: 6),
               Text(
                 'Published units across the curriculum',
-                style: AdminTokens.body(isDark)
-                    .copyWith(fontWeight: FontWeight.w600),
+                style: AdminTokens.body(
+                  isDark,
+                ).copyWith(fontWeight: FontWeight.w600),
               ),
               const SizedBox(height: 22),
               Row(
@@ -636,9 +633,7 @@ class _KpiCard extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: kpi.accent.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: kpi.accent.withValues(alpha: 0.25),
-                  ),
+                  border: Border.all(color: kpi.accent.withValues(alpha: 0.25)),
                 ),
                 child: Icon(kpi.icon, size: 15, color: kpi.accent),
               ),
@@ -693,8 +688,9 @@ class _AnalyticsPanel extends ConsumerWidget {
                 children: [
                   Text(
                     'CONTENT ACTIVITY',
-                    style: AdminTokens.eyebrow(isDark)
-                        .copyWith(color: AppColors.primary),
+                    style: AdminTokens.eyebrow(
+                      isDark,
+                    ).copyWith(color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
                   Text('Last 7 days', style: AdminTokens.sectionTitle(isDark)),
@@ -737,7 +733,8 @@ class _AnalyticsPanel extends ConsumerWidget {
                 message: 'Couldn\'t load engagement data',
               ),
               data: (m) {
-                final hasData = m.lessonsSeries.any((v) => v > 0) ||
+                final hasData =
+                    m.lessonsSeries.any((v) => v > 0) ||
                     m.vocabularySeries.any((v) => v > 0);
                 if (!hasData) {
                   return _ChartEmpty(
@@ -781,10 +778,9 @@ class _ChartEmpty extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             message,
-            style: AdminTokens.body(isDark).copyWith(
-              fontSize: 13,
-              color: AdminTokens.textTertiary(isDark),
-            ),
+            style: AdminTokens.body(
+              isDark,
+            ).copyWith(fontSize: 13, color: AdminTokens.textTertiary(isDark)),
           ),
         ],
       ),
@@ -840,8 +836,9 @@ class _Chart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final gridColor =
-        isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black12;
+    final gridColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.black12;
     final axisColor = AdminTokens.textMuted(isDark);
 
     final maxValue = [
@@ -859,7 +856,8 @@ class _Chart extends StatelessWidget {
         gridData: FlGridData(
           drawVerticalLine: false,
           horizontalInterval: yInterval,
-          getDrawingHorizontalLine: (_) => FlLine(color: gridColor, strokeWidth: 1),
+          getDrawingHorizontalLine: (_) =>
+              FlLine(color: gridColor, strokeWidth: 1),
         ),
         titlesData: FlTitlesData(
           leftTitles: AxisTitles(
@@ -881,10 +879,8 @@ class _Chart extends StatelessWidget {
               ),
             ),
           ),
-          rightTitles:
-              const AxisTitles(),
-          topTitles:
-              const AxisTitles(),
+          rightTitles: const AxisTitles(),
+          topTitles: const AxisTitles(),
           bottomTitles: AxisTitles(
             sideTitles: SideTitles(
               showTitles: true,
@@ -914,11 +910,9 @@ class _Chart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) => isDark
-                ? const Color(0xFF1A2030)
-                : Colors.white,
-            tooltipBorder:
-                BorderSide(color: AdminTokens.border(isDark)),
+            getTooltipColor: (_) =>
+                isDark ? const Color(0xFF1A2030) : Colors.white,
+            tooltipBorder: BorderSide(color: AdminTokens.border(isDark)),
             tooltipRoundedRadius: 10,
             getTooltipItems: (spots) => spots
                 .map(
@@ -960,23 +954,18 @@ class _Chart extends StatelessWidget {
     double barWidth = 3.5,
   }) {
     return LineChartBarData(
-      spots: [
-        for (var i = 0; i < ys.length; i++) FlSpot(i.toDouble(), ys[i]),
-      ],
+      spots: [for (var i = 0; i < ys.length; i++) FlSpot(i.toDouble(), ys[i])],
       isCurved: true,
       curveSmoothness: 0.32,
       color: color,
       barWidth: barWidth,
       isStrokeCapRound: true,
       dotData: FlDotData(
-        getDotPainter: (spot, percent, bar, index) =>
-            FlDotCirclePainter(
+        getDotPainter: (spot, percent, bar, index) => FlDotCirclePainter(
           radius: 3.5,
           color: color,
           strokeWidth: 2,
-          strokeColor: isDark
-              ? const Color(0xFF111621)
-              : Colors.white,
+          strokeColor: isDark ? const Color(0xFF111621) : Colors.white,
         ),
       ),
       belowBarData: BarAreaData(
@@ -1022,17 +1011,19 @@ class _ActivityPanel extends ConsumerWidget {
                 children: [
                   Text(
                     'ACTIVITY',
-                    style: AdminTokens.eyebrow(isDark)
-                        .copyWith(color: AppColors.primary),
+                    style: AdminTokens.eyebrow(
+                      isDark,
+                    ).copyWith(color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
-                  Text('Recent changes',
-                      style: AdminTokens.sectionTitle(isDark)),
+                  Text(
+                    'Recent changes',
+                    style: AdminTokens.sectionTitle(isDark),
+                  ),
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 9, vertical: 4),
+                padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                 decoration: BoxDecoration(
                   color: AdminTokens.sunken(isDark),
                   borderRadius: BorderRadius.circular(999),
@@ -1090,10 +1081,7 @@ class _ActivityPanel extends ConsumerWidget {
                       color: items[i].color,
                     ),
                     if (i < items.length - 1)
-                      Divider(
-                        color: AdminTokens.divider(isDark),
-                        height: 18,
-                      ),
+                      Divider(color: AdminTokens.divider(isDark), height: 18),
                   ],
                 ],
               );
@@ -1138,10 +1126,9 @@ class _ActivityEmpty extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               message,
-              style: AdminTokens.body(isDark).copyWith(
-                fontSize: 13,
-                color: AdminTokens.textTertiary(isDark),
-              ),
+              style: AdminTokens.body(
+                isDark,
+              ).copyWith(fontSize: 13, color: AdminTokens.textTertiary(isDark)),
             ),
           ],
         ),
@@ -1183,9 +1170,10 @@ class _ActivityRow extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(title,
-                  style: AdminTokens.bodyStrong(isDark)
-                      .copyWith(fontSize: 13.5)),
+              Text(
+                title,
+                style: AdminTokens.bodyStrong(isDark).copyWith(fontSize: 13.5),
+              ),
               const SizedBox(height: 2),
               Text(
                 subtitle,
@@ -1217,10 +1205,7 @@ void _handleSeeding(BuildContext context, WidgetRef ref) {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
       ),
-      title: Text(
-        'Seed sample data?',
-        style: AdminTokens.sectionTitle(isDark),
-      ),
+      title: Text('Seed sample data?', style: AdminTokens.sectionTitle(isDark)),
       content: Text(
         'This will populate the app with rich sample categories, lessons, and letters. Existing data is preserved.',
         style: AdminTokens.body(isDark),

@@ -328,32 +328,25 @@ class _BentoGrid extends ConsumerWidget {
     final delta = metricsAsync.valueOrNull?.weekOverWeekDelta;
 
     if (isWide) {
-      return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      return Column(
         children: [
-          Expanded(
-            flex: 5,
-            child: _HeroMetric(
-              isDark: isDark,
-              total: totalContent,
-              isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
-              weekDelta: delta,
-            ),
+          _HeroMetric(
+            isDark: isDark,
+            total: totalContent,
+            isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
+            weekDelta: delta,
           ),
-          const SizedBox(width: 20),
-          Expanded(
-            flex: 7,
-            child: GridView.count(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              crossAxisCount: 3,
-              mainAxisSpacing: 16,
-              crossAxisSpacing: 16,
-              childAspectRatio: 1.55,
-              children: supporting
-                  .map((k) => _KpiCard(kpi: k, isDark: isDark))
-                  .toList(),
-            ),
+          const SizedBox(height: 20),
+          GridView.count(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            crossAxisCount: 3,
+            mainAxisSpacing: 16,
+            crossAxisSpacing: 16,
+            childAspectRatio: 1.55,
+            children: supporting
+                .map((k) => _KpiCard(kpi: k, isDark: isDark))
+                .toList(),
           ),
         ],
       );

@@ -13,6 +13,29 @@ import '../../../core/presentation/animations/scale_button.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 
+/// Robust fuzzy matching for Ol Chiki text against entity labels.
+bool _isFuzzyMatch(String target, String entityText) {
+  if (entityText.isEmpty) return false;
+  final t = target.trim().toLowerCase();
+  final e = entityText.trim().toLowerCase();
+
+  if (t == e) return true;
+
+  final separators = [' ', '-', '–', '—', '−', '.', '!', '?', ':', ';'];
+  for (final s in separators) {
+    if (t.startsWith('$e$s')) return true;
+  }
+
+  final tokens = t.split(RegExp(r'[\s\-\–\—\−\.\!\?\:\;]'));
+  if (tokens.isNotEmpty && tokens.first == e) return true;
+
+  final tClean = t.replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '').trim();
+  final eClean = e.replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '').trim();
+  if (tClean == eClean && tClean.isNotEmpty) return true;
+
+  return false;
+}
+
 class LessonDetailScreen extends ConsumerWidget {
   final String lessonId;
 
@@ -22,23 +45,11 @@ class LessonDetailScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final lessons = ref.watch(lessonNotifierProvider);
 
-    // Watch these content providers to ensure data is available for dynamic block matching
-    final letters = ref.watch(lettersProvider);
-    final numbers = ref.watch(numbersProvider);
-    final words = ref.watch(wordsProvider);
-    final sentences = ref.watch(sentencesProvider);
-
-    final allLoaded =
-        letters.hasValue &&
-        numbers.hasValue &&
-        words.hasValue &&
-        sentences.hasValue;
-
-    final countsString =
-        'Letters: ${letters.value?.length ?? 'null'} (loading: ${letters.isLoading}, hasError: ${letters.hasError})\n'
-        'Numbers: ${numbers.value?.length ?? 'null'} (loading: ${numbers.isLoading}, hasError: ${numbers.hasError})\n'
-        'Words: ${words.value?.length ?? 'null'} (loading: ${words.isLoading}, hasError: ${words.hasError})\n'
-        'Sentences: ${sentences.value?.length ?? 'null'} (loading: ${sentences.isLoading}, hasError: ${sentences.hasError})';
+    // Watch content providers to ensure data is available for dynamic block matching.
+    ref.watch(lettersProvider);
+    ref.watch(numbersProvider);
+    ref.watch(wordsProvider);
+    ref.watch(sentencesProvider);
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -137,34 +148,13 @@ class LessonDetailScreen extends ConsumerWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Text(
-                                _getSectionTitle(lesson.categoryId),
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : Colors.black,
-                                ),
-                              ),
-                              Tooltip(
-                                message: countsString,
-                                child: Container(
-                                  width: 10,
-                                  height: 10,
-                                  decoration: BoxDecoration(
-                                    color: allLoaded
-                                        ? Colors.green
-                                        : Colors.red,
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: Colors.white,
-                                      width: 1,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
+                          Text(
+                            _getSectionTitle(lesson.categoryId),
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
+                            ),
                           ),
                           const SizedBox(height: 16),
                           // Build content based on category
@@ -321,63 +311,26 @@ class LessonDetailScreen extends ConsumerWidget {
           return const SizedBox.shrink();
         }
 
-        // Try to find matching entity for navigation
         String? navRoute;
-
-        // Robust fuzzy matching helper
-        bool isFuzzyMatch(String target, String entityText) {
-          if (entityText.isEmpty) return false;
-          final t = target.trim().toLowerCase();
-          final e = entityText.trim().toLowerCase();
-
-          if (t == e) return true;
-
-          // Match at start with common separators
-          final separators = [' ', '-', '–', '—', '−', '.', '!', '?', ':', ';'];
-          for (final s in separators) {
-            if (t.startsWith('$e$s')) return true;
-          }
-
-          // Check if e is the first token
-          final tokens = t.split(RegExp(r'[\s\-\–\—\−\.\!\?\:\;]'));
-          if (tokens.isNotEmpty && tokens.first == e) return true;
-
-          // Punctuation-stripped check
-          final tClean = t
-              .replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '')
-              .trim();
-          final eClean = e
-              .replaceAll(RegExp(r'[^\w\s\u1C50-\u1C7F]'), '')
-              .trim();
-          if (tClean == eClean && tClean.isNotEmpty) return true;
-
-          return false;
-        }
-
-        debugPrint('DynamicBlock CHECK: "$textOlChiki"');
 
         // 1. Check Letters
         final letters = ref.read(lettersProvider).value ?? [];
         final matchedLetter = letters
-            .where((l) => isFuzzyMatch(textOlChiki, l.charOlChiki))
+            .where((l) => _isFuzzyMatch(textOlChiki, l.charOlChiki))
             .firstOrNull;
         if (matchedLetter != null) {
           navRoute = '/letter/$lessonId/${matchedLetter.charOlChiki}';
-          debugPrint(
-            'Matched Letter: ${matchedLetter.charOlChiki} -> $navRoute',
-          );
         }
 
         // 2. Check Numbers
         if (navRoute == null) {
           final numbers = ref.read(numbersProvider).value ?? [];
           final matchedNumber = numbers.where((n) {
-            return isFuzzyMatch(textOlChiki, n.numeral) ||
-                isFuzzyMatch(textOlChiki, n.value.toString());
+            return _isFuzzyMatch(textOlChiki, n.numeral) ||
+                _isFuzzyMatch(textOlChiki, n.value.toString());
           }).firstOrNull;
           if (matchedNumber != null) {
             navRoute = '/number/$lessonId/${matchedNumber.id}';
-            debugPrint('Matched Number: ${matchedNumber.numeral} -> $navRoute');
           }
         }
 
@@ -385,11 +338,10 @@ class LessonDetailScreen extends ConsumerWidget {
         if (navRoute == null) {
           final words = ref.read(wordsProvider).value ?? [];
           final matchedWord = words
-              .where((w) => isFuzzyMatch(textOlChiki, w.wordOlChiki))
+              .where((w) => _isFuzzyMatch(textOlChiki, w.wordOlChiki))
               .firstOrNull;
           if (matchedWord != null) {
             navRoute = '/word/$lessonId/${matchedWord.id}';
-            debugPrint('Matched Word: ${matchedWord.wordOlChiki} -> $navRoute');
           }
         }
 
@@ -397,11 +349,10 @@ class LessonDetailScreen extends ConsumerWidget {
         if (navRoute == null) {
           final sentences = ref.read(sentencesProvider).value ?? [];
           final matchedSentence = sentences
-              .where((s) => isFuzzyMatch(textOlChiki, s.sentenceOlChiki))
+              .where((s) => _isFuzzyMatch(textOlChiki, s.sentenceOlChiki))
               .firstOrNull;
           if (matchedSentence != null) {
             navRoute = '/sentence/$lessonId/${matchedSentence.id}';
-            debugPrint('Matched Sentence: ${matchedSentence.id} -> $navRoute');
           }
         }
 

@@ -13,6 +13,7 @@ import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import '../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../core/motion/motion.dart';
+import '../../lessons/domain/entities/lesson_entity.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
@@ -41,6 +42,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final stars = ref.watch(userStarsProvider);
     final lessonsCompleted = ref.watch(lessonsCompletedProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
+    final quizzesAsync = ref.watch(quizzesProvider);
+
+    // Derive the next incomplete lesson for the hero card.
+    final completedIds = ref.watch(userStatsProvider).value?.completedLessons ?? {};
+    final allLessons = lessonsAsync.value ?? [];
+    LessonEntity? nextLesson;
+    for (final l in allLessons) {
+      if (!completedIds.contains(l.id)) {
+        nextLesson = l;
+        break;
+      }
+    }
+    final heroTitle = nextLesson?.titleLatin ?? 'Start Learning';
+    final quizCount = quizzesAsync.value?.length ?? 0;
 
     final stats = statsAsync.value;
     final streak = stats?.currentStreak ?? 0;
@@ -385,9 +401,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  const Text(
-                    'Master the\nVowels',
-                    style: TextStyle(
+                  Text(
+                    heroTitle.contains(' ')
+                        ? heroTitle.replaceFirst(' ', '\n')
+                        : heroTitle,
+                    style: const TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w900,
                       fontSize: 26,
@@ -490,7 +508,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    '3 Quizzes Available',
+                    '$quizCount Quizzes Available',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.8),
                       fontWeight: FontWeight.w600,

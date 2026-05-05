@@ -18,6 +18,7 @@ Use this checklist before every production release.
 - Run `scripts/appwrite_setup.mjs` with a server API key after schema or permission changes.
 - Confirm `translation_cache` and `rate_limits` have function-only permissions.
 - Confirm public collections are read-only for clients and admin writes require the admin team.
+- Confirm the `quizzes` collection exists and its `questions` field is a JSON-string attribute.
 
 ## Web Deployment
 
@@ -30,6 +31,9 @@ Use this checklist before every production release.
 - Run a release web build with the same dart-defines used by production.
 - Smoke test `/`, `/welcome`, `/privacy`, `/terms`, `/translate`, and `/admin/login`.
 - Verify refresh/deep links work through the SPA rewrite.
+- Open `https://admin.olitun.in` and confirm it redirects to `/admin`.
+- Sign in as an Appwrite team admin and create or update a draft quiz/category.
+- Confirm the Flutter mobile app is built with the same `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, and `ADMIN_TEAM_ID`, then verify the admin content change appears after refresh.
 
 ## Android Release
 

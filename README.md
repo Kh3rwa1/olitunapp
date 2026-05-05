@@ -165,6 +165,22 @@ The build script installs Flutter when the Vercel image does not provide it,
 runs code generation, and builds `build/web`. The SPA rewrite sends deep links
 such as `/privacy`, `/terms`, and `/admin/login` back to Flutter.
 
+### Admin and mobile Appwrite connection
+
+The admin panel at `admin.olitun.in` and the Flutter mobile app must be built
+with the same Appwrite values:
+
+- `APPWRITE_ENDPOINT`
+- `APPWRITE_PROJECT_ID`
+- `ADMIN_TEAM_ID`
+
+`admin.olitun.in` is routed to the same Flutter web app and redirects non-admin
+paths to `/admin`. Admin CMS writes go to Appwrite content collections, including
+`categories`, `lessons`, `quizzes`, `letters`, `numbers`, `words`, `sentences`,
+`rhymes`, `banners`, and settings. The mobile app reads those same collections
+and keeps Hive/shared-preferences caches as an offline fallback, so production
+admin edits become visible to mobile users after the next content refresh.
+
 ### Managing admins
 
 Admin access is purely team membership — there is no client-side secret.

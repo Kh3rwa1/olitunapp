@@ -132,6 +132,24 @@ const collections = [
     ],
   },
   {
+    id: 'quizzes',
+    name: 'Quizzes',
+    attrs: [
+      { type: 'string', key: 'categoryId', size: 36, required: false },
+      { type: 'string', key: 'title', size: 255, required: false },
+      { type: 'string', key: 'level', size: 20, required: false, default: 'beginner' },
+      { type: 'integer', key: 'order', required: false, default: 0 },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'passingScore', required: false, default: 70 },
+      // questions stored as JSON string so Appwrite, admin web, and mobile share one source.
+      { type: 'string', key: 'questions', size: 1000000, required: false },
+    ],
+    indexes: [
+      { key: 'idx_category', type: 'key', attributes: ['categoryId'] },
+      { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
+    ],
+  },
+  {
     id: 'letters',
     name: 'Letters',
     attrs: [

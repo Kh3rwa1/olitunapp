@@ -33,5 +33,187 @@
                 "type": "int"
             }
         }
-    }
+    },
+
+    "settings": "Settings",
+    "customizeExperience": "Em chet' anubhav badal me",
+    "appearance": "Dekhaw",
+    "darkMode": "Andhar Mode",
+    "scriptDisplay": "Ol Dekhaw",
+    "scriptMode": "Ol Mode",
+    "sound": "Sadam",
+    "soundEffects": "Sadam Effects",
+    "playSoundsForActions": "Kam lagid sadam bajao me",
+    "dangerZone": "Khatra Jaega",
+    "resetProgress": "Pragati Reset",
+    "clearAllLearningData": "Joto chet data sapha me",
+    "deleteAccount": "Account Mitao",
+    "deleteAccountSubtitle": "Account hamesa lagid mitao me",
+    "legal": "Ain",
+    "privacyPolicy": "Gopaniyata Niti",
+    "privacyPolicySubtitle": "Account ar chet data ok'to horok kanam",
+    "termsOfUse": "Niyam",
+    "termsOfUseSubtitle": "Chetgir, account, ar bichaar lagid niyam",
+    "chooseTheme": "Theme bachao me",
+    "systemDefault": "System default",
+    "light": "Chanana",
+    "dark": "Andhar",
+    "olChikiOnly": "Khaali Ol Chiki",
+    "latinOnly": "Khaali Latin",
+    "bothScripts": "Bariya ol",
+    "cancel": "Band",
+    "reset": "Reset",
+    "resetProgressWarning": "Noa em joto pragati, stars, ar streaks sapha kate. Noa kam aar undo ba hoyok'a.",
+    "deleteAccountWarning": "Noa em account ar joto data hamesa lagid mitao kate. Noa kam aar undo ba hoyok'a.\n\nEm pragati, settings, ar nijir tethay hamesa lagid udao kata.",
+    "deletePermanently": "Hamesa lagid mitao",
+    "failedToDeleteAccount": "Account mitao kat' bango: {message}",
+    "@failedToDeleteAccount": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+
+    "signInWithEmail": "Email ren sign in me",
+    "magicCodeDescription": "Am inag mit jaadu code pathao-a em chinah lagid. Password lakat ba.",
+    "emailAddress": "Email Address",
+    "emailHint": "chetgir@example.com",
+    "sendCode": "Code pathao me",
+    "continueWithoutAccount": "Account bagich idi me",
+    "enterVerificationCode": "Chinah Code dohoy me",
+    "codeSentTo": "Am {email} re code pathao len-a",
+    "@codeSentTo": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "verificationCode": "Chinah Code",
+    "enterCodeFromEmail": "Email khon code dohoy me",
+    "verifyAndContinue": "Chinah ar idi me",
+    "resendCodeIn": "{seconds}s re code aar pathao me",
+    "@resendCodeIn": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "resendCode": "Code aar pathao me",
+    "validEmailError": "Mit bhalo email address dohoy me",
+    "enterCodeError": "Chinah code dohoy me",
+    "sessionExpired": "Session khatam. Code aar pathao me.",
+    "errorCopiedToClipboard": "Bhul clipboard re copy hoena",
+    "skip": "Bagich",
+
+    "quiz": "Quiz",
+    "noQuestionsYet": "Abo tak kudchhi ba",
+    "goBack": "Pichhe me",
+    "continueButton": "Idi me",
+    "wellDone": "Bhalo hoena!",
+    "keepPracticing": "Abhyas idi me",
+    "youScored": "Em {total} khon {score} paolen-a",
+    "@youScored": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "plusStars": "+{count} Stars",
+    "@plusStars": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+
+    "aboutThisLesson": "Noa path babot",
+    "completeLesson": "Path chao me",
+    "lettersToLearn": "Ol chetlagid",
+    "numbersToLearn": "Ginti chetlagid",
+    "vocabulary": "Ror",
+    "commonPhrases": "Chalit Baat",
+    "content": "Bichaar",
+    "takeAQuiz": "Quiz me",
+    "testYourKnowledge": "Em gyaan jaanch me!",
+    "noLettersAvailable": "Abo tak ol ba",
+    "noNumbersAvailable": "Abo tak ginti ba",
+    "noWordsAvailable": "Abo tak ror ba",
+    "noSentencesAvailable": "Abo tak baat ba",
+    "noLessonsAvailable": "Abo tak path ba",
+
+    "joharUser": "Johar, {userName}!",
+    "@joharUser": {
+        "placeholders": {
+            "userName": {
+                "type": "String"
+            }
+        }
+    },
+    "dailyProgressPercent": "Din Pragati: {percent}%",
+    "@dailyProgressPercent": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "milestones": "Miitpatthar",
+    "learningTime": "Chet Samay",
+    "time": "Samay",
+    "resumeJourney": "YATRA IDI ME",
+    "testYourKnowledgeTitle": "Em Gyaan\nJaanch me!",
+    "quizzesAvailable": "{count} Quiz menag-a",
+    "@quizzesAvailable": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "start": "SURU",
+    "discover": "SANDHAY",
+    "couldNotLoadPaths": "Chet path load bango",
+
+    "yourStats": "EM STATS",
+    "skillsMastery": "KAUSAL MASTER",
+    "quizAnalysis": "QUIZ BISHLESHAN",
+    "account": "ACCOUNT",
+    "editName": "Nut' badal",
+    "share": "Adik",
+    "comingSoon": "Nawa ased!",
+    "chooseYourAvatar": "Em Avatar bachao me",
+    "backgroundColor": "Rang",
+    "avatarEmoji": "Avatar Emoji",
+
+    "rhymes": "Dander",
+    "santali": "Santali",
+    "unlockMagic": "Katha ar enger jaadu khul me",
+    "all": "Joto",
+    "discoverMore": "AAR SANDHAY",
+    "moreComing": "Aar ased! ✨",
+    "couldNotLoadRhymes": "Dander load bango",
+    "checkConnection": "Em connection dekhao ar aar try me",
+    "featured": "BISESH",
+    "listenNow": "ABO AYUM",
+    "pause": "THAM",
+
+    "getStarted": "Suru me",
+    "loading": "Load hoyog...",
+    "error": "Bhul",
+    "retry": "Aar try me",
+    "undo": "Undo",
+    "clear": "Sapha",
+    "tryAgain": "Aar try me",
+    "replayAnimation": "Animation aar dekhao",
+    "sentences": "Baat",
+    "noSentencesFound": "Baat ba sedaena",
+    "noQuestionsFound": "Kudchhi ba sedaena."
 }

@@ -116,8 +116,8 @@ class _EnchantedPainter extends CustomPainter {
       for (var particle in particles) {
         particle.update();
         final paint = Paint()
-          ..color = color.withValues(alpha: 
-            particle.opacity * (1.0 - (1.0 - particle.y).abs()),
+          ..color = color.withValues(
+            alpha: particle.opacity * (1.0 - (1.0 - particle.y).abs()),
           )
           ..style = PaintingStyle.fill;
 

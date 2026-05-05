@@ -105,7 +105,9 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     }
 
     if (_userId == null) {
-      setState(() => _errorMessage = 'Session expired. Please resend the code.');
+      setState(
+        () => _errorMessage = 'Session expired. Please resend the code.',
+      );
       return;
     }
 
@@ -609,5 +611,4 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
       ],
     );
   }
-
 }

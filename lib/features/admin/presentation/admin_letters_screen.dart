@@ -848,11 +848,7 @@ class AdminLettersScreen extends ConsumerWidget {
     required String hint,
     required bool isDark,
   }) {
-    return AdminTextField(
-      controller: controller,
-      label: label,
-      hint: hint,
-    );
+    return AdminTextField(controller: controller, label: label, hint: hint);
   }
 
   Future<void> _showDeleteDialog(

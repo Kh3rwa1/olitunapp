@@ -24,7 +24,8 @@ class ProgressScreen extends ConsumerWidget {
     final isDesktop = ResponsiveLayout.isDesktop(context);
 
     return statsAsync.when(
-      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
       error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
       data: (stats) {
         final streak = stats.currentStreak;
@@ -43,85 +44,88 @@ class ProgressScreen extends ConsumerWidget {
               ref.invalidate(userStatsProvider);
             },
             child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // Minimal app bar
-              SliverAppBar(
-                expandedHeight: 0,
-                pinned: true,
-                backgroundColor: isDark
-                    ? AppColors.darkBackground
-                    : AppColors.lightBackground,
-                elevation: 0,
-                toolbarHeight: 0,
-              ),
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // Minimal app bar
+                SliverAppBar(
+                  expandedHeight: 0,
+                  pinned: true,
+                  backgroundColor: isDark
+                      ? AppColors.darkBackground
+                      : AppColors.lightBackground,
+                  elevation: 0,
+                  toolbarHeight: 0,
+                ),
 
-              SliverToBoxAdapter(
-                child: ResponsivePageContainer(
-                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 20),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 16),
+                SliverToBoxAdapter(
+                  child: ResponsivePageContainer(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 32 : 20,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 16),
 
-                      // ═══════════════ PROFILE HERO SECTION ═══════════════
-                      _ProfileHeroCard(
-                            userName: userName,
-                            avatarColors: avatarColors,
-                            avatarEmoji: avatarEmoji,
-                            level: stats.learnerLevel,
-                            levelIndex: stats.levelIndex,
-                            memberSince: memberSince,
-                            overallProgress: stats.overallProgress,
-                            isDark: isDark,
-                            onEditName: () =>
-                                _showEditNameDialog(context, ref, userName),
-                            onEditAvatar: () => _showAvatarPicker(context, ref),
-                          )
-                          .animate()
-                          .fadeIn(duration: 500.ms)
-                          .slideY(begin: 0.1, end: 0),
+                        // ═══════════════ PROFILE HERO SECTION ═══════════════
+                        _ProfileHeroCard(
+                              userName: userName,
+                              avatarColors: avatarColors,
+                              avatarEmoji: avatarEmoji,
+                              level: stats.learnerLevel,
+                              levelIndex: stats.levelIndex,
+                              memberSince: memberSince,
+                              overallProgress: stats.overallProgress,
+                              isDark: isDark,
+                              onEditName: () =>
+                                  _showEditNameDialog(context, ref, userName),
+                              onEditAvatar: () =>
+                                  _showAvatarPicker(context, ref),
+                            )
+                            .animate()
+                            .fadeIn(duration: 500.ms)
+                            .slideY(begin: 0.1, end: 0),
 
-                      const SizedBox(height: 24),
+                        const SizedBox(height: 24),
 
-                      // ═══════════════ CORE STATS ROW ═══════════════
-                      _buildSectionHeader('YOUR STATS', isDark),
-                      const SizedBox(height: 14),
-                      _buildStatsGrid(
-                        streak: streak,
-                        stars: stars,
-                        quizzesCompleted: quizzesCompleted,
-                        learningTime: learningTime,
-                        isDark: isDark,
-                        isTablet: isTablet,
-                      ),
-                      const SizedBox(height: 32),
+                        // ═══════════════ CORE STATS ROW ═══════════════
+                        _buildSectionHeader('YOUR STATS', isDark),
+                        const SizedBox(height: 14),
+                        _buildStatsGrid(
+                          streak: streak,
+                          stars: stars,
+                          quizzesCompleted: quizzesCompleted,
+                          learningTime: learningTime,
+                          isDark: isDark,
+                          isTablet: isTablet,
+                        ),
+                        const SizedBox(height: 32),
 
-                      _buildSectionHeader('SKILLS MASTERY', isDark),
-                      const SizedBox(height: 16),
-                      _buildSkillsGrid(context, isDark, isTablet, stats),
-                      const SizedBox(height: 32),
+                        _buildSectionHeader('SKILLS MASTERY', isDark),
+                        const SizedBox(height: 16),
+                        _buildSkillsGrid(context, isDark, isTablet, stats),
+                        const SizedBox(height: 32),
 
-                      _buildSectionHeader('QUIZ ANALYSIS', isDark),
-                      const SizedBox(height: 16),
-                      _QuizPerformanceCard(
-                        quizzes: quizzesCompleted,
-                        accuracy: (stats.quizAccuracy * 100).round(),
-                        bestScore: stats.bestQuizScore,
-                        isDark: isDark,
-                      ),
-                      const SizedBox(height: 32),
+                        _buildSectionHeader('QUIZ ANALYSIS', isDark),
+                        const SizedBox(height: 16),
+                        _QuizPerformanceCard(
+                          quizzes: quizzesCompleted,
+                          accuracy: (stats.quizAccuracy * 100).round(),
+                          bestScore: stats.bestQuizScore,
+                          isDark: isDark,
+                        ),
+                        const SizedBox(height: 32),
 
-                      _buildSectionHeader('ACCOUNT', isDark),
-                      const SizedBox(height: 12),
-                      _buildActionTiles(context, ref, isDark),
-                      SizedBox(height: isDesktop ? 32 : 120),
-                    ],
+                        _buildSectionHeader('ACCOUNT', isDark),
+                        const SizedBox(height: 12),
+                        _buildActionTiles(context, ref, isDark),
+                        SizedBox(height: isDesktop ? 32 : 120),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            ),
           ),
         );
       },
@@ -222,7 +226,12 @@ class ProgressScreen extends ConsumerWidget {
               child: AnimatedBentoChild(
                 index: 1,
                 child: _StatPill(
-                  data: _StatData.counter(Icons.star_rounded, stars, 'Stars', AppColors.duoYellow),
+                  data: _StatData.counter(
+                    Icons.star_rounded,
+                    stars,
+                    'Stars',
+                    AppColors.duoYellow,
+                  ),
                   isDark: isDark,
                   delay: 80,
                 ),
@@ -233,7 +242,12 @@ class ProgressScreen extends ConsumerWidget {
               child: AnimatedBentoChild(
                 index: 2,
                 child: _StatPill(
-                  data: _StatData.counter(Icons.quiz_rounded, quizzesCompleted, 'Quizzes', AppColors.duoBlue),
+                  data: _StatData.counter(
+                    Icons.quiz_rounded,
+                    quizzesCompleted,
+                    'Quizzes',
+                    AppColors.duoBlue,
+                  ),
                   isDark: isDark,
                   delay: 160,
                 ),
@@ -244,7 +258,13 @@ class ProgressScreen extends ConsumerWidget {
               child: AnimatedBentoChild(
                 index: 3,
                 child: _StatPill(
-                  data: _StatData.counter(Icons.timer_rounded, learningTime, 'Time', AppColors.primary, suffix: 'm'),
+                  data: _StatData.counter(
+                    Icons.timer_rounded,
+                    learningTime,
+                    'Time',
+                    AppColors.primary,
+                    suffix: 'm',
+                  ),
                   isDark: isDark,
                   delay: 240,
                 ),
@@ -265,11 +285,7 @@ class ProgressScreen extends ConsumerWidget {
     final skills = [
       _SkillData('Alphabet', stats.alphabetProgress, AppColors.duoBlue),
       _SkillData('Numbers', stats.numbersProgress, AppColors.duoOrange),
-      _SkillData(
-        'Vocabulary',
-        stats.vocabularyProgress,
-        AppColors.duoGreen,
-      ),
+      _SkillData('Vocabulary', stats.vocabularyProgress, AppColors.duoGreen),
       _SkillData('Rhymes', stats.rhymesProgress, AppColors.primary),
     ];
 
@@ -468,7 +484,9 @@ class ProgressScreen extends ConsumerWidget {
                     return GestureDetector(
                       onTap: () {
                         setSheetState(() => selectedColor = i);
-                          ref.read(userStatsProvider.notifier).updateAvatar(ref, currentEmoji, i);
+                        ref
+                            .read(userStatsProvider.notifier)
+                            .updateAvatar(ref, currentEmoji, i);
                         HapticFeedback.selectionClick();
                       },
                       child: Container(
@@ -476,7 +494,9 @@ class ProgressScreen extends ConsumerWidget {
                         height: 32,
                         margin: const EdgeInsets.symmetric(horizontal: 4),
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(colors: AppColors.avatarPalettes[i]),
+                          gradient: LinearGradient(
+                            colors: AppColors.avatarPalettes[i],
+                          ),
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isSelected
@@ -487,9 +507,8 @@ class ProgressScreen extends ConsumerWidget {
                           boxShadow: isSelected
                               ? [
                                   BoxShadow(
-                                    color: AppColors.avatarPalettes[i][0].withValues(
-                                      alpha: 0.4,
-                                    ),
+                                    color: AppColors.avatarPalettes[i][0]
+                                        .withValues(alpha: 0.4),
                                     blurRadius: 8,
                                   ),
                                 ]
@@ -529,8 +548,10 @@ class ProgressScreen extends ConsumerWidget {
                         return GestureDetector(
                           onTap: () {
                             setSheetState(() => selectedEmoji = '');
-                             ref.read(userStatsProvider.notifier).updateAvatar(ref, '', selectedColor);
-                             HapticFeedback.selectionClick();
+                            ref
+                                .read(userStatsProvider.notifier)
+                                .updateAvatar(ref, '', selectedColor);
+                            HapticFeedback.selectionClick();
                           },
                           child: Container(
                             decoration: BoxDecoration(
@@ -560,7 +581,9 @@ class ProgressScreen extends ConsumerWidget {
                       return GestureDetector(
                         onTap: () {
                           setSheetState(() => selectedEmoji = emoji);
-                          ref.read(userStatsProvider.notifier).updateAvatar(ref, emoji, currentColorIndex);
+                          ref
+                              .read(userStatsProvider.notifier)
+                              .updateAvatar(ref, emoji, currentColorIndex);
                           HapticFeedback.selectionClick();
                         },
                         child: Container(
@@ -610,8 +633,9 @@ class _EditNameSheet extends StatefulWidget {
 }
 
 class _EditNameSheetState extends State<_EditNameSheet> {
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialName);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
   final FocusNode _focusNode = FocusNode();
   final GlobalKey<FocusGlowFieldState> _glowKey =
       GlobalKey<FocusGlowFieldState>();
@@ -740,16 +764,16 @@ class _StatData {
   final int? numericValue;
   final String suffix;
   const _StatData(this.icon, this.value, this.label, this.color)
-      : numericValue = null,
-        suffix = '';
+    : numericValue = null,
+      suffix = '';
   const _StatData.counter(
     this.icon,
     int value,
     this.label,
     this.color, {
     this.suffix = '',
-  })  : numericValue = value,
-        value = '';
+  }) : numericValue = value,
+       value = '';
 }
 
 class _SkillData {
@@ -830,7 +854,10 @@ class _ProfileHeroCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: isDark
-              ? [Colors.white.withValues(alpha: 0.06), Colors.white.withValues(alpha: 0.02)]
+              ? [
+                  Colors.white.withValues(alpha: 0.06),
+                  Colors.white.withValues(alpha: 0.02),
+                ]
               : [Colors.white, Colors.white.withValues(alpha: 0.9)],
         ),
         borderRadius: BorderRadius.circular(28),

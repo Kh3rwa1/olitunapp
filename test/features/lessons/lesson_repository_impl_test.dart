@@ -16,12 +16,12 @@ class _MockLocal extends Mock implements LessonLocalDataSource {}
 class _MockNetwork extends Mock implements NetworkInfo {}
 
 LessonModel _lesson(String id) => LessonModel(
-      id: id,
-      categoryId: 'cat',
-      titleOlChiki: 'ᱚ',
-      titleLatin: 'a',
-      blocks: const [],
-    );
+  id: id,
+  categoryId: 'cat',
+  titleOlChiki: 'ᱚ',
+  titleLatin: 'a',
+  blocks: const [],
+);
 
 void main() {
   late _MockRemote remote;
@@ -50,37 +50,40 @@ void main() {
       final result = await repo.getLessons();
 
       expect(result.isRight(), isTrue);
-      result.match((_) => fail('should be right'),
-          (lessons) => expect(lessons.single.id, '1'));
+      result.match(
+        (_) => fail('should be right'),
+        (lessons) => expect(lessons.single.id, '1'),
+      );
       verify(() => local.cacheLessons(any())).called(1);
     });
 
     test('falls back to cache on remote ServerException', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
-      when(() => remote.getLessons())
-          .thenThrow(ServerException(message: 'boom', code: 500));
+      when(
+        () => remote.getLessons(),
+      ).thenThrow(ServerException(message: 'boom', code: 500));
       when(() => local.getLessons()).thenAnswer((_) async => [_lesson('c')]);
 
       final result = await repo.getLessons();
 
-      result.match((_) => fail('should be right (cache hit)'),
-          (lessons) => expect(lessons.single.id, 'c'));
+      result.match(
+        (_) => fail('should be right (cache hit)'),
+        (lessons) => expect(lessons.single.id, 'c'),
+      );
     });
 
     test('returns ServerFailure when offline AND cache empty', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
-      when(() => local.getLessons())
-          .thenThrow(CacheException(message: 'no cache'));
+      when(
+        () => local.getLessons(),
+      ).thenThrow(CacheException(message: 'no cache'));
 
       final result = await repo.getLessons();
 
-      result.match(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'No internet connection');
-        },
-        (_) => fail('should be left'),
-      );
+      result.match((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'No internet connection');
+      }, (_) => fail('should be left'));
     });
 
     test('uses cache when offline AND cache populated', () async {
@@ -89,39 +92,41 @@ void main() {
 
       final result = await repo.getLessons();
 
-      result.match((_) => fail('should be right'),
-          (lessons) => expect(lessons.single.id, 'x'));
+      result.match(
+        (_) => fail('should be right'),
+        (lessons) => expect(lessons.single.id, 'x'),
+      );
     });
   });
 
   group('getLessonsByCategory', () {
-    test('returns NetworkFailure when offline AND local cache throws',
-        () async {
-      when(() => network.isConnected).thenAnswer((_) async => false);
-      when(() => local.getLessons()).thenThrow(Exception('disk'));
+    test(
+      'returns NetworkFailure when offline AND local cache throws',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => false);
+        when(() => local.getLessons()).thenThrow(Exception('disk'));
 
-      final result = await repo.getLessonsByCategory('cat');
+        final result = await repo.getLessonsByCategory('cat');
 
-      result.match(
-        (failure) => expect(failure, isA<NetworkFailure>()),
-        (_) => fail('should be left'),
-      );
-    });
+        result.match(
+          (failure) => expect(failure, isA<NetworkFailure>()),
+          (_) => fail('should be left'),
+        );
+      },
+    );
 
     test('returns ServerFailure when remote throws while online', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
-      when(() => remote.getLessonsByCategory(any()))
-          .thenThrow(ServerException(message: 'nope', code: 500));
+      when(
+        () => remote.getLessonsByCategory(any()),
+      ).thenThrow(ServerException(message: 'nope', code: 500));
 
       final result = await repo.getLessonsByCategory('cat');
 
-      result.match(
-        (failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'nope');
-        },
-        (_) => fail('should be left'),
-      );
+      result.match((failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, 'nope');
+      }, (_) => fail('should be left'));
     });
   });
 }

@@ -69,12 +69,14 @@ class AdminGlassCard extends StatelessWidget {
             child: Container(
               padding: padding,
               decoration: BoxDecoration(
-                color: color ??
+                color:
+                    color ??
                     (isDark
                         ? Colors.white.withValues(alpha: opacity)
                         : Colors.white.withValues(alpha: 0.72)),
                 borderRadius: radius,
-                border: border ??
+                border:
+                    border ??
                     Border.all(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.08)
@@ -103,18 +105,11 @@ class AdminGlassCard extends StatelessWidget {
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
                 colors: isDark
-                    ? [
-                        AdminTokens.raisedAlt(true),
-                        AdminTokens.raised(true),
-                      ]
-                    : [
-                        Colors.white,
-                        AdminTokens.neutral25,
-                      ],
+                    ? [AdminTokens.raisedAlt(true), AdminTokens.raised(true)]
+                    : [Colors.white, AdminTokens.neutral25],
               )
             : null,
-        border: border ??
-            Border.all(color: AdminTokens.border(isDark)),
+        border: border ?? Border.all(color: AdminTokens.border(isDark)),
         boxShadow: boxShadow ?? AdminTokens.raisedShadow(isDark),
       ),
       child: child,

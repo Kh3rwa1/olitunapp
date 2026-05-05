@@ -36,14 +36,14 @@ class _PressableScaleState extends State<PressableScale>
     value: 0.0,
   );
 
-  late final Animation<double> _scaleAnim = Tween<double>(
-    begin: 1.0,
-    end: widget.scale,
-  ).animate(CurvedAnimation(
-    parent: _controller,
-    curve: MotionTokens.standard,
-    reverseCurve: MotionTokens.gentleSpring,
-  ));
+  late final Animation<double> _scaleAnim =
+      Tween<double>(begin: 1.0, end: widget.scale).animate(
+        CurvedAnimation(
+          parent: _controller,
+          curve: MotionTokens.standard,
+          reverseCurve: MotionTokens.gentleSpring,
+        ),
+      );
 
   bool get _interactive =>
       widget.enabled && (widget.onTap != null || widget.onLongPress != null);

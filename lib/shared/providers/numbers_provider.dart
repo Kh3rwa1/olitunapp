@@ -17,11 +17,41 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
   final Ref ref;
 
   static final List<NumberModel> _seedNumbers = [
-    NumberModel(id: '1', numeral: '᱑', value: 1, nameOlChiki: 'ᱢᱤᱫ', nameLatin: 'Mit'),
-    NumberModel(id: '2', numeral: '᱒', value: 2, nameOlChiki: 'ᱵᱟᱨ', nameLatin: 'Bar'),
-    NumberModel(id: '3', numeral: '᱓', value: 3, nameOlChiki: 'ᱯᱮ', nameLatin: 'Pe'),
-    NumberModel(id: '4', numeral: '᱔', value: 4, nameOlChiki: 'ᱯᱩᱱ', nameLatin: 'Pun'),
-    NumberModel(id: '5', numeral: '᱕', value: 5, nameOlChiki: 'ᱢᱚᱬᱮ', nameLatin: 'Mone'),
+    NumberModel(
+      id: '1',
+      numeral: '᱑',
+      value: 1,
+      nameOlChiki: 'ᱢᱤᱫ',
+      nameLatin: 'Mit',
+    ),
+    NumberModel(
+      id: '2',
+      numeral: '᱒',
+      value: 2,
+      nameOlChiki: 'ᱵᱟᱨ',
+      nameLatin: 'Bar',
+    ),
+    NumberModel(
+      id: '3',
+      numeral: '᱓',
+      value: 3,
+      nameOlChiki: 'ᱯᱮ',
+      nameLatin: 'Pe',
+    ),
+    NumberModel(
+      id: '4',
+      numeral: '᱔',
+      value: 4,
+      nameOlChiki: 'ᱯᱩᱱ',
+      nameLatin: 'Pun',
+    ),
+    NumberModel(
+      id: '5',
+      numeral: '᱕',
+      value: 5,
+      nameOlChiki: 'ᱢᱚᱬᱮ',
+      nameLatin: 'Mone',
+    ),
   ];
 
   Future<void> _loadNumbers() async {

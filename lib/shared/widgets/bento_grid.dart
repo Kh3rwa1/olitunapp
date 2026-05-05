@@ -40,8 +40,12 @@ class _BentoCellState extends State<BentoCell> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return MouseRegion(
-      onEnter: widget.enableHover ? (_) => setState(() => _isHovered = true) : null,
-      onExit: widget.enableHover ? (_) => setState(() => _isHovered = false) : null,
+      onEnter: widget.enableHover
+          ? (_) => setState(() => _isHovered = true)
+          : null,
+      onExit: widget.enableHover
+          ? (_) => setState(() => _isHovered = false)
+          : null,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 250),
         curve: Curves.easeOutCubic,
@@ -52,18 +56,19 @@ class _BentoCellState extends State<BentoCell> {
         padding: widget.padding,
         decoration: BoxDecoration(
           gradient: widget.gradient,
-          color: widget.color ??
-              (isDark
-                  ? Colors.white.withValues(alpha: 0.04)
-                  : Colors.white),
+          color:
+              widget.color ??
+              (isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white),
           borderRadius: BorderRadius.circular(widget.borderRadius),
-          border: widget.border ??
+          border:
+              widget.border ??
               Border.all(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.08)
                     : Colors.black.withValues(alpha: 0.05),
               ),
-          boxShadow: widget.boxShadow ??
+          boxShadow:
+              widget.boxShadow ??
               (isDark
                   ? []
                   : [
@@ -112,8 +117,8 @@ class BentoGridLayout extends StatelessWidget {
             if (child is BentoCell) {
               final span = child.columnSpan.clamp(1, columns);
               final width = cellWidth * span + spacing * (span - 1);
-              final height = cellHeight * child.rowSpan +
-                  runSpacing * (child.rowSpan - 1);
+              final height =
+                  cellHeight * child.rowSpan + runSpacing * (child.rowSpan - 1);
               return SizedBox(width: width, height: height, child: child);
             }
             return SizedBox(width: cellWidth, height: cellHeight, child: child);

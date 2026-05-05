@@ -12,7 +12,6 @@
 # Google Play Core & GMS (Flutter engine references these)
 -dontwarn com.google.android.play.core.**
 -dontwarn com.google.android.gms.**
--dontwarn com.google.firebase.**
 
 # Allow obfuscation of most things, but keep some essentials
 -keepattributes Signature

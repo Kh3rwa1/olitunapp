@@ -94,40 +94,41 @@ final List<_CollectionSpec> _activitySpecs = [
     singular: 'Lesson',
     icon: Icons.school_rounded,
     color: AppColors.duoBlue,
-    subtitle: (r) => _firstNonEmpty(
-      [r['titleLatin'] as String?, r['titleOlChiki'] as String?],
-      'Untitled lesson',
-    ),
+    subtitle: (r) => _firstNonEmpty([
+      r['titleLatin'] as String?,
+      r['titleOlChiki'] as String?,
+    ], 'Untitled lesson'),
   ),
   _CollectionSpec(
     id: 'categories',
     singular: 'Category',
     icon: Icons.category_rounded,
     color: AppColors.duoGreen,
-    subtitle: (r) => _firstNonEmpty(
-      [r['titleLatin'] as String?, r['titleOlChiki'] as String?],
-      'Untitled category',
-    ),
+    subtitle: (r) => _firstNonEmpty([
+      r['titleLatin'] as String?,
+      r['titleOlChiki'] as String?,
+    ], 'Untitled category'),
   ),
   _CollectionSpec(
     id: 'words',
     singular: 'Word',
     icon: Icons.menu_book_rounded,
     color: AppColors.duoYellow,
-    subtitle: (r) => _firstNonEmpty(
-      [r['wordLatin'] as String?, r['wordOlChiki'] as String?, r['meaning'] as String?],
-      'Untitled word',
-    ),
+    subtitle: (r) => _firstNonEmpty([
+      r['wordLatin'] as String?,
+      r['wordOlChiki'] as String?,
+      r['meaning'] as String?,
+    ], 'Untitled word'),
   ),
   _CollectionSpec(
     id: 'letters',
     singular: 'Letter',
     icon: Icons.text_fields_rounded,
     color: AppColors.duoOrange,
-    subtitle: (r) => _firstNonEmpty(
-      [r['transliterationLatin'] as String?, r['charOlChiki'] as String?],
-      'Untitled letter',
-    ),
+    subtitle: (r) => _firstNonEmpty([
+      r['transliterationLatin'] as String?,
+      r['charOlChiki'] as String?,
+    ], 'Untitled letter'),
   ),
   _CollectionSpec(
     id: 'numbers',
@@ -148,10 +149,10 @@ final List<_CollectionSpec> _activitySpecs = [
     singular: 'Banner',
     icon: Icons.featured_play_list_rounded,
     color: AppColors.duoPurple,
-    subtitle: (r) => _firstNonEmpty(
-      [r['title'] as String?, r['subtitle'] as String?],
-      'Untitled banner',
-    ),
+    subtitle: (r) => _firstNonEmpty([
+      r['title'] as String?,
+      r['subtitle'] as String?,
+    ], 'Untitled banner'),
   ),
 ];
 
@@ -195,7 +196,8 @@ final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
       if (ts == null) continue;
 
       // Treat anything updated more than ~30s after creation as an "update".
-      final isUpdate = created != null &&
+      final isUpdate =
+          created != null &&
           updated != null &&
           updated.difference(created).inSeconds > 30;
 

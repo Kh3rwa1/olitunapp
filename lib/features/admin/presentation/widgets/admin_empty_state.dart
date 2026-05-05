@@ -12,8 +12,10 @@ class AdminEmptyState extends StatelessWidget {
     this.message,
     this.actionLabel,
     this.onAction,
-  }) : assert(icon != null || glyph != null,
-            'Provide either an icon or a glyph.');
+  }) : assert(
+         icon != null || glyph != null,
+         'Provide either an icon or a glyph.',
+       );
 
   final IconData? icon;
   final String? glyph;
@@ -52,9 +54,7 @@ class AdminEmptyState extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: AdminTokens.accentSoft(isDark),
                   borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
-                  border: Border.all(
-                    color: AdminTokens.accentBorder(isDark),
-                  ),
+                  border: Border.all(color: AdminTokens.accentBorder(isDark)),
                 ),
                 alignment: Alignment.center,
                 child: mark,
@@ -70,9 +70,9 @@ class AdminEmptyState extends StatelessWidget {
                 Text(
                   message!,
                   textAlign: TextAlign.center,
-                  style: AdminTokens.body(isDark).copyWith(
-                    color: AdminTokens.textSecondary(isDark),
-                  ),
+                  style: AdminTokens.body(
+                    isDark,
+                  ).copyWith(color: AdminTokens.textSecondary(isDark)),
                 ),
               ],
               if (actionLabel != null && onAction != null) ...[

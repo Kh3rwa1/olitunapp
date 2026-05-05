@@ -49,8 +49,9 @@ class QuizListScreen extends ConsumerWidget {
                   }).toList();
 
                   activeQuizzes.sort(
-                    (a, b) => _getLevelValue(a.level)
-                        .compareTo(_getLevelValue(b.level)),
+                    (a, b) => _getLevelValue(
+                      a.level,
+                    ).compareTo(_getLevelValue(b.level)),
                   );
 
                   if (activeQuizzes.isEmpty) {
@@ -91,15 +92,16 @@ class QuizListScreen extends ConsumerWidget {
                             const SizedBox(height: 28),
 
                             Text(
-                              'MORE QUIZZES',
-                              style: GoogleFonts.inter(
-                                fontSize: 11,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 1.5,
-                                color:
-                                    isDark ? Colors.white38 : Colors.black38,
-                              ),
-                            )
+                                  'MORE QUIZZES',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w800,
+                                    letterSpacing: 1.5,
+                                    color: isDark
+                                        ? Colors.white38
+                                        : Colors.black38,
+                                  ),
+                                )
                                 .animate()
                                 .fadeIn(delay: 200.ms)
                                 .slideX(begin: -0.05),
@@ -111,16 +113,14 @@ class QuizListScreen extends ConsumerWidget {
                               physics: const NeverScrollableScrollPhysics(),
                               gridDelegate:
                                   SliverGridDelegateWithFixedCrossAxisCount(
-                                crossAxisCount:
-                                    ResponsiveLayout.gridColumns(
-                                  context,
-                                ),
-                                mainAxisSpacing: 16,
-                                crossAxisSpacing: 16,
-                                childAspectRatio: isDesktop
-                                    ? 1.1
-                                    : (isTablet ? 1.0 : 0.88),
-                              ),
+                                    crossAxisCount:
+                                        ResponsiveLayout.gridColumns(context),
+                                    mainAxisSpacing: 16,
+                                    crossAxisSpacing: 16,
+                                    childAspectRatio: isDesktop
+                                        ? 1.1
+                                        : (isTablet ? 1.0 : 0.88),
+                                  ),
                               itemCount: activeQuizzes.length - 1,
                               itemBuilder: (context, index) {
                                 final quiz = activeQuizzes[index + 1];
@@ -251,7 +251,11 @@ class QuizListScreen extends ConsumerWidget {
                 ),
               ],
             ),
-            child: const Icon(Icons.quiz_outlined, size: 48, color: Colors.white),
+            child: const Icon(
+              Icons.quiz_outlined,
+              size: 48,
+              color: Colors.white,
+            ),
           ),
           const SizedBox(height: 24),
           Text(
@@ -290,10 +294,7 @@ class _HeroQuizCard extends StatelessWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [
-          AppColors.duoOrange,
-          AppColors.duoOrangeDark,
-        ],
+        colors: [AppColors.duoOrange, AppColors.duoOrangeDark],
       ),
       borderRadius: 32,
       border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
@@ -311,31 +312,33 @@ class _HeroQuizCard extends StatelessWidget {
           Positioned(
             right: -10,
             bottom: -10,
-            child: Icon(
-                  Icons.quiz_rounded,
-                  size: 100,
-                  color: Colors.white.withValues(alpha: 0.15),
-                )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .moveY(begin: 0, end: -8, duration: 1800.ms)
-                .scale(
-                  begin: const Offset(1, 1),
-                  end: const Offset(1.05, 1.05),
-                  duration: 1800.ms,
-                ),
+            child:
+                Icon(
+                      Icons.quiz_rounded,
+                      size: 100,
+                      color: Colors.white.withValues(alpha: 0.15),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .moveY(begin: 0, end: -8, duration: 1800.ms)
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.05, 1.05),
+                      duration: 1800.ms,
+                    ),
           ),
           Positioned(
             right: 60,
             top: 8,
-            child: Icon(
-                  Icons.auto_awesome,
-                  size: 18,
-                  color: Colors.white.withValues(alpha: 0.5),
-                )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .fadeIn(duration: 600.ms)
-                .then()
-                .fadeOut(duration: 600.ms),
+            child:
+                Icon(
+                      Icons.auto_awesome,
+                      size: 18,
+                      color: Colors.white.withValues(alpha: 0.5),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .fadeIn(duration: 600.ms)
+                    .then()
+                    .fadeOut(duration: 600.ms),
           ),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -354,8 +357,11 @@ class _HeroQuizCard extends StatelessWidget {
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.emoji_events_rounded,
-                            size: 13, color: Colors.white),
+                        const Icon(
+                          Icons.emoji_events_rounded,
+                          size: 13,
+                          color: Colors.white,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           _getLevelEmoji(quiz.level),
@@ -392,39 +398,42 @@ class _HeroQuizCard extends StatelessWidget {
               ),
               const SizedBox(height: 20),
               Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(14),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
                     ),
-                  ],
-                ),
-                child: const Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.play_arrow_rounded,
-                        color: AppColors.duoOrangeDark, size: 20),
-                    SizedBox(width: 8),
-                    Text(
-                      'START QUIZ',
-                      style: TextStyle(
-                        color: AppColors.duoOrangeDark,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 14,
-                        letterSpacing: 0.5,
-                      ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.duoOrangeDark,
+                          size: 20,
+                        ),
+                        SizedBox(width: 8),
+                        Text(
+                          'START QUIZ',
+                          style: TextStyle(
+                            color: AppColors.duoOrangeDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 14,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                   .animate(onPlay: (c) => c.repeat(reverse: true))
                   .shimmer(
                     delay: 2.seconds,
@@ -473,9 +482,7 @@ class _BentoQuizCard extends StatelessWidget {
 
     return BentoCell(
       padding: const EdgeInsets.all(16),
-      color: isDark
-          ? Colors.white.withValues(alpha: 0.04)
-          : Colors.white,
+      color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
       boxShadow: isDark
           ? null
           : [

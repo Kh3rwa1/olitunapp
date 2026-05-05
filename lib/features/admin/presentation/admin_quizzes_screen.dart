@@ -172,12 +172,13 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return AdminEmptyState(
-      icon: Icons.quiz_outlined,
-      title: 'No quizzes found',
-      message: 'Create your first quiz to assess what learners have mastered.',
-      actionLabel: 'Add Quiz',
-      onAction: () => _showQuizDialog(context, null),
-    )
+          icon: Icons.quiz_outlined,
+          title: 'No quizzes found',
+          message:
+              'Create your first quiz to assess what learners have mastered.',
+          actionLabel: 'Add Quiz',
+          onAction: () => _showQuizDialog(context, null),
+        )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
         .scale(begin: const Offset(0.96, 0.96));
@@ -210,11 +211,18 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
 
   void _showQuizDialog(BuildContext context, QuizModel? quiz) {
     final isEditing = quiz != null;
-    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
-    var selectedCategoryId = quiz?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+    final categories =
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+    var selectedCategoryId =
+        quiz?.categoryId ??
+        (categories.isNotEmpty ? categories.first.id : null);
     final titleController = TextEditingController(text: quiz?.title ?? '');
-    final orderController = TextEditingController(text: (quiz?.order ?? 0).toString());
-    final passingScoreController = TextEditingController(text: (quiz?.passingScore ?? 70).toString());
+    final orderController = TextEditingController(
+      text: (quiz?.order ?? 0).toString(),
+    );
+    final passingScoreController = TextEditingController(
+      text: (quiz?.passingScore ?? 70).toString(),
+    );
     var level = quiz?.level ?? 'beginner';
     var isActive = quiz?.isActive ?? true;
 
@@ -289,9 +297,15 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       DropdownButtonFormField<String>(
                         initialValue: selectedCategoryId,
                         items: categories
-                            .map((c) => DropdownMenuItem(value: c.id, child: Text(c.titleLatin)))
+                            .map(
+                              (c) => DropdownMenuItem(
+                                value: c.id,
+                                child: Text(c.titleLatin),
+                              ),
+                            )
                             .toList(),
-                        onChanged: (value) => setDialogState(() => selectedCategoryId = value),
+                        onChanged: (value) =>
+                            setDialogState(() => selectedCategoryId = value),
                         decoration: InputDecoration(
                           filled: true,
                           fillColor: isDark
@@ -338,12 +352,23 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       DropdownButtonFormField<String>(
                         initialValue: level,
                         items: const [
-                          DropdownMenuItem(value: 'beginner', child: Text('Beginner')),
-                          DropdownMenuItem(value: 'intermediate', child: Text('Intermediate')),
-                          DropdownMenuItem(value: 'advanced', child: Text('Advanced')),
+                          DropdownMenuItem(
+                            value: 'beginner',
+                            child: Text('Beginner'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'intermediate',
+                            child: Text('Intermediate'),
+                          ),
+                          DropdownMenuItem(
+                            value: 'advanced',
+                            child: Text('Advanced'),
+                          ),
                         ],
                         onChanged: (value) {
-                          if (value != null) setDialogState(() => level = value);
+                          if (value != null) {
+                            setDialogState(() => level = value);
+                          }
                         },
                         decoration: InputDecoration(
                           filled: true,
@@ -359,7 +384,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       const SizedBox(height: 12),
                       SwitchListTile(
                         value: isActive,
-                        onChanged: (value) => setDialogState(() => isActive = value),
+                        onChanged: (value) =>
+                            setDialogState(() => isActive = value),
                         title: const Text('Active'),
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -385,23 +411,43 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                                   final newQuiz = QuizModel(
                                     id: quiz?.id ?? const Uuid().v4(),
                                     categoryId: selectedCategoryId,
-                                    title: titleController.text.trim().isEmpty ? null : titleController.text.trim(),
-                                    order: int.tryParse(orderController.text.trim()) ?? 0,
-                                    passingScore: int.tryParse(passingScoreController.text.trim()) ?? 70,
+                                    title: titleController.text.trim().isEmpty
+                                        ? null
+                                        : titleController.text.trim(),
+                                    order:
+                                        int.tryParse(
+                                          orderController.text.trim(),
+                                        ) ??
+                                        0,
+                                    passingScore:
+                                        int.tryParse(
+                                          passingScoreController.text.trim(),
+                                        ) ??
+                                        70,
                                     level: level,
                                     isActive: isActive,
-                                    questions: quiz?.questions ?? const <QuizQuestion>[],
+                                    questions:
+                                        quiz?.questions ??
+                                        const <QuizQuestion>[],
                                   );
 
                                   if (isEditing) {
-                                    await ref.read(quizzesProvider.notifier).updateQuiz(newQuiz);
+                                    await ref
+                                        .read(quizzesProvider.notifier)
+                                        .updateQuiz(newQuiz);
                                   } else {
-                                    await ref.read(quizzesProvider.notifier).addQuiz(newQuiz);
+                                    await ref
+                                        .read(quizzesProvider.notifier)
+                                        .addQuiz(newQuiz);
                                   }
 
-                                  if (context.mounted) Navigator.pop(context);
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
                                 },
-                          child: Text(isEditing ? 'Save Changes' : 'Create Quiz'),
+                          child: Text(
+                            isEditing ? 'Save Changes' : 'Create Quiz',
+                          ),
                         ),
                       ),
                     ],
@@ -415,10 +461,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
     );
   }
 
-  Future<void> _showDeleteDialog(
-    BuildContext context,
-    QuizModel quiz,
-  ) async {
+  Future<void> _showDeleteDialog(BuildContext context, QuizModel quiz) async {
     final ok = await showAdminConfirmDialog(
       context: context,
       title: 'Delete Quiz',
@@ -436,11 +479,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
     required String hint,
     required bool isDark,
   }) {
-    return AdminTextField(
-      controller: controller,
-      label: label,
-      hint: hint,
-    );
+    return AdminTextField(controller: controller, label: label, hint: hint);
   }
 }
 
@@ -459,11 +498,7 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminFilterChip(
-      label: label,
-      selected: isSelected,
-      onTap: onTap,
-    );
+    return AdminFilterChip(label: label, selected: isSelected, onTap: onTap);
   }
 }
 

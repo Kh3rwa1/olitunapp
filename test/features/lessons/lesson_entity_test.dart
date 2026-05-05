@@ -69,9 +69,7 @@ void main() {
         categoryId: 'alphabets',
         titleOlChiki: 'ᱚ',
         titleLatin: 'Vowels',
-        blocks: [
-          LessonBlockEntity(type: 'text', textOlChiki: 'hello'),
-        ],
+        blocks: [LessonBlockEntity(type: 'text', textOlChiki: 'hello')],
       );
       const withoutBlocks = LessonEntity(
         id: 'l1',

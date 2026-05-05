@@ -29,9 +29,7 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: AppTheme.darkTheme,
-        home: const Scaffold(
-          body: SafeArea(child: Text('dark')),
-        ),
+        home: const Scaffold(body: SafeArea(child: Text('dark'))),
       ),
     );
     expect(find.text('dark'), findsOneWidget);

@@ -11,11 +11,7 @@ class OnboardingScreen extends ConsumerWidget {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.go('/');
     });
-    
-    return const Scaffold(
-      body: Center(
-        child: CircularProgressIndicator(),
-      ),
-    );
+
+    return const Scaffold(body: Center(child: CircularProgressIndicator()));
   }
 }

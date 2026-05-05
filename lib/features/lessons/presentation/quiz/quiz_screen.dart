@@ -143,12 +143,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
     // Persist quiz result and update streak
     final statsNotifier = ref.read(userStatsProvider.notifier);
-    statsNotifier.saveQuizResult(QuizResultEntity(
-      quizId: widget.quizId ?? '',
-      score: _score,
-      totalQuestions: _questions.length,
-      completedAt: DateTime.now().toIso8601String(),
-    ));
+    statsNotifier.saveQuizResult(
+      QuizResultEntity(
+        quizId: widget.quizId ?? '',
+        score: _score,
+        totalQuestions: _questions.length,
+        completedAt: DateTime.now().toIso8601String(),
+      ),
+    );
 
     // Award stars based on performance
     if (isPassing) {

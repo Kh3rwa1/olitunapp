@@ -21,21 +21,30 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
 
   static final List<RhymeModel> _seedRhymes = [
     RhymeModel(
-      id: 'seed_1', titleOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ', titleLatin: 'Isin Sanam',
+      id: 'seed_1',
+      titleOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ',
+      titleLatin: 'Isin Sanam',
       contentOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ ᱨᱮ\nᱵᱤᱨ ᱦᱚᱨ ᱥᱟᱱᱟᱢ',
-      contentLatin: 'Isin sanam re\nBir hor sanam', category: 'Nature',
+      contentLatin: 'Isin sanam re\nBir hor sanam',
+      category: 'Nature',
     ),
     RhymeModel(
-      id: 'seed_2', titleOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ', titleLatin: 'Meram Pasi',
+      id: 'seed_2',
+      titleOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ',
+      titleLatin: 'Meram Pasi',
       contentOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ\nᱠᱟᱛᱮ ᱟᱥᱤ',
-      contentLatin: 'Meram pasi\nKate asi', category: 'Animal',
+      contentLatin: 'Meram pasi\nKate asi',
+      category: 'Animal',
     ),
   ];
 
   Future<void> _loadRhymes() async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listDocuments('rhymes', queries: [Query.limit(500)]);
+      final data = await db.listDocuments(
+        'rhymes',
+        queries: [Query.limit(500)],
+      );
       state = AsyncValue.data(data.map(RhymeModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.data(_seedRhymes);
@@ -47,7 +56,9 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       await db.createDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
-    } catch (e) { debugPrint('❌ add rhyme FAILED: $e'); }
+    } catch (e) {
+      debugPrint('❌ add rhyme FAILED: $e');
+    }
   }
 
   Future<void> update(RhymeModel item) async {
@@ -55,7 +66,9 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       await db.updateDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
-    } catch (e) { debugPrint('❌ update rhyme FAILED: $e'); }
+    } catch (e) {
+      debugPrint('❌ update rhyme FAILED: $e');
+    }
   }
 
   Future<void> delete(String id) async {
@@ -63,7 +76,9 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       await db.deleteDocument('rhymes', id);
       await _loadRhymes();
-    } catch (e) { debugPrint('❌ delete rhyme FAILED: $e'); }
+    } catch (e) {
+      debugPrint('❌ delete rhyme FAILED: $e');
+    }
   }
 
   Future<void> addRhyme(RhymeModel item) async => add(item);
@@ -76,9 +91,10 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
 // ============== RHYME CATEGORIES ==============
 
 final rhymeCategoriesProvider =
-    StateNotifierProvider<RhymeCategoriesNotifier, AsyncValue<List<RhymeCategoryModel>>>(
-      RhymeCategoriesNotifier.new,
-    );
+    StateNotifierProvider<
+      RhymeCategoriesNotifier,
+      AsyncValue<List<RhymeCategoryModel>>
+    >(RhymeCategoriesNotifier.new);
 
 class RhymeCategoriesNotifier
     extends StateNotifier<AsyncValue<List<RhymeCategoryModel>>> {
@@ -92,7 +108,8 @@ class RhymeCategoriesNotifier
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
-        'rhyme_categories', queries: [Query.orderAsc('order'), Query.limit(500)],
+        'rhyme_categories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
       );
       state = AsyncValue.data(data.map(RhymeCategoryModel.fromJson).toList());
     } catch (e, st) {
@@ -106,7 +123,10 @@ class RhymeCategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.createDocument('rhyme_categories', item.id, item.toJson());
       await _load();
-    } catch (e) { debugPrint('Error adding rhyme category: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error adding rhyme category: $e');
+      rethrow;
+    }
   }
 
   Future<void> update(RhymeCategoryModel item) async {
@@ -114,7 +134,10 @@ class RhymeCategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.updateDocument('rhyme_categories', item.id, item.toJson());
       await _load();
-    } catch (e) { debugPrint('Error updating rhyme category: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error updating rhyme category: $e');
+      rethrow;
+    }
   }
 
   Future<void> delete(String id) async {
@@ -122,16 +145,20 @@ class RhymeCategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.deleteDocument('rhyme_categories', id);
       await _load();
-    } catch (e) { debugPrint('Error deleting rhyme category: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error deleting rhyme category: $e');
+      rethrow;
+    }
   }
 }
 
 // ============== RHYME SUBCATEGORIES ==============
 
 final rhymeSubcategoriesProvider =
-    StateNotifierProvider<RhymeSubcategoriesNotifier, AsyncValue<List<RhymeSubcategoryModel>>>(
-      RhymeSubcategoriesNotifier.new,
-    );
+    StateNotifierProvider<
+      RhymeSubcategoriesNotifier,
+      AsyncValue<List<RhymeSubcategoryModel>>
+    >(RhymeSubcategoriesNotifier.new);
 
 class RhymeSubcategoriesNotifier
     extends StateNotifier<AsyncValue<List<RhymeSubcategoryModel>>> {
@@ -145,9 +172,12 @@ class RhymeSubcategoriesNotifier
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
-        'rhyme_subcategories', queries: [Query.orderAsc('order'), Query.limit(500)],
+        'rhyme_subcategories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map(RhymeSubcategoryModel.fromJson).toList());
+      state = AsyncValue.data(
+        data.map(RhymeSubcategoryModel.fromJson).toList(),
+      );
     } catch (e, st) {
       debugPrint('Error loading rhyme subcategories: $e');
       state = AsyncValue.error(e, st);
@@ -159,7 +189,10 @@ class RhymeSubcategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.createDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
-    } catch (e) { debugPrint('Error adding rhyme subcategory: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error adding rhyme subcategory: $e');
+      rethrow;
+    }
   }
 
   Future<void> update(RhymeSubcategoryModel item) async {
@@ -167,7 +200,10 @@ class RhymeSubcategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.updateDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
-    } catch (e) { debugPrint('Error updating rhyme subcategory: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error updating rhyme subcategory: $e');
+      rethrow;
+    }
   }
 
   Future<void> delete(String id) async {
@@ -175,13 +211,19 @@ class RhymeSubcategoriesNotifier
       final db = ref.read(appwriteDbServiceProvider);
       await db.deleteDocument('rhyme_subcategories', id);
       await _load();
-    } catch (e) { debugPrint('Error deleting rhyme subcategory: $e'); rethrow; }
+    } catch (e) {
+      debugPrint('Error deleting rhyme subcategory: $e');
+      rethrow;
+    }
   }
 }
 
 // Filtered subcategories by category
 final rhymeSubcategoriesByCategoryProvider =
-    Provider.family<AsyncValue<List<RhymeSubcategoryModel>>, String>((ref, categoryId) {
+    Provider.family<AsyncValue<List<RhymeSubcategoryModel>>, String>((
+      ref,
+      categoryId,
+    ) {
       final subcatsAsync = ref.watch(rhymeSubcategoriesProvider);
       return subcatsAsync.when(
         data: (subcats) => AsyncValue.data(

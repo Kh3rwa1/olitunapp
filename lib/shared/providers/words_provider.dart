@@ -17,7 +17,12 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
   final Ref ref;
 
   static final List<WordModel> _seedWords = [
-    WordModel(id: 'w1', wordOlChiki: 'ᱡᱚᱦᱟᱨ', wordLatin: 'Johar', meaning: 'Hello'),
+    WordModel(
+      id: 'w1',
+      wordOlChiki: 'ᱡᱚᱦᱟᱨ',
+      wordLatin: 'Johar',
+      meaning: 'Hello',
+    ),
     WordModel(id: 'w2', wordOlChiki: 'ᱫᱟᱠ', wordLatin: 'Dak', meaning: 'Water'),
   ];
 

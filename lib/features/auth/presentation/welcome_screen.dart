@@ -262,10 +262,9 @@ class WelcomeScreen extends ConsumerWidget {
     return Column(
       children: [
         // Google Sign-In Button
-        _GoogleSignInButton(isDark: isDark)
-            .animate()
-            .fadeIn(delay: 700.ms, duration: 500.ms)
-            .slideY(begin: 0.3),
+        _GoogleSignInButton(
+          isDark: isDark,
+        ).animate().fadeIn(delay: 700.ms, duration: 500.ms).slideY(begin: 0.3),
 
         const SizedBox(height: 14),
 

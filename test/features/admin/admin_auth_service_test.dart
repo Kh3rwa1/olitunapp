@@ -30,44 +30,53 @@ abstract class _TeamsApi {
 class _MockTeamsApi extends Mock implements _TeamsApi {}
 
 AdminAuthService _serviceFor(_TeamsApi teams) => AdminAuthService(
-      _FakeAuthService(_MockClient()),
-      teamsListFetcher: () async =>
-          (await teams.list()).map((t) => t.id).toList(),
-    );
+  _FakeAuthService(_MockClient()),
+  teamsListFetcher: () async => (await teams.list()).map((t) => t.id).toList(),
+);
 
 void main() {
   group('AdminAuthService.isCurrentUserAdmin (Teams.list mocked)', () {
-    test('returns true when a team ID matches the configured admin ID',
-        () async {
-      final teams = _MockTeamsApi();
-      when(teams.list).thenAnswer((_) async => [
+    test(
+      'returns true when a team ID matches the configured admin ID',
+      () async {
+        final teams = _MockTeamsApi();
+        when(teams.list).thenAnswer(
+          (_) async => [
             _FakeTeam(id: 'random', name: 'random_team'),
             _FakeTeam(id: AppwriteConfig.adminTeamId, name: 'whatever'),
-          ]);
+          ],
+        );
 
-      expect(await _serviceFor(teams).isCurrentUserAdmin(), isTrue);
-      verify(teams.list).called(1);
-    });
+        expect(await _serviceFor(teams).isCurrentUserAdmin(), isTrue);
+        verify(teams.list).called(1);
+      },
+    );
 
     test('returns false when no team ID matches', () async {
       final teams = _MockTeamsApi();
-      when(teams.list).thenAnswer((_) async => [
-            _FakeTeam(id: 'team_a', name: 'A'),
-            _FakeTeam(id: 'team_b', name: 'B'),
-          ]);
+      when(teams.list).thenAnswer(
+        (_) async => [
+          _FakeTeam(id: 'team_a', name: 'A'),
+          _FakeTeam(id: 'team_b', name: 'B'),
+        ],
+      );
 
       expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
     });
 
-    test('rejects a team whose NAME equals the admin ID but whose ID differs',
-        () async {
-      final teams = _MockTeamsApi();
-      when(teams.list).thenAnswer((_) async => [
+    test(
+      'rejects a team whose NAME equals the admin ID but whose ID differs',
+      () async {
+        final teams = _MockTeamsApi();
+        when(teams.list).thenAnswer(
+          (_) async => [
             _FakeTeam(id: 'spoof_id', name: AppwriteConfig.adminTeamId),
-          ]);
+          ],
+        );
 
-      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
-    });
+        expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
+      },
+    );
 
     test('returns false when Teams.list throws', () async {
       final teams = _MockTeamsApi();
@@ -82,10 +91,9 @@ void main() {
       final teams = _MockTeamsApi();
       when(teams.list).thenAnswer((_) async => const []);
 
-      final result = await _serviceFor(teams).signInAsAdmin(
-        email: 'x@example.com',
-        password: 'nope',
-      );
+      final result = await _serviceFor(
+        teams,
+      ).signInAsAdmin(email: 'x@example.com', password: 'nope');
       expect(result, isFalse);
     });
   });

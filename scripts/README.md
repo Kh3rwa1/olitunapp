@@ -25,6 +25,21 @@ npm install   # installs node-appwrite SDK
 
 ## Usage
 
+All Appwrite scripts read:
+
+```bash
+APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 # optional, defaults to Appwrite Singapore
+APPWRITE_PROJECT_ID=<project-id>                  # optional if appwrite.config.json has projectId
+APPWRITE_API_KEY=<server-api-key>                 # required
+ADMIN_TEAM_ID=admins                              # optional, setup only
+```
+
+The setup script grants public read access to learning content, but create,
+update, and delete permissions are restricted to `team:$ADMIN_TEAM_ID`. The
+translator support collections (`translation_cache` and `rate_limits`) are
+function-only: they are created with no public/client permissions and are
+accessed by the Appwrite Function through its server API key.
+
 ### 1. First-time Appwrite Setup
 
 Creates the entire database schema from scratch:

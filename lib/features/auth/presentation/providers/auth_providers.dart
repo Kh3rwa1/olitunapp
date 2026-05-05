@@ -13,10 +13,7 @@ final authRemoteDataSourceProvider = Provider<AuthRemoteDataSource>((ref) {
 final authRepositoryProvider = Provider<AuthRepository>((ref) {
   final remote = ref.watch(authRemoteDataSourceProvider);
   final network = ref.watch(networkInfoProvider);
-  return AuthRepositoryImpl(
-    remoteDataSource: remote,
-    networkInfo: network,
-  );
+  return AuthRepositoryImpl(remoteDataSource: remote, networkInfo: network);
 });
 
 final isAuthenticatedProvider = FutureProvider<bool>((ref) async {

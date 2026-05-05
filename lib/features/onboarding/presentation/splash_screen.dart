@@ -64,15 +64,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             try {
               final authRepo = ref.read(authRepositoryProvider);
               final userResult = await authRepo.getCurrentUser();
-              userResult.fold(
-                (_) => null,
-                (user) async {
-                  if (user != null && (user.name?.isNotEmpty ?? false)) {
-                    final firstName = user.name!.split(' ').first;
-                    await ref.read(userStatsProvider.notifier).updateName(ref, firstName);
-                  }
-                },
-              );
+              userResult.fold((_) => null, (user) async {
+                if (user != null && (user.name?.isNotEmpty ?? false)) {
+                  final firstName = user.name!.split(' ').first;
+                  await ref
+                      .read(userStatsProvider.notifier)
+                      .updateName(ref, firstName);
+                }
+              });
             } catch (_) {}
             if (!mounted) return;
             context.go('/');

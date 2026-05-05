@@ -10,16 +10,12 @@ void main() {
       // translate must surface the misconfiguration loudly rather than
       // silently falling back to a hardcoded host.
       final svc = AiService();
-      expect(
-        () => svc.translate('hello'),
-        throwsA(isA<StateError>()),
-      );
+      expect(() => svc.translate('hello'), throwsA(isA<StateError>()));
     });
   });
 
   group('AiService Appwrite Execution unwrap', () {
-    test('returns the body as-is when it is already a function response',
-        () {
+    test('returns the body as-is when it is already a function response', () {
       final body = jsonEncode({
         'success': true,
         'data': {'translation': 'hi'},
@@ -29,8 +25,7 @@ void main() {
       expect((out['data'] as Map)['translation'], 'hi');
     });
 
-    test('unwraps an Appwrite Execution object to its inner responseBody',
-        () {
+    test('unwraps an Appwrite Execution object to its inner responseBody', () {
       final inner = jsonEncode({
         'success': true,
         'data': {'translation': 'ᱚᱞ', 'cached': false},

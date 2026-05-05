@@ -18,16 +18,18 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(const UserStatsEntity(
-      practicedLetters: {},
-      completedLessons: {},
-      quizHistory: {},
-      categoryMastery: {},
-      totalLearningMinutes: 0,
-      lastActiveDate: '',
-      currentStreak: 0,
-      totalStars: 0,
-    ));
+    registerFallbackValue(
+      const UserStatsEntity(
+        practicedLetters: {},
+        completedLessons: {},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 0,
+        lastActiveDate: '',
+        currentStreak: 0,
+        totalStars: 0,
+      ),
+    );
   });
 
   const baseStats = UserStatsEntity(
@@ -43,8 +45,9 @@ void main() {
 
   group('UserStatsNotifier', () {
     test('loadStats emits data on success', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -55,9 +58,9 @@ void main() {
     });
 
     test('loadStats emits error on failure', () async {
-      when(() => mockRepo.getUserStats()).thenAnswer(
-        (_) async => const Left(CacheFailure(message: 'no data')),
-      );
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Left(CacheFailure(message: 'no data')));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -66,10 +69,12 @@ void main() {
     });
 
     test('addStars increments totalStars correctly', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -80,9 +85,9 @@ void main() {
     });
 
     test('addStars does nothing when state has no value', () async {
-      when(() => mockRepo.getUserStats()).thenAnswer(
-        (_) async => const Left(CacheFailure(message: 'no data')),
-      );
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Left(CacheFailure(message: 'no data')));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -94,10 +99,12 @@ void main() {
     });
 
     test('completeLesson adds lessonId to set', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -111,10 +118,12 @@ void main() {
     });
 
     test('completeLesson is idempotent for same lessonId', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -125,10 +134,12 @@ void main() {
     });
 
     test('practiceLetter adds letter to set', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -140,10 +151,12 @@ void main() {
     });
 
     test('saveQuizResult stores result in history', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -161,10 +174,12 @@ void main() {
     });
 
     test('resetProgress clears all stats', () async {
-      when(() => mockRepo.getUserStats())
-          .thenAnswer((_) async => const Right(baseStats));
-      when(() => mockRepo.updateUserStats(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+      when(
+        () => mockRepo.updateUserStats(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);

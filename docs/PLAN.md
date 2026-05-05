@@ -1,37 +1,31 @@
-# PLAN: Production Deployment (Web & Mobile)
+# Production Readiness Plan
 
-## Task
-Deploy the "AAA+" Themed AI Translator and the refined "Practice Writing" corner-icon UI to both the live PWA (olitun.in) and the production mobile app.
+## Goal
 
-## Target Platforms
-1. **Web (PWA)**: Build and package for `olitun.in`.
-2. **Mobile**: Build production APK/AAB for Android.
+Bring Olitun to a production-grade release posture across Flutter Web, Android,
+and the Appwrite backend.
 
-## Proposed Changes & Orchestration
+## Current Gates
 
-### PHASE 1: PLANNING
-- [project-planner] Create this deployment plan.
+- `flutter analyze` must pass with no issues.
+- `flutter test` must pass across unit, widget, repository, router, and
+  security-focused tests.
+- `flutter build web --release` must pass with real Appwrite dart-defines.
+- Android release builds must use the release signing configuration when
+  `android/key.properties` is present.
+- Appwrite collections and storage buckets must grant public read access only
+  where needed, with write/delete restricted to the configured admin Team.
 
-### PHASE 2: IMPLEMENTATION (After Approval)
-- [devops-engineer]
-    - Build Flutter Web for release (`--renderer canvaskit`).
-    - Perform cache-busting on `index.html` (Version 8).
-    - Package the build into `build_web_v8.zip`.
-- [mobile-developer]
-    - Build production APK (`flutter build apk --release`).
-    - Build production AAB (`flutter build appbundle --release`).
-- [test-engineer]
-    - Verify the integrity of the zip package.
-    - Confirm the presence of APK and AAB artifacts in the `build/app/outputs/flutter-apk` and `build/app/outputs/bundle` directories.
+## Release Checklist
 
-## Verification
-- Final check of the versioned `index.html`.
-- List all generated build artifacts.
-
----
-
-✅ Plan oluşturuldu: docs/PLAN.md
-
-Onaylıyor musunuz? (Y/N)
-- Y: Implementation başlatılır
-- N: Planı düzeltirim
+- Verify Appwrite project, database, collections, indexes, teams, and buckets
+  with `scripts/appwrite_setup.mjs`.
+- Seed or import content with `scripts/appwrite_seed.mjs` or
+  `scripts/appwrite_import.mjs`.
+- Deploy the translator Appwrite Function and pass its execution URL via
+  `TRANSLATE_URL`.
+- Build web with `APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `ADMIN_TEAM_ID`,
+  and optional `SENTRY_DSN`.
+- Build Android APK/AAB with the same dart-defines and release signing.
+- Smoke test onboarding, email auth, Google OAuth redirect, lessons, quizzes,
+  progress, admin login, media upload, and translator flows.

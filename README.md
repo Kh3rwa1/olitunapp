@@ -9,16 +9,16 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/github/actions/workflow/status/Kh3rwa1/olitunapp/ci.yml?branch=main&style=for-the-badge&label=CI" />
+  <img src="https://img.shields.io/github/actions/workflow/status/Kh3rwa1/olitunapp/flutter-ci.yml?branch=main&style=for-the-badge&label=CI" />
   <img src="https://img.shields.io/codecov/c/github/Kh3rwa1/olitunapp?style=for-the-badge&label=coverage" />
-  <img src="https://img.shields.io/badge/Flutter-3.24-02569B?style=for-the-badge&logo=flutter" />
+  <img src="https://img.shields.io/badge/Flutter-3.35%2B-02569B?style=for-the-badge&logo=flutter" />
   <img src="https://img.shields.io/badge/platforms-Android%20%7C%20iOS%20%7C%20Web-blue?style=for-the-badge" />
   <img src="https://img.shields.io/github/license/Kh3rwa1/olitunapp?style=for-the-badge" />
   <img src="https://img.shields.io/github/v/release/Kh3rwa1/olitunapp?style=for-the-badge" />
 </p>
 
 <p align="center">
-  <img src="docs/assets/hero-demo.gif" width="800" alt="App Demo Placeholder — Add your hero-demo.gif here"/>
+  <img src="assets/images/onboarding_1.png" width="800" alt="Olitun onboarding preview"/>
 </p>
 
 ---
@@ -96,7 +96,7 @@ graph TB
 ## 🚀 Quick Start
 
 ### Prerequisites
-- Flutter SDK `^3.24.0`
+- Flutter SDK with Dart `^3.9.0` support
 - An [Appwrite](https://appwrite.io/) project
 
 ### Setup
@@ -119,7 +119,8 @@ flutter run \
   --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
   --dart-define=ADMIN_TEAM_ID=admins \
   --dart-define=TRANSLATE_URL=<appwrite-function-execution-url> \
-  --dart-define=SENTRY_DSN=<your-sentry-dsn>
+  --dart-define=SENTRY_DSN=<your-sentry-dsn> \\
+  --dart-define=ALLOW_SELF_SIGNED=false
 ```
 
 The app will refuse to boot if `APPWRITE_ENDPOINT` or `APPWRITE_PROJECT_ID`

@@ -61,7 +61,7 @@ class AppConstants {
   static const String prefUserLevel = 'user_level';
   static const String prefOnboardingComplete = 'onboarding_complete';
 
-  // Firebase Collections
+  // Appwrite Collections
   static const String colCategories = 'categories';
   static const String colFeaturedBanners = 'featuredBanners';
   static const String colLetters = 'letters';
@@ -72,7 +72,7 @@ class AppConstants {
   static const String colStickers = 'stickers';
   static const String colAppStrings = 'appStrings';
 
-  // Firebase Storage Paths
+  // Appwrite Storage Paths
   static const String storageCategoryIcons = 'images/categories';
   static const String storageBannerImages = 'images/banners';
   static const String storageLetterImages = 'images/letters';

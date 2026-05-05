@@ -28,16 +28,18 @@ class ProfileRepositoryImpl implements ProfileRepository {
         final model = UserStatsModel.fromJson(jsonDecode(stored));
         return Right(model);
       }
-      return const Right(UserStatsEntity(
-        practicedLetters: {},
-        completedLessons: {},
-        quizHistory: {},
-        categoryMastery: {},
-        totalLearningMinutes: 0,
-        lastActiveDate: '',
-        currentStreak: 0,
-        totalStars: 0,
-      ));
+      return const Right(
+        UserStatsEntity(
+          practicedLetters: {},
+          completedLessons: {},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 0,
+          lastActiveDate: '',
+          currentStreak: 0,
+          totalStars: 0,
+        ),
+      );
     } catch (e) {
       return Left(_recordedCacheFailure(e));
     }
@@ -48,19 +50,16 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       final model = UserStatsModel.fromEntity(stats);
       await prefs.setString(_statsKey, jsonEncode(model.toJson()));
-      
+
       // Sync with cloud if logged in
       final loggedIn = await _authRepository.isLoggedIn();
-      await loggedIn.fold(
-        (failure) => null,
-        (isLoggedIn) async {
-          if (isLoggedIn) {
-            // This assumes the legacy updatePrefs exists or we use a new domain method
-            // For now, we'll assume the AuthRepository handles it or we add it there.
-          }
-        },
-      );
-      
+      await loggedIn.fold((failure) => null, (isLoggedIn) async {
+        if (isLoggedIn) {
+          // This assumes the legacy updatePrefs exists or we use a new domain method
+          // For now, we'll assume the AuthRepository handles it or we add it there.
+        }
+      });
+
       return const Right(null);
     } catch (e) {
       return Left(_recordedCacheFailure(e));
@@ -71,21 +70,21 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Either<Failure, void>> updateDisplayName(String name) async {
     await prefs.setString('user_name', name);
     final result = await _authRepository.isLoggedIn();
-    return await result.fold(
-      Left.new,
-      (isLoggedIn) async {
-        if (isLoggedIn) {
-          // We need updateDisplayName in AuthRepository
-          // For now, return Right as we updated local
-          return const Right(null);
-        }
+    return await result.fold(Left.new, (isLoggedIn) async {
+      if (isLoggedIn) {
+        // We need updateDisplayName in AuthRepository
+        // For now, return Right as we updated local
         return const Right(null);
-      },
-    );
+      }
+      return const Right(null);
+    });
   }
 
   @override
-  Future<Either<Failure, void>> updateAvatar(String emoji, int colorIndex) async {
+  Future<Either<Failure, void>> updateAvatar(
+    String emoji,
+    int colorIndex,
+  ) async {
     await prefs.setString('user_avatar_emoji', emoji);
     await prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);

@@ -44,7 +44,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final quizzesAsync = ref.watch(quizzesProvider);
 
     // Derive the next incomplete lesson for the hero card.
-    final completedIds = ref.watch(userStatsProvider).value?.completedLessons ?? {};
+    final completedIds =
+        ref.watch(userStatsProvider).value?.completedLessons ?? {};
     final allLessons = lessonsAsync.value ?? [];
     LessonEntity? nextLesson;
     for (final l in allLessons) {
@@ -60,13 +61,17 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final streak = stats?.currentStreak ?? 0;
     final learningTime = stats?.totalLearningMinutes ?? 0;
     final dailyProgress = stats != null
-        ? ((stats.alphabetProgress + stats.numbersProgress + stats.vocabularyProgress) / 3 * 100).round()
+        ? ((stats.alphabetProgress +
+                      stats.numbersProgress +
+                      stats.vocabularyProgress) /
+                  3 *
+                  100)
+              .round()
         : 0;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
-
 
     return Scaffold(
       backgroundColor: isDesktop
@@ -145,9 +150,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     ),
                                     borderRadius: BorderRadius.circular(20),
                                     border: Border.all(
-                                      color: AppColors.glass(
-                                        context,
-                                      ),
+                                      color: AppColors.glass(context),
                                     ),
                                   ),
                                   child: Row(
@@ -208,7 +211,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                         // Row 2: Hero Journey + Quiz Banner (side-by-side on tablet/desktop)
                         if (isTablet || isDesktop)
-                          _buildHeroBentoRow(context, isDark, heroTitle, quizCount)
+                          _buildHeroBentoRow(
+                            context,
+                            isDark,
+                            heroTitle,
+                            quizCount,
+                          )
                         else ...[
                           _buildHeroJourneyCard(context, isDark, 0, heroTitle),
                           const SizedBox(height: 16),
@@ -253,13 +261,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       // 4-column bento on tablet
       return Row(
         children: [
-          Expanded(child: _BentoStatCard(icon: Icons.local_fire_department_rounded, value: streak, label: 'Day Streak', color: AppColors.duoOrange, index: 0)),
+          Expanded(
+            child: _BentoStatCard(
+              icon: Icons.local_fire_department_rounded,
+              value: streak,
+              label: 'Day Streak',
+              color: AppColors.duoOrange,
+              index: 0,
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.star_rounded, value: stars, label: 'Stars', color: AppColors.duoYellow, index: 1)),
+          Expanded(
+            child: _BentoStatCard(
+              icon: Icons.star_rounded,
+              value: stars,
+              label: 'Stars',
+              color: AppColors.duoYellow,
+              index: 1,
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.emoji_events_rounded, value: lessonsCompleted, label: 'Milestones', color: AppColors.primary, index: 2)),
+          Expanded(
+            child: _BentoStatCard(
+              icon: Icons.emoji_events_rounded,
+              value: lessonsCompleted,
+              label: 'Milestones',
+              color: AppColors.primary,
+              index: 2,
+            ),
+          ),
           const SizedBox(width: 12),
-          Expanded(child: _BentoStatCard(icon: Icons.timer_rounded, value: learningTime, suffix: 'm', label: 'Time', color: AppColors.duoBlue, index: 3)),
+          Expanded(
+            child: _BentoStatCard(
+              icon: Icons.timer_rounded,
+              value: learningTime,
+              suffix: 'm',
+              label: 'Time',
+              color: AppColors.duoBlue,
+              index: 3,
+            ),
+          ),
         ],
       );
     }
@@ -328,7 +369,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── BENTO: Hero + Quiz side-by-side (tablet/desktop) ──
-  Widget _buildHeroBentoRow(BuildContext context, bool isDark, String heroTitle, int quizCount) {
+  Widget _buildHeroBentoRow(
+    BuildContext context,
+    bool isDark,
+    String heroTitle,
+    int quizCount,
+  ) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -346,7 +392,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── BENTO: Hero Journey Card ──────────────────────────
-  Widget _buildHeroJourneyCard(BuildContext context, bool isDark, int index, String heroTitle) {
+  Widget _buildHeroJourneyCard(
+    BuildContext context,
+    bool isDark,
+    int index,
+    String heroTitle,
+  ) {
     return AnimatedBentoChild(
       index: index,
       child: PressableScale(
@@ -369,19 +420,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Positioned(
                 right: -20,
                 bottom: -20,
-                child: Icon(
-                      Icons.rocket_launch_rounded,
-                      size: 120,
-                      color: Colors.white.withValues(alpha: 0.15),
-                    )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .moveY(begin: 0, end: -10, duration: 2.seconds),
+                child:
+                    Icon(
+                          Icons.rocket_launch_rounded,
+                          size: 120,
+                          color: Colors.white.withValues(alpha: 0.15),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .moveY(begin: 0, end: -10, duration: 2.seconds),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -427,7 +482,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── BENTO: Quiz Banner Card ───────────────────────────
-  Widget _buildQuizBannerCard(BuildContext context, bool isDark, int index, int quizCount) {
+  Widget _buildQuizBannerCard(
+    BuildContext context,
+    bool isDark,
+    int index,
+    int quizCount,
+  ) {
     return AnimatedBentoChild(
       index: index,
       child: PressableScale(
@@ -456,19 +516,28 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               Positioned(
                 right: -10,
                 bottom: -10,
-                child: Icon(
-                      Icons.quiz_rounded,
-                      size: 80,
-                      color: Colors.white.withValues(alpha: 0.2),
-                    )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .moveY(begin: 0, end: -8, duration: 1800.ms, curve: Curves.easeInOut),
+                child:
+                    Icon(
+                          Icons.quiz_rounded,
+                          size: 80,
+                          color: Colors.white.withValues(alpha: 0.2),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .moveY(
+                          begin: 0,
+                          end: -8,
+                          duration: 1800.ms,
+                          curve: Curves.easeInOut,
+                        ),
               ),
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(12),
@@ -476,7 +545,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.emoji_events_rounded, size: 14, color: Colors.white),
+                        Icon(
+                          Icons.emoji_events_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        ),
                         SizedBox(width: 4),
                         Text(
                           'DAILY QUIZ',
@@ -512,7 +585,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   ),
                   const SizedBox(height: 16),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(14),
@@ -520,7 +596,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.play_arrow_rounded, color: AppColors.primary, size: 20),
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
                         SizedBox(width: 6),
                         Text(
                           'START',
@@ -611,7 +691,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.wifi_off_rounded, color: Colors.red.withValues(alpha: 0.6), size: 32),
+                Icon(
+                  Icons.wifi_off_rounded,
+                  color: Colors.red.withValues(alpha: 0.6),
+                  size: 32,
+                ),
                 const SizedBox(height: 12),
                 Text(
                   'Could not load learning paths',
@@ -651,7 +735,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       ],
     );
   }
-
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -701,12 +784,19 @@ class _BentoStatCard extends StatelessWidget {
                 if (isHero) ...[
                   const Spacer(),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: color.withValues(alpha: 0.08),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Icon(Icons.trending_up_rounded, color: color, size: 14),
+                    child: Icon(
+                      Icons.trending_up_rounded,
+                      color: color,
+                      size: 14,
+                    ),
                   ),
                 ],
               ],
@@ -783,7 +873,11 @@ class _BentoContentGrid extends StatelessWidget {
                   color: Colors.white.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.translate_rounded, color: Colors.white, size: 20),
+                child: const Icon(
+                  Icons.translate_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -818,7 +912,10 @@ class _BentoContentGrid extends StatelessWidget {
                 ),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(10),
@@ -843,10 +940,7 @@ class _BentoContentGrid extends StatelessWidget {
     final grad = _categoryGradients[catIndex % _categoryGradients.length];
     return AnimatedBentoChild(
       index: 7 + catIndex,
-      child: _BentoCategoryCard(
-        category: cat,
-        gradientColors: grad,
-      ),
+      child: _BentoCategoryCard(category: cat, gradientColors: grad),
     );
   }
 
@@ -870,16 +964,15 @@ class _BentoContentGrid extends StatelessWidget {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  flex: 2,
-                  child: _buildAITranslateCard(context),
-                ),
-                ...firstRowCats.map((card) => Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.only(left: gap),
-                    child: card,
+                Expanded(flex: 2, child: _buildAITranslateCard(context)),
+                ...firstRowCats.map(
+                  (card) => Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: gap),
+                      child: card,
+                    ),
                   ),
-                )),
+                ),
               ],
             ),
           ),

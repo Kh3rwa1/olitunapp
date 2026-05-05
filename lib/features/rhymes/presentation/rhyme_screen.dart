@@ -71,425 +71,475 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               ref.invalidate(rhymeSubcategoriesProvider);
             },
             child: CustomScrollView(
-            physics: const BouncingScrollPhysics(),
-            slivers: [
-              // --- Premium Layered Header ---
-              SliverToBoxAdapter(
-                child: ResponsivePageContainer(
-                  padding: EdgeInsets.fromLTRB(
-                    isTablet ? 32 : 24,
-                    32,
-                    isTablet ? 32 : 24,
-                    24,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                    'Santali',
-                                    style: GoogleFonts.fredoka(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w600,
-                                      letterSpacing: 3,
-                                      color: isDark
-                                          ? AppColors.primary
-                                          : AppColors.primaryDark.withValues(
-                                              alpha: 0.6,
-                                            ),
+              physics: const BouncingScrollPhysics(),
+              slivers: [
+                // --- Premium Layered Header ---
+                SliverToBoxAdapter(
+                  child: ResponsivePageContainer(
+                    padding: EdgeInsets.fromLTRB(
+                      isTablet ? 32 : 24,
+                      32,
+                      isTablet ? 32 : 24,
+                      24,
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                      'Santali',
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w600,
+                                        letterSpacing: 3,
+                                        color: isDark
+                                            ? AppColors.primary
+                                            : AppColors.primaryDark.withValues(
+                                                alpha: 0.6,
+                                              ),
+                                      ),
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 100.ms, duration: 600.ms)
+                                    .slideY(begin: 0.5)
+                                    .then()
+                                    .shimmer(
+                                      delay: 1.seconds,
+                                      duration: 1800.ms,
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.3,
+                                      ),
                                     ),
-                                  )
-                                  .animate()
-                                  .fadeIn(delay: 100.ms, duration: 600.ms)
-                                  .slideY(begin: 0.5)
-                                  .then()
-                                  .shimmer(
-                                    delay: 1.seconds,
-                                    duration: 1800.ms,
-                                    color: AppColors.primary.withValues(alpha: 0.3),
-                                  ),
-                              Text(
-                                    'Rhymes',
-                                    style: GoogleFonts.fredoka(
-                                      fontSize: 48,
-                                      fontWeight: FontWeight.w700,
-                                      letterSpacing: -1.5,
-                                      height: 1,
-                                      color: isDark
-                                          ? Colors.white
-                                          : AppColors.primaryDark,
-                                    ),
-                                  )
-                                  .animate()
-                                  .fadeIn(delay: 200.ms, duration: 600.ms)
-                                  .slideX(begin: -0.15, curve: Curves.easeOutCubic)
-                                  .blurXY(begin: 4, end: 0, duration: 500.ms),
-                            ],
-                          ),
-                          const Spacer(),
-                          // Decorative Icon with layered animations
-                          _AnimatedMusicIcon(
-                            controller: _headerPulseController,
-                            isDark: isDark,
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Text(
-                        'Unlock the magic of stories & songs',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 16,
-                          color: isDark ? Colors.white54 : Colors.black45,
+                                Text(
+                                      'Rhymes',
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 48,
+                                        fontWeight: FontWeight.w700,
+                                        letterSpacing: -1.5,
+                                        height: 1,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppColors.primaryDark,
+                                      ),
+                                    )
+                                    .animate()
+                                    .fadeIn(delay: 200.ms, duration: 600.ms)
+                                    .slideX(
+                                      begin: -0.15,
+                                      curve: Curves.easeOutCubic,
+                                    )
+                                    .blurXY(begin: 4, end: 0, duration: 500.ms),
+                              ],
+                            ),
+                            const Spacer(),
+                            // Decorative Icon with layered animations
+                            _AnimatedMusicIcon(
+                              controller: _headerPulseController,
+                              isDark: isDark,
+                            ),
+                          ],
                         ),
-                      )
-                          .animate()
-                          .fadeIn(delay: 400.ms, duration: 800.ms)
-                          .slideY(begin: 0.3, curve: Curves.easeOutCubic)
-                          .then(delay: 500.ms)
-                          .shimmer(
-                            duration: 2.seconds,
-                            color: (isDark ? Colors.white : AppColors.primary)
-                                .withValues(alpha: 0.15),
-                          ),
-                    ],
+                        const SizedBox(height: 16),
+                        Text(
+                              'Unlock the magic of stories & songs',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 16,
+                                color: isDark ? Colors.white54 : Colors.black45,
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 400.ms, duration: 800.ms)
+                            .slideY(begin: 0.3, curve: Curves.easeOutCubic)
+                            .then(delay: 500.ms)
+                            .shimmer(
+                              duration: 2.seconds,
+                              color: (isDark ? Colors.white : AppColors.primary)
+                                  .withValues(alpha: 0.15),
+                            ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              // --- Animated Category Filter chips ---
-              categoriesAsync.when(
-                data: (categories) => SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 52,
-                    child: ListView(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isTablet ? 32 : 24,
-                      ),
-                      children: [
-                        _buildFilterChip(
-                          label: 'All',
-                          isSelected: _selectedCategory == null,
-                          onTap: () => setState(() {
-                            _selectedCategory = null;
-                            _selectedSubcategory = null;
-                          }),
-                          isDark: isDark,
+                // --- Animated Category Filter chips ---
+                categoriesAsync.when(
+                  data: (categories) => SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 52,
+                      child: ListView(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 32 : 24,
                         ),
-                        ...categories.map(
-                          (cat) => _buildFilterChip(
-                            label: cat.nameLatin,
-                            isSelected: _selectedCategory == cat.nameLatin,
+                        children: [
+                          _buildFilterChip(
+                            label: 'All',
+                            isSelected: _selectedCategory == null,
                             onTap: () => setState(() {
-                              _selectedCategory = cat.nameLatin;
+                              _selectedCategory = null;
                               _selectedSubcategory = null;
                             }),
                             isDark: isDark,
                           ),
-                        ),
-                      ],
-                    ),
-                  ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.05),
-                ),
-                loading: () => SliverToBoxAdapter(
-                  child: SizedBox(
-                    height: 52,
-                    child: ListView.builder(
-                      scrollDirection: Axis.horizontal,
-                      padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                      itemCount: 5,
-                      itemBuilder: (context, index) => const Padding(
-                        padding: EdgeInsets.only(right: 12),
-                        child: Skeleton(width: 80, height: 44, borderRadius: 24),
-                      ),
-                    ),
-                  ),
-                ),
-                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              ),
-
-              // --- Cascading Subcategory chips ---
-              if (_selectedCategory != null)
-                subcategoriesAsync.when(
-                  data: (allSubcats) {
-                    final cats = ref.read(rhymeCategoriesProvider).value ?? [];
-                    final matching = cats
-                        .where((c) => c.nameLatin == _selectedCategory)
-                        .toList();
-                    final catId = matching.isNotEmpty ? matching.first.id : '';
-                    final filtered = allSubcats
-                        .where((s) => s.categoryId == catId)
-                        .toList();
-
-                    if (filtered.isEmpty) {
-                      return const SliverToBoxAdapter(child: SizedBox.shrink());
-                    }
-
-                    return SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.only(top: 12),
-                        child: SizedBox(
-                          height: 40,
-                          child: ListView(
-                            scrollDirection: Axis.horizontal,
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isTablet ? 32 : 24,
-                            ),
-                            children: [
-                              _buildFilterChip(
-                                label: 'All ${_selectedCategory ?? ""}',
-                                isSelected: _selectedSubcategory == null,
-                                onTap: () =>
-                                    setState(() => _selectedSubcategory = null),
-                                isDark: isDark,
-                                small: true,
-                              ),
-                              ...filtered.map(
-                                (sub) => _buildFilterChip(
-                                  label: sub.nameLatin,
-                                  isSelected:
-                                      _selectedSubcategory == sub.nameLatin,
-                                  onTap: () => setState(
-                                    () => _selectedSubcategory = sub.nameLatin,
-                                  ),
-                                  isDark: isDark,
-                                  small: true,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ).animate().fadeIn().slideX(begin: 0.1),
-                    );
-                  },
-                  loading: () => SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 12),
-                      child: SizedBox(
-                        height: 40,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                          itemCount: 3,
-                          itemBuilder: (context, index) => const Padding(
-                            padding: EdgeInsets.only(right: 12),
-                            child: Skeleton(width: 100, height: 32, borderRadius: 20),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-                ),
-
-              const SliverToBoxAdapter(child: SizedBox(height: 24)),
-
-              // --- Featured Card with Glassmorphism 2.0 ---
-              rhymesAsync.when(
-                data: (rhymes) {
-                  final filtered = _filterRhymes(rhymes);
-                  return filtered.isNotEmpty
-                      ? SliverToBoxAdapter(
-                          child: Padding(
-                            padding: EdgeInsets.symmetric(
-                              horizontal: isTablet ? 32 : 24,
-                            ),
-                            child: _FeaturedRhymeCard(rhyme: filtered.first),
-                          ),
-                        )
-                      : const SliverToBoxAdapter(child: SizedBox.shrink());
-                },
-                loading: () => SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                    child: const Skeleton(width: double.infinity, height: 240, borderRadius: 40),
-                  ),
-                ),
-                error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
-              ),
-
-
-              const SliverToBoxAdapter(child: SizedBox(height: 40)),
-
-              // --- Section Title ---
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                  child: Row(
-                    children: [
-                      Text(
-                        'DISCOVER MORE',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          letterSpacing: 2.5,
-                          color: isDark ? Colors.white24 : Colors.black26,
-                        ),
-                      )
-                          .animate()
-                          .fadeIn(delay: 600.ms, duration: 500.ms)
-                          .slideX(begin: -0.2),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: AnimatedBuilder(
-                          animation: _dividerGlowController,
-                          builder: (context, child) {
-                            return Container(
-                              height: 1.5,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                                    AppColors.primary.withValues(
-                                      alpha: 0.3 + 0.2 * math.sin(_dividerGlowController.value * 2 * math.pi),
-                                    ),
-                                    (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-                                  ],
-                                  stops: [
-                                    0,
-                                    (_dividerGlowController.value).clamp(0.1, 0.9),
-                                    1,
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(1),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ).animate().fadeIn(delay: 600.ms),
-              ),
-              const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-              // --- Bento Grid with Staggered Entrance ---
-              rhymesAsync.when(
-                data: (rhymes) {
-                  final filtered = _filterRhymes(rhymes);
-                  final gridItems = filtered.length > 1
-                      ? filtered.sublist(1)
-                      : <RhymeModel>[];
-
-                  if (gridItems.isEmpty) {
-                    return SliverFillRemaining(
-                      hasScrollBody: false,
-                      child: Center(
-                        child: Text(
-                          'More coming soon! ✨',
-                          style: TextStyle(
-                            color: isDark ? Colors.white24 : Colors.black26,
-                          ),
-                        ),
-                      ),
-                    );
-                  }
-
-                  return SliverPadding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 32 : 24,
-                    ),
-                    sliver: SliverGrid(
-                      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: ResponsiveLayout.gridColumns(
-                          context,
-                        ),
-                        mainAxisSpacing: 16,
-                        crossAxisSpacing: 16,
-                        childAspectRatio: isDesktop
-                            ? 1.0
-                            : (isTablet ? 1.0 : 0.95),
-                      ),
-                      delegate: SliverChildBuilderDelegate((context, index) {
-                        return TiltCard(
-                              child: _BentoRhymeCard(
-                                rhyme: gridItems[index],
-                                index: index,
-                              ),
-                            )
-                            .animate()
-                            .fadeIn(delay: (index * 120).ms, duration: 700.ms)
-                            .scale(
-                              begin: const Offset(0.85, 0.85),
-                              curve: Curves.easeOutBack,
-                              delay: (index * 120).ms,
-                            )
-                            .slideY(
-                              begin: 0.25,
-                              delay: (index * 120).ms,
-                              curve: Curves.easeOutCubic,
-                            )
-                            .rotate(
-                              begin: index.isEven ? -0.02 : 0.02,
-                              end: 0,
-                              delay: (index * 120).ms,
-                              duration: 500.ms,
-                            );
-                      }, childCount: gridItems.length),
-                    ),
-                  );
-                },
-                loading: () =>
-                    const SliverToBoxAdapter(child: SizedBox.shrink()),
-                error: (e, st) => SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 24,
-                      vertical: 16,
-                    ),
-                    child: Container(
-                      padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: isDark
-                            ? Colors.red.withValues(alpha: 0.08)
-                            : Colors.red.withValues(alpha: 0.05),
-                        borderRadius: BorderRadius.circular(16),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.red.withValues(alpha: 0.2)
-                              : Colors.red.withValues(alpha: 0.1),
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(
-                            Icons.wifi_off_rounded,
-                            size: 36,
-                            color: isDark
-                                ? Colors.red.shade300
-                                : Colors.red.shade400,
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            'Could not load rhymes',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: isDark ? Colors.white : Colors.black87,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            'Check your connection and try again',
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: isDark ? Colors.white54 : Colors.black45,
+                          ...categories.map(
+                            (cat) => _buildFilterChip(
+                              label: cat.nameLatin,
+                              isSelected: _selectedCategory == cat.nameLatin,
+                              onTap: () => setState(() {
+                                _selectedCategory = cat.nameLatin;
+                                _selectedSubcategory = null;
+                              }),
+                              isDark: isDark,
                             ),
                           ),
                         ],
                       ),
+                    ).animate().fadeIn(delay: 500.ms).slideX(begin: 0.05),
+                  ),
+                  loading: () => SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 52,
+                      child: ListView.builder(
+                        scrollDirection: Axis.horizontal,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 32 : 24,
+                        ),
+                        itemCount: 5,
+                        itemBuilder: (context, index) => const Padding(
+                          padding: EdgeInsets.only(right: 12),
+                          child: Skeleton(
+                            width: 80,
+                            height: 44,
+                            borderRadius: 24,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  error: (_, __) =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                ),
+
+                // --- Cascading Subcategory chips ---
+                if (_selectedCategory != null)
+                  subcategoriesAsync.when(
+                    data: (allSubcats) {
+                      final cats =
+                          ref.read(rhymeCategoriesProvider).value ?? [];
+                      final matching = cats
+                          .where((c) => c.nameLatin == _selectedCategory)
+                          .toList();
+                      final catId = matching.isNotEmpty
+                          ? matching.first.id
+                          : '';
+                      final filtered = allSubcats
+                          .where((s) => s.categoryId == catId)
+                          .toList();
+
+                      if (filtered.isEmpty) {
+                        return const SliverToBoxAdapter(
+                          child: SizedBox.shrink(),
+                        );
+                      }
+
+                      return SliverToBoxAdapter(
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: SizedBox(
+                            height: 40,
+                            child: ListView(
+                              scrollDirection: Axis.horizontal,
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 32 : 24,
+                              ),
+                              children: [
+                                _buildFilterChip(
+                                  label: 'All ${_selectedCategory ?? ""}',
+                                  isSelected: _selectedSubcategory == null,
+                                  onTap: () => setState(
+                                    () => _selectedSubcategory = null,
+                                  ),
+                                  isDark: isDark,
+                                  small: true,
+                                ),
+                                ...filtered.map(
+                                  (sub) => _buildFilterChip(
+                                    label: sub.nameLatin,
+                                    isSelected:
+                                        _selectedSubcategory == sub.nameLatin,
+                                    onTap: () => setState(
+                                      () =>
+                                          _selectedSubcategory = sub.nameLatin,
+                                    ),
+                                    isDark: isDark,
+                                    small: true,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ).animate().fadeIn().slideX(begin: 0.1),
+                      );
+                    },
+                    loading: () => SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.only(top: 12),
+                        child: SizedBox(
+                          height: 40,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            padding: EdgeInsets.symmetric(
+                              horizontal: isTablet ? 32 : 24,
+                            ),
+                            itemCount: 3,
+                            itemBuilder: (context, index) => const Padding(
+                              padding: EdgeInsets.only(right: 12),
+                              child: Skeleton(
+                                width: 100,
+                                height: 32,
+                                borderRadius: 20,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    error: (_, __) =>
+                        const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+                // --- Featured Card with Glassmorphism 2.0 ---
+                rhymesAsync.when(
+                  data: (rhymes) {
+                    final filtered = _filterRhymes(rhymes);
+                    return filtered.isNotEmpty
+                        ? SliverToBoxAdapter(
+                            child: Padding(
+                              padding: EdgeInsets.symmetric(
+                                horizontal: isTablet ? 32 : 24,
+                              ),
+                              child: _FeaturedRhymeCard(rhyme: filtered.first),
+                            ),
+                          )
+                        : const SliverToBoxAdapter(child: SizedBox.shrink());
+                  },
+                  loading: () => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 32 : 24,
+                      ),
+                      child: const Skeleton(
+                        width: double.infinity,
+                        height: 240,
+                        borderRadius: 40,
+                      ),
+                    ),
+                  ),
+                  error: (_, __) =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                ),
+
+                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+
+                // --- Section Title ---
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isTablet ? 32 : 24,
+                    ),
+                    child: Row(
+                      children: [
+                        Text(
+                              'DISCOVER MORE',
+                              style: GoogleFonts.fredoka(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 2.5,
+                                color: isDark ? Colors.white24 : Colors.black26,
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 600.ms, duration: 500.ms)
+                            .slideX(begin: -0.2),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: AnimatedBuilder(
+                            animation: _dividerGlowController,
+                            builder: (context, child) {
+                              return Container(
+                                height: 1.5,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      (isDark
+                                          ? Colors.white10
+                                          : Colors.black.withValues(
+                                              alpha: 0.05,
+                                            )),
+                                      AppColors.primary.withValues(
+                                        alpha:
+                                            0.3 +
+                                            0.2 *
+                                                math.sin(
+                                                  _dividerGlowController.value *
+                                                      2 *
+                                                      math.pi,
+                                                ),
+                                      ),
+                                      (isDark
+                                          ? Colors.white10
+                                          : Colors.black.withValues(
+                                              alpha: 0.05,
+                                            )),
+                                    ],
+                                    stops: [
+                                      0,
+                                      (_dividerGlowController.value).clamp(
+                                        0.1,
+                                        0.9,
+                                      ),
+                                      1,
+                                    ],
+                                  ),
+                                  borderRadius: BorderRadius.circular(1),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate().fadeIn(delay: 600.ms),
+                ),
+                const SliverToBoxAdapter(child: SizedBox(height: 20)),
+
+                // --- Bento Grid with Staggered Entrance ---
+                rhymesAsync.when(
+                  data: (rhymes) {
+                    final filtered = _filterRhymes(rhymes);
+                    final gridItems = filtered.length > 1
+                        ? filtered.sublist(1)
+                        : <RhymeModel>[];
+
+                    if (gridItems.isEmpty) {
+                      return SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text(
+                            'More coming soon! ✨',
+                            style: TextStyle(
+                              color: isDark ? Colors.white24 : Colors.black26,
+                            ),
+                          ),
+                        ),
+                      );
+                    }
+
+                    return SliverPadding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isTablet ? 32 : 24,
+                      ),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: ResponsiveLayout.gridColumns(context),
+                          mainAxisSpacing: 16,
+                          crossAxisSpacing: 16,
+                          childAspectRatio: isDesktop
+                              ? 1.0
+                              : (isTablet ? 1.0 : 0.95),
+                        ),
+                        delegate: SliverChildBuilderDelegate((context, index) {
+                          return TiltCard(
+                                child: _BentoRhymeCard(
+                                  rhyme: gridItems[index],
+                                  index: index,
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(delay: (index * 120).ms, duration: 700.ms)
+                              .scale(
+                                begin: const Offset(0.85, 0.85),
+                                curve: Curves.easeOutBack,
+                                delay: (index * 120).ms,
+                              )
+                              .slideY(
+                                begin: 0.25,
+                                delay: (index * 120).ms,
+                                curve: Curves.easeOutCubic,
+                              )
+                              .rotate(
+                                begin: index.isEven ? -0.02 : 0.02,
+                                end: 0,
+                                delay: (index * 120).ms,
+                                duration: 500.ms,
+                              );
+                        }, childCount: gridItems.length),
+                      ),
+                    );
+                  },
+                  loading: () =>
+                      const SliverToBoxAdapter(child: SizedBox.shrink()),
+                  error: (e, st) => SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 24,
+                        vertical: 16,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.red.withValues(alpha: 0.08)
+                              : Colors.red.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.red.withValues(alpha: 0.2)
+                                : Colors.red.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.wifi_off_rounded,
+                              size: 36,
+                              color: isDark
+                                  ? Colors.red.shade300
+                                  : Colors.red.shade400,
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              'Could not load rhymes',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w600,
+                                color: isDark ? Colors.white : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              'Check your connection and try again',
+                              style: TextStyle(
+                                fontSize: 13,
+                                color: isDark ? Colors.white54 : Colors.black45,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ),
-              ),
 
-              const SliverToBoxAdapter(child: SizedBox(height: 120)),
-            ],
-          ),
+                const SliverToBoxAdapter(child: SizedBox(height: 120)),
+              ],
+            ),
           ),
         ),
       ),
@@ -540,56 +590,56 @@ class _AnimatedMusicIcon extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedBuilder(
-      animation: controller,
-      builder: (context, child) {
-        final pulse = 0.8 + 0.2 * math.sin(controller.value * 2 * math.pi);
-        return Stack(
-          alignment: Alignment.center,
-          children: [
-            // Outer glow ring
-            Container(
-              width: 64 * pulse,
-              height: 64 * pulse,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.1 * pulse),
-                  width: 2,
+          animation: controller,
+          builder: (context, child) {
+            final pulse = 0.8 + 0.2 * math.sin(controller.value * 2 * math.pi);
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                // Outer glow ring
+                Container(
+                  width: 64 * pulse,
+                  height: 64 * pulse,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.1 * pulse),
+                      width: 2,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // Middle glow ring
-            Container(
-              width: 52 * pulse,
-              height: 52 * pulse,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: AppColors.primary.withValues(alpha: 0.15 * pulse),
-                  width: 1.5,
+                // Middle glow ring
+                Container(
+                  width: 52 * pulse,
+                  height: 52 * pulse,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.15 * pulse),
+                      width: 1.5,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            // Core icon
-            Container(
-              padding: const EdgeInsets.all(12),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: Transform.rotate(
-                angle: math.sin(controller.value * 2 * math.pi) * 0.15,
-                child: const Icon(
-                  Icons.music_note_rounded,
-                  color: AppColors.primary,
-                  size: 28,
+                // Core icon
+                Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Transform.rotate(
+                    angle: math.sin(controller.value * 2 * math.pi) * 0.15,
+                    child: const Icon(
+                      Icons.music_note_rounded,
+                      color: AppColors.primary,
+                      size: 28,
+                    ),
+                  ),
                 ),
-              ),
-            ),
-          ],
-        );
-      },
-    )
+              ],
+            );
+          },
+        )
         .animate()
         .fadeIn(delay: 300.ms, duration: 600.ms)
         .scale(begin: const Offset(0.5, 0.5), curve: Curves.easeOutBack);
@@ -799,9 +849,9 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard>
                     Row(
                       children: [
                         _buildBadge(
-                          'FEATURED',
-                          Colors.white.withValues(alpha: 0.2),
-                        )
+                              'FEATURED',
+                              Colors.white.withValues(alpha: 0.2),
+                            )
                             .animate()
                             .fadeIn(delay: 200.ms, duration: 400.ms)
                             .slideX(begin: -0.3)
@@ -809,44 +859,42 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard>
                         if (widget.rhyme.subcategory != null) ...[
                           const SizedBox(width: 8),
                           _buildBadge(
-                            widget.rhyme.subcategory?.toUpperCase() ?? '',
-                            Colors.white.withValues(alpha: 0.1),
-                          )
+                                widget.rhyme.subcategory?.toUpperCase() ?? '',
+                                Colors.white.withValues(alpha: 0.1),
+                              )
                               .animate()
                               .fadeIn(delay: 400.ms, duration: 400.ms)
                               .slideX(begin: -0.3)
                               .scale(begin: const Offset(0.8, 0.8)),
                         ],
                         const Spacer(),
-                        _PlayingIndicator(
-                          isPlaying: _isPlaying,
-                        ),
+                        _PlayingIndicator(isPlaying: _isPlaying),
                       ],
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      widget.rhyme.titleLatin,
-                      style: GoogleFonts.fredoka(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white,
-                        letterSpacing: -1,
-                        height: 1,
-                      ),
-                    )
+                          widget.rhyme.titleLatin,
+                          style: GoogleFonts.fredoka(
+                            fontSize: 28,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white,
+                            letterSpacing: -1,
+                            height: 1,
+                          ),
+                        )
                         .animate()
                         .fadeIn(delay: 300.ms, duration: 500.ms)
                         .slideX(begin: -0.08, curve: Curves.easeOutCubic),
                     const SizedBox(height: 4),
                     Text(
-                      widget.rhyme.titleOlChiki,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: Colors.white70,
-                        fontFamily: 'OlChiki',
-                      ),
-                    )
+                          widget.rhyme.titleOlChiki,
+                          style: const TextStyle(
+                            fontSize: 24,
+                            fontWeight: FontWeight.w700,
+                            color: Colors.white70,
+                            fontFamily: 'OlChiki',
+                          ),
+                        )
                         .animate()
                         .fadeIn(delay: 450.ms, duration: 500.ms)
                         .slideX(begin: -0.06, curve: Curves.easeOutCubic),
@@ -861,9 +909,15 @@ class _FeaturedRhymeCardState extends State<_FeaturedRhymeCard>
                             duration: const Duration(milliseconds: 300),
                             transitionBuilder: (child, anim) =>
                                 RotationTransition(
-                              turns: Tween(begin: 0.75, end: 1.0).animate(anim),
-                              child: ScaleTransition(scale: anim, child: child),
-                            ),
+                                  turns: Tween(
+                                    begin: 0.75,
+                                    end: 1.0,
+                                  ).animate(anim),
+                                  child: ScaleTransition(
+                                    scale: anim,
+                                    child: child,
+                                  ),
+                                ),
                             child: Icon(
                               _isPlaying
                                   ? Icons.stop_rounded
@@ -1039,21 +1093,19 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard>
                       child: AnimatedBuilder(
                         animation: _iconBounceController,
                         builder: (context, child) {
-                          final bounce = 1.0 +
+                          final bounce =
+                              1.0 +
                               0.2 *
-                                  math.sin(_iconBounceController.value * math.pi) *
+                                  math.sin(
+                                    _iconBounceController.value * math.pi,
+                                  ) *
                                   (1 - _iconBounceController.value);
-                          return Transform.scale(
-                            scale: bounce,
-                            child: child,
-                          );
+                          return Transform.scale(scale: bounce, child: child);
                         },
                         child: AnimatedSwitcher(
                           duration: const Duration(milliseconds: 300),
-                          transitionBuilder: (child, anim) => ScaleTransition(
-                            scale: anim,
-                            child: child,
-                          ),
+                          transitionBuilder: (child, anim) =>
+                              ScaleTransition(scale: anim, child: child),
                           child: Icon(
                             _isPlaying
                                 ? Icons.pause_circle_filled_rounded
@@ -1070,46 +1122,46 @@ class _BentoRhymeCardState extends State<_BentoRhymeCard>
                 const Spacer(),
                 if (widget.rhyme.subcategory != null)
                   Text(
-                    widget.rhyme.subcategory?.toUpperCase() ?? '',
-                    style: GoogleFonts.fredoka(
-                      fontSize: 9,
-                      fontWeight: FontWeight.w700,
-                      color: color.withValues(alpha: 0.8),
-                      letterSpacing: 1,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  )
+                        widget.rhyme.subcategory?.toUpperCase() ?? '',
+                        style: GoogleFonts.fredoka(
+                          fontSize: 9,
+                          fontWeight: FontWeight.w700,
+                          color: color.withValues(alpha: 0.8),
+                          letterSpacing: 1,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
                       .animate()
                       .fadeIn(delay: 200.ms, duration: 400.ms)
                       .slideX(begin: 0.15),
                 const SizedBox(height: 4),
                 Text(
-                  widget.rhyme.titleLatin,
-                  style: GoogleFonts.fredoka(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : AppColors.primaryDark,
-                    height: 1.1,
-                  ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                )
+                      widget.rhyme.titleLatin,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: isDark ? Colors.white : AppColors.primaryDark,
+                        height: 1.1,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    )
                     .animate()
                     .fadeIn(delay: 300.ms, duration: 500.ms)
                     .slideY(begin: 0.15, curve: Curves.easeOutCubic),
                 const SizedBox(height: 2),
                 Text(
-                  widget.rhyme.titleOlChiki,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white54 : Colors.black45,
-                    fontFamily: 'OlChiki',
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                )
+                      widget.rhyme.titleOlChiki,
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white54 : Colors.black45,
+                        fontFamily: 'OlChiki',
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    )
                     .animate()
                     .fadeIn(delay: 450.ms, duration: 500.ms)
                     .slideY(begin: 0.10, curve: Curves.easeOutCubic),
@@ -1227,20 +1279,20 @@ class _PlayingIndicatorState extends State<_PlayingIndicator>
               ),
             )
           : Container(
-              key: const ValueKey('note'),
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.music_note_rounded,
-                color: Colors.white70,
-                size: 20,
-              ),
-            )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .rotate(begin: -0.05, end: 0.05, duration: 2.seconds),
+                  key: const ValueKey('note'),
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.music_note_rounded,
+                    color: Colors.white70,
+                    size: 20,
+                  ),
+                )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .rotate(begin: -0.05, end: 0.05, duration: 2.seconds),
     );
   }
 }

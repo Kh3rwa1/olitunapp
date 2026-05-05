@@ -24,20 +24,27 @@ void main() {
     expect(notifier.state, isTrue);
   });
 
-  test('completeOnboarding flips state to false and persists the flag',
-      () async {
-    final notifier = OnboardingNotifier();
-    await notifier.completeOnboarding();
-    expect(notifier.state, isFalse);
-    expect(hive_service.prefs.getBool('show_onboarding'), isFalse);
-  });
+  test(
+    'completeOnboarding flips state to false and persists the flag',
+    () async {
+      final notifier = OnboardingNotifier();
+      await notifier.completeOnboarding();
+      expect(notifier.state, isFalse);
+      expect(hive_service.prefs.getBool('show_onboarding'), isFalse);
+    },
+  );
 
-  test('after completing onboarding, a new notifier reads false from prefs',
-      () async {
-    SharedPreferences.setMockInitialValues({'show_onboarding': false});
-    hive_service.prefs = await SharedPreferences.getInstance();
-    final notifier = OnboardingNotifier();
-    expect(notifier.state, isFalse,
-        reason: 'persisted "false" flag must short-circuit onboarding');
-  });
+  test(
+    'after completing onboarding, a new notifier reads false from prefs',
+    () async {
+      SharedPreferences.setMockInitialValues({'show_onboarding': false});
+      hive_service.prefs = await SharedPreferences.getInstance();
+      final notifier = OnboardingNotifier();
+      expect(
+        notifier.state,
+        isFalse,
+        reason: 'persisted "false" flag must short-circuit onboarding',
+      );
+    },
+  );
 }

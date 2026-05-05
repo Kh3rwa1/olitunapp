@@ -49,7 +49,11 @@ class CategoryRepositoryImpl implements CategoryRepository {
       final cached = await localDataSource.getCategories();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(_recordedServerFailure(ServerException(message: originalMessage, code: originalCode)));
+      return Left(
+        _recordedServerFailure(
+          ServerException(message: originalMessage, code: originalCode),
+        ),
+      );
     }
   }
 
@@ -71,7 +75,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Either<Failure, void>> createCategory(CategoryEntity category) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.createCategory(CategoryModel.fromEntity(category));
+        await remoteDataSource.createCategory(
+          CategoryModel.fromEntity(category),
+        );
         return const Right(null);
       } on ServerException catch (e) {
         return Left(_recordedServerFailure(e));
@@ -85,7 +91,9 @@ class CategoryRepositoryImpl implements CategoryRepository {
   Future<Either<Failure, void>> updateCategory(CategoryEntity category) async {
     if (await networkInfo.isConnected) {
       try {
-        await remoteDataSource.updateCategory(CategoryModel.fromEntity(category));
+        await remoteDataSource.updateCategory(
+          CategoryModel.fromEntity(category),
+        );
         return const Right(null);
       } on ServerException catch (e) {
         return Left(_recordedServerFailure(e));

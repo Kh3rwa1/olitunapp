@@ -295,10 +295,8 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                     height: 150,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, __) => Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 100),
-                    ),
+                    errorBuilder: (context, _, __) =>
+                        Text(emoji, style: const TextStyle(fontSize: 100)),
                   ),
           ),
         ),
@@ -352,224 +350,235 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               const SizedBox(height: 24),
 
               // Large Ol Chiki number
-          Container(
-            width: 160,
-            height: 160,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  accentColor.withValues(alpha: 0.15),
-                  accentColor.withValues(alpha: 0.25),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(32),
-              border: Border.all(color: accentColor.withValues(alpha: 0.4), width: 4),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.2),
-                  blurRadius: 40,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Animate(
-              child: Center(
-                child: Text(
-                  number.numeral,
-                  style: TextStyle(
-                    fontSize: 80,
-                    fontWeight: FontWeight.w700,
-                    color: accentColor,
+              Container(
+                width: 160,
+                height: 160,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      accentColor.withValues(alpha: 0.15),
+                      accentColor.withValues(alpha: 0.25),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                ),
-              ),
-            ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
-          ),
-          const SizedBox(height: 20),
-
-          // Ol Chiki name badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  number.nameOlChiki,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                    letterSpacing: 1,
+                  borderRadius: BorderRadius.circular(32),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.4),
+                    width: 4,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-                if (number.audioUrl != null) ...[
-                  const SizedBox(width: 12),
-                  PressableScale(
-                    onTap: () {
-                      ref.read(audioServiceProvider).playUrl(number.audioUrl!);
-                    },
-                    child: Container(
-                      padding: const EdgeInsets.all(6),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.25),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: const Icon(
-                        Icons.volume_up_rounded,
-                        color: Colors.white,
-                        size: 20,
+                child: Animate(
+                  child: Center(
+                    child: Text(
+                      number.numeral,
+                      style: TextStyle(
+                        fontSize: 80,
+                        fontWeight: FontWeight.w700,
+                        color: accentColor,
                       ),
                     ),
                   ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Pronunciation hint
-          if (number.pronunciation != null && number.pronunciation!.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: isDark
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
+                ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
               ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.record_voice_over_rounded,
-                        color: accentColor,
-                        size: 24,
+              const SizedBox(height: 20),
+
+              // Ol Chiki name badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      number.nameOlChiki,
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.w900,
+                        color: Colors.white,
+                        letterSpacing: 1,
                       ),
-                      const SizedBox(width: 8),
+                    ),
+                    if (number.audioUrl != null) ...[
+                      const SizedBox(width: 12),
+                      PressableScale(
+                        onTap: () {
+                          ref
+                              .read(audioServiceProvider)
+                              .playUrl(number.audioUrl!);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(6),
+                          decoration: BoxDecoration(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.volume_up_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Pronunciation hint
+              if (number.pronunciation != null &&
+                  number.pronunciation!.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.record_voice_over_rounded,
+                            color: accentColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pronunciation',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
                       Text(
-                        'Pronunciation',
+                        number.pronunciation!,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: accentColor,
+                          height: 1.5,
+                          color: isDark ? Colors.white70 : Colors.grey[700],
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Text(
-                    number.pronunciation!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.5,
-                      color: isDark ? Colors.white70 : Colors.grey[700],
+                ),
+
+              const SizedBox(height: 16),
+
+              // Value representation (animated dots)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      accentColor.withValues(alpha: 0.08),
+                      accentColor.withValues(alpha: 0.04),
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                    color: accentColor.withValues(alpha: 0.15),
+                    width: 2,
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    Text(
+                      'Count',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: accentColor.withValues(alpha: 0.8),
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ),
-
-          const SizedBox(height: 16),
-
-          // Value representation (animated dots)
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  accentColor.withValues(alpha: 0.08),
-                  accentColor.withValues(alpha: 0.04),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: accentColor.withValues(alpha: 0.15),
-                width: 2,
-              ),
-            ),
-            child: Column(
-              children: [
-                Text(
-                  'Count',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    color: accentColor.withValues(alpha: 0.8),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Wrap(
-                  spacing: 12,
-                  runSpacing: 12,
-                  alignment: WrapAlignment.center,
-                  children: List.generate(
-                    number.value,
-                    (i) =>
-                        Animate(
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      accentColor,
-                                      accentColor.withValues(alpha: 0.7),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: accentColor.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 12,
+                      alignment: WrapAlignment.center,
+                      children: List.generate(
+                        number.value,
+                        (i) =>
+                            Animate(
+                                  child: Container(
+                                    width: 24,
+                                    height: 24,
+                                    decoration: BoxDecoration(
+                                      gradient: LinearGradient(
+                                        colors: [
+                                          accentColor,
+                                          accentColor.withValues(alpha: 0.7),
+                                        ],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
+                                      shape: BoxShape.circle,
+                                      boxShadow: [
+                                        BoxShadow(
+                                          color: accentColor.withValues(
+                                            alpha: 0.3,
+                                          ),
+                                          blurRadius: 6,
+                                          offset: const Offset(0, 2),
+                                        ),
+                                      ],
                                     ),
-                                  ],
+                                  ),
+                                )
+                                .fadeIn(
+                                  delay: Duration(milliseconds: 800 + (i * 80)),
+                                )
+                                .scale(
+                                  begin: const Offset(0, 0),
+                                  curve: Curves.easeOutBack,
+                                  delay: Duration(milliseconds: 800 + (i * 80)),
                                 ),
-                              ),
-                            )
-                            .fadeIn(
-                              delay: Duration(milliseconds: 800 + (i * 80)),
-                            )
-                            .scale(
-                              begin: const Offset(0, 0),
-                              curve: Curves.easeOutBack,
-                              delay: Duration(milliseconds: 800 + (i * 80)),
-                            ),
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
+              ),
             ]),
           ),
         ),

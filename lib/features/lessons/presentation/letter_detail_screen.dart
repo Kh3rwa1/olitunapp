@@ -322,10 +322,8 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                     height: 160,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, __) => Text(
-                      emoji,
-                      style: const TextStyle(fontSize: 100),
-                    ),
+                    errorBuilder: (context, _, __) =>
+                        Text(emoji, style: const TextStyle(fontSize: 100)),
                   ),
           ),
         ),
@@ -344,9 +342,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             end: Alignment.bottomRight,
           ),
           glyph: letter.charOlChiki,
-          title: Text(
-            letter.exampleWordLatin ?? letter.transliterationLatin,
-          ),
+          title: Text(letter.exampleWordLatin ?? letter.transliterationLatin),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
             onPressed: () => context.pop(),
@@ -369,180 +365,184 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
           sliver: SliverList(
             delegate: SliverChildListDelegate.fixed([
               // Large Ol Chiki character
-          Container(
-            width: 180,
-            height: 180,
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  accentColor.withValues(alpha: 0.15),
-                  accentColor.withValues(alpha: 0.25),
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(36),
-              border: Border.all(
-                color: accentColor.withValues(alpha: 0.4),
-                width: 4,
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.2),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Center(
-              child: Text(
-                letter.charOlChiki,
-                style: TextStyle(
-                  fontSize: 80,
-                  fontWeight: FontWeight.w900,
-                  color: accentColor,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-
-          // Romanization badge
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            decoration: BoxDecoration(
-              color: accentColor,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: accentColor.withValues(alpha: 0.4),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Text(
-              letter.transliterationLatin.toUpperCase(),
-              style: const TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w900,
-                color: Colors.white,
-                letterSpacing: 2,
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-
-          // Pronunciation hint
-          if (letter.pronunciation != null && letter.pronunciation!.isNotEmpty)
-            Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: isDark
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.record_voice_over_rounded,
-                        color: accentColor,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Pronunciation',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: accentColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    letter.pronunciation!,
-                    style: TextStyle(
-                      fontSize: 16,
-                      height: 1.5,
-                      color: isDark ? Colors.white70 : Colors.grey[700],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-
-          // Example word
-          if (letter.exampleWordOlChiki != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
+              Container(
+                width: 180,
+                height: 180,
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      accentColor.withValues(alpha: 0.1),
-                      accentColor.withValues(alpha: 0.05),
+                      accentColor.withValues(alpha: 0.15),
+                      accentColor.withValues(alpha: 0.25),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(36),
                   border: Border.all(
-                    color: accentColor.withValues(alpha: 0.2),
-                    width: 2,
+                    color: accentColor.withValues(alpha: 0.4),
+                    width: 4,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Center(
+                  child: Text(
+                    letter.charOlChiki,
+                    style: TextStyle(
+                      fontSize: 80,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                    ),
                   ),
                 ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Example',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor.withValues(alpha: 0.8),
-                      ),
+              ),
+              const SizedBox(height: 20),
+
+              // Romanization badge
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
                     ),
-                    const SizedBox(height: 8),
-                    Text(
-                      letter.exampleWordOlChiki!,
-                      style: TextStyle(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w900,
-                        color: accentColor,
+                  ],
+                ),
+                child: Text(
+                  letter.transliterationLatin.toUpperCase(),
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.white,
+                    letterSpacing: 2,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Pronunciation hint
+              if (letter.pronunciation != null &&
+                  letter.pronunciation!.isNotEmpty)
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: isDark
+                        ? null
+                        : [
+                            BoxShadow(
+                              color: Colors.black.withValues(alpha: 0.05),
+                              blurRadius: 10,
+                              offset: const Offset(0, 4),
+                            ),
+                          ],
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.record_voice_over_rounded,
+                            color: accentColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pronunciation',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: accentColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ),
-                    if (letter.exampleWordLatin != null) ...[
-                      const SizedBox(height: 4),
+                      const SizedBox(height: 12),
                       Text(
-                        letter.exampleWordLatin!,
+                        letter.pronunciation!,
                         style: TextStyle(
                           fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white70 : Colors.grey[600],
+                          height: 1.5,
+                          color: isDark ? Colors.white70 : Colors.grey[700],
                         ),
                       ),
                     ],
-                  ],
+                  ),
                 ),
-              ),
-            ),
+
+              // Example word
+              if (letter.exampleWordOlChiki != null)
+                Padding(
+                  padding: const EdgeInsets.only(top: 16),
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          accentColor.withValues(alpha: 0.1),
+                          accentColor.withValues(alpha: 0.05),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.2),
+                        width: 2,
+                      ),
+                    ),
+                    child: Column(
+                      children: [
+                        Text(
+                          'Example',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: accentColor.withValues(alpha: 0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          letter.exampleWordOlChiki!,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: accentColor,
+                          ),
+                        ),
+                        if (letter.exampleWordLatin != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            letter.exampleWordLatin!,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : Colors.grey[600],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                ),
             ]),
           ),
         ),

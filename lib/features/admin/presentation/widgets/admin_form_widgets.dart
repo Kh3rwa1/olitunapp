@@ -39,15 +39,18 @@ class AdminTextField extends StatelessWidget {
           style: AdminTokens.bodyStrong(isDark),
           decoration: InputDecoration(
             hintText: hint,
-            hintStyle: AdminTokens.body(isDark).copyWith(
-              color: AdminTokens.textTertiary(isDark),
-            ),
+            hintStyle: AdminTokens.body(
+              isDark,
+            ).copyWith(color: AdminTokens.textTertiary(isDark)),
             filled: true,
             fillColor: AdminTokens.sunken(isDark),
             prefixIcon: prefixIcon == null
                 ? null
-                : Icon(prefixIcon,
-                    size: 20, color: AdminTokens.textTertiary(isDark)),
+                : Icon(
+                    prefixIcon,
+                    size: 20,
+                    color: AdminTokens.textTertiary(isDark),
+                  ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
               borderSide: BorderSide(color: AdminTokens.border(isDark)),
@@ -58,8 +61,10 @@ class AdminTextField extends StatelessWidget {
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              borderSide:
-                  const BorderSide(color: AdminTokens.accent, width: 1.5),
+              borderSide: const BorderSide(
+                color: AdminTokens.accent,
+                width: 1.5,
+              ),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: 16,
@@ -71,8 +76,9 @@ class AdminTextField extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             helperText!,
-            style: AdminTokens.label(isDark)
-                .copyWith(color: AdminTokens.textTertiary(isDark)),
+            style: AdminTokens.label(
+              isDark,
+            ).copyWith(color: AdminTokens.textTertiary(isDark)),
           ),
         ],
       ],
@@ -137,10 +143,10 @@ class AdminModalSheet extends StatelessWidget {
                     height: 44,
                     decoration: BoxDecoration(
                       color: AdminTokens.accentSoft(isDark),
-                      borderRadius:
-                          BorderRadius.circular(AdminTokens.radiusMd),
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
                       border: Border.all(
-                          color: AdminTokens.accentBorder(isDark)),
+                        color: AdminTokens.accentBorder(isDark),
+                      ),
                     ),
                     child: Icon(icon, color: AdminTokens.accent, size: 22),
                   ),
@@ -156,9 +162,9 @@ class AdminModalSheet extends StatelessWidget {
                         const SizedBox(height: 2),
                         Text(
                           subtitle!,
-                          style: AdminTokens.label(isDark).copyWith(
-                            color: AdminTokens.textTertiary(isDark),
-                          ),
+                          style: AdminTokens.label(
+                            isDark,
+                          ).copyWith(color: AdminTokens.textTertiary(isDark)),
                         ),
                       ],
                     ],
@@ -166,8 +172,10 @@ class AdminModalSheet extends StatelessWidget {
                 ),
                 IconButton(
                   onPressed: () => Navigator.pop(context),
-                  icon: Icon(Icons.close_rounded,
-                      color: AdminTokens.textSecondary(isDark)),
+                  icon: Icon(
+                    Icons.close_rounded,
+                    color: AdminTokens.textSecondary(isDark),
+                  ),
                 ),
               ],
             ),
@@ -245,8 +253,7 @@ class AdminPrimaryButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: AdminTokens.accent,
             borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-            boxShadow: AdminTokens.brandGlow(AdminTokens.accent,
-                strength: 0.7),
+            boxShadow: AdminTokens.brandGlow(AdminTokens.accent, strength: 0.7),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
@@ -378,19 +385,16 @@ Future<bool?> showAdminConfirmDialog({
                       color: destructive
                           ? AppColors.error.withValues(alpha: 0.14)
                           : AdminTokens.accentSoft(isDark),
-                      borderRadius:
-                          BorderRadius.circular(AdminTokens.radiusMd),
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
                     ),
                     child: Icon(
                       icon,
-                      color:
-                          destructive ? AppColors.error : AdminTokens.accent,
+                      color: destructive ? AppColors.error : AdminTokens.accent,
                     ),
                   ),
                   const SizedBox(width: 14),
                   Expanded(
-                    child: Text(title,
-                        style: AdminTokens.sectionTitle(isDark)),
+                    child: Text(title, style: AdminTokens.sectionTitle(isDark)),
                   ),
                 ],
               ),
@@ -417,16 +421,18 @@ Future<bool?> showAdminConfirmDialog({
                           HapticFeedback.mediumImpact();
                           Navigator.pop(context, true);
                         },
-                        borderRadius:
-                            BorderRadius.circular(AdminTokens.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusMd,
+                        ),
                         child: Container(
                           padding: const EdgeInsets.symmetric(vertical: 14),
                           decoration: BoxDecoration(
                             color: destructive
                                 ? AppColors.error
                                 : AdminTokens.accent,
-                            borderRadius:
-                                BorderRadius.circular(AdminTokens.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
                           ),
                           child: Center(
                             child: Text(
@@ -481,25 +487,23 @@ class AdminFilterChip extends StatelessWidget {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
           decoration: BoxDecoration(
-            color: selected
-                ? AdminTokens.accent
-                : AdminTokens.sunken(isDark),
+            color: selected ? AdminTokens.accent : AdminTokens.sunken(isDark),
             borderRadius: BorderRadius.circular(999),
             border: Border.all(
-              color: selected
-                  ? AdminTokens.accent
-                  : AdminTokens.border(isDark),
+              color: selected ? AdminTokens.accent : AdminTokens.border(isDark),
             ),
           ),
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
               if (icon != null) ...[
-                Icon(icon,
-                    size: 14,
-                    color: selected
-                        ? Colors.white
-                        : AdminTokens.textSecondary(isDark)),
+                Icon(
+                  icon,
+                  size: 14,
+                  color: selected
+                      ? Colors.white
+                      : AdminTokens.textSecondary(isDark),
+                ),
                 const SizedBox(width: 6),
               ],
               Text(
@@ -539,17 +543,16 @@ class AdminLoadingState extends StatelessWidget {
             height: 28,
             child: CircularProgressIndicator(
               strokeWidth: 2.5,
-              valueColor:
-                  AlwaysStoppedAnimation<Color>(AdminTokens.accent),
+              valueColor: AlwaysStoppedAnimation<Color>(AdminTokens.accent),
             ),
           ),
           if (label != null) ...[
             const SizedBox(height: 14),
             Text(
               label!,
-              style: AdminTokens.label(isDark).copyWith(
-                color: AdminTokens.textSecondary(isDark),
-              ),
+              style: AdminTokens.label(
+                isDark,
+              ).copyWith(color: AdminTokens.textSecondary(isDark)),
             ),
           ],
         ],
@@ -587,10 +590,10 @@ class AdminErrorState extends StatelessWidget {
                 height: 72,
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.12),
-                  borderRadius:
-                      BorderRadius.circular(AdminTokens.radiusXl),
+                  borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
                   border: Border.all(
-                      color: AppColors.error.withValues(alpha: 0.28)),
+                    color: AppColors.error.withValues(alpha: 0.28),
+                  ),
                 ),
                 child: const Icon(
                   Icons.error_outline_rounded,
@@ -599,16 +602,18 @@ class AdminErrorState extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: AdminTokens.space5),
-              Text(title,
-                  textAlign: TextAlign.center,
-                  style: AdminTokens.sectionTitle(isDark)),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: AdminTokens.sectionTitle(isDark),
+              ),
               const SizedBox(height: AdminTokens.space2),
               SelectableText(
                 message,
                 textAlign: TextAlign.center,
-                style: AdminTokens.body(isDark).copyWith(
-                  color: AdminTokens.textSecondary(isDark),
-                ),
+                style: AdminTokens.body(
+                  isDark,
+                ).copyWith(color: AdminTokens.textSecondary(isDark)),
               ),
               if (onRetry != null) ...[
                 const SizedBox(height: AdminTokens.space5),

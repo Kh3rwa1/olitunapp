@@ -9,8 +9,7 @@ final sentencesProvider =
       SentencesNotifier.new,
     );
 
-class SentencesNotifier
-    extends StateNotifier<AsyncValue<List<SentenceModel>>> {
+class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
   SentencesNotifier(this.ref) : super(AsyncValue.data(_seedSentences)) {
     _loadSentences();
   }

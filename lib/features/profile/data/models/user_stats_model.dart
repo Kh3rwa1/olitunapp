@@ -17,7 +17,8 @@ class UserStatsModel extends UserStatsEntity {
     return UserStatsModel(
       practicedLetters: Set<String>.from(json['practicedLetters'] ?? []),
       completedLessons: Set<String>.from(json['completedLessons'] ?? []),
-      quizHistory: (json['quizHistory'] as Map<String, dynamic>?)?.map(
+      quizHistory:
+          (json['quizHistory'] as Map<String, dynamic>?)?.map(
             (k, v) => MapEntry(k, QuizResultModel.fromJson(v)),
           ) ??
           {},
@@ -33,7 +34,9 @@ class UserStatsModel extends UserStatsEntity {
     return {
       'practicedLetters': practicedLetters.toList(),
       'completedLessons': completedLessons.toList(),
-      'quizHistory': quizHistory.map((k, v) => MapEntry(k, QuizResultModel.fromEntity(v).toJson())),
+      'quizHistory': quizHistory.map(
+        (k, v) => MapEntry(k, QuizResultModel.fromEntity(v).toJson()),
+      ),
       'categoryMastery': categoryMastery,
       'totalLearningMinutes': totalLearningMinutes,
       'lastActiveDate': lastActiveDate,

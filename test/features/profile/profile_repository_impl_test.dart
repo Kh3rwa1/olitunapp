@@ -30,39 +30,38 @@ void main() {
 
   test('getUserStats returns empty defaults when no data is stored', () async {
     final result = await repo.getUserStats();
-    result.match(
-      (_) => fail('should be right'),
-      (stats) {
-        expect(stats.totalStars, 0);
-        expect(stats.practicedLetters, isEmpty);
-      },
-    );
-  });
-
-  test('getUserStats returns stored stats round-tripped through JSON',
-      () async {
-    const stored = UserStatsEntity(
-      practicedLetters: {'a', 'b'},
-      completedLessons: {'l1'},
-      quizHistory: {},
-      categoryMastery: {'cat': 7},
-      totalLearningMinutes: 42,
-      lastActiveDate: '2025-01-01',
-      currentStreak: 3,
-      totalStars: 99,
-    );
-    await hive_service.prefs.setString(
-      'user_progress_data',
-      jsonEncode(UserStatsModel.fromEntity(stored).toJson()),
-    );
-
-    final result = await repo.getUserStats();
     result.match((_) => fail('should be right'), (stats) {
-      expect(stats.totalStars, 99);
-      expect(stats.categoryMastery['cat'], 7);
-      expect(stats.practicedLetters.contains('a'), isTrue);
+      expect(stats.totalStars, 0);
+      expect(stats.practicedLetters, isEmpty);
     });
   });
+
+  test(
+    'getUserStats returns stored stats round-tripped through JSON',
+    () async {
+      const stored = UserStatsEntity(
+        practicedLetters: {'a', 'b'},
+        completedLessons: {'l1'},
+        quizHistory: {},
+        categoryMastery: {'cat': 7},
+        totalLearningMinutes: 42,
+        lastActiveDate: '2025-01-01',
+        currentStreak: 3,
+        totalStars: 99,
+      );
+      await hive_service.prefs.setString(
+        'user_progress_data',
+        jsonEncode(UserStatsModel.fromEntity(stored).toJson()),
+      );
+
+      final result = await repo.getUserStats();
+      result.match((_) => fail('should be right'), (stats) {
+        expect(stats.totalStars, 99);
+        expect(stats.categoryMastery['cat'], 7);
+        expect(stats.practicedLetters.contains('a'), isTrue);
+      });
+    },
+  );
 
   test('getUserStats maps malformed stored JSON to CacheFailure', () async {
     await hive_service.prefs.setString('user_progress_data', '{not json');
@@ -74,8 +73,7 @@ void main() {
     );
   });
 
-  test('getUserStats maps structurally-invalid JSON to CacheFailure',
-      () async {
+  test('getUserStats maps structurally-invalid JSON to CacheFailure', () async {
     await hive_service.prefs.setString(
       'user_progress_data',
       jsonEncode({'totalStars': 'not-an-int'}),
@@ -113,24 +111,29 @@ void main() {
     expect(hive_service.prefs.getInt('user_avatar_color'), 3);
   });
 
-  test('updateDisplayName writes name and returns Right when not logged in',
-      () async {
-    final res = await repo.updateDisplayName('Sido');
-    expect(res.isRight(), isTrue);
-    expect(hive_service.prefs.getString('user_name'), 'Sido');
-  });
+  test(
+    'updateDisplayName writes name and returns Right when not logged in',
+    () async {
+      final res = await repo.updateDisplayName('Sido');
+      expect(res.isRight(), isTrue);
+      expect(hive_service.prefs.getString('user_name'), 'Sido');
+    },
+  );
 
-  test('updateDisplayName surfaces Left when auth.isLoggedIn returns Left',
-      () async {
-    when(() => auth.isLoggedIn())
-        .thenAnswer((_) async => const Left(NetworkFailure()));
+  test(
+    'updateDisplayName surfaces Left when auth.isLoggedIn returns Left',
+    () async {
+      when(
+        () => auth.isLoggedIn(),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
 
-    final res = await repo.updateDisplayName('Kanhu');
-    expect(res.isLeft(), isTrue);
-    res.match(
-      (failure) => expect(failure, isA<NetworkFailure>()),
-      (_) => fail('should be left'),
-    );
-    expect(hive_service.prefs.getString('user_name'), 'Kanhu');
-  });
+      final res = await repo.updateDisplayName('Kanhu');
+      expect(res.isLeft(), isTrue);
+      res.match(
+        (failure) => expect(failure, isA<NetworkFailure>()),
+        (_) => fail('should be left'),
+      );
+      expect(hive_service.prefs.getString('user_name'), 'Kanhu');
+    },
+  );
 }

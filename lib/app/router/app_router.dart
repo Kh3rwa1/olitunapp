@@ -44,6 +44,12 @@ String? adminHostRedirectFor(String host, String path) {
   return '/admin';
 }
 
+@visibleForTesting
+String? adminAccessRedirectFor({required bool isAdmin, required String path}) {
+  if (!path.startsWith('/admin') || path == '/admin/login') return null;
+  return isAdmin ? null : '/admin/login';
+}
+
 /// Convenience: builds a GoRoute whose `pageBuilder` wraps the screen
 /// in our shared-axis Z transition. Used for content "drill-in" routes
 /// (lesson, letter, word, number, sentence, quiz, practice).
@@ -97,6 +103,30 @@ GoRoute _modalRoute({
 }
 
 final routerProvider = Provider<GoRouter>((ref) {
+  FutureOr<String?> adminRedirect(
+    BuildContext context,
+    GoRouterState state,
+  ) async {
+    final path = state.uri.path;
+    if (!path.startsWith('/admin') || path == '/admin/login') return null;
+
+    final isAdmin = await ref.read(adminAuthProvider.future);
+    return adminAccessRedirectFor(isAdmin: isAdmin, path: path);
+  }
+
+  GoRoute adminRoute({
+    required String path,
+    String? name,
+    required Widget Function(BuildContext, GoRouterState) builder,
+  }) {
+    return GoRoute(
+      path: path,
+      name: name,
+      redirect: adminRedirect,
+      builder: builder,
+    );
+  }
+
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
     initialLocation: '/splash',
@@ -201,66 +231,61 @@ final routerProvider = Provider<GoRouter>((ref) {
       ShellRoute(
         builder: (context, state, child) => AdminShell(child: child),
         routes: [
-          GoRoute(
+          adminRoute(
             path: '/admin',
             name: RouteNames.admin,
-            redirect: (context, state) async {
-              final isAdmin = await ref.read(adminAuthProvider.future);
-              if (!isAdmin) return '/admin/login';
-              return null;
-            },
             builder: (context, state) => const AdminDashboardScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/categories',
             builder: (context, state) => const AdminCategoriesScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/banners',
             builder: (context, state) => const AdminBannersScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/letters',
             builder: (context, state) => const AdminLettersScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/lessons',
             builder: (context, state) => const AdminLessonsScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/lessons/content/:lessonId',
             builder: (context, state) {
               final lessonId = state.pathParameters['lessonId'] ?? '';
               return AdminLessonContentScreen(lessonId: lessonId);
             },
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/quizzes',
             builder: (context, state) => const AdminQuizzesScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/rhymes',
             builder: (context, state) => const AdminRhymesScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/rhymes/categories',
             builder: (context, state) => const AdminRhymeCategoriesScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/media',
             builder: (context, state) => const AdminMediaScreen(),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/audio',
             builder: (context, state) =>
                 const AdminMediaScreen(initialType: MediaType.audio),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/video',
             builder: (context, state) =>
                 const AdminMediaScreen(initialType: MediaType.video),
           ),
-          GoRoute(
+          adminRoute(
             path: '/admin/settings',
             builder: (context, state) => const AdminSettingsScreen(),
           ),

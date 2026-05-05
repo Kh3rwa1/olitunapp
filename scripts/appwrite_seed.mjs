@@ -8,10 +8,26 @@
  *   APPWRITE_API_KEY=your_key node scripts/appwrite_seed.mjs
  */
 
-const ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
-const PROJECT_ID = '699495910038e39622c5';
+import { readFileSync } from 'fs';
+
+function readProjectIdFromConfig() {
+  try {
+    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    return JSON.parse(raw).projectId || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+const PROJECT_ID = process.env.APPWRITE_PROJECT_ID || readProjectIdFromConfig();
 const API_KEY = process.env.APPWRITE_API_KEY;
 const DB = 'olitun_db';
+
+if (!PROJECT_ID) {
+  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.config.json projectId');
+  process.exit(1);
+}
 
 if (!API_KEY) {
   console.error('❌ Set APPWRITE_API_KEY environment variable');

@@ -15,45 +15,46 @@ Future<void> main() async {
   // silently points at the wrong project or no project at all.
   AppwriteConfig.validate();
 
-  await runZonedGuarded(() async {
-    WidgetsFlutterBinding.ensureInitialized();
+  await runZonedGuarded(
+    () async {
+      WidgetsFlutterBinding.ensureInitialized();
 
-    FlutterError.onError = (details) {
-      FlutterError.presentError(details);
-      CrashReporting.recordFlutterError(details);
-    };
+      FlutterError.onError = (details) {
+        FlutterError.presentError(details);
+        CrashReporting.recordFlutterError(details);
+      };
 
-    await initStorage();
+      await initStorage();
 
-    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(
-      const SystemUiOverlayStyle(
-        statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
-        systemNavigationBarColor: Colors.transparent,
-        systemNavigationBarIconBrightness: Brightness.dark,
-      ),
-    );
+      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+      SystemChrome.setSystemUIOverlayStyle(
+        const SystemUiOverlayStyle(
+          statusBarColor: Colors.transparent,
+          statusBarIconBrightness: Brightness.dark,
+          systemNavigationBarColor: Colors.transparent,
+          systemNavigationBarIconBrightness: Brightness.dark,
+        ),
+      );
 
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp,
-      DeviceOrientation.portraitDown,
-    ]);
+      await SystemChrome.setPreferredOrientations([
+        DeviceOrientation.portraitUp,
+        DeviceOrientation.portraitDown,
+      ]);
 
-    await CrashReporting.init();
+      await CrashReporting.init();
 
-    runApp(
-      ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-        child: const OlitunApp(),
-      ),
-    );
-  }, (error, stack) {
-    debugPrint('Uncaught zone error: $error');
-    CrashReporting.recordError(error, stack);
-  });
+      runApp(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: const OlitunApp(),
+        ),
+      );
+    },
+    (error, stack) {
+      debugPrint('Uncaught zone error: $error');
+      CrashReporting.recordError(error, stack);
+    },
+  );
 }
 
 class OlitunApp extends ConsumerWidget {

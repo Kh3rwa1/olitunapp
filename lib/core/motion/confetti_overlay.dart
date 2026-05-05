@@ -28,16 +28,18 @@ class ConfettiBurst extends StatefulWidget {
 
 class _ConfettiBurstState extends State<ConfettiBurst>
     with SingleTickerProviderStateMixin {
-  late final AnimationController _ctl =
-      AnimationController(vsync: this, duration: widget.duration)..forward();
+  late final AnimationController _ctl = AnimationController(
+    vsync: this,
+    duration: widget.duration,
+  )..forward();
 
   late final List<_Particle> _particles = _build();
 
   List<_Particle> _build() {
     final rng = math.Random();
     return List.generate(widget.particleCount, (i) {
-      final angle = (math.pi * 2) * (i / widget.particleCount) +
-          rng.nextDouble() * 0.4;
+      final angle =
+          (math.pi * 2) * (i / widget.particleCount) + rng.nextDouble() * 0.4;
       final speed = 180 + rng.nextDouble() * 220;
       return _Particle(
         angle: angle,
@@ -65,10 +67,7 @@ class _ConfettiBurstState extends State<ConfettiBurst>
       child: AnimatedBuilder(
         animation: _ctl,
         builder: (_, __) => CustomPaint(
-          painter: _ConfettiPainter(
-            t: _ctl.value,
-            particles: _particles,
-          ),
+          painter: _ConfettiPainter(t: _ctl.value, particles: _particles),
           size: Size.infinite,
         ),
       ),
@@ -122,7 +121,10 @@ class _ConfettiPainter extends CustomPainter {
       canvas.drawRRect(
         RRect.fromRectAndRadius(
           Rect.fromCenter(
-              center: Offset.zero, width: p.size, height: p.size * 0.5),
+            center: Offset.zero,
+            width: p.size,
+            height: p.size * 0.5,
+          ),
           const Radius.circular(1.5),
         ),
         paint,

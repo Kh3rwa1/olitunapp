@@ -174,12 +174,12 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return AdminEmptyState(
-      icon: Icons.school_outlined,
-      title: 'No lessons found',
-      message: 'Create your first lesson to get learners started.',
-      actionLabel: 'Add Lesson',
-      onAction: () => _showLessonDialog(context, null),
-    )
+          icon: Icons.school_outlined,
+          title: 'No lessons found',
+          message: 'Create your first lesson to get learners started.',
+          actionLabel: 'Add Lesson',
+          onAction: () => _showLessonDialog(context, null),
+        )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
         .scale(begin: const Offset(0.96, 0.96));
@@ -468,7 +468,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                                         ) ??
                                         0,
                                     blocks:
-                                        lesson?.blocks ?? const <LessonBlockEntity>[],
+                                        lesson?.blocks ??
+                                        const <LessonBlockEntity>[],
                                   );
 
                                   if (isEditing) {
@@ -545,11 +546,7 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminFilterChip(
-      label: label,
-      selected: isSelected,
-      onTap: onTap,
-    );
+    return AdminFilterChip(label: label, selected: isSelected, onTap: onTap);
   }
 }
 

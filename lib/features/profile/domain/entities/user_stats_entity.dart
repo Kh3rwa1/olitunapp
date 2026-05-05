@@ -31,15 +31,15 @@ class UserStatsEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        practicedLetters,
-        completedLessons,
-        quizHistory,
-        categoryMastery,
-        totalLearningMinutes,
-        lastActiveDate,
-        currentStreak,
-        totalStars,
-      ];
+    practicedLetters,
+    completedLessons,
+    quizHistory,
+    categoryMastery,
+    totalLearningMinutes,
+    lastActiveDate,
+    currentStreak,
+    totalStars,
+  ];
 
   UserStatsEntity copyWith({
     Set<String>? practicedLetters,
@@ -68,17 +68,23 @@ class UserStatsEntity extends Equatable {
   double get alphabetProgress => (practicedLetters.length / 30).clamp(0.0, 1.0);
 
   double get numbersProgress {
-    final numberLessons = completedLessons.where((id) => id.startsWith('numbers_')).length;
+    final numberLessons = completedLessons
+        .where((id) => id.startsWith('numbers_'))
+        .length;
     return (numberLessons / 10).clamp(0.0, 1.0);
   }
 
   double get vocabularyProgress {
-    final wordLessons = completedLessons.where((id) => id.startsWith('words_')).length;
+    final wordLessons = completedLessons
+        .where((id) => id.startsWith('words_'))
+        .length;
     return (wordLessons / 20).clamp(0.0, 1.0);
   }
 
   double get rhymesProgress {
-    final rhymeLessons = completedLessons.where((id) => id.startsWith('rhymes_')).length;
+    final rhymeLessons = completedLessons
+        .where((id) => id.startsWith('rhymes_'))
+        .length;
     return (rhymeLessons / 10).clamp(0.0, 1.0);
   }
 
@@ -110,7 +116,12 @@ class UserStatsEntity extends Equatable {
   }
 
   double get overallProgress {
-    final skills = [alphabetProgress, numbersProgress, vocabularyProgress, rhymesProgress];
+    final skills = [
+      alphabetProgress,
+      numbersProgress,
+      vocabularyProgress,
+      rhymesProgress,
+    ];
     return skills.reduce((a, b) => a + b) / skills.length;
   }
 

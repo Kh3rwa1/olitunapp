@@ -5,8 +5,8 @@ import 'category_providers.dart';
 
 final categoryNotifierProvider =
     StateNotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>(
-  (ref) => CategoryNotifier(ref.watch(categoryRepositoryProvider)),
-);
+      (ref) => CategoryNotifier(ref.watch(categoryRepositoryProvider)),
+    );
 
 class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
   final CategoryRepository _repository;
@@ -19,7 +19,8 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
     state = const AsyncValue.loading();
     final result = await _repository.getCategories();
     result.fold(
-      (failure) => state = AsyncValue.error(failure.message, StackTrace.current),
+      (failure) =>
+          state = AsyncValue.error(failure.message, StackTrace.current),
       (categories) => state = AsyncValue.data(categories),
     );
   }

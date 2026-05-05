@@ -24,7 +24,8 @@ class LessonModel extends LessonEntity {
       blocksJson = rawBlocks;
     }
 
-    final resolvedId = docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
+    final resolvedId =
+        docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
     return LessonModel(
       id: resolvedId,
       categoryId: json['categoryId'] as String? ?? '',
@@ -35,7 +36,9 @@ class LessonModel extends LessonEntity {
       estimatedMinutes: json['estimatedMinutes'] as int? ?? 5,
       isActive: json['isActive'] as bool? ?? true,
       data: json['data'] as Map<String, dynamic>?,
-      blocks: blocksJson.map((e) => LessonBlockModel.fromJson(e as Map<String, dynamic>)).toList(),
+      blocks: blocksJson
+          .map((e) => LessonBlockModel.fromJson(e as Map<String, dynamic>))
+          .toList(),
     );
   }
 
@@ -50,7 +53,9 @@ class LessonModel extends LessonEntity {
       'estimatedMinutes': estimatedMinutes,
       'isActive': isActive,
       'data': data,
-      'blocks': blocks.map((e) => LessonBlockModel.fromEntity(e).toJson()).toList(),
+      'blocks': blocks
+          .map((e) => LessonBlockModel.fromEntity(e).toJson())
+          .toList(),
     };
   }
 

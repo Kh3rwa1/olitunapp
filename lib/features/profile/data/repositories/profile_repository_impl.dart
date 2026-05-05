@@ -1,8 +1,8 @@
 import 'dart:convert';
 import 'package:fpdart/fpdart.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/observability/crash_reporting.dart';
-import '../../../../core/storage/hive_service.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/entities/user_stats_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
@@ -10,9 +10,10 @@ import '../models/user_stats_model.dart';
 
 class ProfileRepositoryImpl implements ProfileRepository {
   final AuthRepository _authRepository;
+  final SharedPreferences _prefs;
   static const _statsKey = 'user_progress_data';
 
-  ProfileRepositoryImpl(this._authRepository);
+  ProfileRepositoryImpl(this._authRepository, this._prefs);
 
   CacheFailure _recordedCacheFailure(Object e, [StackTrace? st]) {
     final f = CacheFailure(message: e.toString());
@@ -23,7 +24,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, UserStatsEntity>> getUserStats() async {
     try {
-      final stored = prefs.getString(_statsKey);
+      final stored = _prefs.getString(_statsKey);
       if (stored != null) {
         final model = UserStatsModel.fromJson(jsonDecode(stored));
         return Right(model);
@@ -49,7 +50,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Either<Failure, void>> updateUserStats(UserStatsEntity stats) async {
     try {
       final model = UserStatsModel.fromEntity(stats);
-      await prefs.setString(_statsKey, jsonEncode(model.toJson()));
+      await _prefs.setString(_statsKey, jsonEncode(model.toJson()));
 
       // Sync with cloud if logged in
       final loggedIn = await _authRepository.isLoggedIn();
@@ -68,7 +69,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, void>> updateDisplayName(String name) async {
-    await prefs.setString('user_name', name);
+    await _prefs.setString('user_name', name);
     final result = await _authRepository.isLoggedIn();
     return await result.fold(Left.new, (isLoggedIn) async {
       if (isLoggedIn) {
@@ -85,8 +86,8 @@ class ProfileRepositoryImpl implements ProfileRepository {
     String emoji,
     int colorIndex,
   ) async {
-    await prefs.setString('user_avatar_emoji', emoji);
-    await prefs.setInt('user_avatar_color', colorIndex);
+    await _prefs.setString('user_avatar_emoji', emoji);
+    await _prefs.setInt('user_avatar_color', colorIndex);
     return const Right(null);
   }
 }

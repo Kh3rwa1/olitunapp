@@ -9,7 +9,6 @@ import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/providers/local_settings_provider.dart';
-import 'features/admin/providers/admin_auth_provider.dart';
 
 Future<void> main() async {
   // Fail fast if Appwrite config is missing; release builds must not silently
@@ -25,7 +24,7 @@ Future<void> main() async {
         CrashReporting.recordFlutterError(details);
       };
 
-      await initStorage();
+      final prefs = await initStorage();
 
       SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
       SystemChrome.setSystemUIOverlayStyle(

@@ -11,7 +11,8 @@ import 'package:flutter/material.dart';
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
-  return ProfileRepositoryImpl(authRepo);
+  final prefs = ref.watch(sharedPreferencesProvider);
+  return ProfileRepositoryImpl(authRepo, prefs);
 });
 
 final userStatsProvider =
@@ -23,17 +24,15 @@ final userStatsProvider =
     });
 
 final userNameProvider = StateProvider<String>((ref) {
-  // We'll keep using prefs directly for now to avoid breaking too much,
-  // but eventually this should come from the repository.
-  return prefs.getString('user_name') ?? 'Learner';
+  return ref.read(sharedPreferencesProvider).getString('user_name') ?? 'Learner';
 });
 
 final userAvatarEmojiProvider = StateProvider<String>((ref) {
-  return prefs.getString('user_avatar_emoji') ?? '👶';
+  return ref.read(sharedPreferencesProvider).getString('user_avatar_emoji') ?? '👶';
 });
 
 final userAvatarColorIndexProvider = StateProvider<int>((ref) {
-  return prefs.getInt('user_avatar_color') ?? 0;
+  return ref.read(sharedPreferencesProvider).getInt('user_avatar_color') ?? 0;
 });
 
 final userStarsProvider = Provider<int>((ref) {
@@ -52,7 +51,7 @@ final quizzesCompletedProvider = Provider<int>((ref) {
 });
 
 final memberSinceProvider = StateProvider<String>((ref) {
-  return prefs.getString('member_since') ?? 'April 2024';
+  return ref.read(sharedPreferencesProvider).getString('member_since') ?? 'April 2024';
 });
 
 final userAvatarColorsProvider = Provider<List<Color>>((ref) {

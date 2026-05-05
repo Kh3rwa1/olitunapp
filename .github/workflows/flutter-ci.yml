@@ -36,11 +36,33 @@ jobs:
       - name: Test with coverage
         run: flutter test --coverage
 
+      - name: Enforce coverage threshold
+        run: |
+          TOTAL=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
+          echo "Coverage: ${TOTAL}%"
+          if [ "$(echo "$TOTAL < 25" | bc -l)" -eq 1 ]; then
+            echo "::error::Test coverage ${TOTAL}% is below 25% threshold"
+            exit 1
+          fi
+
       - name: Smoke tests
         run: flutter test test/smoke
+
+      - name: Check outdated dependencies
+        run: flutter pub outdated --no-dev-dependencies || true
 
       - name: Build web release
         run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com
 
       - name: Build Android release
         run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com
+
+      - name: Upload build artifacts
+        if: github.ref == 'refs/heads/main'
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-builds
+          path: |
+            build/web/
+            build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 14

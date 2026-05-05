@@ -1,7 +1,6 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
 import '../../../core/config/appwrite_config.dart';
 
@@ -93,10 +92,4 @@ final adminAuthServiceProvider = Provider<AdminAuthService>((ref) {
 final adminAuthProvider = FutureProvider<bool>((ref) async {
   final svc = ref.watch(adminAuthServiceProvider);
   return svc.isCurrentUserAdmin();
-});
-
-/// Kept for legacy `sharedPreferencesProvider` consumers — DO NOT use this
-/// for admin auth decisions. The override is set in main.dart.
-final sharedPreferencesProvider = Provider<SharedPreferences>((ref) {
-  throw UnimplementedError('sharedPreferencesProvider must be overridden');
 });

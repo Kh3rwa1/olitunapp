@@ -87,9 +87,9 @@ class AdminSectionHeader extends StatelessWidget {
                   const SizedBox(height: 6),
                   Text(
                     subtitle!,
-                    style: AdminTokens.body(isDark).copyWith(
-                      fontSize: compact ? 13 : 15,
-                    ),
+                    style: AdminTokens.body(
+                      isDark,
+                    ).copyWith(fontSize: compact ? 13 : 15),
                   ),
                 ],
               ],

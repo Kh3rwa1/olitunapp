@@ -193,115 +193,120 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                             }
 
                             return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: PressableScale(
-                                enabled: !_isAnswered,
-                                haptic: HapticIntensity.none,
-                                onTap: _isAnswered
-                                    ? null
-                                    : () => _selectAnswer(index),
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 200),
-                                  padding: const EdgeInsets.all(18),
-                                  decoration: BoxDecoration(
-                                    color: bgColor,
-                                    borderRadius: BorderRadius.circular(16),
-                                    border: Border.all(
-                                      color: isSelected
-                                          ? AppColors.primary
-                                          : (isDark
-                                                ? Colors.white10
-                                                : Colors.black.withValues(
-                                                    alpha: 0.05,
-                                                  )),
-                                      width: isSelected ? 2 : 1,
-                                    ),
-                                    boxShadow: isSelected && !_isAnswered
-                                        ? [
-                                            BoxShadow(
-                                              color: AppColors.primary
-                                                  .withValues(alpha: 0.2),
-                                              blurRadius: 15,
-                                            ),
-                                          ]
-                                        : null,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        width: 36,
-                                        height: 36,
-                                        decoration: BoxDecoration(
-                                          color: (_isAnswered && isCorrect)
-                                              ? Colors.white
-                                              : (isSelected
-                                                    ? AppColors.primary
-                                                    : Colors.transparent),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                          border: Border.all(
-                                            color:
-                                                isSelected ||
-                                                    (_isAnswered && isCorrect)
-                                                ? Colors.transparent
-                                                : (isDark
-                                                      ? Colors.white24
-                                                      : Colors.black12),
-                                          ),
+                                  padding: const EdgeInsets.only(bottom: 12),
+                                  child: PressableScale(
+                                    enabled: !_isAnswered,
+                                    haptic: HapticIntensity.none,
+                                    onTap: _isAnswered
+                                        ? null
+                                        : () => _selectAnswer(index),
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 200,
+                                      ),
+                                      padding: const EdgeInsets.all(18),
+                                      decoration: BoxDecoration(
+                                        color: bgColor,
+                                        borderRadius: BorderRadius.circular(16),
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? AppColors.primary
+                                              : (isDark
+                                                    ? Colors.white10
+                                                    : Colors.black.withValues(
+                                                        alpha: 0.05,
+                                                      )),
+                                          width: isSelected ? 2 : 1,
                                         ),
-                                        child: Center(
-                                          child: Text(
-                                            String.fromCharCode(65 + index),
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
+                                        boxShadow: isSelected && !_isAnswered
+                                            ? [
+                                                BoxShadow(
+                                                  color: AppColors.primary
+                                                      .withValues(alpha: 0.2),
+                                                  blurRadius: 15,
+                                                ),
+                                              ]
+                                            : null,
+                                      ),
+                                      child: Row(
+                                        children: [
+                                          Container(
+                                            width: 36,
+                                            height: 36,
+                                            decoration: BoxDecoration(
                                               color: (_isAnswered && isCorrect)
-                                                  ? AppColors.success
+                                                  ? Colors.white
                                                   : (isSelected
-                                                        ? Colors.white
-                                                        : (isDark
-                                                              ? Colors.white54
-                                                              : Colors
-                                                                    .black45)),
+                                                        ? AppColors.primary
+                                                        : Colors.transparent),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                              border: Border.all(
+                                                color:
+                                                    isSelected ||
+                                                        (_isAnswered &&
+                                                            isCorrect)
+                                                    ? Colors.transparent
+                                                    : (isDark
+                                                          ? Colors.white24
+                                                          : Colors.black12),
+                                              ),
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                String.fromCharCode(65 + index),
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.w700,
+                                                  color:
+                                                      (_isAnswered && isCorrect)
+                                                      ? AppColors.success
+                                                      : (isSelected
+                                                            ? Colors.white
+                                                            : (isDark
+                                                                  ? Colors
+                                                                        .white54
+                                                                  : Colors
+                                                                        .black45)),
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 14),
-                                      Expanded(
-                                        child: Text(
-                                          question.optionsLatin[index],
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w600,
-                                            color:
-                                                (_isAnswered &&
-                                                    (isCorrect || isSelected))
-                                                ? Colors.white
-                                                : (isDark
-                                                      ? Colors.white
-                                                      : Colors.black),
+                                          const SizedBox(width: 14),
+                                          Expanded(
+                                            child: Text(
+                                              question.optionsLatin[index],
+                                              style: TextStyle(
+                                                fontSize: 16,
+                                                fontWeight: FontWeight.w600,
+                                                color:
+                                                    (_isAnswered &&
+                                                        (isCorrect ||
+                                                            isSelected))
+                                                    ? Colors.white
+                                                    : (isDark
+                                                          ? Colors.white
+                                                          : Colors.black),
+                                              ),
+                                            ),
                                           ),
-                                        ),
+                                          if (_isAnswered && isCorrect)
+                                            const Icon(
+                                              Icons.check_circle_rounded,
+                                              color: Colors.white,
+                                            ),
+                                          if (_isAnswered &&
+                                              isSelected &&
+                                              !isCorrect)
+                                            const Icon(
+                                              Icons.cancel_rounded,
+                                              color: Colors.white,
+                                            ),
+                                        ],
                                       ),
-                                      if (_isAnswered && isCorrect)
-                                        const Icon(
-                                          Icons.check_circle_rounded,
-                                          color: Colors.white,
-                                        ),
-                                      if (_isAnswered &&
-                                          isSelected &&
-                                          !isCorrect)
-                                        const Icon(
-                                          Icons.cancel_rounded,
-                                          color: Colors.white,
-                                        ),
-                                    ],
+                                    ),
                                   ),
-                                ),
-                              ),
-                            )
+                                )
                                 .animate(
                                   key: ValueKey(
                                     'opt-$_currentQuestion-$index-$_isAnswered',
@@ -316,7 +321,8 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                                 .then()
                                 .swap(
                                   builder: (context, childWidget) {
-                                    final child = childWidget ?? const SizedBox.shrink();
+                                    final child =
+                                        childWidget ?? const SizedBox.shrink();
                                     if (!_isAnswered) return child;
                                     if (isCorrect) {
                                       // Brief scale pulse on the right answer.
@@ -407,7 +413,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           _score++;
           // Crisp double-tap haptic for "right answer" satisfaction.
           HapticFeedback.mediumImpact();
-          Future.delayed(const Duration(milliseconds: 90), HapticFeedback.lightImpact);
+          Future.delayed(
+            const Duration(milliseconds: 90),
+            HapticFeedback.lightImpact,
+          );
         } else {
           // Medium single thump for "wrong" — firm but not punitive.
           HapticFeedback.mediumImpact();
@@ -432,12 +441,14 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           _isQuizComplete = true;
         });
         final statsNotifier = ref.read(userStatsProvider.notifier);
-        statsNotifier.saveQuizResult(QuizResultEntity(
-          quizId: quiz.id,
-          score: _score,
-          totalQuestions: quiz.questions.length,
-          completedAt: DateTime.now().toIso8601String(),
-        ));
+        statsNotifier.saveQuizResult(
+          QuizResultEntity(
+            quizId: quiz.id,
+            score: _score,
+            totalQuestions: quiz.questions.length,
+            completedAt: DateTime.now().toIso8601String(),
+          ),
+        );
         statsNotifier.addStars(_score * 5);
       }
     });
@@ -499,135 +510,134 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       body: Stack(
         children: [
           SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Container(
-                    width: 140,
-                    height: 140,
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                        width: 140,
+                        height: 140,
+                        decoration: BoxDecoration(
+                          gradient: isPassing
+                              ? AppColors.premiumGreen
+                              : AppColors.premiumOrange,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  (isPassing
+                                          ? AppColors.success
+                                          : AppColors.warning)
+                                      .withValues(alpha: 0.4),
+                              blurRadius: 40,
+                              offset: const Offset(0, 16),
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          isPassing
+                              ? Icons.emoji_events_rounded
+                              : Icons.refresh_rounded,
+                          size: 70,
+                          color: Colors.white,
+                        ),
+                      )
+                      .animate()
+                      .fadeIn(duration: 500.ms)
+                      .scale(
+                        begin: const Offset(0.8, 0.8),
+                        curve: Curves.easeOutBack,
+                      ),
+                  const SizedBox(height: 36),
+                  Text(
+                    isPassing ? 'Well Done!' : 'Keep Practicing',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
+                  ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
+                  const SizedBox(height: 16),
+                  Text(
+                    'You scored $_score out of $totalQuestions',
+                    style: TextStyle(
+                      fontSize: 18,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                    ),
+                  ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
+                  const SizedBox(height: 12),
+                  Text(
+                    '$percentage%',
+                    style: TextStyle(
+                      fontSize: 56,
+                      fontWeight: FontWeight.w900,
+                      color: isPassing ? AppColors.success : AppColors.warning,
+                    ),
+                  ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
                     decoration: BoxDecoration(
-                      gradient: isPassing
-                          ? AppColors.premiumGreen
-                          : AppColors.premiumOrange,
-                      shape: BoxShape.circle,
-                      boxShadow: [
-                        BoxShadow(
-                          color:
-                              (isPassing
-                                      ? AppColors.success
-                                      : AppColors.warning)
-                                  .withValues(alpha: 0.4),
-                          blurRadius: 40,
-                          offset: const Offset(0, 16),
+                      color: AppColors.primary.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, color: Colors.amber),
+                        const SizedBox(width: 8),
+                        Text(
+                          '+${_score * 5} Stars',
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.primary,
+                          ),
                         ),
                       ],
                     ),
-                    child: Icon(
-                      isPassing
-                          ? Icons.emoji_events_rounded
-                          : Icons.refresh_rounded,
-                      size: 70,
-                      color: Colors.white,
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(duration: 500.ms)
-                  .scale(
-                    begin: const Offset(0.8, 0.8),
-                    curve: Curves.easeOutBack,
-                  ),
-              const SizedBox(height: 36),
-              Text(
-                isPassing ? 'Well Done!' : 'Keep Practicing',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
-              const SizedBox(height: 16),
-              Text(
-                'You scored $_score out of $totalQuestions',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
-              ).animate().fadeIn(delay: 400.ms, duration: 400.ms),
-              const SizedBox(height: 12),
-              Text(
-                '$percentage%',
-                style: TextStyle(
-                  fontSize: 56,
-                  fontWeight: FontWeight.w900,
-                  color: isPassing ? AppColors.success : AppColors.warning,
-                ),
-              ).animate().fadeIn(delay: 600.ms, duration: 400.ms),
-              const SizedBox(height: 16),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 20,
-                  vertical: 10,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.star_rounded, color: Colors.amber),
-                    const SizedBox(width: 8),
-                    Text(
-                      '+${_score * 5} Stars',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.primary,
-                      ),
-                    ),
-                  ],
-                ),
-              ).animate().fadeIn(delay: 800.ms, duration: 400.ms),
-              const Spacer(),
-              GestureDetector(
-                    onTap: () => context.go('/'),
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.heroGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
+                  ).animate().fadeIn(delay: 800.ms, duration: 400.ms),
+                  const Spacer(),
+                  GestureDetector(
+                        onTap: () => context.go('/'),
+                        child: Container(
+                          width: double.infinity,
+                          padding: const EdgeInsets.symmetric(vertical: 18),
+                          decoration: BoxDecoration(
+                            gradient: AppColors.heroGradient,
+                            borderRadius: BorderRadius.circular(16),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppColors.primary.withValues(alpha: 0.4),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
                           ),
-                        ],
-                      ),
-                      child: const Center(
-                        child: Text(
-                          'Continue',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
+                          child: const Center(
+                            child: Text(
+                              'Continue',
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ),
-                      ),
-                    ),
-                  )
-                  .animate()
-                  .fadeIn(delay: 1000.ms, duration: 400.ms)
-                  .slideY(begin: 0.3),
-            ],
+                      )
+                      .animate()
+                      .fadeIn(delay: 1000.ms, duration: 400.ms)
+                      .slideY(begin: 0.3),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
-          if (isPassing)
-            const Positioned.fill(child: ConfettiBurst()),
+          if (isPassing) const Positioned.fill(child: ConfettiBurst()),
         ],
       ),
     );
@@ -674,8 +684,7 @@ class _WrongAnswerShakeState extends State<_WrongAnswerShake>
       builder: (_, child) {
         final t = _ctl.value;
         // 3 damped sine cycles, amplitude 8 like FocusGlowField.
-        final dx = (1 - t) * 8 *
-            math.sin(t * 3 * 2 * math.pi);
+        final dx = (1 - t) * 8 * math.sin(t * 3 * 2 * math.pi);
         return Transform.translate(offset: Offset(dx, 0), child: child);
       },
       child: widget.child,

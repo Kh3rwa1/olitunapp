@@ -74,8 +74,7 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
               foregroundColor: AdminTokens.accent,
               side: BorderSide(color: AdminTokens.accentBorder(isDark)),
               backgroundColor: AdminTokens.accentSoft(isDark),
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
               ),
@@ -95,7 +94,8 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     return AdminEmptyState(
       icon: Icons.music_note_rounded,
       title: 'No rhymes yet',
-      message: 'Add your first rhyme or story to give learners something to sing along with.',
+      message:
+          'Add your first rhyme or story to give learners something to sing along with.',
       actionLabel: 'Add Rhyme',
       onAction: () => _showRhymeDialog(context, null),
     );

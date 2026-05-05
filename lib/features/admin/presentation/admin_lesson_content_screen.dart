@@ -114,10 +114,7 @@ class _AdminLessonContentScreenState
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Manage Content',
-              style: AdminTokens.cardTitle(isDark),
-            ),
+            Text('Manage Content', style: AdminTokens.cardTitle(isDark)),
             Text(
               _lesson?.titleLatin ?? 'Lesson Content',
               style: AdminTokens.label(isDark),
@@ -428,8 +425,12 @@ class _AdminLessonContentScreenState
     bool isTranslating = false;
     final imageCtrl = TextEditingController(text: block.imageUrl ?? '');
     final audioCtrl = TextEditingController(text: block.audioUrl ?? '');
-    final animationCtrl = TextEditingController(text: block.data?['animationUrl'] ?? '');
-    final quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
+    final animationCtrl = TextEditingController(
+      text: block.data?['animationUrl'] ?? '',
+    );
+    final quizRefCtrl = TextEditingController(
+      text: block.data?['quizRefId'] ?? '',
+    );
 
     showModalBottomSheet(
       context: context,
@@ -686,9 +687,9 @@ class _AdminLessonContentScreenState
                 style: AdminTokens.bodyStrong(isDark),
                 decoration: InputDecoration(
                   hintText: 'https://...',
-                  hintStyle: AdminTokens.body(isDark).copyWith(
-                    color: AdminTokens.textTertiary(isDark),
-                  ),
+                  hintStyle: AdminTokens.body(
+                    isDark,
+                  ).copyWith(color: AdminTokens.textTertiary(isDark)),
                   filled: true,
                   fillColor: AdminTokens.sunken(isDark),
                   enabledBorder: OutlineInputBorder(

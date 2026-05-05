@@ -42,10 +42,14 @@ class LessonRepositoryImpl implements LessonRepository {
   }
 
   @override
-  Future<Either<Failure, List<LessonEntity>>> getLessonsByCategory(String categoryId) async {
+  Future<Either<Failure, List<LessonEntity>>> getLessonsByCategory(
+    String categoryId,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
-        final remoteLessons = await remoteDataSource.getLessonsByCategory(categoryId);
+        final remoteLessons = await remoteDataSource.getLessonsByCategory(
+          categoryId,
+        );
         // We only cache the "all lessons" for now, or we could implement category-specific caching
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
       } on ServerException catch (e) {
@@ -55,10 +59,12 @@ class LessonRepositoryImpl implements LessonRepository {
       // Fallback to local filtering of all cached lessons
       try {
         final cached = await localDataSource.getLessons();
-        return Right(cached
-            .where((l) => l.categoryId == categoryId)
-            .map((m) => m.toEntity())
-            .toList());
+        return Right(
+          cached
+              .where((l) => l.categoryId == categoryId)
+              .map((m) => m.toEntity())
+              .toList(),
+        );
       } catch (_) {
         return const Left(NetworkFailure());
       }
@@ -73,7 +79,11 @@ class LessonRepositoryImpl implements LessonRepository {
       final cached = await localDataSource.getLessons();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(_recordedServerFailure(ServerException(message: originalMessage, code: originalCode)));
+      return Left(
+        _recordedServerFailure(
+          ServerException(message: originalMessage, code: originalCode),
+        ),
+      );
     }
   }
 

@@ -103,12 +103,16 @@ class AppPageTransitions {
       reverseTransitionDuration: MotionTokens.short,
       transitionsBuilder: (context, animation, secondary, child) {
         if (RespectMotion.of(context)) return child;
-        final slide = Tween<Offset>(
-          begin: const Offset(0, 0.06),
-          end: Offset.zero,
-        ).animate(
-          CurvedAnimation(parent: animation, curve: MotionTokens.emphasized),
-        );
+        final slide =
+            Tween<Offset>(
+              begin: const Offset(0, 0.06),
+              end: Offset.zero,
+            ).animate(
+              CurvedAnimation(
+                parent: animation,
+                curve: MotionTokens.emphasized,
+              ),
+            );
         return FadeTransition(
           opacity: animation,
           child: SlideTransition(position: slide, child: child),

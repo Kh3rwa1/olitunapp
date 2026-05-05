@@ -136,7 +136,9 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                     ),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.28 : 0.08),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.28 : 0.08,
+                        ),
                         blurRadius: 30,
                         offset: const Offset(0, 15),
                       ),
@@ -206,7 +208,9 @@ class _XpBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFF4F5CFF).withValues(alpha: isDark ? 0.35 : 0.22),
+            color: const Color(
+              0xFF4F5CFF,
+            ).withValues(alpha: isDark ? 0.35 : 0.22),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),

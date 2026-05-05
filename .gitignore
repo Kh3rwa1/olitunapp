@@ -53,3 +53,5 @@ run.sh
 build_web_v*.zip
 
 !/build/web/
+.agent/
+coverage/

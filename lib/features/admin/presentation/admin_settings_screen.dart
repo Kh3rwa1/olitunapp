@@ -189,8 +189,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: AppColors.success.withValues(alpha: 0.12),
-                          borderRadius:
-                              BorderRadius.circular(AdminTokens.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusMd,
+                          ),
                           border: Border.all(
                             color: AppColors.success.withValues(alpha: 0.28),
                           ),
@@ -266,15 +267,14 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                     ),
                     decoration: BoxDecoration(
                       color: AdminTokens.base(isDark),
-                      borderRadius:
-                          BorderRadius.circular(AdminTokens.radiusXs),
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusXs),
                       border: Border.all(color: AdminTokens.border(isDark)),
                     ),
                     child: Text(
                       _currentVideoUrl!,
-                      style: AdminTokens.label(isDark).copyWith(
-                        fontFamily: 'monospace',
-                      ),
+                      style: AdminTokens.label(
+                        isDark,
+                      ).copyWith(fontFamily: 'monospace'),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -347,11 +347,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                   height: 48,
                   decoration: BoxDecoration(
                     color: AdminTokens.accentSoft(isDark),
-                    borderRadius:
-                        BorderRadius.circular(AdminTokens.radiusMd),
-                    border: Border.all(
-                      color: AdminTokens.accentBorder(isDark),
-                    ),
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                    border: Border.all(color: AdminTokens.accentBorder(isDark)),
                   ),
                   child: Icon(icon, color: AdminTokens.accent, size: 22),
                 ),
@@ -362,10 +359,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                     children: [
                       Text(title, style: AdminTokens.sectionTitle(isDark)),
                       const SizedBox(height: 4),
-                      Text(
-                        subtitle,
-                        style: AdminTokens.body(isDark),
-                      ),
+                      Text(subtitle, style: AdminTokens.body(isDark)),
                     ],
                   ),
                 ),

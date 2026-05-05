@@ -4,9 +4,20 @@
  * Run: node scripts/appwrite_setup.mjs
  */
 
-const ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
-const PROJECT_ID = '699495910038e39622c5';
-const API_KEY = process.env.APPWRITE_API_KEY || 'YOUR_API_KEY_HERE';
+import { readFileSync } from 'fs';
+
+function readProjectIdFromConfig() {
+  try {
+    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    return JSON.parse(raw).projectId || '';
+  } catch (_) {
+    return '';
+  }
+}
+
+const ENDPOINT = process.env.APPWRITE_ENDPOINT || 'https://sgp.cloud.appwrite.io/v1';
+const PROJECT_ID = process.env.APPWRITE_PROJECT_ID || readProjectIdFromConfig();
+const API_KEY = process.env.APPWRITE_API_KEY;
 
 const DATABASE_ID = 'olitun_db';
 const DATABASE_NAME = 'Olitun Database';
@@ -16,11 +27,37 @@ const DATABASE_NAME = 'Olitun Database';
 const ADMIN_TEAM_ID = process.env.ADMIN_TEAM_ID || 'admins';
 const ADMIN_TEAM_NAME = 'Olitun Admins';
 
+if (!PROJECT_ID) {
+  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.config.json projectId');
+  process.exit(1);
+}
+
+if (!API_KEY) {
+  console.error('❌ Set APPWRITE_API_KEY environment variable');
+  process.exit(1);
+}
+
 const headers = {
   'Content-Type': 'application/json',
   'X-Appwrite-Project': PROJECT_ID,
   'X-Appwrite-Key': API_KEY,
 };
+
+const adminWritePermissions = [
+  'read("any")',
+  `create("team:${ADMIN_TEAM_ID}")`,
+  `update("team:${ADMIN_TEAM_ID}")`,
+  `delete("team:${ADMIN_TEAM_ID}")`,
+];
+
+const functionOnlyCollections = new Set(['translation_cache', 'rate_limits']);
+
+function permissionsForCollection(collectionId) {
+  if (functionOnlyCollections.has(collectionId)) {
+    return [];
+  }
+  return adminWritePermissions;
+}
 
 async function api(method, path, body = null) {
   const opts = { method, headers };
@@ -316,16 +353,17 @@ async function main() {
   // 2. Create Collections + Attributes + Indexes
   for (const col of collections) {
     console.log(`📋 Creating collection: ${col.name} (${col.id})`);
+    const permissions = permissionsForCollection(col.id);
     await api('POST', `/databases/${DATABASE_ID}/collections`, {
       collectionId: col.id,
       name: col.name,
       documentSecurity: false,
-      permissions: [
-        'read("any")',      // Anyone can read content
-        'create("users")',  // Auth users can create
-        'update("users")',  // Auth users can update
-        'delete("users")',  // Auth users can delete
-      ],
+      permissions,
+    });
+    await api('PATCH', `/databases/${DATABASE_ID}/collections/${col.id}`, {
+      name: col.name,
+      documentSecurity: false,
+      permissions,
     });
 
     // Create attributes
@@ -392,15 +430,24 @@ async function main() {
   console.log('🗂️  Creating storage buckets...');
   for (const bucket of buckets) {
     console.log(`  📁 Bucket: ${bucket.name} (${bucket.id})`);
+    const permissions = [
+      'read("any")',
+      `create("team:${ADMIN_TEAM_ID}")`,
+      `update("team:${ADMIN_TEAM_ID}")`,
+      `delete("team:${ADMIN_TEAM_ID}")`,
+    ];
     await api('POST', '/storage/buckets', {
       bucketId: bucket.id,
       name: bucket.name,
-      permissions: [
-        'read("any")',      // Anyone can view files
-        'create("users")',  // Auth users can upload
-        'update("users")',
-        'delete("users")',
-      ],
+      permissions,
+      fileSecurity: false,
+      maximumFileSize: bucket.maxFileSize,
+      allowedFileExtensions: bucket.allowedExtensions,
+      enabled: true,
+    });
+    await api('PATCH', `/storage/buckets/${bucket.id}`, {
+      name: bucket.name,
+      permissions,
       fileSecurity: false,
       maximumFileSize: bucket.maxFileSize,
       allowedFileExtensions: bucket.allowedExtensions,

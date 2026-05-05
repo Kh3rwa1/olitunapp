@@ -5,12 +5,18 @@ import 'package:itun/core/motion/motion_tokens.dart';
 void main() {
   group('MotionTokens', () {
     test('durations are in ascending order', () {
-      expect(MotionTokens.quick.inMilliseconds,
-          lessThan(MotionTokens.short.inMilliseconds));
-      expect(MotionTokens.short.inMilliseconds,
-          lessThan(MotionTokens.medium.inMilliseconds));
-      expect(MotionTokens.medium.inMilliseconds,
-          lessThan(MotionTokens.long.inMilliseconds));
+      expect(
+        MotionTokens.quick.inMilliseconds,
+        lessThan(MotionTokens.short.inMilliseconds),
+      );
+      expect(
+        MotionTokens.short.inMilliseconds,
+        lessThan(MotionTokens.medium.inMilliseconds),
+      );
+      expect(
+        MotionTokens.medium.inMilliseconds,
+        lessThan(MotionTokens.long.inMilliseconds),
+      );
     });
 
     test('pressedScale is between 0 and 1', () {
@@ -32,7 +38,9 @@ void main() {
   });
 
   group('RespectMotion', () {
-    testWidgets('returns false when no ancestor provides reduced motion', (tester) async {
+    testWidgets('returns false when no ancestor provides reduced motion', (
+      tester,
+    ) async {
       bool? result;
       await tester.pumpWidget(
         MaterialApp(

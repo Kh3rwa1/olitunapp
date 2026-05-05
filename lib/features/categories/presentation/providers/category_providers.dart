@@ -7,12 +7,16 @@ import '../../data/datasources/category_local_datasource.dart';
 import '../../data/datasources/category_remote_datasource.dart';
 import '../../data/repositories/category_repository_impl.dart';
 
-final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((ref) {
+final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((
+  ref,
+) {
   final client = AppwriteAuthService().client;
   return CategoryRemoteDataSourceImpl(Databases(client));
 });
 
-final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((ref) {
+final categoryLocalDataSourceProvider = Provider<CategoryLocalDataSource>((
+  ref,
+) {
   return CategoryLocalDataSourceImpl();
 });
 

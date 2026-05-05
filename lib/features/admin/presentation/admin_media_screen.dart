@@ -460,8 +460,9 @@ class _MediaCard extends StatelessWidget {
                       height: 64,
                       decoration: BoxDecoration(
                         color: accent.withValues(alpha: 0.18),
-                        borderRadius:
-                            BorderRadius.circular(AdminTokens.radiusMd),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusMd,
+                        ),
                         border: Border.all(
                           color: accent.withValues(alpha: 0.32),
                         ),
@@ -477,10 +478,10 @@ class _MediaCard extends StatelessWidget {
                         padding: const EdgeInsets.all(6),
                         decoration: BoxDecoration(
                           color: AdminTokens.overlay(isDark),
-                          borderRadius:
-                              BorderRadius.circular(AdminTokens.radiusXs),
-                          border:
-                              Border.all(color: AdminTokens.border(isDark)),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusXs,
+                          ),
+                          border: Border.all(color: AdminTokens.border(isDark)),
                         ),
                         child: Icon(
                           Icons.more_vert_rounded,

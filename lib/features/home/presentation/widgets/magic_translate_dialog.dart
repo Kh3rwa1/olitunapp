@@ -23,9 +23,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
     setState(() => _isLoading = true);
 
     final aiService = ref.read(aiServiceProvider);
-    final result = await aiService.translate(
-      _controller.text.trim(),
-    );
+    final result = await aiService.translate(_controller.text.trim());
 
     if (mounted) {
       setState(() {
@@ -119,7 +117,9 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.2),
+                  ),
                 ),
                 child: Text(
                   _result,

@@ -10,9 +10,12 @@ class AppwriteAuthService {
   // Singleton pattern — one SDK Client shared across the app
   AppwriteAuthService._internal() {
     _client = Client()
-      .setEndpoint(AppwriteConfig.endpoint)
-      .setProject(AppwriteConfig.projectId)
-      .setSelfSigned();
+        .setEndpoint(AppwriteConfig.endpoint)
+        .setProject(AppwriteConfig.projectId);
+
+    if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
+      _client.setSelfSigned();
+    }
 
     _account = Account(_client);
   }
@@ -54,10 +57,7 @@ class AppwriteAuthService {
     required String secret,
   }) async {
     debugPrint('Appwrite: Verifying OTP for user $userId');
-    return await _account.createSession(
-      userId: userId,
-      secret: secret,
-    );
+    return await _account.createSession(userId: userId, secret: secret);
   }
 
   // ─── Google OAuth ───
@@ -72,18 +72,17 @@ class AppwriteAuthService {
       // Web: full-page redirect to Appwrite OAuth2 token endpoint.
       // After Google auth, Appwrite redirects back with ?userId=...&secret=...
       final origin = Uri.base.origin;
-      final oauthUrl = '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
+      final oauthUrl =
+          '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
           '?project=${AppwriteConfig.projectId}'
           '&success=${Uri.encodeComponent(origin)}'
           '&failure=${Uri.encodeComponent('$origin/#/welcome')}'
           '&scopes[]=email&scopes[]=profile';
-      
+
       // Navigate the entire page (not popup)
       _redirectToUrl(oauthUrl);
     } else {
-      await _account.createOAuth2Session(
-        provider: OAuthProvider.google,
-      );
+      await _account.createOAuth2Session(provider: OAuthProvider.google);
     }
   }
 
@@ -151,7 +150,6 @@ class AppwriteAuthService {
     await signOut();
   }
 }
-
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
   return AppwriteAuthService();

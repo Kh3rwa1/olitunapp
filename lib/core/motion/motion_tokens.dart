@@ -22,13 +22,14 @@ class MotionTokens {
   static const Duration staggerMax = Duration(milliseconds: 480);
 
   static Duration staggerFor(int index) {
-    final ms = (index * staggerStep.inMilliseconds)
-        .clamp(0, staggerMax.inMilliseconds);
+    final ms = (index * staggerStep.inMilliseconds).clamp(
+      0,
+      staggerMax.inMilliseconds,
+    );
     return Duration(milliseconds: ms);
   }
 
-  static String heroTag(String namespace, Object id) =>
-      'hero/$namespace/$id';
+  static String heroTag(String namespace, Object id) => 'hero/$namespace/$id';
 }
 
 /// Collapses durations/curves to no-op when the OS reduce-motion

@@ -52,9 +52,23 @@ class SettingsScreen extends ConsumerWidget {
 
         // Bento grid for settings sections
         if (isTablet || isDesktop)
-          _buildDesktopBento(context, ref, themeMode, scriptMode, soundEnabled, isDark)
+          _buildDesktopBento(
+            context,
+            ref,
+            themeMode,
+            scriptMode,
+            soundEnabled,
+            isDark,
+          )
         else
-          _buildMobileBento(context, ref, themeMode, scriptMode, soundEnabled, isDark),
+          _buildMobileBento(
+            context,
+            ref,
+            themeMode,
+            scriptMode,
+            soundEnabled,
+            isDark,
+          ),
 
         const SizedBox(height: 120),
       ],
@@ -564,7 +578,9 @@ class SettingsScreen extends ConsumerWidget {
                       Navigator.pop(context); // Close loading
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('Failed to delete account: ${failure.message}'),
+                          content: Text(
+                            'Failed to delete account: ${failure.message}',
+                          ),
                           backgroundColor: AppColors.error,
                         ),
                       );
@@ -607,7 +623,6 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 }
-
 
 class _SettingTile extends StatelessWidget {
   final IconData icon;

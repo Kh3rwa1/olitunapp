@@ -41,10 +41,7 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? [
-                      const Color(0xFF0F172A),
-                      const Color(0xFF1E1B4B),
-                    ]
+                  ? [const Color(0xFF0F172A), const Color(0xFF1E1B4B)]
                   : [const Color(0xFFF8FAFC), const Color(0xFFEFF6FF)],
             ),
           ),
@@ -169,7 +166,8 @@ class _FloatingNotesPainter extends CustomPainter {
       final rawY = (1.0 - ((animationValue * speed + seed / 360) % 1.0));
       final y = rawY * size.height * 1.2 - size.height * 0.1;
       final swayAmplitude = 20.0 + i * 8;
-      final x = (size.width * ((seed % 100) / 100)) +
+      final x =
+          (size.width * ((seed % 100) / 100)) +
           math.sin((animationValue + seed / 100) * 2 * math.pi) * swayAmplitude;
 
       final distFromCenter = (rawY - 0.5).abs();
@@ -179,9 +177,7 @@ class _FloatingNotesPainter extends CustomPainter {
         text: _notes[i % _notes.length],
         style: TextStyle(
           fontSize: 14 + (i % 4) * 4,
-          color: (isDark
-                  ? const Color(0xFF818CF8)
-                  : const Color(0xFF6366F1))
+          color: (isDark ? const Color(0xFF818CF8) : const Color(0xFF6366F1))
               .withValues(alpha: opacity),
         ),
       );
@@ -190,7 +186,8 @@ class _FloatingNotesPainter extends CustomPainter {
       canvas.save();
       canvas.translate(x, y);
       canvas.rotate(
-          math.sin((animationValue + seed / 200) * 2 * math.pi) * 0.25);
+        math.sin((animationValue + seed / 200) * 2 * math.pi) * 0.25,
+      );
       textPainter.paint(canvas, Offset.zero);
       canvas.restore();
     }

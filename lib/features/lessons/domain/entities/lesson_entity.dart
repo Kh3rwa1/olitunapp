@@ -53,17 +53,17 @@ class LessonEntity extends Equatable {
 
   @override
   List<Object?> get props => [
-        id,
-        categoryId,
-        titleOlChiki,
-        titleLatin,
-        description,
-        order,
-        estimatedMinutes,
-        isActive,
-        data,
-        blocks,
-      ];
+    id,
+    categoryId,
+    titleOlChiki,
+    titleLatin,
+    description,
+    order,
+    estimatedMinutes,
+    isActive,
+    data,
+    blocks,
+  ];
 }
 
 class LessonBlockEntity extends Equatable {
@@ -84,5 +84,12 @@ class LessonBlockEntity extends Equatable {
   });
 
   @override
-  List<Object?> get props => [type, textOlChiki, textLatin, imageUrl, audioUrl, data];
+  List<Object?> get props => [
+    type,
+    textOlChiki,
+    textLatin,
+    imageUrl,
+    audioUrl,
+    data,
+  ];
 }

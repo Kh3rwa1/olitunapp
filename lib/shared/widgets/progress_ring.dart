@@ -45,9 +45,10 @@ class _ProgressRingState extends State<ProgressRing>
       duration: widget.animationDuration,
       vsync: this,
     );
-    _progressAnimation = Tween<double>(begin: 0, end: widget.progress).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _progressAnimation = Tween<double>(
+      begin: 0,
+      end: widget.progress,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
     if (widget.animate) {
       _controller.forward();
     }
@@ -58,12 +59,10 @@ class _ProgressRingState extends State<ProgressRing>
     super.didUpdateWidget(oldWidget);
     if (oldWidget.progress != widget.progress) {
       _oldProgress = oldWidget.progress;
-      _progressAnimation = Tween<double>(
-        begin: _oldProgress,
-        end: widget.progress,
-      ).animate(
-        CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-      );
+      _progressAnimation =
+          Tween<double>(begin: _oldProgress, end: widget.progress).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _controller.forward(from: 0);
     }
   }
@@ -77,10 +76,11 @@ class _ProgressRingState extends State<ProgressRing>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final bgColor = widget.backgroundColor ??
+
+    final bgColor =
+        widget.backgroundColor ??
         (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant);
-    
+
     final progressColor = widget.progressColor ?? AppColors.primaryCyan;
 
     return SizedBox(
@@ -91,7 +91,9 @@ class _ProgressRingState extends State<ProgressRing>
         builder: (context, child) {
           return CustomPaint(
             painter: _ProgressRingPainter(
-              progress: widget.animate ? _progressAnimation.value : widget.progress,
+              progress: widget.animate
+                  ? _progressAnimation.value
+                  : widget.progress,
               strokeWidth: widget.strokeWidth,
               progressColor: progressColor,
               backgroundColor: bgColor,
@@ -124,14 +126,14 @@ class _ProgressRingPainter extends CustomPainter {
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = (size.width - strokeWidth) / 2;
-    
+
     // Background circle
     final bgPaint = Paint()
       ..color = backgroundColor
       ..style = PaintingStyle.stroke
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
-    
+
     canvas.drawCircle(center, radius, bgPaint);
 
     // Progress arc
@@ -189,10 +191,11 @@ class MiniProgressBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
-    final bgColor = backgroundColor ??
+
+    final bgColor =
+        backgroundColor ??
         (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant);
-    
+
     final progColor = progressColor ?? AppColors.primaryCyan;
 
     return Container(

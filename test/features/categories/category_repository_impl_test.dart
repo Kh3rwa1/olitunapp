@@ -15,11 +15,8 @@ class _MockLocal extends Mock implements CategoryLocalDataSource {}
 
 class _MockNetwork extends Mock implements NetworkInfo {}
 
-CategoryModel _cat(String id) => CategoryModel(
-      id: id,
-      titleOlChiki: 'ᱚ',
-      titleLatin: 'a',
-    );
+CategoryModel _cat(String id) =>
+    CategoryModel(id: id, titleOlChiki: 'ᱚ', titleLatin: 'a');
 
 void main() {
   late _MockRemote remote;
@@ -41,60 +38,59 @@ void main() {
 
   test('returns remote categories and caches them when online', () async {
     when(() => network.isConnected).thenAnswer((_) async => true);
-    when(() => remote.getCategories())
-        .thenAnswer((_) async => [_cat('1')]);
+    when(() => remote.getCategories()).thenAnswer((_) async => [_cat('1')]);
     when(() => local.cacheCategories(any())).thenAnswer((_) async {});
 
     final result = await repo.getCategories();
 
-    result.match((_) => fail('should be right'),
-        (cats) => expect(cats.single.id, '1'));
+    result.match(
+      (_) => fail('should be right'),
+      (cats) => expect(cats.single.id, '1'),
+    );
     verify(() => local.cacheCategories(any())).called(1);
   });
 
   test('falls back to cache when remote throws ServerException', () async {
     when(() => network.isConnected).thenAnswer((_) async => true);
-    when(() => remote.getCategories())
-        .thenThrow(ServerException(message: 'boom', code: 500));
+    when(
+      () => remote.getCategories(),
+    ).thenThrow(ServerException(message: 'boom', code: 500));
     when(() => local.getCategories()).thenAnswer((_) async => [_cat('c')]);
 
     final result = await repo.getCategories();
 
-    result.match((_) => fail('should be right'),
-        (cats) => expect(cats.single.id, 'c'));
+    result.match(
+      (_) => fail('should be right'),
+      (cats) => expect(cats.single.id, 'c'),
+    );
   });
 
-  test(
-      'returns ServerFailure when offline AND cache miss '
+  test('returns ServerFailure when offline AND cache miss '
       '(propagates "No internet connection" message)', () async {
     when(() => network.isConnected).thenAnswer((_) async => false);
-    when(() => local.getCategories())
-        .thenThrow(CacheException(message: 'no cache'));
+    when(
+      () => local.getCategories(),
+    ).thenThrow(CacheException(message: 'no cache'));
 
     final result = await repo.getCategories();
 
-    result.match(
-      (failure) {
-        expect(failure, isA<ServerFailure>());
-        expect(failure.message, 'No internet connection');
-      },
-      (_) => fail('should be left'),
-    );
+    result.match((failure) {
+      expect(failure, isA<ServerFailure>());
+      expect(failure.message, 'No internet connection');
+    }, (_) => fail('should be left'));
   });
 
   test('getCategoryById surfaces ServerFailure on remote error', () async {
     when(() => network.isConnected).thenAnswer((_) async => true);
-    when(() => remote.getCategoryById(any()))
-        .thenThrow(ServerException(message: 'gone', code: 404));
+    when(
+      () => remote.getCategoryById(any()),
+    ).thenThrow(ServerException(message: 'gone', code: 404));
 
     final result = await repo.getCategoryById('x');
 
-    result.match(
-      (failure) {
-        expect(failure, isA<ServerFailure>());
-        expect(failure.code, 404);
-      },
-      (_) => fail('should be left'),
-    );
+    result.match((failure) {
+      expect(failure, isA<ServerFailure>());
+      expect(failure.code, 404);
+    }, (_) => fail('should be left'));
   });
 }

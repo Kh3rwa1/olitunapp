@@ -5,7 +5,10 @@
 
 ## Context
 
-The app requires configuration values that vary between environments: Appwrite endpoint, project ID, admin secret key, and translation API URLs. Early versions hardcoded these in source files, creating security risks and making multi-environment builds impossible.
+The app requires configuration values that vary between environments: Appwrite
+endpoint, project ID, admin Team ID, translation API URL, and optional
+observability settings. Early versions hardcoded these in source files, creating
+security risks and making multi-environment builds impossible.
 
 ## Decision
 
@@ -15,7 +18,8 @@ Inject all environment-specific values at **build time** using `--dart-define` f
 flutter run \
   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 \
   --dart-define=APPWRITE_PROJECT_ID=<id> \
-  --dart-define=ADMIN_SECRET_KEY=<key>
+  --dart-define=ADMIN_TEAM_ID=admins \
+  --dart-define=TRANSLATE_URL=<appwrite-function-url>
 ```
 
 Values are accessed via `String.fromEnvironment()` / `bool.fromEnvironment()` in Dart, which are resolved at compile time and tree-shaken into the binary.
@@ -24,7 +28,8 @@ A local `run.sh` script (gitignored) wraps these flags for developer convenience
 
 ## Consequences
 
-- ✅ Zero secrets in source control
+- ✅ No client-side admin secret in source control or compiled bundles
+- ✅ Admin access comes from Appwrite Team membership, not a bundled key
 - ✅ Same codebase builds for dev, staging, and production
 - ✅ CI/CD can inject values via environment variables
 - ✅ `run.sh` is gitignored — each developer manages their own

@@ -89,11 +89,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           children: [
             // 1. Background Video (Fullscreen)
             if (videoPath.endsWith('.mp4') || videoPath.startsWith('http'))
-              Positioned.fill(
-                child: VideoPlayerWidget(
-                  assetPath: videoPath,
-                ),
-              ),
+              Positioned.fill(child: VideoPlayerWidget(assetPath: videoPath)),
 
             // 2. Dark Overlay Gradient
             Positioned.fill(

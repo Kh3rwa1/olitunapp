@@ -125,26 +125,20 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   const Color(0xFF0A1018),
                   const Color(0xFF050810),
                 ]
-              : [
-                  AdminTokens.neutral50,
-                  Colors.white,
-                  AdminTokens.neutral75,
-                ],
+              : [AdminTokens.neutral50, Colors.white, AdminTokens.neutral75],
         ),
       ),
       child: Stack(
         children: [
           _blob(
-            color: AppColors.primary
-                .withValues(alpha: isDark ? 0.18 : 0.12),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.12),
             top: -80,
             left: -60,
             size: 320,
             duration: 18.seconds,
           ),
           _blob(
-            color: AppColors.duoBlue
-                .withValues(alpha: isDark ? 0.12 : 0.08),
+            color: AppColors.duoBlue.withValues(alpha: isDark ? 0.12 : 0.08),
             bottom: -100,
             right: -50,
             size: 360,
@@ -178,24 +172,25 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       left: left,
       bottom: bottom,
       right: right,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(color: color, shape: BoxShape.circle),
-      )
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .move(
-            begin: Offset.zero,
-            end: const Offset(40, 40),
-            duration: duration,
-            curve: Curves.easeInOut,
-          )
-          .scale(
-            begin: const Offset(1, 1),
-            end: const Offset(1.18, 1.18),
-            duration: duration,
-            curve: Curves.easeInOut,
-          ),
+      child:
+          Container(
+                width: size,
+                height: size,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              )
+              .animate(onPlay: (c) => c.repeat(reverse: true))
+              .move(
+                begin: Offset.zero,
+                end: const Offset(40, 40),
+                duration: duration,
+                curve: Curves.easeInOut,
+              )
+              .scale(
+                begin: const Offset(1, 1),
+                end: const Offset(1.18, 1.18),
+                duration: duration,
+                curve: Curves.easeInOut,
+              ),
     );
   }
 
@@ -217,10 +212,10 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
             ),
           ),
         ).animate().scale(
-              duration: 500.ms,
-              curve: Curves.easeOutBack,
-              begin: const Offset(0.7, 0.7),
-            ),
+          duration: 500.ms,
+          curve: Curves.easeOutBack,
+          begin: const Offset(0.7, 0.7),
+        ),
         const SizedBox(height: 16),
         Text(
           'Olitun Studio',
@@ -300,7 +295,9 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               const SizedBox(height: 14),
               Container(
                 padding: const EdgeInsets.symmetric(
-                    horizontal: 14, vertical: 12),
+                  horizontal: 14,
+                  vertical: 12,
+                ),
                 decoration: BoxDecoration(
                   color: AppColors.error.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
@@ -310,8 +307,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.error_outline_rounded,
-                        size: 18, color: AppColors.error),
+                    const Icon(
+                      Icons.error_outline_rounded,
+                      size: 18,
+                      color: AppColors.error,
+                    ),
                     const SizedBox(width: 10),
                     Expanded(
                       child: Text(
@@ -407,12 +407,11 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       hintText: hint,
       filled: true,
       fillColor: AdminTokens.sunken(isDark),
-      hintStyle: AdminTokens.body(isDark)
-          .copyWith(color: AdminTokens.textMuted(isDark)),
-      prefixIcon: Icon(icon,
-          size: 18, color: AdminTokens.textTertiary(isDark)),
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+      hintStyle: AdminTokens.body(
+        isDark,
+      ).copyWith(color: AdminTokens.textMuted(isDark)),
+      prefixIcon: Icon(icon, size: 18, color: AdminTokens.textTertiary(isDark)),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
       border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
         borderSide: BorderSide(color: AdminTokens.border(isDark)),

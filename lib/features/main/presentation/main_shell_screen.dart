@@ -156,10 +156,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
         _buildPremiumBackground(isDark),
         SafeArea(
           bottom: false,
-          child: _ShellTabSwitcher(
-            index: _selectedIndex,
-            screens: _screens,
-          ),
+          child: _ShellTabSwitcher(index: _selectedIndex, screens: _screens),
         ),
         Positioned(
           left: 0,
@@ -816,16 +813,18 @@ class _RightPanelStatState extends State<_RightPanelStat> {
         decoration: BoxDecoration(
           color: _isHovered
               ? (widget.isDark
-                  ? Colors.white.withValues(alpha: 0.06)
-                  : Colors.black.withValues(alpha: 0.04))
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.04))
               : (widget.isDark
-                  ? Colors.white.withValues(alpha: 0.03)
-                  : Colors.black.withValues(alpha: 0.02)),
+                    ? Colors.white.withValues(alpha: 0.03)
+                    : Colors.black.withValues(alpha: 0.02)),
           borderRadius: BorderRadius.circular(18),
           border: Border.all(
             color: _isHovered
                 ? widget.color.withValues(alpha: 0.2)
-                : (widget.isDark ? Colors.white : Colors.black).withValues(alpha: 0.05),
+                : (widget.isDark ? Colors.white : Colors.black).withValues(
+                    alpha: 0.05,
+                  ),
           ),
         ),
         child: Row(
@@ -881,8 +880,7 @@ class _ShellTabSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final reduce =
-        MediaQuery.maybeDisableAnimationsOf(context) ?? false;
+    final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final dur = Duration(milliseconds: reduce ? 1 : 220);
     return Stack(
       children: List.generate(screens.length, (i) {

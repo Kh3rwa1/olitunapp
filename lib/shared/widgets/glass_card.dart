@@ -55,7 +55,9 @@ class GlassCard extends StatelessWidget {
           height: height,
           padding: padding ?? const EdgeInsets.all(20),
           decoration: BoxDecoration(
-            color: gradient == null ? (backgroundColor ?? defaultBgColor) : null,
+            color: gradient == null
+                ? (backgroundColor ?? defaultBgColor)
+                : null,
             gradient: gradient,
             borderRadius: BorderRadius.circular(borderRadius),
             border: showBorder ? Border.all(color: borderColor) : null,
@@ -227,10 +229,7 @@ class GradientCard extends StatelessWidget {
               ),
             ),
           // Content
-          Padding(
-            padding: padding ?? const EdgeInsets.all(24),
-            child: child,
-          ),
+          Padding(padding: padding ?? const EdgeInsets.all(24), child: child),
         ],
       ),
     );
@@ -280,7 +279,8 @@ class NeumorphicCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final bgColor = backgroundColor ??
+    final bgColor =
+        backgroundColor ??
         (isDark ? AppColors.darkSurface : AppColors.lightBackground);
 
     Widget content = AnimatedContainer(
@@ -365,9 +365,10 @@ class _TapWrapperState extends State<_TapWrapper>
       vsync: this,
       duration: const Duration(milliseconds: 120),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.97).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.97,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -389,10 +390,7 @@ class _TapWrapperState extends State<_TapWrapper>
       child: AnimatedBuilder(
         animation: _scaleAnimation,
         builder: (context, child) {
-          return Transform.scale(
-            scale: _scaleAnimation.value,
-            child: child,
-          );
+          return Transform.scale(scale: _scaleAnimation.value, child: child);
         },
         child: widget.child,
       ),

@@ -13,7 +13,7 @@ acknowledge within 72 hours.
 Admin access is gated server-side by membership in the Appwrite Team named
 `admins` (or whatever `ADMIN_TEAM_ID` is set to at build time).
 
-- There is **no** client-side admin secret. The previous `ADMIN_SECRET_KEY`
+- There is **no** client-side admin secret. The previous admin-secret
   build flag has been removed because any value bundled into the compiled
   Flutter Web JS or Android APK is trivially extractable and therefore not a
   secret.
@@ -26,9 +26,12 @@ Admin access is gated server-side by membership in the Appwrite Team named
      non-members to `/admin/login`.
   2. `AdminShell` re-checks the same provider before rendering, so direct
      widget mounting (tests, deep links) is also gated.
-- Every Appwrite collection used by the admin UI is expected to enforce
-  Team-based permissions on the server. The Flutter checks are a UX layer
-  on top of those permissions, not the security boundary.
+- The Appwrite provisioning script grants public read access to learning
+  content, but create/update/delete permissions only to the configured admin
+  Team. Translator support collections are created without client permissions
+  and are accessed only by the Appwrite Function server key.
+- The Flutter checks are a UX layer on top of those permissions, not the
+  security boundary.
 
 ### Configuration
 
@@ -55,3 +58,13 @@ before enabling in production.
 ## Supported versions
 
 Only the `main` branch receives security fixes.
+
+### TLS / self-signed certificates
+
+Self-signed Appwrite certificates are disabled by default. Only enable them for local/self-hosted development with:
+
+```bash
+--dart-define=ALLOW_SELF_SIGNED=true
+```
+
+Production builds should keep this unset or false.

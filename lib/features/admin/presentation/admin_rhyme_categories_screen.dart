@@ -173,9 +173,9 @@ class _AdminRhymeCategoriesScreenState
                         padding: const EdgeInsets.fromLTRB(72, 0, 16, 16),
                         child: Text(
                           'No subcategories yet. Tap + to add.',
-                          style: AdminTokens.label(isDark).copyWith(
-                            color: AdminTokens.textTertiary(isDark),
-                          ),
+                          style: AdminTokens.label(
+                            isDark,
+                          ).copyWith(color: AdminTokens.textTertiary(isDark)),
                         ),
                       ),
                     ]
@@ -282,8 +282,7 @@ class _AdminRhymeCategoriesScreenState
             primaryLabel: cat == null ? 'Create Category' : 'Save Changes',
             heightFactor: 0.7,
             onPrimary: () {
-              final categories =
-                  ref.read(rhymeCategoriesProvider).value ?? [];
+              final categories = ref.read(rhymeCategoriesProvider).value ?? [];
               final item = RhymeCategoryModel(
                 id: cat?.id ?? 'rcat_${const Uuid().v4().substring(0, 8)}',
                 nameOlChiki: nameOlChikiCtrl.text,
@@ -339,8 +338,9 @@ class _AdminRhymeCategoriesScreenState
                           color: selected
                               ? AdminTokens.accentSoft(isDark)
                               : AdminTokens.sunken(isDark),
-                          borderRadius:
-                              BorderRadius.circular(AdminTokens.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusMd,
+                          ),
                           border: Border.all(
                             color: selected
                                 ? AdminTokens.accentBorder(isDark)
@@ -417,8 +417,9 @@ class _AdminRhymeCategoriesScreenState
         heightFactor: 0.55,
         onPrimary: () {
           final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
-          final catSubs =
-              subcats.where((s) => s.categoryId == categoryId).toList();
+          final catSubs = subcats
+              .where((s) => s.categoryId == categoryId)
+              .toList();
           final item = RhymeSubcategoryModel(
             id: sub?.id ?? 'rsub_${const Uuid().v4().substring(0, 8)}',
             categoryId: categoryId,

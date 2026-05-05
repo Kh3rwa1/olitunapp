@@ -75,9 +75,9 @@ class AdminTokens {
   static Color border(bool isDark, {double strength = 1}) => isDark
       ? Colors.white.withValues(alpha: 0.06 * strength)
       : Colors.black.withValues(alpha: 0.07 * strength);
-  static Color borderStrong(bool isDark) =>
-      isDark ? Colors.white.withValues(alpha: 0.12)
-            : Colors.black.withValues(alpha: 0.12);
+  static Color borderStrong(bool isDark) => isDark
+      ? Colors.white.withValues(alpha: 0.12)
+      : Colors.black.withValues(alpha: 0.12);
   static Color divider(bool isDark) => border(isDark, strength: 0.7);
 
   // ============== TEXT ==============
@@ -141,101 +141,101 @@ class AdminTokens {
         ];
 
   static List<BoxShadow> brandGlow(Color color, {double strength = 1}) => [
-        BoxShadow(
-          color: color.withValues(alpha: 0.30 * strength),
-          blurRadius: 28 * strength,
-          offset: const Offset(0, 10),
-          spreadRadius: -6,
-        ),
-      ];
+    BoxShadow(
+      color: color.withValues(alpha: 0.30 * strength),
+      blurRadius: 28 * strength,
+      offset: const Offset(0, 10),
+      spreadRadius: -6,
+    ),
+  ];
 
   // ============== TYPOGRAPHY ==============
   // A real type scale — use these instead of ad-hoc fontSize / fontWeight.
   static TextStyle display(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 40,
-        height: 1.05,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.8,
-        color: textPrimary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 40,
+    height: 1.05,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.8,
+    color: textPrimary(isDark),
+  );
 
   static TextStyle pageTitle(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 30,
-        height: 1.1,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.5,
-        color: textPrimary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 30,
+    height: 1.1,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.5,
+    color: textPrimary(isDark),
+  );
 
   static TextStyle sectionTitle(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 20,
-        height: 1.2,
-        fontWeight: FontWeight.w700,
-        letterSpacing: -0.2,
-        color: textPrimary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 20,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: -0.2,
+    color: textPrimary(isDark),
+  );
 
   static TextStyle cardTitle(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 16,
-        height: 1.3,
-        fontWeight: FontWeight.w700,
-        color: textPrimary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 16,
+    height: 1.3,
+    fontWeight: FontWeight.w700,
+    color: textPrimary(isDark),
+  );
 
   static TextStyle body(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 14,
-        height: 1.45,
-        fontWeight: FontWeight.w500,
-        color: textSecondary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 14,
+    height: 1.45,
+    fontWeight: FontWeight.w500,
+    color: textSecondary(isDark),
+  );
 
   static TextStyle bodyStrong(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 14,
-        height: 1.45,
-        fontWeight: FontWeight.w600,
-        color: textPrimary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 14,
+    height: 1.45,
+    fontWeight: FontWeight.w600,
+    color: textPrimary(isDark),
+  );
 
   static TextStyle label(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 12,
-        height: 1.3,
-        fontWeight: FontWeight.w600,
-        color: textSecondary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 12,
+    height: 1.3,
+    fontWeight: FontWeight.w600,
+    color: textSecondary(isDark),
+  );
 
   static TextStyle eyebrow(bool isDark, {Color? color}) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 11,
-        height: 1.2,
-        fontWeight: FontWeight.w700,
-        letterSpacing: 1.4,
-        color: color ?? textTertiary(isDark),
-      );
+    fontFamily: 'Poppins',
+    fontSize: 11,
+    height: 1.2,
+    fontWeight: FontWeight.w700,
+    letterSpacing: 1.4,
+    color: color ?? textTertiary(isDark),
+  );
 
   static TextStyle metric(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 36,
-        height: 1.0,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -1.2,
-        color: textPrimary(isDark),
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+    fontFamily: 'Poppins',
+    fontSize: 36,
+    height: 1.0,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -1.2,
+    color: textPrimary(isDark),
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 
   static TextStyle metricSmall(bool isDark) => TextStyle(
-        fontFamily: 'Poppins',
-        fontSize: 22,
-        height: 1.0,
-        fontWeight: FontWeight.w800,
-        letterSpacing: -0.6,
-        color: textPrimary(isDark),
-        fontFeatures: const [FontFeature.tabularFigures()],
-      );
+    fontFamily: 'Poppins',
+    fontSize: 22,
+    height: 1.0,
+    fontWeight: FontWeight.w800,
+    letterSpacing: -0.6,
+    color: textPrimary(isDark),
+    fontFeatures: const [FontFeature.tabularFigures()],
+  );
 }

@@ -5,9 +5,10 @@ import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
 
 final bannersProvider =
-    StateNotifierProvider<BannersNotifier, AsyncValue<List<FeaturedBannerModel>>>(
-      BannersNotifier.new,
-    );
+    StateNotifierProvider<
+      BannersNotifier,
+      AsyncValue<List<FeaturedBannerModel>>
+    >(BannersNotifier.new);
 
 // Alias for backward compatibility
 final featuredBannersProvider = bannersProvider;
@@ -27,9 +28,7 @@ class BannersNotifier
         'banners',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(
-        data.map(FeaturedBannerModel.fromJson).toList(),
-      );
+      state = AsyncValue.data(data.map(FeaturedBannerModel.fromJson).toList());
     } catch (e) {
       state = AsyncValue.error(e, StackTrace.current);
     }

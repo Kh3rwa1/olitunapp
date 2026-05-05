@@ -1,5 +1,6 @@
 /// Barrel file — re-exports all split providers for zero import breakage.
 library;
+
 ///
 /// Existing `import 'providers.dart'` statements across the app
 /// continue to work because this file re-exports everything.

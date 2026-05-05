@@ -20,14 +20,54 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
 
   static final List<LetterModel> _seedLetters = [
     // ... (existing seeds)
-    LetterModel(id: 'ᱚ', charOlChiki: 'ᱚ', transliterationLatin: 'La', pronunciation: 'o'),
-    LetterModel(id: 'ᱟ', charOlChiki: 'ᱟ', transliterationLatin: 'Aah', pronunciation: 'aa'),
-    LetterModel(id: 'ᱤ', charOlChiki: 'ᱤ', transliterationLatin: 'Li', pronunciation: 'i'),
-    LetterModel(id: 'ᱩ', charOlChiki: 'ᱩ', transliterationLatin: 'Lu', pronunciation: 'u'),
-    LetterModel(id: 'ᱮ', charOlChiki: 'ᱮ', transliterationLatin: 'Le', pronunciation: 'e'),
-    LetterModel(id: 'ᱳ', charOlChiki: 'ᱳ', transliterationLatin: 'Lo', pronunciation: 'oh'),
-    LetterModel(id: 'ᱠ', charOlChiki: 'ᱠ', transliterationLatin: 'Ok', pronunciation: 'ko'),
-    LetterModel(id: 'ᱜ', charOlChiki: 'ᱜ', transliterationLatin: 'Ol', pronunciation: 'ga'),
+    LetterModel(
+      id: 'ᱚ',
+      charOlChiki: 'ᱚ',
+      transliterationLatin: 'La',
+      pronunciation: 'o',
+    ),
+    LetterModel(
+      id: 'ᱟ',
+      charOlChiki: 'ᱟ',
+      transliterationLatin: 'Aah',
+      pronunciation: 'aa',
+    ),
+    LetterModel(
+      id: 'ᱤ',
+      charOlChiki: 'ᱤ',
+      transliterationLatin: 'Li',
+      pronunciation: 'i',
+    ),
+    LetterModel(
+      id: 'ᱩ',
+      charOlChiki: 'ᱩ',
+      transliterationLatin: 'Lu',
+      pronunciation: 'u',
+    ),
+    LetterModel(
+      id: 'ᱮ',
+      charOlChiki: 'ᱮ',
+      transliterationLatin: 'Le',
+      pronunciation: 'e',
+    ),
+    LetterModel(
+      id: 'ᱳ',
+      charOlChiki: 'ᱳ',
+      transliterationLatin: 'Lo',
+      pronunciation: 'oh',
+    ),
+    LetterModel(
+      id: 'ᱠ',
+      charOlChiki: 'ᱠ',
+      transliterationLatin: 'Ok',
+      pronunciation: 'ko',
+    ),
+    LetterModel(
+      id: 'ᱜ',
+      charOlChiki: 'ᱜ',
+      transliterationLatin: 'Ol',
+      pronunciation: 'ga',
+    ),
   ];
 
   Future<void> _loadLetters() async {
@@ -45,7 +85,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
       final list = data.map(LetterModel.fromJson).toList();
-      
+
       if (list.isNotEmpty) {
         state = AsyncValue.data(list);
         // 3. Save Cache

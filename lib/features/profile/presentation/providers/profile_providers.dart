@@ -14,13 +14,16 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(authRepo);
 });
 
-final userStatsProvider = StateNotifierProvider<UserStatsNotifier, AsyncValue<UserStatsEntity>>((ref) {
-  final repo = ref.watch(profileRepositoryProvider);
-  return UserStatsNotifier(repo);
-});
+final userStatsProvider =
+    StateNotifierProvider<UserStatsNotifier, AsyncValue<UserStatsEntity>>((
+      ref,
+    ) {
+      final repo = ref.watch(profileRepositoryProvider);
+      return UserStatsNotifier(repo);
+    });
 
 final userNameProvider = StateProvider<String>((ref) {
-  // We'll keep using prefs directly for now to avoid breaking too much, 
+  // We'll keep using prefs directly for now to avoid breaking too much,
   // but eventually this should come from the repository.
   return prefs.getString('user_name') ?? 'Learner';
 });
@@ -54,7 +57,10 @@ final memberSinceProvider = StateProvider<String>((ref) {
 
 final userAvatarColorsProvider = Provider<List<Color>>((ref) {
   final index = ref.watch(userAvatarColorIndexProvider);
-  return AppColors.avatarPalettes[index.clamp(0, AppColors.avatarPalettes.length - 1)];
+  return AppColors.avatarPalettes[index.clamp(
+    0,
+    AppColors.avatarPalettes.length - 1,
+  )];
 });
 
 class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
@@ -84,8 +90,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> practiceLetter(String letter) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
-    final updatedLetters = Set<String>.from(current.practicedLetters)..add(letter);
+
+    final updatedLetters = Set<String>.from(current.practicedLetters)
+      ..add(letter);
     final updated = current.copyWith(practicedLetters: updatedLetters);
     await updateStats(updated);
   }
@@ -93,7 +100,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> addStars(int count) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
+
     final updated = current.copyWith(totalStars: current.totalStars + count);
     await updateStats(updated);
   }
@@ -101,8 +108,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> completeLesson(String lessonId) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
-    final updatedLessons = Set<String>.from(current.completedLessons)..add(lessonId);
+
+    final updatedLessons = Set<String>.from(current.completedLessons)
+      ..add(lessonId);
     final updated = current.copyWith(completedLessons: updatedLessons);
     await updateStats(updated);
   }
@@ -110,9 +118,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> saveQuizResult(QuizResultEntity result) async {
     final current = state.valueOrNull;
     if (current == null) return;
-    
-    final updatedHistory = Map<String, QuizResultEntity>.from(current.quizHistory)
-      ..[result.quizId] = result;
+
+    final updatedHistory = Map<String, QuizResultEntity>.from(
+      current.quizHistory,
+    )..[result.quizId] = result;
     final updated = current.copyWith(quizHistory: updatedHistory);
     await updateStats(updated);
   }
@@ -141,12 +150,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> updateAvatar(WidgetRef ref, String emoji, int colorIndex) async {
     final result = await _repository.updateAvatar(emoji, colorIndex);
-    result.fold(
-      (failure) => null,
-      (_) {
-        ref.read(userAvatarEmojiProvider.notifier).state = emoji;
-        ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
-      },
-    );
+    result.fold((failure) => null, (_) {
+      ref.read(userAvatarEmojiProvider.notifier).state = emoji;
+      ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
+    });
   }
 }

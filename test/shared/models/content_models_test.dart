@@ -133,20 +133,13 @@ void main() {
 
   group('LessonBlock', () {
     test('text block parses correctly', () {
-      final block = LessonBlock(
-        type: 'text',
-        textOlChiki: 'ᱚ',
-        textLatin: 'A',
-      );
+      final block = LessonBlock(type: 'text', textOlChiki: 'ᱚ', textLatin: 'A');
       expect(block.type, 'text');
       expect(block.textOlChiki, 'ᱚ');
     });
 
     test('quiz ref block', () {
-      final block = LessonBlock(
-        type: 'quiz',
-        quizRefId: 'quiz_123',
-      );
+      final block = LessonBlock(type: 'quiz', quizRefId: 'quiz_123');
       expect(block.type, 'quiz');
       expect(block.quizRefId, 'quiz_123');
     });

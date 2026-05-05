@@ -13,8 +13,12 @@
 class AppwriteConfig {
   AppwriteConfig._();
 
-  static const String _envEndpoint = String.fromEnvironment('APPWRITE_ENDPOINT');
-  static const String _envProjectId = String.fromEnvironment('APPWRITE_PROJECT_ID');
+  static const String _envEndpoint = String.fromEnvironment(
+    'APPWRITE_ENDPOINT',
+  );
+  static const String _envProjectId = String.fromEnvironment(
+    'APPWRITE_PROJECT_ID',
+  );
 
   /// Resolved endpoint — never empty after [validate].
   static String get endpoint => _envEndpoint;

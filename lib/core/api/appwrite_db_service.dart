@@ -9,8 +9,8 @@ class AppwriteDbService {
   final Client _client;
 
   AppwriteDbService(this._client)
-      : _tablesDB = TablesDB(_client),
-        storage = Storage(_client);
+    : _tablesDB = TablesDB(_client),
+      storage = Storage(_client);
 
   // ─── Generic CRUD ───
 
@@ -87,10 +87,7 @@ class AppwriteDbService {
   }
 
   /// Delete a document
-  Future<void> deleteDocument(
-    String collectionId,
-    String documentId,
-  ) async {
+  Future<void> deleteDocument(String collectionId, String documentId) async {
     await _tablesDB.deleteRow(
       databaseId: AppwriteConfig.databaseId,
       tableId: collectionId,
@@ -107,9 +104,15 @@ class AppwriteDbService {
   }
 
   /// Get file preview URL (for images with transformations)
-  String getFilePreviewUrl(String bucketId, String fileId, {int? width, int? height}) {
+  String getFilePreviewUrl(
+    String bucketId,
+    String fileId, {
+    int? width,
+    int? height,
+  }) {
     final endpoint = _client.endPoint;
-    var url = '$endpoint/storage/buckets/$bucketId/files/$fileId/preview?project=${AppwriteConfig.projectId}';
+    var url =
+        '$endpoint/storage/buckets/$bucketId/files/$fileId/preview?project=${AppwriteConfig.projectId}';
     if (width != null) url += '&width=$width';
     if (height != null) url += '&height=$height';
     return url;
@@ -121,4 +124,3 @@ final appwriteDbServiceProvider = Provider<AppwriteDbService>((ref) {
   final authService = ref.watch(appwriteAuthServiceProvider);
   return AppwriteDbService(authService.client);
 });
-

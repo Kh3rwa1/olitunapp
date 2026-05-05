@@ -19,8 +19,11 @@ void main() {
           AdminTokens.space10,
         ];
         for (var i = 1; i < scale.length; i++) {
-          expect(scale[i], greaterThan(scale[i - 1]),
-              reason: 'space${i + 1} should be > space$i');
+          expect(
+            scale[i],
+            greaterThan(scale[i - 1]),
+            reason: 'space${i + 1} should be > space$i',
+          );
         }
       });
     });
@@ -45,15 +48,19 @@ void main() {
       test('dark base is darker than light base', () {
         final darkBase = AdminTokens.base(true);
         final lightBase = AdminTokens.base(false);
-        expect(darkBase.computeLuminance(),
-            lessThan(lightBase.computeLuminance()));
+        expect(
+          darkBase.computeLuminance(),
+          lessThan(lightBase.computeLuminance()),
+        );
       });
 
       test('raised is lighter than base in both modes', () {
         final darkRaised = AdminTokens.raised(true);
         final darkBase = AdminTokens.base(true);
-        expect(darkRaised.computeLuminance(),
-            greaterThan(darkBase.computeLuminance()));
+        expect(
+          darkRaised.computeLuminance(),
+          greaterThan(darkBase.computeLuminance()),
+        );
       });
     });
 
@@ -71,18 +78,30 @@ void main() {
       });
 
       test('font size hierarchy is correct', () {
-        expect(AdminTokens.display(false).fontSize,
-            greaterThan(AdminTokens.pageTitle(false).fontSize!));
-        expect(AdminTokens.pageTitle(false).fontSize,
-            greaterThan(AdminTokens.sectionTitle(false).fontSize!));
-        expect(AdminTokens.sectionTitle(false).fontSize,
-            greaterThan(AdminTokens.cardTitle(false).fontSize!));
-        expect(AdminTokens.cardTitle(false).fontSize,
-            greaterThan(AdminTokens.body(false).fontSize!));
-        expect(AdminTokens.body(false).fontSize,
-            greaterThan(AdminTokens.label(false).fontSize!));
-        expect(AdminTokens.label(false).fontSize,
-            greaterThan(AdminTokens.eyebrow(false).fontSize!));
+        expect(
+          AdminTokens.display(false).fontSize,
+          greaterThan(AdminTokens.pageTitle(false).fontSize!),
+        );
+        expect(
+          AdminTokens.pageTitle(false).fontSize,
+          greaterThan(AdminTokens.sectionTitle(false).fontSize!),
+        );
+        expect(
+          AdminTokens.sectionTitle(false).fontSize,
+          greaterThan(AdminTokens.cardTitle(false).fontSize!),
+        );
+        expect(
+          AdminTokens.cardTitle(false).fontSize,
+          greaterThan(AdminTokens.body(false).fontSize!),
+        );
+        expect(
+          AdminTokens.body(false).fontSize,
+          greaterThan(AdminTokens.label(false).fontSize!),
+        );
+        expect(
+          AdminTokens.label(false).fontSize,
+          greaterThan(AdminTokens.eyebrow(false).fontSize!),
+        );
       });
     });
 
@@ -108,11 +127,15 @@ void main() {
     group('text colors', () {
       test('primary text is readable in both modes', () {
         // Light mode: dark text.
-        expect(AdminTokens.textPrimary(false).computeLuminance(),
-            lessThan(0.15));
+        expect(
+          AdminTokens.textPrimary(false).computeLuminance(),
+          lessThan(0.15),
+        );
         // Dark mode: light text.
-        expect(AdminTokens.textPrimary(true).computeLuminance(),
-            greaterThan(0.8));
+        expect(
+          AdminTokens.textPrimary(true).computeLuminance(),
+          greaterThan(0.8),
+        );
       });
     });
   });

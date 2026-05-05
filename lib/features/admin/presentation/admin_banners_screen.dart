@@ -70,7 +70,8 @@ class AdminBannersScreen extends ConsumerWidget {
     return AdminEmptyState(
       icon: Icons.featured_play_list_outlined,
       title: 'No banners yet',
-      message: 'Create your first promotional banner to highlight on the home screen.',
+      message:
+          'Create your first promotional banner to highlight on the home screen.',
       actionLabel: 'Create Banner',
       onAction: () => _showBannerDialog(context, ref, null),
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
@@ -409,11 +410,7 @@ class AdminBannersScreen extends ConsumerWidget {
     required String hint,
     required bool isDark,
   }) {
-    return AdminTextField(
-      controller: controller,
-      label: label,
-      hint: hint,
-    );
+    return AdminTextField(controller: controller, label: label, hint: hint);
   }
 
   void _showDeleteDialog(
@@ -766,7 +763,9 @@ class _BannerCardState extends State<_BannerCard> {
                                       style: TextStyle(
                                         fontSize: isSmall ? 13 : 15,
                                         fontWeight: FontWeight.w500,
-                                        color: Colors.white.withValues(alpha: 0.85),
+                                        color: Colors.white.withValues(
+                                          alpha: 0.85,
+                                        ),
                                       ),
                                     ),
                                   ],

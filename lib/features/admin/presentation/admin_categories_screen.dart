@@ -69,12 +69,13 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return AdminEmptyState(
-      icon: Icons.category_outlined,
-      title: 'No categories yet',
-      message: 'Create your first learning category to start grouping lessons.',
-      actionLabel: 'Create Category',
-      onAction: () => _showCategoryDialog(context, null),
-    )
+          icon: Icons.category_outlined,
+          title: 'No categories yet',
+          message:
+              'Create your first learning category to start grouping lessons.',
+          actionLabel: 'Create Category',
+          onAction: () => _showCategoryDialog(context, null),
+        )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
         .scale(begin: const Offset(0.96, 0.96));
@@ -387,51 +388,54 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                 child: SafeArea(
                   top: false,
                   child: Row(
-                  children: [
-                    Expanded(
-                      child: AdminSecondaryButton(
-                        label: 'Cancel',
-                        onTap: () => Navigator.pop(context),
+                    children: [
+                      Expanded(
+                        child: AdminSecondaryButton(
+                          label: 'Cancel',
+                          onTap: () => Navigator.pop(context),
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      flex: 2,
-                      child: AdminPrimaryButton(
-                        label: isEditing ? 'Save Changes' : 'Create Category',
-                        icon: isEditing ? Icons.save_rounded : Icons.add_rounded,
-                        onTap: () {
-                          HapticFeedback.lightImpact();
-                          final newCategory = CategoryEntity(
-                            id: category?.id ?? const Uuid().v4(),
-                            titleLatin: titleLatinController.text,
-                            titleOlChiki: titleOlChikiController.text,
-                            description: descriptionController.text,
-                            iconUrl: iconUrlController.text.isNotEmpty
-                                ? iconUrlController.text
-                                : null,
-                            animationUrl: animationUrlController.text.isNotEmpty
-                                ? animationUrlController.text
-                                : null,
-                            gradientPreset: selectedGradient,
-                            iconName: selectedIcon,
-                            order: category?.order ?? 0,
-                          );
+                      const SizedBox(width: 12),
+                      Expanded(
+                        flex: 2,
+                        child: AdminPrimaryButton(
+                          label: isEditing ? 'Save Changes' : 'Create Category',
+                          icon: isEditing
+                              ? Icons.save_rounded
+                              : Icons.add_rounded,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            final newCategory = CategoryEntity(
+                              id: category?.id ?? const Uuid().v4(),
+                              titleLatin: titleLatinController.text,
+                              titleOlChiki: titleOlChikiController.text,
+                              description: descriptionController.text,
+                              iconUrl: iconUrlController.text.isNotEmpty
+                                  ? iconUrlController.text
+                                  : null,
+                              animationUrl:
+                                  animationUrlController.text.isNotEmpty
+                                  ? animationUrlController.text
+                                  : null,
+                              gradientPreset: selectedGradient,
+                              iconName: selectedIcon,
+                              order: category?.order ?? 0,
+                            );
 
-                          if (isEditing) {
-                            ref
-                                .read(categoryNotifierProvider.notifier)
-                                .updateCategory(newCategory);
-                          } else {
-                            ref
-                                .read(categoryNotifierProvider.notifier)
-                                .addCategory(newCategory);
-                          }
-                          Navigator.pop(context);
-                        },
+                            if (isEditing) {
+                              ref
+                                  .read(categoryNotifierProvider.notifier)
+                                  .updateCategory(newCategory);
+                            } else {
+                              ref
+                                  .read(categoryNotifierProvider.notifier)
+                                  .addCategory(newCategory);
+                            }
+                            Navigator.pop(context);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
                   ),
                 ),
               ),
@@ -492,9 +496,9 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                 style: AdminTokens.bodyStrong(isDark),
                 decoration: InputDecoration(
                   hintText: 'https://...',
-                  hintStyle: AdminTokens.body(isDark).copyWith(
-                    color: AdminTokens.textTertiary(isDark),
-                  ),
+                  hintStyle: AdminTokens.body(
+                    isDark,
+                  ).copyWith(color: AdminTokens.textTertiary(isDark)),
                   filled: true,
                   fillColor: AdminTokens.sunken(isDark),
                   border: OutlineInputBorder(
@@ -551,9 +555,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
 
       // On web, FileType.custom with allowedExtensions throws PlatformException
       // Use FileType.any and validate client-side instead
-      final result = await FilePicker.platform.pickFiles(
-        withData: true,
-      );
+      final result = await FilePicker.platform.pickFiles(withData: true);
 
       if (result != null && result.files.isNotEmpty) {
         final pickedFile = result.files.first;
@@ -613,9 +615,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
   ) async {
     try {
       // On web, FileType.custom throws PlatformException — use FileType.any
-      final result = await FilePicker.platform.pickFiles(
-        withData: true,
-      );
+      final result = await FilePicker.platform.pickFiles(withData: true);
 
       if (result != null && result.files.isNotEmpty) {
         final pickedFile = result.files.first;

@@ -143,10 +143,7 @@ void main() {
     test('fromMap handles nested contentJson', () {
       final block = LessonBlock.fromMap({
         'type': 'text',
-        'contentJson': {
-          'textOlChiki': 'ᱚ',
-          'textLatin': 'a',
-        },
+        'contentJson': {'textOlChiki': 'ᱚ', 'textLatin': 'a'},
       });
       expect(block.textOlChiki, 'ᱚ');
     });
@@ -156,10 +153,7 @@ void main() {
         'type': 'text',
         'contentJson': {
           'type': 'text',
-          'contentJson': {
-            'textOlChiki': 'ᱚ',
-            'textLatin': 'a',
-          },
+          'contentJson': {'textOlChiki': 'ᱚ', 'textLatin': 'a'},
         },
       });
       expect(block.textOlChiki, 'ᱚ');
@@ -209,10 +203,7 @@ void main() {
     });
 
     test('copyWith updates selected fields', () {
-      final original = QuizModel(
-        id: 'q1',
-        title: 'Before',
-      );
+      final original = QuizModel(id: 'q1', title: 'Before');
       final copy = original.copyWith(title: 'After', passingScore: 85);
       expect(copy.title, 'After');
       expect(copy.passingScore, 85);

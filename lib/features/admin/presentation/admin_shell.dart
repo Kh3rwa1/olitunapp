@@ -41,8 +41,7 @@ class AdminShell extends ConsumerWidget {
                 decoration: BoxDecoration(
                   color: AdminTokens.accentSoft(isDark),
                   shape: BoxShape.circle,
-                  border:
-                      Border.all(color: AdminTokens.accentBorder(isDark)),
+                  border: Border.all(color: AdminTokens.accentBorder(isDark)),
                 ),
                 child: const Icon(
                   Icons.lock_outline_rounded,
@@ -51,8 +50,10 @@ class AdminShell extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: 16),
-              Text('Admin access required',
-                  style: AdminTokens.sectionTitle(isDark)),
+              Text(
+                'Admin access required',
+                style: AdminTokens.sectionTitle(isDark),
+              ),
             ],
           ),
         ),
@@ -109,8 +110,10 @@ class AdminShell extends ConsumerWidget {
         elevation: 0,
         leading: Builder(
           builder: (context) => IconButton(
-            icon: Icon(Icons.menu_rounded,
-                color: AdminTokens.textPrimary(isDark)),
+            icon: Icon(
+              Icons.menu_rounded,
+              color: AdminTokens.textPrimary(isDark),
+            ),
             onPressed: () => Scaffold.of(context).openDrawer(),
           ),
         ),
@@ -119,10 +122,7 @@ class AdminShell extends ConsumerWidget {
           children: [
             const _BrandMark(size: 28),
             const SizedBox(width: 10),
-            Text(
-              'Olitun CMS',
-              style: AdminTokens.cardTitle(isDark),
-            ),
+            Text('Olitun CMS', style: AdminTokens.cardTitle(isDark)),
           ],
         ),
       ),
@@ -149,8 +149,7 @@ class AdminShell extends ConsumerWidget {
               center: const Alignment(-0.7, -0.9),
               radius: 1.4,
               colors: [
-                AppColors.primary
-                    .withValues(alpha: isDark ? 0.07 : 0.05),
+                AppColors.primary.withValues(alpha: isDark ? 0.07 : 0.05),
                 Colors.transparent,
               ],
             ),
@@ -176,10 +175,7 @@ class _BrandMark extends StatelessWidget {
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset(
-          'assets/icons/olitun_logo.png',
-          fit: BoxFit.cover,
-        ),
+        child: Image.asset('assets/icons/olitun_logo.png', fit: BoxFit.cover),
       ),
     );
   }
@@ -202,14 +198,20 @@ class _AdminTopBar extends StatelessWidget {
       ),
       child: Row(
         children: [
-          Icon(Icons.dashboard_customize_rounded,
-              size: 16, color: AdminTokens.textTertiary(isDark)),
+          Icon(
+            Icons.dashboard_customize_rounded,
+            size: 16,
+            color: AdminTokens.textTertiary(isDark),
+          ),
           const SizedBox(width: 8),
           for (var i = 0; i < crumbs.length; i++) ...[
             if (i > 0) ...[
               const SizedBox(width: 8),
-              Icon(Icons.chevron_right_rounded,
-                  size: 16, color: AdminTokens.textMuted(isDark)),
+              Icon(
+                Icons.chevron_right_rounded,
+                size: 16,
+                color: AdminTokens.textMuted(isDark),
+              ),
               const SizedBox(width: 8),
             ],
             Text(
@@ -256,9 +258,11 @@ class _AdminTopBar extends StatelessWidget {
     final cleaned = s.replaceAll('-', ' ').replaceAll('_', ' ');
     return cleaned
         .split(' ')
-        .map((p) => p.isEmpty
-            ? p
-            : '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}')
+        .map(
+          (p) => p.isEmpty
+              ? p
+              : '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}',
+        )
         .join(' ');
   }
 }
@@ -454,10 +458,9 @@ class _AdminSidebar extends StatelessWidget {
                 children: [
                   Text(
                     'Olitun',
-                    style: AdminTokens.cardTitle(isDark).copyWith(
-                      letterSpacing: -0.3,
-                      fontSize: 18,
-                    ),
+                    style: AdminTokens.cardTitle(
+                      isDark,
+                    ).copyWith(letterSpacing: -0.3, fontSize: 18),
                   ),
                   Text(
                     'Content Studio',
@@ -471,8 +474,7 @@ class _AdminSidebar extends StatelessWidget {
               ),
             ),
             Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
               decoration: BoxDecoration(
                 color: AdminTokens.accentSoft(isDark),
                 borderRadius: BorderRadius.circular(999),
@@ -531,9 +533,7 @@ class _AdminSidebar extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: AdminTokens.accentSoft(isDark),
                     shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AdminTokens.accentBorder(isDark),
-                    ),
+                    border: Border.all(color: AdminTokens.accentBorder(isDark)),
                   ),
                   child: const Icon(
                     Icons.shield_outlined,
@@ -549,8 +549,9 @@ class _AdminSidebar extends StatelessWidget {
                     children: [
                       Text(
                         'Administrator',
-                        style: AdminTokens.bodyStrong(isDark)
-                            .copyWith(fontSize: 13),
+                        style: AdminTokens.bodyStrong(
+                          isDark,
+                        ).copyWith(fontSize: 13),
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
@@ -590,8 +591,11 @@ class _AdminSidebar extends StatelessWidget {
                 child: const Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.arrow_back_rounded,
-                        size: 18, color: Colors.white),
+                    Icon(
+                      Icons.arrow_back_rounded,
+                      size: 18,
+                      color: Colors.white,
+                    ),
                     SizedBox(width: 8),
                     Text(
                       'Back to App',
@@ -684,8 +688,8 @@ class _NavItemState extends State<_NavItem> {
     final fg = selected
         ? AppColors.primary
         : (_hovering
-            ? AdminTokens.textPrimary(isDark)
-            : AdminTokens.textSecondary(isDark));
+              ? AdminTokens.textPrimary(isDark)
+              : AdminTokens.textSecondary(isDark));
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 2),
@@ -714,9 +718,7 @@ class _NavItemState extends State<_NavItem> {
                   ),
                 Container(
                   padding: EdgeInsets.fromLTRB(
-                    widget.isCompact
-                        ? 10
-                        : (widget.indent ? 30 : 14),
+                    widget.isCompact ? 10 : (widget.indent ? 30 : 14),
                     10,
                     14,
                     10,
@@ -725,10 +727,9 @@ class _NavItemState extends State<_NavItem> {
                     color: selected
                         ? AdminTokens.accentSoft(isDark)
                         : (_hovering
-                            ? AdminTokens.sunken(isDark)
-                            : Colors.transparent),
-                    borderRadius:
-                        BorderRadius.circular(AdminTokens.radiusSm),
+                              ? AdminTokens.sunken(isDark)
+                              : Colors.transparent),
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
                   ),
                   child: Row(
                     mainAxisAlignment: widget.isCompact

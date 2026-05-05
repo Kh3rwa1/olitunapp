@@ -35,58 +35,64 @@ void main() {
     test('returns NetworkFailure when offline', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
 
-      final result =
-          await repo.signInWithEmail(email: 'a@b.co', password: 'pwpwpwpw');
+      final result = await repo.signInWithEmail(
+        email: 'a@b.co',
+        password: 'pwpwpwpw',
+      );
 
       expect(result, isA<Left<Failure, dynamic>>());
       result.match(
         (f) => expect(f, isA<NetworkFailure>()),
         (_) => fail('expected Left'),
       );
-      verifyNever(() => remote.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          ));
+      verifyNever(
+        () => remote.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      );
     });
 
     test('returns Right(UserEntity) on success', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
-      when(() => remote.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenAnswer((_) async => user);
+      when(
+        () => remote.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenAnswer((_) async => user);
 
-      final result =
-          await repo.signInWithEmail(email: 'a@b.co', password: 'pwpwpwpw');
+      final result = await repo.signInWithEmail(
+        email: 'a@b.co',
+        password: 'pwpwpwpw',
+      );
 
       expect(result.isRight(), true);
-      result.match(
-        (_) => fail('expected Right'),
-        (e) {
-          expect(e.id, 'u1');
-          expect(e.email, 'a@b.co');
-        },
-      );
+      result.match((_) => fail('expected Right'), (e) {
+        expect(e.id, 'u1');
+        expect(e.email, 'a@b.co');
+      });
     });
 
     test('maps ServerException to ServerFailure', () async {
       when(() => network.isConnected).thenAnswer((_) async => true);
-      when(() => remote.signInWithEmail(
-            email: any(named: 'email'),
-            password: any(named: 'password'),
-          )).thenThrow(ServerException(message: 'bad creds', code: 401));
+      when(
+        () => remote.signInWithEmail(
+          email: any(named: 'email'),
+          password: any(named: 'password'),
+        ),
+      ).thenThrow(ServerException(message: 'bad creds', code: 401));
 
-      final result =
-          await repo.signInWithEmail(email: 'a@b.co', password: 'pwpwpwpw');
-
-      result.match(
-        (f) {
-          expect(f, isA<ServerFailure>());
-          expect(f.message, 'bad creds');
-          expect(f.code, 401);
-        },
-        (_) => fail('expected Left'),
+      final result = await repo.signInWithEmail(
+        email: 'a@b.co',
+        password: 'pwpwpwpw',
       );
+
+      result.match((f) {
+        expect(f, isA<ServerFailure>());
+        expect(f.message, 'bad creds');
+        expect(f.code, 401);
+      }, (_) => fail('expected Left'));
     });
   });
 
@@ -112,10 +118,7 @@ void main() {
     test('returns Right(null) when remote returns null (no session)', () async {
       when(() => remote.getCurrentUser()).thenAnswer((_) async => null);
       final result = await repo.getCurrentUser();
-      result.match(
-        (_) => fail('expected Right'),
-        (u) => expect(u, isNull),
-      );
+      result.match((_) => fail('expected Right'), (u) => expect(u, isNull));
     });
   });
 }

@@ -103,10 +103,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           ),
                         ),
                       ],
-                    )
-                        .animate()
-                        .fadeIn(duration: 500.ms)
-                        .slideY(begin: -0.1),
+                    ).animate().fadeIn(duration: 500.ms).slideY(begin: -0.1),
 
                     const SizedBox(height: 32),
 
@@ -115,9 +112,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       AnimatedBentoChild(
                         index: 0,
                         child: PressableScale(
-                          onTap: () => context.go(
-                            '/lessons/${data.first.id}',
-                          ),
+                          onTap: () => context.go('/lessons/${data.first.id}'),
                           child: Hero(
                             tag: MotionTokens.heroTag(
                               'category',
@@ -143,19 +138,13 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           letterSpacing: 1.5,
                           color: isDark ? Colors.white38 : Colors.black38,
                         ),
-                      )
-                          .animate()
-                          .fadeIn(delay: 200.ms)
-                          .slideX(begin: -0.05),
+                      ).animate().fadeIn(delay: 200.ms).slideX(begin: -0.05),
                       const SizedBox(height: 16),
                       GridView.builder(
                         shrinkWrap: true,
                         physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: ResponsiveLayout.gridColumns(
-                            context,
-                          ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: ResponsiveLayout.gridColumns(context),
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
                           childAspectRatio: isDesktop
@@ -168,9 +157,8 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           return AnimatedBentoChild(
                             index: index + 1,
                             child: PressableScale(
-                              onTap: () => context.go(
-                                '/lessons/${category.id}',
-                              ),
+                              onTap: () =>
+                                  context.go('/lessons/${category.id}'),
                               child: Hero(
                                 tag: MotionTokens.heroTag(
                                   'category',
@@ -201,13 +189,19 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Icon(Icons.wifi_off_rounded,
-                      size: 48, color: Colors.red.withValues(alpha: 0.5)),
+                  Icon(
+                    Icons.wifi_off_rounded,
+                    size: 48,
+                    color: Colors.red.withValues(alpha: 0.5),
+                  ),
                   const SizedBox(height: 16),
-                  Text('Could not load lessons',
-                      style: TextStyle(
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white70 : Colors.black54)),
+                  Text(
+                    'Could not load lessons',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white70 : Colors.black54,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -241,7 +235,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
             ),
             const SizedBox(height: 32),
             // Hero card skeleton
-            const Skeleton(width: double.infinity, height: 220, borderRadius: 32),
+            const Skeleton(
+              width: double.infinity,
+              height: 220,
+              borderRadius: 32,
+            ),
             const SizedBox(height: 32),
             // Subtitle skeleton
             const Skeleton(width: 100, height: 12, borderRadius: 4),
@@ -263,8 +261,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
       ),
     );
   }
-
-
 }
 
 // ═══════════════ HERO CATEGORY CARD ═══════════════
@@ -330,18 +326,19 @@ class _HeroCategoryCard extends StatelessWidget {
           Positioned(
             right: -10,
             bottom: -10,
-            child: Icon(
-                  _getIcon(category.iconName),
-                  size: 120,
-                  color: Colors.white.withValues(alpha: 0.15),
-                )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .moveY(begin: 0, end: -8, duration: 2.seconds)
-                .scale(
-                  begin: const Offset(1, 1),
-                  end: const Offset(1.05, 1.05),
-                  duration: 2.seconds,
-                ),
+            child:
+                Icon(
+                      _getIcon(category.iconName),
+                      size: 120,
+                      color: Colors.white.withValues(alpha: 0.15),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .moveY(begin: 0, end: -8, duration: 2.seconds)
+                    .scale(
+                      begin: const Offset(1, 1),
+                      end: const Offset(1.05, 1.05),
+                      duration: 2.seconds,
+                    ),
           ),
           // Gloss
           Positioned(
@@ -352,10 +349,12 @@ class _HeroCategoryCard extends StatelessWidget {
               height: 180,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                gradient: RadialGradient(colors: [
-                  Colors.white.withValues(alpha: 0.12),
-                  Colors.white.withValues(alpha: 0),
-                ]),
+                gradient: RadialGradient(
+                  colors: [
+                    Colors.white.withValues(alpha: 0.12),
+                    Colors.white.withValues(alpha: 0),
+                  ],
+                ),
               ),
             ),
           ),
@@ -363,8 +362,10 @@ class _HeroCategoryCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 5,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withValues(alpha: 0.2),
                   borderRadius: BorderRadius.circular(12),
@@ -422,37 +423,42 @@ class _HeroCategoryCard extends StatelessWidget {
               ],
               const SizedBox(height: 20),
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.1),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
                     ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(Icons.play_arrow_rounded,
-                        color: gradient.colors.first, size: 20),
-                    const SizedBox(width: 8),
-                    Text(
-                      'START LEARNING',
-                      style: TextStyle(
-                        color: gradient.colors.last,
-                        fontWeight: FontWeight.w900,
-                        fontSize: 13,
-                        letterSpacing: 0.5,
-                      ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.1),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              )
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: gradient.colors.first,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(
+                          'START LEARNING',
+                          style: TextStyle(
+                            color: gradient.colors.last,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
                   .animate(onPlay: (c) => c.repeat(reverse: true))
                   .shimmer(
                     delay: 2.seconds,
@@ -519,9 +525,7 @@ class _BentoCategoryCard extends StatelessWidget {
 
     return BentoCell(
       padding: const EdgeInsets.all(20),
-      color: isDark
-          ? Colors.white.withValues(alpha: 0.04)
-          : Colors.white,
+      color: isDark ? Colors.white.withValues(alpha: 0.04) : Colors.white,
       boxShadow: isDark
           ? null
           : [

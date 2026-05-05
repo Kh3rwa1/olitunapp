@@ -29,7 +29,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
           .map((doc) => CategoryModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to load categories', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to load categories',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -45,7 +48,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
       );
       return CategoryModel.fromJson(doc.data, doc.$id);
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to get category', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to get category',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -63,7 +69,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
         data: data,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to create category', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to create category',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -81,7 +90,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
         data: data,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to update category', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to update category',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }
@@ -96,7 +108,10 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
         documentId: id,
       );
     } on AppwriteException catch (e) {
-      throw ServerException(message: e.message ?? 'Failed to delete category', code: e.code);
+      throw ServerException(
+        message: e.message ?? 'Failed to delete category',
+        code: e.code,
+      );
     } catch (e) {
       throw ServerException(message: e.toString());
     }

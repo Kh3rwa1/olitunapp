@@ -122,7 +122,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               ),
               const SizedBox(height: 20),
               TextButton.icon(
-                onPressed: () => ref.read(lessonNotifierProvider.notifier).refresh(),
+                onPressed: () =>
+                    ref.read(lessonNotifierProvider.notifier).refresh(),
                 icon: const Icon(Icons.refresh_rounded),
                 label: const Text('Retry'),
                 style: TextButton.styleFrom(foregroundColor: AppColors.primary),
@@ -197,96 +198,100 @@ class _LessonCard extends StatelessWidget {
             child: Hero(
               tag: MotionTokens.heroTag('lesson', lesson.id),
               child: Container(
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.white,
-                borderRadius: BorderRadius.circular(18),
-                border: Border.all(
+                padding: const EdgeInsets.all(18),
+                decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white10
-                      : Colors.black.withValues(alpha: 0.05),
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                  boxShadow: isDark
+                      ? null
+                      : [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 15,
+                            offset: const Offset(0, 5),
+                          ),
+                        ],
                 ),
-                boxShadow: isDark
-                    ? null
-                    : [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          blurRadius: 15,
-                          offset: const Offset(0, 5),
-                        ),
-                      ],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      gradient: AppColors.heroGradient,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Center(
-                      child: Text(
-                        '${index + 1}',
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
+                child: Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        gradient: AppColors.heroGradient,
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Center(
+                        child: Text(
+                          '${index + 1}',
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          lesson.titleLatin,
-                          style: TextStyle(
-                            fontSize: 17,
-                            fontWeight: FontWeight.w700,
-                            color: isDark ? Colors.white : Colors.black,
-                          ),
-                        ),
-                        if (lesson.titleOlChiki.isNotEmpty)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 2),
-                            child: Text(
-                              lesson.titleOlChiki,
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontFamily: 'OlChiki',
-                                color: isDark ? Colors.white54 : Colors.black45,
-                              ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson.titleLatin,
+                            style: TextStyle(
+                              fontSize: 17,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
-                        if (lesson.description != null)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 6),
-                            child: Text(
-                              lesson.description!,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: isDark ? Colors.white38 : Colors.black38,
+                          if (lesson.titleOlChiki.isNotEmpty)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 2),
+                              child: Text(
+                                lesson.titleOlChiki,
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontFamily: 'OlChiki',
+                                  color: isDark
+                                      ? Colors.white54
+                                      : Colors.black45,
+                                ),
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                      ],
+                          if (lesson.description != null)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 6),
+                              child: Text(
+                                lesson.description!,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black38,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                        ],
+                      ),
                     ),
-                  ),
-                  const Icon(
-                    Icons.play_circle_rounded,
-                    color: AppColors.primary,
-                    size: 32,
-                  ),
-                ],
+                    const Icon(
+                      Icons.play_circle_rounded,
+                      color: AppColors.primary,
+                      size: 32,
+                    ),
+                  ],
+                ),
               ),
-            ),
             ),
           ),
         )

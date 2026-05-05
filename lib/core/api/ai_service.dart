@@ -27,8 +27,9 @@ import 'package:flutter/foundation.dart';
 /// separate deployment.
 class AiConfig {
   static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
-  static const String _reverseOverride =
-      String.fromEnvironment('REVERSE_TRANSLATE_URL');
+  static const String _reverseOverride = String.fromEnvironment(
+    'REVERSE_TRANSLATE_URL',
+  );
 
   /// Reverse-translate URL — defaults to [translateUrl] so a single
   /// function deployment serves both directions.
@@ -48,22 +49,19 @@ class AiService {
     String text, {
     String from = 'auto',
     String to = 'sat',
-  }) =>
-      _post(
-        AiConfig.translateUrl,
-        {'text': text, 'from': from, 'to': to},
-        endpointName: 'translate',
-      );
+  }) => _post(AiConfig.translateUrl, {
+    'text': text,
+    'from': from,
+    'to': to,
+  }, endpointName: 'translate');
 
   Future<TranslateResult?> translateFromOlChiki(
     String text, {
     String to = 'en',
-  }) =>
-      _post(
-        AiConfig.reverseTranslateUrl,
-        {'text': text, 'to': to},
-        endpointName: 'reverseTranslate',
-      );
+  }) => _post(AiConfig.reverseTranslateUrl, {
+    'text': text,
+    'to': to,
+  }, endpointName: 'reverseTranslate');
 
   Future<TranslateResult?> _post(
     String url,

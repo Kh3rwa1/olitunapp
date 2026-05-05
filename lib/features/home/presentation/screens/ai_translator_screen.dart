@@ -43,9 +43,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
 
     try {
       final aiService = ref.read(aiServiceProvider);
-      final result = await aiService.translate(
-        _controller.text.trim(),
-      );
+      final result = await aiService.translate(_controller.text.trim());
 
       if (mounted) {
         setState(() {
@@ -132,40 +130,39 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                     borderRadius: 32,
                     glowColor: AppColors.primary,
                     child: Container(
-                    padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: (isDark ? Colors.white : Colors.black).withValues(
-                        alpha: 0.05,
-                      ),
-                      borderRadius: BorderRadius.circular(32),
-                      border: Border.all(
+                      padding: const EdgeInsets.all(24),
+                      decoration: BoxDecoration(
                         color: (isDark ? Colors.white : Colors.black)
-                            .withValues(alpha: 0.1),
-                      ),
-                    ),
-                    child: TextField(
-                      controller: _controller,
-                      focusNode: _focusNode,
-                      maxLines: null,
-                      style: GoogleFonts.inter(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                      cursorColor: AppColors.primary,
-                      decoration: InputDecoration(
-                        hintText: 'Type anything in English...',
-                        hintStyle: GoogleFonts.inter(
+                            .withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(
                           color: (isDark ? Colors.white : Colors.black)
-                              .withValues(alpha: 0.3),
+                              .withValues(alpha: 0.1),
+                        ),
+                      ),
+                      child: TextField(
+                        controller: _controller,
+                        focusNode: _focusNode,
+                        maxLines: null,
+                        style: GoogleFonts.inter(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
                         ),
-                        border: InputBorder.none,
-                        contentPadding: EdgeInsets.zero,
+                        cursorColor: AppColors.primary,
+                        decoration: InputDecoration(
+                          hintText: 'Type anything in English...',
+                          hintStyle: GoogleFonts.inter(
+                            color: (isDark ? Colors.white : Colors.black)
+                                .withValues(alpha: 0.3),
+                            fontSize: 24,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          border: InputBorder.none,
+                          contentPadding: EdgeInsets.zero,
+                        ),
                       ),
                     ),
-                  ),
                   ).animate().fadeIn(delay: 400.ms, duration: 800.ms),
 
                   const SizedBox(height: 32),

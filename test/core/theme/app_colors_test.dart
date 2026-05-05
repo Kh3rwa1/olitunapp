@@ -16,8 +16,11 @@ void main() {
 
     test('each avatar palette has exactly 2 colors', () {
       for (final palette in AppColors.avatarPalettes) {
-        expect(palette.length, 2,
-            reason: 'Avatar palette should have start and end gradient colors');
+        expect(
+          palette.length,
+          2,
+          reason: 'Avatar palette should have start and end gradient colors',
+        );
       }
     });
 

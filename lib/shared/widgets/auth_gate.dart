@@ -56,7 +56,9 @@ class AuthGate extends ConsumerWidget {
                   end: Alignment.bottomRight,
                 ),
                 borderRadius: BorderRadius.circular(28),
-                border: Border.all(color: AppColors.primary.withValues(alpha: 0.15)),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.15),
+                ),
               ),
               child: Icon(icon, size: 44, color: AppColors.primary),
             ),

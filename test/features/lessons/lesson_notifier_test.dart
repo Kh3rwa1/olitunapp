@@ -18,12 +18,14 @@ void main() {
   });
 
   setUpAll(() {
-    registerFallbackValue(const LessonEntity(
-      id: 'fallback',
-      categoryId: 'cat',
-      titleOlChiki: '',
-      titleLatin: '',
-    ));
+    registerFallbackValue(
+      const LessonEntity(
+        id: 'fallback',
+        categoryId: 'cat',
+        titleOlChiki: '',
+        titleLatin: '',
+      ),
+    );
   });
 
   final sampleLessons = [
@@ -44,8 +46,9 @@ void main() {
 
   group('LessonNotifier', () {
     test('starts in loading then emits data on success', () async {
-      when(() => mockRepo.getLessons())
-          .thenAnswer((_) async => Right(sampleLessons));
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
 
       final notifier = LessonNotifier(mockRepo);
 
@@ -71,8 +74,9 @@ void main() {
     });
 
     test('refresh re-fetches lessons', () async {
-      when(() => mockRepo.getLessons())
-          .thenAnswer((_) async => Right(sampleLessons));
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
 
       final notifier = LessonNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -83,10 +87,12 @@ void main() {
     });
 
     test('addLesson calls repository and refreshes', () async {
-      when(() => mockRepo.getLessons())
-          .thenAnswer((_) async => Right(sampleLessons));
-      when(() => mockRepo.createLesson(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
+      when(
+        () => mockRepo.createLesson(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = LessonNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -100,10 +106,12 @@ void main() {
     });
 
     test('deleteLesson calls repository and refreshes', () async {
-      when(() => mockRepo.getLessons())
-          .thenAnswer((_) async => Right(sampleLessons));
-      when(() => mockRepo.deleteLesson(any()))
-          .thenAnswer((_) async => const Right(null));
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
+      when(
+        () => mockRepo.deleteLesson(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       final notifier = LessonNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -114,11 +122,12 @@ void main() {
     });
 
     test('addLesson swallows failure silently', () async {
-      when(() => mockRepo.getLessons())
-          .thenAnswer((_) async => Right(sampleLessons));
-      when(() => mockRepo.createLesson(any())).thenAnswer(
-        (_) async => const Left(ServerFailure(message: 'conflict')),
-      );
+      when(
+        () => mockRepo.getLessons(),
+      ).thenAnswer((_) async => Right(sampleLessons));
+      when(
+        () => mockRepo.createLesson(any()),
+      ).thenAnswer((_) async => const Left(ServerFailure(message: 'conflict')));
 
       final notifier = LessonNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -134,16 +143,15 @@ void main() {
     test('filters lessons by categoryId', () {
       final container = ProviderContainer(
         overrides: [
-          lessonNotifierProvider.overrideWith(
-            (ref) {
-              when(() => mockRepo.getLessons())
-                  .thenAnswer((_) async => Right(sampleLessons));
-              final n = LessonNotifier(mockRepo);
-              // Manually set state to avoid async init.
-              n.state = AsyncValue.data(sampleLessons);
-              return n;
-            },
-          ),
+          lessonNotifierProvider.overrideWith((ref) {
+            when(
+              () => mockRepo.getLessons(),
+            ).thenAnswer((_) async => Right(sampleLessons));
+            final n = LessonNotifier(mockRepo);
+            // Manually set state to avoid async init.
+            n.state = AsyncValue.data(sampleLessons);
+            return n;
+          }),
         ],
       );
       addTearDown(container.dispose);

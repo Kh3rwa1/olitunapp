@@ -57,13 +57,22 @@ void main() {
 
     test('equatable works correctly', () {
       const a = QuizResultEntity(
-        quizId: 'q1', score: 7, totalQuestions: 10, completedAt: '2026-05-04',
+        quizId: 'q1',
+        score: 7,
+        totalQuestions: 10,
+        completedAt: '2026-05-04',
       );
       const b = QuizResultEntity(
-        quizId: 'q1', score: 7, totalQuestions: 10, completedAt: '2026-05-04',
+        quizId: 'q1',
+        score: 7,
+        totalQuestions: 10,
+        completedAt: '2026-05-04',
       );
       const c = QuizResultEntity(
-        quizId: 'q2', score: 7, totalQuestions: 10, completedAt: '2026-05-04',
+        quizId: 'q2',
+        score: 7,
+        totalQuestions: 10,
+        completedAt: '2026-05-04',
       );
       expect(a, equals(b));
       expect(a, isNot(equals(c)));
@@ -118,10 +127,16 @@ void main() {
         completedLessons: {},
         quizHistory: {
           'q1': QuizResultEntity(
-            quizId: 'q1', score: 8, totalQuestions: 10, completedAt: '',
+            quizId: 'q1',
+            score: 8,
+            totalQuestions: 10,
+            completedAt: '',
           ),
           'q2': QuizResultEntity(
-            quizId: 'q2', score: 6, totalQuestions: 10, completedAt: '',
+            quizId: 'q2',
+            score: 6,
+            totalQuestions: 10,
+            completedAt: '',
           ),
         },
         categoryMastery: {},
@@ -155,10 +170,16 @@ void main() {
         completedLessons: {},
         quizHistory: {
           'q1': QuizResultEntity(
-            quizId: 'q1', score: 8, totalQuestions: 10, completedAt: '',
+            quizId: 'q1',
+            score: 8,
+            totalQuestions: 10,
+            completedAt: '',
           ),
           'q2': QuizResultEntity(
-            quizId: 'q2', score: 10, totalQuestions: 10, completedAt: '',
+            quizId: 'q2',
+            score: 10,
+            totalQuestions: 10,
+            completedAt: '',
           ),
         },
         categoryMastery: {},
@@ -177,7 +198,10 @@ void main() {
         completedLessons: {},
         quizHistory: {
           'q1': QuizResultEntity(
-            quizId: 'q1', score: 5, totalQuestions: 10, completedAt: '',
+            quizId: 'q1',
+            score: 5,
+            totalQuestions: 10,
+            completedAt: '',
           ),
         },
         categoryMastery: {},
@@ -208,10 +232,17 @@ void main() {
       const intermediate = UserStatsEntity(
         practicedLetters: {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'},
         completedLessons: {
-          'l1', 'l2', 'l3',
-          'numbers_1', 'numbers_2',
-          'words_1', 'words_2', 'words_3', 'words_4',
-          'rhymes_1', 'rhymes_2',
+          'l1',
+          'l2',
+          'l3',
+          'numbers_1',
+          'numbers_2',
+          'words_1',
+          'words_2',
+          'words_3',
+          'words_4',
+          'rhymes_1',
+          'rhymes_2',
         },
         quizHistory: {},
         categoryMastery: {},

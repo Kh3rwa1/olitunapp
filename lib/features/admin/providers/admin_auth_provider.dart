@@ -12,7 +12,7 @@ import '../../../core/config/appwrite_config.dart';
 /// must (a) have a valid Appwrite session and (b) be a member of the admin
 /// team, both of which are verified server-side by Appwrite.
 ///
-/// The previous client-side `ADMIN_SECRET_KEY` model has been removed —
+/// The previous client-side admin-secret model has been removed —
 /// it provided no real security because the secret was bundled into the
 /// compiled JS/APK and could be extracted by anyone.
 /// Minimal seam over `Teams(client).list()` so unit tests can inject a fake
@@ -21,7 +21,7 @@ typedef TeamsListFetcher = Future<List<String>> Function();
 
 class AdminAuthService {
   AdminAuthService(this._auth, {TeamsListFetcher? teamsListFetcher})
-      : _teamsListFetcher = teamsListFetcher;
+    : _teamsListFetcher = teamsListFetcher;
 
   final AppwriteAuthService _auth;
   final TeamsListFetcher? _teamsListFetcher;

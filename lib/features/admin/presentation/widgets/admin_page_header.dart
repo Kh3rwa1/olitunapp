@@ -44,9 +44,9 @@ class AdminPageHeader extends StatelessWidget {
                   padding: const EdgeInsets.only(bottom: 6),
                   child: Text(
                     eyebrow!.toUpperCase(),
-                    style: AdminTokens.eyebrow(isDark).copyWith(
-                      color: AdminTokens.accent,
-                    ),
+                    style: AdminTokens.eyebrow(
+                      isDark,
+                    ).copyWith(color: AdminTokens.accent),
                   ),
                 ),
               Text(title, style: AdminTokens.pageTitle(isDark)),
@@ -54,9 +54,9 @@ class AdminPageHeader extends StatelessWidget {
                 const SizedBox(height: 4),
                 Text(
                   subtitle!,
-                  style: AdminTokens.body(isDark).copyWith(
-                    color: AdminTokens.textSecondary(isDark),
-                  ),
+                  style: AdminTokens.body(
+                    isDark,
+                  ).copyWith(color: AdminTokens.textSecondary(isDark)),
                 ),
               ],
             ],

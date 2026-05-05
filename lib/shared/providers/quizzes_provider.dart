@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/hive_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../models/content_models.dart';
 
 final quizzesProvider =
@@ -15,6 +16,8 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   QuizzesNotifier(this.ref) : super(AsyncValue.data(_defaultQuizzes)) {
     _loadQuizzes();
   }
+
+  SharedPreferences get _prefs => ref.read(sharedPreferencesProvider);
 
   final Ref ref;
   static const String _collectionId = 'quizzes';
@@ -94,7 +97,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   Future<void> _loadQuizzes() async {
     try {
       final stored =
-          prefs.getString(_cacheKey) ?? prefs.getString(_legacyCacheKey);
+          _prefs.getString(_cacheKey) ?? _prefs.getString(_legacyCacheKey);
       if (stored != null) {
         final List<dynamic> decoded = jsonDecode(stored);
         final cachedQuizzes = decoded
@@ -102,7 +105,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
             .toList();
         state = AsyncValue.data(cachedQuizzes);
         _saveQuizzes(cachedQuizzes);
-        prefs.remove(_legacyCacheKey);
+        _prefs.remove(_legacyCacheKey);
       }
     } catch (e) {
       debugPrint('Failed to load cached quizzes: $e');
@@ -132,7 +135,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 
   void _saveQuizzes(List<QuizModel> quizzes) {
     final encoded = jsonEncode(quizzes.map((e) => e.toJson()).toList());
-    prefs.setString(_cacheKey, encoded);
+    _prefs.setString(_cacheKey, encoded);
   }
 
   Map<String, dynamic> _toAppwritePayload(QuizModel quiz) {
@@ -183,7 +186,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 
   Future<void> seed() async {
     state = const AsyncValue.loading();
-    prefs.remove(_cacheKey);
+    _prefs.remove(_cacheKey);
     await _loadQuizzes();
   }
 }

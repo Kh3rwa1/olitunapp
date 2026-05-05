@@ -4,14 +4,27 @@ import 'package:hive/hive.dart';
 
 /// Lightweight Hive-backed JSON cache used by content providers.
 ///
-/// Replaces the previous `cache_service_legacy.dart`. Behavior is identical;
-/// only the file name and doc comments changed.
+/// The box is opened once (lazily, on first access) and reused for the
+/// lifetime of the app. This avoids the overhead of calling
+/// `Hive.openBox` on every read/write.
 class CacheService {
   static const String _boxName = 'content_cache';
 
+  /// Lazily-opened, long-lived box handle.
+  static Box? _box;
+
+  @visibleForTesting
+  static void resetForTesting() => _box = null;
+
+  static Future<Box> _getBox() async {
+    if (_box != null && _box!.isOpen) return _box!;
+    _box = await Hive.openBox(_boxName);
+    return _box!;
+  }
+
   static Future<void> set(String key, dynamic data) async {
     try {
-      final box = await Hive.openBox(_boxName);
+      final box = await _getBox();
       await box.put(key, jsonEncode(data));
     } catch (e) {
       debugPrint('[Cache] write error ($key): $e');
@@ -23,7 +36,7 @@ class CacheService {
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final box = await Hive.openBox(_boxName);
+      final box = await _getBox();
       final raw = box.get(key);
       if (raw == null) return null;
       return fromJson(jsonDecode(raw as String) as Map<String, dynamic>);
@@ -38,7 +51,7 @@ class CacheService {
     T Function(Map<String, dynamic>) fromJson,
   ) async {
     try {
-      final box = await Hive.openBox(_boxName);
+      final box = await _getBox();
       final raw = box.get(key);
       if (raw == null) return null;
       final list = jsonDecode(raw as String) as List;
@@ -52,12 +65,12 @@ class CacheService {
   }
 
   static Future<void> delete(String key) async {
-    final box = await Hive.openBox(_boxName);
+    final box = await _getBox();
     await box.delete(key);
   }
 
   static Future<void> clear() async {
-    final box = await Hive.openBox(_boxName);
+    final box = await _getBox();
     await box.clear();
   }
 }

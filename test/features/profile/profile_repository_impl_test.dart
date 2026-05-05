@@ -6,7 +6,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:itun/core/error/failures.dart';
-import 'package:itun/core/storage/hive_service.dart' as hive_service;
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
 import 'package:itun/features/profile/data/models/user_stats_model.dart';
 import 'package:itun/features/profile/data/repositories/profile_repository_impl.dart';
@@ -19,13 +18,14 @@ void main() {
 
   late ProfileRepositoryImpl repo;
   late _MockAuthRepository auth;
+  late SharedPreferences prefs;
 
   setUp(() async {
     SharedPreferences.setMockInitialValues({});
-    hive_service.prefs = await SharedPreferences.getInstance();
+    prefs = await SharedPreferences.getInstance();
     auth = _MockAuthRepository();
     when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(false));
-    repo = ProfileRepositoryImpl(auth);
+    repo = ProfileRepositoryImpl(auth, prefs);
   });
 
   test('getUserStats returns empty defaults when no data is stored', () async {
@@ -49,7 +49,7 @@ void main() {
         currentStreak: 3,
         totalStars: 99,
       );
-      await hive_service.prefs.setString(
+      await prefs.setString(
         'user_progress_data',
         jsonEncode(UserStatsModel.fromEntity(stored).toJson()),
       );
@@ -64,7 +64,7 @@ void main() {
   );
 
   test('getUserStats maps malformed stored JSON to CacheFailure', () async {
-    await hive_service.prefs.setString('user_progress_data', '{not json');
+    await prefs.setString('user_progress_data', '{not json');
 
     final result = await repo.getUserStats();
     result.match(
@@ -74,7 +74,7 @@ void main() {
   });
 
   test('getUserStats maps structurally-invalid JSON to CacheFailure', () async {
-    await hive_service.prefs.setString(
+    await prefs.setString(
       'user_progress_data',
       jsonEncode({'totalStars': 'not-an-int'}),
     );
@@ -99,7 +99,7 @@ void main() {
     );
     final res = await repo.updateUserStats(stats);
     expect(res.isRight(), isTrue);
-    final stored = hive_service.prefs.getString('user_progress_data');
+    final stored = prefs.getString('user_progress_data');
     expect(stored, isNotNull);
     expect(stored, contains('"totalStars":5'));
   });
@@ -107,8 +107,8 @@ void main() {
   test('updateAvatar writes both emoji and color index to prefs', () async {
     final res = await repo.updateAvatar('🦊', 3);
     expect(res.isRight(), isTrue);
-    expect(hive_service.prefs.getString('user_avatar_emoji'), '🦊');
-    expect(hive_service.prefs.getInt('user_avatar_color'), 3);
+    expect(prefs.getString('user_avatar_emoji'), '🦊');
+    expect(prefs.getInt('user_avatar_color'), 3);
   });
 
   test(
@@ -116,7 +116,7 @@ void main() {
     () async {
       final res = await repo.updateDisplayName('Sido');
       expect(res.isRight(), isTrue);
-      expect(hive_service.prefs.getString('user_name'), 'Sido');
+      expect(prefs.getString('user_name'), 'Sido');
     },
   );
 
@@ -133,7 +133,7 @@ void main() {
         (failure) => expect(failure, isA<NetworkFailure>()),
         (_) => fail('should be left'),
       );
-      expect(hive_service.prefs.getString('user_name'), 'Kanhu');
+      expect(prefs.getString('user_name'), 'Kanhu');
     },
   );
 }

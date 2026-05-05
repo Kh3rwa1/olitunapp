@@ -51,6 +51,17 @@ app.*.map.json
 scripts/node_modules/
 run.sh
 build_web_v*.zip
+*.jks
+*.keystore
 
+# Agent / AI
 .agent/
+
+# Test artifacts
 coverage/
+test_hive_cache/
+
+# Release artifacts (build locally, don't commit)
+*.apk
+*.aab
+*.ipa

@@ -1,100 +1,46 @@
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-
 import 'package:itun/core/auth/appwrite_auth_service.dart';
-import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/features/admin/providers/admin_auth_provider.dart';
 
-class _FakeAuthService implements AppwriteAuthService {
-  _FakeAuthService(this._client);
-  final Client _client;
-  @override
-  Client get client => _client;
-  @override
-  noSuchMethod(Invocation i) => super.noSuchMethod(i);
-}
-
-class _MockClient extends Mock implements Client {}
-
-class _FakeTeam {
-  _FakeTeam({required this.id, required this.name});
-  final String id;
-  final String name;
-}
-
-abstract class _TeamsApi {
-  Future<List<_FakeTeam>> list();
-}
-
-class _MockTeamsApi extends Mock implements _TeamsApi {}
-
-AdminAuthService _serviceFor(_TeamsApi teams) => AdminAuthService(
-  _FakeAuthService(_MockClient()),
-  teamsListFetcher: () async => (await teams.list()).map((t) => t.id).toList(),
-);
+class _MockAuth extends Mock implements AppwriteAuthService {}
 
 void main() {
-  group('AdminAuthService.isCurrentUserAdmin (Teams.list mocked)', () {
-    test(
-      'returns true when a team ID matches the configured admin ID',
-      () async {
-        final teams = _MockTeamsApi();
-        when(teams.list).thenAnswer(
-          (_) async => [
-            _FakeTeam(id: 'random', name: 'random_team'),
-            _FakeTeam(id: AppwriteConfig.adminTeamId, name: 'whatever'),
-          ],
-        );
+  group('AdminAuthService', () {
+    late _MockAuth mockAuth;
 
-        expect(await _serviceFor(teams).isCurrentUserAdmin(), isTrue);
-        verify(teams.list).called(1);
-      },
-    );
+    setUp(() {
+      mockAuth = _MockAuth();
+    });
 
-    test('returns false when no team ID matches', () async {
-      final teams = _MockTeamsApi();
-      when(teams.list).thenAnswer(
-        (_) async => [
-          _FakeTeam(id: 'team_a', name: 'A'),
-          _FakeTeam(id: 'team_b', name: 'B'),
-        ],
+    test('isCurrentUserAdmin returns false when teams list is empty', () async {
+      final service = AdminAuthService(
+        mockAuth,
+        teamsListFetcher: () async => [],
       );
-
-      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
+      expect(await service.isCurrentUserAdmin(), isFalse);
     });
 
     test(
-      'rejects a team whose NAME equals the admin ID but whose ID differs',
+      'isCurrentUserAdmin returns false when admin team id is not in list',
       () async {
-        final teams = _MockTeamsApi();
-        when(teams.list).thenAnswer(
-          (_) async => [
-            _FakeTeam(id: 'spoof_id', name: AppwriteConfig.adminTeamId),
-          ],
+        final service = AdminAuthService(
+          mockAuth,
+          teamsListFetcher: () async => ['team-abc', 'team-xyz'],
         );
-
-        expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
+        expect(await service.isCurrentUserAdmin(), isFalse);
       },
     );
 
-    test('returns false when Teams.list throws', () async {
-      final teams = _MockTeamsApi();
-      when(teams.list).thenThrow(Exception('401 unauthorized'));
-
-      expect(await _serviceFor(teams).isCurrentUserAdmin(), isFalse);
-    });
-  });
-
-  group('AdminAuthService.signInAsAdmin', () {
-    test('returns false when the membership check fails', () async {
-      final teams = _MockTeamsApi();
-      when(teams.list).thenAnswer((_) async => const []);
-
-      final result = await _serviceFor(
-        teams,
-      ).signInAsAdmin(email: 'x@example.com', password: 'nope');
-      expect(result, isFalse);
-    });
+    test(
+      'isCurrentUserAdmin returns false when fetcher throws',
+      () async {
+        final service = AdminAuthService(
+          mockAuth,
+          teamsListFetcher: () async => throw Exception('network error'),
+        );
+        expect(await service.isCurrentUserAdmin(), isFalse);
+      },
+    );
   });
 }

@@ -1,71 +1,91 @@
-import 'dart:convert';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/api/ai_service.dart';
 
 void main() {
-  group('AiService config', () {
-    test('throws StateError when TRANSLATE_URL is not configured', () async {
-      // The dart-define is empty in the test environment, so calling
-      // translate must surface the misconfiguration loudly rather than
-      // silently falling back to a hardcoded host.
-      final svc = AiService();
-      expect(() => svc.translate('hello'), throwsA(isA<StateError>()));
+  group('AiConfig', () {
+    test('reverseTranslateUrl defaults to translateUrl', () {
+      expect(AiConfig.reverseTranslateUrl, AiConfig.translateUrl);
     });
 
-    test(
-      'rejects oversized requests before network configuration is used',
-      () async {
-        final svc = AiService();
-        final result = await svc.translate(
-          'x' * (AiConfig.maxTranslationChars + 1),
-        );
-
-        expect(result, isNotNull);
-        expect(result!.isError, isTrue);
-        expect(result.translation, contains('${AiConfig.maxTranslationChars}'));
-      },
-    );
+    test('maxTranslationChars is reasonable', () {
+      expect(AiConfig.maxTranslationChars, greaterThan(0));
+      expect(AiConfig.maxTranslationChars, lessThanOrEqualTo(10000));
+    });
   });
 
-  group('AiService Appwrite Execution unwrap', () {
-    test('returns the body as-is when it is already a function response', () {
-      final body = jsonEncode({
-        'success': true,
-        'data': {'translation': 'hi'},
-      });
-      final out = AiService.unwrapAppwriteExecution(body);
-      expect(out!['success'], isTrue);
-      expect((out['data'] as Map)['translation'], 'hi');
+  group('TranslateResult', () {
+    test('creates a non-error result', () {
+      final result = TranslateResult(
+        translation: 'hello',
+        detectedLanguage: 'en',
+        cached: true,
+      );
+      expect(result.translation, 'hello');
+      expect(result.detectedLanguage, 'en');
+      expect(result.cached, isTrue);
+      expect(result.isError, isFalse);
     });
 
-    test('unwraps an Appwrite Execution object to its inner responseBody', () {
-      final inner = jsonEncode({
-        'success': true,
-        'data': {'translation': 'ᱚᱞ', 'cached': false},
-      });
-      final execution = jsonEncode({
-        '\$id': 'exec_1',
-        'status': 'completed',
-        'responseStatusCode': 200,
-        'responseBody': inner,
-      });
-      final out = AiService.unwrapAppwriteExecution(execution);
-      expect(out!['success'], isTrue);
-      expect((out['data'] as Map)['translation'], 'ᱚᱞ');
+    test('creates an error result', () {
+      final result = TranslateResult(
+        translation: 'rate limited',
+        isError: true,
+      );
+      expect(result.isError, isTrue);
+      expect(result.cached, isFalse);
+    });
+  });
+
+  group('unwrapAppwriteExecution', () {
+    test('parses direct JSON body', () {
+      const body = '{"success":true,"data":{"translation":"hello"}}';
+      final parsed = AiService.unwrapAppwriteExecution(body);
+      expect(parsed, isNotNull);
+      expect(parsed!['success'], isTrue);
+      expect((parsed['data'] as Map)['translation'], 'hello');
     });
 
-    test('returns null on malformed JSON', () {
-      expect(AiService.unwrapAppwriteExecution('not json'), isNull);
+    test('unwraps Appwrite Execution responseBody', () {
+      const body =
+          '{"status":"completed","responseBody":"{\\"success\\":true,\\"data\\":{\\"translation\\":\\"hi\\"}}","\$id":"exec1"}';
+      final parsed = AiService.unwrapAppwriteExecution(body);
+      expect(parsed, isNotNull);
+      expect(parsed!['success'], isTrue);
     });
 
-    test('returns null when execution wrapper has empty responseBody', () {
-      final execution = jsonEncode({
-        '\$id': 'exec_2',
-        'status': 'completed',
-        'responseBody': '',
-      });
-      expect(AiService.unwrapAppwriteExecution(execution), isNull);
+    test('returns null for non-map JSON', () {
+      final parsed = AiService.unwrapAppwriteExecution('[1,2,3]');
+      expect(parsed, isNull);
+    });
+
+    test('returns null for invalid JSON', () {
+      final parsed = AiService.unwrapAppwriteExecution('not json');
+      expect(parsed, isNull);
+    });
+
+    test('returns null for Execution with empty responseBody', () {
+      const body = '{"status":"completed","responseBody":"","\$id":"exec1"}';
+      final parsed = AiService.unwrapAppwriteExecution(body);
+      expect(parsed, isNull);
+    });
+  });
+
+  group('AiService.translate', () {
+    test('rejects text exceeding maxTranslationChars', () async {
+      final service = AiService();
+      final longText = 'a' * (AiConfig.maxTranslationChars + 1);
+      final result = await service.translate(longText);
+      expect(result, isNotNull);
+      expect(result!.isError, isTrue);
+      expect(result.translation, contains('too long'));
+    });
+
+    test('throws StateError when URL is not configured', () async {
+      final service = AiService();
+      expect(
+        () => service.translate('hello'),
+        throwsA(isA<StateError>()),
+      );
     });
   });
 }

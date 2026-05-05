@@ -622,7 +622,7 @@ class SettingsScreen extends ConsumerWidget {
                   },
                   (_) async {
                     // Clear all local data
-                    await prefs.clear();
+                    await ref.read(sharedPreferencesProvider).clear();
 
                     // Navigate to welcome screen
                     if (context.mounted) {

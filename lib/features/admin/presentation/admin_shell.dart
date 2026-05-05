@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../shared/providers/providers.dart';
 import '../providers/admin_auth_provider.dart';
 
 /// Admin shell — refined sidebar (desktop / tablet) and drawer (mobile) plus
@@ -59,6 +60,8 @@ class AdminShell extends ConsumerWidget {
         ),
       );
     }
+
+    _warmAdminContent(ref);
 
     if (isDesktop || isTablet) {
       return Scaffold(
@@ -138,6 +141,21 @@ class AdminShell extends ConsumerWidget {
         ],
       ),
     );
+  }
+
+  void _warmAdminContent(WidgetRef ref) {
+    ref
+      ..read(categoryNotifierProvider)
+      ..read(lessonNotifierProvider)
+      ..read(featuredBannersProvider)
+      ..read(lettersProvider)
+      ..read(numbersProvider)
+      ..read(wordsProvider)
+      ..read(sentencesProvider)
+      ..read(quizzesProvider)
+      ..read(rhymesProvider)
+      ..read(rhymeCategoriesProvider)
+      ..read(rhymeSubcategoriesProvider);
   }
 
   Widget _buildAmbientBackdrop(bool isDark) {

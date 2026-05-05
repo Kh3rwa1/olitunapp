@@ -82,10 +82,7 @@ void main() {
 
     test('throws StateError when URL is not configured', () async {
       final service = AiService();
-      expect(
-        () => service.translate('hello'),
-        throwsA(isA<StateError>()),
-      );
+      expect(() => service.translate('hello'), throwsA(isA<StateError>()));
     });
   });
 }

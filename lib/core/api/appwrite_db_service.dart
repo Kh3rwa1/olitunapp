@@ -4,6 +4,9 @@ import '../config/appwrite_config.dart';
 import '../auth/appwrite_auth_service.dart';
 
 class AppwriteDbService {
+  static const Duration _readTimeout = Duration(seconds: 6);
+  static const Duration _writeTimeout = Duration(seconds: 15);
+
   final TablesDB _tablesDB;
   final Storage storage;
   final Client _client;
@@ -19,11 +22,13 @@ class AppwriteDbService {
     String collectionId, {
     List<String>? queries,
   }) async {
-    final result = await _tablesDB.listRows(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: collectionId,
-      queries: queries ?? [Query.limit(500)],
-    );
+    final result = await _tablesDB
+        .listRows(
+          databaseId: AppwriteConfig.databaseId,
+          tableId: collectionId,
+          queries: queries ?? [Query.limit(500)],
+        )
+        .timeout(_readTimeout);
     return result.rows.map((row) {
       final data = Map<String, dynamic>.from(row.data);
       data['id'] = row.$id;
@@ -40,11 +45,13 @@ class AppwriteDbService {
     String collectionId,
     String documentId,
   ) async {
-    final row = await _tablesDB.getRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: collectionId,
-      rowId: documentId,
-    );
+    final row = await _tablesDB
+        .getRow(
+          databaseId: AppwriteConfig.databaseId,
+          tableId: collectionId,
+          rowId: documentId,
+        )
+        .timeout(_readTimeout);
     final data = Map<String, dynamic>.from(row.data);
     data['id'] = row.$id;
     return data;
@@ -61,12 +68,14 @@ class AppwriteDbService {
     // Remove null values
     payload.removeWhere((key, value) => value == null);
 
-    await _tablesDB.createRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: collectionId,
-      rowId: documentId,
-      data: payload,
-    );
+    await _tablesDB
+        .createRow(
+          databaseId: AppwriteConfig.databaseId,
+          tableId: collectionId,
+          rowId: documentId,
+          data: payload,
+        )
+        .timeout(_writeTimeout);
   }
 
   /// Update a document
@@ -78,21 +87,25 @@ class AppwriteDbService {
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
-    await _tablesDB.updateRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: collectionId,
-      rowId: documentId,
-      data: payload,
-    );
+    await _tablesDB
+        .updateRow(
+          databaseId: AppwriteConfig.databaseId,
+          tableId: collectionId,
+          rowId: documentId,
+          data: payload,
+        )
+        .timeout(_writeTimeout);
   }
 
   /// Delete a document
   Future<void> deleteDocument(String collectionId, String documentId) async {
-    await _tablesDB.deleteRow(
-      databaseId: AppwriteConfig.databaseId,
-      tableId: collectionId,
-      rowId: documentId,
-    );
+    await _tablesDB
+        .deleteRow(
+          databaseId: AppwriteConfig.databaseId,
+          tableId: collectionId,
+          rowId: documentId,
+        )
+        .timeout(_writeTimeout);
   }
 
   // ─── Storage Helpers ───

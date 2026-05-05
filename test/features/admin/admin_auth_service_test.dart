@@ -32,15 +32,12 @@ void main() {
       },
     );
 
-    test(
-      'isCurrentUserAdmin returns false when fetcher throws',
-      () async {
-        final service = AdminAuthService(
-          mockAuth,
-          teamsListFetcher: () async => throw Exception('network error'),
-        );
-        expect(await service.isCurrentUserAdmin(), isFalse);
-      },
-    );
+    test('isCurrentUserAdmin returns false when fetcher throws', () async {
+      final service = AdminAuthService(
+        mockAuth,
+        teamsListFetcher: () async => throw Exception('network error'),
+      );
+      expect(await service.isCurrentUserAdmin(), isFalse);
+    });
   });
 }

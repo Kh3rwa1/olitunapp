@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
 final bannersProvider =
@@ -15,22 +16,40 @@ final featuredBannersProvider = bannersProvider;
 
 class BannersNotifier
     extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
-  BannersNotifier(this.ref) : super(const AsyncValue.loading()) {
+  BannersNotifier(this.ref)
+    : super(const AsyncValue.data(<FeaturedBannerModel>[])) {
     _loadBanners();
   }
 
   final Ref ref;
+  static const String _cacheKey = 'cached_banners';
 
   Future<void> _loadBanners() async {
+    final cached = await CacheService.getList(
+      _cacheKey,
+      FeaturedBannerModel.fromJson,
+    );
+    if (cached != null) {
+      state = AsyncValue.data(cached);
+    }
+
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
         'banners',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map(FeaturedBannerModel.fromJson).toList());
-    } catch (e) {
-      state = AsyncValue.error(e, StackTrace.current);
+      final banners = data.map(FeaturedBannerModel.fromJson).toList();
+      state = AsyncValue.data(banners);
+      await CacheService.set(
+        _cacheKey,
+        banners.map((e) => e.toJson()).toList(),
+      );
+    } catch (e, stack) {
+      debugPrint('❌ load banners FAILED: $e');
+      if (cached == null) {
+        state = AsyncValue.error(e, stack);
+      }
     }
   }
 

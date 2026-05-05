@@ -13,6 +13,9 @@ abstract class CategoryRemoteDataSource {
 }
 
 class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
+  static const Duration _readTimeout = Duration(seconds: 6);
+  static const Duration _writeTimeout = Duration(seconds: 15);
+
   final Databases databases;
 
   CategoryRemoteDataSourceImpl(this.databases);
@@ -20,11 +23,13 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final result = await databases.listDocuments(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
+      final result = await databases
+          .listDocuments(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            queries: [Query.orderAsc('order'), Query.limit(500)],
+          )
+          .timeout(_readTimeout);
       return result.documents
           .map((doc) => CategoryModel.fromJson(doc.data, doc.$id))
           .toList();
@@ -41,11 +46,13 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<CategoryModel> getCategoryById(String id) async {
     try {
-      final doc = await databases.getDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
-        documentId: id,
-      );
+      final doc = await databases
+          .getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: id,
+          )
+          .timeout(_readTimeout);
       return CategoryModel.fromJson(doc.data, doc.$id);
     } on AppwriteException catch (e) {
       throw ServerException(
@@ -62,12 +69,14 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
     try {
       final data = category.toJson()..remove('id');
       data.removeWhere((key, value) => value == null);
-      await databases.createDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
-        documentId: category.id,
-        data: data,
-      );
+      await databases
+          .createDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: category.id,
+            data: data,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to create category',
@@ -83,12 +92,14 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
     try {
       final data = category.toJson()..remove('id');
       data.removeWhere((key, value) => value == null);
-      await databases.updateDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
-        documentId: category.id,
-        data: data,
-      );
+      await databases
+          .updateDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: category.id,
+            data: data,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to update category',
@@ -102,11 +113,13 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<void> deleteCategory(String id) async {
     try {
-      await databases.deleteDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'categories',
-        documentId: id,
-      );
+      await databases
+          .deleteDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'categories',
+            documentId: id,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to delete category',

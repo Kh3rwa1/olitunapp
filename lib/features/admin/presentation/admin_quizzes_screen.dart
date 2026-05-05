@@ -431,18 +431,29 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                                         const <QuizQuestion>[],
                                   );
 
-                                  if (isEditing) {
-                                    await ref
-                                        .read(quizzesProvider.notifier)
-                                        .updateQuiz(newQuiz);
-                                  } else {
-                                    await ref
-                                        .read(quizzesProvider.notifier)
-                                        .addQuiz(newQuiz);
-                                  }
+                                  try {
+                                    if (isEditing) {
+                                      await ref
+                                          .read(quizzesProvider.notifier)
+                                          .updateQuiz(newQuiz);
+                                    } else {
+                                      await ref
+                                          .read(quizzesProvider.notifier)
+                                          .addQuiz(newQuiz);
+                                    }
 
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  } catch (e) {
+                                    if (!context.mounted) return;
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Could not save quiz: $e',
+                                        ),
+                                      ),
+                                    );
                                   }
                                 },
                           child: Text(
@@ -469,7 +480,14 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
           'This will permanently delete "${quiz.title ?? 'Untitled Quiz'}". This action cannot be undone.',
     );
     if (ok == true) {
-      await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
+      try {
+        await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not delete quiz: $e')));
+      }
     }
   }
 

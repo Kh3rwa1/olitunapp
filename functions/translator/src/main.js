@@ -1,5 +1,10 @@
 import { Client, Databases, ID, Query } from 'node-appwrite';
 import translate from '@vitalets/google-translate-api';
+import {
+  createCacheKey,
+  MAX_TRANSLATION_CHARS,
+  normalizeLanguage,
+} from './security.js';
 
 const DB_ID = 'olitun_db';
 const CACHE_COLLECTION = 'translation_cache';
@@ -23,9 +28,15 @@ export default async ({ req, res, log, error }) => {
   }
 
   const text = (body?.text || '').trim();
-  const from = body?.from || 'auto';
-  const to = body?.to || 'sat';
+  const from = normalizeLanguage(body?.from, 'auto');
+  const to = normalizeLanguage(body?.to, 'sat');
   if (!text) return res.json(err('Missing "text"'), 400);
+  if (text.length > MAX_TRANSLATION_CHARS) {
+    return res.json(
+      err(`Text too long (max ${MAX_TRANSLATION_CHARS} chars)`),
+      400
+    );
+  }
 
   // API key comes ONLY from server-side env. We deliberately do NOT trust
   // the `x-appwrite-key` request header — that would let a caller override
@@ -78,7 +89,7 @@ export default async ({ req, res, log, error }) => {
   }
 
   // ---- Cache lookup ----
-  const cacheKey = `${from}:${to}:${text}`;
+  const cacheKey = createCacheKey({ from, to, text });
   try {
     const cached = await db.listDocuments(DB_ID, CACHE_COLLECTION, [
       Query.equal('cacheKey', cacheKey),

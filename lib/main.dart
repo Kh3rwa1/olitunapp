@@ -1,4 +1,5 @@
 import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,8 +12,8 @@ import 'shared/providers/local_settings_provider.dart';
 import 'features/admin/providers/admin_auth_provider.dart';
 
 Future<void> main() async {
-  // Fail fast if Appwrite config is missing — don't ship a build that
-  // silently points at the wrong project or no project at all.
+  // Fail fast if Appwrite config is missing; release builds must not silently
+  // point at the wrong backend or an empty project.
   AppwriteConfig.validate();
 
   await runZonedGuarded(

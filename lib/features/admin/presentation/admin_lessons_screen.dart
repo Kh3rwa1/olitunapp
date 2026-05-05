@@ -4,16 +4,12 @@ import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/gamified_card.dart';
 import 'widgets/admin_upload_field.dart';
-import 'widgets/admin_empty_state.dart';
-import 'widgets/admin_page_header.dart';
-import 'widgets/admin_form_widgets.dart';
 
 class AdminLessonsScreen extends ConsumerStatefulWidget {
   const AdminLessonsScreen({super.key});
@@ -125,7 +121,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => _showLessonDialog(context, null),
-        backgroundColor: AppColors.primary,
+        backgroundColor: AppColors
+            .primaryCyan, // Fixed: use primary color not gradient preset
+
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
           'Add Lesson',
@@ -136,53 +134,139 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
   }
 
   Widget _buildBackground(bool isDark) {
-    return Container(color: AdminTokens.base(isDark));
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: isDark
+              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
+              : [const Color(0xFFF8FAFC), Colors.white],
+        ),
+      ),
+    );
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (!isWideScreen) ...[
+        if (!isWideScreen)
           GestureDetector(
             onTap: () => context.go('/admin'),
             child: Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: AdminTokens.sunken(isDark),
-                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-                border: Border.all(color: AdminTokens.border(isDark)),
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 Icons.arrow_back_rounded,
-                color: AdminTokens.textPrimary(isDark),
-                size: 18,
+                color: isDark ? Colors.white : Colors.black,
               ),
             ),
           ),
-          const SizedBox(width: 12),
-        ],
-        const Expanded(
-          child: AdminPageHeader(
-            title: 'Lessons',
-            subtitle: 'Create and manage learning content',
-            eyebrow: 'CONTENT · LESSONS',
-          ),
+        if (!isWideScreen) const SizedBox(height: 20),
+        Row(
+          children: [
+            Container(
+              width: 4,
+              height: 32,
+              decoration: BoxDecoration(
+                gradient: AppColors.premiumCyan,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(width: 14),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Lessons',
+                    style: TextStyle(
+                      fontSize: 32,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: -1.5,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Create and manage learning content',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w500,
+                      color: isDark
+                          ? AppColors.textTertiaryDark
+                          : AppColors.textTertiaryLight,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
-    return AdminEmptyState(
-          icon: Icons.school_outlined,
-          title: 'No lessons found',
-          message: 'Create your first lesson to get learners started.',
-          actionLabel: 'Add Lesson',
-          onAction: () => _showLessonDialog(context, null),
+    return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: AppColors.premiumCyan,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.school_outlined,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'No lessons found',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Create your first lesson to get started',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
+                ),
+              ),
+            ],
+          ),
         )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)
-        .scale(begin: const Offset(0.96, 0.96));
+        .scale(begin: const Offset(0.9, 0.9));
   }
 
   Widget _buildLessonsList(
@@ -248,11 +332,10 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           builder: (context, setDialogState) => Container(
             height: MediaQuery.of(context).size.height * 0.86,
             decoration: BoxDecoration(
-              color: AdminTokens.overlay(isDark),
+              color: isDark ? const Color(0xFF161B22) : Colors.white,
               borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(AdminTokens.radius2xl),
+                top: Radius.circular(28),
               ),
-              boxShadow: AdminTokens.overlayShadow(isDark),
             ),
             child: Column(
               children: [
@@ -261,7 +344,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                   width: 44,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AdminTokens.borderStrong(isDark),
+                    color: isDark ? Colors.white24 : Colors.black12,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -500,19 +583,29 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     );
   }
 
-  Future<void> _showDeleteDialog(
-    BuildContext context,
-    LessonEntity lesson,
-  ) async {
-    final ok = await showAdminConfirmDialog(
+  void _showDeleteDialog(BuildContext context, LessonEntity lesson) {
+    showDialog(
       context: context,
-      title: 'Delete Lesson',
-      message:
-          'This will permanently delete "${lesson.titleLatin}". This action cannot be undone.',
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Delete lesson?'),
+        content: Text('This will permanently delete "${lesson.titleLatin}".'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await ref
+                  .read(lessonNotifierProvider.notifier)
+                  .deleteLesson(lesson.id);
+              if (dialogContext.mounted) Navigator.pop(dialogContext);
+            },
+            child: const Text('Delete'),
+          ),
+        ],
+      ),
     );
-    if (ok == true) {
-      await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
-    }
   }
 
   Widget _buildTextField({
@@ -522,11 +615,38 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
     required bool isDark,
     int maxLines = 1,
   }) {
-    return AdminTextField(
-      controller: controller,
-      label: label,
-      hint: hint,
-      maxLines: maxLines,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 15,
+            fontWeight: FontWeight.w700,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+        ),
+        const SizedBox(height: 10),
+        TextField(
+          controller: controller,
+          maxLines: maxLines,
+          style: TextStyle(color: isDark ? Colors.white : Colors.black),
+          decoration: InputDecoration(
+            hintText: hint,
+            hintStyle: TextStyle(
+              color: isDark ? Colors.white38 : Colors.black38,
+            ),
+            filled: true,
+            fillColor: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.04),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(14),
+              borderSide: BorderSide.none,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
@@ -546,7 +666,47 @@ class _FilterChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AdminFilterChip(label: label, selected: isSelected, onTap: onTap);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.premiumCyan.colors.first
+              : (isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.05)),
+          borderRadius: BorderRadius.circular(30),
+          border: Border.all(
+            color: isSelected
+                ? Colors.transparent
+                : (isDark ? Colors.white10 : Colors.black12),
+          ),
+          boxShadow: isSelected
+              ? [
+                  BoxShadow(
+                    color: AppColors.premiumCyan.colors.first.withValues(
+                      alpha: 0.3,
+                    ),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ]
+              : null,
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+            color: isSelected
+                ? Colors.white
+                : (isDark ? Colors.white70 : Colors.black87),
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -566,61 +726,83 @@ class _LessonCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 14),
+      padding: const EdgeInsets.only(bottom: 16),
       child: GamifiedCard(
-        color: AdminTokens.raised(isDark),
-        borderRadius: AdminTokens.radiusXl,
+        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+        borderRadius: 20,
         padding: const EdgeInsets.all(16),
         child: Row(
           children: [
             Container(
-              width: 52,
-              height: 52,
+              width: 56,
+              height: 56,
               decoration: BoxDecoration(
-                color: AdminTokens.accentSoft(isDark),
-                borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                border: Border.all(color: AdminTokens.accentBorder(isDark)),
+                gradient: AppColors.premiumCyan,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.3),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
               ),
               child: const Icon(
                 Icons.school_rounded,
-                color: AdminTokens.accent,
-                size: 26,
+                color: Colors.white,
+                size: 28,
               ),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 20),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     lesson.titleOlChiki,
-                    style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 17),
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : Colors.black,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${lesson.blocks.length} content blocks',
-                    style: AdminTokens.label(isDark),
+                    '${lesson.blocks.length} CONTENT BLOCKS',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
                   ),
                 ],
               ),
             ),
-            AdminIconAction(
-              icon: Icons.edit_note_rounded,
+            IconButton(
+              onPressed: onEdit,
+              icon: Icon(
+                Icons.edit_note_rounded,
+                color: isDark ? Colors.white54 : Colors.black45,
+              ),
               tooltip: 'Edit Details',
-              onTap: onEdit,
             ),
-            const SizedBox(width: 6),
-            AdminIconAction(
-              icon: Icons.playlist_add_rounded,
+            IconButton(
+              onPressed: () =>
+                  context.go('/admin/lessons/content/${lesson.id}'),
+              icon: Icon(
+                Icons.playlist_add_rounded,
+                color: isDark ? Colors.white70 : Colors.black54,
+              ),
               tooltip: 'Edit Content',
-              onTap: () => context.go('/admin/lessons/content/${lesson.id}'),
             ),
-            const SizedBox(width: 6),
-            AdminIconAction(
-              icon: Icons.delete_outline_rounded,
+            IconButton(
+              onPressed: onDelete,
+              icon: const Icon(
+                Icons.delete_outline_rounded,
+                color: AppColors.error,
+              ),
               tooltip: 'Delete',
-              destructive: true,
-              onTap: onDelete,
             ),
           ],
         ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/shared/models/content_models.dart';
 
@@ -200,6 +202,27 @@ void main() {
       expect(restored.passingScore, 80);
       expect(restored.questions.length, 1);
       expect(restored.questions.first.correctIndex, 0);
+    });
+
+    test('fromJson parses Appwrite string-encoded questions', () {
+      final restored = QuizModel.fromJson({
+        'id': 'q_appwrite',
+        'categoryId': 'alphabets',
+        'title': 'Appwrite Quiz',
+        'questions': jsonEncode([
+          {
+            'promptOlChiki': 'ᱚ',
+            'promptLatin': 'What sound?',
+            'optionsOlChiki': ['a', 'i', 'u', 'o'],
+            'optionsLatin': ['a', 'i', 'u', 'o'],
+            'correctIndex': 0,
+          },
+        ]),
+      });
+
+      expect(restored.id, 'q_appwrite');
+      expect(restored.questions, hasLength(1));
+      expect(restored.questions.single.promptOlChiki, 'ᱚ');
     });
 
     test('copyWith updates selected fields', () {

@@ -143,6 +143,8 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       child: TextField(
                         controller: _controller,
                         focusNode: _focusNode,
+                        maxLength: AiConfig.maxTranslationChars,
+                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
                         maxLines: null,
                         style: GoogleFonts.inter(
                           fontSize: 24,
@@ -159,6 +161,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                             fontWeight: FontWeight.w600,
                           ),
                           border: InputBorder.none,
+                          counterText: '',
                           contentPadding: EdgeInsets.zero,
                         ),
                       ),

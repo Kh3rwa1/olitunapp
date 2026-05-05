@@ -132,6 +132,24 @@ const collections = [
     ],
   },
   {
+    id: 'quizzes',
+    name: 'Quizzes',
+    attrs: [
+      { type: 'string', key: 'categoryId', size: 36, required: false },
+      { type: 'string', key: 'title', size: 255, required: false },
+      { type: 'string', key: 'level', size: 20, required: false, default: 'beginner' },
+      { type: 'integer', key: 'order', required: false, default: 0 },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'passingScore', required: false, default: 70 },
+      // questions stored as JSON string so Appwrite, admin web, and mobile share one source.
+      { type: 'string', key: 'questions', size: 1000000, required: false },
+    ],
+    indexes: [
+      { key: 'idx_category', type: 'key', attributes: ['categoryId'] },
+      { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
+    ],
+  },
+  {
     id: 'letters',
     name: 'Letters',
     attrs: [
@@ -276,7 +294,8 @@ const collections = [
     id: 'translation_cache',
     name: 'Translation Cache',
     attrs: [
-      { type: 'string', key: 'cacheKey', size: 1024, required: true },
+      // SHA-256 of `{from,to,text}`; never store raw source text as an index key.
+      { type: 'string', key: 'cacheKey', size: 64, required: true },
       { type: 'string', key: 'translation', size: 10000, required: true },
       { type: 'string', key: 'detectedLanguage', size: 16, required: false },
       { type: 'string', key: 'targetLang', size: 16, required: false },

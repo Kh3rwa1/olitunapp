@@ -8,6 +8,8 @@ class RouteNames {
   static const lessonDetail = 'lessonDetail';
   static const quiz = 'quiz';
   static const profile = 'profile';
+  static const privacy = 'privacy';
+  static const terms = 'terms';
   static const admin = 'admin';
   static const adminLogin = 'adminLogin';
 }

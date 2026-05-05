@@ -32,7 +32,7 @@ migrate_working_dir/
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
-#/build/
+build/
 /coverage/
 
 # Symbolication related
@@ -52,6 +52,5 @@ scripts/node_modules/
 run.sh
 build_web_v*.zip
 
-!/build/web/
 .agent/
 coverage/

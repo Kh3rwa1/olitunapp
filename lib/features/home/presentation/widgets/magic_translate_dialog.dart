@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../../core/theme/app_colors.dart';
@@ -82,6 +83,8 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             const SizedBox(height: 24),
             TextField(
               controller: _controller,
+              maxLength: AiConfig.maxTranslationChars,
+              maxLengthEnforcement: MaxLengthEnforcement.enforced,
               maxLines: 3,
               style: const TextStyle(fontSize: 16),
               decoration: InputDecoration(
@@ -97,6 +100,7 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
                   borderRadius: BorderRadius.circular(20),
                   borderSide: BorderSide.none,
                 ),
+                counterText: '',
               ),
             ),
             const SizedBox(height: 24),

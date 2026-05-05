@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 // ============== CATEGORY MODEL ==============
 class CategoryModel {
   final String id;
@@ -587,7 +589,7 @@ class QuizModel {
   });
 
   factory QuizModel.fromJson(Map<String, dynamic> data, [String? docId]) {
-    final questionsData = data['questions'] as List<dynamic>? ?? [];
+    final questionsData = _decodeQuizQuestions(data['questions']);
     return QuizModel(
       id: docId ?? data['id'] as String? ?? '',
       categoryId: data['categoryId'] as String?,
@@ -595,7 +597,8 @@ class QuizModel {
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
       questions: questionsData
-          .map((q) => QuizQuestion.fromMap(q as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((q) => QuizQuestion.fromMap(Map<String, dynamic>.from(q)))
           .toList(),
       title: data['title'] as String?,
       passingScore: data['passingScore'] as int? ?? 70,
@@ -684,6 +687,19 @@ class QuizQuestion {
       'imageUrl': imageUrl,
     };
   }
+}
+
+List<dynamic> _decodeQuizQuestions(dynamic value) {
+  if (value is List<dynamic>) return value;
+  if (value is String && value.trim().isNotEmpty) {
+    try {
+      final decoded = jsonDecode(value);
+      return decoded is List<dynamic> ? decoded : const [];
+    } catch (_) {
+      return const [];
+    }
+  }
+  return const [];
 }
 
 // ============== STICKER MODEL ==============

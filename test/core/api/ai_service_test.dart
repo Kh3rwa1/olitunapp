@@ -12,6 +12,20 @@ void main() {
       final svc = AiService();
       expect(() => svc.translate('hello'), throwsA(isA<StateError>()));
     });
+
+    test(
+      'rejects oversized requests before network configuration is used',
+      () async {
+        final svc = AiService();
+        final result = await svc.translate(
+          'x' * (AiConfig.maxTranslationChars + 1),
+        );
+
+        expect(result, isNotNull);
+        expect(result!.isError, isTrue);
+        expect(result.translation, contains('${AiConfig.maxTranslationChars}'));
+      },
+    );
   });
 
   group('AiService Appwrite Execution unwrap', () {

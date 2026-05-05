@@ -36,6 +36,9 @@ jobs:
       - name: Test with coverage
         run: flutter test --coverage
 
+      - name: Smoke tests
+        run: flutter test test/smoke
+
       - name: Build web release
         run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com
 

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/shared/models/content_models.dart';
 
@@ -96,6 +98,26 @@ void main() {
       final output = model.toJson();
       expect(output['title'], 'Test Quiz');
       expect((output['questions'] as List).length, 1);
+    });
+
+    test('fromJson parses Appwrite string-encoded questions', () {
+      final model = QuizModel.fromJson({
+        'id': 'quiz_appwrite',
+        'categoryId': 'alphabets',
+        'title': 'Synced Quiz',
+        'questions': jsonEncode([
+          {
+            'promptOlChiki': 'ᱛ',
+            'promptLatin': 'Identify this consonant',
+            'optionsOlChiki': ['at', 'ag', 'al', 'ak'],
+            'optionsLatin': ['at', 'ag', 'al', 'ak'],
+            'correctIndex': 0,
+          },
+        ]),
+      });
+
+      expect(model.questions, hasLength(1));
+      expect(model.questions.single.promptLatin, 'Identify this consonant');
     });
   });
 

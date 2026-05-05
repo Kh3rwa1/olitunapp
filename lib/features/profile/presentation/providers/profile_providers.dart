@@ -24,11 +24,13 @@ final userStatsProvider =
     });
 
 final userNameProvider = StateProvider<String>((ref) {
-  return ref.read(sharedPreferencesProvider).getString('user_name') ?? 'Learner';
+  return ref.read(sharedPreferencesProvider).getString('user_name') ??
+      'Learner';
 });
 
 final userAvatarEmojiProvider = StateProvider<String>((ref) {
-  return ref.read(sharedPreferencesProvider).getString('user_avatar_emoji') ?? '👶';
+  return ref.read(sharedPreferencesProvider).getString('user_avatar_emoji') ??
+      '👶';
 });
 
 final userAvatarColorIndexProvider = StateProvider<int>((ref) {
@@ -51,7 +53,8 @@ final quizzesCompletedProvider = Provider<int>((ref) {
 });
 
 final memberSinceProvider = StateProvider<String>((ref) {
-  return ref.read(sharedPreferencesProvider).getString('member_since') ?? 'April 2024';
+  return ref.read(sharedPreferencesProvider).getString('member_since') ??
+      'April 2024';
 });
 
 final userAvatarColorsProvider = Provider<List<Color>>((ref) {

@@ -15,6 +15,9 @@ abstract class LessonRemoteDataSource {
 }
 
 class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
+  static const Duration _readTimeout = Duration(seconds: 6);
+  static const Duration _writeTimeout = Duration(seconds: 15);
+
   final Databases databases;
 
   LessonRemoteDataSourceImpl(this.databases);
@@ -22,11 +25,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<List<LessonModel>> getLessons() async {
     try {
-      final result = await databases.listDocuments(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
+      final result = await databases
+          .listDocuments(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            queries: [Query.orderAsc('order'), Query.limit(500)],
+          )
+          .timeout(_readTimeout);
       return result.documents
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
@@ -43,15 +48,17 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<List<LessonModel>> getLessonsByCategory(String categoryId) async {
     try {
-      final result = await databases.listDocuments(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        queries: [
-          Query.equal('categoryId', categoryId),
-          Query.orderAsc('order'),
-          Query.limit(500),
-        ],
-      );
+      final result = await databases
+          .listDocuments(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            queries: [
+              Query.equal('categoryId', categoryId),
+              Query.orderAsc('order'),
+              Query.limit(500),
+            ],
+          )
+          .timeout(_readTimeout);
       return result.documents
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
@@ -68,11 +75,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<LessonModel> getLessonById(String id) async {
     try {
-      final doc = await databases.getDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        documentId: id,
-      );
+      final doc = await databases
+          .getDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: id,
+          )
+          .timeout(_readTimeout);
       return LessonModel.fromJson(doc.data, doc.$id);
     } on AppwriteException catch (e) {
       throw ServerException(
@@ -93,12 +102,14 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
 
-      await databases.createDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        documentId: lesson.id,
-        data: data,
-      );
+      await databases
+          .createDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: lesson.id,
+            data: data,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to create lesson',
@@ -116,12 +127,14 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
       data['blocks'] = jsonEncode(data['blocks']);
       data.removeWhere((key, value) => value == null);
 
-      await databases.updateDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        documentId: lesson.id,
-        data: data,
-      );
+      await databases
+          .updateDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: lesson.id,
+            data: data,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to update lesson',
@@ -135,11 +148,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<void> deleteLesson(String id) async {
     try {
-      await databases.deleteDocument(
-        databaseId: AppwriteConfig.databaseId,
-        collectionId: 'lessons',
-        documentId: id,
-      );
+      await databases
+          .deleteDocument(
+            databaseId: AppwriteConfig.databaseId,
+            collectionId: 'lessons',
+            documentId: id,
+          )
+          .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Failed to delete lesson',

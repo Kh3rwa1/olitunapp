@@ -177,6 +177,7 @@ final dashboardMetricsProvider = FutureProvider<DashboardMetrics>((ref) async {
         final rows = await db.listDocuments(
           spec.id,
           queries: [Query.orderDesc(r'$updatedAt'), Query.limit(50)],
+          paginate: false,
         );
         return MapEntry(spec, rows);
       } catch (_) {

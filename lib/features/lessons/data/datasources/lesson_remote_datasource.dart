@@ -1,6 +1,7 @@
 import 'dart:convert';
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/api/appwrite_databases_pagination.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/lesson_model.dart';
@@ -25,14 +26,13 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<List<LessonModel>> getLessons() async {
     try {
-      final result = await databases
-          .listDocuments(
-            databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            queries: [Query.orderAsc('order'), Query.limit(500)],
-          )
-          .timeout(_readTimeout);
-      return result.documents
+      final documents = await AppwriteDatabasesPagination.listDocuments(
+        databases,
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: 'lessons',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      return documents
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {
@@ -48,18 +48,17 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
   @override
   Future<List<LessonModel>> getLessonsByCategory(String categoryId) async {
     try {
-      final result = await databases
-          .listDocuments(
-            databaseId: AppwriteConfig.databaseId,
-            collectionId: 'lessons',
-            queries: [
-              Query.equal('categoryId', categoryId),
-              Query.orderAsc('order'),
-              Query.limit(500),
-            ],
-          )
-          .timeout(_readTimeout);
-      return result.documents
+      final documents = await AppwriteDatabasesPagination.listDocuments(
+        databases,
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: 'lessons',
+        queries: [
+          Query.equal('categoryId', categoryId),
+          Query.orderAsc('order'),
+          Query.limit(500),
+        ],
+      );
+      return documents
           .map((doc) => LessonModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {

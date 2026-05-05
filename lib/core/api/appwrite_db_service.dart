@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/appwrite_config.dart';
 import '../auth/appwrite_auth_service.dart';
+import 'appwrite_query_paging.dart';
 
 class AppwriteDbService {
   static const Duration _readTimeout = Duration(seconds: 6);
@@ -17,27 +18,78 @@ class AppwriteDbService {
 
   // ─── Generic CRUD ───
 
-  /// List rows with optional queries
+  /// List rows with optional queries.
+  ///
+  /// By default this fetches every matching page, preventing larger content
+  /// collections from being silently truncated at Appwrite's page limit. Pass
+  /// [paginate] as false for intentionally capped reads such as dashboard
+  /// widgets or previews.
   Future<List<Map<String, dynamic>>> listDocuments(
     String collectionId, {
     List<String>? queries,
+    bool paginate = true,
+    int pageSize = AppwriteQueryPaging.defaultPageSize,
+  }) async {
+    AppwriteQueryPaging.validatePageSize(pageSize);
+
+    if (!paginate || AppwriteQueryPaging.containsManualPagination(queries)) {
+      return _listSinglePage(
+        collectionId,
+        queries: AppwriteQueryPaging.queriesWithDefaultLimit(queries, pageSize),
+      );
+    }
+
+    final baseQueries = AppwriteQueryPaging.withoutPaginationQueries(queries);
+    final rows = <Map<String, dynamic>>[];
+    var offset = 0;
+    var total = 0;
+
+    do {
+      final result = await _tablesDB
+          .listRows(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            queries: AppwriteQueryPaging.pagedQueries(
+              baseQueries,
+              limit: pageSize,
+              offset: offset,
+            ),
+            total: true,
+          )
+          .timeout(_readTimeout);
+
+      total = result.total;
+      rows.addAll(result.rows.map(_rowToMap));
+
+      if (result.rows.length < pageSize) break;
+      offset += result.rows.length;
+    } while (rows.length < total);
+
+    return rows;
+  }
+
+  Future<List<Map<String, dynamic>>> _listSinglePage(
+    String collectionId, {
+    required List<String> queries,
   }) async {
     final result = await _tablesDB
         .listRows(
           databaseId: AppwriteConfig.databaseId,
           tableId: collectionId,
-          queries: queries ?? [Query.limit(500)],
+          queries: queries,
         )
         .timeout(_readTimeout);
-    return result.rows.map((row) {
-      final data = Map<String, dynamic>.from(row.data);
-      data['id'] = row.$id;
-      // Preserve Appwrite system timestamps for downstream consumers
-      // (e.g. admin dashboard activity feed / engagement chart).
-      data[r'$createdAt'] = row.$createdAt;
-      data[r'$updatedAt'] = row.$updatedAt;
-      return data;
-    }).toList();
+    return result.rows.map(_rowToMap).toList();
+  }
+
+  static Map<String, dynamic> _rowToMap(row) {
+    final data = Map<String, dynamic>.from(row.data);
+    data['id'] = row.$id;
+    // Preserve Appwrite system timestamps for downstream consumers
+    // (e.g. admin dashboard activity feed / engagement chart).
+    data[r'$createdAt'] = row.$createdAt;
+    data[r'$updatedAt'] = row.$updatedAt;
+    return data;
   }
 
   /// Get a single document by ID

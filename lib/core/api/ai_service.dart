@@ -27,6 +27,7 @@ import 'package:flutter/foundation.dart';
 /// separate deployment.
 class AiConfig {
   static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+  static const int maxTranslationChars = 5000;
   static const String _reverseOverride = String.fromEnvironment(
     'REVERSE_TRANSLATE_URL',
   );
@@ -68,6 +69,14 @@ class AiService {
     Map<String, dynamic> body, {
     required String endpointName,
   }) async {
+    final text = (body['text'] as String?)?.trim() ?? '';
+    if (text.length > AiConfig.maxTranslationChars) {
+      return TranslateResult(
+        translation:
+            'Text is too long. Keep translations under ${AiConfig.maxTranslationChars} characters.',
+        isError: true,
+      );
+    }
     if (url.isEmpty) {
       throw StateError(
         'AiService.$endpointName called without a configured URL. '

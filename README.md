@@ -119,7 +119,7 @@ flutter run \
   --dart-define=APPWRITE_PROJECT_ID=<your-project-id> \
   --dart-define=ADMIN_TEAM_ID=admins \
   --dart-define=TRANSLATE_URL=<appwrite-function-execution-url> \
-  --dart-define=SENTRY_DSN=<your-sentry-dsn> \\
+  --dart-define=SENTRY_DSN=<your-sentry-dsn> \
   --dart-define=ALLOW_SELF_SIGNED=false
 ```
 
@@ -148,6 +148,22 @@ creates:
 Then deploy the translator function (see
 [`functions/translator/README.md`](functions/translator/README.md)) and pass its execution URL to
 the Flutter build via `--dart-define=TRANSLATE_URL=…`.
+
+### Deploying to Vercel
+
+The repo includes [`vercel.json`](vercel.json) and
+[`scripts/vercel_build.sh`](scripts/vercel_build.sh). Set these Vercel
+environment variables before deploying:
+
+- `APPWRITE_ENDPOINT`
+- `APPWRITE_PROJECT_ID`
+- `TRANSLATE_URL`
+- `ADMIN_TEAM_ID` (optional, defaults to `admins`)
+- `SENTRY_DSN` and `SENTRY_ENV` (optional)
+
+The build script installs Flutter when the Vercel image does not provide it,
+runs code generation, and builds `build/web`. The SPA rewrite sends deep links
+such as `/privacy`, `/terms`, and `/admin/login` back to Flutter.
 
 ### Managing admins
 
@@ -208,7 +224,9 @@ Track our progress and upcoming features on our [Public Project Board](https://g
 
 ## 📄 License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is proprietary - see the [LICENSE](LICENSE) file for details.
+See also the [Privacy Policy](PRIVACY.md), [Terms Of Use](TERMS.md), and
+[Release Checklist](docs/RELEASE_CHECKLIST.md).
 
 ---
 

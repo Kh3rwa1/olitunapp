@@ -276,7 +276,8 @@ const collections = [
     id: 'translation_cache',
     name: 'Translation Cache',
     attrs: [
-      { type: 'string', key: 'cacheKey', size: 1024, required: true },
+      // SHA-256 of `{from,to,text}`; never store raw source text as an index key.
+      { type: 'string', key: 'cacheKey', size: 64, required: true },
       { type: 'string', key: 'translation', size: 10000, required: true },
       { type: 'string', key: 'detectedLanguage', size: 16, required: false },
       { type: 'string', key: 'targetLang', size: 16, required: false },

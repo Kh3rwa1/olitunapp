@@ -223,6 +223,10 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
         ),
+        SizedBox(
+          width: double.infinity,
+          child: _buildLegalCard(context, isDark, 4),
+        ),
       ],
     );
   }
@@ -292,6 +296,8 @@ class SettingsScreen extends ConsumerWidget {
           ],
         ),
         const SizedBox(height: 16),
+        _buildLegalCard(context, isDark, 4),
+        const SizedBox(height: 16),
         _buildSettingsCard(
           context: context,
           title: 'Danger Zone',
@@ -318,6 +324,34 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => _showDeleteAccountDialog(context, ref),
             ),
           ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildLegalCard(BuildContext context, bool isDark, int index) {
+    return _buildSettingsCard(
+      context: context,
+      title: 'Legal',
+      icon: Icons.verified_user_rounded,
+      color: AppColors.duoGreen,
+      isDark: isDark,
+      index: index,
+      children: [
+        _SettingTile(
+          icon: Icons.privacy_tip_rounded,
+          title: 'Privacy Policy',
+          subtitle: 'How account and learning data are handled',
+          isDark: isDark,
+          onTap: () => context.go('/privacy'),
+        ),
+        const SizedBox(height: 10),
+        _SettingTile(
+          icon: Icons.description_rounded,
+          title: 'Terms Of Use',
+          subtitle: 'Rules for learners, accounts, and content',
+          isDark: isDark,
+          onTap: () => context.go('/terms'),
         ),
       ],
     );

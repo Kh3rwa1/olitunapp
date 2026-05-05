@@ -18,6 +18,7 @@ import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
+import '../../features/legal/presentation/legal_document_screen.dart';
 import '../../features/admin/presentation/admin_login_screen.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
@@ -216,6 +217,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       _modalRoute(
         path: '/translate',
         child: (_, __) => const AiTranslatorScreen(),
+      ),
+      _peerRoute(
+        path: '/privacy',
+        name: RouteNames.privacy,
+        child: (_, __) =>
+            const LegalDocumentScreen(type: LegalDocumentType.privacy),
+      ),
+      _peerRoute(
+        path: '/terms',
+        name: RouteNames.terms,
+        child: (_, __) =>
+            const LegalDocumentScreen(type: LegalDocumentType.terms),
       ),
       _drillRoute(
         path: '/quiz/:quizId',

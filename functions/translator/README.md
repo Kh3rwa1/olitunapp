@@ -29,13 +29,15 @@ Successful response:
 }
 ```
 
-`429` is returned when the per-IP rate limit (default: 20/hour) is exceeded.
+`400` is returned when the text is empty or longer than the configured maximum
+(default: 5000 characters). `429` is returned when the per-IP rate limit
+(default: 20/hour) is exceeded.
 
 ## Setup
 
 1. Create an Appwrite Database with collections:
-   - `translation_cache` (attributes: `cacheKey` string, `translation` string,
-     `detectedLanguage` string, `targetLang` string)
+   - `translation_cache` (attributes: `cacheKey` 64-character SHA-256 string,
+     `translation` string, `detectedLanguage` string, `targetLang` string)
    - `rate_limits` (attributes: `clientIp` string, `count` integer,
      `windowStart` integer)
 2. From the project root:
@@ -57,6 +59,17 @@ Successful response:
 - `APPWRITE_FUNCTION_PROJECT_ID` — provided automatically by Appwrite
 - `APPWRITE_API_KEY` — server key with database read/write
 - `RATE_LIMIT_PER_HOUR` — optional, defaults to `20`
+- `MAX_TRANSLATION_CHARS` — optional, defaults to `5000`
+
+## Local checks
+
+```bash
+npm test
+node --check src/main.js
+```
+
+The cache key is a SHA-256 hash of `{from,to,text}` so raw source text is not
+stored in an indexed key.
 
 ## Why this runs on Appwrite
 

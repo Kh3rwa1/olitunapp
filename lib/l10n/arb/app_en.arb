@@ -33,5 +33,187 @@
                 "type": "int"
             }
         }
-    }
+    },
+
+    "settings": "Settings",
+    "customizeExperience": "Customize your learning experience",
+    "appearance": "Appearance",
+    "darkMode": "Dark Mode",
+    "scriptDisplay": "Script Display",
+    "scriptMode": "Script Mode",
+    "sound": "Sound",
+    "soundEffects": "Sound Effects",
+    "playSoundsForActions": "Play sounds for actions",
+    "dangerZone": "Danger Zone",
+    "resetProgress": "Reset Progress",
+    "clearAllLearningData": "Clear all learning data",
+    "deleteAccount": "Delete Account",
+    "deleteAccountSubtitle": "Permanently delete your account",
+    "legal": "Legal",
+    "privacyPolicy": "Privacy Policy",
+    "privacyPolicySubtitle": "How account and learning data are handled",
+    "termsOfUse": "Terms Of Use",
+    "termsOfUseSubtitle": "Rules for learners, accounts, and content",
+    "chooseTheme": "Choose Theme",
+    "systemDefault": "System default",
+    "light": "Light",
+    "dark": "Dark",
+    "olChikiOnly": "Ol Chiki only",
+    "latinOnly": "Latin only",
+    "bothScripts": "Both scripts",
+    "cancel": "Cancel",
+    "reset": "Reset",
+    "resetProgressWarning": "This will clear all your progress, stars, and streaks. This action cannot be undone.",
+    "deleteAccountWarning": "This will permanently delete your account and all associated data. This action cannot be undone.\n\nYour progress, settings, and personal information will be permanently removed.",
+    "deletePermanently": "Delete Permanently",
+    "failedToDeleteAccount": "Failed to delete account: {message}",
+    "@failedToDeleteAccount": {
+        "placeholders": {
+            "message": {
+                "type": "String"
+            }
+        }
+    },
+
+    "signInWithEmail": "Sign In with Email",
+    "magicCodeDescription": "We'll send you a magic code to verify your identity. No password needed!",
+    "emailAddress": "Email Address",
+    "emailHint": "learner@example.com",
+    "sendCode": "Send Code",
+    "continueWithoutAccount": "Continue without an account",
+    "enterVerificationCode": "Enter Verification Code",
+    "codeSentTo": "We sent a code to {email}",
+    "@codeSentTo": {
+        "placeholders": {
+            "email": {
+                "type": "String"
+            }
+        }
+    },
+    "verificationCode": "Verification Code",
+    "enterCodeFromEmail": "Enter code from email",
+    "verifyAndContinue": "Verify & Continue",
+    "resendCodeIn": "Resend code in {seconds}s",
+    "@resendCodeIn": {
+        "placeholders": {
+            "seconds": {
+                "type": "int"
+            }
+        }
+    },
+    "resendCode": "Resend code",
+    "validEmailError": "Please enter a valid email address",
+    "enterCodeError": "Please enter the verification code",
+    "sessionExpired": "Session expired. Please resend the code.",
+    "errorCopiedToClipboard": "Error copied to clipboard",
+    "skip": "Skip",
+
+    "quiz": "Quiz",
+    "noQuestionsYet": "No questions yet",
+    "goBack": "Go Back",
+    "continueButton": "Continue",
+    "wellDone": "Well Done!",
+    "keepPracticing": "Keep Practicing",
+    "youScored": "You scored {score} out of {total}",
+    "@youScored": {
+        "placeholders": {
+            "score": {
+                "type": "int"
+            },
+            "total": {
+                "type": "int"
+            }
+        }
+    },
+    "plusStars": "+{count} Stars",
+    "@plusStars": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+
+    "aboutThisLesson": "About this lesson",
+    "completeLesson": "Complete Lesson",
+    "lettersToLearn": "Letters to Learn",
+    "numbersToLearn": "Numbers to Learn",
+    "vocabulary": "Vocabulary",
+    "commonPhrases": "Common Phrases",
+    "content": "Content",
+    "takeAQuiz": "Take a Quiz",
+    "testYourKnowledge": "Test your knowledge now!",
+    "noLettersAvailable": "No letters available yet",
+    "noNumbersAvailable": "No numbers available yet",
+    "noWordsAvailable": "No words available yet",
+    "noSentencesAvailable": "No sentences available yet",
+    "noLessonsAvailable": "No lessons available",
+
+    "joharUser": "Johar, {userName}!",
+    "@joharUser": {
+        "placeholders": {
+            "userName": {
+                "type": "String"
+            }
+        }
+    },
+    "dailyProgressPercent": "Daily Progress: {percent}%",
+    "@dailyProgressPercent": {
+        "placeholders": {
+            "percent": {
+                "type": "int"
+            }
+        }
+    },
+    "milestones": "Milestones",
+    "learningTime": "Learning Time",
+    "time": "Time",
+    "resumeJourney": "RESUME JOURNEY",
+    "testYourKnowledgeTitle": "Test Your\nKnowledge!",
+    "quizzesAvailable": "{count} Quizzes Available",
+    "@quizzesAvailable": {
+        "placeholders": {
+            "count": {
+                "type": "int"
+            }
+        }
+    },
+    "start": "START",
+    "discover": "DISCOVER",
+    "couldNotLoadPaths": "Could not load learning paths",
+
+    "yourStats": "YOUR STATS",
+    "skillsMastery": "SKILLS MASTERY",
+    "quizAnalysis": "QUIZ ANALYSIS",
+    "account": "ACCOUNT",
+    "editName": "Edit Name",
+    "share": "Share",
+    "comingSoon": "Coming soon!",
+    "chooseYourAvatar": "Choose Your Avatar",
+    "backgroundColor": "Background Color",
+    "avatarEmoji": "Avatar Emoji",
+
+    "rhymes": "Rhymes",
+    "santali": "Santali",
+    "unlockMagic": "Unlock the magic of stories & songs",
+    "all": "All",
+    "discoverMore": "DISCOVER MORE",
+    "moreComing": "More coming soon! ✨",
+    "couldNotLoadRhymes": "Could not load rhymes",
+    "checkConnection": "Check your connection and try again",
+    "featured": "FEATURED",
+    "listenNow": "LISTEN NOW",
+    "pause": "PAUSE",
+
+    "getStarted": "Get Started",
+    "loading": "Loading...",
+    "error": "Error",
+    "retry": "Retry",
+    "undo": "Undo",
+    "clear": "Clear",
+    "tryAgain": "Try Again",
+    "replayAnimation": "Replay Animation",
+    "sentences": "Sentences",
+    "noSentencesFound": "No sentences found",
+    "noQuestionsFound": "No questions found."
 }

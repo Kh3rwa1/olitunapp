@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/widgets/animated_buttons.dart';
 
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../categories/domain/entities/category_entity.dart';
@@ -369,6 +372,256 @@ class _BentoCategoryCard extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// HERO JOURNEY CARD — main "continue" CTA
+// ═══════════════════════════════════════════════════════════
+class HeroJourneyCard extends StatelessWidget {
+  final String heroTitle;
+  final int index;
+
+  const HeroJourneyCard({
+    super.key,
+    required this.heroTitle,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBentoChild(
+      index: index,
+      child: PressableScale(
+        onTap: () => context.push('/categories'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(28),
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primary, AppColors.primaryDark],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: AppColors.fluidShadow,
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -20,
+                bottom: -20,
+                child:
+                    Icon(
+                          Icons.rocket_launch_rounded,
+                          size: 120,
+                          color: Colors.white.withValues(alpha: 0.15),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .moveY(begin: 0, end: -10, duration: 2.seconds),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'CONTINUE LEARNING',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: 1.5,
+                        fontSize: 10,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    heroTitle.contains(' ')
+                        ? heroTitle.replaceFirst(' ', '\n')
+                        : heroTitle,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 26,
+                      letterSpacing: -0.5,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  DuoButton(
+                    text: 'RESUME JOURNEY',
+                    color: Colors.white,
+                    onPressed: () => context.push('/categories'),
+                    width: double.infinity,
+                    height: 52,
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// QUIZ BANNER CARD — daily quiz prompt
+// ═══════════════════════════════════════════════════════════
+class QuizBannerCard extends StatelessWidget {
+  final int quizCount;
+  final int index;
+
+  const QuizBannerCard({
+    super.key,
+    required this.quizCount,
+    required this.index,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBentoChild(
+      index: index,
+      child: PressableScale(
+        onTap: () => context.push('/quizzes'),
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.all(24),
+          clipBehavior: Clip.hardEdge,
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(
+              colors: [AppColors.primaryLight, AppColors.primary],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+            borderRadius: BorderRadius.circular(28),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: 0.35),
+                blurRadius: 20,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: Stack(
+            children: [
+              Positioned(
+                right: -10,
+                bottom: -10,
+                child:
+                    Icon(
+                          Icons.quiz_rounded,
+                          size: 80,
+                          color: Colors.white.withValues(alpha: 0.2),
+                        )
+                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .moveY(
+                          begin: 0,
+                          end: -8,
+                          duration: 1800.ms,
+                          curve: Curves.easeInOut,
+                        ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.emoji_events_rounded,
+                          size: 14,
+                          color: Colors.white,
+                        ),
+                        SizedBox(width: 4),
+                        Text(
+                          'DAILY QUIZ',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1,
+                            fontSize: 10,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'Test Your\nKnowledge!',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 22,
+                      letterSpacing: -0.5,
+                      height: 1.15,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '$quizCount Quizzes Available',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.8),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 18,
+                      vertical: 12,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.play_arrow_rounded,
+                          color: AppColors.primary,
+                          size: 20,
+                        ),
+                        SizedBox(width: 6),
+                        Text(
+                          'START',
+                          style: TextStyle(
+                            color: AppColors.primaryDark,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );

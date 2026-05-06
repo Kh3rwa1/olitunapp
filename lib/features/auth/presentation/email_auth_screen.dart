@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/motion/motion.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import 'providers/auth_providers.dart';
 
 class EmailAuthScreen extends ConsumerStatefulWidget {
@@ -224,7 +225,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         const SizedBox(height: 28),
 
         Text(
-              'Sign In with Email',
+              AppLocalizations.of(context)!.signInWithEmail,
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
@@ -239,7 +240,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         const SizedBox(height: 8),
 
         Text(
-          'We\'ll send you a magic code to verify your identity. No password needed!',
+          AppLocalizations.of(context)!.magicCodeDescription,
           style: TextStyle(
             fontSize: 15,
             color: isDark ? Colors.white54 : Colors.black45,
@@ -254,8 +255,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           controller: _emailController,
           focusNode: _emailFocus,
           glowKey: _emailFieldKey,
-          label: 'Email Address',
-          hint: 'learner@example.com',
+          label: AppLocalizations.of(context)!.emailAddress,
+          hint: AppLocalizations.of(context)!.emailHint,
           icon: Icons.email_outlined,
           keyboardType: TextInputType.emailAddress,
           isDark: isDark,
@@ -267,7 +268,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
         // Send Code button
         _buildPrimaryButton(
-              label: 'Send Code',
+              label: AppLocalizations.of(context)!.sendCode,
               onTap: _handleSendCode,
               isDark: isDark,
             )
@@ -282,7 +283,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           child: GestureDetector(
             onTap: _handleSkip,
             child: Text(
-              'Continue without an account',
+              AppLocalizations.of(context)!.continueWithoutAccount,
               style: TextStyle(
                 color: isDark ? Colors.white38 : Colors.black38,
                 fontSize: 14,
@@ -325,7 +326,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         const SizedBox(height: 28),
 
         Text(
-              'Enter Verification Code',
+              AppLocalizations.of(context)!.enterVerificationCode,
               style: TextStyle(
                 fontSize: 28,
                 fontWeight: FontWeight.w900,
@@ -366,8 +367,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
           controller: _otpController,
           focusNode: _otpFocus,
           glowKey: _otpFieldKey,
-          label: 'Verification Code',
-          hint: 'Enter code from email',
+          label: AppLocalizations.of(context)!.verificationCode,
+          hint: AppLocalizations.of(context)!.enterCodeFromEmail,
           icon: Icons.pin_rounded,
           isDark: isDark,
         ).animate().fadeIn(delay: 300.ms, duration: 500.ms).slideY(begin: 0.1),
@@ -378,7 +379,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
         // Verify button
         _buildPrimaryButton(
-              label: 'Verify & Continue',
+              label: AppLocalizations.of(context)!.verifyAndContinue,
               onTap: _handleVerifyCode,
               isDark: isDark,
             )
@@ -394,8 +395,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             onTap: _resendCooldown > 0 ? null : _handleSendCode,
             child: Text(
               _resendCooldown > 0
-                  ? 'Resend code in ${_resendCooldown}s'
-                  : 'Resend code',
+                  ? AppLocalizations.of(context)!.resendCodeIn(_resendCooldown)
+                  : AppLocalizations.of(context)!.resendCode,
               style: TextStyle(
                 color: _resendCooldown > 0
                     ? (isDark ? Colors.white24 : Colors.black26)

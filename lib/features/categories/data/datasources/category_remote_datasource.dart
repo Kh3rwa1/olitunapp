@@ -1,5 +1,6 @@
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/api/appwrite_databases_pagination.dart';
 import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/category_model.dart';
@@ -23,14 +24,13 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final result = await databases
-          .listDocuments(
-            databaseId: AppwriteConfig.databaseId,
-            collectionId: 'categories',
-            queries: [Query.orderAsc('order'), Query.limit(500)],
-          )
-          .timeout(_readTimeout);
-      return result.documents
+      final documents = await AppwriteDatabasesPagination.listDocuments(
+        databases,
+        databaseId: AppwriteConfig.databaseId,
+        collectionId: 'categories',
+        queries: [Query.orderAsc('order'), Query.limit(500)],
+      );
+      return documents
           .map((doc) => CategoryModel.fromJson(doc.data, doc.$id))
           .toList();
     } on AppwriteException catch (e) {

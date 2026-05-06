@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../l10n/generated/app_localizations.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
@@ -64,7 +65,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               onPressed: () => context.go('/'),
             ),
             title: Text(
-              quiz.title ?? 'Quiz',
+              quiz.title ?? AppLocalizations.of(context)!.quiz,
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: isDark ? Colors.white : Colors.black,
@@ -380,10 +381,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                           ),
                         ],
                       ),
-                      child: const Center(
+                      child: Center(
                         child: Text(
-                          'Continue',
-                          style: TextStyle(
+                          AppLocalizations.of(context)!.continueButton,
+                          style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
                             color: Colors.white,
@@ -468,7 +469,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'No questions yet',
+              AppLocalizations.of(context)!.noQuestionsYet,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
@@ -489,7 +490,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
-              child: const Text('Go Back'),
+              child: Text(AppLocalizations.of(context)!.goBack),
             ),
           ],
         ),
@@ -551,7 +552,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                       ),
                   const SizedBox(height: 36),
                   Text(
-                    isPassing ? 'Well Done!' : 'Keep Practicing',
+                    isPassing
+                        ? AppLocalizations.of(context)!.wellDone
+                        : AppLocalizations.of(context)!.keepPracticing,
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
@@ -560,7 +563,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
                   const SizedBox(height: 16),
                   Text(
-                    'You scored $_score out of $totalQuestions',
+                    AppLocalizations.of(
+                      context,
+                    )!.youScored(_score, totalQuestions),
                     style: TextStyle(
                       fontSize: 18,
                       color: isDark ? Colors.white60 : Colors.black54,
@@ -591,7 +596,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                         const Icon(Icons.star_rounded, color: Colors.amber),
                         const SizedBox(width: 8),
                         Text(
-                          '+${_score * 5} Stars',
+                          AppLocalizations.of(context)!.plusStars(_score * 5),
                           style: const TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w700,
@@ -618,10 +623,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                               ),
                             ],
                           ),
-                          child: const Center(
+                          child: Center(
                             child: Text(
-                              'Continue',
-                              style: TextStyle(
+                              AppLocalizations.of(context)!.continueButton,
+                              style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
                                 color: Colors.white,

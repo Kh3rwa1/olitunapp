@@ -178,7 +178,9 @@ class SettingsScreen extends ConsumerWidget {
                     ToggleTile(
                       icon: Icons.volume_up_rounded,
                       title: AppLocalizations.of(context)!.soundEffects,
-                      subtitle: AppLocalizations.of(context)!.playSoundsForActions,
+                      subtitle: AppLocalizations.of(
+                        context,
+                      )!.playSoundsForActions,
                       value: soundEnabled,
                       isDark: isDark,
                       onChanged: (value) => toggleSound(ref),
@@ -197,7 +199,9 @@ class SettingsScreen extends ConsumerWidget {
                     SettingTile(
                       icon: Icons.restart_alt_rounded,
                       title: AppLocalizations.of(context)!.resetProgress,
-                      subtitle: AppLocalizations.of(context)!.clearAllLearningData,
+                      subtitle: AppLocalizations.of(
+                        context,
+                      )!.clearAllLearningData,
                       isDark: isDark,
                       isDestructive: true,
                       onTap: () => _showResetDialog(context, ref),
@@ -206,7 +210,9 @@ class SettingsScreen extends ConsumerWidget {
                     SettingTile(
                       icon: Icons.delete_forever_rounded,
                       title: AppLocalizations.of(context)!.deleteAccount,
-                      subtitle: AppLocalizations.of(context)!.deleteAccountSubtitle,
+                      subtitle: AppLocalizations.of(
+                        context,
+                      )!.deleteAccountSubtitle,
                       isDark: isDark,
                       isDestructive: true,
                       onTap: () => _showDeleteAccountDialog(context, ref),
@@ -373,9 +379,27 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ThemeOption(label: AppLocalizations.of(context)!.systemDefault, value: 'system', current: current, ref: ref, isDark: isDark),
-            ThemeOption(label: AppLocalizations.of(context)!.light, value: 'light', current: current, ref: ref, isDark: isDark),
-            ThemeOption(label: AppLocalizations.of(context)!.dark, value: 'dark', current: current, ref: ref, isDark: isDark),
+            ThemeOption(
+              label: AppLocalizations.of(context)!.systemDefault,
+              value: 'system',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            ThemeOption(
+              label: AppLocalizations.of(context)!.light,
+              value: 'light',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            ThemeOption(
+              label: AppLocalizations.of(context)!.dark,
+              value: 'dark',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -414,9 +438,27 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ScriptOption(label: AppLocalizations.of(context)!.bothScripts, value: 'both', current: current, ref: ref, isDark: isDark),
-            ScriptOption(label: AppLocalizations.of(context)!.olChikiOnly, value: 'olchiki', current: current, ref: ref, isDark: isDark),
-            ScriptOption(label: AppLocalizations.of(context)!.latinOnly, value: 'latin', current: current, ref: ref, isDark: isDark),
+            ScriptOption(
+              label: AppLocalizations.of(context)!.bothScripts,
+              value: 'both',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            ScriptOption(
+              label: AppLocalizations.of(context)!.olChikiOnly,
+              value: 'olchiki',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            ScriptOption(
+              label: AppLocalizations.of(context)!.latinOnly,
+              value: 'latin',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
             const SizedBox(height: 24),
           ],
         ),
@@ -470,9 +512,7 @@ class SettingsScreen extends ConsumerWidget {
             Text(AppLocalizations.of(context)!.resetProgress),
           ],
         ),
-        content: Text(
-          AppLocalizations.of(context)!.resetProgressWarning,
-        ),
+        content: Text(AppLocalizations.of(context)!.resetProgressWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
@@ -522,9 +562,7 @@ class SettingsScreen extends ConsumerWidget {
             Expanded(child: Text(l10n.deleteAccount)),
           ],
         ),
-        content: Text(
-          l10n.deleteAccountWarning,
-        ),
+        content: Text(l10n.deleteAccountWarning),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),

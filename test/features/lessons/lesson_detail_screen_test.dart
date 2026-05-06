@@ -45,35 +45,42 @@ void main() {
   );
 
   testWidgets('LessonDetailScreen shows loading state', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
-      overrides: [
-        lessonNotifierProvider.overrideWith(
-          (ref) => _MockLessonNotifier(const AsyncValue.loading(), mockRepo),
-        ),
-        lettersProvider.overrideWith((ref) => MockLettersNotifier()),
-        numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
-        wordsProvider.overrideWith((ref) => MockWordsNotifier()),
-        sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
+        overrides: [
+          lessonNotifierProvider.overrideWith(
+            (ref) => _MockLessonNotifier(const AsyncValue.loading(), mockRepo),
+          ),
+          lettersProvider.overrideWith((ref) => MockLettersNotifier()),
+          numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
+          wordsProvider.overrideWith((ref) => MockWordsNotifier()),
+          sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
+        ],
+      ),
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('LessonDetailScreen shows lesson content', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
-      overrides: [
-        lessonNotifierProvider.overrideWith(
-          (ref) => _MockLessonNotifier(const AsyncValue.data([mockLesson]), mockRepo),
-        ),
-        lettersProvider.overrideWith((ref) => MockLettersNotifier()),
-        numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
-        wordsProvider.overrideWith((ref) => MockWordsNotifier()),
-        sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
+        overrides: [
+          lessonNotifierProvider.overrideWith(
+            (ref) => _MockLessonNotifier(
+              const AsyncValue.data([mockLesson]),
+              mockRepo,
+            ),
+          ),
+          lettersProvider.overrideWith((ref) => MockLettersNotifier()),
+          numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
+          wordsProvider.overrideWith((ref) => MockWordsNotifier()),
+          sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
+        ],
+      ),
+    );
 
     await tester.pumpAndSettle();
 
@@ -82,18 +89,27 @@ void main() {
   });
 }
 
-class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> with Mock implements LettersNotifier {
+class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>>
+    with Mock
+    implements LettersNotifier {
   MockLettersNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockNumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> with Mock implements NumbersNotifier {
+class MockNumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>>
+    with Mock
+    implements NumbersNotifier {
   MockNumbersNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> with Mock implements WordsNotifier {
+class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>>
+    with Mock
+    implements WordsNotifier {
   MockWordsNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockSentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> with Mock implements SentencesNotifier {
+class MockSentencesNotifier
+    extends StateNotifier<AsyncValue<List<SentenceModel>>>
+    with Mock
+    implements SentencesNotifier {
   MockSentencesNotifier() : super(const AsyncValue.data([]));
 }

@@ -91,11 +91,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
                 // --- Subcategory chips ---
                 if (_selectedCategory != null)
-                  _buildSubcategoryChips(
-                    subcategoriesAsync,
-                    isDark,
-                    isTablet,
-                  ),
+                  _buildSubcategoryChips(subcategoriesAsync, isDark, isTablet),
 
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
@@ -194,8 +190,9 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             .then(delay: 500.ms)
             .shimmer(
               duration: 2.seconds,
-              color: (isDark ? Colors.white : AppColors.primary)
-                  .withValues(alpha: 0.15),
+              color: (isDark ? Colors.white : AppColors.primary).withValues(
+                alpha: 0.15,
+              ),
             ),
       ],
     );
@@ -272,11 +269,13 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     return subcategoriesAsync.when(
       data: (allSubcats) {
         final cats = ref.read(rhymeCategoriesProvider).value ?? [];
-        final matching =
-            cats.where((c) => c.nameLatin == _selectedCategory).toList();
+        final matching = cats
+            .where((c) => c.nameLatin == _selectedCategory)
+            .toList();
         final catId = matching.isNotEmpty ? matching.first.id : '';
-        final filtered =
-            allSubcats.where((s) => s.categoryId == catId).toList();
+        final filtered = allSubcats
+            .where((s) => s.categoryId == catId)
+            .toList();
 
         if (filtered.isEmpty) {
           return const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -289,17 +288,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               height: 40,
               child: ListView(
                 scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(
-                  horizontal: isTablet ? 32 : 24,
-                ),
+                padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
                 children: [
                   Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: AnimatedFilterChip(
                       label: 'All ${_selectedCategory ?? ""}',
                       isSelected: _selectedSubcategory == null,
-                      onTap: () =>
-                          setState(() => _selectedSubcategory = null),
+                      onTap: () => setState(() => _selectedSubcategory = null),
                       isDark: isDark,
                       small: true,
                     ),
@@ -356,9 +352,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
         return filtered.isNotEmpty
             ? SliverToBoxAdapter(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isTablet ? 32 : 24,
-                  ),
+                  padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
                   child: FeaturedRhymeCard(rhyme: filtered.first),
                 ),
               )
@@ -383,17 +377,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     return Row(
       children: [
         Text(
-              'DISCOVER MORE',
-              style: GoogleFonts.fredoka(
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 2.5,
-                color: isDark ? Colors.white24 : Colors.black26,
-              ),
-            )
-            .animate()
-            .fadeIn(delay: 600.ms, duration: 500.ms)
-            .slideX(begin: -0.2),
+          'DISCOVER MORE',
+          style: GoogleFonts.fredoka(
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+            letterSpacing: 2.5,
+            color: isDark ? Colors.white24 : Colors.black26,
+          ),
+        ).animate().fadeIn(delay: 600.ms, duration: 500.ms).slideX(begin: -0.2),
         const SizedBox(width: 12),
         Expanded(
           child: AnimatedBuilder(
@@ -445,8 +436,9 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     return rhymesAsync.when(
       data: (rhymes) {
         final filtered = _filterRhymes(rhymes);
-        final gridItems =
-            filtered.length > 1 ? filtered.sublist(1) : <RhymeModel>[];
+        final gridItems = filtered.length > 1
+            ? filtered.sublist(1)
+            : <RhymeModel>[];
 
         if (gridItems.isEmpty) {
           return SliverFillRemaining(
@@ -469,8 +461,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               crossAxisCount: ResponsiveLayout.gridColumns(context),
               mainAxisSpacing: 16,
               crossAxisSpacing: 16,
-              childAspectRatio:
-                  isDesktop ? 1.0 : (isTablet ? 1.0 : 0.95),
+              childAspectRatio: isDesktop ? 1.0 : (isTablet ? 1.0 : 0.95),
             ),
             delegate: SliverChildBuilderDelegate((context, index) {
               return TiltCard(
@@ -557,12 +548,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   List<RhymeModel> _filterRhymes(List<RhymeModel> rhymes) {
     var filtered = rhymes;
     if (_selectedCategory != null) {
-      filtered =
-          filtered.where((r) => r.category == _selectedCategory).toList();
+      filtered = filtered
+          .where((r) => r.category == _selectedCategory)
+          .toList();
     }
     if (_selectedSubcategory != null) {
-      filtered =
-          filtered.where((r) => r.subcategory == _selectedSubcategory).toList();
+      filtered = filtered
+          .where((r) => r.subcategory == _selectedSubcategory)
+          .toList();
     }
     return filtered;
   }

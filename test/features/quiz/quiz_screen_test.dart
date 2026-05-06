@@ -24,23 +24,31 @@ void main() {
   );
 
   testWidgets('QuizScreen renders loading state initially', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const QuizScreen(quizId: 'test_quiz'),
-      overrides: [
-        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(const AsyncValue.loading())),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const QuizScreen(quizId: 'test_quiz'),
+        overrides: [
+          quizzesProvider.overrideWith(
+            (ref) => MockQuizzesNotifier(const AsyncValue.loading()),
+          ),
+        ],
+      ),
+    );
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('QuizScreen renders question and options', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const QuizScreen(quizId: 'test_quiz'),
-      overrides: [
-        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const QuizScreen(quizId: 'test_quiz'),
+        overrides: [
+          quizzesProvider.overrideWith(
+            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+          ),
+        ],
+      ),
+    );
 
     await tester.pumpAndSettle();
 
@@ -51,12 +59,16 @@ void main() {
   });
 
   testWidgets('Selecting an answer and completing quiz', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const QuizScreen(quizId: 'test_quiz'),
-      overrides: [
-        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const QuizScreen(quizId: 'test_quiz'),
+        overrides: [
+          quizzesProvider.overrideWith(
+            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+          ),
+        ],
+      ),
+    );
 
     await tester.pumpAndSettle();
 
@@ -66,13 +78,18 @@ void main() {
 
     // Check if "Continue" button appeared (it usually does after an answer is selected)
     // Looking at QuizScreen logic... _selectedAnswer != null
-    expect(find.byIcon(Icons.check_circle_rounded), findsWidgets); // Option selection indicators
+    expect(
+      find.byIcon(Icons.check_circle_rounded),
+      findsWidgets,
+    ); // Option selection indicators
 
     // The Continue button in QuizScreen is often dynamic.
     // In quiz_screen.dart, it uses AppLocalizations.of(context)!.continueButton
   });
 }
 
-class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> with Mock implements QuizzesNotifier {
+class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
+    with Mock
+    implements QuizzesNotifier {
   MockQuizzesNotifier(super.state);
 }

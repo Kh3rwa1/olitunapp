@@ -156,8 +156,7 @@ class LessonDetailScreen extends ConsumerWidget {
                   color: Colors.white,
                 ),
               ),
-              icon:
-                  const Icon(Icons.check_circle_rounded, color: Colors.white),
+              icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
             ),
           ),
           floatingActionButtonLocation:
@@ -224,10 +223,7 @@ class LessonDetailScreen extends ConsumerWidget {
         children: lesson.blocks.map((block) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 20),
-            child: DynamicBlockBuilder(
-              lessonId: lesson.id,
-              block: block,
-            ),
+            child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
           );
         }).toList(),
       );

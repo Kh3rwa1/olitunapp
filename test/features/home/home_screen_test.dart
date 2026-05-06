@@ -18,35 +18,36 @@ class MockCategoryNotifier
   MockCategoryNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockLessonNotifier
-    extends StateNotifier<AsyncValue<List<LessonEntity>>>
+class MockLessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>>
     with Mock
     implements LessonNotifier {
   MockLessonNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockQuizzesNotifier
-    extends StateNotifier<AsyncValue<List<QuizModel>>>
+class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
     with Mock
     implements QuizzesNotifier {
   MockQuizzesNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockUserStatsNotifier
-    extends StateNotifier<AsyncValue<UserStatsEntity>>
+class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
     with Mock
     implements UserStatsNotifier {
   MockUserStatsNotifier()
-      : super(const AsyncValue.data(UserStatsEntity(
-          practicedLetters: {},
-          completedLessons: {},
-          quizHistory: {},
-          categoryMastery: {},
-          totalLearningMinutes: 10,
-          lastActiveDate: '',
-          currentStreak: 2,
-          totalStars: 100,
-        )));
+    : super(
+        const AsyncValue.data(
+          UserStatsEntity(
+            practicedLetters: {},
+            completedLessons: {},
+            quizHistory: {},
+            categoryMastery: {},
+            totalLearningMinutes: 10,
+            lastActiveDate: '',
+            currentStreak: 2,
+            totalStars: 100,
+          ),
+        ),
+      );
 }
 
 void main() {
@@ -63,18 +64,22 @@ void main() {
     addTearDown(tester.view.resetPhysicalSize);
     addTearDown(tester.view.resetDevicePixelRatio);
 
-    await tester.pumpWidget(createTestableWidget(
-      child: const HomeScreen(),
-      overrides: [
-        userNameProvider.overrideWith((ref) => 'Test User'),
-        userStarsProvider.overrideWith((ref) => 100),
-        lessonsCompletedProvider.overrideWith((ref) => 2),
-        categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
-        lessonNotifierProvider.overrideWith((ref) => MockLessonNotifier()),
-        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
-        userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const HomeScreen(),
+        overrides: [
+          userNameProvider.overrideWith((ref) => 'Test User'),
+          userStarsProvider.overrideWith((ref) => 100),
+          lessonsCompletedProvider.overrideWith((ref) => 2),
+          categoryNotifierProvider.overrideWith(
+            (ref) => MockCategoryNotifier(),
+          ),
+          lessonNotifierProvider.overrideWith((ref) => MockLessonNotifier()),
+          quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
+          userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
+        ],
+      ),
+    );
 
     // Pump enough time to let all flutter_animate one-shot animations complete
     await tester.pump(const Duration(seconds: 5));

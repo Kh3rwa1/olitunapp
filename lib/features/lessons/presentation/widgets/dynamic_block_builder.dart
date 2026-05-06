@@ -48,11 +48,7 @@ class DynamicBlockBuilder extends ConsumerWidget {
 
     switch (block.type) {
       case 'text':
-        return _TextBlock(
-          lessonId: lessonId,
-          block: block,
-          isDark: isDark,
-        );
+        return _TextBlock(lessonId: lessonId, block: block, isDark: isDark);
       case 'image':
         return _ImageBlock(block: block, isDark: isDark);
       case 'quiz':
@@ -121,8 +117,7 @@ class _TextBlock extends ConsumerWidget {
                     height: 1.2,
                   ),
                 ),
-                if (block.textLatin != null &&
-                    block.textLatin!.isNotEmpty) ...[
+                if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   Text(
                     block.textLatin!,
@@ -235,9 +230,7 @@ class _ImageBlock extends StatelessWidget {
               return Container(
                 height: 200,
                 color: Colors.grey.withValues(alpha: 0.1),
-                child: const Center(
-                  child: Icon(Icons.broken_image_rounded),
-                ),
+                child: const Center(child: Icon(Icons.broken_image_rounded)),
               );
             },
           ),

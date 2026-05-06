@@ -552,7 +552,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                       ),
                   const SizedBox(height: 36),
                   Text(
-                    isPassing ? AppLocalizations.of(context)!.wellDone : AppLocalizations.of(context)!.keepPracticing,
+                    isPassing
+                        ? AppLocalizations.of(context)!.wellDone
+                        : AppLocalizations.of(context)!.keepPracticing,
                     style: TextStyle(
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
@@ -561,7 +563,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
                   const SizedBox(height: 16),
                   Text(
-                    AppLocalizations.of(context)!.youScored(_score, totalQuestions),
+                    AppLocalizations.of(
+                      context,
+                    )!.youScored(_score, totalQuestions),
                     style: TextStyle(
                       fontSize: 18,
                       color: isDark ? Colors.white60 : Colors.black54,

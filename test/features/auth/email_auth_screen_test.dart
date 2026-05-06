@@ -16,31 +16,41 @@ void main() {
     mockAuthRepository = MockAuthRepository();
   });
 
-  testWidgets('EmailAuthScreen initial state shows email input', (tester) async {
-    await tester.pumpWidget(createTestableWidget(
-      child: const EmailAuthScreen(),
-      overrides: [
-        authRepositoryProvider.overrideWithValue(mockAuthRepository),
-      ],
-    ));
+  testWidgets('EmailAuthScreen initial state shows email input', (
+    tester,
+  ) async {
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const EmailAuthScreen(),
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+        ],
+      ),
+    );
 
     await tester.pumpAndSettle();
 
-    expect(find.byType(TextField), findsOneWidget); // Assuming one main text field initially
+    expect(
+      find.byType(TextField),
+      findsOneWidget,
+    ); // Assuming one main text field initially
     // We can also find by label text or hint text based on localization
     // AppLocalizations.of(context)!.emailAddress
   });
 
   testWidgets('EmailAuthScreen sends OTP and shows OTP input', (tester) async {
-    when(() => mockAuthRepository.sendOtp(any()))
-        .thenAnswer((_) async => const Right('mock_user_id'));
+    when(
+      () => mockAuthRepository.sendOtp(any()),
+    ).thenAnswer((_) async => const Right('mock_user_id'));
 
-    await tester.pumpWidget(createTestableWidget(
-      child: const EmailAuthScreen(),
-      overrides: [
-        authRepositoryProvider.overrideWithValue(mockAuthRepository),
-      ],
-    ));
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const EmailAuthScreen(),
+        overrides: [
+          authRepositoryProvider.overrideWithValue(mockAuthRepository),
+        ],
+      ),
+    );
 
     // Enter email
     final emailField = find.byType(TextField);
@@ -52,7 +62,7 @@ void main() {
     // We can find by type if there's a specific button type, or by gesture detector.
     // Let's just tap the button containing 'Continue' or 'Send Code' text from localization.
     // We will find any button/gesture detector that has a text child.
-    
+
     // Instead of hardcoding, let's find the PrimaryButton or InkWell that triggers it.
     // We will look for a widget that contains "Send Code" text or just tap the only button.
     // To be safe, we'll try to find the button. In EmailAuthScreen it's likely a PrimaryButton or DuoButton.
@@ -73,7 +83,7 @@ void main() {
         await tester.tap(sendCodeButton.first);
       }
     }
-    
+
     await tester.pumpAndSettle();
 
     verify(() => mockAuthRepository.sendOtp('test@example.com')).called(1);

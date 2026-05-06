@@ -54,8 +54,7 @@ class LetterGridContent extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color:
-                      Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
                   blurRadius: 15,
                   offset: const Offset(0, 6),
                 ),
@@ -162,8 +161,7 @@ class NumberGridContent extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color:
-                      Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -283,8 +281,7 @@ class VocabularyListContent extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color:
-                                    isDark ? Colors.white70 : Colors.black54,
+                                color: isDark ? Colors.white70 : Colors.black54,
                                 letterSpacing: 0.5,
                               ),
                             ),
@@ -293,8 +290,7 @@ class VocabularyListContent extends ConsumerWidget {
                               word.meaning,
                               style: TextStyle(
                                 fontSize: 15,
-                                color:
-                                    isDark ? Colors.white : Colors.black87,
+                                color: isDark ? Colors.white : Colors.black87,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -368,8 +364,7 @@ class SentenceListContent extends ConsumerWidget {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
-                                color:
-                                    isDark ? Colors.white70 : Colors.black54,
+                                color: isDark ? Colors.white70 : Colors.black54,
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
@@ -378,8 +373,7 @@ class SentenceListContent extends ConsumerWidget {
                               sentence.meaning,
                               style: TextStyle(
                                 fontSize: 15,
-                                color:
-                                    isDark ? Colors.white : Colors.black87,
+                                color: isDark ? Colors.white : Colors.black87,
                                 letterSpacing: 0.3,
                               ),
                             ),

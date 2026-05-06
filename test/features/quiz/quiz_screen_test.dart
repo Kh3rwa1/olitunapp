@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
 void main() {
@@ -26,7 +27,7 @@ void main() {
     await tester.pumpWidget(createTestableWidget(
       child: const QuizScreen(quizId: 'test_quiz'),
       overrides: [
-        quizzesProvider.overrideWith((ref) => _MockQuizzesNotifier(const AsyncValue.loading())),
+        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(const AsyncValue.loading())),
       ],
     ));
 
@@ -37,7 +38,7 @@ void main() {
     await tester.pumpWidget(createTestableWidget(
       child: const QuizScreen(quizId: 'test_quiz'),
       overrides: [
-        quizzesProvider.overrideWith((ref) => _MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
+        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
       ],
     ));
 
@@ -53,7 +54,7 @@ void main() {
     await tester.pumpWidget(createTestableWidget(
       child: const QuizScreen(quizId: 'test_quiz'),
       overrides: [
-        quizzesProvider.overrideWith((ref) => _MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
+        quizzesProvider.overrideWith((ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz]))),
       ],
     ));
 
@@ -72,17 +73,6 @@ void main() {
   });
 }
 
-class _MockQuizzesNotifier extends QuizzesNotifier {
-  final AsyncValue<List<QuizModel>> mockState;
-
-  _MockQuizzesNotifier(this.mockState, [Ref? ref]) : super(ref ?? ProviderContainer().read(dummyRefProvider)) {
-    state = mockState;
-  }
-
-  @override
-  Future<void> _loadQuizzes() async {} // Do nothing
+class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> with Mock implements QuizzesNotifier {
+  MockQuizzesNotifier(super.state);
 }
-
-// Helper to provide a dummy Ref if needed, but actually StateNotifierProvider 
-// constructor passes Ref automatically. However, we are overriding.
-final dummyRefProvider = Provider((ref) => ref);

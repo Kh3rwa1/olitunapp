@@ -239,13 +239,14 @@ class ThemeOption extends StatelessWidget {
   final WidgetRef ref;
   final bool isDark;
 
-  const ThemeOption(
-    this.label,
-    this.value,
-    this.current,
-    this.ref,
-    this.isDark,
-  );
+  const ThemeOption({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.current,
+    required this.ref,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -276,13 +277,14 @@ class ScriptOption extends StatelessWidget {
   final WidgetRef ref;
   final bool isDark;
 
-  const ScriptOption(
-    this.label,
-    this.value,
-    this.current,
-    this.ref,
-    this.isDark,
-  );
+  const ScriptOption({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.current,
+    required this.ref,
+    required this.isDark,
+  });
 
   @override
   Widget build(BuildContext context) {

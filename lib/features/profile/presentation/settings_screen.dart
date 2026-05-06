@@ -9,7 +9,6 @@ import '../../auth/presentation/providers/auth_providers.dart';
 import '../../profile/presentation/providers/profile_providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/providers/local_settings_provider.dart';
-import '../../../shared/widgets/bento_grid.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'widgets/settings_widgets.dart';
 
@@ -374,9 +373,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ThemeOption(AppLocalizations.of(context)!.systemDefault, 'system', current, ref, isDark),
-            ThemeOption(AppLocalizations.of(context)!.light, 'light', current, ref, isDark),
-            ThemeOption(AppLocalizations.of(context)!.dark, 'dark', current, ref, isDark),
+            ThemeOption(label: AppLocalizations.of(context)!.systemDefault, value: 'system', current: current, ref: ref, isDark: isDark),
+            ThemeOption(label: AppLocalizations.of(context)!.light, value: 'light', current: current, ref: ref, isDark: isDark),
+            ThemeOption(label: AppLocalizations.of(context)!.dark, value: 'dark', current: current, ref: ref, isDark: isDark),
             const SizedBox(height: 24),
           ],
         ),
@@ -415,9 +414,9 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: 20),
-            ScriptOption(AppLocalizations.of(context)!.bothScripts, 'both', current, ref, isDark),
-            ScriptOption(AppLocalizations.of(context)!.olChikiOnly, 'olchiki', current, ref, isDark),
-            ScriptOption(AppLocalizations.of(context)!.latinOnly, 'latin', current, ref, isDark),
+            ScriptOption(label: AppLocalizations.of(context)!.bothScripts, value: 'both', current: current, ref: ref, isDark: isDark),
+            ScriptOption(label: AppLocalizations.of(context)!.olChikiOnly, value: 'olchiki', current: current, ref: ref, isDark: isDark),
+            ScriptOption(label: AppLocalizations.of(context)!.latinOnly, value: 'latin', current: current, ref: ref, isDark: isDark),
             const SizedBox(height: 24),
           ],
         ),

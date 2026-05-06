@@ -3,7 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/lesson_detail_screen.dart';
-import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/shared/providers/providers.dart';
@@ -30,7 +29,7 @@ void main() {
     mockRepo = MockLessonRepository();
   });
 
-  final mockLesson = const LessonEntity(
+  const mockLesson = LessonEntity(
     id: 'test_lesson_1',
     categoryId: 'alphabets',
     titleOlChiki: 'ᱚ',
@@ -67,7 +66,7 @@ void main() {
       child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
       overrides: [
         lessonNotifierProvider.overrideWith(
-          (ref) => _MockLessonNotifier(AsyncValue.data([mockLesson]), mockRepo),
+          (ref) => _MockLessonNotifier(const AsyncValue.data([mockLesson]), mockRepo),
         ),
         lettersProvider.overrideWith((ref) => MockLettersNotifier()),
         numbersProvider.overrideWith((ref) => MockNumbersNotifier()),

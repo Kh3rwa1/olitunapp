@@ -5,8 +5,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
 import 'package:itun/shared/providers/providers.dart';
-import 'package:itun/shared/providers/quizzes_provider.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';

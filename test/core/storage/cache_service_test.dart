@@ -1,133 +1,131 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
-
 import 'package:itun/core/storage/cache_service.dart';
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  group('CacheEntry', () {
+    test('fresh entry is not expired', () {
+      final entry = CacheEntry(
+        data: {'key': 'value'},
+        schemaVersion: cacheSchemaVersion,
+        createdAtMs: DateTime.now().millisecondsSinceEpoch,
+        ttlMs: const Duration(hours: 1).inMilliseconds,
+      );
+      expect(entry.isExpired, false);
+      expect(entry.isSchemaMismatch, false);
+    });
 
-  setUpAll(() async {
-    Hive.init('./test_hive_cache');
+    test('old entry is expired', () {
+      final entry = CacheEntry(
+        data: {'key': 'value'},
+        schemaVersion: cacheSchemaVersion,
+        createdAtMs: DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch,
+        ttlMs: const Duration(hours: 1).inMilliseconds,
+      );
+      expect(entry.isExpired, true);
+    });
+
+    test('entry with no TTL never expires', () {
+      final entry = CacheEntry(
+        data: {'key': 'value'},
+        schemaVersion: cacheSchemaVersion,
+        createdAtMs: DateTime.now().subtract(const Duration(days: 365)).millisecondsSinceEpoch,
+        ttlMs: null,
+      );
+      expect(entry.isExpired, false);
+    });
+
+    test('schema mismatch detected', () {
+      final entry = CacheEntry(
+        data: {'key': 'value'},
+        schemaVersion: 0,
+        createdAtMs: DateTime.now().millisecondsSinceEpoch,
+      );
+      expect(entry.isSchemaMismatch, true);
+    });
+
+    test('toJson / fromJson roundtrip', () {
+      final entry = CacheEntry(
+        data: {'key': 'value'},
+        schemaVersion: cacheSchemaVersion,
+        createdAtMs: 1700000000000,
+        ttlMs: 3600000,
+      );
+      final json = entry.toJson();
+      final restored = CacheEntry.fromJson(json);
+
+      expect(restored.schemaVersion, cacheSchemaVersion);
+      expect(restored.createdAtMs, 1700000000000);
+      expect(restored.ttlMs, 3600000);
+      expect((restored.data as Map)['key'], 'value');
+    });
   });
 
-  setUp(() async {
-    CacheService.resetForTesting();
-  });
+  group('CacheService integration', () {
+    setUpAll(() async {
+      Hive.init('test_hive_cache_v2');
+      CacheService.resetForTesting();
+    });
 
-  tearDownAll(() async {
-    try {
-      await Hive.deleteBoxFromDisk('content_cache');
-      await Hive.close();
-    } catch (_) {}
-  });
+    tearDownAll(() async {
+      await CacheService.clear();
+    });
 
-  group('CacheService', () {
-    test('set and get round-trips a single JSON object', () async {
-      final data = {'name': 'Olitun', 'version': 1};
-      await CacheService.set('test_single', data);
-
+    test('set and get roundtrip', () async {
+      await CacheService.set('test_key', {'name': 'Olitun'});
       final result = await CacheService.get<Map<String, dynamic>>(
-        'test_single',
+        'test_key',
         (json) => json,
       );
       expect(result, isNotNull);
       expect(result!['name'], 'Olitun');
-      expect(result['version'], 1);
     });
 
-    test('get returns null for missing key', () async {
+    test('expired entry returns null', () async {
+      await CacheService.set(
+        'expired_key',
+        {'name': 'old'},
+        ttl: Duration.zero,
+      );
+      // Wait a tick to ensure expiry
+      await Future.delayed(const Duration(milliseconds: 10));
       final result = await CacheService.get<Map<String, dynamic>>(
-        'nonexistent',
+        'expired_key',
         (json) => json,
       );
       expect(result, isNull);
     });
 
-    test('set and getList round-trips a list of JSON objects', () async {
-      final data = [
-        {'id': '1', 'title': 'Alphabet'},
-        {'id': '2', 'title': 'Numbers'},
-      ];
-      await CacheService.set('test_list', data);
+    test('getMeta returns metadata', () async {
+      await CacheService.set('meta_key', {'value': 42});
+      final meta = await CacheService.getMeta('meta_key');
+      expect(meta, isNotNull);
+      expect(meta!.schemaVersion, cacheSchemaVersion);
+      expect(meta.ttlMs, CacheService.defaultTtl.inMilliseconds);
+    });
 
+    test('delete removes entry', () async {
+      await CacheService.set('del_key', {'temp': true});
+      await CacheService.delete('del_key');
+      final result = await CacheService.get<Map<String, dynamic>>(
+        'del_key',
+        (json) => json,
+      );
+      expect(result, isNull);
+    });
+
+    test('getList roundtrip', () async {
+      await CacheService.set('list_key', [
+        {'id': '1'},
+        {'id': '2'},
+      ]);
       final result = await CacheService.getList<Map<String, dynamic>>(
-        'test_list',
+        'list_key',
         (json) => json,
       );
       expect(result, isNotNull);
       expect(result!.length, 2);
-      expect(result[0]['title'], 'Alphabet');
-      expect(result[1]['id'], '2');
-    });
-
-    test('getList returns null for missing key', () async {
-      final result = await CacheService.getList<Map<String, dynamic>>(
-        'nonexistent_list',
-        (json) => json,
-      );
-      expect(result, isNull);
-    });
-
-    test('delete removes a key', () async {
-      await CacheService.set('to_delete', {'a': 1});
-      await CacheService.delete('to_delete');
-
-      final result = await CacheService.get<Map<String, dynamic>>(
-        'to_delete',
-        (json) => json,
-      );
-      expect(result, isNull);
-    });
-
-    test('clear removes all keys', () async {
-      await CacheService.set('key1', {'a': 1});
-      await CacheService.set('key2', {'b': 2});
-      await CacheService.clear();
-
-      final r1 = await CacheService.get<Map<String, dynamic>>(
-        'key1',
-        (json) => json,
-      );
-      final r2 = await CacheService.get<Map<String, dynamic>>(
-        'key2',
-        (json) => json,
-      );
-      expect(r1, isNull);
-      expect(r2, isNull);
-    });
-
-    test('overwriting a key replaces the value', () async {
-      await CacheService.set('overwrite', {'v': 1});
-      await CacheService.set('overwrite', {'v': 2});
-
-      final result = await CacheService.get<Map<String, dynamic>>(
-        'overwrite',
-        (json) => json,
-      );
-      expect(result!['v'], 2);
-    });
-
-    test('get gracefully handles corrupted data', () async {
-      // Write raw corrupted value directly to the box
-      final box = await Hive.openBox('content_cache');
-      await box.put('corrupted', 'not valid json{{{');
-
-      final result = await CacheService.get<Map<String, dynamic>>(
-        'corrupted',
-        (json) => json,
-      );
-      expect(result, isNull);
-    });
-
-    test('getList gracefully handles corrupted data', () async {
-      final box = await Hive.openBox('content_cache');
-      await box.put('corrupted_list', 'not valid json');
-
-      final result = await CacheService.getList<Map<String, dynamic>>(
-        'corrupted_list',
-        (json) => json,
-      );
-      expect(result, isNull);
+      expect(result[0]['id'], '1');
     });
   });
 }

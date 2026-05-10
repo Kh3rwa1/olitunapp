@@ -55,4 +55,122 @@ class CrashReporting {
       level: SentryLevel.error,
     );
   }
+
+  // ─── Breadcrumbs ────────────────────────────────────────
+
+  /// Add a navigation breadcrumb (e.g. screen transitions).
+  static void addNavigationBreadcrumb(String from, String to) {
+    if (!isEnabled) return;
+    Sentry.addBreadcrumb(Breadcrumb(
+      type: 'navigation',
+      category: 'navigation',
+      data: {'from': from, 'to': to},
+    ));
+  }
+
+  /// Record an Appwrite API call result as a breadcrumb.
+  ///
+  /// On success, records collection/operation for tracing context.
+  /// On failure, adds the error message for faster root-cause analysis.
+  static void addAppwriteBreadcrumb({
+    required String operation,
+    required String collection,
+    String? documentId,
+    bool success = true,
+    String? error,
+    int? statusCode,
+  }) {
+    if (!isEnabled) {
+      debugPrint(
+        '[Breadcrumb] Appwrite $operation on $collection'
+        '${documentId != null ? '/$documentId' : ''}'
+        ' → ${success ? 'OK' : 'FAIL: $error'}',
+      );
+      return;
+    }
+    Sentry.addBreadcrumb(Breadcrumb(
+      type: 'http',
+      category: 'appwrite.$operation',
+      message: '$operation $collection${documentId != null ? '/$documentId' : ''}',
+      level: success ? SentryLevel.info : SentryLevel.error,
+      data: {
+        'collection': collection,
+        if (documentId != null) 'documentId': documentId,
+        'success': success,
+        if (error != null) 'error': error,
+        if (statusCode != null) 'statusCode': statusCode,
+      },
+    ));
+  }
+
+  /// Record an admin write action (create/update/delete) as a breadcrumb
+  /// for auditing and debugging admin mutations.
+  static void addAdminWriteBreadcrumb({
+    required String action,
+    required String entity,
+    String? entityId,
+    Map<String, dynamic>? metadata,
+  }) {
+    if (!isEnabled) {
+      debugPrint(
+        '[Breadcrumb] Admin $action $entity'
+        '${entityId != null ? ' ($entityId)' : ''}',
+      );
+      return;
+    }
+    Sentry.addBreadcrumb(Breadcrumb(
+      type: 'user',
+      category: 'admin.$action',
+      message: '$action $entity${entityId != null ? ' ($entityId)' : ''}',
+      level: SentryLevel.info,
+      data: {
+        'entity': entity,
+        if (entityId != null) 'entityId': entityId,
+        if (metadata != null) ...metadata,
+      },
+    ));
+  }
+
+  /// Record an upload attempt breadcrumb.
+  static void addUploadBreadcrumb({
+    required String filename,
+    required String bucket,
+    bool success = true,
+    String? error,
+    int? sizeBytes,
+  }) {
+    if (!isEnabled) {
+      debugPrint('[Breadcrumb] Upload $filename → $bucket ${success ? 'OK' : 'FAIL: $error'}');
+      return;
+    }
+    Sentry.addBreadcrumb(Breadcrumb(
+      type: 'http',
+      category: 'upload',
+      message: 'Upload $filename → $bucket',
+      level: success ? SentryLevel.info : SentryLevel.error,
+      data: {
+        'filename': filename,
+        'bucket': bucket,
+        'success': success,
+        if (sizeBytes != null) 'sizeBytes': sizeBytes,
+        if (error != null) 'error': error,
+      },
+    ));
+  }
+
+  /// Record a cache operation breadcrumb.
+  static void addCacheBreadcrumb({
+    required String operation,
+    required String key,
+    bool hit = true,
+  }) {
+    if (!isEnabled) return;
+    Sentry.addBreadcrumb(Breadcrumb(
+      type: 'query',
+      category: 'cache.$operation',
+      message: '$operation $key → ${hit ? 'HIT' : 'MISS'}',
+      level: SentryLevel.debug,
+      data: {'key': key, 'hit': hit},
+    ));
+  }
 }

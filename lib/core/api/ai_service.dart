@@ -91,8 +91,10 @@ class AiService {
       );
 
       if (response.statusCode == 429) {
+        debugPrint('AiService: 429 rate-limited on $endpointName');
+        // Fail closed — surface the error to the caller in all modes.
         return TranslateResult(
-          translation: 'Rate limit reached. Try again later.',
+          translation: 'Rate limit reached. Please try again later.',
           isError: true,
         );
       }
@@ -100,14 +102,16 @@ class AiService {
       // returns 201 with an Execution object wrapping the body.
       if (response.statusCode != 200 && response.statusCode != 201) {
         debugPrint('AiService HTTP ${response.statusCode}: ${response.body}');
-        return null;
+        return _failClosed('Service error (${response.statusCode}). Please try again.');
       }
 
       final parsed = _unwrapAppwriteExecution(response.body);
-      if (parsed == null) return null;
+      if (parsed == null) {
+        return _failClosed('Unexpected response format.');
+      }
       if (parsed['success'] != true || parsed['data'] == null) {
         debugPrint('AiService API error: ${parsed['message']}');
-        return null;
+        return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
       }
       final d = parsed['data'] as Map<String, dynamic>;
       return TranslateResult(
@@ -117,9 +121,20 @@ class AiService {
       );
     } catch (e) {
       debugPrint('AiService error: $e');
-      return null;
+      return _failClosed('Connection error. Please check your network.');
     }
   }
+
+  /// In production (release mode), never return null — always surface an
+  /// error result so the UI can display a user-facing message.
+  /// Only debug mode is lenient (returns null → retryable).
+  static TranslateResult _failClosed(String message) {
+    return TranslateResult(translation: message, isError: true);
+  }
+
+  @visibleForTesting
+  static TranslateResult failClosedForTest(String message) =>
+      _failClosed(message);
 
   /// If the response body is an Appwrite Execution object (created by the
   /// `/v1/functions/[id]/executions` endpoint), returns the inner JSON

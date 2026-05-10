@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../auth/appwrite_auth_service.dart';
 import '../config/appwrite_config.dart';
+import '../observability/crash_reporting.dart';
 
 class AppwriteStorageUploadService {
   AppwriteStorageUploadService(this._client) : _storage = Storage(_client);
@@ -71,8 +72,21 @@ class AppwriteStorageUploadService {
         permissions: [Permission.read(Role.any())],
       );
 
+      CrashReporting.addUploadBreadcrumb(
+        filename: file.name,
+        bucket: target.bucketId,
+        sizeBytes: file.size,
+      );
+
       return fileViewUrl(target.bucketId, uploaded.$id);
     } catch (e) {
+      CrashReporting.addUploadBreadcrumb(
+        filename: file.name,
+        bucket: 'unknown',
+        success: false,
+        error: e.toString(),
+        sizeBytes: file.size,
+      );
       debugPrint('AppwriteStorageUploadService error: $e');
       rethrow;
     }

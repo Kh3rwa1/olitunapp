@@ -1,0 +1,39 @@
+version: 2
+updates:
+  - package-ecosystem: "pub"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "flutter"
+    groups:
+      flutter-ui:
+        patterns:
+          - "flutter_animate"
+          - "flutter_svg"
+          - "cached_network_image"
+          - "fl_chart"
+          - "shimmer"
+          - "lottie"
+      flutter-storage:
+        patterns:
+          - "hive*"
+          - "shared_preferences"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 3
+    labels:
+      - "ci"
+      - "dependencies"
+
+  - package-ecosystem: "npm"
+    directory: "/scripts"
+    schedule:
+      interval: "monthly"
+    open-pull-requests-limit: 2

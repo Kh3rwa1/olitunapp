@@ -40,7 +40,7 @@ dependencies:
 
 
   # Auth
-  appwrite: 21.1.0
+  appwrite: 24.0.0
 
   # Utils
   uuid: ^4.5.1

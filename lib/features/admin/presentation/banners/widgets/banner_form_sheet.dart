@@ -206,7 +206,6 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                     icon: Icons.upload_file_rounded,
                     isDark: isDark,
                     folder: 'banners',
-                    uploadType: AdminUploadType.image,
                     dialogSetState: setState,
                   ),
                   const SizedBox(height: 24),

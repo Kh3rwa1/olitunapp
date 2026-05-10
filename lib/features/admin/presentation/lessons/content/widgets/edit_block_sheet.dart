@@ -183,7 +183,6 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                     icon: Icons.image_rounded,
                     isDark: isDark,
                     folder: 'lesson-images',
-                    uploadType: AdminUploadType.image,
                     dialogSetState: setState,
                   ),
                 ],

@@ -34,7 +34,6 @@ void main() {
         createdAtMs: DateTime.now()
             .subtract(const Duration(days: 365))
             .millisecondsSinceEpoch,
-        ttlMs: null,
       );
       expect(entry.isExpired, false);
     });

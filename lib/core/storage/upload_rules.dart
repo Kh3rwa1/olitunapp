@@ -1,4 +1,3 @@
-
 /// Centralised upload validation rules for admin media uploads.
 ///
 /// All admin screens should call [validate] before uploading to ensure

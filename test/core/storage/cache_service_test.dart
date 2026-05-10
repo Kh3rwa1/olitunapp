@@ -19,7 +19,9 @@ void main() {
       final entry = CacheEntry(
         data: {'key': 'value'},
         schemaVersion: cacheSchemaVersion,
-        createdAtMs: DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch,
+        createdAtMs: DateTime.now()
+            .subtract(const Duration(hours: 2))
+            .millisecondsSinceEpoch,
         ttlMs: const Duration(hours: 1).inMilliseconds,
       );
       expect(entry.isExpired, true);
@@ -29,8 +31,9 @@ void main() {
       final entry = CacheEntry(
         data: {'key': 'value'},
         schemaVersion: cacheSchemaVersion,
-        createdAtMs: DateTime.now().subtract(const Duration(days: 365)).millisecondsSinceEpoch,
-        ttlMs: null,
+        createdAtMs: DateTime.now()
+            .subtract(const Duration(days: 365))
+            .millisecondsSinceEpoch,
       );
       expect(entry.isExpired, false);
     });
@@ -82,11 +85,9 @@ void main() {
     });
 
     test('expired entry returns null', () async {
-      await CacheService.set(
-        'expired_key',
-        {'name': 'old'},
-        ttl: Duration.zero,
-      );
+      await CacheService.set('expired_key', {
+        'name': 'old',
+      }, ttl: Duration.zero);
       // Wait a tick to ensure expiry
       await Future.delayed(const Duration(milliseconds: 10));
       final result = await CacheService.get<Map<String, dynamic>>(

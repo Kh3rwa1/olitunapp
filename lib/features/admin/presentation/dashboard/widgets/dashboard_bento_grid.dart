@@ -7,7 +7,11 @@ import '../../widgets/dashboard_kpi_widgets.dart';
 class DashboardBentoGrid extends ConsumerWidget {
   final bool isDark;
   final bool isWide;
-  const DashboardBentoGrid({super.key, required this.isDark, required this.isWide});
+  const DashboardBentoGrid({
+    super.key,
+    required this.isDark,
+    required this.isWide,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +25,7 @@ class DashboardBentoGrid extends ConsumerWidget {
     int countOf(AsyncValue v) => v.when(
       data: (l) => (l as List).length,
       loading: () => 0,
-      error: (_, __) => 0,
+      error: (_, _) => 0,
     );
 
     final totalContent =
@@ -92,13 +96,15 @@ class DashboardBentoGrid extends ConsumerWidget {
             crossAxisSpacing: 16,
             childAspectRatio: 1.55,
             children: supporting
-                .map((k) => DashboardKpiCard(
-                  label: k.label,
-                  value: k.value,
-                  icon: k.icon,
-                  accent: k.accent,
-                  isDark: isDark,
-                ))
+                .map(
+                  (k) => DashboardKpiCard(
+                    label: k.label,
+                    value: k.value,
+                    icon: k.icon,
+                    accent: k.accent,
+                    isDark: isDark,
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -121,13 +127,15 @@ class DashboardBentoGrid extends ConsumerWidget {
           crossAxisSpacing: 12,
           childAspectRatio: 1.55,
           children: supporting
-              .map((k) => DashboardKpiCard(
+              .map(
+                (k) => DashboardKpiCard(
                   label: k.label,
                   value: k.value,
                   icon: k.icon,
                   accent: k.accent,
                   isDark: isDark,
-                ))
+                ),
+              )
               .toList(),
         ),
       ],
@@ -137,7 +145,7 @@ class DashboardBentoGrid extends ConsumerWidget {
   String _txt(AsyncValue v) => v.when(
     data: (l) => (l as List).length.toString(),
     loading: () => '—',
-    error: (_, __) => '0',
+    error: (_, _) => '0',
   );
 }
 

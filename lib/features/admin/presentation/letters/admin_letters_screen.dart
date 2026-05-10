@@ -47,10 +47,12 @@ class AdminLettersScreen extends ConsumerWidget {
                             letters: letters,
                             isDark: isDark,
                             isWideScreen: isWideScreen,
-                            onEdit: (l) => LetterFormSheet.show(context, ref, l),
+                            onEdit: (l) =>
+                                LetterFormSheet.show(context, ref, l),
                             onDelete: (l) => _confirmDelete(context, ref, l),
                           ),
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (error, _) => Center(
                       child: SelectableText(
                         'Error loading letters: $error',
@@ -120,11 +122,16 @@ class AdminLettersScreen extends ConsumerWidget {
     ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
   }
 
-  Future<void> _confirmDelete(BuildContext context, WidgetRef ref, LetterModel letter) async {
+  Future<void> _confirmDelete(
+    BuildContext context,
+    WidgetRef ref,
+    LetterModel letter,
+  ) async {
     final ok = await showAdminConfirmDialog(
       context: context,
       title: 'Delete Letter',
-      message: 'Are you sure you want to delete "${letter.charOlChiki}"? This action cannot be undone.',
+      message:
+          'Are you sure you want to delete "${letter.charOlChiki}"? This action cannot be undone.',
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();

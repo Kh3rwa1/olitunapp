@@ -308,7 +308,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                       height: 160,
                       fit: BoxFit.contain,
                       filterQuality: FilterQuality.high,
-                      errorBuilder: (context, _, __) => Image.network(
+                      errorBuilder: (context, _, _) => Image.network(
                         _emojiToPngUrl(emoji),
                         width: 160,
                         height: 160,
@@ -322,7 +322,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                     height: 160,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, __) =>
+                    errorBuilder: (context, _, _) =>
                         Text(emoji, style: const TextStyle(fontSize: 100)),
                   ),
           ),

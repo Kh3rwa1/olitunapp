@@ -72,7 +72,7 @@ class DashboardAnalyticsPanel extends ConsumerWidget {
                   ),
                 ),
               ),
-              error: (_, __) => _ChartEmpty(
+              error: (_, _) => _ChartEmpty(
                 isDark: isDark,
                 icon: Icons.cloud_off_rounded,
                 message: 'Couldn\'t load engagement data',

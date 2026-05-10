@@ -100,7 +100,10 @@ void main() {
     });
 
     test('replaces unsafe characters', () {
-      expect(UploadRules.sanitizeFilename('hello world!.jpg'), 'hello-world-.jpg');
+      expect(
+        UploadRules.sanitizeFilename('hello world!.jpg'),
+        'hello-world-.jpg',
+      );
     });
 
     test('empty filename returns fallback', () {

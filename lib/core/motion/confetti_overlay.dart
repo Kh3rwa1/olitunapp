@@ -66,7 +66,7 @@ class _ConfettiBurstState extends State<ConfettiBurst>
     return IgnorePointer(
       child: AnimatedBuilder(
         animation: _ctl,
-        builder: (_, __) => CustomPaint(
+        builder: (_, _) => CustomPaint(
           painter: _ConfettiPainter(t: _ctl.value, particles: _particles),
           size: Size.infinite,
         ),

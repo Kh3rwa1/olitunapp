@@ -16,7 +16,10 @@ class BannerFormSheet extends ConsumerStatefulWidget {
   const BannerFormSheet({super.key, this.banner});
 
   static void show(
-      BuildContext context, WidgetRef ref, FeaturedBannerModel? banner) {
+    BuildContext context,
+    WidgetRef ref,
+    FeaturedBannerModel? banner,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -44,9 +47,13 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
     super.initState();
     _titleCtrl = TextEditingController(text: widget.banner?.title ?? '');
     _subtitleCtrl = TextEditingController(text: widget.banner?.subtitle ?? '');
-    _targetRouteCtrl = TextEditingController(text: widget.banner?.targetRoute ?? '');
+    _targetRouteCtrl = TextEditingController(
+      text: widget.banner?.targetRoute ?? '',
+    );
     _imageCtrl = TextEditingController(text: widget.banner?.imageUrl ?? '');
-    _animationCtrl = TextEditingController(text: widget.banner?.animationUrl ?? '');
+    _animationCtrl = TextEditingController(
+      text: widget.banner?.animationUrl ?? '',
+    );
     _selectedGradient = widget.banner?.gradientPreset ?? 'skyBlue';
   }
 
@@ -69,7 +76,9 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
       imageUrl: _imageCtrl.text.isNotEmpty ? _imageCtrl.text : null,
       animationUrl: _animationCtrl.text.isNotEmpty ? _animationCtrl.text : null,
       gradientPreset: _selectedGradient,
-      targetRoute: _targetRouteCtrl.text.isNotEmpty ? _targetRouteCtrl.text : null,
+      targetRoute: _targetRouteCtrl.text.isNotEmpty
+          ? _targetRouteCtrl.text
+          : null,
       order: widget.banner?.order ?? 0,
     );
 
@@ -197,7 +206,6 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                     icon: Icons.upload_file_rounded,
                     isDark: isDark,
                     folder: 'banners',
-                    uploadType: AdminUploadType.image,
                     dialogSetState: setState,
                   ),
                   const SizedBox(height: 24),
@@ -227,12 +235,14 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                       _GradientOption(
                         gradient: AppColors.skyBlueGradient,
                         isSelected: _selectedGradient == 'skyBlue',
-                        onTap: () => setState(() => _selectedGradient = 'skyBlue'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'skyBlue'),
                       ),
                       _GradientOption(
                         gradient: AppColors.peachGradient,
                         isSelected: _selectedGradient == 'peach',
-                        onTap: () => setState(() => _selectedGradient = 'peach'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'peach'),
                       ),
                       _GradientOption(
                         gradient: AppColors.mintGradient,
@@ -242,7 +252,8 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                       _GradientOption(
                         gradient: AppColors.sunsetGradient,
                         isSelected: _selectedGradient == 'sunset',
-                        onTap: () => setState(() => _selectedGradient = 'sunset'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'sunset'),
                       ),
                     ],
                   ),

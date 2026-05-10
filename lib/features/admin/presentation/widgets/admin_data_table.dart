@@ -63,15 +63,14 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
     if (_sortColumnIndex != null) {
       final comparator = widget.columns[_sortColumnIndex!].comparator;
       if (comparator != null) {
-        list.sort(
-          _sortAscending ? comparator : (a, b) => comparator(b, a),
-        );
+        list.sort(_sortAscending ? comparator : (a, b) => comparator(b, a));
       }
     }
     return list;
   }
 
-  int get _totalPages => (_filtered.length / widget.pageSize).ceil().clamp(1, 9999);
+  int get _totalPages =>
+      (_filtered.length / widget.pageSize).ceil().clamp(1, 9999);
 
   List<T> get _pageItems {
     final start = _currentPage * widget.pageSize;
@@ -108,9 +107,9 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
               ? Center(
                   child: Text(
                     'No results found',
-                    style: AdminTokens.body(isDark).copyWith(
-                      color: AdminTokens.textTertiary(isDark),
-                    ),
+                    style: AdminTokens.body(
+                      isDark,
+                    ).copyWith(color: AdminTokens.textTertiary(isDark)),
                   ),
                 )
               : ListView.builder(
@@ -131,9 +130,9 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
       style: AdminTokens.bodyStrong(isDark),
       decoration: InputDecoration(
         hintText: widget.searchHint,
-        hintStyle: AdminTokens.body(isDark).copyWith(
-          color: AdminTokens.textTertiary(isDark),
-        ),
+        hintStyle: AdminTokens.body(
+          isDark,
+        ).copyWith(color: AdminTokens.textTertiary(isDark)),
         prefixIcon: Icon(
           Icons.search_rounded,
           color: AdminTokens.textTertiary(isDark),
@@ -190,22 +189,22 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
               child: InkWell(
                 onTap: widget.columns[i].comparator != null
                     ? () => setState(() {
-                          if (_sortColumnIndex == i) {
-                            _sortAscending = !_sortAscending;
-                          } else {
-                            _sortColumnIndex = i;
-                            _sortAscending = true;
-                          }
-                        })
+                        if (_sortColumnIndex == i) {
+                          _sortAscending = !_sortAscending;
+                        } else {
+                          _sortColumnIndex = i;
+                          _sortAscending = true;
+                        }
+                      })
                     : null,
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
                       widget.columns[i].label.toUpperCase(),
-                      style: AdminTokens.eyebrow(isDark).copyWith(
-                        fontSize: 10.5,
-                      ),
+                      style: AdminTokens.eyebrow(
+                        isDark,
+                      ).copyWith(fontSize: 10.5),
                     ),
                     if (_sortColumnIndex == i)
                       Icon(
@@ -274,10 +273,9 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
             children: [
               IconButton(
                 icon: const Icon(Icons.chevron_left_rounded, size: 20),
-                onPressed:
-                    _currentPage > 0
-                        ? () => setState(() => _currentPage--)
-                        : null,
+                onPressed: _currentPage > 0
+                    ? () => setState(() => _currentPage--)
+                    : null,
                 tooltip: 'Previous',
                 iconSize: 20,
               ),
@@ -302,10 +300,9 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
               ),
               IconButton(
                 icon: const Icon(Icons.chevron_right_rounded, size: 20),
-                onPressed:
-                    _currentPage < _totalPages - 1
-                        ? () => setState(() => _currentPage++)
-                        : null,
+                onPressed: _currentPage < _totalPages - 1
+                    ? () => setState(() => _currentPage++)
+                    : null,
                 tooltip: 'Next',
                 iconSize: 20,
               ),

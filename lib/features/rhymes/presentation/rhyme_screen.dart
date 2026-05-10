@@ -256,7 +256,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         ),
       ),
-      error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 
@@ -337,7 +337,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         ),
       ),
-      error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 
@@ -368,7 +368,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         ),
       ),
-      error: (_, __) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
     );
   }
 

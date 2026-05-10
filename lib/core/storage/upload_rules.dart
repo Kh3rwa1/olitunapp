@@ -1,5 +1,3 @@
-import 'package:flutter/foundation.dart';
-
 /// Centralised upload validation rules for admin media uploads.
 ///
 /// All admin screens should call [validate] before uploading to ensure
@@ -18,8 +16,21 @@ class UploadRules {
   static const int maxVideoBytes = 50 * 1024 * 1024; // 50 MB
 
   /// Allowed extensions per category.
-  static const Set<String> imageExtensions = {'png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'};
-  static const Set<String> audioExtensions = {'mp3', 'wav', 'ogg', 'aac', 'm4a'};
+  static const Set<String> imageExtensions = {
+    'png',
+    'jpg',
+    'jpeg',
+    'webp',
+    'gif',
+    'svg',
+  };
+  static const Set<String> audioExtensions = {
+    'mp3',
+    'wav',
+    'ogg',
+    'aac',
+    'm4a',
+  };
   static const Set<String> animationExtensions = {'json', 'lottie'};
   static const Set<String> videoExtensions = {'mp4', 'webm', 'mov'};
 

@@ -11,7 +11,7 @@ import 'dart:io';
 /// Environment variables:
 ///   RATE_LIMIT_PER_MINUTE (default: 30)
 
-Future<dynamic> main(final context) async {
+Future<dynamic> main(final dynamic context) async {
   final method = context.req.method;
 
   // CORS preflight

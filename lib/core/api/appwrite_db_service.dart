@@ -83,7 +83,7 @@ class AppwriteDbService {
     return result.rows.map(_rowToMap).toList();
   }
 
-  static Map<String, dynamic> _rowToMap(row) {
+  static Map<String, dynamic> _rowToMap(dynamic row) {
     final data = Map<String, dynamic>.from(row.data);
     data['id'] = row.$id;
     // Preserve Appwrite system timestamps for downstream consumers

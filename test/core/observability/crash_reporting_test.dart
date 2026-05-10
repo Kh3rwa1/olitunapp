@@ -13,7 +13,6 @@ void main() {
         () => CrashReporting.addAppwriteBreadcrumb(
           operation: 'list',
           collection: 'categories',
-          success: true,
         ),
         returnsNormally,
       );
@@ -50,7 +49,6 @@ void main() {
         () => CrashReporting.addUploadBreadcrumb(
           filename: 'letter_a.mp3',
           bucket: 'audio',
-          success: true,
           sizeBytes: 1024000,
         ),
         returnsNormally,
@@ -81,7 +79,6 @@ void main() {
         () => CrashReporting.addCacheBreadcrumb(
           operation: 'get',
           key: 'categories',
-          hit: true,
         ),
         returnsNormally,
       );
@@ -89,10 +86,7 @@ void main() {
 
     test('recordError does not throw when disabled', () {
       expect(
-        () => CrashReporting.recordError(
-          Exception('test'),
-          StackTrace.current,
-        ),
+        () => CrashReporting.recordError(Exception('test'), StackTrace.current),
         returnsNormally,
       );
     });

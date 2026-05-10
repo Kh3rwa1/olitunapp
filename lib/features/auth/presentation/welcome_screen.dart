@@ -162,7 +162,7 @@ class WelcomeScreen extends ConsumerWidget {
         child: Image.asset(
           'assets/icons/olitun_logo.png',
           fit: BoxFit.cover,
-          errorBuilder: (_, __, ___) => const Center(
+          errorBuilder: (_, _, _) => const Center(
             child: Text(
               'ᱚ',
               style: TextStyle(

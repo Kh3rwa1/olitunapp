@@ -1,4 +1,3 @@
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
@@ -90,8 +89,6 @@ void main() {
   });
 
   group('AiService fail-closed', () {
-
-
     test('429 returns error result (fail closed)', () async {
       final mock = MockClient((_) async => http.Response('', 429));
       // We need a URL set — use environment override or test directly

@@ -81,12 +81,12 @@ jobs:
       - name: Run tests with coverage
         run: flutter test --coverage
 
-      - name: Enforce coverage threshold (40%)
+      - name: Enforce coverage threshold (50%)
         run: |
           TOTAL=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
           echo "Coverage: ${TOTAL}%"
-          if [ "$(echo "$TOTAL < 40" | bc -l)" -eq 1 ]; then
-            echo "::error::Coverage ${TOTAL}% is below 40% release threshold"
+          if [ "$(echo "$TOTAL < 50" | bc -l)" -eq 1 ]; then
+            echo "::error::Coverage ${TOTAL}% is below 50% release threshold"
             exit 1
           fi
 
@@ -180,7 +180,7 @@ jobs:
           echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
           echo "| Environment | ✅ Validated |" >> $GITHUB_STEP_SUMMARY
           echo "| Tests | ✅ Passed |" >> $GITHUB_STEP_SUMMARY
-          echo "| Coverage | ✅ ≥40% |" >> $GITHUB_STEP_SUMMARY
+          echo "| Coverage | ✅ ≥50% |" >> $GITHUB_STEP_SUMMARY
           echo "| Web Build | ✅ Built |" >> $GITHUB_STEP_SUMMARY
           echo "| Android Build | ✅ Built |" >> $GITHUB_STEP_SUMMARY
           echo "| Tag | ✅ v${{ github.event.inputs.version }} |" >> $GITHUB_STEP_SUMMARY

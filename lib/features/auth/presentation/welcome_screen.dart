@@ -329,11 +329,11 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
         (failure) {
           if (mounted) {
             setState(() => _isLoading = false);
+            final msg = failure.message.contains('user_already_exists')
+                ? 'An account with this email already exists. Please continue with Email.'
+                : 'Google sign-in failed: ${failure.message}';
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Google sign-in failed: ${failure.message}'),
-                backgroundColor: Colors.red,
-              ),
+              SnackBar(content: Text(msg), backgroundColor: Colors.red),
             );
           }
         },

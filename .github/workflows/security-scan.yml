@@ -48,7 +48,6 @@ jobs:
           scan-args: |-
             --lockfile=pubspec.lock
             --format=table
-        continue-on-error: true
 
       - name: Scan npm dependencies
         uses: google/osv-scanner-action/osv-scanner-action@v1.9.2
@@ -57,7 +56,6 @@ jobs:
             --lockfile=scripts/package-lock.json
             --lockfile=functions/translator/package-lock.json
             --format=table
-        continue-on-error: true
 
   codeql:
     name: CodeQL Analysis

@@ -1,341 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../../core/theme/admin_tokens.dart';
-import '../../../core/theme/app_colors.dart';
-import '../../../shared/providers/providers.dart';
-import '../providers/admin_auth_provider.dart';
+import '../../../../../core/theme/admin_tokens.dart';
+import '../../../../../core/theme/app_colors.dart';
+import 'admin_brand_mark.dart';
 
-/// Admin shell — refined sidebar (desktop / tablet) and drawer (mobile) plus
-/// a polished page frame: brand mark, grouped navigation with section labels,
-/// considered active / hover state, an account footer, and a max-width
-/// content container so dense screens never feel stretched.
-class AdminShell extends ConsumerWidget {
-  final Widget child;
-
-  const AdminShell({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final width = MediaQuery.of(context).size.width;
-
-    final isDesktop = width > 1180;
-    final isTablet = width > 760 && width <= 1180;
-
-    final adminAsync = ref.watch(adminAuthProvider);
-    if (adminAsync.isLoading) {
-      return Scaffold(
-        backgroundColor: AdminTokens.base(isDark),
-        body: const Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (adminAsync.value != true) {
-      return Scaffold(
-        backgroundColor: AdminTokens.base(isDark),
-        body: Center(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: AdminTokens.accentSoft(isDark),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: AdminTokens.accentBorder(isDark)),
-                ),
-                child: const Icon(
-                  Icons.lock_outline_rounded,
-                  size: 36,
-                  color: AppColors.primary,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Text(
-                'Admin access required',
-                style: AdminTokens.sectionTitle(isDark),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-
-    _warmAdminContent(ref);
-
-    if (isDesktop || isTablet) {
-      return Scaffold(
-        backgroundColor: AdminTokens.base(isDark),
-        body: Stack(
-          children: [
-            _buildAmbientBackdrop(isDark),
-            Row(
-              children: [
-                Container(
-                  width: isDesktop ? 272 : 84,
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF0A0E15).withValues(alpha: 0.92)
-                        : Colors.white.withValues(alpha: 0.85),
-                    border: Border(
-                      right: BorderSide(color: AdminTokens.divider(isDark)),
-                    ),
-                  ),
-                  child: _AdminSidebar(isCompact: !isDesktop),
-                ),
-                Expanded(
-                  child: Column(
-                    children: [
-                      _AdminTopBar(isDark: isDark),
-                      Expanded(
-                        child: ClipRect(
-                          child: Material(
-                            color: Colors.transparent,
-                            child: child,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      );
-    }
-
-    // Mobile
-    return Scaffold(
-      backgroundColor: AdminTokens.base(isDark),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: Builder(
-          builder: (context) => IconButton(
-            icon: Icon(
-              Icons.menu_rounded,
-              color: AdminTokens.textPrimary(isDark),
-            ),
-            onPressed: () => Scaffold.of(context).openDrawer(),
-          ),
-        ),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const _BrandMark(size: 28),
-            const SizedBox(width: 10),
-            Text('Olitun CMS', style: AdminTokens.cardTitle(isDark)),
-          ],
-        ),
-      ),
-      drawer: Drawer(
-        backgroundColor: AdminTokens.raised(isDark),
-        width: 288,
-        child: const _AdminSidebar(),
-      ),
-      body: Stack(
-        children: [
-          _buildAmbientBackdrop(isDark),
-          Material(color: Colors.transparent, child: child),
-        ],
-      ),
-    );
-  }
-
-  void _warmAdminContent(WidgetRef ref) {
-    ref
-      ..read(categoryNotifierProvider)
-      ..read(lessonNotifierProvider)
-      ..read(featuredBannersProvider)
-      ..read(lettersProvider)
-      ..read(numbersProvider)
-      ..read(wordsProvider)
-      ..read(sentencesProvider)
-      ..read(quizzesProvider)
-      ..read(rhymesProvider)
-      ..read(rhymeCategoriesProvider)
-      ..read(rhymeSubcategoriesProvider);
-  }
-
-  Widget _buildAmbientBackdrop(bool isDark) {
-    return Positioned.fill(
-      child: IgnorePointer(
-        child: DecoratedBox(
-          decoration: BoxDecoration(
-            gradient: RadialGradient(
-              center: const Alignment(-0.7, -0.9),
-              radius: 1.4,
-              colors: [
-                AppColors.primary.withValues(alpha: isDark ? 0.07 : 0.05),
-                Colors.transparent,
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _BrandMark extends StatelessWidget {
-  final double size;
-  const _BrandMark({this.size = 40});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: size,
-      height: size,
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        boxShadow: AdminTokens.brandGlow(AppColors.primary, strength: 0.8),
-      ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(size * 0.28),
-        child: Image.asset('assets/icons/olitun_logo.png', fit: BoxFit.cover),
-      ),
-    );
-  }
-}
-
-class _AdminTopBar extends StatelessWidget {
-  final bool isDark;
-  const _AdminTopBar({required this.isDark});
-
-  @override
-  Widget build(BuildContext context) {
-    final location = GoRouterState.of(context).matchedLocation;
-    final crumbs = _crumbsFor(location);
-
-    return Container(
-      height: 60,
-      padding: const EdgeInsets.symmetric(horizontal: 28),
-      decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AdminTokens.divider(isDark))),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.dashboard_customize_rounded,
-            size: 16,
-            color: AdminTokens.textTertiary(isDark),
-          ),
-          const SizedBox(width: 8),
-          for (var i = 0; i < crumbs.length; i++) ...[
-            if (i > 0) ...[
-              const SizedBox(width: 8),
-              Icon(
-                Icons.chevron_right_rounded,
-                size: 16,
-                color: AdminTokens.textMuted(isDark),
-              ),
-              const SizedBox(width: 8),
-            ],
-            Text(
-              crumbs[i],
-              style: AdminTokens.label(isDark).copyWith(
-                color: i == crumbs.length - 1
-                    ? AdminTokens.textPrimary(isDark)
-                    : AdminTokens.textTertiary(isDark),
-                fontWeight: i == crumbs.length - 1
-                    ? FontWeight.w700
-                    : FontWeight.w500,
-              ),
-            ),
-          ],
-          const Spacer(),
-          _TopBarChip(
-            isDark: isDark,
-            icon: Icons.bolt_rounded,
-            label: 'Live',
-            color: AppColors.primary,
-          ),
-          const SizedBox(width: 10),
-          _TopBarChip(
-            isDark: isDark,
-            icon: Icons.person_outline_rounded,
-            label: 'Admin',
-          ),
-        ],
-      ),
-    );
-  }
-
-  List<String> _crumbsFor(String location) {
-    if (location == '/admin' || location == '/admin/') return ['Dashboard'];
-    final segments = location
-        .replaceFirst('/admin/', '')
-        .split('/')
-        .where((s) => s.isNotEmpty)
-        .toList();
-    return ['Admin', ...segments.map(_titleize)];
-  }
-
-  String _titleize(String s) {
-    final cleaned = s.replaceAll('-', ' ').replaceAll('_', ' ');
-    return cleaned
-        .split(' ')
-        .map(
-          (p) => p.isEmpty
-              ? p
-              : '${p[0].toUpperCase()}${p.substring(1).toLowerCase()}',
-        )
-        .join(' ');
-  }
-}
-
-class _TopBarChip extends StatelessWidget {
-  final bool isDark;
-  final IconData icon;
-  final String label;
-  final Color? color;
-  const _TopBarChip({
-    required this.isDark,
-    required this.icon,
-    required this.label,
-    this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final tint = color ?? AdminTokens.textSecondary(isDark);
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-      decoration: BoxDecoration(
-        color: color != null
-            ? color!.withValues(alpha: isDark ? 0.14 : 0.1)
-            : AdminTokens.sunken(isDark),
-        borderRadius: BorderRadius.circular(999),
-        border: Border.all(
-          color: color != null
-              ? color!.withValues(alpha: 0.28)
-              : AdminTokens.border(isDark),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: tint),
-          const SizedBox(width: 6),
-          Text(
-            label,
-            style: AdminTokens.label(isDark).copyWith(
-              color: tint,
-              fontSize: 11,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.4,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AdminSidebar extends StatelessWidget {
+class AdminSidebar extends StatelessWidget {
   final bool isCompact;
-  const _AdminSidebar({this.isCompact = false});
+  const AdminSidebar({super.key, this.isCompact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -355,7 +26,7 @@ class _AdminSidebar extends StatelessWidget {
               ),
               children: [
                 _SectionLabel(label: 'OVERVIEW', isCompact: isCompact),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.dashboard_rounded,
                   label: 'Dashboard',
                   isSelected: location == '/admin',
@@ -364,42 +35,42 @@ class _AdminSidebar extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SectionLabel(label: 'CONTENT', isCompact: isCompact),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.category_rounded,
                   label: 'Categories',
                   isSelected: location == '/admin/categories',
                   onTap: () => context.go('/admin/categories'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.featured_play_list_rounded,
                   label: 'Banners',
                   isSelected: location == '/admin/banners',
                   onTap: () => context.go('/admin/banners'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.text_fields_rounded,
                   label: 'Letters & Alphabet',
                   isSelected: location == '/admin/letters',
                   onTap: () => context.go('/admin/letters'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.school_rounded,
                   label: 'Lessons',
                   isSelected: location.startsWith('/admin/lessons'),
                   onTap: () => context.go('/admin/lessons'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.music_note_rounded,
                   label: 'Rhymes & Stories',
                   isSelected: location == '/admin/rhymes',
                   onTap: () => context.go('/admin/rhymes'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.grid_view_rounded,
                   label: 'Rhyme Categories',
                   isSelected: location == '/admin/rhymes/categories',
@@ -407,7 +78,7 @@ class _AdminSidebar extends StatelessWidget {
                   isCompact: isCompact,
                   indent: !isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.quiz_rounded,
                   label: 'Quizzes',
                   isSelected: location == '/admin/quizzes',
@@ -416,21 +87,21 @@ class _AdminSidebar extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SectionLabel(label: 'MEDIA', isCompact: isCompact),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.perm_media_rounded,
                   label: 'Media Library',
                   isSelected: location == '/admin/media',
                   onTap: () => context.go('/admin/media'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.audiotrack_rounded,
                   label: 'Audio Files',
                   isSelected: location == '/admin/audio',
                   onTap: () => context.go('/admin/audio'),
                   isCompact: isCompact,
                 ),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.videocam_rounded,
                   label: 'Video Files',
                   isSelected: location == '/admin/video',
@@ -439,7 +110,7 @@ class _AdminSidebar extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 _SectionLabel(label: 'SYSTEM', isCompact: isCompact),
-                _NavItem(
+                AdminNavItem(
                   icon: Icons.settings_rounded,
                   label: 'Settings',
                   isSelected: location == '/admin/settings',
@@ -466,7 +137,7 @@ class _AdminSidebar extends StatelessWidget {
             ? MainAxisAlignment.center
             : MainAxisAlignment.start,
         children: [
-          _BrandMark(size: isCompact ? 38 : 42),
+          AdminBrandMark(size: isCompact ? 38 : 42),
           if (!isCompact) ...[
             const SizedBox(width: 12),
             Expanded(
@@ -674,7 +345,7 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-class _NavItem extends StatefulWidget {
+class AdminNavItem extends StatefulWidget {
   final IconData icon;
   final String label;
   final bool isSelected;
@@ -682,7 +353,8 @@ class _NavItem extends StatefulWidget {
   final bool isCompact;
   final bool indent;
 
-  const _NavItem({
+  const AdminNavItem({
+    super.key,
     required this.icon,
     required this.label,
     required this.isSelected,
@@ -692,10 +364,10 @@ class _NavItem extends StatefulWidget {
   });
 
   @override
-  State<_NavItem> createState() => _NavItemState();
+  State<AdminNavItem> createState() => _AdminNavItemState();
 }
 
-class _NavItemState extends State<_NavItem> {
+class _AdminNavItemState extends State<AdminNavItem> {
   bool _hovering = false;
 
   @override

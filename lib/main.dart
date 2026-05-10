@@ -9,6 +9,7 @@ import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
 import 'shared/providers/local_settings_provider.dart';
+import 'l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
   // Fail fast if Appwrite config is missing; release builds must not silently
@@ -71,6 +72,8 @@ class OlitunApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _getThemeMode(themeMode),
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       routerConfig: router,
     );
   }

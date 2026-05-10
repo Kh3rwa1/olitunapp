@@ -213,7 +213,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                       width: 130,
                       height: 130,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, _, __) =>
+                      errorBuilder: (context, _, _) =>
                           Text(emoji, style: const TextStyle(fontSize: 90)),
                     ),
                   )

@@ -281,7 +281,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                       width: 150,
                       height: 150,
                       fit: BoxFit.contain,
-                      errorBuilder: (context, _, __) => Image.network(
+                      errorBuilder: (context, _, _) => Image.network(
                         _emojiToPngUrl(emoji),
                         width: 150,
                         height: 150,
@@ -295,7 +295,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                     height: 150,
                     fit: BoxFit.contain,
                     filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, __) =>
+                    errorBuilder: (context, _, _) =>
                         Text(emoji, style: const TextStyle(fontSize: 100)),
                   ),
           ),

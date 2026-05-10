@@ -83,7 +83,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
           tween: Tween(begin: _from.toDouble(), end: _to.toDouble()),
           duration: dur,
           curve: curve,
-          builder: (_, v, __) => Text(
+          builder: (_, v, _) => Text(
             '${widget.prefix}${v.round()}${widget.suffix}',
             style: widget.style,
             textAlign: widget.textAlign,

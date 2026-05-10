@@ -99,10 +99,10 @@ class CrashReporting {
         level: success ? SentryLevel.info : SentryLevel.error,
         data: {
           'collection': collection,
-          if (documentId != null) 'documentId': documentId,
+          'documentId': ?documentId,
           'success': success,
-          if (error != null) 'error': error,
-          if (statusCode != null) 'statusCode': statusCode,
+          'error': ?error,
+          'statusCode': ?statusCode,
         },
       ),
     );

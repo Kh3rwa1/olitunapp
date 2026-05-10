@@ -65,3 +65,4 @@ test_hive_cache/
 *.apk
 *.aab
 *.ipa
+test_hive_cache_v2/

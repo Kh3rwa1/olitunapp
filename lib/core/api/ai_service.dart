@@ -109,6 +109,16 @@ class AiService {
       if (parsed == null) {
         return _failClosed('Unexpected response format.');
       }
+      
+      final int? innerStatusCode = parsed['_appwriteStatusCode'] as int?;
+      if (innerStatusCode == 429 || response.statusCode == 429) {
+        debugPrint('AiService: 429 rate-limited on $endpointName');
+        return TranslateResult(
+          translation: 'Rate limit reached. Please try again later.',
+          isError: true,
+        );
+      }
+
       if (parsed['success'] != true || parsed['data'] == null) {
         debugPrint('AiService API error: ${parsed['message']}');
         return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
@@ -152,9 +162,19 @@ Map<String, dynamic>? _unwrapAppwriteExecution(String body) {
     // An Appwrite Execution has $id + status + responseBody fields.
     if (raw.containsKey('responseBody') && raw.containsKey('status')) {
       final inner = raw['responseBody'];
+      final statusCode = raw['responseStatusCode'];
+      
       if (inner is String && inner.isNotEmpty) {
-        final innerJson = jsonDecode(inner);
-        return innerJson is Map<String, dynamic> ? innerJson : null;
+        try {
+          final innerJson = jsonDecode(inner);
+          if (innerJson is Map<String, dynamic>) {
+            innerJson['_appwriteStatusCode'] = statusCode;
+            return innerJson;
+          }
+        } catch (_) {
+          // If JSON decode fails, just return the string wrapped
+        }
+        return {'_appwriteStatusCode': statusCode, 'message': inner};
       }
       return null;
     }

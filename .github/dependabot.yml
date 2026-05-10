@@ -37,3 +37,13 @@ updates:
     schedule:
       interval: "monthly"
     open-pull-requests-limit: 2
+
+  - package-ecosystem: "npm"
+    directory: "/functions/translator"
+    schedule:
+      interval: "weekly"
+      day: "wednesday"
+    open-pull-requests-limit: 3
+    labels:
+      - "dependencies"
+      - "appwrite-function"

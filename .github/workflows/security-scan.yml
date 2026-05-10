@@ -55,6 +55,7 @@ jobs:
         with:
           scan-args: |-
             --lockfile=scripts/package-lock.json
+            --lockfile=functions/translator/package-lock.json
             --format=table
         continue-on-error: true
 

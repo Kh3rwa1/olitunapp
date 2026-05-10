@@ -55,6 +55,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Bump version in pubspec.yaml
+        run: |
+          VERSION="${{ github.event.inputs.version }}"
+          sed -i -E "s/^version: .*/version: $VERSION/" pubspec.yaml
+
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
@@ -155,12 +160,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Create release tag
+      - name: Commit version bump and create release tag
         run: |
-          VERSION="v${{ github.event.inputs.version }}"
-          git tag "$VERSION"
-          git push origin "$VERSION"
-          echo "✅ Tagged release: $VERSION"
+          VERSION="${{ github.event.inputs.version }}"
+          sed -i -E "s/^version: .*/version: $VERSION/" pubspec.yaml
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git commit -a -m "chore(release): bump version to $VERSION" || true
+          git push origin HEAD
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
+          echo "✅ Tagged release: v$VERSION"
 
       - name: Generate release summary
         run: |

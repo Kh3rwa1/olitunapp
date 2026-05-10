@@ -94,7 +94,7 @@ class AdminTopBarChip extends StatelessWidget {
   final IconData icon;
   final String label;
   final Color? color;
-  
+
   const AdminTopBarChip({
     super.key,
     required this.isDark,

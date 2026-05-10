@@ -22,7 +22,7 @@ import '../../features/legal/presentation/legal_document_screen.dart';
 import '../../features/admin/presentation/admin_login_screen.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/admin/presentation/dashboard/admin_dashboard_screen.dart';
-import '../../features/admin/presentation/admin_categories_screen.dart';
+import '../../features/admin/presentation/categories/admin_categories_screen.dart';
 import '../../features/admin/presentation/banners/admin_banners_screen.dart';
 import '../../features/admin/presentation/letters/admin_letters_screen.dart';
 import '../../features/admin/presentation/admin_lessons_screen.dart';

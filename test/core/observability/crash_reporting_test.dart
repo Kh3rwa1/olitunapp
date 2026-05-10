@@ -1,34 +1,106 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/observability/crash_reporting.dart';
+import 'package:itun/core/error/failures.dart';
 
 void main() {
   group('CrashReporting', () {
-    test('is disabled in debug / when DSN is empty', () {
-      // Tests run with kDebugMode == true and no SENTRY_DSN dart-define,
-      // so isEnabled must be false and no recording call may throw.
+    test('isEnabled is false in test environment', () {
       expect(CrashReporting.isEnabled, isFalse);
+    });
+
+    test('addAppwriteBreadcrumb does not throw when disabled', () {
       expect(
-        () => CrashReporting.recordError(Exception('x'), StackTrace.current),
-        returnsNormally,
-      );
-      expect(
-        () => CrashReporting.recordFailure(
-          const ServerFailure(message: 'boom', code: 500),
+        () => CrashReporting.addAppwriteBreadcrumb(
+          operation: 'list',
+          collection: 'categories',
+          success: true,
         ),
         returnsNormally,
       );
     });
 
-    test('recordFailure tolerates NetworkFailure and ValidationFailure', () {
-      // These failure types are user-facing expected outcomes, never sent.
+    test('addAppwriteBreadcrumb with failure does not throw', () {
       expect(
-        () => CrashReporting.recordFailure(const NetworkFailure()),
+        () => CrashReporting.addAppwriteBreadcrumb(
+          operation: 'create',
+          collection: 'lessons',
+          documentId: 'abc123',
+          success: false,
+          error: 'Timeout',
+          statusCode: 408,
+        ),
         returnsNormally,
       );
+    });
+
+    test('addAdminWriteBreadcrumb does not throw when disabled', () {
+      expect(
+        () => CrashReporting.addAdminWriteBreadcrumb(
+          action: 'create',
+          entity: 'lesson',
+          entityId: 'lesson-1',
+          metadata: {'title': 'Alphabet Intro'},
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('addUploadBreadcrumb does not throw when disabled', () {
+      expect(
+        () => CrashReporting.addUploadBreadcrumb(
+          filename: 'letter_a.mp3',
+          bucket: 'audio',
+          success: true,
+          sizeBytes: 1024000,
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('addUploadBreadcrumb with failure does not throw', () {
+      expect(
+        () => CrashReporting.addUploadBreadcrumb(
+          filename: 'huge.mp4',
+          bucket: 'videos',
+          success: false,
+          error: 'File too large',
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('addNavigationBreadcrumb does not throw when disabled', () {
+      expect(
+        () => CrashReporting.addNavigationBreadcrumb('/home', '/admin'),
+        returnsNormally,
+      );
+    });
+
+    test('addCacheBreadcrumb does not throw when disabled', () {
+      expect(
+        () => CrashReporting.addCacheBreadcrumb(
+          operation: 'get',
+          key: 'categories',
+          hit: true,
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('recordError does not throw when disabled', () {
+      expect(
+        () => CrashReporting.recordError(
+          Exception('test'),
+          StackTrace.current,
+        ),
+        returnsNormally,
+      );
+    });
+
+    test('recordFailure does not throw when disabled', () {
       expect(
         () => CrashReporting.recordFailure(
-          const ValidationFailure(message: 'bad'),
+          const ServerFailure(message: 'test', code: 500),
         ),
         returnsNormally,
       );

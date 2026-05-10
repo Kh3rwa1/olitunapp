@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'cache_service.dart';
 
 /// Riverpod provider for [SharedPreferences].
 ///
@@ -18,8 +19,11 @@ final sharedPreferencesProvider = Provider<SharedPreferences>((_) {
 ///
 /// Returns the [SharedPreferences] instance so the caller can feed it into
 /// the `ProviderScope` override.
+/// Also evicts stale cache entries on every startup.
 Future<SharedPreferences> initStorage() async {
   final prefs = await SharedPreferences.getInstance();
   await Hive.initFlutter();
+  // Evict expired / schema-mismatched cache entries on startup.
+  await CacheService.evictStale();
   return prefs;
 }

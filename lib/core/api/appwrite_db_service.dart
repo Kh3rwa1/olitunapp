@@ -2,6 +2,7 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/appwrite_config.dart';
 import '../auth/appwrite_auth_service.dart';
+import '../observability/crash_reporting.dart';
 import 'appwrite_query_paging.dart';
 
 class AppwriteDbService {
@@ -120,14 +121,30 @@ class AppwriteDbService {
     // Remove null values
     payload.removeWhere((key, value) => value == null);
 
-    await _tablesDB
-        .createRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: collectionId,
-          rowId: documentId,
-          data: payload,
-        )
-        .timeout(_writeTimeout);
+    try {
+      await _tablesDB
+          .createRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            rowId: documentId,
+            data: payload,
+          )
+          .timeout(_writeTimeout);
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'create',
+        collection: collectionId,
+        documentId: documentId,
+      );
+    } catch (e) {
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'create',
+        collection: collectionId,
+        documentId: documentId,
+        success: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
   }
 
   /// Update a document
@@ -139,25 +156,57 @@ class AppwriteDbService {
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
-    await _tablesDB
-        .updateRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: collectionId,
-          rowId: documentId,
-          data: payload,
-        )
-        .timeout(_writeTimeout);
+    try {
+      await _tablesDB
+          .updateRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            rowId: documentId,
+            data: payload,
+          )
+          .timeout(_writeTimeout);
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'update',
+        collection: collectionId,
+        documentId: documentId,
+      );
+    } catch (e) {
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'update',
+        collection: collectionId,
+        documentId: documentId,
+        success: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
   }
 
   /// Delete a document
   Future<void> deleteDocument(String collectionId, String documentId) async {
-    await _tablesDB
-        .deleteRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: collectionId,
-          rowId: documentId,
-        )
-        .timeout(_writeTimeout);
+    try {
+      await _tablesDB
+          .deleteRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            rowId: documentId,
+          )
+          .timeout(_writeTimeout);
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'delete',
+        collection: collectionId,
+        documentId: documentId,
+      );
+    } catch (e) {
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'delete',
+        collection: collectionId,
+        documentId: documentId,
+        success: false,
+        error: e.toString(),
+      );
+      rethrow;
+    }
   }
 
   // ─── Storage Helpers ───

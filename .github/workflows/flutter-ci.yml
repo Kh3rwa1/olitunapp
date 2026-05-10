@@ -40,8 +40,8 @@ jobs:
         run: |
           TOTAL=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
           echo "Coverage: ${TOTAL}%"
-          if [ "$(echo "$TOTAL < 40" | bc -l)" -eq 1 ]; then
-            echo "::error::Test coverage ${TOTAL}% is below 40% threshold"
+          if [ "$(echo "$TOTAL < 50" | bc -l)" -eq 1 ]; then
+            echo "::error::Test coverage ${TOTAL}% is below 50% threshold"
             exit 1
           fi
 

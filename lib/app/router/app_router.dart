@@ -24,7 +24,7 @@ import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/admin/presentation/admin_dashboard_screen.dart';
 import '../../features/admin/presentation/admin_categories_screen.dart';
 import '../../features/admin/presentation/admin_banners_screen.dart';
-import '../../features/admin/presentation/admin_letters_screen.dart';
+import '../../features/admin/presentation/letters/admin_letters_screen.dart';
 import '../../features/admin/presentation/admin_lessons_screen.dart';
 import '../../features/admin/presentation/admin_lesson_content_screen.dart';
 import '../../features/admin/presentation/admin_quizzes_screen.dart';

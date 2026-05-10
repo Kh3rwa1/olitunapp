@@ -55,7 +55,8 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                           LessonFilterChip(
                             label: 'All Lessons',
                             isSelected: _selectedCategoryId == null,
-                            onTap: () => setState(() => _selectedCategoryId = null),
+                            onTap: () =>
+                                setState(() => _selectedCategoryId = null),
                             isDark: isDark,
                           ),
                           ...categories.map(
@@ -64,7 +65,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                               child: LessonFilterChip(
                                 label: img.titleLatin,
                                 isSelected: _selectedCategoryId == img.id,
-                                onTap: () => setState(() => _selectedCategoryId = img.id),
+                                onTap: () => setState(
+                                  () => _selectedCategoryId = img.id,
+                                ),
                                 isDark: isDark,
                               ),
                             ),
@@ -86,13 +89,22 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                     data: (lessons) {
                       final filteredLessons = _selectedCategoryId == null
                           ? lessons
-                          : lessons.where((l) => l.categoryId == _selectedCategoryId).toList();
+                          : lessons
+                                .where(
+                                  (l) => l.categoryId == _selectedCategoryId,
+                                )
+                                .toList();
 
                       return filteredLessons.isEmpty
                           ? _buildEmptyState(context, isDark)
-                          : _buildLessonsList(filteredLessons, isDark, isWideScreen);
+                          : _buildLessonsList(
+                              filteredLessons,
+                              isDark,
+                              isWideScreen,
+                            );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (error, stack) => Center(
                       child: Text(
                         'Error: $error',
@@ -175,7 +187,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                       fontSize: 32,
                       fontWeight: FontWeight.w900,
                       letterSpacing: -1.5,
-                      color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
+                      color: isDark
+                          ? AppColors.textPrimaryDark
+                          : AppColors.textPrimaryLight,
                     ),
                   ),
                   const SizedBox(height: 4),
@@ -184,7 +198,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                     style: TextStyle(
                       fontSize: 15,
                       fontWeight: FontWeight.w500,
-                      color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
+                      color: isDark
+                          ? AppColors.textTertiaryDark
+                          : AppColors.textTertiaryLight,
                     ),
                   ),
                 ],
@@ -198,49 +214,56 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            width: 100,
-            height: 100,
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumCyan,
-              borderRadius: BorderRadius.circular(30),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.primary.withValues(alpha: 0.3),
-                  blurRadius: 30,
-                  offset: const Offset(0, 10),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  gradient: AppColors.premiumCyan,
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            child: const Icon(
-              Icons.school_outlined,
-              size: 50,
-              color: Colors.white,
-            ),
+                child: const Icon(
+                  Icons.school_outlined,
+                  size: 50,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 28),
+              Text(
+                'No lessons found',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w800,
+                  color: isDark
+                      ? AppColors.textPrimaryDark
+                      : AppColors.textPrimaryLight,
+                ),
+              ),
+              const SizedBox(height: 10),
+              Text(
+                'Create your first lesson to get started',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: isDark
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 28),
-          Text(
-            'No lessons found',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight,
-            ),
-          ),
-          const SizedBox(height: 10),
-          Text(
-            'Create your first lesson to get started',
-            style: TextStyle(
-              fontSize: 15,
-              color: isDark ? AppColors.textTertiaryDark : AppColors.textTertiaryLight,
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(delay: 200.ms, duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
+        )
+        .animate()
+        .fadeIn(delay: 200.ms, duration: 500.ms)
+        .scale(begin: const Offset(0.9, 0.9));
   }
 
   Widget _buildLessonsList(
@@ -281,7 +304,9 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           ),
           TextButton(
             onPressed: () async {
-              await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+              await ref
+                  .read(lessonNotifierProvider.notifier)
+                  .deleteLesson(lesson.id);
               if (dialogContext.mounted) Navigator.pop(dialogContext);
             },
             child: const Text('Delete'),

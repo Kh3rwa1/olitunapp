@@ -102,14 +102,16 @@ class AiService {
       // returns 201 with an Execution object wrapping the body.
       if (response.statusCode != 200 && response.statusCode != 201) {
         debugPrint('AiService HTTP ${response.statusCode}: ${response.body}');
-        return _failClosed('Service error (${response.statusCode}). Please try again.');
+        return _failClosed(
+          'Service error (${response.statusCode}). Please try again.',
+        );
       }
 
       final parsed = _unwrapAppwriteExecution(response.body);
       if (parsed == null) {
         return _failClosed('Unexpected response format.');
       }
-      
+
       final int? innerStatusCode = parsed['_appwriteStatusCode'] as int?;
       if (innerStatusCode == 429 || response.statusCode == 429) {
         debugPrint('AiService: 429 rate-limited on $endpointName');
@@ -163,7 +165,7 @@ Map<String, dynamic>? _unwrapAppwriteExecution(String body) {
     if (raw.containsKey('responseBody') && raw.containsKey('status')) {
       final inner = raw['responseBody'];
       final statusCode = raw['responseStatusCode'];
-      
+
       if (inner is String && inner.isNotEmpty) {
         try {
           final innerJson = jsonDecode(inner);

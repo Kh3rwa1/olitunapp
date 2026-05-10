@@ -13,7 +13,12 @@ class CacheEntry {
   final int createdAtMs;
   final int? ttlMs;
 
-  CacheEntry({required this.data, required this.schemaVersion, required this.createdAtMs, this.ttlMs});
+  CacheEntry({
+    required this.data,
+    required this.schemaVersion,
+    required this.createdAtMs,
+    this.ttlMs,
+  });
 
   bool get isExpired {
     if (ttlMs == null) return false;

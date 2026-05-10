@@ -20,7 +20,8 @@ class AdminLessonContentScreen extends ConsumerStatefulWidget {
       _AdminLessonContentScreenState();
 }
 
-class _AdminLessonContentScreenState extends ConsumerState<AdminLessonContentScreen> {
+class _AdminLessonContentScreenState
+    extends ConsumerState<AdminLessonContentScreen> {
   late List<LessonBlockEntity> _blocks;
   bool _isLoading = true;
   bool _hasChanges = false;
@@ -65,7 +66,8 @@ class _AdminLessonContentScreenState extends ConsumerState<AdminLessonContentScr
     EditBlockSheet.show(
       context: context,
       block: _blocks.last,
-      onUpdate: (updatedBlock) => _updateBlock(_blocks.length - 1, updatedBlock),
+      onUpdate: (updatedBlock) =>
+          _updateBlock(_blocks.length - 1, updatedBlock),
     );
   }
 

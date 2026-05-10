@@ -58,7 +58,8 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                           AdminFilterChip(
                             label: 'All Quizzes',
                             selected: _selectedCategoryId == null,
-                            onTap: () => setState(() => _selectedCategoryId = null),
+                            onTap: () =>
+                                setState(() => _selectedCategoryId = null),
                           ),
                           ...categories.map(
                             (img) => Padding(
@@ -66,7 +67,9 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                               child: AdminFilterChip(
                                 label: img.titleLatin,
                                 selected: _selectedCategoryId == img.id,
-                                onTap: () => setState(() => _selectedCategoryId = img.id),
+                                onTap: () => setState(
+                                  () => _selectedCategoryId = img.id,
+                                ),
                               ),
                             ),
                           ),
@@ -87,13 +90,22 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                     data: (quizzes) {
                       final filteredQuizzes = _selectedCategoryId == null
                           ? quizzes
-                          : quizzes.where((q) => q.categoryId == _selectedCategoryId).toList();
+                          : quizzes
+                                .where(
+                                  (q) => q.categoryId == _selectedCategoryId,
+                                )
+                                .toList();
 
                       return filteredQuizzes.isEmpty
                           ? _buildEmptyState(context, isDark)
-                          : _buildQuizzesList(filteredQuizzes, isDark, isWideScreen);
+                          : _buildQuizzesList(
+                              filteredQuizzes,
+                              isDark,
+                              isWideScreen,
+                            );
                     },
-                    loading: () => const Center(child: CircularProgressIndicator()),
+                    loading: () =>
+                        const Center(child: CircularProgressIndicator()),
                     error: (error, _) => Center(
                       child: Text(
                         'Error: $error',
@@ -158,12 +170,16 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {
     return AdminEmptyState(
-      icon: Icons.quiz_outlined,
-      title: 'No quizzes found',
-      message: 'Create your first quiz to assess what learners have mastered.',
-      actionLabel: 'Add Quiz',
-      onAction: () => QuizFormSheet.show(context, ref, null),
-    ).animate().fadeIn(delay: 200.ms, duration: 500.ms).scale(begin: const Offset(0.96, 0.96));
+          icon: Icons.quiz_outlined,
+          title: 'No quizzes found',
+          message:
+              'Create your first quiz to assess what learners have mastered.',
+          actionLabel: 'Add Quiz',
+          onAction: () => QuizFormSheet.show(context, ref, null),
+        )
+        .animate()
+        .fadeIn(delay: 200.ms, duration: 500.ms)
+        .scale(begin: const Offset(0.96, 0.96));
   }
 
   Widget _buildQuizzesList(
@@ -203,9 +219,9 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
         await ref.read(quizzesProvider.notifier).deleteQuiz(quiz.id);
       } catch (e) {
         if (!context.mounted) return;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Could not delete quiz: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Could not delete quiz: $e')));
       }
     }
   }

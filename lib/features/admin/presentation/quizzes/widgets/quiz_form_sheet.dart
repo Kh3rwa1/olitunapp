@@ -30,7 +30,7 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _orderCtrl;
   late final TextEditingController _passingScoreCtrl;
-  
+
   String? _selectedCategoryId;
   String _level = 'beginner';
   bool _isActive = true;
@@ -41,12 +41,17 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
   void initState() {
     super.initState();
     final quiz = widget.quiz;
-    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
-    
-    _selectedCategoryId = quiz?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+    final categories =
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+
+    _selectedCategoryId =
+        quiz?.categoryId ??
+        (categories.isNotEmpty ? categories.first.id : null);
     _titleCtrl = TextEditingController(text: quiz?.title ?? '');
     _orderCtrl = TextEditingController(text: (quiz?.order ?? 0).toString());
-    _passingScoreCtrl = TextEditingController(text: (quiz?.passingScore ?? 70).toString());
+    _passingScoreCtrl = TextEditingController(
+      text: (quiz?.passingScore ?? 70).toString(),
+    );
     _level = quiz?.level ?? 'beginner';
     _isActive = quiz?.isActive ?? true;
   }
@@ -62,7 +67,8 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+    final categories =
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.78,
@@ -127,12 +133,15 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                 DropdownButtonFormField<String>(
                   initialValue: _selectedCategoryId,
                   items: categories
-                      .map((c) => DropdownMenuItem(
-                            value: c.id,
-                            child: Text(c.titleLatin),
-                          ))
+                      .map(
+                        (c) => DropdownMenuItem(
+                          value: c.id,
+                          child: Text(c.titleLatin),
+                        ),
+                      )
                       .toList(),
-                  onChanged: (value) => setState(() => _selectedCategoryId = value),
+                  onChanged: (value) =>
+                      setState(() => _selectedCategoryId = value),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: isDark
@@ -235,19 +244,29 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                             final newQuiz = QuizModel(
                               id: widget.quiz?.id ?? const Uuid().v4(),
                               categoryId: _selectedCategoryId!,
-                              title: _titleCtrl.text.trim().isEmpty ? null : _titleCtrl.text.trim(),
+                              title: _titleCtrl.text.trim().isEmpty
+                                  ? null
+                                  : _titleCtrl.text.trim(),
                               order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-                              passingScore: int.tryParse(_passingScoreCtrl.text.trim()) ?? 70,
+                              passingScore:
+                                  int.tryParse(_passingScoreCtrl.text.trim()) ??
+                                  70,
                               level: _level,
                               isActive: _isActive,
-                              questions: widget.quiz?.questions ?? const <QuizQuestion>[],
+                              questions:
+                                  widget.quiz?.questions ??
+                                  const <QuizQuestion>[],
                             );
 
                             try {
                               if (_isEditing) {
-                                await ref.read(quizzesProvider.notifier).updateQuiz(newQuiz);
+                                await ref
+                                    .read(quizzesProvider.notifier)
+                                    .updateQuiz(newQuiz);
                               } else {
-                                await ref.read(quizzesProvider.notifier).addQuiz(newQuiz);
+                                await ref
+                                    .read(quizzesProvider.notifier)
+                                    .addQuiz(newQuiz);
                               }
 
                               if (context.mounted) {
@@ -256,7 +275,9 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                             } catch (e) {
                               if (!context.mounted) return;
                               ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Could not save quiz: $e')),
+                                SnackBar(
+                                  content: Text('Could not save quiz: $e'),
+                                ),
                               );
                             }
                           },

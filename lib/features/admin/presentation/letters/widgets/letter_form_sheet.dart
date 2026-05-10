@@ -50,7 +50,9 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
   void initState() {
     super.initState();
     _charCtrl = TextEditingController(text: widget.letter?.charOlChiki ?? '');
-    _romanCtrl = TextEditingController(text: widget.letter?.transliterationLatin ?? '');
+    _romanCtrl = TextEditingController(
+      text: widget.letter?.transliterationLatin ?? '',
+    );
     _pronCtrl = TextEditingController(text: widget.letter?.pronunciation ?? '');
     _audioUrl = widget.letter?.audioUrl;
     _imageUrl = widget.letter?.imageUrl;
@@ -67,9 +69,14 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
 
   // ─── AI-assisted field fill ───────────────────────────
 
-  Future<void> _magicFill(TextEditingController target, String Function(TranslateResult) transform) async {
+  Future<void> _magicFill(
+    TextEditingController target,
+    String Function(TranslateResult) transform,
+  ) async {
     if (_charCtrl.text.trim().isEmpty) return;
-    final result = await ref.read(aiServiceProvider).translateFromOlChiki(_charCtrl.text.trim());
+    final result = await ref
+        .read(aiServiceProvider)
+        .translateFromOlChiki(_charCtrl.text.trim());
     if (result != null && mounted) {
       setState(() => target.text = transform(result));
     }
@@ -107,7 +114,9 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: AdminTokens.overlay(isDark),
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(AdminTokens.radius2xl)),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(AdminTokens.radius2xl),
+        ),
         boxShadow: AdminTokens.overlayShadow(isDark),
       ),
       child: Column(
@@ -179,18 +188,32 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AdminTextField(controller: _charCtrl, label: 'Ol Chiki Character', hint: 'e.g., ᱚ'),
-          const SizedBox(height: 20),
-          _aiRow(
-            child: AdminTextField(controller: _romanCtrl, label: 'Romanization', hint: 'e.g., a'),
-            tooltip: 'Magic Fill (Romanization)',
-            onTap: () => _magicFill(_romanCtrl, (r) => r.translation.toLowerCase()),
+          AdminTextField(
+            controller: _charCtrl,
+            label: 'Ol Chiki Character',
+            hint: 'e.g., ᱚ',
           ),
           const SizedBox(height: 20),
           _aiRow(
-            child: AdminTextField(controller: _pronCtrl, label: 'Pronunciation (optional)', hint: 'e.g., like "a" in "about"'),
+            child: AdminTextField(
+              controller: _romanCtrl,
+              label: 'Romanization',
+              hint: 'e.g., a',
+            ),
+            tooltip: 'Magic Fill (Romanization)',
+            onTap: () =>
+                _magicFill(_romanCtrl, (r) => r.translation.toLowerCase()),
+          ),
+          const SizedBox(height: 20),
+          _aiRow(
+            child: AdminTextField(
+              controller: _pronCtrl,
+              label: 'Pronunciation (optional)',
+              hint: 'e.g., like "a" in "about"',
+            ),
             tooltip: 'Magic Fill (Pronunciation)',
-            onTap: () => _magicFill(_pronCtrl, (r) => 'like "${r.translation}" in ...'),
+            onTap: () =>
+                _magicFill(_pronCtrl, (r) => 'like "${r.translation}" in ...'),
           ),
           const SizedBox(height: 24),
           LetterMediaField(
@@ -218,7 +241,11 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
                 url,
                 height: 120,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(Icons.broken_image_rounded, size: 60, color: Colors.grey),
+                errorBuilder: (_, __, ___) => const Icon(
+                  Icons.broken_image_rounded,
+                  size: 60,
+                  color: Colors.grey,
+                ),
               ),
             ),
           ),
@@ -240,7 +267,11 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
   }
 
   /// Text field + AI magic-fill button in a Row.
-  Widget _aiRow({required Widget child, required String tooltip, required VoidCallback onTap}) {
+  Widget _aiRow({
+    required Widget child,
+    required String tooltip,
+    required VoidCallback onTap,
+  }) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
@@ -262,7 +293,12 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
         top: false,
         child: Row(
           children: [
-            Expanded(child: AdminSecondaryButton(label: 'Cancel', onTap: () => Navigator.pop(context))),
+            Expanded(
+              child: AdminSecondaryButton(
+                label: 'Cancel',
+                onTap: () => Navigator.pop(context),
+              ),
+            ),
             const SizedBox(width: 12),
             Expanded(
               flex: 2,
@@ -308,7 +344,11 @@ class _MagicFillButtonState extends State<_MagicFillButton> {
               }
             },
       icon: _loading
-          ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+          ? const SizedBox(
+              width: 20,
+              height: 20,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
           : const Icon(Icons.auto_awesome_rounded, size: 20),
       tooltip: widget.tooltip,
     );

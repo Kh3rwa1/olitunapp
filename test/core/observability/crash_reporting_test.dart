@@ -89,10 +89,7 @@ void main() {
 
     test('recordError does not throw when disabled', () {
       expect(
-        () => CrashReporting.recordError(
-          Exception('test'),
-          StackTrace.current,
-        ),
+        () => CrashReporting.recordError(Exception('test'), StackTrace.current),
         returnsNormally,
       );
     });

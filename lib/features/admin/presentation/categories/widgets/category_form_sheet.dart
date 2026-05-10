@@ -14,7 +14,11 @@ class CategoryFormSheet extends ConsumerStatefulWidget {
 
   const CategoryFormSheet({super.key, this.category});
 
-  static void show(BuildContext context, WidgetRef ref, CategoryEntity? category) {
+  static void show(
+    BuildContext context,
+    WidgetRef ref,
+    CategoryEntity? category,
+  ) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -41,11 +45,19 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
   @override
   void initState() {
     super.initState();
-    _titleLatinCtrl = TextEditingController(text: widget.category?.titleLatin ?? '');
-    _titleOlChikiCtrl = TextEditingController(text: widget.category?.titleOlChiki ?? '');
-    _descriptionCtrl = TextEditingController(text: widget.category?.description ?? '');
+    _titleLatinCtrl = TextEditingController(
+      text: widget.category?.titleLatin ?? '',
+    );
+    _titleOlChikiCtrl = TextEditingController(
+      text: widget.category?.titleOlChiki ?? '',
+    );
+    _descriptionCtrl = TextEditingController(
+      text: widget.category?.description ?? '',
+    );
     _iconUrlCtrl = TextEditingController(text: widget.category?.iconUrl ?? '');
-    _animationUrlCtrl = TextEditingController(text: widget.category?.animationUrl ?? '');
+    _animationUrlCtrl = TextEditingController(
+      text: widget.category?.animationUrl ?? '',
+    );
     _selectedGradient = widget.category?.gradientPreset ?? 'skyBlue';
     _selectedIcon = widget.category?.iconName ?? 'alphabet';
   }
@@ -68,7 +80,9 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
       titleOlChiki: _titleOlChikiCtrl.text,
       description: _descriptionCtrl.text,
       iconUrl: _iconUrlCtrl.text.isNotEmpty ? _iconUrlCtrl.text : null,
-      animationUrl: _animationUrlCtrl.text.isNotEmpty ? _animationUrlCtrl.text : null,
+      animationUrl: _animationUrlCtrl.text.isNotEmpty
+          ? _animationUrlCtrl.text
+          : null,
       gradientPreset: _selectedGradient,
       iconName: _selectedIcon,
       order: widget.category?.order ?? 0,
@@ -213,13 +227,15 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                         gradient: AppColors.skyBlueGradient,
                         label: 'Blue',
                         isSelected: _selectedGradient == 'skyBlue',
-                        onTap: () => setState(() => _selectedGradient = 'skyBlue'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'skyBlue'),
                       ),
                       _GradientOption(
                         gradient: AppColors.peachGradient,
                         label: 'Peach',
                         isSelected: _selectedGradient == 'peach',
-                        onTap: () => setState(() => _selectedGradient = 'peach'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'peach'),
                       ),
                       _GradientOption(
                         gradient: AppColors.mintGradient,
@@ -231,13 +247,15 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                         gradient: AppColors.sunsetGradient,
                         label: 'Sunset',
                         isSelected: _selectedGradient == 'sunset',
-                        onTap: () => setState(() => _selectedGradient = 'sunset'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'sunset'),
                       ),
                       _GradientOption(
                         gradient: AppColors.skyBlueGradient,
                         label: 'Purple',
                         isSelected: _selectedGradient == 'purple',
-                        onTap: () => setState(() => _selectedGradient = 'purple'),
+                        onTap: () =>
+                            setState(() => _selectedGradient = 'purple'),
                       ),
                     ],
                   ),
@@ -264,7 +282,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                         isSelected: _selectedIcon == 'alphabet',
                         onTap: () => setState(() => _selectedIcon = 'alphabet'),
                         isDark: isDark,
-                    ),
+                      ),
                       _IconOption(
                         icon: Icons.pin_rounded,
                         label: 'Numbers',
@@ -283,7 +301,8 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                         icon: Icons.calculate_rounded,
                         label: 'Math',
                         isSelected: _selectedIcon == 'arithmetic',
-                        onTap: () => setState(() => _selectedIcon = 'arithmetic'),
+                        onTap: () =>
+                            setState(() => _selectedIcon = 'arithmetic'),
                         isDark: isDark,
                       ),
                       _IconOption(
@@ -364,7 +383,9 @@ class _GradientOption extends StatelessWidget {
             decoration: BoxDecoration(
               gradient: gradient,
               shape: BoxShape.circle,
-              border: isSelected ? Border.all(color: Colors.white, width: 3) : null,
+              border: isSelected
+                  ? Border.all(color: Colors.white, width: 3)
+                  : null,
               boxShadow: isSelected
                   ? [
                       BoxShadow(
@@ -434,8 +455,8 @@ class _IconOption extends StatelessWidget {
               color: isSelected
                   ? Colors.white
                   : isDark
-                      ? Colors.white54
-                      : Colors.black54,
+                  ? Colors.white54
+                  : Colors.black54,
             ),
           ),
           const SizedBox(height: 6),

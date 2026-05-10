@@ -30,7 +30,10 @@ class AdminDashboardScreen extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              DashboardHeader(isDark: isDark, onSeedData: () => _handleSeeding(context, ref)),
+              DashboardHeader(
+                isDark: isDark,
+                onSeedData: () => _handleSeeding(context, ref),
+              ),
               SizedBox(height: isWide ? 32 : 24),
               DashboardBentoGrid(isDark: isDark, isWide: isWide),
               SizedBox(height: isWide ? 24 : 20),
@@ -72,7 +75,10 @@ class AdminDashboardScreen extends ConsumerWidget {
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
         ),
-        title: Text('Seed sample data?', style: AdminTokens.sectionTitle(isDark)),
+        title: Text(
+          'Seed sample data?',
+          style: AdminTokens.sectionTitle(isDark),
+        ),
         content: Text(
           'This will populate the app with rich sample categories, lessons, and letters. Existing data is preserved.',
           style: AdminTokens.body(isDark),

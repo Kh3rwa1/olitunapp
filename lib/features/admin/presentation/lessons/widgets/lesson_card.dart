@@ -83,7 +83,8 @@ class LessonCard extends StatelessWidget {
               tooltip: 'Edit Details',
             ),
             IconButton(
-              onPressed: () => context.go('/admin/lessons/content/${lesson.id}'),
+              onPressed: () =>
+                  context.go('/admin/lessons/content/${lesson.id}'),
               icon: Icon(
                 Icons.playlist_add_rounded,
                 color: isDark ? Colors.white70 : Colors.black54,

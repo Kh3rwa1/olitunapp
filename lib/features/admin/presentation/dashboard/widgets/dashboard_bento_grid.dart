@@ -7,7 +7,11 @@ import '../../widgets/dashboard_kpi_widgets.dart';
 class DashboardBentoGrid extends ConsumerWidget {
   final bool isDark;
   final bool isWide;
-  const DashboardBentoGrid({super.key, required this.isDark, required this.isWide});
+  const DashboardBentoGrid({
+    super.key,
+    required this.isDark,
+    required this.isWide,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -92,13 +96,15 @@ class DashboardBentoGrid extends ConsumerWidget {
             crossAxisSpacing: 16,
             childAspectRatio: 1.55,
             children: supporting
-                .map((k) => DashboardKpiCard(
-                  label: k.label,
-                  value: k.value,
-                  icon: k.icon,
-                  accent: k.accent,
-                  isDark: isDark,
-                ))
+                .map(
+                  (k) => DashboardKpiCard(
+                    label: k.label,
+                    value: k.value,
+                    icon: k.icon,
+                    accent: k.accent,
+                    isDark: isDark,
+                  ),
+                )
                 .toList(),
           ),
         ],
@@ -121,13 +127,15 @@ class DashboardBentoGrid extends ConsumerWidget {
           crossAxisSpacing: 12,
           childAspectRatio: 1.55,
           children: supporting
-              .map((k) => DashboardKpiCard(
+              .map(
+                (k) => DashboardKpiCard(
                   label: k.label,
                   value: k.value,
                   icon: k.icon,
                   accent: k.accent,
                   isDark: isDark,
-                ))
+                ),
+              )
               .toList(),
         ),
       ],

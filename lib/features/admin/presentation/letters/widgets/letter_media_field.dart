@@ -52,7 +52,9 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
 
       setState(() => _uploading = true);
       final file = result.files.first;
-      debugPrint('Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}');
+      debugPrint(
+        'Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}',
+      );
 
       final url = await ref
           .read(uploadServiceProvider)
@@ -142,8 +144,8 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
                         _uploading
                             ? 'Uploading...'
                             : hasUrl
-                                ? 'Tap to change'
-                                : 'Upload ${widget.label}',
+                            ? 'Tap to change'
+                            : 'Upload ${widget.label}',
                         style: TextStyle(
                           color: isDark ? Colors.white70 : Colors.black87,
                           fontWeight: FontWeight.w500,

@@ -51,7 +51,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
     latinCtrl = TextEditingController(text: block.textLatin ?? '');
     imageCtrl = TextEditingController(text: block.imageUrl ?? '');
     audioCtrl = TextEditingController(text: block.audioUrl ?? '');
-    animationCtrl = TextEditingController(text: block.data?['animationUrl'] ?? '');
+    animationCtrl = TextEditingController(
+      text: block.data?['animationUrl'] ?? '',
+    );
     quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
   }
 
@@ -150,7 +152,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                                 try {
                                   final result = await ref
                                       .read(aiServiceProvider)
-                                      .translateFromOlChiki(olChikiCtrl.text.trim());
+                                      .translateFromOlChiki(
+                                        olChikiCtrl.text.trim(),
+                                      );
                                   if (result != null) {
                                     latinCtrl.text = result.translation;
                                   }
@@ -162,7 +166,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                             ? const SizedBox(
                                 width: 20,
                                 height: 20,
-                                child: CircularProgressIndicator(strokeWidth: 2),
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
                               )
                             : const Icon(Icons.auto_awesome_rounded, size: 20),
                         tooltip: 'Magic Fill (AI Translate)',
@@ -194,7 +200,8 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                 ],
                 if (block.type == 'video') ...[
                   AdminUploadField(
-                    controller: audioCtrl, // Re-using audioCtrl for video URL storage in model
+                    controller:
+                        audioCtrl, // Re-using audioCtrl for video URL storage in model
                     label: 'Video URL',
                     icon: Icons.videocam_rounded,
                     isDark: isDark,

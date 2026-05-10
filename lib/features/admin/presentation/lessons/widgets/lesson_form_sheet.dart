@@ -9,7 +9,7 @@ import '../../widgets/admin_upload_field.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {
   final LessonEntity? lesson;
-  
+
   const LessonFormSheet({super.key, this.lesson});
 
   static void show(BuildContext context, WidgetRef ref, LessonEntity? lesson) {
@@ -32,7 +32,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   late final TextEditingController _minutesCtrl;
   late final TextEditingController _orderCtrl;
   late final TextEditingController _thumbnailCtrl;
-  
+
   String? _selectedCategoryId;
   String _level = 'beginner';
   bool _isActive = true;
@@ -43,16 +43,23 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   void initState() {
     super.initState();
     final lesson = widget.lesson;
-    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
-    
-    _selectedCategoryId = lesson?.categoryId ?? (categories.isNotEmpty ? categories.first.id : null);
+    final categories =
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+
+    _selectedCategoryId =
+        lesson?.categoryId ??
+        (categories.isNotEmpty ? categories.first.id : null);
     _titleLatinCtrl = TextEditingController(text: lesson?.titleLatin ?? '');
     _titleOlChikiCtrl = TextEditingController(text: lesson?.titleOlChiki ?? '');
     _descriptionCtrl = TextEditingController(text: lesson?.description ?? '');
-    _minutesCtrl = TextEditingController(text: (lesson?.estimatedMinutes ?? 5).toString());
+    _minutesCtrl = TextEditingController(
+      text: (lesson?.estimatedMinutes ?? 5).toString(),
+    );
     _orderCtrl = TextEditingController(text: (lesson?.order ?? 0).toString());
-    _thumbnailCtrl = TextEditingController(text: lesson?.data?['thumbnailUrl'] ?? '');
-    
+    _thumbnailCtrl = TextEditingController(
+      text: lesson?.data?['thumbnailUrl'] ?? '',
+    );
+
     _isActive = lesson?.isActive ?? true;
   }
 
@@ -112,15 +119,14 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final categories = ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+    final categories =
+        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.86,
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF161B22) : Colors.white,
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(28),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
       ),
       child: Column(
         children: [
@@ -199,7 +205,8 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                         ),
                       )
                       .toList(),
-                  onChanged: (value) => setState(() => _selectedCategoryId = value),
+                  onChanged: (value) =>
+                      setState(() => _selectedCategoryId = value),
                   decoration: InputDecoration(
                     filled: true,
                     fillColor: isDark
@@ -318,17 +325,26 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                               description: _descriptionCtrl.text.trim().isEmpty
                                   ? null
                                   : _descriptionCtrl.text.trim(),
-                              estimatedMinutes: int.tryParse(_minutesCtrl.text.trim()) ?? 5,
+                              estimatedMinutes:
+                                  int.tryParse(_minutesCtrl.text.trim()) ?? 5,
                               order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-                              blocks: widget.lesson?.blocks ?? const <LessonBlockEntity>[],
+                              blocks:
+                                  widget.lesson?.blocks ??
+                                  const <LessonBlockEntity>[],
                               isActive: _isActive,
-                              data: _thumbnailCtrl.text.isNotEmpty ? {'thumbnailUrl': _thumbnailCtrl.text} : null,
+                              data: _thumbnailCtrl.text.isNotEmpty
+                                  ? {'thumbnailUrl': _thumbnailCtrl.text}
+                                  : null,
                             );
 
                             if (_isEditing) {
-                              await ref.read(lessonNotifierProvider.notifier).updateLesson(newLesson);
+                              await ref
+                                  .read(lessonNotifierProvider.notifier)
+                                  .updateLesson(newLesson);
                             } else {
-                              await ref.read(lessonNotifierProvider.notifier).addLesson(newLesson);
+                              await ref
+                                  .read(lessonNotifierProvider.notifier)
+                                  .addLesson(newLesson);
                             }
 
                             if (context.mounted) Navigator.pop(context);

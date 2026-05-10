@@ -50,7 +50,9 @@ class LessonBlockCard extends StatelessWidget {
         icon = Icons.videocam_rounded;
         color = Colors.purple;
         title = 'Video Block';
-        subtitle = block.audioUrl ?? 'No video selected'; // Using audioUrl as per data model
+        subtitle =
+            block.audioUrl ??
+            'No video selected'; // Using audioUrl as per data model
         break;
       case 'lottie':
         icon = Icons.animation_rounded;

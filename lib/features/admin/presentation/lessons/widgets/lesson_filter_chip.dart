@@ -26,8 +26,8 @@ class LessonFilterChip extends StatelessWidget {
           color: isSelected
               ? AppColors.premiumCyan.colors.first
               : (isDark
-                  ? Colors.white10
-                  : Colors.black.withValues(alpha: 0.05)),
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.05)),
           borderRadius: BorderRadius.circular(30),
           border: Border.all(
             color: isSelected
@@ -37,7 +37,9 @@ class LessonFilterChip extends StatelessWidget {
           boxShadow: isSelected
               ? [
                   BoxShadow(
-                    color: AppColors.premiumCyan.colors.first.withValues(alpha: 0.3),
+                    color: AppColors.premiumCyan.colors.first.withValues(
+                      alpha: 0.3,
+                    ),
                     blurRadius: 12,
                     offset: const Offset(0, 4),
                   ),

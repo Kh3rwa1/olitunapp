@@ -56,8 +56,10 @@ class AdminBannersScreen extends ConsumerWidget {
                           banner: banner,
                           isDark: isDark,
                           index: index,
-                          onEdit: () => BannerFormSheet.show(context, ref, banner),
-                          onDelete: () => _showDeleteDialog(context, ref, banner),
+                          onEdit: () =>
+                              BannerFormSheet.show(context, ref, banner),
+                          onDelete: () =>
+                              _showDeleteDialog(context, ref, banner),
                         );
                       },
                     ),

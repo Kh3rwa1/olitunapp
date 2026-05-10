@@ -167,7 +167,7 @@ class _AdminUploadFieldState extends ConsumerState<AdminUploadField> {
                     width: double.infinity,
                     height: 80,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => Center(
+                    errorBuilder: (_, _, _) => Center(
                       child: Icon(
                         Icons.broken_image_rounded,
                         color: isDark ? Colors.white24 : Colors.black26,

@@ -77,7 +77,7 @@ class _AnimatedCounterState extends State<AnimatedCounter>
 
     return AnimatedBuilder(
       animation: _pulseAnim,
-      builder: (_, __) => Transform.scale(
+      builder: (_, _) => Transform.scale(
         scale: _pulse.isAnimating || _pulse.value > 0 ? _pulseAnim.value : 1.0,
         child: TweenAnimationBuilder<double>(
           tween: Tween(begin: _from.toDouble(), end: _to.toDouble()),

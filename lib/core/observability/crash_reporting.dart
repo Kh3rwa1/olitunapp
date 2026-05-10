@@ -131,7 +131,7 @@ class CrashReporting {
         level: SentryLevel.info,
         data: {
           'entity': entity,
-          if (entityId != null) 'entityId': entityId,
+          'entityId': ?entityId,
           if (metadata != null) ...metadata,
         },
       ),
@@ -162,8 +162,8 @@ class CrashReporting {
           'filename': filename,
           'bucket': bucket,
           'success': success,
-          if (sizeBytes != null) 'sizeBytes': sizeBytes,
-          if (error != null) 'error': error,
+          'sizeBytes': ?sizeBytes,
+          'error': ?error,
         },
       ),
     );

@@ -70,7 +70,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             );
           },
           loading: () => const Text('Loading...'),
-          error: (_, __) => const Text('Error'),
+          error: (_, _) => const Text('Error'),
         ),
       ),
       body: lessons.when(

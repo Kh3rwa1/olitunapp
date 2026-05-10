@@ -31,7 +31,7 @@ class AuthGate extends ConsumerWidget {
         return _buildLoginPrompt(context, isDark);
       },
       loading: () => const Center(child: CircularProgressIndicator()),
-      error: (_, __) => _buildLoginPrompt(context, isDark),
+      error: (_, _) => _buildLoginPrompt(context, isDark),
     );
   }
 

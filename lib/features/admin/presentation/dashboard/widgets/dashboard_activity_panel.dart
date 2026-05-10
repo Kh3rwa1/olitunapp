@@ -76,7 +76,7 @@ class DashboardActivityPanel extends ConsumerWidget {
                 ),
               ),
             ),
-            error: (_, __) => _ActivityEmpty(
+            error: (_, _) => _ActivityEmpty(
               isDark: isDark,
               icon: Icons.cloud_off_rounded,
               message: 'Couldn\'t load recent activity',

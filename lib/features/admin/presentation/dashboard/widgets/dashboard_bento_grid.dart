@@ -25,7 +25,7 @@ class DashboardBentoGrid extends ConsumerWidget {
     int countOf(AsyncValue v) => v.when(
       data: (l) => (l as List).length,
       loading: () => 0,
-      error: (_, __) => 0,
+      error: (_, _) => 0,
     );
 
     final totalContent =
@@ -145,7 +145,7 @@ class DashboardBentoGrid extends ConsumerWidget {
   String _txt(AsyncValue v) => v.when(
     data: (l) => (l as List).length.toString(),
     loading: () => '—',
-    error: (_, __) => '0',
+    error: (_, _) => '0',
   );
 }
 

@@ -137,33 +137,33 @@ final routerProvider = Provider<GoRouter>((ref) {
       _peerRoute(
         path: '/splash',
         name: RouteNames.splash,
-        child: (_, __) => const SplashScreen(),
+        child: (_, _) => const SplashScreen(),
       ),
       _peerRoute(
         path: '/welcome',
         name: RouteNames.welcome,
-        child: (_, __) => const WelcomeScreen(),
+        child: (_, _) => const WelcomeScreen(),
       ),
       _modalRoute(
         path: '/login',
         name: RouteNames.login,
-        child: (_, __) => const EmailAuthScreen(),
+        child: (_, _) => const EmailAuthScreen(),
       ),
       _peerRoute(
         path: '/',
         name: RouteNames.home,
-        child: (_, __) => const MainShellScreen(),
+        child: (_, _) => const MainShellScreen(),
       ),
       _peerRoute(
         path: '/categories',
         name: RouteNames.categories,
-        child: (_, __) => const MainShellScreen(),
+        child: (_, _) => const MainShellScreen(),
       ),
-      _drillRoute(path: '/quizzes', child: (_, __) => const QuizListScreen()),
+      _drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
       _peerRoute(
         path: '/profile',
         name: RouteNames.profile,
-        child: (_, __) => const MainShellScreen(),
+        child: (_, _) => const MainShellScreen(),
       ),
       _drillRoute(
         path: '/lessons/:categoryId',
@@ -216,18 +216,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       _modalRoute(
         path: '/translate',
-        child: (_, __) => const AiTranslatorScreen(),
+        child: (_, _) => const AiTranslatorScreen(),
       ),
       _peerRoute(
         path: '/privacy',
         name: RouteNames.privacy,
-        child: (_, __) =>
+        child: (_, _) =>
             const LegalDocumentScreen(type: LegalDocumentType.privacy),
       ),
       _peerRoute(
         path: '/terms',
         name: RouteNames.terms,
-        child: (_, __) =>
+        child: (_, _) =>
             const LegalDocumentScreen(type: LegalDocumentType.terms),
       ),
       _drillRoute(
@@ -239,7 +239,7 @@ final routerProvider = Provider<GoRouter>((ref) {
       _modalRoute(
         path: '/admin/login',
         name: RouteNames.adminLogin,
-        child: (_, __) => const AdminLoginScreen(),
+        child: (_, _) => const AdminLoginScreen(),
       ),
       ShellRoute(
         builder: (context, state, child) => AdminShell(child: child),

@@ -80,7 +80,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
                       height: 40,
                       child: Center(child: CircularProgressIndicator()),
                     ),
-                    error: (_, __) => const SizedBox(),
+                    error: (_, _) => const SizedBox(),
                   ),
                 ),
                 const SizedBox(height: 20),

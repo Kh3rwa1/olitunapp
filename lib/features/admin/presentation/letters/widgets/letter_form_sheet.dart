@@ -241,7 +241,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
                 url,
                 height: 120,
                 fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) => const Icon(
+                errorBuilder: (_, _, _) => const Icon(
                   Icons.broken_image_rounded,
                   size: 60,
                   color: Colors.grey,

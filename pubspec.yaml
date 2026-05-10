@@ -25,7 +25,7 @@ dependencies:
   hive_flutter: ^1.1.0
 
   # UI & Animations
-  google_fonts: ^6.2.1
+  google_fonts: ^8.1.0
   flutter_animate: ^4.5.2
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1

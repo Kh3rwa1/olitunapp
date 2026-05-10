@@ -27,7 +27,7 @@ import '../../features/admin/presentation/banners/admin_banners_screen.dart';
 import '../../features/admin/presentation/letters/admin_letters_screen.dart';
 import '../../features/admin/presentation/lessons/admin_lessons_screen.dart';
 import '../../features/admin/presentation/lessons/content/admin_lesson_content_screen.dart';
-import '../../features/admin/presentation/admin_quizzes_screen.dart';
+import '../../features/admin/presentation/quizzes/admin_quizzes_screen.dart';
 import '../../features/admin/presentation/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';

@@ -1,5 +1,5 @@
 import { Client, Databases, ID, Query } from 'node-appwrite';
-import translate from '@vitalets/google-translate-api';
+import { translate } from '@vitalets/google-translate-api';
 import {
   createCacheKey,
   MAX_TRANSLATION_CHARS,

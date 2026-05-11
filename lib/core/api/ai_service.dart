@@ -86,10 +86,7 @@ class AiService {
     }
     try {
       final requestBody = url.contains('/executions')
-          ? jsonEncode({
-              'body': jsonEncode(body),
-              'async': false,
-            })
+          ? jsonEncode({'body': jsonEncode(body), 'async': false})
           : jsonEncode(body);
 
       final response = await _client.post(

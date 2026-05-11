@@ -143,7 +143,11 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   }
 
   Widget _buildEmptyState(bool isDark, [dynamic category]) {
-    final isAlphabet = category?.iconName == 'alphabet';
+    final title = category?.titleLatin?.toLowerCase() ?? '';
+    final isAlphabet =
+        category?.iconName == 'alphabet' ||
+        title.contains('alphabet') ||
+        title.contains('letter');
 
     return Center(
       child: Column(

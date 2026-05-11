@@ -328,7 +328,18 @@ class _BentoCategoryCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return PressableScale(
-      onTap: () => context.push('/lessons/${category.id}'),
+      onTap: () {
+        final title = category.titleLatin.toLowerCase();
+        final isAlphabet =
+            category.iconName == 'alphabet' ||
+            title.contains('alphabet') ||
+            title.contains('letter');
+        if (isAlphabet) {
+          context.push('/letter/standalone/all');
+        } else {
+          context.push('/lessons/${category.id}');
+        }
+      },
       child: BentoCell(
         padding: const EdgeInsets.all(16),
         child: Column(

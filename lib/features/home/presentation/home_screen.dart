@@ -43,6 +43,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final categoriesAsync = ref.watch(categoryNotifierProvider);
     final lessonsAsync = ref.watch(lessonNotifierProvider);
     final quizzesAsync = ref.watch(quizzesProvider);
+    final bannersAsync = ref.watch(bannersProvider);
 
     // Derive the next incomplete lesson for the hero card.
     final completedIds =
@@ -131,6 +132,26 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           isDesktop: isDesktop,
                         ),
                         const SizedBox(height: 28),
+
+                        // Featured Banners Carousel
+                        if (bannersAsync.value != null) ...[
+                          Builder(
+                            builder: (context) {
+                              final activeBanners = bannersAsync.value!
+                                  .where((b) => b.isActive)
+                                  .toList();
+                              if (activeBanners.isEmpty) {
+                                return const SizedBox.shrink();
+                              }
+                              return Padding(
+                                padding: const EdgeInsets.only(bottom: 24),
+                                child: HomeFeaturedBannerCarousel(
+                                  banners: activeBanners,
+                                ),
+                              );
+                            },
+                          ),
+                        ],
 
                         // Row 1: Stats Bento Grid (mobile/tablet only)
                         if (!isDesktop) ...[

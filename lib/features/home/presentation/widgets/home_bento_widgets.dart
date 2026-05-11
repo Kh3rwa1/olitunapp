@@ -7,6 +7,7 @@ import '../../../../shared/widgets/animated_buttons.dart';
 
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../categories/domain/entities/category_entity.dart';
+import '../../../../shared/models/content_models.dart';
 
 // ═══════════════════════════════════════════════════════════
 // BENTO STAT CARD — glassmorphism stat tile with hover
@@ -635,6 +636,205 @@ class QuizBannerCard extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
+// FEATURED BANNERS CAROUSEL
+// ═══════════════════════════════════════════════════════════
+class HomeFeaturedBannerCarousel extends StatefulWidget {
+  final List<FeaturedBannerModel> banners;
+
+  const HomeFeaturedBannerCarousel({super.key, required this.banners});
+
+  @override
+  State<HomeFeaturedBannerCarousel> createState() =>
+      _HomeFeaturedBannerCarouselState();
+}
+
+class _HomeFeaturedBannerCarouselState
+    extends State<HomeFeaturedBannerCarousel> {
+  late PageController _pageController;
+  int _currentIndex = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _pageController = PageController();
+  }
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  LinearGradient _getGradient(String preset) {
+    switch (preset) {
+      case 'skyBlue':
+        return AppColors.skyBlueGradient;
+      case 'peach':
+        return AppColors.peachGradient;
+      case 'mint':
+        return AppColors.mintGradient;
+      case 'sunset':
+        return AppColors.sunsetGradient;
+      case 'purple':
+        return AppColors.purpleGradient;
+      default:
+        return AppColors.heroGradient;
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.banners.isEmpty) return const SizedBox.shrink();
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 140,
+          child: PageView.builder(
+            controller: _pageController,
+            onPageChanged: (i) => setState(() => _currentIndex = i),
+            itemCount: widget.banners.length,
+            itemBuilder: (context, index) {
+              final banner = widget.banners[index];
+              return AnimatedBentoChild(
+                index: index,
+                child: PressableScale(
+                  onTap: () {
+                    if (banner.targetRoute != null &&
+                        banner.targetRoute!.isNotEmpty) {
+                      context.push(banner.targetRoute!);
+                    }
+                  },
+                  child: BentoCell(
+                    padding: const EdgeInsets.all(24),
+                    gradient: _getGradient(banner.gradientPreset),
+                    child: Stack(
+                      children: [
+                        Positioned(
+                          top: -60,
+                          right: -40,
+                          child: Container(
+                            width: 150,
+                            height: 150,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  Colors.white.withValues(alpha: 0.12),
+                                  Colors.white.withValues(alpha: 0),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            if (banner.subtitle != null &&
+                                banner.subtitle!.isNotEmpty) ...[
+                              Text(
+                                banner.subtitle!.toUpperCase(),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.white70,
+                                  letterSpacing: 1.2,
+                                ),
+                              ),
+                              const SizedBox(height: 4),
+                            ],
+                            Text(
+                              banner.title,
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                                letterSpacing: -0.5,
+                                height: 1.1,
+                              ),
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
+                        ),
+                        if (banner.imageUrl != null &&
+                            banner.imageUrl!.isNotEmpty)
+                          Positioned(
+                            right: -10,
+                            bottom: -10,
+                            child: Opacity(
+                              opacity: 0.8,
+                              child: Image.network(
+                                banner.imageUrl!,
+                                width: 80,
+                                height: 80,
+                                fit: BoxFit.contain,
+                                errorBuilder: (c, e, s) =>
+                                    const SizedBox.shrink(),
+                              ),
+                            ).animate().fadeIn().slideY(begin: 0.2),
+                          )
+                        else if (banner.animationUrl != null &&
+                            banner.animationUrl!.isNotEmpty)
+                          Positioned(
+                            right: -10,
+                            bottom: -10,
+                            child:
+                                Icon(
+                                      Icons.star_rounded,
+                                      size: 80,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    )
+                                    .animate(
+                                      onPlay: (c) => c.repeat(reverse: true),
+                                    )
+                                    .moveY(
+                                      begin: 0,
+                                      end: -5,
+                                      duration: 2.seconds,
+                                    ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        if (widget.banners.length > 1) ...[
+          const SizedBox(height: 12),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: List.generate(widget.banners.length, (i) {
+              final active = i == _currentIndex;
+              return AnimatedContainer(
+                duration: 300.ms,
+                margin: const EdgeInsets.symmetric(horizontal: 4),
+                width: active ? 24 : 8,
+                height: 8,
+                decoration: BoxDecoration(
+                  color: active
+                      ? AppColors.primary
+                      : (isDark ? Colors.white24 : Colors.black12),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+              );
+            }),
+          ),
+        ],
+      ],
     );
   }
 }

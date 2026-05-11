@@ -112,7 +112,19 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                       AnimatedBentoChild(
                         index: 0,
                         child: PressableScale(
-                          onTap: () => context.go('/lessons/${data.first.id}'),
+                          onTap: () {
+                            final category = data.first;
+                            final title = category.titleLatin.toLowerCase();
+                            final isAlphabet =
+                                category.iconName == 'alphabet' ||
+                                title.contains('alphabet') ||
+                                title.contains('letter');
+                            if (isAlphabet) {
+                              context.push('/letter/standalone/all');
+                            } else {
+                              context.go('/lessons/${category.id}');
+                            }
+                          },
                           child: Hero(
                             tag: MotionTokens.heroTag(
                               'category',
@@ -157,8 +169,18 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                           return AnimatedBentoChild(
                             index: index + 1,
                             child: PressableScale(
-                              onTap: () =>
-                                  context.go('/lessons/${category.id}'),
+                              onTap: () {
+                                final title = category.titleLatin.toLowerCase();
+                                final isAlphabet =
+                                    category.iconName == 'alphabet' ||
+                                    title.contains('alphabet') ||
+                                    title.contains('letter');
+                                if (isAlphabet) {
+                                  context.push('/letter/standalone/all');
+                                } else {
+                                  context.go('/lessons/${category.id}');
+                                }
+                              },
                               child: Hero(
                                 tag: MotionTokens.heroTag(
                                   'category',

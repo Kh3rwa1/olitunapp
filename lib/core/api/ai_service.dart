@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter/foundation.dart';
+import 'package:itun/core/config/appwrite_config.dart';
 
 /// Translation API configuration.
 ///
@@ -84,10 +85,17 @@ class AiService {
       );
     }
     try {
+      final requestBody = url.contains('/executions')
+          ? jsonEncode({'body': jsonEncode(body), 'async': false})
+          : jsonEncode(body);
+
       final response = await _client.post(
         Uri.parse(url),
-        headers: const {'Content-Type': 'application/json'},
-        body: jsonEncode(body),
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Appwrite-Project': AppwriteConfig.projectId,
+        },
+        body: requestBody,
       );
 
       if (response.statusCode == 429) {

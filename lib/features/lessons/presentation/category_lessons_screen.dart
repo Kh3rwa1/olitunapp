@@ -79,26 +79,26 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             (c) => c.id == widget.categoryId,
             orElse: () => categories.value!.first,
           );
-          
+
           return data.isEmpty
-            ? _buildEmptyState(isDark, category)
-            : BrandedRefreshIndicator(
-                onRefresh: _onRefresh,
-                child: ListView.builder(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
-                  itemCount: data.length,
-                  itemBuilder: (context, index) {
-                    final lesson = data[index];
-                    return _LessonCard(
-                      lesson: lesson,
-                      isDark: isDark,
-                      index: index,
-                      onTap: () => context.push('/lesson/${lesson.id}'),
-                    );
-                  },
-                ),
-              );
+              ? _buildEmptyState(isDark, category)
+              : BrandedRefreshIndicator(
+                  onRefresh: _onRefresh,
+                  child: ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+                    itemCount: data.length,
+                    itemBuilder: (context, index) {
+                      final lesson = data[index];
+                      return _LessonCard(
+                        lesson: lesson,
+                        isDark: isDark,
+                        index: index,
+                        onTap: () => context.push('/lesson/${lesson.id}'),
+                      );
+                    },
+                  ),
+                );
         },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(
@@ -173,9 +173,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            isAlphabet 
-              ? 'Browse all available Ol Chiki letters' 
-              : 'Check back soon for new content',
+            isAlphabet
+                ? 'Browse all available Ol Chiki letters'
+                : 'Check back soon for new content',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white54 : Colors.black45,
@@ -192,7 +192,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.primary,
                 foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 12,
+                ),
                 elevation: 0,
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(16),

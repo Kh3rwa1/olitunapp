@@ -238,7 +238,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
           title: Text(sentence.meaning),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.pop(),
+            onPressed: context.pop,
           ),
           actions: [
             if (sentence.audioUrl != null)

@@ -74,8 +74,14 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ),
       ),
       body: lessons.when(
-        data: (data) => data.isEmpty
-            ? _buildEmptyState(isDark)
+        data: (data) {
+          final category = categories.value?.firstWhere(
+            (c) => c.id == widget.categoryId,
+            orElse: () => categories.value!.first,
+          );
+          
+          return data.isEmpty
+            ? _buildEmptyState(isDark, category)
             : BrandedRefreshIndicator(
                 onRefresh: _onRefresh,
                 child: ListView.builder(
@@ -92,7 +98,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                     );
                   },
                 ),
-              ),
+              );
+        },
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, s) => Center(
           child: Column(
@@ -135,7 +142,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     );
   }
 
-  Widget _buildEmptyState(bool isDark) {
+  Widget _buildEmptyState(bool isDark, [dynamic category]) {
+    final isAlphabet = category?.iconName == 'alphabet';
+
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -147,15 +156,15 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               color: AppColors.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(24),
             ),
-            child: const Icon(
-              Icons.school_outlined,
+            child: Icon(
+              isAlphabet ? Icons.translate_rounded : Icons.school_outlined,
               size: 40,
               color: AppColors.primary,
             ),
           ),
           const SizedBox(height: 24),
           Text(
-            'No lessons yet',
+            isAlphabet ? 'Alphabet Dictionary' : 'No lessons yet',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.w700,
@@ -164,12 +173,33 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
           ),
           const SizedBox(height: 8),
           Text(
-            'Check back soon for new content',
+            isAlphabet 
+              ? 'Browse all available Ol Chiki letters' 
+              : 'Check back soon for new content',
             style: TextStyle(
               fontSize: 14,
               color: isDark ? Colors.white54 : Colors.black45,
             ),
           ),
+          if (isAlphabet) ...[
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () {
+                context.push('/letter/standalone/all');
+              },
+              icon: const Icon(Icons.menu_book_rounded),
+              label: const Text('Open Dictionary'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

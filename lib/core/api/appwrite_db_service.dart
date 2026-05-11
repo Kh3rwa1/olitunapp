@@ -128,9 +128,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [
-              Permission.read(Role.any()),
-            ],
+            permissions: [Permission.read(Role.any())],
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(
@@ -166,9 +164,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [
-              Permission.read(Role.any()),
-            ],
+            permissions: [Permission.read(Role.any())],
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(

@@ -318,7 +318,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           title: Text(number.nameLatin),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.pop(),
+            onPressed: context.pop,
           ),
           actions: [
             if (number.audioUrl != null)

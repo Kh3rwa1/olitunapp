@@ -345,7 +345,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
           title: Text(letter.exampleWordLatin ?? letter.transliterationLatin),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.pop(),
+            onPressed: context.pop,
           ),
           actions: [
             if (letter.audioUrl != null)

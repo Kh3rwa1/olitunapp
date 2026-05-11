@@ -355,8 +355,7 @@ class _GradientOutlineButtonState extends State<GradientOutlineButton>
             ),
             child: Center(
               child: ShaderMask(
-                shaderCallback: (bounds) =>
-                    widget.gradient.createShader(bounds),
+                shaderCallback: widget.gradient.createShader,
                 child: Text(
                   widget.text,
                   style: const TextStyle(

@@ -107,6 +107,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
             collectionId: 'lessons',
             documentId: lesson.id,
             data: data,
+            permissions: [
+              Permission.read(Role.any()),
+            ],
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
@@ -132,6 +135,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
             collectionId: 'lessons',
             documentId: lesson.id,
             data: data,
+            permissions: [
+              Permission.read(Role.any()),
+            ],
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

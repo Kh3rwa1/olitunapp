@@ -310,7 +310,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
           title: Text(word.meaning),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.pop(),
+            onPressed: context.pop,
           ),
           actions: [
             if (word.audioUrl != null)

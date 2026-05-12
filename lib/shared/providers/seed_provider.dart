@@ -1,7 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/lessons/data/models/lesson_model.dart';
-import '../../features/rhymes/domain/rhyme_model.dart';
 import '../models/content_models.dart' hide CategoryModel, LessonModel;
 import 'providers.dart';
 
@@ -13,10 +12,27 @@ Future<void> seedAppContent(WidgetRef ref) async {
   final wordsNotifier = ref.read(wordsProvider.notifier);
   final sentencesNotifier = ref.read(sentencesProvider.notifier);
 
+  // Load existing categories so we can skip duplicates
+  await categoriesNotifier.loadCategories();
+  final existing = ref.read(categoryNotifierProvider).value ?? [];
+  final existingIds = existing.map((c) => c.id).toSet();
+  final existingTitles =
+      existing.map((c) => c.titleLatin.trim().toLowerCase()).toSet();
+
+  Future<void> addCategoryIfNew(CategoryModel cat) async {
+    final normTitle = cat.titleLatin.trim().toLowerCase();
+    if (existingIds.contains(cat.id) || existingTitles.contains(normTitle)) {
+      return; // Already exists — skip
+    }
+    await categoriesNotifier.addCategory(cat);
+    existingIds.add(cat.id);
+    existingTitles.add(normTitle);
+  }
+
   // ── Alphabets Category ──
   const alphabetsId = 'cat_alphabets';
-  await categoriesNotifier.addCategory(
-    CategoryModel(
+  await addCategoryIfNew(
+    const CategoryModel(
       id: alphabetsId,
       titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
       titleLatin: 'Alphabets',
@@ -69,8 +85,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   // ── Numbers Category ──
   const numbersId = 'cat_numbers';
-  await categoriesNotifier.addCategory(
-    CategoryModel(
+  await addCategoryIfNew(
+    const CategoryModel(
       id: numbersId,
       titleOlChiki: 'ᱮᱞᱠᱷᱟ',
       titleLatin: 'Numbers',
@@ -94,7 +110,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
         10,
         (i) => LessonBlockModel(
           type: 'text',
-          textOlChiki: 'n$i', // Scoping by ID or string?
+          textOlChiki: 'n$i',
           textLatin: 'Number $i',
         ),
       ).toList(),
@@ -103,8 +119,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   // ── Vocabulary Category ──
   const vocabId = 'cat_vocab';
-  await categoriesNotifier.addCategory(
-    CategoryModel(
+  await addCategoryIfNew(
+    const CategoryModel(
       id: vocabId,
       titleOlChiki: 'ᱨᱚᱲ',
       titleLatin: 'Vocabulary',
@@ -142,8 +158,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   // ── Sentences Category ──
   const sentencesCatId = 'cat_sentences';
-  await categoriesNotifier.addCategory(
-    CategoryModel(
+  await addCategoryIfNew(
+    const CategoryModel(
       id: sentencesCatId,
       titleOlChiki: 'ᱣᱟᱠᱭ',
       titleLatin: 'Sentences',
@@ -157,18 +173,18 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await sentencesNotifier.seed();
 
   await lessonsNotifier.addLesson(
-    LessonModel(
+    const LessonModel(
       id: 'lesson_sentences_basics',
       categoryId: sentencesCatId,
       titleOlChiki: 'ᱢᱩᱞ ᱣᱟᱠᱭ',
       titleLatin: 'Basic Sentences',
       blocks: [
-        const LessonBlockModel(
+        LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱪᱮᱫ?',
           textLatin: 'What is your name?',
         ),
-        const LessonBlockModel(
+        LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱥᱟᱱᱛᱷᱟᱞ',
           textLatin: 'My name is Santhal',

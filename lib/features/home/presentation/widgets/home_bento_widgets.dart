@@ -317,6 +317,8 @@ class _BentoCategoryCard extends StatelessWidget {
         return Icons.calculate_rounded;
       case 'words':
         return Icons.forum_rounded;
+      case 'sentences':
+        return Icons.chat_rounded;
       case 'stories':
         return Icons.auto_stories_rounded;
       default:

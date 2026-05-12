@@ -21,8 +21,27 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
-      (categories) => state = AsyncValue.data(categories),
+      (categories) => state = AsyncValue.data(_deduplicateCategories(categories)),
     );
+  }
+
+  /// Remove duplicate categories. Dedup by document ID first, then by
+  /// normalized titleLatin so that seed-created and admin-created entries
+  /// with the same logical name don't both appear.
+  List<CategoryEntity> _deduplicateCategories(List<CategoryEntity> categories) {
+    final seenIds = <String>{};
+    final seenTitles = <String>{};
+    final unique = <CategoryEntity>[];
+
+    for (final cat in categories) {
+      if (seenIds.contains(cat.id)) continue;
+      final normTitle = cat.titleLatin.trim().toLowerCase();
+      if (seenTitles.contains(normTitle)) continue;
+      seenIds.add(cat.id);
+      seenTitles.add(normTitle);
+      unique.add(cat);
+    }
+    return unique;
   }
 
   Future<void> refresh() => loadCategories();

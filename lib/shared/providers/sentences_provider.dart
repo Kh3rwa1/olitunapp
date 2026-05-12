@@ -88,5 +88,15 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
     }
   }
 
-  Future<void> seed() async => _loadSentences();
+  Future<void> seed() async {
+    for (final item in _seedSentences) {
+      try {
+        final db = ref.read(appwriteDbServiceProvider);
+        await db.createDocument('sentences', item.id, item.toJson());
+      } catch (e) {
+        debugPrint('Sentence already exists or error: $e');
+      }
+    }
+    await _loadSentences();
+  }
 }

@@ -125,14 +125,4 @@ class AdminDashboardScreen extends ConsumerWidget {
     );
   }
 
-  Future<void> seedAppContent(WidgetRef ref) async {
-    await ref.read(categoryNotifierProvider.notifier).seed();
-    await ref.read(lettersProvider.notifier).seed();
-    await ref.read(lessonNotifierProvider.notifier).seed();
-    await ref.read(numbersProvider.notifier).seed();
-    await ref.read(wordsProvider.notifier).seed();
-    await ref.read(sentencesProvider.notifier).seed();
-    await ref.read(quizzesProvider.notifier).seed();
-    ref.invalidate(dashboardMetricsProvider);
-  }
 }

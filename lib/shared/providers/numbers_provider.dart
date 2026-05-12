@@ -76,5 +76,15 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
   void updateNumber(NumberModel item) => update(item);
   void deleteNumber(String id) => delete(id);
 
-  Future<void> seed() async => _loadNumbers();
+  Future<void> seed() async {
+    for (final item in _seedNumbers) {
+      try {
+        final db = ref.read(appwriteDbServiceProvider);
+        await db.createDocument('numbers', item.id, item.toJson());
+      } catch (e) {
+        debugPrint('Number already exists or error: $e');
+      }
+    }
+    await _loadNumbers();
+  }
 }

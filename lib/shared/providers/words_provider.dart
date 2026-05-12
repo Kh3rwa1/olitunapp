@@ -96,5 +96,15 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
   void updateWord(WordModel item) => update(item);
   void deleteWord(String id) => delete(id);
 
-  Future<void> seed() async => _loadWords();
+  Future<void> seed() async {
+    for (final item in _seedWords) {
+      try {
+        final db = ref.read(appwriteDbServiceProvider);
+        await db.createDocument('words', item.id, item.toJson());
+      } catch (e) {
+        debugPrint('Word already exists or error: $e');
+      }
+    }
+    await _loadWords();
+  }
 }

@@ -50,12 +50,17 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                   ),
                   child: sentencesAsync.when(
                     data: (sentences) {
-                      final categories = sentences
-                          .where((s) => s.category != null && s.category!.isNotEmpty)
-                          .map((s) => s.category!)
-                          .toSet()
-                          .toList()
-                        ..sort();
+                      final categories =
+                          sentences
+                              .where(
+                                (s) =>
+                                    s.category != null &&
+                                    s.category!.isNotEmpty,
+                              )
+                              .map((s) => s.category!)
+                              .toSet()
+                              .toList()
+                            ..sort();
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(

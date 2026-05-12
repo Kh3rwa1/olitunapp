@@ -65,7 +65,9 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
       value: int.tryParse(_valueCtrl.text.trim()) ?? 0,
       nameOlChiki: _nameOlChikiCtrl.text.trim(),
       nameLatin: _nameLatinCtrl.text.trim(),
-      pronunciation: _pronCtrl.text.trim().isNotEmpty ? _pronCtrl.text.trim() : null,
+      pronunciation: _pronCtrl.text.trim().isNotEmpty
+          ? _pronCtrl.text.trim()
+          : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       audioUrl: widget.number?.audioUrl,
       imageUrl: widget.number?.imageUrl,

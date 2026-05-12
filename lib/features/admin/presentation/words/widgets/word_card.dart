@@ -92,9 +92,9 @@ class _WordCardState extends State<WordCard> {
                     children: [
                       Text(
                         w.wordOlChiki,
-                        style: AdminTokens.cardTitle(isDark).copyWith(
-                          fontSize: 17,
-                        ),
+                        style: AdminTokens.cardTitle(
+                          isDark,
+                        ).copyWith(fontSize: 17),
                       ),
                       const SizedBox(width: 8),
                       Text(
@@ -109,9 +109,9 @@ class _WordCardState extends State<WordCard> {
                   const SizedBox(height: 4),
                   Text(
                     w.meaning,
-                    style: AdminTokens.body(isDark).copyWith(
-                      color: AdminTokens.textSecondary(isDark),
-                    ),
+                    style: AdminTokens.body(
+                      isDark,
+                    ).copyWith(color: AdminTokens.textSecondary(isDark)),
                   ),
                   if (w.category != null && w.category!.isNotEmpty) ...[
                     const SizedBox(height: 6),

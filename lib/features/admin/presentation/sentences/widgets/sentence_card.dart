@@ -88,10 +88,9 @@ class _SentenceCardState extends State<SentenceCard> {
                 children: [
                   Text(
                     s.sentenceOlChiki,
-                    style: AdminTokens.cardTitle(isDark).copyWith(
-                      fontSize: 15,
-                      height: 1.4,
-                    ),
+                    style: AdminTokens.cardTitle(
+                      isDark,
+                    ).copyWith(fontSize: 15, height: 1.4),
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                   ),

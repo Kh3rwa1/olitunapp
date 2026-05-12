@@ -39,11 +39,14 @@ class NumberGrid extends StatelessWidget {
       itemBuilder: (context, index) {
         final number = numbers[index];
         return _NumberCard(
-          number: number,
-          isDark: isDark,
-          onEdit: () => onEdit(number),
-          onDelete: () => onDelete(number),
-        ).animate().fadeIn(delay: (index * 60).ms).scale(
+              number: number,
+              isDark: isDark,
+              onEdit: () => onEdit(number),
+              onDelete: () => onDelete(number),
+            )
+            .animate()
+            .fadeIn(delay: (index * 60).ms)
+            .scale(
               begin: const Offset(0.95, 0.95),
               duration: 300.ms,
               curve: Curves.easeOut,
@@ -97,7 +100,9 @@ class _NumberCardState extends State<_NumberCard> {
                 ? AdminTokens.brandGlow(AppColors.primary, strength: 0.3)
                 : [
                     BoxShadow(
-                      color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.3 : 0.08,
+                      ),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),

@@ -75,8 +75,9 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
       category: _categoryCtrl.text.trim().isNotEmpty
           ? _categoryCtrl.text.trim()
           : null,
-      pronunciation:
-          _pronCtrl.text.trim().isNotEmpty ? _pronCtrl.text.trim() : null,
+      pronunciation: _pronCtrl.text.trim().isNotEmpty
+          ? _pronCtrl.text.trim()
+          : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       audioUrl: widget.sentence?.audioUrl,
       imageUrl: widget.sentence?.imageUrl,

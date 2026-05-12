@@ -49,12 +49,17 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                   ),
                   child: wordsAsync.when(
                     data: (words) {
-                      final categories = words
-                          .where((w) => w.category != null && w.category!.isNotEmpty)
-                          .map((w) => w.category!)
-                          .toSet()
-                          .toList()
-                        ..sort();
+                      final categories =
+                          words
+                              .where(
+                                (w) =>
+                                    w.category != null &&
+                                    w.category!.isNotEmpty,
+                              )
+                              .map((w) => w.category!)
+                              .toSet()
+                              .toList()
+                            ..sort();
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -62,7 +67,8 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                             AdminFilterChip(
                               label: 'All Words',
                               selected: _selectedCategory == null,
-                              onTap: () => setState(() => _selectedCategory = null),
+                              onTap: () =>
+                                  setState(() => _selectedCategory = null),
                             ),
                             ...categories.map(
                               (cat) => Padding(
@@ -89,7 +95,9 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                     data: (words) {
                       final filtered = _selectedCategory == null
                           ? words
-                          : words.where((w) => w.category == _selectedCategory).toList();
+                          : words
+                                .where((w) => w.category == _selectedCategory)
+                                .toList();
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
                           : _buildWordsList(filtered, isDark, isWideScreen);

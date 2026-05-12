@@ -10,6 +10,7 @@ import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
+import '../domain/entities/lesson_entity.dart';
 
 class NumberDetailScreen extends ConsumerStatefulWidget {
   final String numberId;
@@ -113,9 +114,49 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     return colors[index % colors.length];
   }
 
+  /// Scope numbers to only those referenced by the lesson's content blocks.
+  List<NumberModel> _scopeNumbersToLesson(
+    List<NumberModel> allNumbers,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      // Standalone / legacy: show all active numbers
+      return allNumbers.where((n) => n.isActive).toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) {
+      // Lesson exists but has no text blocks — show empty instead of everything
+      return const [];
+    }
+
+    final matched = allNumbers
+        .where(
+          (n) =>
+              n.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == n.numeral ||
+                    t == n.value.toString() ||
+                    t == n.nameOlChiki ||
+                    t.contains(n.numeral),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+
+    return matched;
+  }
+
   @override
   Widget build(BuildContext context) {
     final numbersAsync = ref.watch(numbersProvider);
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return numbersAsync.when(
@@ -127,7 +168,12 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
         body: Center(child: Text('Error: $error')),
       ),
-      data: (numbers) {
+      data: (allNumbers) {
+        // Resolve the current lesson to scope numbers
+        final lessons = lessonsAsync.value ?? [];
+        final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+        final numbers = _scopeNumbersToLesson(allNumbers, lesson);
+
         if (numbers.isEmpty) {
           return Scaffold(
             backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -139,11 +185,31 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                 onPressed: () => context.pop(),
               ),
             ),
-            body: const Center(child: Text('No numbers available')),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.inbox_rounded,
+                    size: 48,
+                    color: isDark ? Colors.white24 : Colors.black12,
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    'No numbers in this lesson.\nAdd content blocks in admin.',
+                    style: TextStyle(
+                      fontSize: 15,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ],
+              ),
+            ),
           );
         }
 
-        // Find initial index
+        // Find initial index from numberId
         if (_currentIndex == 0 && widget.numberId.isNotEmpty) {
           final index = numbers.indexWhere(
             (n) =>

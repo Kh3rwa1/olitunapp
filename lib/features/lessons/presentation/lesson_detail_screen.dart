@@ -143,7 +143,11 @@ class LessonDetailScreen extends ConsumerWidget {
             child: FloatingActionButton.extended(
               onPressed: () {
                 final notifier = ref.read(userStatsProvider.notifier);
-                notifier.completeLesson(lesson.id);
+                notifier.completeLesson(
+                  lesson.id,
+                  categoryId: lesson.categoryId,
+                  estimatedMinutes: lesson.estimatedMinutes,
+                );
                 notifier.addStars(25);
                 context.pop();
               },

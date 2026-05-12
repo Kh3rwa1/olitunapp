@@ -65,27 +65,48 @@ class UserStatsEntity extends Equatable {
 
   // ============== COMPUTED PROPERTIES ==============
 
+  /// Alphabet mastery: based on how many letters have been practiced
   double get alphabetProgress => (practicedLetters.length / 30).clamp(0.0, 1.0);
 
+  /// Numbers mastery: from categoryMastery map or completed lessons
   double get numbersProgress {
-    final numberLessons = completedLessons
-        .where((id) => id.startsWith('numbers_'))
-        .length;
-    return (numberLessons / 10).clamp(0.0, 1.0);
+    if (categoryMastery.containsKey('numbers')) {
+      return (categoryMastery['numbers']! / 100).clamp(0.0, 1.0);
+    }
+    // Fallback: estimate from total completed lessons
+    final total = completedLessons.length;
+    return (total / 15).clamp(0.0, 1.0) * 0.5;
   }
 
+  /// Vocabulary mastery: from categoryMastery map or completed lessons
   double get vocabularyProgress {
-    final wordLessons = completedLessons
-        .where((id) => id.startsWith('words_'))
-        .length;
-    return (wordLessons / 20).clamp(0.0, 1.0);
+    if (categoryMastery.containsKey('words') ||
+        categoryMastery.containsKey('vocabulary')) {
+      final val = categoryMastery['words'] ??
+          categoryMastery['vocabulary'] ??
+          0;
+      return (val / 100).clamp(0.0, 1.0);
+    }
+    final total = completedLessons.length;
+    return (total / 20).clamp(0.0, 1.0) * 0.4;
   }
 
+  /// Sentences mastery
+  double get sentencesProgress {
+    if (categoryMastery.containsKey('sentences')) {
+      return (categoryMastery['sentences']! / 100).clamp(0.0, 1.0);
+    }
+    final total = completedLessons.length;
+    return (total / 25).clamp(0.0, 1.0) * 0.3;
+  }
+
+  /// Rhymes mastery
   double get rhymesProgress {
-    final rhymeLessons = completedLessons
-        .where((id) => id.startsWith('rhymes_'))
-        .length;
-    return (rhymeLessons / 10).clamp(0.0, 1.0);
+    if (categoryMastery.containsKey('rhymes')) {
+      return (categoryMastery['rhymes']! / 100).clamp(0.0, 1.0);
+    }
+    final total = completedLessons.length;
+    return (total / 20).clamp(0.0, 1.0) * 0.3;
   }
 
   int get lessonsCompletedCount => completedLessons.length;
@@ -120,6 +141,7 @@ class UserStatsEntity extends Equatable {
       alphabetProgress,
       numbersProgress,
       vocabularyProgress,
+      sentencesProgress,
       rhymesProgress,
     ];
     return skills.reduce((a, b) => a + b) / skills.length;

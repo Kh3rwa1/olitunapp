@@ -84,9 +84,51 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> updateStats(UserStatsEntity stats) async {
     final result = await _repository.updateUserStats(stats);
     result.fold(
-      (failure) => null, // Handle error
+      (failure) => null,
       (_) => state = AsyncValue.data(stats),
     );
+  }
+
+  /// Updates lastActiveDate and currentStreak based on today's date.
+  UserStatsEntity _withStreakUpdate(UserStatsEntity stats) {
+    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final lastDate = stats.lastActiveDate;
+
+    if (lastDate == today) return stats.copyWith(lastActiveDate: today);
+
+    // Check if last active was yesterday
+    int newStreak = 1;
+    if (lastDate.isNotEmpty) {
+      try {
+        final lastDay = DateTime.parse(lastDate);
+        final diff = DateTime.now().difference(lastDay).inDays;
+        if (diff == 1) {
+          newStreak = stats.currentStreak + 1;
+        }
+      } catch (_) {
+        // Malformed date, reset streak
+      }
+    }
+
+    return stats.copyWith(
+      lastActiveDate: today,
+      currentStreak: newStreak,
+    );
+  }
+
+  /// Resolves a category key from a categoryId for mastery tracking.
+  String _normalizeCategoryKey(String categoryId) {
+    final lower = categoryId.toLowerCase();
+    if (lower.contains('alphabet') || lower.contains('letter')) {
+      return 'alphabets';
+    }
+    if (lower.contains('number')) return 'numbers';
+    if (lower.contains('word') || lower.contains('vocab')) return 'words';
+    if (lower.contains('sentence') || lower.contains('phrase')) {
+      return 'sentences';
+    }
+    if (lower.contains('rhyme')) return 'rhymes';
+    return categoryId;
   }
 
   Future<void> practiceLetter(String letter) async {
@@ -95,7 +137,14 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     final updatedLetters = Set<String>.from(current.practicedLetters)
       ..add(letter);
-    final updated = current.copyWith(practicedLetters: updatedLetters);
+    var updated = current.copyWith(practicedLetters: updatedLetters);
+
+    // Update alphabet mastery based on practiced letters
+    final masteryPct = (updatedLetters.length / 30 * 100).clamp(0, 100).round();
+    final updatedMastery = Map<String, int>.from(updated.categoryMastery)
+      ..['alphabets'] = masteryPct;
+    updated = _withStreakUpdate(updated.copyWith(categoryMastery: updatedMastery));
+
     await updateStats(updated);
   }
 
@@ -107,13 +156,38 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     await updateStats(updated);
   }
 
-  Future<void> completeLesson(String lessonId) async {
+  /// Marks a lesson as completed and updates:
+  /// - completedLessons set
+  /// - categoryMastery percentage
+  /// - totalLearningMinutes
+  /// - streak / lastActiveDate
+  Future<void> completeLesson(
+    String lessonId, {
+    String? categoryId,
+    int estimatedMinutes = 5,
+  }) async {
     final current = state.valueOrNull;
     if (current == null) return;
 
     final updatedLessons = Set<String>.from(current.completedLessons)
       ..add(lessonId);
-    final updated = current.copyWith(completedLessons: updatedLessons);
+
+    var updated = current.copyWith(
+      completedLessons: updatedLessons,
+      totalLearningMinutes: current.totalLearningMinutes + estimatedMinutes,
+    );
+
+    // Update category mastery if we know the category
+    if (categoryId != null && categoryId.isNotEmpty) {
+      final key = _normalizeCategoryKey(categoryId);
+      final currentMastery = Map<String, int>.from(updated.categoryMastery);
+      final oldVal = currentMastery[key] ?? 0;
+      // Each completed lesson in this category adds ~10% mastery, capped at 100
+      currentMastery[key] = (oldVal + 10).clamp(0, 100);
+      updated = updated.copyWith(categoryMastery: currentMastery);
+    }
+
+    updated = _withStreakUpdate(updated);
     await updateStats(updated);
   }
 
@@ -124,7 +198,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final updatedHistory = Map<String, QuizResultEntity>.from(
       current.quizHistory,
     )..[result.quizId] = result;
-    final updated = current.copyWith(quizHistory: updatedHistory);
+
+    final updated = _withStreakUpdate(
+      current.copyWith(quizHistory: updatedHistory),
+    );
     await updateStats(updated);
   }
 

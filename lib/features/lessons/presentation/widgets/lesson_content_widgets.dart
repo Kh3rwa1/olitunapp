@@ -5,8 +5,11 @@ import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
+import '../../../../shared/models/content_models.dart';
+import '../../../lessons/domain/entities/lesson_entity.dart';
 
 /// Grid of Ol Chiki letter cards for the lesson detail screen.
+/// Scoped: only shows letters that appear in the lesson's blocks.
 class LetterGridContent extends ConsumerWidget {
   final String lessonId;
 
@@ -16,12 +19,15 @@ class LetterGridContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final allLetters = ref.read(lettersProvider).value ?? [];
-    final letters = allLetters.where((l) => l.isActive).toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+
+    // Scope letters to this lesson's blocks
+    final letters = _scopeLetters(allLetters, lesson);
 
     if (letters.isEmpty) {
       return EmptyContentPlaceholder(
-        message: 'No letters available yet',
+        message: 'No letters in this lesson. Add content blocks in admin.',
         isDark: isDark,
       );
     }
@@ -111,9 +117,42 @@ class LetterGridContent extends ConsumerWidget {
       },
     );
   }
+
+  /// Extract letters referenced by lesson blocks.
+  /// Returns only matched letters — empty list triggers the placeholder.
+  List<LetterModel> _scopeLetters(
+    List<LetterModel> allLetters,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      return const [];
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) return const [];
+
+    return allLetters
+        .where(
+          (l) =>
+              l.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == l.charOlChiki ||
+                    t.contains(l.charOlChiki) ||
+                    l.charOlChiki.contains(t),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+  }
 }
 
 /// Grid of Santali number cards for the lesson detail screen.
+/// Scoped: only shows numbers that appear in the lesson's blocks.
 class NumberGridContent extends ConsumerWidget {
   final String lessonId;
 
@@ -123,12 +162,14 @@ class NumberGridContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final allNumbers = ref.read(numbersProvider).value ?? [];
-    final numbers = allNumbers.where((n) => n.isActive).toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+
+    final numbers = _scopeNumbers(allNumbers, lesson);
 
     if (numbers.isEmpty) {
       return EmptyContentPlaceholder(
-        message: 'No numbers available yet',
+        message: 'No numbers in this lesson. Add content blocks in admin.',
         isDark: isDark,
       );
     }
@@ -225,9 +266,43 @@ class NumberGridContent extends ConsumerWidget {
       },
     );
   }
+
+  /// Extract numbers referenced by lesson blocks.
+  /// Returns only matched numbers — empty list triggers the placeholder.
+  List<NumberModel> _scopeNumbers(
+    List<NumberModel> allNumbers,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      return const [];
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) return const [];
+
+    return allNumbers
+        .where(
+          (n) =>
+              n.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == n.numeral ||
+                    t == n.value.toString() ||
+                    t == n.nameOlChiki ||
+                    t.contains(n.numeral),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+  }
 }
 
 /// List of vocabulary word cards for the lesson detail screen.
+/// Scoped: only shows words that appear in the lesson's blocks.
 class VocabularyListContent extends ConsumerWidget {
   final String lessonId;
 
@@ -237,12 +312,14 @@ class VocabularyListContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final allWords = ref.read(wordsProvider).value ?? [];
-    final words = allWords.where((w) => w.isActive).toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+
+    final words = _scopeWords(allWords, lesson);
 
     if (words.isEmpty) {
       return EmptyContentPlaceholder(
-        message: 'No words available yet',
+        message: 'No words in this lesson. Add content blocks in admin.',
         isDark: isDark,
       );
     }
@@ -308,9 +385,40 @@ class VocabularyListContent extends ConsumerWidget {
           .toList(),
     );
   }
+
+  List<WordModel> _scopeWords(
+    List<WordModel> allWords,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      return const [];
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) return const [];
+
+    return allWords
+        .where(
+          (w) =>
+              w.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == w.wordOlChiki ||
+                    t.contains(w.wordOlChiki) ||
+                    w.wordOlChiki.contains(t),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+  }
 }
 
 /// List of sentence cards for the lesson detail screen.
+/// Scoped: only shows sentences that appear in the lesson's blocks.
 class SentenceListContent extends ConsumerWidget {
   final String lessonId;
 
@@ -320,12 +428,14 @@ class SentenceListContent extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final allSentences = ref.read(sentencesProvider).value ?? [];
-    final sentences = allSentences.where((s) => s.isActive).toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+
+    final sentences = _scopeSentences(allSentences, lesson);
 
     if (sentences.isEmpty) {
       return EmptyContentPlaceholder(
-        message: 'No sentences available yet',
+        message: 'No sentences in this lesson. Add content blocks in admin.',
         isDark: isDark,
       );
     }
@@ -391,6 +501,36 @@ class SentenceListContent extends ConsumerWidget {
           .toList(),
     );
   }
+
+  List<SentenceModel> _scopeSentences(
+    List<SentenceModel> allSentences,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      return const [];
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) return const [];
+
+    return allSentences
+        .where(
+          (s) =>
+              s.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == s.sentenceOlChiki ||
+                    t.contains(s.sentenceOlChiki) ||
+                    s.sentenceOlChiki.contains(t),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+  }
 }
 
 /// Shared empty content placeholder.
@@ -427,6 +567,7 @@ class EmptyContentPlaceholder extends StatelessWidget {
               fontSize: 15,
               color: isDark ? Colors.white38 : Colors.black38,
             ),
+            textAlign: TextAlign.center,
           ),
         ],
       ),

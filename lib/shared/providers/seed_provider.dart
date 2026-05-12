@@ -19,21 +19,28 @@ Future<void> seedAppContent(WidgetRef ref) async {
   final existingTitles =
       existing.map((c) => c.titleLatin.trim().toLowerCase()).toSet();
 
-  Future<void> addCategoryIfNew(CategoryModel cat) async {
+  Future<String> addCategoryIfNew(CategoryModel cat) async {
     final normTitle = cat.titleLatin.trim().toLowerCase();
-    if (existingIds.contains(cat.id) || existingTitles.contains(normTitle)) {
-      return; // Already exists — skip
+    
+    final existingCat = existing.cast<CategoryModel?>().firstWhere(
+      (c) => c?.id == cat.id || c?.titleLatin.trim().toLowerCase() == normTitle,
+      orElse: () => null,
+    );
+    
+    if (existingCat != null) {
+      return existingCat.id; // Return existing ID
     }
+
     await categoriesNotifier.addCategory(cat);
     existingIds.add(cat.id);
     existingTitles.add(normTitle);
+    return cat.id; // Return new ID
   }
 
   // ── Alphabets Category ──
-  const alphabetsId = 'cat_alphabets';
-  await addCategoryIfNew(
+  final actualAlphabetsId = await addCategoryIfNew(
     const CategoryModel(
-      id: alphabetsId,
+      id: 'cat_alphabets',
       titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
       titleLatin: 'Alphabets',
       iconName: 'alphabet',
@@ -68,7 +75,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
     await lessonsNotifier.addLesson(
       LessonModel(
         id: 'lesson_alphabet_$i',
-        categoryId: alphabetsId,
+        categoryId: actualAlphabetsId,
         titleOlChiki: lessonTitles[i][1],
         titleLatin: lessonTitles[i][0],
         order: i,
@@ -84,10 +91,9 @@ Future<void> seedAppContent(WidgetRef ref) async {
   }
 
   // ── Numbers Category ──
-  const numbersId = 'cat_numbers';
-  await addCategoryIfNew(
+  final actualNumbersId = await addCategoryIfNew(
     const CategoryModel(
-      id: numbersId,
+      id: 'cat_numbers',
       titleOlChiki: 'ᱮᱞᱠᱷᱟ',
       titleLatin: 'Numbers',
       iconName: 'numbers',
@@ -103,7 +109,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await lessonsNotifier.addLesson(
     LessonModel(
       id: 'lesson_numbers_0_9',
-      categoryId: numbersId,
+      categoryId: actualNumbersId,
       titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
       titleLatin: 'Numbers 0-9',
       blocks: List.generate(
@@ -118,10 +124,9 @@ Future<void> seedAppContent(WidgetRef ref) async {
   );
 
   // ── Vocabulary Category ──
-  const vocabId = 'cat_vocab';
-  await addCategoryIfNew(
+  final actualVocabId = await addCategoryIfNew(
     const CategoryModel(
-      id: vocabId,
+      id: 'cat_vocab',
       titleOlChiki: 'ᱨᱚᱲ',
       titleLatin: 'Vocabulary',
       iconName: 'words',
@@ -141,7 +146,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
     await lessonsNotifier.addLesson(
       LessonModel(
         id: 'lesson_vocab_$i',
-        categoryId: vocabId,
+        categoryId: actualVocabId,
         titleOlChiki: vocabLessons[i][1] as String,
         titleLatin: vocabLessons[i][0] as String,
         order: i,
@@ -157,10 +162,9 @@ Future<void> seedAppContent(WidgetRef ref) async {
   }
 
   // ── Sentences Category ──
-  const sentencesCatId = 'cat_sentences';
-  await addCategoryIfNew(
+  final actualSentencesId = await addCategoryIfNew(
     const CategoryModel(
-      id: sentencesCatId,
+      id: 'cat_sentences',
       titleOlChiki: 'ᱣᱟᱠᱭ',
       titleLatin: 'Sentences',
       iconName: 'sentences',
@@ -173,9 +177,9 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await sentencesNotifier.seed();
 
   await lessonsNotifier.addLesson(
-    const LessonModel(
+    LessonModel(
       id: 'lesson_sentences_basics',
-      categoryId: sentencesCatId,
+      categoryId: actualSentencesId,
       titleOlChiki: 'ᱢᱩᱞ ᱣᱟᱠᱭ',
       titleLatin: 'Basic Sentences',
       blocks: [
@@ -198,7 +202,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await ref.read(quizzesProvider.notifier).addQuiz(
     QuizModel(
       id: quizId,
-      categoryId: alphabetsId,
+      categoryId: actualAlphabetsId,
       title: 'Basics Quiz',
       questions: [
         QuizQuestion(

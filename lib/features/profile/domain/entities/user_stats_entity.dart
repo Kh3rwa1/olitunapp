@@ -82,9 +82,8 @@ class UserStatsEntity extends Equatable {
   double get vocabularyProgress {
     if (categoryMastery.containsKey('words') ||
         categoryMastery.containsKey('vocabulary')) {
-      final val = categoryMastery['words'] ??
-          categoryMastery['vocabulary'] ??
-          0;
+      final val =
+          categoryMastery['words'] ?? categoryMastery['vocabulary'] ?? 0;
       return (val / 100).clamp(0.0, 1.0);
     }
     final total = completedLessons.length;

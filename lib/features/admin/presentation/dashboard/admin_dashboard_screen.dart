@@ -124,5 +124,4 @@ class AdminDashboardScreen extends ConsumerWidget {
       ),
     );
   }
-
 }

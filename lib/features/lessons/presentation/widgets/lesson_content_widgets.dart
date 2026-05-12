@@ -386,10 +386,7 @@ class VocabularyListContent extends ConsumerWidget {
     );
   }
 
-  List<WordModel> _scopeWords(
-    List<WordModel> allWords,
-    LessonEntity? lesson,
-  ) {
+  List<WordModel> _scopeWords(List<WordModel> allWords, LessonEntity? lesson) {
     if (lesson == null || lesson.blocks.isEmpty) {
       return const [];
     }

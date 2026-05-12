@@ -83,10 +83,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> updateStats(UserStatsEntity stats) async {
     final result = await _repository.updateUserStats(stats);
-    result.fold(
-      (failure) => null,
-      (_) => state = AsyncValue.data(stats),
-    );
+    result.fold((failure) => null, (_) => state = AsyncValue.data(stats));
   }
 
   /// Updates lastActiveDate and currentStreak based on today's date.
@@ -110,10 +107,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       }
     }
 
-    return stats.copyWith(
-      lastActiveDate: today,
-      currentStreak: newStreak,
-    );
+    return stats.copyWith(lastActiveDate: today, currentStreak: newStreak);
   }
 
   /// Resolves a category key from a categoryId for mastery tracking.
@@ -143,7 +137,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final masteryPct = (updatedLetters.length / 30 * 100).clamp(0, 100).round();
     final updatedMastery = Map<String, int>.from(updated.categoryMastery)
       ..['alphabets'] = masteryPct;
-    updated = _withStreakUpdate(updated.copyWith(categoryMastery: updatedMastery));
+    updated = _withStreakUpdate(
+      updated.copyWith(categoryMastery: updatedMastery),
+    );
 
     await updateStats(updated);
   }

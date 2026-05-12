@@ -135,20 +135,21 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       return const [];
     }
 
-    final matched = allNumbers
-        .where(
-          (n) =>
-              n.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == n.numeral ||
-                    t == n.value.toString() ||
-                    t == n.nameOlChiki ||
-                    t.contains(n.numeral),
-              ),
-        )
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final matched =
+        allNumbers
+            .where(
+              (n) =>
+                  n.isActive &&
+                  blockTexts.any(
+                    (t) =>
+                        t == n.numeral ||
+                        t == n.value.toString() ||
+                        t == n.nameOlChiki ||
+                        t.contains(n.numeral),
+                  ),
+            )
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
 
     return matched;
   }
@@ -171,7 +172,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       data: (allNumbers) {
         // Resolve the current lesson to scope numbers
         final lessons = lessonsAsync.value ?? [];
-        final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+        final lesson = lessons
+            .where((l) => l.id == widget.lessonId)
+            .firstOrNull;
         final numbers = _scopeNumbersToLesson(allNumbers, lesson);
 
         if (numbers.isEmpty) {

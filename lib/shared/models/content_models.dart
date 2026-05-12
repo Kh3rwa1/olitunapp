@@ -642,6 +642,8 @@ class QuizModel {
 }
 
 class QuizQuestion {
+  /// Question type: 'mcq' (multiple choice) or 'fill_blank' (fill in the blank)
+  final String type;
   final String promptOlChiki;
   final String? promptLatin;
   final List<String> optionsOlChiki;
@@ -651,19 +653,31 @@ class QuizQuestion {
   final String? audioUrl;
   final String? imageUrl;
 
+  // Fill-in-the-blank fields: sentence with ___ placeholder
+  final String? blankSentenceOlChiki;
+  final String? blankSentenceLatin;
+  final String? correctAnswer;
+  final List<String> distractors;
+
   QuizQuestion({
+    this.type = 'mcq',
     required this.promptOlChiki,
     this.promptLatin,
-    required this.optionsOlChiki,
-    required this.optionsLatin,
-    required this.correctIndex,
+    this.optionsOlChiki = const [],
+    this.optionsLatin = const [],
+    this.correctIndex = 0,
     this.explanation,
     this.audioUrl,
     this.imageUrl,
+    this.blankSentenceOlChiki,
+    this.blankSentenceLatin,
+    this.correctAnswer,
+    this.distractors = const [],
   });
 
   factory QuizQuestion.fromMap(Map<String, dynamic> data) {
     return QuizQuestion(
+      type: data['type'] as String? ?? 'mcq',
       promptOlChiki: data['promptOlChiki'] as String? ?? '',
       promptLatin: data['promptLatin'] as String?,
       optionsOlChiki: List<String>.from(data['optionsOlChiki'] as List? ?? []),
@@ -672,11 +686,16 @@ class QuizQuestion {
       explanation: data['explanation'] as String?,
       audioUrl: data['audioUrl'] as String?,
       imageUrl: data['imageUrl'] as String?,
+      blankSentenceOlChiki: data['blankSentenceOlChiki'] as String?,
+      blankSentenceLatin: data['blankSentenceLatin'] as String?,
+      correctAnswer: data['correctAnswer'] as String?,
+      distractors: List<String>.from(data['distractors'] as List? ?? []),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'type': type,
       'promptOlChiki': promptOlChiki,
       'promptLatin': promptLatin,
       'optionsOlChiki': optionsOlChiki,
@@ -685,6 +704,10 @@ class QuizQuestion {
       'explanation': explanation,
       'audioUrl': audioUrl,
       'imageUrl': imageUrl,
+      'blankSentenceOlChiki': blankSentenceOlChiki,
+      'blankSentenceLatin': blankSentenceLatin,
+      'correctAnswer': correctAnswer,
+      'distractors': distractors,
     };
   }
 }

@@ -28,6 +28,9 @@ import '../../features/admin/presentation/letters/admin_letters_screen.dart';
 import '../../features/admin/presentation/lessons/admin_lessons_screen.dart';
 import '../../features/admin/presentation/lessons/content/admin_lesson_content_screen.dart';
 import '../../features/admin/presentation/quizzes/admin_quizzes_screen.dart';
+import '../../features/admin/presentation/numbers/admin_numbers_screen.dart';
+import '../../features/admin/presentation/words/admin_words_screen.dart';
+import '../../features/admin/presentation/sentences/admin_sentences_screen.dart';
 import '../../features/admin/presentation/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
@@ -271,6 +274,18 @@ final routerProvider = Provider<GoRouter>((ref) {
               final lessonId = state.pathParameters['lessonId'] ?? '';
               return AdminLessonContentScreen(lessonId: lessonId);
             },
+          ),
+          adminRoute(
+            path: '/admin/numbers',
+            builder: (context, state) => const AdminNumbersScreen(),
+          ),
+          adminRoute(
+            path: '/admin/words',
+            builder: (context, state) => const AdminWordsScreen(),
+          ),
+          adminRoute(
+            path: '/admin/sentences',
+            builder: (context, state) => const AdminSentencesScreen(),
           ),
           adminRoute(
             path: '/admin/quizzes',

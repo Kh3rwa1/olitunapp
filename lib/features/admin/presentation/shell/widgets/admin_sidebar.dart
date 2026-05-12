@@ -57,6 +57,27 @@ class AdminSidebar extends StatelessWidget {
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
+                  icon: Icons.pin_rounded,
+                  label: 'Numbers',
+                  isSelected: location == '/admin/numbers',
+                  onTap: () => context.go('/admin/numbers'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
+                  icon: Icons.menu_book_rounded,
+                  label: 'Words & Vocabulary',
+                  isSelected: location == '/admin/words',
+                  onTap: () => context.go('/admin/words'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
+                  icon: Icons.format_quote_rounded,
+                  label: 'Sentences',
+                  isSelected: location == '/admin/sentences',
+                  onTap: () => context.go('/admin/sentences'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
                   icon: Icons.school_rounded,
                   label: 'Lessons',
                   isSelected: location.startsWith('/admin/lessons'),

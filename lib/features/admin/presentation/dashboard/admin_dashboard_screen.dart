@@ -131,6 +131,8 @@ class AdminDashboardScreen extends ConsumerWidget {
     await ref.read(lessonNotifierProvider.notifier).seed();
     await ref.read(numbersProvider.notifier).seed();
     await ref.read(wordsProvider.notifier).seed();
+    await ref.read(sentencesProvider.notifier).seed();
+    await ref.read(quizzesProvider.notifier).seed();
     ref.invalidate(dashboardMetricsProvider);
   }
 }

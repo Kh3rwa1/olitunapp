@@ -35,14 +35,12 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
           promptLatin: 'Which sound does this letter make?',
           optionsOlChiki: ['a', 'i', 'u', 'o'],
           optionsLatin: ['a', 'i', 'u', 'o'],
-          correctIndex: 0,
         ),
         QuizQuestion(
           promptOlChiki: 'ᱛ',
           promptLatin: 'Identify this consonant:',
           optionsOlChiki: ['at', 'ag', 'al', 'ak'],
           optionsLatin: ['at', 'ag', 'al', 'ak'],
-          correctIndex: 0,
         ),
       ],
     ),
@@ -57,7 +55,6 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
           promptLatin: 'What number is this?',
           optionsOlChiki: ['1', '2', '3', '4'],
           optionsLatin: ['One', 'Two', 'Three', 'Four'],
-          correctIndex: 0,
         ),
         QuizQuestion(
           promptOlChiki: '᱕',

@@ -58,7 +58,6 @@ void main() {
             promptLatin: 'What number?',
             optionsOlChiki: ['1', '2', '3'],
             optionsLatin: ['One', 'Two', 'Three'],
-            correctIndex: 0,
           ),
           QuizQuestion(
             promptOlChiki: '᱕',

@@ -91,7 +91,6 @@ void main() {
             promptLatin: 'What sound?',
             optionsOlChiki: ['a', 'i', 'u', 'o'],
             optionsLatin: ['a', 'i', 'u', 'o'],
-            correctIndex: 0,
           ),
         ],
       );

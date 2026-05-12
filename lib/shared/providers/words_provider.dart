@@ -24,7 +24,6 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       wordLatin: 'Johar',
       meaning: 'Hello / Greetings',
       category: 'greeting',
-      order: 0,
     ),
     WordModel(
       id: 'w2',

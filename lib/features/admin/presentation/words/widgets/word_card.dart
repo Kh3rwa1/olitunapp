@@ -129,7 +129,7 @@ class _WordCardState extends State<WordCard> {
                       ),
                       child: Text(
                         w.category!,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
                           color: AppColors.primary,
@@ -143,7 +143,7 @@ class _WordCardState extends State<WordCard> {
             ),
             if (_hovering) ...[
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.edit_rounded,
                   size: 18,
                   color: AppColors.primary,
@@ -152,7 +152,7 @@ class _WordCardState extends State<WordCard> {
                 tooltip: 'Edit',
               ),
               IconButton(
-                icon: Icon(
+                icon: const Icon(
                   Icons.delete_outline_rounded,
                   size: 18,
                   color: AppColors.error,

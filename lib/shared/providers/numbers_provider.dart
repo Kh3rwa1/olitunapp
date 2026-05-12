@@ -23,7 +23,6 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       value: 0,
       nameOlChiki: 'ᱥᱩᱱᱭᱟ',
       nameLatin: 'Sunya',
-      order: 0,
     ),
     NumberModel(
       id: 'n1',

@@ -18,7 +18,6 @@ void main() {
         promptLatin: 'Sound of this?',
         optionsOlChiki: ['a', 'e', 'i', 'o'],
         optionsLatin: ['a', 'e', 'i', 'o'],
-        correctIndex: 0,
       ),
     ],
   );

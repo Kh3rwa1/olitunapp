@@ -25,7 +25,6 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       meaning: 'Hello, how are you?',
       pronunciation: 'Jo-har, am do ched nyu-tum ka-na?',
       category: 'Greeting',
-      order: 0,
     ),
     SentenceModel(
       id: 's2',

@@ -96,7 +96,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
           promptLatin: 'Which sound does this letter make?',
           optionsOlChiki: ['a', 'i', 'u', 'o'],
           optionsLatin: ['a', 'i', 'u', 'o'],
-          correctIndex: 0,
         ),
       ];
       _isLoading = false;

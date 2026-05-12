@@ -163,7 +163,7 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: _selectedCategoryId,
+                  initialValue: _selectedCategoryId,
                   items: categories
                       .map(
                         (c) => DropdownMenuItem(
@@ -215,7 +215,7 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                 ),
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
-                  value: _level,
+                  initialValue: _level,
                   items: const [
                     DropdownMenuItem(
                       value: 'beginner',
@@ -255,7 +255,7 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                 // Questions section
                 Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.quiz_rounded,
                       size: 20,
                       color: AppColors.primary,
@@ -416,7 +416,7 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
                           tooltip: 'Edit',
                         ),
                         IconButton(
-                          icon: Icon(
+                          icon: const Icon(
                             Icons.delete_outline_rounded,
                             size: 16,
                             color: AppColors.error,
@@ -599,7 +599,6 @@ class _QuestionEditorSheetState extends State<_QuestionEditorSheet> {
     } else {
       widget.onSave(
         QuizQuestion(
-          type: 'mcq',
           promptOlChiki: _promptOlChiki.text.trim(),
           promptLatin: _promptLatin.text.trim().isNotEmpty
               ? _promptLatin.text.trim()
@@ -789,11 +788,20 @@ class _QuestionEditorSheetState extends State<_QuestionEditorSheet> {
           padding: const EdgeInsets.only(bottom: 10),
           child: Row(
             children: [
-              Radio<int>(
-                value: i,
-                groupValue: _correctIndex,
-                onChanged: (v) => setState(() => _correctIndex = v!),
-                activeColor: AppColors.primary,
+              GestureDetector(
+                onTap: () => setState(() => _correctIndex = i),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Icon(
+                    _correctIndex == i
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.radio_button_off_rounded,
+                    color: _correctIndex == i
+                        ? AppColors.primary
+                        : AdminTokens.border(isDark),
+                    size: 20,
+                  ),
+                ),
               ),
               Expanded(
                 child: TextField(
@@ -870,23 +878,23 @@ class _QuestionEditorSheetState extends State<_QuestionEditorSheet> {
             color: const Color(0xFF10B981).withValues(alpha: 0.2),
           ),
         ),
-        child: Column(
+        child: const Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
               children: [
-                const Icon(
+                Icon(
                   Icons.info_outline_rounded,
                   size: 16,
                   color: Color(0xFF10B981),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: 8),
                 Text(
                   'Use ___ (three underscores) as the blank placeholder',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
-                    color: const Color(0xFF10B981),
+                    color: Color(0xFF10B981),
                   ),
                 ),
               ],

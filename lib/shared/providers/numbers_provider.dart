@@ -10,7 +10,7 @@ final numbersProvider =
     );
 
 class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
-  NumbersNotifier(this.ref) : super(AsyncValue.data(_seedNumbers)) {
+  NumbersNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadNumbers();
   }
 

@@ -9,8 +9,12 @@ Future<void> seedAppContent(WidgetRef ref) async {
   final categoriesNotifier = ref.read(categoryNotifierProvider.notifier);
   final lettersNotifier = ref.read(lettersProvider.notifier);
   final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
+  final numbersNotifier = ref.read(numbersProvider.notifier);
+  final wordsNotifier = ref.read(wordsProvider.notifier);
+  final sentencesNotifier = ref.read(sentencesProvider.notifier);
 
-  final alphabetsId = 'cat_alphabets_${DateTime.now().millisecondsSinceEpoch}';
+  // ── Alphabets Category ──
+  const alphabetsId = 'cat_alphabets';
   await categoriesNotifier.addCategory(
     CategoryModel(
       id: alphabetsId,
@@ -31,7 +35,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
   for (int i = 0; i < letters.length; i++) {
     lettersNotifier.addLetter(
       LetterModel(
-        id: 'letter_${i}_${DateTime.now().microsecondsSinceEpoch}',
+        id: 'letter_${letters[i][1]}',
         charOlChiki: letters[i][0],
         transliterationLatin: letters[i][1],
         order: i,
@@ -40,27 +44,31 @@ Future<void> seedAppContent(WidgetRef ref) async {
   }
 
   final lessonTitles = [
-    'Basics of Ol Chiki',
-    'Vowels I',
-    'Consonants I',
-    'Vowels II',
-    'Consonants II',
+    ['Basics of Ol Chiki', 'ᱚᱞ ᱪᱤᱠᱤ ᱢᱩᱞ'],
+    ['Vowels I', 'ᱨᱟᱦᱟ ᱟᱲᱟᱝ I'],
+    ['Consonants I', 'ᱠᱮᱪᱮᱫ ᱟᱲᱟᱝ I'],
   ];
   for (int i = 0; i < lessonTitles.length; i++) {
     await lessonsNotifier.addLesson(
       LessonModel(
-        id: 'lesson_${i}_${DateTime.now().microsecondsSinceEpoch}',
+        id: 'lesson_alphabet_$i',
         categoryId: alphabetsId,
-        titleOlChiki: 'ᱯᱟᱹᱴ $i',
-        titleLatin: lessonTitles[i],
+        titleOlChiki: lessonTitles[i][1],
+        titleLatin: lessonTitles[i][0],
         order: i,
-        blocks: const [],
+        blocks: [
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: letters[i][0],
+            textLatin: 'Learn the letter ${letters[i][1]}',
+          ),
+        ],
       ),
     );
   }
 
   // ── Numbers Category ──
-  final numbersId = 'cat_numbers_${DateTime.now().millisecondsSinceEpoch}';
+  const numbersId = 'cat_numbers';
   await categoriesNotifier.addCategory(
     CategoryModel(
       id: numbersId,
@@ -69,15 +77,32 @@ Future<void> seedAppContent(WidgetRef ref) async {
       iconName: 'numbers',
       gradientPreset: 'peach',
       order: 1,
-      totalLessons: 3,
+      totalLessons: 1,
     ),
   );
 
-  // Seed numbers via provider (triggers _loadNumbers)
-  await ref.read(numbersProvider.notifier).seed();
+  // Seed numbers (0-9)
+  await numbersNotifier.seed();
 
-  // ── Vocabulary / Words Category ──
-  final vocabId = 'cat_vocab_${DateTime.now().millisecondsSinceEpoch}';
+  await lessonsNotifier.addLesson(
+    LessonModel(
+      id: 'lesson_numbers_0_9',
+      categoryId: numbersId,
+      titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers 0-9',
+      blocks: List.generate(
+        10,
+        (i) => LessonBlockModel(
+          type: 'text',
+          textOlChiki: 'n$i', // Scoping by ID or string?
+          textLatin: 'Number $i',
+        ),
+      ).toList(),
+    ),
+  );
+
+  // ── Vocabulary Category ──
+  const vocabId = 'cat_vocab';
   await categoriesNotifier.addCategory(
     CategoryModel(
       id: vocabId,
@@ -90,32 +115,33 @@ Future<void> seedAppContent(WidgetRef ref) async {
     ),
   );
 
-  // Seed words via provider
-  await ref.read(wordsProvider.notifier).seed();
+  await wordsNotifier.seed();
 
-  // Create vocab lessons
   final vocabLessons = [
-    ['Greetings & Basics', 'ᱡᱚᱦᱟᱨ ᱟᱨ ᱢᱩᱞ'],
-    ['Family Words', 'ᱯᱟᱨᱤᱣᱟᱨ'],
-    ['Nature Words', 'ᱯᱨᱚᱠᱨᱤᱛᱤ'],
-    ['Body & Daily Life', 'ᱡᱤᱣᱤ ᱟᱨ ᱫᱤᱱᱚᱛ'],
+    ['Greetings', 'ᱡᱚᱦᱟᱨ', ['ᱡᱚᱦᱟᱨ', 'ᱥᱟᱹᱜᱩᱱ ᱥᱮᱛᱟ', 'ᱥᱟᱹᱜᱩᱱ ᱢᱟᱦᱟ']],
+    ['Family', 'ᱯᱟᱨᱤᱣᱟᱨ', ['ᱵᱟᱵᱟ', 'ᱟᱭᱳ', 'ᱫᱟᱫᱟ', 'ᱫᱟᱹᱭ']],
   ];
   for (int i = 0; i < vocabLessons.length; i++) {
     await lessonsNotifier.addLesson(
       LessonModel(
-        id: 'lesson_vocab_${i}_${DateTime.now().microsecondsSinceEpoch}',
+        id: 'lesson_vocab_$i',
         categoryId: vocabId,
-        titleOlChiki: vocabLessons[i][1],
-        titleLatin: vocabLessons[i][0],
+        titleOlChiki: vocabLessons[i][1] as String,
+        titleLatin: vocabLessons[i][0] as String,
         order: i,
-        blocks: const [],
+        blocks: (vocabLessons[i][2] as List<String>)
+            .map((word) => LessonBlockModel(
+                  type: 'text',
+                  textOlChiki: word,
+                  textLatin: 'Learning $word',
+                ))
+            .toList(),
       ),
     );
   }
 
   // ── Sentences Category ──
-  final sentencesCatId =
-      'cat_sentences_${DateTime.now().millisecondsSinceEpoch}';
+  const sentencesCatId = 'cat_sentences';
   await categoriesNotifier.addCategory(
     CategoryModel(
       id: sentencesCatId,
@@ -124,50 +150,36 @@ Future<void> seedAppContent(WidgetRef ref) async {
       iconName: 'sentences',
       gradientPreset: 'ocean',
       order: 3,
-      totalLessons: 4,
+      totalLessons: 1,
     ),
   );
 
-  // Seed sentences via provider
-  await ref.read(sentencesProvider.notifier).seed();
+  await sentencesNotifier.seed();
 
-  // Create sentence lessons
-  final sentenceLessons = [
-    ['Greetings & Goodbyes', 'ᱡᱚᱦᱟᱨ ᱟᱨ ᱵᱤᱫᱟᱭ'],
-    ['Introducing Yourself', 'ᱟᱯᱱᱟᱨ ᱯᱟᱨᱤᱪᱚᱭ'],
-    ['Asking Questions', 'ᱠᱩᱥᱤ ᱠᱟᱛᱷᱟ'],
-    ['Daily Conversations', 'ᱫᱤᱱᱚᱛ ᱠᱟᱛᱷᱟ'],
-  ];
-  for (int i = 0; i < sentenceLessons.length; i++) {
-    await lessonsNotifier.addLesson(
-      LessonModel(
-        id: 'lesson_sent_${i}_${DateTime.now().microsecondsSinceEpoch}',
-        categoryId: sentencesCatId,
-        titleOlChiki: sentenceLessons[i][1],
-        titleLatin: sentenceLessons[i][0],
-        order: i,
-        blocks: const [],
-      ),
-    );
-  }
-
-  // ── Phrases / Greetings Category ──
-  await categoriesNotifier.addCategory(
-    CategoryModel(
-      id: 'cat_phrases_${DateTime.now().millisecondsSinceEpoch}',
-      titleOlChiki: 'ᱛᱮᱞᱟ ᱯᱟᱹᱨᱥᱤ',
-      titleLatin: 'Greetings',
-      iconName: 'words',
-      gradientPreset: 'mint',
-      order: 4,
-      totalLessons: 4,
+  await lessonsNotifier.addLesson(
+    LessonModel(
+      id: 'lesson_sentences_basics',
+      categoryId: sentencesCatId,
+      titleOlChiki: 'ᱢᱩᱞ ᱣᱟᱠᱭ',
+      titleLatin: 'Basic Sentences',
+      blocks: [
+        const LessonBlockModel(
+          type: 'text',
+          textOlChiki: 'ᱟᱢᱟᱜ ᱧᱩᱛᱩᱢ ᱪᱮᱫ?',
+          textLatin: 'What is your name?',
+        ),
+        const LessonBlockModel(
+          type: 'text',
+          textOlChiki: 'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ ᱫᱚ ᱥᱟᱱᱛᱷᱟᱞ',
+          textLatin: 'My name is Santhal',
+        ),
+      ],
     ),
   );
 
   // ── Quiz ──
-  final quizzesNotifier = ref.read(quizzesProvider.notifier);
-  final quizId = 'quiz_basics_${DateTime.now().millisecondsSinceEpoch}';
-  await quizzesNotifier.addQuiz(
+  const quizId = 'quiz_basics_1';
+  await ref.read(quizzesProvider.notifier).addQuiz(
     QuizModel(
       id: quizId,
       categoryId: alphabetsId,
@@ -180,54 +192,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
           correctIndex: 3,
         ),
       ],
-    ),
-  );
-
-  await lessonsNotifier.addLesson(
-    LessonModel(
-      id: 'lesson_quiz_demo_${DateTime.now().millisecondsSinceEpoch}',
-      categoryId: alphabetsId,
-      titleOlChiki: 'ᱠᱩᱤᱡᱽ',
-      titleLatin: 'Quiz Demo',
-      order: 99,
-      estimatedMinutes: 2,
-      blocks: const [
-        LessonBlockModel(
-          type: 'text',
-          textLatin: 'Ready to test your knowledge?',
-          textOlChiki: 'ᱵᱤᱰᱟᱹᱣ ᱨᱮᱱᱟᱜ ᱚᱠᱛᱚ!',
-        ),
-        LessonBlockModel(
-          type: 'quiz',
-          data: {'quizRefId': 'quiz_basics_...'},
-        ), // Simplified for demo
-      ],
-    ),
-  );
-
-  // ── Rhymes ──
-  final rhymesNotifier = ref.read(rhymesProvider.notifier);
-  await rhymesNotifier.addRhyme(
-    RhymeModel(
-      id: 'rhyme_hati',
-      titleOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ',
-      titleLatin: 'Hati Lagit',
-      contentOlChiki: 'ᱦᱟᱹᱛᱤ ᱞᱟᱹᱜᱤᱫ ᱦᱟᱹᱛᱤ...',
-      contentLatin: 'Hati lagit hati...',
-      category: 'Animal',
-      subcategory: 'Wild Animals',
-    ),
-  );
-
-  await rhymesNotifier.addRhyme(
-    RhymeModel(
-      id: 'rhyme_buru',
-      titleOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ',
-      titleLatin: 'Buru Re',
-      contentOlChiki: 'ᱵᱩᱨᱩ ᱨᱮ ᱵᱩᱨᱩ...',
-      contentLatin: 'Buru re buru...',
-      category: 'Nature',
-      subcategory: 'Mountains & Forest',
     ),
   );
 }

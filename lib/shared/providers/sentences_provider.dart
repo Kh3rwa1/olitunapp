@@ -10,7 +10,7 @@ final sentencesProvider =
     );
 
 class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
-  SentencesNotifier(this.ref) : super(AsyncValue.data(_seedSentences)) {
+  SentencesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadSentences();
   }
 

@@ -10,7 +10,7 @@ final wordsProvider =
     );
 
 class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
-  WordsNotifier(this.ref) : super(AsyncValue.data(_seedWords)) {
+  WordsNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadWords();
   }
 

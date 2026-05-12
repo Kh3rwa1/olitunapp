@@ -210,13 +210,13 @@ class AppColors {
   static const LinearGradient meshLight = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFFF8F9FA), Color(0xFFFFFFFF), Color(0xFFF0FFF4)],
+    colors: [Color(0xFFF8F9FA), Color(0xFFFFFFFF), Color(0xFFE6FFF2)],
   );
 
   static const LinearGradient meshDark = LinearGradient(
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
-    colors: [Color(0xFF000000), Color(0xFF0D0D0D), Color(0xFF001A0D)],
+    colors: [Color(0xFF000000), Color(0xFF080808), Color(0xFF001208)],
   );
 
   // Dark mode card gradients

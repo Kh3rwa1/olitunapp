@@ -11,7 +11,7 @@ final lettersProvider =
     );
 
 class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
-  LettersNotifier(this.ref) : super(AsyncValue.data(_seedLetters)) {
+  LettersNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadLetters();
   }
 

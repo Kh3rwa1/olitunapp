@@ -106,6 +106,12 @@ Future<void> seedAppContent(WidgetRef ref) async {
   // Seed numbers (0-9)
   await numbersNotifier.seed();
 
+  const olChikiNumerals = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
+  const latinLabels = [
+    '0 – Zero', '1 – One', '2 – Two', '3 – Three', '4 – Four',
+    '5 – Five', '6 – Six', '7 – Seven', '8 – Eight', '9 – Nine',
+  ];
+
   await lessonsNotifier.addLesson(
     LessonModel(
       id: 'lesson_numbers_0_9',
@@ -116,8 +122,8 @@ Future<void> seedAppContent(WidgetRef ref) async {
         10,
         (i) => LessonBlockModel(
           type: 'text',
-          textOlChiki: 'n$i',
-          textLatin: 'Number $i',
+          textOlChiki: olChikiNumerals[i],
+          textLatin: latinLabels[i],
         ),
       ).toList(),
     ),

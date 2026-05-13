@@ -111,6 +111,9 @@ class LessonRemoteDataSourceImpl implements LessonRemoteDataSource {
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
+      if (e.code == 409) {
+        return updateLesson(lesson);
+      }
       throw ServerException(
         message: e.message ?? 'Failed to create lesson',
         code: e.code,

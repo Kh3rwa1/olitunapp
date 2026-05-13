@@ -47,6 +47,16 @@ class _AdminLessonContentScreenState
   Future<void> _saveChanges() async {
     if (_lesson == null) return;
 
+    if (_blocks.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('A lesson must have at least one block!'),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final updatedLesson = _lesson!.copyWith(blocks: _blocks);
     await ref.read(lessonNotifierProvider.notifier).updateLesson(updatedLesson);
 

@@ -63,12 +63,16 @@ class LessonCard extends StatelessWidget {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${lesson.blocks.length} CONTENT BLOCKS',
+                    lesson.blocks.isEmpty
+                        ? 'EMPTY - ADD BLOCKS!'
+                        : '${lesson.blocks.length} CONTENT BLOCKS',
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
-                      color: isDark ? Colors.white38 : Colors.black38,
+                      color: lesson.blocks.isEmpty
+                          ? AppColors.error
+                          : (isDark ? Colors.white38 : Colors.black38),
                     ),
                   ),
                 ],

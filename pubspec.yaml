@@ -1,7 +1,7 @@
 name: itun
 description: Olitun - Premium Ol Chiki (Santali Script) Learning App
 publish_to: 'none'
-version: 1.1.0+15
+version: 1.1.1+16
 
 environment:
   sdk: ^3.9.0

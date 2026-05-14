@@ -110,7 +110,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
               .map((e) => QuizModel.fromJson(e))
               .toList();
           state = AsyncValue.data(cachedQuizzes);
-          _saveQuizzes(cachedQuizzes);
+          await _saveQuizzes(cachedQuizzes);
           _prefs.remove(_legacyCacheKey);
           _prefs.remove(_cacheKey);
         }
@@ -128,10 +128,10 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
       final quizzes = data.map(QuizModel.fromJson).toList();
       if (quizzes.isNotEmpty) {
         state = AsyncValue.data(quizzes);
-        _saveQuizzes(quizzes);
+        await _saveQuizzes(quizzes);
       } else if (!(state.value?.isNotEmpty ?? false)) {
         state = AsyncValue.data(_defaultQuizzes);
-        _saveQuizzes(_defaultQuizzes);
+        await _saveQuizzes(_defaultQuizzes);
       }
     } catch (e, stack) {
       debugPrint('Failed to load quizzes from Appwrite: $e');
@@ -141,9 +141,9 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
     }
   }
 
-  void _saveQuizzes(List<QuizModel> quizzes) {
+  Future<void> _saveQuizzes(List<QuizModel> quizzes) async {
     final data = quizzes.map((e) => e.toJson()).toList();
-    CacheService.set(_cacheKey, data);
+    await CacheService.set(_cacheKey, data);
   }
 
   Map<String, dynamic> _toAppwritePayload(QuizModel quiz) {

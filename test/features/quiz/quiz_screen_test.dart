@@ -82,8 +82,8 @@ void main() {
       findsWidgets,
     ); // Option selection indicators
 
-    // The Continue button in QuizScreen is often dynamic.
-    // In quiz_screen.dart, it uses AppLocalizations.of(context)!.continueButton
+    // Wait for any remaining timers (e.g. HapticFeedback delays or flutter_animate)
+    await tester.pump(const Duration(milliseconds: 500));
   });
 }
 

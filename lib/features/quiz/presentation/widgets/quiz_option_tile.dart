@@ -1,9 +1,9 @@
-import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
+import 'wrong_answer_shake.dart';
 
 class QuizOptionTile extends StatelessWidget {
   final int index;
@@ -152,57 +152,10 @@ class QuizOptionTile extends StatelessWidget {
                   .scaleXY(begin: 1.0, end: 1 / 1.04, duration: 220.ms);
             }
             if (isSelected && !isCorrect) {
-              return _WrongAnswerShake(child: child);
+              return WrongAnswerShake(child: child);
             }
             return child;
           },
         );
-  }
-}
-
-class _WrongAnswerShake extends StatefulWidget {
-  final Widget child;
-  const _WrongAnswerShake({required this.child});
-
-  @override
-  State<_WrongAnswerShake> createState() => _WrongAnswerShakeState();
-}
-
-class _WrongAnswerShakeState extends State<_WrongAnswerShake>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _ctl = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 360),
-  );
-
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!mounted) return;
-      if (!RespectMotion.of(context)) {
-        _ctl.forward(from: 0);
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _ctl.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    if (RespectMotion.of(context)) return widget.child;
-    return AnimatedBuilder(
-      animation: _ctl,
-      builder: (_, child) {
-        final t = _ctl.value;
-        final dx = (1 - t) * 8 * math.sin(t * 3 * 2 * math.pi);
-        return Transform.translate(offset: Offset(dx, 0), child: child);
-      },
-      child: widget.child,
-    );
   }
 }

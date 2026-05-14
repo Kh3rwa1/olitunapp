@@ -3,14 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 
-class QuizState {
+class QuizSessionState {
   final int currentQuestion;
   final int score;
   final int? selectedAnswer;
   final bool isAnswered;
   final bool isQuizComplete;
 
-  const QuizState({
+  const QuizSessionState({
     this.currentQuestion = 0,
     this.score = 0,
     this.selectedAnswer,
@@ -18,7 +18,7 @@ class QuizState {
     this.isQuizComplete = false,
   });
 
-  QuizState copyWith({
+  QuizSessionState copyWith({
     int? currentQuestion,
     int? score,
     int? selectedAnswer,
@@ -26,7 +26,7 @@ class QuizState {
     bool? isQuizComplete,
     bool clearSelectedAnswer = false,
   }) {
-    return QuizState(
+    return QuizSessionState(
       currentQuestion: currentQuestion ?? this.currentQuestion,
       score: score ?? this.score,
       selectedAnswer: clearSelectedAnswer
@@ -38,10 +38,11 @@ class QuizState {
   }
 }
 
-class QuizNotifier extends StateNotifier<QuizState> {
-  final Ref ref;
-
-  QuizNotifier(this.ref) : super(const QuizState());
+class QuizSessionNotifier extends AutoDisposeNotifier<QuizSessionState> {
+  @override
+  QuizSessionState build() {
+    return const QuizSessionState();
+  }
 
   void selectAnswer(int index, QuizQuestion question) {
     if (state.isAnswered) return;
@@ -90,11 +91,11 @@ class QuizNotifier extends StateNotifier<QuizState> {
   }
 
   void reset() {
-    state = const QuizState();
+    state = const QuizSessionState();
   }
 }
 
-final quizNotifierProvider =
-    StateNotifierProvider.autoDispose<QuizNotifier, QuizState>((ref) {
-      return QuizNotifier(ref);
-    });
+final quizSessionNotifierProvider =
+    NotifierProvider.autoDispose<QuizSessionNotifier, QuizSessionState>(
+      QuizSessionNotifier.new,
+    );

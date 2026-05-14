@@ -6,37 +6,25 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../core/motion/motion.dart';
 import '../data/quiz_repository.dart';
-import 'providers/quiz_notifier.dart';
+import 'providers/quiz_session_notifier.dart';
 import 'widgets/quiz_complete_screen.dart';
+import 'widgets/quiz_empty_view.dart';
 import 'widgets/quiz_option_tile.dart';
+import 'widgets/quiz_progress_bar.dart';
 import 'widgets/quiz_question_card.dart';
 
-class QuizScreen extends ConsumerStatefulWidget {
+class QuizScreen extends ConsumerWidget {
   final String quizId;
 
   const QuizScreen({super.key, required this.quizId});
 
   @override
-  ConsumerState<QuizScreen> createState() => _QuizScreenState();
-}
-
-class _QuizScreenState extends ConsumerState<QuizScreen> {
-  @override
-  void initState() {
-    super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(quizNotifierProvider.notifier).reset();
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final quizState = ref.watch(quizNotifierProvider);
+  Widget build(BuildContext context, WidgetRef ref) {
     final quizRepo = ref.watch(quizRepositoryProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return FutureBuilder(
-      future: quizRepo.getQuiz(widget.quizId),
+      future: quizRepo.getQuiz(quizId),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
@@ -48,25 +36,25 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             body: Center(child: Text('Error: ${snapshot.error}')),
           );
         }
-
         final quiz = snapshot.data;
         if (quiz == null) {
-          return _buildNotFoundQuiz(context, isDark);
+          return const QuizEmptyView(isNotFound: true);
         }
         if (quiz.questions.isEmpty) {
-          return _buildEmptyQuiz(context, isDark);
+          return const QuizEmptyView();
         }
 
-        if (quizState.isQuizComplete) {
+        final state = ref.watch(quizSessionNotifierProvider);
+        if (state.isQuizComplete) {
           return QuizCompleteScreen(
-            score: quizState.score,
+            score: state.score,
             totalQuestions: quiz.questions.length,
           );
         }
 
-        final question = quiz.questions[quizState.currentQuestion];
-        final totalQuestions = quiz.questions.length;
-        final notifier = ref.read(quizNotifierProvider.notifier);
+        final notifier = ref.read(quizSessionNotifierProvider.notifier);
+        final question = quiz.questions[state.currentQuestion];
+        final totalQs = quiz.questions.length;
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -99,7 +87,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '${quizState.currentQuestion + 1}/$totalQuestions',
+                  '${state.currentQuestion + 1}/$totalQs',
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
@@ -113,50 +101,34 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             padding: const EdgeInsets.all(20),
             child: Column(
               children: [
-                // Progress bar
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(6),
-                  child: LinearProgressIndicator(
-                    value: (quizState.currentQuestion + 1) / totalQuestions,
-                    backgroundColor: isDark ? Colors.white12 : Colors.black12,
-                    valueColor: const AlwaysStoppedAnimation<Color>(
-                      AppColors.primary,
-                    ),
-                    minHeight: 8,
-                  ),
+                QuizProgressBar(
+                  current: state.currentQuestion + 1,
+                  total: totalQs,
+                  isDark: isDark,
                 ),
                 const SizedBox(height: 40),
-
-                // Question
                 Expanded(
                   child: Column(
                     children: [
                       QuizQuestionCard(question: question),
                       const SizedBox(height: 32),
-
-                      // Options
                       Expanded(
                         child: ListView.builder(
                           itemCount: question.optionsLatin.length,
-                          itemBuilder: (context, index) {
-                            return QuizOptionTile(
-                              index: index,
-                              currentQuestion: quizState.currentQuestion,
-                              question: question,
-                              isSelected: quizState.selectedAnswer == index,
-                              isAnswered: quizState.isAnswered,
-                              onTap: () =>
-                                  notifier.selectAnswer(index, question),
-                            );
-                          },
+                          itemBuilder: (_, index) => QuizOptionTile(
+                            index: index,
+                            currentQuestion: state.currentQuestion,
+                            question: question,
+                            isSelected: state.selectedAnswer == index,
+                            isAnswered: state.isAnswered,
+                            onTap: () => notifier.selectAnswer(index, question),
+                          ),
                         ),
                       ),
                     ],
                   ),
                 ),
-
-                // Continue button
-                if (quizState.isAnswered)
+                if (state.isAnswered)
                   PressableScale(
                     onTap: () => notifier.nextQuestion(quiz),
                     haptic: HapticIntensity.selection,
@@ -191,92 +163,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           ),
         );
       },
-    );
-  }
-
-  Widget _buildNotFoundQuiz(BuildContext context, bool isDark) {
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.error_outline_rounded,
-              size: 64,
-              color: AppColors.error.withValues(alpha: 0.8),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              'Quiz not found',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(AppLocalizations.of(context)!.goBack),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEmptyQuiz(BuildContext context, bool isDark) {
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(
-              Icons.quiz_outlined,
-              size: 64,
-              color: AppColors.primary.withValues(alpha: 0.5),
-            ),
-            const SizedBox(height: 24),
-            Text(
-              AppLocalizations.of(context)!.noQuestionsYet,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w700,
-                color: isDark ? Colors.white : Colors.black,
-              ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () => context.go('/'),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.primary,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 32,
-                  vertical: 16,
-                ),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(14),
-                ),
-              ),
-              child: Text(AppLocalizations.of(context)!.goBack),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

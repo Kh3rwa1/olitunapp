@@ -352,7 +352,7 @@ class AppLocalizationsSat extends AppLocalizations {
   String get avatarEmoji => 'Avatar Emoji';
 
   @override
-  String get rhymes => 'ᱵᱟᱠᱷᱮᱫ';
+  String get rhymes => 'ᱵᱟᱠᱷᱮᱬ';
 
   @override
   String get santali => 'Santali';
@@ -370,7 +370,7 @@ class AppLocalizationsSat extends AppLocalizations {
   String get moreComing => 'Aar ased! ✨';
 
   @override
-  String get couldNotLoadRhymes => 'ᱵᱟᱠᱷᱮᱫ load ᱵᱟᱝᱜᱚ';
+  String get couldNotLoadRhymes => 'ᱵᱟᱠᱷᱮᱬ load ᱵᱟᱝᱜᱚ';
 
   @override
   String get checkConnection => 'Em connection dekhao ar aar try me';

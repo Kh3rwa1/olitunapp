@@ -154,7 +154,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       color: AppColors.primary.withValues(alpha: 0.3),
                     ),
                 Text(
-                      'Rhymes',
+                      'Bakhed',
                       style: GoogleFonts.fredoka(
                         fontSize: 48,
                         fontWeight: FontWeight.w700,
@@ -526,7 +526,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
           const SizedBox(height: 12),
           Text(
-            'Could not load rhymes',
+            'Could not load bakhed',
             style: TextStyle(
               fontWeight: FontWeight.w600,
               color: isDark ? Colors.white : Colors.black87,

@@ -246,7 +246,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildNavItem(0, Icons.home_rounded, 'Home'),
-                _buildNavItem(1, Icons.music_note_rounded, 'Rhymes'),
+                _buildNavItem(1, Icons.music_note_rounded, 'Bakhed'),
                 _buildNavItem(2, Icons.person_rounded, 'Profile'),
               ],
             ),
@@ -400,7 +400,7 @@ class _DesktopSidebar extends ConsumerWidget {
           ),
           _SidebarNavItem(
             icon: Icons.music_note_rounded,
-            label: 'Rhymes',
+            label: 'Bakhed',
             isSelected: selectedIndex == 1,
             onTap: () => onItemTapped(1),
             isDark: isDark,

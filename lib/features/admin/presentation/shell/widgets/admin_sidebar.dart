@@ -86,14 +86,14 @@ class AdminSidebar extends StatelessWidget {
                 ),
                 AdminNavItem(
                   icon: Icons.music_note_rounded,
-                  label: 'Rhymes & Stories',
+                  label: 'Bakhed & Stories',
                   isSelected: location == '/admin/rhymes',
                   onTap: () => context.go('/admin/rhymes'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.grid_view_rounded,
-                  label: 'Rhyme Categories',
+                  label: 'Bakhed Categories',
                   isSelected: location == '/admin/rhymes/categories',
                   onTap: () => context.go('/admin/rhymes/categories'),
                   isCompact: isCompact,

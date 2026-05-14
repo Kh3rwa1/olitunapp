@@ -77,7 +77,7 @@ class _AdminRhymeCategoriesScreenState
     return Padding(
       padding: const EdgeInsets.all(AdminTokens.space7),
       child: AdminPageHeader(
-        title: 'Rhyme Categories',
+        title: 'Bakhed Categories',
         subtitle: 'Manage categories & subcategories ($count categories)',
         eyebrow: 'CONTENT · CATEGORIES',
       ),
@@ -88,7 +88,7 @@ class _AdminRhymeCategoriesScreenState
     return AdminEmptyState(
       icon: Icons.folder_open_rounded,
       title: 'No categories yet',
-      message: 'Create a category to start organising your rhymes and stories.',
+      message: 'Create a category to start organising your bakhed and stories.',
       actionLabel: 'Add Category',
       onAction: () => _showCategoryDialog(null),
     );
@@ -277,7 +277,7 @@ class _AdminRhymeCategoriesScreenState
         builder: (context, setDialogState) {
           return AdminModalSheet(
             title: cat == null ? 'Add Category' : 'Edit Category',
-            subtitle: 'Organise rhymes into top-level groups',
+            subtitle: 'Organise bakhed into top-level groups',
             icon: Icons.folder_rounded,
             primaryLabel: cat == null ? 'Create Category' : 'Save Changes',
             heightFactor: 0.7,

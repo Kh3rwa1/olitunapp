@@ -353,7 +353,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get avatarEmoji => 'Avatar Emoji';
 
   @override
-  String get rhymes => 'Rhymes';
+  String get rhymes => 'Bakhed';
 
   @override
   String get santali => 'Santali';
@@ -371,7 +371,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get moreComing => 'More coming soon! ✨';
 
   @override
-  String get couldNotLoadRhymes => 'Could not load rhymes';
+  String get couldNotLoadRhymes => 'Could not load bakhed';
 
   @override
   String get checkConnection => 'Check your connection and try again';

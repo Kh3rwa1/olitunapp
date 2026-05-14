@@ -737,7 +737,7 @@ abstract class AppLocalizations {
   /// No description provided for @rhymes.
   ///
   /// In en, this message translates to:
-  /// **'Rhymes'**
+  /// **'Bakhed'**
   String get rhymes;
 
   /// No description provided for @santali.
@@ -773,7 +773,7 @@ abstract class AppLocalizations {
   /// No description provided for @couldNotLoadRhymes.
   ///
   /// In en, this message translates to:
-  /// **'Could not load rhymes'**
+  /// **'Could not load bakhed'**
   String get couldNotLoadRhymes;
 
   /// No description provided for @checkConnection.

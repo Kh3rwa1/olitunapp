@@ -247,14 +247,18 @@ class _AdminRhymeCategoriesScreenState
 
   IconData _getIconFromName(String name) {
     switch (name) {
-      case 'pets':
-        return Icons.pets_rounded;
-      case 'nature':
-        return Icons.wb_sunny_rounded;
-      case 'auto_awesome':
-        return Icons.auto_awesome_rounded;
-      case 'child_care':
-        return Icons.child_care_rounded;
+      case 'agriculture':
+        return Icons.agriculture_rounded;
+      case 'local_florist':
+        return Icons.local_florist_rounded;
+      case 'eco':
+        return Icons.eco_rounded;
+      case 'child_friendly':
+        return Icons.child_friendly_rounded;
+      case 'favorite':
+        return Icons.favorite_rounded;
+      case 'group':
+        return Icons.group_rounded;
       default:
         return Icons.folder_rounded;
     }
@@ -265,9 +269,9 @@ class _AdminRhymeCategoriesScreenState
   void _showCategoryDialog(RhymeCategoryModel? cat) {
     final nameLatinCtrl = TextEditingController(text: cat?.nameLatin);
     final nameOlChikiCtrl = TextEditingController(text: cat?.nameOlChiki);
-    String iconName = cat?.iconName ?? 'child_care';
+    String iconName = cat?.iconName ?? 'folder';
 
-    final iconOptions = ['pets', 'nature', 'auto_awesome', 'child_care'];
+    final iconOptions = ['agriculture', 'local_florist', 'eco', 'child_friendly', 'favorite', 'group'];
 
     showModalBottomSheet(
       context: context,

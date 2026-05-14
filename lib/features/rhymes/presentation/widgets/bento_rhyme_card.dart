@@ -191,14 +191,20 @@ class _BentoRhymeCardState extends State<BentoRhymeCard>
 
   IconData _getIconForCategory(String? category) {
     switch (category?.toLowerCase()) {
-      case 'animal':
-        return Icons.pets_rounded;
-      case 'nature':
-        return Icons.wb_sunny_rounded;
-      case 'moral':
-        return Icons.auto_awesome_rounded;
+      case 'sohrai':
+        return Icons.agriculture_rounded;
+      case 'baha':
+        return Icons.local_florist_rounded;
+      case 'mag\'more':
+        return Icons.eco_rounded;
+      case 'chhatyar':
+        return Icons.child_friendly_rounded;
+      case 'bapla':
+        return Icons.favorite_rounded;
+      case 'bhandan':
+        return Icons.group_rounded;
       default:
-        return Icons.child_care_rounded;
+        return Icons.auto_awesome_rounded;
     }
   }
 }

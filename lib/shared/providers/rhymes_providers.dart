@@ -26,7 +26,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       titleLatin: 'Isin Sanam',
       contentOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ ᱨᱮ\nᱵᱤᱨ ᱦᱚᱨ ᱥᱟᱱᱟᱢ',
       contentLatin: 'Isin sanam re\nBir hor sanam',
-      category: 'Nature',
+      category: 'Sohrai',
     ),
     RhymeModel(
       id: 'seed_2',
@@ -34,7 +34,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       titleLatin: 'Meram Pasi',
       contentOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ\nᱠᱟᱛᱮ ᱟᱥᱤ',
       contentLatin: 'Meram pasi\nKate asi',
-      category: 'Animal',
+      category: 'Baha',
     ),
   ];
 

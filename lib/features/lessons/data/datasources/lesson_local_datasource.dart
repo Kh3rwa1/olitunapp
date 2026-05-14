@@ -1,6 +1,5 @@
-import 'dart:convert';
-import 'package:hive/hive.dart';
 import '../../../../core/error/exceptions.dart';
+import '../../../../core/storage/cache_service.dart';
 import '../models/lesson_model.dart';
 
 abstract class LessonLocalDataSource {
@@ -10,22 +9,21 @@ abstract class LessonLocalDataSource {
 }
 
 class LessonLocalDataSourceImpl implements LessonLocalDataSource {
-  static const String _boxName = 'content_cache';
   static const String _cacheKey = 'cached_lessons';
 
   @override
   Future<List<LessonModel>> getLessons() async {
     try {
-      final box = await Hive.openBox(_boxName);
-      final jsonString = box.get(_cacheKey);
-      if (jsonString != null) {
-        final decoded = jsonDecode(jsonString) as List;
-        return decoded
-            .map((e) => LessonModel.fromJson(e as Map<String, dynamic>))
-            .toList();
+      final cached = await CacheService.getList<LessonModel>(
+        _cacheKey,
+        LessonModel.fromJson,
+      );
+      if (cached != null && cached.isNotEmpty) {
+        return cached;
       }
       throw CacheException(message: 'No cached lessons found');
     } catch (e) {
+      if (e is CacheException) rethrow;
       throw CacheException(message: e.toString());
     }
   }
@@ -33,9 +31,8 @@ class LessonLocalDataSourceImpl implements LessonLocalDataSource {
   @override
   Future<void> cacheLessons(List<LessonModel> lessons) async {
     try {
-      final box = await Hive.openBox(_boxName);
-      final jsonString = jsonEncode(lessons.map((e) => e.toJson()).toList());
-      await box.put(_cacheKey, jsonString);
+      final data = lessons.map((e) => e.toJson()).toList();
+      await CacheService.set(_cacheKey, data);
     } catch (e) {
       throw CacheException(message: e.toString());
     }
@@ -43,7 +40,6 @@ class LessonLocalDataSourceImpl implements LessonLocalDataSource {
 
   @override
   Future<void> clearCache() async {
-    final box = await Hive.openBox(_boxName);
-    await box.delete(_cacheKey);
+    await CacheService.delete(_cacheKey);
   }
 }

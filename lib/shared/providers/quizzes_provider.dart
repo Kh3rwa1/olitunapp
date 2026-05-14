@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/hive_service.dart';
+import '../../core/storage/cache_service.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/content_models.dart';
 
@@ -93,16 +94,26 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 
   Future<void> _loadQuizzes() async {
     try {
-      final stored =
-          _prefs.getString(_cacheKey) ?? _prefs.getString(_legacyCacheKey);
-      if (stored != null) {
-        final List<dynamic> decoded = jsonDecode(stored);
-        final cachedQuizzes = decoded
-            .map((e) => QuizModel.fromJson(e))
-            .toList();
-        state = AsyncValue.data(cachedQuizzes);
-        _saveQuizzes(cachedQuizzes);
-        _prefs.remove(_legacyCacheKey);
+      final cached = await CacheService.getList<QuizModel>(
+        _cacheKey,
+        QuizModel.fromJson,
+      );
+      if (cached != null && cached.isNotEmpty) {
+        state = AsyncValue.data(cached);
+      } else {
+        // Migration from SharedPreferences
+        final stored =
+            _prefs.getString(_cacheKey) ?? _prefs.getString(_legacyCacheKey);
+        if (stored != null) {
+          final List<dynamic> decoded = jsonDecode(stored);
+          final cachedQuizzes = decoded
+              .map((e) => QuizModel.fromJson(e))
+              .toList();
+          state = AsyncValue.data(cachedQuizzes);
+          _saveQuizzes(cachedQuizzes);
+          _prefs.remove(_legacyCacheKey);
+          _prefs.remove(_cacheKey);
+        }
       }
     } catch (e) {
       debugPrint('Failed to load cached quizzes: $e');
@@ -131,8 +142,8 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   }
 
   void _saveQuizzes(List<QuizModel> quizzes) {
-    final encoded = jsonEncode(quizzes.map((e) => e.toJson()).toList());
-    _prefs.setString(_cacheKey, encoded);
+    final data = quizzes.map((e) => e.toJson()).toList();
+    CacheService.set(_cacheKey, data);
   }
 
   Map<String, dynamic> _toAppwritePayload(QuizModel quiz) {
@@ -183,7 +194,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 
   Future<void> seed() async {
     state = const AsyncValue.loading();
-    _prefs.remove(_cacheKey);
+    await CacheService.delete(_cacheKey);
     await _loadQuizzes();
   }
 }

@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../auth/appwrite_auth_service.dart';
 import '../config/appwrite_config.dart';
 import '../observability/crash_reporting.dart';
+import 'upload_rules.dart';
 
 class AppwriteStorageUploadService {
   AppwriteStorageUploadService(this._client) : _storage = Storage(_client);
@@ -14,22 +15,22 @@ class AppwriteStorageUploadService {
   final Storage _storage;
 
   static const Map<String, UploadTarget> _targetsByExtension = {
-    'mp3': UploadTarget('audio', 'audio/mpeg', 50 * 1024 * 1024),
-    'wav': UploadTarget('audio', 'audio/wav', 50 * 1024 * 1024),
-    'ogg': UploadTarget('audio', 'audio/ogg', 50 * 1024 * 1024),
-    'aac': UploadTarget('audio', 'audio/aac', 50 * 1024 * 1024),
-    'm4a': UploadTarget('audio', 'audio/mp4', 50 * 1024 * 1024),
-    'png': UploadTarget('images', 'image/png', 10 * 1024 * 1024),
-    'jpg': UploadTarget('images', 'image/jpeg', 10 * 1024 * 1024),
-    'jpeg': UploadTarget('images', 'image/jpeg', 10 * 1024 * 1024),
-    'gif': UploadTarget('images', 'image/gif', 10 * 1024 * 1024),
-    'webp': UploadTarget('images', 'image/webp', 10 * 1024 * 1024),
-    'svg': UploadTarget('images', 'image/svg+xml', 10 * 1024 * 1024),
-    'json': UploadTarget('animations', 'application/json', 5 * 1024 * 1024),
-    'lottie': UploadTarget('animations', 'application/json', 5 * 1024 * 1024),
-    'mp4': UploadTarget('videos', 'video/mp4', 100 * 1024 * 1024),
-    'webm': UploadTarget('videos', 'video/webm', 100 * 1024 * 1024),
-    'mov': UploadTarget('videos', 'video/quicktime', 100 * 1024 * 1024),
+    'mp3': UploadTarget('audio', 'audio/mpeg', UploadCategory.audio),
+    'wav': UploadTarget('audio', 'audio/wav', UploadCategory.audio),
+    'ogg': UploadTarget('audio', 'audio/ogg', UploadCategory.audio),
+    'aac': UploadTarget('audio', 'audio/aac', UploadCategory.audio),
+    'm4a': UploadTarget('audio', 'audio/mp4', UploadCategory.audio),
+    'png': UploadTarget('images', 'image/png', UploadCategory.image),
+    'jpg': UploadTarget('images', 'image/jpeg', UploadCategory.image),
+    'jpeg': UploadTarget('images', 'image/jpeg', UploadCategory.image),
+    'gif': UploadTarget('images', 'image/gif', UploadCategory.image),
+    'webp': UploadTarget('images', 'image/webp', UploadCategory.image),
+    'svg': UploadTarget('images', 'image/svg+xml', UploadCategory.image),
+    'json': UploadTarget('animations', 'application/json', UploadCategory.animation),
+    'lottie': UploadTarget('animations', 'application/json', UploadCategory.animation),
+    'mp4': UploadTarget('videos', 'video/mp4', UploadCategory.video),
+    'webm': UploadTarget('videos', 'video/webm', UploadCategory.video),
+    'mov': UploadTarget('videos', 'video/quicktime', UploadCategory.video),
   };
 
   Future<String?> uploadMedia(PlatformFile file, String folder) async {
@@ -41,10 +42,15 @@ class AppwriteStorageUploadService {
       }
 
       final target = targetForFilename(file.name);
-      if (file.size <= 0 || file.size > target.maxBytes) {
-        throw Exception(
-          'File must be between 1 byte and ${target.maxBytes ~/ (1024 * 1024)}MB.',
-        );
+      
+      final validationError = UploadRules.validate(
+        filename: file.name,
+        sizeBytes: file.size,
+        category: target.category,
+      );
+      
+      if (validationError != null) {
+        throw Exception(validationError);
       }
 
       final filename = _storageFilename(file.name, folder);
@@ -115,13 +121,7 @@ class AppwriteStorageUploadService {
 
   @visibleForTesting
   static String sanitizeFilename(String filename) {
-    final basename = filename.split(RegExp(r'[/\\]+')).last;
-    final sanitized = basename
-        .trim()
-        .replaceAll(RegExp(r'[^A-Za-z0-9._-]+'), '-')
-        .replaceAll(RegExp(r'-+'), '-')
-        .replaceAll(RegExp(r'^-|-$'), '');
-    return sanitized.isEmpty ? 'upload' : sanitized;
+    return UploadRules.sanitizeFilename(filename);
   }
 
   @visibleForTesting
@@ -140,11 +140,11 @@ class AppwriteStorageUploadService {
 }
 
 class UploadTarget {
-  const UploadTarget(this.bucketId, this.contentType, this.maxBytes);
+  const UploadTarget(this.bucketId, this.contentType, this.category);
 
   final String bucketId;
   final String contentType;
-  final int maxBytes;
+  final UploadCategory category;
 }
 
 final uploadServiceProvider = Provider((ref) {

@@ -30,6 +30,13 @@ class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
   MockQuizzesNotifier() : super(const AsyncValue.data([]));
 }
 
+class MockBannersNotifier
+    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>>
+    with Mock
+    implements BannersNotifier {
+  MockBannersNotifier() : super(const AsyncValue.data([]));
+}
+
 class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
     with Mock
     implements UserStatsNotifier {
@@ -77,13 +84,13 @@ void main() {
           lessonNotifierProvider.overrideWith((ref) => MockLessonNotifier()),
           quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
           userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
+          bannersProvider.overrideWith((ref) => MockBannersNotifier()),
         ],
       ),
     );
 
     // Pump enough time to let all flutter_animate one-shot animations complete
     await tester.pump(const Duration(seconds: 5));
-
     expect(find.text('Johar, Test User!'), findsOneWidget);
     expect(find.text('Daily Progress: 0%'), findsOneWidget);
   });

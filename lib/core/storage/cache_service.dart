@@ -78,6 +78,7 @@ class CacheService {
       await box.put(key, jsonEncode(entry.toJson()));
     } catch (e) {
       debugPrint('[Cache] write error ($key): $e');
+      rethrow;
     }
   }
 

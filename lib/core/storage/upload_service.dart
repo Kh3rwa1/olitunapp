@@ -26,8 +26,16 @@ class AppwriteStorageUploadService {
     'gif': UploadTarget('images', 'image/gif', UploadCategory.image),
     'webp': UploadTarget('images', 'image/webp', UploadCategory.image),
     'svg': UploadTarget('images', 'image/svg+xml', UploadCategory.image),
-    'json': UploadTarget('animations', 'application/json', UploadCategory.animation),
-    'lottie': UploadTarget('animations', 'application/json', UploadCategory.animation),
+    'json': UploadTarget(
+      'animations',
+      'application/json',
+      UploadCategory.animation,
+    ),
+    'lottie': UploadTarget(
+      'animations',
+      'application/json',
+      UploadCategory.animation,
+    ),
     'mp4': UploadTarget('videos', 'video/mp4', UploadCategory.video),
     'webm': UploadTarget('videos', 'video/webm', UploadCategory.video),
     'mov': UploadTarget('videos', 'video/quicktime', UploadCategory.video),
@@ -42,13 +50,13 @@ class AppwriteStorageUploadService {
       }
 
       final target = targetForFilename(file.name);
-      
+
       final validationError = UploadRules.validate(
         filename: file.name,
         sizeBytes: file.size,
         category: target.category,
       );
-      
+
       if (validationError != null) {
         throw Exception(validationError);
       }

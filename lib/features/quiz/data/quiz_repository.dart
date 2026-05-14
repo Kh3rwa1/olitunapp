@@ -7,10 +7,14 @@ class QuizRepository {
 
   QuizRepository(this._ref);
 
-  Future<QuizModel> getQuiz(String quizId) async {
+  Future<QuizModel?> getQuiz(String quizId) async {
     final quizzesAsync = _ref.read(quizzesProvider);
     final quizzes = quizzesAsync.value ?? [];
-    return quizzes.firstWhere((q) => q.id == quizId);
+    try {
+      return quizzes.firstWhere((q) => q.id == quizId);
+    } catch (_) {
+      return null;
+    }
   }
 }
 

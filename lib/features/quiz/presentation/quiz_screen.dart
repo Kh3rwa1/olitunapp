@@ -50,7 +50,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         }
 
         final quiz = snapshot.data;
-        if (quiz == null || quiz.questions.isEmpty) {
+        if (quiz == null) {
+          return _buildNotFoundQuiz(context, isDark);
+        }
+        if (quiz.questions.isEmpty) {
           return _buildEmptyQuiz(context, isDark);
         }
 
@@ -188,6 +191,49 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           ),
         );
       },
+    );
+  }
+
+  Widget _buildNotFoundQuiz(BuildContext context, bool isDark) {
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline_rounded,
+              size: 64,
+              color: AppColors.error.withValues(alpha: 0.8),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Quiz not found',
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 32),
+            ElevatedButton(
+              onPressed: () => context.go('/'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 32,
+                  vertical: 16,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: Text(AppLocalizations.of(context)!.goBack),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

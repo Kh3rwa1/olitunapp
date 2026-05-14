@@ -328,13 +328,14 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                               estimatedMinutes:
                                   int.tryParse(_minutesCtrl.text.trim()) ?? 5,
                               order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-                              blocks: widget.lesson?.blocks ??
+                              blocks:
+                                  widget.lesson?.blocks ??
                                   const [
                                     LessonBlockEntity(
                                       type: 'text',
                                       textLatin: 'New Block',
                                       textOlChiki: 'New Block',
-                                    )
+                                    ),
                                   ],
                               isActive: _isActive,
                               data: _thumbnailCtrl.text.isNotEmpty

@@ -271,7 +271,14 @@ class _AdminRhymeCategoriesScreenState
     final nameOlChikiCtrl = TextEditingController(text: cat?.nameOlChiki);
     String iconName = cat?.iconName ?? 'folder';
 
-    final iconOptions = ['agriculture', 'local_florist', 'eco', 'child_friendly', 'favorite', 'group'];
+    final iconOptions = [
+      'agriculture',
+      'local_florist',
+      'eco',
+      'child_friendly',
+      'favorite',
+      'group',
+    ];
 
     showModalBottomSheet(
       context: context,

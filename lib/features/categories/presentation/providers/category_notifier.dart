@@ -21,7 +21,8 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
-      (categories) => state = AsyncValue.data(_deduplicateCategories(categories)),
+      (categories) =>
+          state = AsyncValue.data(_deduplicateCategories(categories)),
     );
   }
 

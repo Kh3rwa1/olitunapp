@@ -17,17 +17,18 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await categoriesNotifier.loadCategories();
   final existing = ref.read(categoryNotifierProvider).value ?? [];
   final existingIds = existing.map((c) => c.id).toSet();
-  final existingTitles =
-      existing.map((c) => c.titleLatin.trim().toLowerCase()).toSet();
+  final existingTitles = existing
+      .map((c) => c.titleLatin.trim().toLowerCase())
+      .toSet();
 
   Future<String> addCategoryIfNew(CategoryModel cat) async {
     final normTitle = cat.titleLatin.trim().toLowerCase();
-    
+
     final existingCat = existing.cast<CategoryEntity?>().firstWhere(
       (c) => c?.id == cat.id || c?.titleLatin.trim().toLowerCase() == normTitle,
       orElse: () => null,
     );
-    
+
     if (existingCat != null) {
       return existingCat.id; // Return existing ID
     }
@@ -248,8 +249,16 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   const olChikiNumerals = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
   const latinLabels = [
-    '0 – Zero', '1 – One', '2 – Two', '3 – Three', '4 – Four',
-    '5 – Five', '6 – Six', '7 – Seven', '8 – Eight', '9 – Nine',
+    '0 – Zero',
+    '1 – One',
+    '2 – Two',
+    '3 – Three',
+    '4 – Four',
+    '5 – Five',
+    '6 – Six',
+    '7 – Seven',
+    '8 – Eight',
+    '9 – Nine',
   ];
 
   await lessonsNotifier.addLesson(
@@ -270,11 +279,31 @@ Future<void> seedAppContent(WidgetRef ref) async {
   );
 
   // Numbers 10-20 lesson
-  const olChikiTens = ['᱑᱐', '᱑᱑', '᱑᱒', '᱑᱓', '᱑᱔', '᱑᱕', '᱑᱖', '᱑᱗', '᱑᱘', '᱑᱙', '᱒᱐'];
+  const olChikiTens = [
+    '᱑᱐',
+    '᱑᱑',
+    '᱑᱒',
+    '᱑᱓',
+    '᱑᱔',
+    '᱑᱕',
+    '᱑᱖',
+    '᱑᱗',
+    '᱑᱘',
+    '᱑᱙',
+    '᱒᱐',
+  ];
   const latinTens = [
-    '10 – Ten', '11 – Eleven', '12 – Twelve', '13 – Thirteen', '14 – Fourteen',
-    '15 – Fifteen', '16 – Sixteen', '17 – Seventeen', '18 – Eighteen',
-    '19 – Nineteen', '20 – Twenty',
+    '10 – Ten',
+    '11 – Eleven',
+    '12 – Twelve',
+    '13 – Thirteen',
+    '14 – Fourteen',
+    '15 – Fifteen',
+    '16 – Sixteen',
+    '17 – Seventeen',
+    '18 – Eighteen',
+    '19 – Nineteen',
+    '20 – Twenty',
   ];
 
   await lessonsNotifier.addLesson(
@@ -353,11 +382,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
           textOlChiki: 'ᱵᱟᱵᱟ',
           textLatin: 'Father',
         ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱟᱭᱳ',
-          textLatin: 'Mother',
-        ),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱟᱭᱳ', textLatin: 'Mother'),
         LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱫᱟᱫᱟ',
@@ -385,11 +410,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
       'titleLatin': 'Colors',
       'titleOlChiki': 'ᱨᱚᱝ',
       'blocks': const [
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱟᱨᱟᱜ',
-          textLatin: 'Red',
-        ),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱟᱨᱟᱜ', textLatin: 'Red'),
         LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱥᱟᱥᱟᱝ',
@@ -400,11 +421,7 @@ Future<void> seedAppContent(WidgetRef ref) async {
           textOlChiki: 'ᱦᱟᱹᱨᱭᱟᱹᱲ',
           textLatin: 'Yellow',
         ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱯᱩᱱᱫ',
-          textLatin: 'White',
-        ),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱯᱩᱱᱫ', textLatin: 'White'),
         LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱦᱮᱱᱫᱮ',
@@ -417,31 +434,11 @@ Future<void> seedAppContent(WidgetRef ref) async {
       'titleLatin': 'Animals',
       'titleOlChiki': 'ᱡᱟᱱᱣᱟᱨ',
       'blocks': const [
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱥᱮᱛᱟ',
-          textLatin: 'Dog',
-        ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱢᱮᱨᱳᱢ',
-          textLatin: 'Cat',
-        ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱜᱟᱹᱭ',
-          textLatin: 'Cow',
-        ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱥᱩᱠᱨᱤ',
-          textLatin: 'Pig',
-        ),
-        LessonBlockModel(
-          type: 'text',
-          textOlChiki: 'ᱪᱮᱨᱮ',
-          textLatin: 'Bird',
-        ),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱥᱮᱛᱟ', textLatin: 'Dog'),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱢᱮᱨᱳᱢ', textLatin: 'Cat'),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱜᱟᱹᱭ', textLatin: 'Cow'),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱥᱩᱠᱨᱤ', textLatin: 'Pig'),
+        LessonBlockModel(type: 'text', textOlChiki: 'ᱪᱮᱨᱮ', textLatin: 'Bird'),
         LessonBlockModel(
           type: 'text',
           textOlChiki: 'ᱦᱟᱹᱠᱩ',
@@ -718,19 +715,21 @@ Future<void> seedAppContent(WidgetRef ref) async {
 
   // ── Quiz ──
   const quizId = 'quiz_basics_1';
-  await ref.read(quizzesProvider.notifier).addQuiz(
-    QuizModel(
-      id: quizId,
-      categoryId: actualAlphabetsId,
-      title: 'Basics Quiz',
-      questions: [
-        QuizQuestion(
-          promptOlChiki: 'Which letter is "La"?',
-          optionsOlChiki: ['ᱚ', 'ᱛ', 'ᱜ', 'ᱞ'],
-          optionsLatin: ['a', 'at', 'ag', 'al'],
-          correctIndex: 3,
+  await ref
+      .read(quizzesProvider.notifier)
+      .addQuiz(
+        QuizModel(
+          id: quizId,
+          categoryId: actualAlphabetsId,
+          title: 'Basics Quiz',
+          questions: [
+            QuizQuestion(
+              promptOlChiki: 'Which letter is "La"?',
+              optionsOlChiki: ['ᱚ', 'ᱛ', 'ᱜ', 'ᱞ'],
+              optionsLatin: ['a', 'at', 'ag', 'al'],
+              correctIndex: 3,
+            ),
+          ],
         ),
-      ],
-    ),
-  );
+      );
 }

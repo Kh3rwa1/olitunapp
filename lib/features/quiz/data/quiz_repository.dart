@@ -19,3 +19,8 @@ class QuizRepository {
 }
 
 final quizRepositoryProvider = Provider(QuizRepository.new);
+
+final quizFutureProvider = FutureProvider.family<QuizModel?, String>((ref, quizId) async {
+  final repo = ref.watch(quizRepositoryProvider);
+  return repo.getQuiz(quizId);
+});

@@ -20,23 +20,15 @@ class QuizScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final quizRepo = ref.watch(quizRepositoryProvider);
+    final quizAsync = ref.watch(quizFutureProvider(quizId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return FutureBuilder(
-      future: quizRepo.getQuiz(quizId),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(child: Text('Error: ${snapshot.error}')),
-          );
-        }
-        final quiz = snapshot.data;
+    return quizAsync.when(
+      loading: () =>
+          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (error, stack) =>
+          Scaffold(body: Center(child: Text('Error: $error'))),
+      data: (quiz) {
         if (quiz == null) {
           return const QuizEmptyView(isNotFound: true);
         }

@@ -39,5 +39,13 @@ void main() {
       );
       expect(await service.isCurrentUserAdmin(), isFalse);
     });
+
+    test('isCurrentUserAdmin returns true when admin team id is present', () async {
+      final service = AdminAuthService(
+        mockAuth,
+        teamsListFetcher: () async => ['admins'],
+      );
+      expect(await service.isCurrentUserAdmin(), isTrue);
+    });
   });
 }

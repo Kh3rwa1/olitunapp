@@ -73,7 +73,6 @@ class AppwriteAuthService {
 
     if (kIsWeb) {
       final origin = Uri.base.origin;
-      final callbackUrl = '$origin/auth.html';
       final result = await _account.createOAuth2Session(
         provider: OAuthProvider.google,
         success: '$origin/splash',

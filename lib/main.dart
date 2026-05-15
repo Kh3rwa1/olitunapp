@@ -12,50 +12,92 @@ import 'shared/providers/local_settings_provider.dart';
 import 'l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
-  // Fail fast if Appwrite config is missing; release builds must not silently
-  // point at the wrong backend or an empty project.
-  AppwriteConfig.validate();
+  try {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  await runZonedGuarded(
-    () async {
-      WidgetsFlutterBinding.ensureInitialized();
+    // Fail fast if Appwrite config is missing; release builds must not silently
+    // point at the wrong backend or an empty project.
+    AppwriteConfig.validate();
 
-      FlutterError.onError = (details) {
-        FlutterError.presentError(details);
-        CrashReporting.recordFlutterError(details);
-      };
+    await runZonedGuarded(
+      () async {
+        FlutterError.onError = (details) {
+          FlutterError.presentError(details);
+          CrashReporting.recordFlutterError(details);
+        };
 
-      final prefs = await initStorage();
+        final prefs = await initStorage();
 
-      SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-      SystemChrome.setSystemUIOverlayStyle(
-        const SystemUiOverlayStyle(
-          statusBarColor: Colors.transparent,
-          statusBarIconBrightness: Brightness.dark,
-          systemNavigationBarColor: Colors.transparent,
-          systemNavigationBarIconBrightness: Brightness.dark,
+        SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+        SystemChrome.setSystemUIOverlayStyle(
+          const SystemUiOverlayStyle(
+            statusBarColor: Colors.transparent,
+            statusBarIconBrightness: Brightness.dark,
+            systemNavigationBarColor: Colors.transparent,
+            systemNavigationBarIconBrightness: Brightness.dark,
+          ),
+        );
+
+        await SystemChrome.setPreferredOrientations([
+          DeviceOrientation.portraitUp,
+          DeviceOrientation.portraitDown,
+        ]);
+
+        await CrashReporting.init();
+
+        runApp(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            child: const OlitunApp(),
+          ),
+        );
+      },
+      (error, stack) {
+        debugPrint('Uncaught zone error: $error');
+        CrashReporting.recordError(error, stack);
+      },
+    );
+  } catch (e, stack) {
+    debugPrint('Fatal initialization error: $e\n$stack');
+    runApp(
+      MaterialApp(
+        home: Scaffold(
+          backgroundColor: Colors.red.shade900,
+          body: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Icon(
+                      Icons.error_outline,
+                      color: Colors.white,
+                      size: 48,
+                    ),
+                    const SizedBox(height: 16),
+                    const Text(
+                      'Initialization Failed',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      e.toString(),
+                      style: const TextStyle(color: Colors.white, fontSize: 16),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
         ),
-      );
-
-      await SystemChrome.setPreferredOrientations([
-        DeviceOrientation.portraitUp,
-        DeviceOrientation.portraitDown,
-      ]);
-
-      await CrashReporting.init();
-
-      runApp(
-        ProviderScope(
-          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-          child: const OlitunApp(),
-        ),
-      );
-    },
-    (error, stack) {
-      debugPrint('Uncaught zone error: $error');
-      CrashReporting.recordError(error, stack);
-    },
-  );
+      ),
+    );
+  }
 }
 
 class OlitunApp extends ConsumerWidget {

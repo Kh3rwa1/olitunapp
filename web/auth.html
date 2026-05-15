@@ -1,16 +1,18 @@
 <!DOCTYPE html>
-<html>
-<head>
-  <title>Authentication complete</title>
-</head>
-<body>
-  <p>Authentication is complete. If this does not happen automatically, please close the window.</p>
-  <script>
-    // flutter_web_auth_2 expects a postMessage with this exact object format
-    window.opener.postMessage({
-      'flutter-web-auth-2': window.location.href
-    }, window.location.origin);
+<title>Authentication complete</title>
+<p>Authentication is complete. You can close this window.</p>
+<script>
+  const message = {
+    'flutter-web-auth-2': window.location.href
+  };
+
+  if (window.opener) {
+    window.opener.postMessage(message, window.location.origin);
     window.close();
-  </script>
-</body>
-</html>
+  } else if (window.parent && window.parent !== window) {
+    window.parent.postMessage(message, window.location.origin);
+  } else {
+    localStorage.setItem('flutter-web-auth-2', window.location.href);
+    window.close();
+  }
+</script>

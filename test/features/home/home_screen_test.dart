@@ -76,6 +76,7 @@ void main() {
         child: const HomeScreen(),
         overrides: [
           userNameProvider.overrideWith((ref) => 'Test User'),
+          isAuthenticatedProvider.overrideWith((ref) async => true),
           userStarsProvider.overrideWith((ref) => 100),
           lessonsCompletedProvider.overrideWith((ref) => 2),
           categoryNotifierProvider.overrideWith(

@@ -10,7 +10,6 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
-import '../../auth/presentation/providers/auth_providers.dart';
 
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
@@ -63,7 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final stats = statsAsync.value;
     final streak = stats?.currentStreak ?? 0;
     final learningTime = stats?.totalLearningMinutes ?? 0;
-    
+
     final isAuthAsync = ref.watch(isAuthenticatedProvider);
     final isGuest = isAuthAsync.value == false;
     final displayUserName = isGuest ? 'Explorer' : userName;
@@ -147,14 +146,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             decoration: BoxDecoration(
                               gradient: AppColors.heroGradientAlt,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: AppColors.glowShadow(AppColors.primary),
+                              boxShadow: AppColors.glowShadow(
+                                AppColors.primary,
+                              ),
                             ),
                             child: Row(
                               children: [
                                 Container(
                                   padding: const EdgeInsets.all(12),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withOpacity(0.2),
+                                    color: Colors.white.withValues(alpha: 0.2),
                                     shape: BoxShape.circle,
                                   ),
                                   child: const Icon(
@@ -165,7 +166,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const SizedBox(width: 16),
                                 Expanded(
                                   child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       const Text(
                                         'Track Your Progress',
@@ -179,7 +181,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                       Text(
                                         'Create an account to save your learning journey.',
                                         style: TextStyle(
-                                          color: Colors.white.withOpacity(0.9),
+                                          color: Colors.white.withValues(
+                                            alpha: 0.9,
+                                          ),
                                           fontSize: 13,
                                         ),
                                       ),
@@ -192,7 +196,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         ],
 
                         // Featured Banners Carousel
-                        if (bannersAsync.value != null && bannersAsync.value!.isNotEmpty) ...[
+                        if (bannersAsync.value != null &&
+                            bannersAsync.value!.isNotEmpty) ...[
                           Builder(
                             builder: (context) {
                               final activeBanners = bannersAsync.value!

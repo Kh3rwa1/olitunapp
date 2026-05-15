@@ -1,5 +1,5 @@
-import 'package:appwrite/enums.dart';
 import 'package:appwrite/appwrite.dart';
+import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/error/exceptions.dart';
 import '../models/user_model.dart';
 
@@ -25,9 +25,11 @@ abstract class AuthRemoteDataSource {
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  final Account account;
+  final AppwriteAuthService authService;
 
-  AuthRemoteDataSourceImpl(this.account);
+  AuthRemoteDataSourceImpl(this.authService);
+
+  Account get account => authService.account;
 
   @override
   Future<UserModel> signUpWithEmail({
@@ -78,7 +80,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signOut() async {
     try {
-      await account.deleteSession(sessionId: 'current');
+      await authService.signOut();
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Sign out failed',
@@ -92,7 +94,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<UserModel?> getCurrentUser() async {
     try {
-      final user = await account.get();
+      final user = await authService.getMe();
       return UserModel.fromJson(user.toMap());
     } on AppwriteException catch (e) {
       if (e.code == 401) return null;
@@ -107,14 +109,10 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<bool> isLoggedIn() async {
-    try {
-      await account
-          .getSession(sessionId: 'current')
-          .timeout(const Duration(seconds: 3));
-      return true;
-    } catch (_) {
-      return false;
-    }
+    return authService.isLoggedIn().timeout(
+      const Duration(seconds: 3),
+      onTimeout: () => false,
+    );
   }
 
   @override
@@ -134,7 +132,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> deleteAccount() async {
     try {
-      await account.updateStatus();
+      await authService.deleteAccount();
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Delete account failed',
@@ -148,7 +146,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> updateDisplayName(String name) async {
     try {
-      await account.updateName(name: name);
+      await authService.updateName(name);
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Update name failed',
@@ -199,7 +197,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> signInWithGoogle() async {
     try {
-      await account.createOAuth2Session(provider: OAuthProvider.google);
+      await authService.signInWithGoogle();
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Google sign in failed',

@@ -3,9 +3,12 @@ import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../config/appwrite_config.dart';
 
 class AppwriteAuthService {
+  static const String _webSessionSecretKey = 'olitun_appwrite_session_secret';
+
   // Singleton pattern — one SDK Client shared across the app
   AppwriteAuthService._internal() {
     _client = Client()
@@ -64,18 +67,20 @@ class AppwriteAuthService {
   /// Sign in with Google OAuth2
   /// Uses the Appwrite SDK's built-in OAuth2 session flow on all platforms.
   /// On mobile: opens a browser, then deep-links back via appwrite-callback-{projectId}.
-  /// On web: redirects the page, then returns with session cookie.
+  /// On web: opens a popup, returns through /auth.html, then stores the session.
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
 
     if (kIsWeb) {
       final origin = Uri.base.origin;
-      await _account.createOAuth2Session(
+      final callbackUrl = '$origin/auth.html';
+      final result = await _account.createOAuth2Session(
         provider: OAuthProvider.google,
-        success: origin,
-        failure: '$origin/#/welcome',
+        success: callbackUrl,
+        failure: '$callbackUrl?failure=1',
         scopes: ['email', 'profile'],
       );
+      await _completeWebOAuth(result);
     } else {
       await _account.createOAuth2Session(provider: OAuthProvider.google);
     }
@@ -84,7 +89,11 @@ class AppwriteAuthService {
   /// Exchange OAuth token for session (called from splash screen after redirect)
   Future<bool> exchangeOAuthToken(String userId, String secret) async {
     try {
-      await _account.createSession(userId: userId, secret: secret);
+      if (userId.startsWith('a_session_')) {
+        await _persistWebSession(secret);
+      } else {
+        await _account.createSession(userId: userId, secret: secret);
+      }
       debugPrint('Appwrite: OAuth session created ✅');
       return true;
     } catch (e) {
@@ -93,11 +102,64 @@ class AppwriteAuthService {
     }
   }
 
+  Future<void> _completeWebOAuth(Object? result) async {
+    if (!kIsWeb || result is! String || result.isEmpty) return;
+
+    final uri = Uri.parse(result);
+    if (uri.queryParameters.containsKey('failure')) {
+      throw AppwriteException('Google sign in was cancelled or failed.');
+    }
+
+    final key = uri.queryParameters['key'];
+    final secret = uri.queryParameters['secret'];
+    final userId = uri.queryParameters['userId'];
+
+    if (secret == null || secret.isEmpty) {
+      throw AppwriteException(
+        'Invalid OAuth2 response. Missing session secret.',
+      );
+    }
+
+    if (key != null && key.startsWith('a_session_')) {
+      await _persistWebSession(secret);
+      return;
+    }
+
+    if (userId != null && userId.isNotEmpty) {
+      await _account.createSession(userId: userId, secret: secret);
+      return;
+    }
+
+    throw AppwriteException('Invalid OAuth2 response. Missing session key.');
+  }
+
+  Future<void> _persistWebSession(String secret) async {
+    _client.setSession(secret);
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_webSessionSecretKey, secret);
+  }
+
+  Future<void> _restoreWebSession() async {
+    if (!kIsWeb) return;
+    final prefs = await SharedPreferences.getInstance();
+    final secret = prefs.getString(_webSessionSecretKey);
+    if (secret != null && secret.isNotEmpty) {
+      _client.setSession(secret);
+    }
+  }
+
+  Future<void> _clearWebSession() async {
+    if (!kIsWeb) return;
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_webSessionSecretKey);
+  }
+
   // ─── Session Management ───
 
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
     try {
+      await _restoreWebSession();
       await _account.getSession(sessionId: 'current');
       return true;
     } catch (_) {
@@ -107,6 +169,7 @@ class AppwriteAuthService {
 
   /// Get current user profile
   Future<models.User> getMe() async {
+    await _restoreWebSession();
     return await _account.get();
   }
 
@@ -131,6 +194,8 @@ class AppwriteAuthService {
       await _account.deleteSession(sessionId: 'current');
     } catch (e) {
       debugPrint('Appwrite: Sign out error: $e');
+    } finally {
+      await _clearWebSession();
     }
   }
 

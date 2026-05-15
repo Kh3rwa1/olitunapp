@@ -76,8 +76,8 @@ class AppwriteAuthService {
       final callbackUrl = '$origin/auth.html';
       final result = await _account.createOAuth2Session(
         provider: OAuthProvider.google,
-        success: callbackUrl,
-        failure: '$callbackUrl?failure=1',
+        success: '$origin/splash',
+        failure: '$origin/welcome',
         scopes: ['email', 'profile'],
       );
       await _completeWebOAuth(result);

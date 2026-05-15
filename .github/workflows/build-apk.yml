@@ -1,0 +1,40 @@
+name: Build Release APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Generate build runner code
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Build APK
+        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: olitun-release-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          retention-days: 7

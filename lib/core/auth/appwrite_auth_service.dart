@@ -4,7 +4,6 @@ import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import '../config/appwrite_config.dart';
-import 'web_redirect.dart' as web_redirect;
 
 class AppwriteAuthService {
   // Singleton pattern — one SDK Client shared across the app
@@ -63,32 +62,23 @@ class AppwriteAuthService {
   // ─── Google OAuth ───
 
   /// Sign in with Google OAuth2
-  /// On web: redirects the entire page to Appwrite OAuth endpoint.
-  /// On mobile: uses SDK popup/deep link.
+  /// Uses the Appwrite SDK's built-in OAuth2 session flow on all platforms.
+  /// On mobile: opens a browser, then deep-links back via appwrite-callback-{projectId}.
+  /// On web: redirects the page, then returns with session cookie.
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
 
     if (kIsWeb) {
-      // Web: full-page redirect to Appwrite OAuth2 token endpoint.
-      // After Google auth, Appwrite redirects back with ?userId=...&secret=...
       final origin = Uri.base.origin;
-      final oauthUrl =
-          '${AppwriteConfig.endpoint}/account/tokens/oauth2/google'
-          '?project=${AppwriteConfig.projectId}'
-          '&success=${Uri.encodeComponent(origin)}'
-          '&failure=${Uri.encodeComponent('$origin/#/welcome')}'
-          '&scopes[]=email&scopes[]=profile';
-
-      // Navigate the entire page (not popup)
-      _redirectToUrl(oauthUrl);
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+        success: origin,
+        failure: '$origin/#/welcome',
+        scopes: ['email', 'profile'],
+      );
     } else {
       await _account.createOAuth2Session(provider: OAuthProvider.google);
     }
-  }
-
-  /// Redirect the page (web only)
-  void _redirectToUrl(String url) {
-    web_redirect.redirectToUrl(url);
   }
 
   /// Exchange OAuth token for session (called from splash screen after redirect)

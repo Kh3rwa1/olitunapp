@@ -15,7 +15,7 @@ class AppwriteConfig {
 
   static const String _envEndpoint = String.fromEnvironment(
     'APPWRITE_ENDPOINT',
-    defaultValue: 'https://cloud.appwrite.io/v1',
+    defaultValue: 'https://sgp.cloud.appwrite.io/v1',
   );
   static const String _envProjectId = String.fromEnvironment(
     'APPWRITE_PROJECT_ID',

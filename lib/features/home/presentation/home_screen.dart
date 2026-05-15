@@ -10,6 +10,7 @@ import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
+import '../../auth/presentation/providers/auth_providers.dart';
 
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
@@ -62,6 +63,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final stats = statsAsync.value;
     final streak = stats?.currentStreak ?? 0;
     final learningTime = stats?.totalLearningMinutes ?? 0;
+    
+    final isAuthAsync = ref.watch(isAuthenticatedProvider);
+    final isGuest = isAuthAsync.value == false;
+    final displayUserName = isGuest ? 'Explorer' : userName;
+
     final dailyProgress = stats != null
         ? ((stats.alphabetProgress +
                       stats.numbersProgress +
@@ -126,15 +132,67 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         // Header
                         _buildHeader(
                           context,
-                          userName: userName,
+                          userName: displayUserName,
                           dailyProgress: dailyProgress,
                           isDark: isDark,
                           isDesktop: isDesktop,
                         ),
                         const SizedBox(height: 28),
 
+                        // Guest Call to Action (if not logged in)
+                        if (isGuest) ...[
+                          Container(
+                            margin: const EdgeInsets.only(bottom: 24),
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: AppColors.heroGradientAlt,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: AppColors.glowShadow(AppColors.primary),
+                            ),
+                            child: Row(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.2),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: const Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const Text(
+                                        'Track Your Progress',
+                                        style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w800,
+                                          fontSize: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        'Create an account to save your learning journey.',
+                                        style: TextStyle(
+                                          color: Colors.white.withOpacity(0.9),
+                                          fontSize: 13,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1),
+                        ],
+
                         // Featured Banners Carousel
-                        if (bannersAsync.value != null) ...[
+                        if (bannersAsync.value != null && bannersAsync.value!.isNotEmpty) ...[
                           Builder(
                             builder: (context) {
                               final activeBanners = bannersAsync.value!
@@ -221,9 +279,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             Text(
               'Johar, $userName!',
               style: TextStyle(
-                fontSize: 32,
+                fontSize: 30,
                 fontWeight: FontWeight.w900,
-                letterSpacing: -1.2,
+                letterSpacing: -1.0,
                 color: isDark ? Colors.white : Colors.black,
               ),
             ),

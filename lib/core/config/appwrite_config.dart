@@ -15,9 +15,11 @@ class AppwriteConfig {
 
   static const String _envEndpoint = String.fromEnvironment(
     'APPWRITE_ENDPOINT',
+    defaultValue: 'https://cloud.appwrite.io/v1',
   );
   static const String _envProjectId = String.fromEnvironment(
     'APPWRITE_PROJECT_ID',
+    defaultValue: '699495910038e39622c5',
   );
 
   /// Resolved endpoint — never empty after [validate].

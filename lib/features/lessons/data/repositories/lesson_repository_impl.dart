@@ -50,7 +50,7 @@ class LessonRepositoryImpl implements LessonRepository {
         final remoteLessons = await remoteDataSource.getLessonsByCategory(
           categoryId,
         );
-        // We only cache the "all lessons" for now, or we could implement category-specific caching
+        await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
       } on ServerException catch (e) {
         return Left(_recordedServerFailure(e));
@@ -92,12 +92,19 @@ class LessonRepositoryImpl implements LessonRepository {
     if (await networkInfo.isConnected) {
       try {
         final result = await remoteDataSource.getLessonById(id);
+        await localDataSource.cacheLessons([result]);
         return Right(result.toEntity());
       } on ServerException catch (e) {
         return Left(_recordedServerFailure(e));
       }
     } else {
-      return const Left(NetworkFailure());
+      try {
+        final cached = await localDataSource.getLessons();
+        final lesson = cached.firstWhere((l) => l.id == id);
+        return Right(lesson.toEntity());
+      } catch (_) {
+        return const Left(NetworkFailure());
+      }
     }
   }
 

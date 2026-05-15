@@ -27,6 +27,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // Providers initialize with seed data synchronously.
     // Network refresh happens automatically in the background via provider init.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      // Prefetch core content for offline availability
+      ref.read(wordsProvider);
+      ref.read(numbersProvider);
+      ref.read(sentencesProvider);
+      ref.read(lettersProvider);
+    });
   }
 
   Future<void> _onRefresh() async {

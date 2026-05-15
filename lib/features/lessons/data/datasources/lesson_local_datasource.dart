@@ -31,7 +31,20 @@ class LessonLocalDataSourceImpl implements LessonLocalDataSource {
   @override
   Future<void> cacheLessons(List<LessonModel> lessons) async {
     try {
-      final data = lessons.map((e) => e.toJson()).toList();
+      final existing = await CacheService.getList<LessonModel>(
+        _cacheKey,
+        LessonModel.fromJson,
+      ) ?? [];
+      
+      final Map<String, LessonModel> lessonMap = {
+        for (var l in existing) l.id: l
+      };
+      
+      for (var l in lessons) {
+        lessonMap[l.id] = l;
+      }
+      
+      final data = lessonMap.values.map((e) => e.toJson()).toList();
       await CacheService.set(_cacheKey, data);
     } catch (e) {
       throw CacheException(message: e.toString());

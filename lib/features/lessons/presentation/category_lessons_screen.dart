@@ -318,6 +318,25 @@ class _LessonCard extends StatelessWidget {
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ),
+                          const SizedBox(height: 8),
+                          const Row(
+                            children: [
+                              Icon(
+                                Icons.cloud_done_rounded,
+                                size: 14,
+                                color: AppColors.primary,
+                              ),
+                              SizedBox(width: 4),
+                              Text(
+                                'Available Offline',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ],
+                          ),
                         ],
                       ),
                     ),

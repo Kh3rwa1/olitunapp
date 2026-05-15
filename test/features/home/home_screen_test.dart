@@ -37,6 +37,31 @@ class MockBannersNotifier
   MockBannersNotifier() : super(const AsyncValue.data([]));
 }
 
+class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>>
+    with Mock
+    implements WordsNotifier {
+  MockWordsNotifier() : super(const AsyncValue.data([]));
+}
+
+class MockNumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>>
+    with Mock
+    implements NumbersNotifier {
+  MockNumbersNotifier() : super(const AsyncValue.data([]));
+}
+
+class MockSentencesNotifier
+    extends StateNotifier<AsyncValue<List<SentenceModel>>>
+    with Mock
+    implements SentencesNotifier {
+  MockSentencesNotifier() : super(const AsyncValue.data([]));
+}
+
+class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>>
+    with Mock
+    implements LettersNotifier {
+  MockLettersNotifier() : super(const AsyncValue.data([]));
+}
+
 class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
     with Mock
     implements UserStatsNotifier {
@@ -86,6 +111,11 @@ void main() {
           quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
           userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
           bannersProvider.overrideWith((ref) => MockBannersNotifier()),
+
+          wordsProvider.overrideWith((ref) => MockWordsNotifier()),
+          numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
+          sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
+          lettersProvider.overrideWith((ref) => MockLettersNotifier()),
         ],
       ),
     );

@@ -67,6 +67,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
 
       // 2. Desktop/web wide screens skip onboarding entirely
+      if (!mounted) return;
       final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
       debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
 

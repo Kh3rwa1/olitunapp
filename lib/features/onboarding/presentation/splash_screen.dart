@@ -46,19 +46,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ref.read(onboardingProvider.notifier).completeOnboarding();
             // Invalidate cached auth state so AuthGate widgets update
             ref.invalidate(isAuthenticatedProvider);
-            // Sync user's first name from Google profile
-            try {
-              final authRepo = ref.read(authRepositoryProvider);
-              final userResult = await authRepo.getCurrentUser();
-              userResult.fold((_) => null, (user) async {
-                if (user != null && (user.name?.isNotEmpty ?? false)) {
-                  final firstName = user.name!.split(' ').first;
-                  await ref
-                      .read(userStatsProvider.notifier)
-                      .updateName(ref, firstName);
-                }
-              });
-            } catch (_) {}
             if (!mounted) return;
             context.go('/');
             return;

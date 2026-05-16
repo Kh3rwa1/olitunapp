@@ -69,16 +69,21 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, void>> updateDisplayName(String name) async {
-    await _prefs.setString('user_name', name);
-    final result = await _authRepository.isLoggedIn();
-    return await result.fold(Left.new, (isLoggedIn) async {
-      if (isLoggedIn) {
-        // We need updateDisplayName in AuthRepository
-        // For now, return Right as we updated local
-        return const Right(null);
-      }
-      return const Right(null);
-    });
+    try {
+      await _prefs.setString('user_name', name);
+      final result = await _authRepository.isLoggedIn();
+      return await result.fold(
+        (failure) => const Right(null), // Ignore check failure, local is updated
+        (isLoggedIn) async {
+          if (isLoggedIn) {
+            return await _authRepository.updateDisplayName(name);
+          }
+          return const Right(null);
+        },
+      );
+    } catch (e) {
+      return Left(_recordedCacheFailure(e));
+    }
   }
 
   @override

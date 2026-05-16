@@ -234,7 +234,7 @@ class ProgressScreen extends ConsumerWidget {
         initialName: currentName,
         isDark: isDark,
         onSave: (name) =>
-            ref.read(userStatsProvider.notifier).updateName(ref, name),
+            ref.read(userStatsProvider.notifier).updateName(name),
       ),
     );
   }
@@ -332,7 +332,7 @@ class ProgressScreen extends ConsumerWidget {
                         setSheetState(() => selectedColor = i);
                         ref
                             .read(userStatsProvider.notifier)
-                            .updateAvatar(ref, currentEmoji, i);
+                            .updateAvatar(currentEmoji, i);
                         HapticFeedback.selectionClick();
                       },
                       child: Container(
@@ -395,7 +395,7 @@ class ProgressScreen extends ConsumerWidget {
                             setSheetState(() => selectedEmoji = '');
                             ref
                                 .read(userStatsProvider.notifier)
-                                .updateAvatar(ref, '', selectedColor);
+                                .updateAvatar('', selectedColor);
                             HapticFeedback.selectionClick();
                           },
                           child: Container(
@@ -428,7 +428,7 @@ class ProgressScreen extends ConsumerWidget {
                           setSheetState(() => selectedEmoji = emoji);
                           ref
                               .read(userStatsProvider.notifier)
-                              .updateAvatar(ref, emoji, currentColorIndex);
+                              .updateAvatar(emoji, currentColorIndex);
                           HapticFeedback.selectionClick();
                         },
                         child: Container(

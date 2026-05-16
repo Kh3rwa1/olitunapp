@@ -20,7 +20,7 @@ final userStatsProvider =
       ref,
     ) {
       final repo = ref.watch(profileRepositoryProvider);
-      return UserStatsNotifier(repo);
+      return UserStatsNotifier(repo, ref);
     });
 
 final userNameProvider = StateProvider<String>((ref) {
@@ -67,9 +67,11 @@ final userAvatarColorsProvider = Provider<List<Color>>((ref) {
 
 class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   final ProfileRepository _repository;
+  final Ref _ref;
 
-  UserStatsNotifier(this._repository) : super(const AsyncValue.loading()) {
+  UserStatsNotifier(this._repository, this._ref) : super(const AsyncValue.loading()) {
     loadStats();
+    _syncProfileFromCloud();
   }
 
   Future<void> loadStats() async {
@@ -79,6 +81,31 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (stats) => state = AsyncValue.data(stats),
     );
+  }
+
+  /// Fetches current user from Appwrite and updates local name if it's still 'Learner'
+  Future<void> _syncProfileFromCloud() async {
+    try {
+      final authRepo = _ref.read(authRepositoryProvider);
+      final userResult = await authRepo.getCurrentUser();
+
+      userResult.fold(
+        (failure) => debugPrint('ProfileSync: Failed to get user: $failure'),
+        (user) {
+          if (user != null && user.name != null && user.name!.isNotEmpty) {
+            final currentName = _ref.read(userNameProvider);
+            // Only sync if name is default or we're refreshing
+            if (currentName == 'Learner' || currentName == 'Explorer') {
+              final name = user.name!.split(' ').first;
+              debugPrint('ProfileSync: Syncing name from cloud: $name');
+              updateName(name);
+            }
+          }
+        },
+      );
+    } catch (e) {
+      debugPrint('ProfileSync: Error during sync: $e');
+    }
   }
 
   Future<void> updateStats(UserStatsEntity stats) async {
@@ -215,19 +242,19 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     await updateStats(empty);
   }
 
-  Future<void> updateName(WidgetRef ref, String name) async {
+  Future<void> updateName(String name) async {
     final result = await _repository.updateDisplayName(name);
     result.fold(
       (failure) => null,
-      (_) => ref.read(userNameProvider.notifier).state = name,
+      (_) => _ref.read(userNameProvider.notifier).state = name,
     );
   }
 
-  Future<void> updateAvatar(WidgetRef ref, String emoji, int colorIndex) async {
+  Future<void> updateAvatar(String emoji, int colorIndex) async {
     final result = await _repository.updateAvatar(emoji, colorIndex);
     result.fold((failure) => null, (_) {
-      ref.read(userAvatarEmojiProvider.notifier).state = emoji;
-      ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
+      _ref.read(userAvatarEmojiProvider.notifier).state = emoji;
+      _ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     });
   }
 }

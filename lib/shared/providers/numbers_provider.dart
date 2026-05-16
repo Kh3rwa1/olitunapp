@@ -105,10 +105,27 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
         'numbers',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      state = AsyncValue.data(data.map(NumberModel.fromJson).toList());
+      state = AsyncValue.data(
+        _deduplicate(data.map(NumberModel.fromJson).toList()),
+      );
     } catch (e) {
-      state = AsyncValue.data(_seedNumbers);
+      state = AsyncValue.data(_deduplicate(_seedNumbers));
     }
+  }
+
+  List<NumberModel> _deduplicate(List<NumberModel> list) {
+    final seenIds = <String>{};
+    final seenNums = <String>{};
+    final unique = <NumberModel>[];
+
+    for (final item in list) {
+      if (seenIds.contains(item.id)) continue;
+      if (seenNums.contains(item.numeral)) continue;
+      seenIds.add(item.id);
+      seenNums.add(item.numeral);
+      unique.add(item);
+    }
+    return unique;
   }
 
   Future<void> add(NumberModel item) async {

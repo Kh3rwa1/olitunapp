@@ -33,8 +33,27 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
-      (lessons) => state = AsyncValue.data(lessons),
+      (lessons) => state = AsyncValue.data(_deduplicateLessons(lessons)),
     );
+  }
+
+  List<LessonEntity> _deduplicateLessons(List<LessonEntity> lessons) {
+    final seenIds = <String>{};
+    final seenTitles = <String>{};
+    final unique = <LessonEntity>[];
+
+    for (final lesson in lessons) {
+      if (seenIds.contains(lesson.id)) continue;
+      final normTitle = lesson.titleLatin.trim().toLowerCase();
+      // Combine title and category to differentiate same titles in different categories
+      final key = '${lesson.categoryId}_$normTitle';
+      if (seenTitles.contains(key)) continue;
+
+      seenIds.add(lesson.id);
+      seenTitles.add(key);
+      unique.add(lesson);
+    }
+    return unique;
   }
 
   Future<void> refresh() => loadLessons();

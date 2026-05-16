@@ -87,16 +87,35 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       final list = data.map(LetterModel.fromJson).toList();
 
       if (list.isNotEmpty) {
-        state = AsyncValue.data(list);
+        final uniqueList = _deduplicate(list);
+        state = AsyncValue.data(uniqueList);
         // 3. Save Cache
-        await CacheService.set(_cacheKey, list.map((e) => e.toJson()).toList());
+        await CacheService.set(
+          _cacheKey,
+          uniqueList.map((e) => e.toJson()).toList(),
+        );
       }
     } catch (e) {
       debugPrint('❌ _loadLetters network FAILED: $e');
       if (!state.hasValue || state.value!.isEmpty) {
-        state = AsyncValue.data(_seedLetters);
+        state = AsyncValue.data(_deduplicate(_seedLetters));
       }
     }
+  }
+
+  List<LetterModel> _deduplicate(List<LetterModel> list) {
+    final seenIds = <String>{};
+    final seenChars = <String>{};
+    final unique = <LetterModel>[];
+
+    for (final item in list) {
+      if (seenIds.contains(item.id)) continue;
+      if (seenChars.contains(item.charOlChiki)) continue;
+      seenIds.add(item.id);
+      seenChars.add(item.charOlChiki);
+      unique.add(item);
+    }
+    return unique;
   }
 
   Future<void> add(LetterModel item) async {

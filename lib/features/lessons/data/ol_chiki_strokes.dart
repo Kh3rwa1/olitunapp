@@ -1,4 +1,4 @@
-/// Ol Chiki letter stroke data for practice/tracing screen.
+/// Ol Chiki letter and numeral stroke data for practice/tracing screen.
 ///
 /// Each letter has a list of stroke segments. Each segment represents one
 /// continuous pen stroke (lift between segments). Points are normalized
@@ -20,8 +20,245 @@ class StrokeSegment {
   const StrokeSegment({required this.type, required this.points});
 }
 
-/// Letter stroke data: Maps Ol Chiki character to its stroke segments
+/// Character stroke data: Maps Ol Chiki characters to stroke segments.
 final Map<String, List<StrokeSegment>> olChikiStrokes = {
+  // ᱐ - Ol Chiki zero
+  '᱐': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.16),
+        Offset(0.22, 0.16),
+        Offset(0.18, 0.84),
+        Offset(0.50, 0.84),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.84),
+        Offset(0.82, 0.84),
+        Offset(0.78, 0.16),
+        Offset(0.50, 0.16),
+      ],
+    ),
+  ],
+
+  // ᱑ - Ol Chiki one
+  '᱑': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.52, 0.18), Offset(0.52, 0.82)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.40, 0.30), Offset(0.52, 0.18)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.38, 0.82), Offset(0.66, 0.82)],
+    ),
+  ],
+
+  // ᱒ - Ol Chiki two
+  '᱒': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.30, 0.28),
+        Offset(0.42, 0.14),
+        Offset(0.76, 0.18),
+        Offset(0.74, 0.38),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.74, 0.38),
+        Offset(0.72, 0.54),
+        Offset(0.42, 0.58),
+        Offset(0.30, 0.80),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.30, 0.80), Offset(0.76, 0.80)],
+    ),
+  ],
+
+  // ᱓ - Ol Chiki three
+  '᱓': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.30, 0.24),
+        Offset(0.46, 0.12),
+        Offset(0.78, 0.22),
+        Offset(0.58, 0.48),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.58, 0.48),
+        Offset(0.84, 0.58),
+        Offset(0.64, 0.88),
+        Offset(0.30, 0.74),
+      ],
+    ),
+  ],
+
+  // ᱔ - Ol Chiki four
+  '᱔': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.66, 0.18), Offset(0.66, 0.84)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.66, 0.18), Offset(0.26, 0.58)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.26, 0.58), Offset(0.76, 0.58)],
+    ),
+  ],
+
+  // ᱕ - Ol Chiki five
+  '᱕': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.72, 0.20), Offset(0.34, 0.20)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.34, 0.20), Offset(0.30, 0.50)],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.30, 0.50),
+        Offset(0.74, 0.44),
+        Offset(0.82, 0.82),
+        Offset(0.36, 0.80),
+      ],
+    ),
+  ],
+
+  // ᱖ - Ol Chiki six
+  '᱖': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.70, 0.22),
+        Offset(0.30, 0.26),
+        Offset(0.22, 0.72),
+        Offset(0.52, 0.82),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.52, 0.82),
+        Offset(0.82, 0.84),
+        Offset(0.80, 0.50),
+        Offset(0.50, 0.50),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.50),
+        Offset(0.26, 0.50),
+        Offset(0.26, 0.78),
+        Offset(0.52, 0.82),
+      ],
+    ),
+  ],
+
+  // ᱗ - Ol Chiki seven
+  '᱗': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.28, 0.20), Offset(0.76, 0.20)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.76, 0.20), Offset(0.42, 0.82)],
+    ),
+  ],
+
+  // ᱘ - Ol Chiki eight
+  '᱘': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.16),
+        Offset(0.22, 0.18),
+        Offset(0.26, 0.48),
+        Offset(0.50, 0.48),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.48),
+        Offset(0.78, 0.48),
+        Offset(0.78, 0.18),
+        Offset(0.50, 0.16),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.48),
+        Offset(0.20, 0.50),
+        Offset(0.22, 0.84),
+        Offset(0.50, 0.84),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.84),
+        Offset(0.80, 0.84),
+        Offset(0.80, 0.50),
+        Offset(0.50, 0.48),
+      ],
+    ),
+  ],
+
+  // ᱙ - Ol Chiki nine
+  '᱙': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.18),
+        Offset(0.20, 0.18),
+        Offset(0.22, 0.52),
+        Offset(0.50, 0.52),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.52),
+        Offset(0.78, 0.52),
+        Offset(0.78, 0.18),
+        Offset(0.50, 0.18),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.76, 0.30),
+        Offset(0.76, 0.66),
+        Offset(0.58, 0.82),
+        Offset(0.30, 0.80),
+      ],
+    ),
+  ],
+
   // ᱚ - La (a) - Circular shape with tail
   'ᱚ': [
     const StrokeSegment(

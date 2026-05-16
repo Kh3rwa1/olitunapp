@@ -18,7 +18,9 @@ class _TracingViewState extends State<TracingView>
     with SingleTickerProviderStateMixin {
   final List<Offset?> _points = [];
   double _progress = 0;
+  TraceScore _score = TraceScore.zero;
   bool _showCelebration = false;
+  double? _lastBoardSize;
 
   late final AnimationController _pulseController;
   late final Animation<double> _pulseAnimation;
@@ -46,6 +48,7 @@ class _TracingViewState extends State<TracingView>
     setState(() {
       _points.clear();
       _progress = 0;
+      _score = TraceScore.zero;
       _showCelebration = false;
     });
   }
@@ -75,50 +78,51 @@ class _TracingViewState extends State<TracingView>
 
     // Recalculate progress after undo
     if (_points.isNotEmpty) {
-      // We need to get the board size from context, so we'll use a post-frame callback
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) {
-          _recalculateProgressForUndo();
-        }
-      });
+      _recalculateProgressForUndo();
     } else {
-      setState(() => _progress = 0);
+      setState(() {
+        _progress = 0;
+        _score = TraceScore.zero;
+      });
     }
   }
 
   void _recalculateProgressForUndo() {
-    // Use a default size that will be overwritten by LayoutBuilder
-    const size = Size.square(300);
+    final boardSize = _lastBoardSize ?? 300;
+    final size = Size.square(boardSize);
     final guidePath = buildPracticeGuidePath(size, widget.letterChar);
     final guidePoints = samplePath(guidePath, samplesPerMetric: 64);
 
-    final progress = computeTraceProgress(
-      guidePoints: guidePoints,
-      tracedPoints: _points,
-      tolerance: size.width * 0.07,
-    );
-
-    setState(() {
-      _progress = progress;
-    });
-  }
-
-  void _recalculateProgress(double boardSize) {
-    final guidePath = buildPracticeGuidePath(
-      Size.square(boardSize),
-      widget.letterChar,
-    );
-    final guidePoints = samplePath(guidePath, samplesPerMetric: 64);
-
-    final progress = computeTraceProgress(
+    final score = computeTraceScore(
       guidePoints: guidePoints,
       tracedPoints: _points,
       tolerance: boardSize * 0.07,
     );
 
     setState(() {
-      _progress = progress;
-      if (_progress >= 0.9 && !_showCelebration) {
+      _score = score;
+      _progress = score.overall;
+    });
+  }
+
+  void _recalculateProgress(double boardSize) {
+    _lastBoardSize = boardSize;
+    final guidePath = buildPracticeGuidePath(
+      Size.square(boardSize),
+      widget.letterChar,
+    );
+    final guidePoints = samplePath(guidePath, samplesPerMetric: 64);
+
+    final score = computeTraceScore(
+      guidePoints: guidePoints,
+      tracedPoints: _points,
+      tolerance: boardSize * 0.07,
+    );
+
+    setState(() {
+      _score = score;
+      _progress = score.overall;
+      if (score.isComplete && !_showCelebration) {
         _showCelebration = true;
         HapticFeedback.heavyImpact();
         // Notify parent that practice is complete
@@ -127,8 +131,58 @@ class _TracingViewState extends State<TracingView>
     });
   }
 
+  void _appendTracePoint(Offset localPosition, double boardSize) {
+    final point = Offset(
+      localPosition.dx.clamp(0.0, boardSize),
+      localPosition.dy.clamp(0.0, boardSize),
+    );
+    final lastPoint = _lastDrawnPoint;
+    if (lastPoint != null && (point - lastPoint).distance < boardSize * 0.01) {
+      return;
+    }
+
+    setState(() => _points.add(point));
+
+    if (_points.length % 6 == 0) {
+      _recalculateProgress(boardSize);
+    }
+  }
+
+  Offset? get _lastDrawnPoint {
+    for (var i = _points.length - 1; i >= 0; i--) {
+      final point = _points[i];
+      if (point != null) {
+        return point;
+      }
+      if (i != _points.length - 1) {
+        return null;
+      }
+    }
+    return null;
+  }
+
+  String _feedbackText() {
+    if (_showCelebration) {
+      return 'Amazing! Your trace is super accurate!';
+    }
+    if (_points.isEmpty) {
+      return 'Tap the start point and trace the shape';
+    }
+    if (_score.startAccuracy < 0.45) {
+      return 'Start closer to the glowing dot, then follow the path';
+    }
+    if (_score.precision < 0.58) {
+      return 'Stay closer to the guide line';
+    }
+    if (_score.coverage < 0.72) {
+      return 'Good start. Keep tracing to finish the shape';
+    }
+    return 'Nice control. Complete the last bit cleanly';
+  }
+
   Offset? _getStartPoint(double boardSize) {
-    final strokeData = olChikiStrokes[widget.letterChar];
+    final strokeData =
+        olChikiStrokes[normalizePracticeCharacter(widget.letterChar)];
     if (strokeData == null || strokeData.isEmpty) return null;
 
     final firstStroke = strokeData.first;
@@ -148,6 +202,7 @@ class _TracingViewState extends State<TracingView>
     return LayoutBuilder(
       builder: (context, constraints) {
         final boardSize = constraints.biggest.shortestSide.clamp(260.0, 560.0);
+        _lastBoardSize = boardSize;
         final startPoint = _getStartPoint(boardSize);
 
         return Padding(
@@ -202,14 +257,16 @@ class _TracingViewState extends State<TracingView>
                                 behavior: HitTestBehavior.opaque,
                                 onPanStart: (details) {
                                   HapticFeedback.selectionClick();
-                                  setState(
-                                    () => _points.add(details.localPosition),
+                                  _appendTracePoint(
+                                    details.localPosition,
+                                    boardSize,
                                   );
                                 },
                                 onPanUpdate: (details) {
-                                  setState(() {
-                                    _points.add(details.localPosition);
-                                  });
+                                  _appendTracePoint(
+                                    details.localPosition,
+                                    boardSize,
+                                  );
                                 },
                                 onPanEnd: (_) {
                                   _points.add(null);
@@ -276,11 +333,7 @@ class _TracingViewState extends State<TracingView>
               ),
               const SizedBox(height: 8),
               Text(
-                _showCelebration
-                    ? '🎉 Amazing! Your trace is super accurate!'
-                    : _points.isEmpty
-                    ? 'Tap the start point and trace the letter'
-                    : 'Trace on the guideline. Accuracy: ${(_progress * 100).round()}%',
+                '${_feedbackText()}  Accuracy: ${(_progress * 100).round()}%',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,

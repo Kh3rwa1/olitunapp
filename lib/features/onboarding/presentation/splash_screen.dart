@@ -30,25 +30,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
     debugPrint('Splash: delay finished');
 
     if (mounted) {
-      // Desktop/web wide screens skip onboarding entirely
-      final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
-      debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
-
-      final showOnboarding = ref.read(onboardingProvider);
-      debugPrint('Splash: showOnboarding = $showOnboarding');
-      if (showOnboarding && !isDesktopWeb) {
-        debugPrint('Splash: navigating to /welcome');
-        context.go('/welcome');
-        return;
-      }
-
-      // If desktop skipped onboarding, mark it as done
-      if (showOnboarding && isDesktopWeb) {
-        debugPrint('Splash: marking onboarding complete for desktop');
-        ref.read(onboardingProvider.notifier).completeOnboarding();
-      }
-
-      // Check for OAuth token in URL params (after Google sign-in redirect on web)
+      // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)
+      // This MUST happen before checking showOnboarding, otherwise users get
+      // redirected back to /welcome while the session is still being exchanged.
       if (kIsWeb) {
         final uri = Uri.base;
         final userId = uri.queryParameters['userId'];
@@ -58,6 +42,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
           if (success) {
+            // Logged in via OAuth -> Mark onboarding as done automatically
+            ref.read(onboardingProvider.notifier).completeOnboarding();
             // Invalidate cached auth state so AuthGate widgets update
             ref.invalidate(isAuthenticatedProvider);
             // Sync user's first name from Google profile
@@ -78,6 +64,24 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             return;
           }
         }
+      }
+
+      // 2. Desktop/web wide screens skip onboarding entirely
+      final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
+      debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
+
+      final showOnboarding = ref.read(onboardingProvider);
+      debugPrint('Splash: showOnboarding = $showOnboarding');
+      if (showOnboarding && !isDesktopWeb) {
+        debugPrint('Splash: navigating to /welcome');
+        context.go('/welcome');
+        return;
+      }
+
+      // If desktop skipped onboarding, mark it as done
+      if (showOnboarding && isDesktopWeb) {
+        debugPrint('Splash: marking onboarding complete for desktop');
+        ref.read(onboardingProvider.notifier).completeOnboarding();
       }
 
       // Check authentication status

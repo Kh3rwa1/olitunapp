@@ -30,7 +30,7 @@ jobs:
         run: dart run build_runner build --delete-conflicting-outputs
 
       - name: Build APK
-        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5
+        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

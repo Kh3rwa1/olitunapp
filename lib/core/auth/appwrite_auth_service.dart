@@ -106,7 +106,11 @@ class AppwriteAuthService {
 
     final uri = Uri.parse(result);
     if (uri.queryParameters.containsKey('failure')) {
-      throw AppwriteException('Google sign in was cancelled or failed.');
+      final error = uri.queryParameters['error'] ?? '';
+      final message = uri.queryParameters['message'] ?? '';
+      throw AppwriteException(
+        'Google sign in failed${error.isNotEmpty ? ' ($error)' : ''}: ${message.isNotEmpty ? message : 'Session was cancelled or failed.'}',
+      );
     }
 
     final key = uri.queryParameters['key'];

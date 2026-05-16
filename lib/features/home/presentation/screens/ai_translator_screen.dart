@@ -24,6 +24,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
       GlobalKey<FocusGlowFieldState>();
   String _result = '';
   bool _isLoading = false;
+  bool _isError = false;
 
   @override
   void dispose() {
@@ -48,6 +49,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
       if (mounted) {
         setState(() {
           _result = result?.translation ?? 'Translation failed.';
+          _isError = result?.isError ?? true;
           _isLoading = false;
         });
       }
@@ -55,6 +57,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
       if (mounted) {
         setState(() {
           _result = 'Error occurred. Please try again.';
+          _isError = true;
           _isLoading = false;
         });
       }
@@ -182,23 +185,30 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       padding: const EdgeInsets.all(32),
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [
-                            AppColors.primary.withValues(alpha: 0.15),
-                            AppColors.primaryDark.withValues(alpha: 0.05),
-                          ],
+                          colors: _isError
+                              ? [
+                                  Colors.red.withValues(alpha: 0.1),
+                                  Colors.red.withValues(alpha: 0.05),
+                                ]
+                              : [
+                                  AppColors.primary.withValues(alpha: 0.15),
+                                  AppColors.primaryDark.withValues(alpha: 0.05),
+                                ],
                         ),
                         borderRadius: BorderRadius.circular(32),
                         border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2),
+                          color: _isError
+                              ? Colors.red.withValues(alpha: 0.3)
+                              : AppColors.primary.withValues(alpha: 0.2),
                         ),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'SANTALI (OL CHIKI)',
+                            _isError ? 'TRANSLATION ERROR' : 'SANTALI (OL CHIKI)',
                             style: GoogleFonts.inter(
-                              color: AppColors.primary,
+                              color: _isError ? Colors.redAccent : AppColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.5,
@@ -207,13 +217,19 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                           const SizedBox(height: 20),
                           Text(
                             _result,
-                            style: TextStyle(
-                              fontFamily: 'OlChiki',
-                              fontSize: 56,
-                              height: 1.1,
-                              color: isDark ? Colors.white : Colors.black,
-                              fontWeight: FontWeight.w900,
-                            ),
+                            style: _isError
+                                ? GoogleFonts.inter(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  )
+                                : TextStyle(
+                                    fontFamily: 'OlChiki',
+                                    fontSize: 56,
+                                    height: 1.1,
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontWeight: FontWeight.w900,
+                                  ),
                           ),
                         ],
                       ),

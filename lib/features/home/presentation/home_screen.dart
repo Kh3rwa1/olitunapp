@@ -11,6 +11,7 @@ import '../../categories/domain/entities/category_entity.dart';
 import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 
+import 'package:go_router/go_router.dart';
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
 
@@ -147,57 +148,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                         // Guest Call to Action (if not logged in)
                         if (isGuest) ...[
-                          Container(
-                            margin: const EdgeInsets.only(bottom: 24),
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              gradient: AppColors.heroGradientAlt,
-                              borderRadius: BorderRadius.circular(20),
-                              boxShadow: AppColors.glowShadow(
-                                AppColors.primary,
+                          PressableScale(
+                            onTap: () => context.push('/login'),
+                            child: Container(
+                              margin: const EdgeInsets.only(bottom: 24),
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                gradient: AppColors.heroGradientAlt,
+                                borderRadius: BorderRadius.circular(20),
+                                boxShadow: AppColors.glowShadow(
+                                  AppColors.primary,
+                                ),
                               ),
-                            ),
-                            child: Row(
-                              children: [
-                                Container(
-                                  padding: const EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.2),
-                                    shape: BoxShape.circle,
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      color:
+                                          Colors.white.withValues(alpha: 0.2),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.person_add_alt_1_rounded,
+                                      color: Colors.white,
+                                    ),
                                   ),
-                                  child: const Icon(
-                                    Icons.person_add_alt_1_rounded,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                const SizedBox(width: 16),
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        'Track Your Progress',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.w800,
-                                          fontSize: 16,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        'Create an account to save your learning journey.',
-                                        style: TextStyle(
-                                          color: Colors.white.withValues(
-                                            alpha: 0.9,
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          'Track Your Progress',
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: FontWeight.w800,
+                                            fontSize: 16,
                                           ),
-                                          fontSize: 13,
                                         ),
-                                      ),
-                                    ],
+                                        const SizedBox(height: 4),
+                                        Text(
+                                          'Create an account to save your learning journey.',
+                                          style: TextStyle(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.9,
+                                            ),
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
                           ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1),
                         ],

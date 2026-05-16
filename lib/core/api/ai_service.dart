@@ -27,7 +27,11 @@ import 'package:itun/core/config/appwrite_config.dart';
 /// `REVERSE_TRANSLATE_URL` if you have intentionally split it out into a
 /// separate deployment.
 class AiConfig {
-  static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+  static const String translateUrl = String.fromEnvironment(
+    'TRANSLATE_URL',
+    defaultValue:
+        'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions',
+  );
   static const int maxTranslationChars = 5000;
   static const String _reverseOverride = String.fromEnvironment(
     'REVERSE_TRANSLATE_URL',
@@ -78,13 +82,13 @@ class AiService {
         isError: true,
       );
     }
-    if (url.isEmpty) {
-      throw StateError(
-        'AiService.$endpointName called without a configured URL. '
-        'Build with --dart-define=TRANSLATE_URL=[appwrite-function-execution-url].',
-      );
-    }
     try {
+      if (url.isEmpty) {
+        throw StateError(
+          'AiService.$endpointName called without a configured URL. '
+          'Build with --dart-define=TRANSLATE_URL=[appwrite-function-execution-url].',
+        );
+      }
       final requestBody = url.contains('/executions')
           ? jsonEncode({'body': jsonEncode(body), 'async': false})
           : jsonEncode(body);

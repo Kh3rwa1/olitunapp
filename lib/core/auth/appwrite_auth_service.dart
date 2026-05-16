@@ -81,7 +81,15 @@ class AppwriteAuthService {
       );
       await _completeWebOAuth(result);
     } else {
-      await _account.createOAuth2Session(provider: OAuthProvider.google);
+      // Explicitly providing the callback URL for mobile to avoid "Missing redirect URL" errors.
+      // This URL must match the one defined in AndroidManifest.xml and be allowed in Appwrite Console.
+      final callbackUrl = 'appwrite-callback-${AppwriteConfig.projectId}://localhost';
+      await _account.createOAuth2Session(
+        provider: OAuthProvider.google,
+        success: callbackUrl,
+        failure: callbackUrl,
+        scopes: ['email', 'profile'],
+      );
     }
   }
 

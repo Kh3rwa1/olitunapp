@@ -59,10 +59,10 @@ jobs:
         run: flutter pub outdated --no-dev-dependencies || true
 
       - name: Build web release
-        run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com
+        run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
 
       - name: Build Android release
-        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com
+        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/main'

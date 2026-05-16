@@ -4,6 +4,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
+import 'activity_row.dart';
+import 'dashboard_empty_state.dart';
+
 
 class DashboardActivityPanel extends ConsumerWidget {
   final bool isDark;
@@ -76,7 +79,7 @@ class DashboardActivityPanel extends ConsumerWidget {
                 ),
               ),
             ),
-            error: (_, _) => _ActivityEmpty(
+            error: (_, _) => DashboardEmptyState(
               isDark: isDark,
               icon: Icons.cloud_off_rounded,
               message: 'Couldn\'t load recent activity',
@@ -84,7 +87,7 @@ class DashboardActivityPanel extends ConsumerWidget {
             data: (m) {
               final items = m.recentActivity;
               if (items.isEmpty) {
-                return _ActivityEmpty(
+                return DashboardEmptyState(
                   isDark: isDark,
                   icon: Icons.inbox_rounded,
                   message: 'No recent changes yet',
@@ -93,11 +96,11 @@ class DashboardActivityPanel extends ConsumerWidget {
               return Column(
                 children: [
                   for (var i = 0; i < items.length; i++) ...[
-                    _ActivityRow(
+                    ActivityRow(
                       isDark: isDark,
                       title: items[i].title,
                       subtitle:
-                          '${items[i].subtitle} · ${_formatRelative(items[i].timestamp)}',
+                          '${items[i].subtitle} · ${formatRelative(items[i].timestamp)}',
                       icon: items[i].icon,
                       color: items[i].color,
                     ),
@@ -111,108 +114,5 @@ class DashboardActivityPanel extends ConsumerWidget {
         ],
       ),
     ).animate().fadeIn(delay: 220.ms);
-  }
-}
-
-String _formatRelative(DateTime ts) {
-  final diff = DateTime.now().difference(ts);
-  if (diff.inSeconds < 60) return 'just now';
-  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
-  if (diff.inHours < 24) return '${diff.inHours}h ago';
-  if (diff.inDays < 7) return '${diff.inDays}d ago';
-  if (diff.inDays < 30) return '${(diff.inDays / 7).floor()}w ago';
-  if (diff.inDays < 365) return '${(diff.inDays / 30).floor()}mo ago';
-  return '${(diff.inDays / 365).floor()}y ago';
-}
-
-class _ActivityEmpty extends StatelessWidget {
-  final bool isDark;
-  final IconData icon;
-  final String message;
-  const _ActivityEmpty({
-    required this.isDark,
-    required this.icon,
-    required this.message,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 28),
-      child: Center(
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(icon, size: 26, color: AdminTokens.textMuted(isDark)),
-            const SizedBox(height: 10),
-            Text(
-              message,
-              style: AdminTokens.body(
-                isDark,
-              ).copyWith(fontSize: 13, color: AdminTokens.textTertiary(isDark)),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ActivityRow extends StatelessWidget {
-  final bool isDark;
-  final String title;
-  final String subtitle;
-  final IconData icon;
-  final Color color;
-  const _ActivityRow({
-    required this.isDark,
-    required this.title,
-    required this.subtitle,
-    required this.icon,
-    required this.color,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.12),
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: color.withValues(alpha: 0.22)),
-          ),
-          child: Icon(icon, size: 16, color: color),
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: AdminTokens.bodyStrong(isDark).copyWith(fontSize: 13.5),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: AdminTokens.label(isDark).copyWith(
-                  letterSpacing: 0,
-                  fontWeight: FontWeight.w500,
-                  color: AdminTokens.textTertiary(isDark),
-                ),
-              ),
-            ],
-          ),
-        ),
-        Icon(
-          Icons.chevron_right_rounded,
-          size: 18,
-          color: AdminTokens.textMuted(isDark),
-        ),
-      ],
-    );
   }
 }

@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/motion/motion.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 import 'providers/auth_providers.dart';
 
 class EmailAuthScreen extends ConsumerStatefulWidget {
@@ -130,6 +131,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         },
         (_) {
           if (mounted) {
+            ref.read(onboardingProvider.notifier).completeOnboarding();
+            ref.invalidate(isAuthenticatedProvider);
             context.go('/');
           }
         },

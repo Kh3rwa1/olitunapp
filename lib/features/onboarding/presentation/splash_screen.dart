@@ -52,7 +52,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       }
 
-      // 2. Check authentication status
+      // 2. Check authentication before onboarding. A valid persisted Appwrite
+      // session should always restore the learner to the app, even if an older
+      // install still has show_onboarding=true in local prefs.
       debugPrint('Splash: checking auth status...');
       final authRepo = ref.read(authRepositoryProvider);
       final isLoggedInResult = await authRepo.isLoggedIn();
@@ -60,6 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       debugPrint('Splash: isLoggedIn = $isLoggedIn');
 
       if (isLoggedIn) {
+        ref.read(onboardingProvider.notifier).completeOnboarding();
         if (!mounted) return;
         debugPrint('Splash: navigating to /');
         context.go('/');
@@ -83,11 +86,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       if (showOnboarding && isDesktopWeb) {
         debugPrint('Splash: marking onboarding complete for desktop');
         ref.read(onboardingProvider.notifier).completeOnboarding();
+      } else {
+        debugPrint('Splash: navigating to /welcome (not logged in)');
       }
 
-      // If we got here and not logged in, go to welcome
       if (!mounted) return;
-      debugPrint('Splash: navigating to /welcome (fallback)');
       context.go('/welcome');
     }
   }

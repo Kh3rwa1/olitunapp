@@ -397,20 +397,30 @@ class _BentoCategoryCard extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════
 class HeroJourneyCard extends StatelessWidget {
   final String heroTitle;
+  final String? lessonId;
   final int index;
 
   const HeroJourneyCard({
     super.key,
     required this.heroTitle,
+    this.lessonId,
     required this.index,
   });
+
+  void _onTap(BuildContext context) {
+    if (lessonId != null && lessonId!.isNotEmpty) {
+      context.push('/lesson/$lessonId');
+    } else {
+      context.push('/categories');
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return AnimatedBentoChild(
       index: index,
       child: PressableScale(
-        onTap: () => context.push('/categories'),
+        onTap: () => _onTap(context),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(28),
@@ -477,7 +487,7 @@ class HeroJourneyCard extends StatelessWidget {
                   DuoButton(
                     text: 'RESUME JOURNEY',
                     color: Colors.white,
-                    onPressed: () => context.push('/categories'),
+                    onPressed: () => _onTap(context),
                     width: double.infinity,
                     height: 52,
                   ),

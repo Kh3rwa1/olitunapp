@@ -248,10 +248,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             context,
                             isDark,
                             heroTitle,
+                            nextLesson?.id,
                             quizCount,
                           )
                         else ...[
-                          HeroJourneyCard(heroTitle: heroTitle, index: 0),
+                          HeroJourneyCard(
+                            heroTitle: heroTitle,
+                            lessonId: nextLesson?.id,
+                            index: 0,
+                          ),
                           const SizedBox(height: 16),
                           QuizBannerCard(quizCount: quizCount, index: 1),
                         ],
@@ -466,6 +471,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     BuildContext context,
     bool isDark,
     String heroTitle,
+    String? nextLessonId,
     int quizCount,
   ) {
     return Row(
@@ -473,7 +479,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         Expanded(
           flex: 3,
-          child: HeroJourneyCard(heroTitle: heroTitle, index: 4),
+          child: HeroJourneyCard(
+            heroTitle: heroTitle,
+            lessonId: nextLessonId,
+            index: 4,
+          ),
         ),
         const SizedBox(width: 16),
         Expanded(

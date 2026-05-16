@@ -206,9 +206,13 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            _isError ? 'TRANSLATION ERROR' : 'SANTALI (OL CHIKI)',
+                            _isError
+                                ? 'TRANSLATION ERROR'
+                                : 'SANTALI (OL CHIKI)',
                             style: GoogleFonts.inter(
-                              color: _isError ? Colors.redAccent : AppColors.primary,
+                              color: _isError
+                                  ? Colors.redAccent
+                                  : AppColors.primary,
                               fontSize: 12,
                               fontWeight: FontWeight.w900,
                               letterSpacing: 1.5,

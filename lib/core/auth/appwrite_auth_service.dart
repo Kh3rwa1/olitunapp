@@ -157,19 +157,47 @@ class AppwriteAuthService {
     await prefs.remove(_webSessionSecretKey);
   }
 
+  static const String _hasLocalSessionKey = 'olitun_has_local_session';
+
   // ─── Session Management ───
 
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
     try {
       if (kIsWeb) {
         await _restoreWebSession();
       }
       final session = await _account.getSession(sessionId: 'current');
       debugPrint('Appwrite: Session active for user ${session.userId} ✅');
+      await prefs.setBool(_hasLocalSessionKey, true);
       return true;
     } catch (e) {
-      debugPrint('Appwrite: No active session found: $e');
+      debugPrint('Appwrite: isLoggedIn error: $e');
+
+      // If it's a network error or timeout, and we know we had a session,
+      // return true optimistically to avoid kicking the user to login.
+      final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
+      if (hasLocal) {
+        if (e is AppwriteException) {
+          // code 0 or empty type often indicates network/timeout issues in Appwrite SDK
+          if (e.code == 0 || e.type == '' || e.type == 'general_unknown') {
+            debugPrint('Appwrite: Network error, but had local session. Returning true.');
+            return true;
+          }
+        } else if (e.toString().contains('SocketException') ||
+            e.toString().contains('TimeoutException')) {
+          debugPrint('Appwrite: Socket/Timeout error, but had local session. Returning true.');
+          return true;
+        }
+      }
+
+      // If it's a 401 (Unauthorized), the session is definitely gone.
+      if (e is AppwriteException && e.code == 401) {
+        debugPrint('Appwrite: Session expired (401). Clearing local flag.');
+        await prefs.setBool(_hasLocalSessionKey, false);
+      }
+
       return false;
     }
   }
@@ -198,6 +226,8 @@ class AppwriteAuthService {
   /// Sign out — delete current session
   Future<void> signOut() async {
     try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool(_hasLocalSessionKey, false);
       await _account.deleteSession(sessionId: 'current');
     } catch (e) {
       debugPrint('Appwrite: Sign out error: $e');

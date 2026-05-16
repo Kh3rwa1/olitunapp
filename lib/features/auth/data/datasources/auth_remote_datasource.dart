@@ -110,13 +110,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
 
   @override
   Future<bool> isLoggedIn() async {
-    return authService.isLoggedIn().timeout(
-      const Duration(seconds: 10),
-      onTimeout: () {
-        debugPrint('Appwrite: isLoggedIn check timed out');
-        return false;
-      },
-    );
+    return await authService.isLoggedIn();
   }
 
   @override

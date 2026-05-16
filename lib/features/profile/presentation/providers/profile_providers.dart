@@ -20,7 +20,7 @@ final userStatsProvider =
       ref,
     ) {
       final repo = ref.watch(profileRepositoryProvider);
-      return UserStatsNotifier(repo, ref);
+      return UserStatsNotifier(repo, ref: ref);
     });
 
 final userNameProvider = StateProvider<String>((ref) {
@@ -67,10 +67,13 @@ final userAvatarColorsProvider = Provider<List<Color>>((ref) {
 
 class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   final ProfileRepository _repository;
-  final Ref _ref;
+  final Ref? _ref;
+  final DateTime Function() _now;
 
-  UserStatsNotifier(this._repository, this._ref)
-    : super(const AsyncValue.loading()) {
+  UserStatsNotifier(this._repository, {Ref? ref, DateTime Function()? now})
+    : _now = now ?? DateTime.now,
+      _ref = ref,
+      super(const AsyncValue.loading()) {
     loadStats();
     _syncProfileFromCloud();
   }
@@ -86,15 +89,18 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   /// Fetches current user from Appwrite and updates local name if it's still 'Learner'
   Future<void> _syncProfileFromCloud() async {
+    final ref = _ref;
+    if (ref == null) return;
+
     try {
-      final authRepo = _ref.read(authRepositoryProvider);
+      final authRepo = ref.read(authRepositoryProvider);
       final userResult = await authRepo.getCurrentUser();
 
       userResult.fold(
         (failure) => debugPrint('ProfileSync: Failed to get user: $failure'),
         (user) {
           if (user != null && user.name != null && user.name!.isNotEmpty) {
-            final currentName = _ref.read(userNameProvider);
+            final currentName = ref.read(userNameProvider);
             // Only sync if name is default or we're refreshing
             if (currentName == 'Learner' || currentName == 'Explorer') {
               final name = user.name!.split(' ').first;
@@ -116,22 +122,28 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   /// Updates lastActiveDate and currentStreak based on today's date.
   UserStatsEntity _withStreakUpdate(UserStatsEntity stats) {
-    final today = DateTime.now().toIso8601String().substring(0, 10);
+    final now = _now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final today = todayDate.toIso8601String().substring(0, 10);
     final lastDate = stats.lastActiveDate;
 
     if (lastDate == today) return stats.copyWith(lastActiveDate: today);
 
-    // Check if last active was yesterday
     int newStreak = 1;
     if (lastDate.isNotEmpty) {
-      try {
-        final lastDay = DateTime.parse(lastDate);
-        final diff = DateTime.now().difference(lastDay).inDays;
+      final parsedLastDay = DateTime.tryParse(lastDate);
+      if (parsedLastDay != null) {
+        final lastDay = DateTime(
+          parsedLastDay.year,
+          parsedLastDay.month,
+          parsedLastDay.day,
+        );
+        final diff = todayDate.difference(lastDay).inDays;
         if (diff == 1) {
           newStreak = stats.currentStreak + 1;
+        } else if (diff == 0) {
+          newStreak = stats.currentStreak;
         }
-      } catch (_) {
-        // Malformed date, reset streak
       }
     }
 
@@ -157,12 +169,18 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final current = state.valueOrNull;
     if (current == null) return;
 
+    final normalizedLetter = letter.trim();
+    if (normalizedLetter.isEmpty) return;
+
     final updatedLetters = Set<String>.from(current.practicedLetters)
-      ..add(letter);
+      ..add(normalizedLetter);
     var updated = current.copyWith(practicedLetters: updatedLetters);
 
     // Update alphabet mastery based on practiced letters
-    final masteryPct = (updatedLetters.length / 30 * 100).clamp(0, 100).round();
+    final masteryPct =
+        (updatedLetters.length / UserStatsEntity.alphabetLetterCount * 100)
+            .clamp(0, 100)
+            .round();
     final updatedMastery = Map<String, int>.from(updated.categoryMastery)
       ..['alphabets'] = masteryPct;
     updated = _withStreakUpdate(
@@ -175,8 +193,11 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> addStars(int count) async {
     final current = state.valueOrNull;
     if (current == null) return;
+    if (count <= 0) return;
 
-    final updated = current.copyWith(totalStars: current.totalStars + count);
+    final updated = _withStreakUpdate(
+      current.copyWith(totalStars: current.totalStars + count),
+    );
     await updateStats(updated);
   }
 
@@ -193,16 +214,19 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final current = state.valueOrNull;
     if (current == null) return;
 
+    final alreadyCompleted = current.completedLessons.contains(lessonId);
     final updatedLessons = Set<String>.from(current.completedLessons)
       ..add(lessonId);
 
     var updated = current.copyWith(
       completedLessons: updatedLessons,
-      totalLearningMinutes: current.totalLearningMinutes + estimatedMinutes,
+      totalLearningMinutes: alreadyCompleted
+          ? current.totalLearningMinutes
+          : current.totalLearningMinutes + estimatedMinutes.clamp(0, 240),
     );
 
-    // Update category mastery if we know the category
-    if (categoryId != null && categoryId.isNotEmpty) {
+    // Update category mastery only the first time a lesson is completed.
+    if (!alreadyCompleted && categoryId != null && categoryId.isNotEmpty) {
       final key = _normalizeCategoryKey(categoryId);
       final currentMastery = Map<String, int>.from(updated.categoryMastery);
       final oldVal = currentMastery[key] ?? 0;
@@ -218,10 +242,24 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   Future<void> saveQuizResult(QuizResultEntity result) async {
     final current = state.valueOrNull;
     if (current == null) return;
+    if (result.quizId.trim().isEmpty || result.totalQuestions <= 0) return;
+
+    final sanitized = QuizResultEntity(
+      quizId: result.quizId.trim(),
+      score: result.score.clamp(0, result.totalQuestions),
+      totalQuestions: result.totalQuestions,
+      completedAt: result.completedAt.isNotEmpty
+          ? result.completedAt
+          : _now().toIso8601String(),
+    );
 
     final updatedHistory = Map<String, QuizResultEntity>.from(
       current.quizHistory,
-    )..[result.quizId] = result;
+    );
+    final key = updatedHistory.containsKey(sanitized.quizId)
+        ? '${sanitized.quizId}@${sanitized.completedAt}'
+        : sanitized.quizId;
+    updatedHistory[key] = sanitized;
 
     final updated = _withStreakUpdate(
       current.copyWith(quizHistory: updatedHistory),
@@ -244,18 +282,24 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateName(String name) async {
+    final ref = _ref;
+    if (ref == null) return;
+
     final result = await _repository.updateDisplayName(name);
     result.fold(
       (failure) => null,
-      (_) => _ref.read(userNameProvider.notifier).state = name,
+      (_) => ref.read(userNameProvider.notifier).state = name,
     );
   }
 
   Future<void> updateAvatar(String emoji, int colorIndex) async {
+    final ref = _ref;
+    if (ref == null) return;
+
     final result = await _repository.updateAvatar(emoji, colorIndex);
     result.fold((failure) => null, (_) {
-      _ref.read(userAvatarEmojiProvider.notifier).state = emoji;
-      _ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
+      ref.read(userAvatarEmojiProvider.notifier).state = emoji;
+      ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     });
   }
 }

@@ -41,11 +41,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
 
     _player.onPlayerComplete.listen((_) {
       if (mounted) {
-        this.state = this.state.copyWith(
-          isPlaying: false,
-          playerState: PlayerState.completed,
-          playingRhymeId: null,
-        );
+        state = RhymeAudioState(playerState: PlayerState.completed);
       }
     });
   }

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'quiz_result_entity.dart';
 
 class UserStatsEntity extends Equatable {
+  static const int alphabetLetterCount = 30;
   static const List<String> levelThresholds = [
     'Beginner',
     'Intermediate',
@@ -65,14 +66,25 @@ class UserStatsEntity extends Equatable {
 
   // ============== COMPUTED PROPERTIES ==============
 
+  double _masteryProgress(List<String> keys) {
+    for (final key in keys) {
+      final value = categoryMastery[key];
+      if (value != null) return (value / 100).clamp(0.0, 1.0);
+    }
+    return 0.0;
+  }
+
   /// Alphabet mastery: based on how many letters have been practiced
-  double get alphabetProgress => (practicedLetters.length / 30).clamp(0.0, 1.0);
+  double get alphabetProgress {
+    final trackedMastery = _masteryProgress(['alphabets', 'alphabet']);
+    if (trackedMastery > 0) return trackedMastery;
+    return (practicedLetters.length / alphabetLetterCount).clamp(0.0, 1.0);
+  }
 
   /// Numbers mastery: from categoryMastery map or completed lessons
   double get numbersProgress {
-    if (categoryMastery.containsKey('numbers')) {
-      return (categoryMastery['numbers']! / 100).clamp(0.0, 1.0);
-    }
+    final trackedMastery = _masteryProgress(['numbers', 'number']);
+    if (trackedMastery > 0) return trackedMastery;
     // Fallback: estimate from total completed lessons
     final total = completedLessons.length;
     return (total / 15).clamp(0.0, 1.0) * 0.5;
@@ -80,30 +92,24 @@ class UserStatsEntity extends Equatable {
 
   /// Vocabulary mastery: from categoryMastery map or completed lessons
   double get vocabularyProgress {
-    if (categoryMastery.containsKey('words') ||
-        categoryMastery.containsKey('vocabulary')) {
-      final val =
-          categoryMastery['words'] ?? categoryMastery['vocabulary'] ?? 0;
-      return (val / 100).clamp(0.0, 1.0);
-    }
+    final trackedMastery = _masteryProgress(['words', 'vocabulary']);
+    if (trackedMastery > 0) return trackedMastery;
     final total = completedLessons.length;
     return (total / 20).clamp(0.0, 1.0) * 0.4;
   }
 
   /// Sentences mastery
   double get sentencesProgress {
-    if (categoryMastery.containsKey('sentences')) {
-      return (categoryMastery['sentences']! / 100).clamp(0.0, 1.0);
-    }
+    final trackedMastery = _masteryProgress(['sentences', 'sentence']);
+    if (trackedMastery > 0) return trackedMastery;
     final total = completedLessons.length;
     return (total / 25).clamp(0.0, 1.0) * 0.3;
   }
 
   /// Rhymes mastery
   double get rhymesProgress {
-    if (categoryMastery.containsKey('rhymes')) {
-      return (categoryMastery['rhymes']! / 100).clamp(0.0, 1.0);
-    }
+    final trackedMastery = _masteryProgress(['rhymes', 'rhyme', 'bakhed']);
+    if (trackedMastery > 0) return trackedMastery;
     final total = completedLessons.length;
     return (total / 20).clamp(0.0, 1.0) * 0.3;
   }
@@ -116,7 +122,8 @@ class UserStatsEntity extends Equatable {
     int totalCorrect = 0;
     int totalQuestions = 0;
     for (final result in quizHistory.values) {
-      totalCorrect += result.score;
+      if (result.totalQuestions <= 0) continue;
+      totalCorrect += result.score.clamp(0, result.totalQuestions);
       totalQuestions += result.totalQuestions;
     }
     if (totalQuestions == 0) return 0.0;
@@ -128,11 +135,43 @@ class UserStatsEntity extends Equatable {
     double best = 0;
     for (final result in quizHistory.values) {
       if (result.totalQuestions > 0) {
-        final pct = result.score / result.totalQuestions;
+        final pct =
+            result.score.clamp(0, result.totalQuestions) /
+            result.totalQuestions;
         if (pct > best) best = pct;
       }
     }
     return (best * 100).round();
+  }
+
+  List<QuizResultEntity> get recentQuizResults {
+    final results = quizHistory.values.toList();
+    results.sort((a, b) {
+      final aDate = DateTime.tryParse(a.completedAt);
+      final bDate = DateTime.tryParse(b.completedAt);
+      if (aDate == null && bDate == null) return 0;
+      if (aDate == null) return 1;
+      if (bDate == null) return -1;
+      return bDate.compareTo(aDate);
+    });
+    return results;
+  }
+
+  int get quizzesCompletedThisWeek {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final weekStart = today.subtract(Duration(days: today.weekday - 1));
+
+    return quizHistory.values.where((result) {
+      final completedAt = DateTime.tryParse(result.completedAt);
+      if (completedAt == null) return false;
+      final completedDay = DateTime(
+        completedAt.year,
+        completedAt.month,
+        completedAt.day,
+      );
+      return !completedDay.isBefore(weekStart) && !completedDay.isAfter(today);
+    }).length;
   }
 
   double get overallProgress {

@@ -6,7 +6,6 @@ import '../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {

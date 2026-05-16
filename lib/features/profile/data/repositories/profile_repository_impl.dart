@@ -72,16 +72,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
     try {
       await _prefs.setString('user_name', name);
       final result = await _authRepository.isLoggedIn();
-      return await result.fold(
-        (failure) =>
-            const Right(null), // Ignore check failure, local is updated
-        (isLoggedIn) async {
-          if (isLoggedIn) {
-            return await _authRepository.updateDisplayName(name);
-          }
-          return const Right(null);
-        },
-      );
+      return await result.fold((failure) async => Left(failure), (
+        isLoggedIn,
+      ) async {
+        if (isLoggedIn) {
+          return await _authRepository.updateDisplayName(name);
+        }
+        return const Right(null);
+      });
     } catch (e) {
       return Left(_recordedCacheFailure(e));
     }

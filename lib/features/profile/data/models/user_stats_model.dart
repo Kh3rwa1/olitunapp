@@ -14,19 +14,50 @@ class UserStatsModel extends UserStatsEntity {
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
+    int readInt(String key) {
+      final value = json[key];
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is num) return value.round();
+      if (value is String) return int.parse(value);
+      throw FormatException('Invalid integer field: $key');
+    }
+
+    Map<String, int> readMastery(dynamic value) {
+      if (value is! Map) return {};
+      return value.map((key, raw) {
+        final parsed = raw is int
+            ? raw
+            : raw is num
+            ? raw.round()
+            : raw is String
+            ? int.parse(raw)
+            : throw FormatException('Invalid mastery value: $key');
+        return MapEntry(key.toString(), parsed.clamp(0, 100));
+      });
+    }
+
+    Map<String, QuizResultEntity> readQuizHistory(dynamic value) {
+      if (value is! Map<String, dynamic>) return {};
+      return value.map((k, v) {
+        final data = v is Map<String, dynamic>
+            ? v
+            : v is Map
+            ? Map<String, dynamic>.from(v)
+            : <String, dynamic>{};
+        return MapEntry(k, QuizResultModel.fromJson(data));
+      });
+    }
+
     return UserStatsModel(
       practicedLetters: Set<String>.from(json['practicedLetters'] ?? []),
       completedLessons: Set<String>.from(json['completedLessons'] ?? []),
-      quizHistory:
-          (json['quizHistory'] as Map<String, dynamic>?)?.map(
-            (k, v) => MapEntry(k, QuizResultModel.fromJson(v)),
-          ) ??
-          {},
-      categoryMastery: Map<String, int>.from(json['categoryMastery'] ?? {}),
-      totalLearningMinutes: json['totalLearningMinutes'] ?? 0,
+      quizHistory: readQuizHistory(json['quizHistory']),
+      categoryMastery: readMastery(json['categoryMastery']),
+      totalLearningMinutes: readInt('totalLearningMinutes'),
       lastActiveDate: json['lastActiveDate'] ?? '',
-      currentStreak: json['currentStreak'] ?? 0,
-      totalStars: json['totalStars'] ?? 0,
+      currentStreak: readInt('currentStreak'),
+      totalStars: readInt('totalStars'),
     );
   }
 
@@ -68,10 +99,19 @@ class QuizResultModel extends QuizResultEntity {
   });
 
   factory QuizResultModel.fromJson(Map<String, dynamic> json) {
+    int readInt(String key) {
+      final value = json[key];
+      if (value == null) return 0;
+      if (value is int) return value;
+      if (value is num) return value.round();
+      if (value is String) return int.parse(value);
+      throw FormatException('Invalid integer field: $key');
+    }
+
     return QuizResultModel(
       quizId: json['quizId'] ?? '',
-      score: json['score'] ?? 0,
-      totalQuestions: json['totalQuestions'] ?? 0,
+      score: readInt('score'),
+      totalQuestions: readInt('totalQuestions'),
       completedAt: json['completedAt'] ?? '',
     );
   }

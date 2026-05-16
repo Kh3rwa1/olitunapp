@@ -69,7 +69,8 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   final ProfileRepository _repository;
   final Ref _ref;
 
-  UserStatsNotifier(this._repository, this._ref) : super(const AsyncValue.loading()) {
+  UserStatsNotifier(this._repository, this._ref)
+    : super(const AsyncValue.loading()) {
     loadStats();
     _syncProfileFromCloud();
   }

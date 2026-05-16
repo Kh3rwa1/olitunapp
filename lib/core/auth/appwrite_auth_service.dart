@@ -182,12 +182,16 @@ class AppwriteAuthService {
         if (e is AppwriteException) {
           // code 0 or empty type often indicates network/timeout issues in Appwrite SDK
           if (e.code == 0 || e.type == '' || e.type == 'general_unknown') {
-            debugPrint('Appwrite: Network error, but had local session. Returning true.');
+            debugPrint(
+              'Appwrite: Network error, but had local session. Returning true.',
+            );
             return true;
           }
         } else if (e.toString().contains('SocketException') ||
             e.toString().contains('TimeoutException')) {
-          debugPrint('Appwrite: Socket/Timeout error, but had local session. Returning true.');
+          debugPrint(
+            'Appwrite: Socket/Timeout error, but had local session. Returning true.',
+          );
           return true;
         }
       }

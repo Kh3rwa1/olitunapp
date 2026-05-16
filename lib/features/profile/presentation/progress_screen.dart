@@ -233,8 +233,7 @@ class ProgressScreen extends ConsumerWidget {
       builder: (context) => EditNameSheet(
         initialName: currentName,
         isDark: isDark,
-        onSave: (name) =>
-            ref.read(userStatsProvider.notifier).updateName(name),
+        onSave: (name) => ref.read(userStatsProvider.notifier).updateName(name),
       ),
     );
   }

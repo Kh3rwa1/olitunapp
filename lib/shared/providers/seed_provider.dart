@@ -16,17 +16,17 @@ Future<void> seedAppContent(WidgetRef ref) async {
   await categoriesNotifier.loadCategories();
   final existing = ref.read(categoryNotifierProvider).value ?? [];
   final existingIds = existing.map((c) => c.id).toSet();
-  final existingTitles =
-      existing.map((c) => c.titleLatin.trim().toLowerCase()).toSet();
+  final existingTitles = existing
+      .map((c) => c.titleLatin.trim().toLowerCase())
+      .toSet();
 
   Future<String> addCategoryIfNew(CategoryModel cat) async {
     final normTitle = cat.titleLatin.trim().toLowerCase();
 
     final existingCat = existing.cast<CategoryEntity?>().firstWhere(
-          (c) =>
-              c?.id == cat.id || c?.titleLatin.trim().toLowerCase() == normTitle,
-          orElse: () => null,
-        );
+      (c) => c?.id == cat.id || c?.titleLatin.trim().toLowerCase() == normTitle,
+      orElse: () => null,
+    );
 
     if (existingCat != null) {
       return existingCat.id; // Return existing ID

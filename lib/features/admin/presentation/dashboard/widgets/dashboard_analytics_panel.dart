@@ -7,7 +7,6 @@ import '../../../../../shared/providers/providers.dart';
 import 'analytics_chart.dart';
 import 'dashboard_empty_state.dart';
 
-
 class DashboardAnalyticsPanel extends ConsumerWidget {
   final bool isDark;
   const DashboardAnalyticsPanel({super.key, required this.isDark});

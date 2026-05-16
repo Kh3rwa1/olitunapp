@@ -49,7 +49,8 @@ class AlphabetSeeder {
           const LessonBlockModel(
             type: 'text',
             textOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
-            textLatin: 'Ol Chiki is the writing system for the Santali language',
+            textLatin:
+                'Ol Chiki is the writing system for the Santali language',
           ),
           const LessonBlockModel(
             type: 'text',

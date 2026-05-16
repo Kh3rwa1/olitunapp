@@ -100,11 +100,7 @@ class VocabSeeder {
         'titleLatin': 'Colors',
         'titleOlChiki': 'ᱨᱚᱝ',
         'blocks': const [
-          LessonBlockModel(
-            type: 'text',
-            textOlChiki: 'ᱟᱨᱟᱜ',
-            textLatin: 'Red',
-          ),
+          LessonBlockModel(type: 'text', textOlChiki: 'ᱟᱨᱟᱜ', textLatin: 'Red'),
           LessonBlockModel(
             type: 'text',
             textOlChiki: 'ᱥᱟᱥᱟᱝ',
@@ -132,21 +128,13 @@ class VocabSeeder {
         'titleLatin': 'Animals',
         'titleOlChiki': 'ᱡᱟᱱᱣᱟᱨ',
         'blocks': const [
-          LessonBlockModel(
-            type: 'text',
-            textOlChiki: 'ᱥᱮᱛᱟ',
-            textLatin: 'Dog',
-          ),
+          LessonBlockModel(type: 'text', textOlChiki: 'ᱥᱮᱛᱟ', textLatin: 'Dog'),
           LessonBlockModel(
             type: 'text',
             textOlChiki: 'ᱢᱮᱨᱳᱢ',
             textLatin: 'Cat',
           ),
-          LessonBlockModel(
-            type: 'text',
-            textOlChiki: 'ᱜᱟᱹᱭ',
-            textLatin: 'Cow',
-          ),
+          LessonBlockModel(type: 'text', textOlChiki: 'ᱜᱟᱹᱭ', textLatin: 'Cow'),
           LessonBlockModel(
             type: 'text',
             textOlChiki: 'ᱥᱩᱠᱨᱤ',

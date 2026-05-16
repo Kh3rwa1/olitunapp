@@ -3,12 +3,11 @@ import '../../models/content_models.dart' hide CategoryModel, LessonModel;
 import '../providers.dart';
 
 class QuizSeeder {
-  static Future<void> seed(
-    WidgetRef ref,
-    String actualAlphabetsId,
-  ) async {
+  static Future<void> seed(WidgetRef ref, String actualAlphabetsId) async {
     const quizId = 'quiz_basics_1';
-    await ref.read(quizzesProvider.notifier).addQuiz(
+    await ref
+        .read(quizzesProvider.notifier)
+        .addQuiz(
           QuizModel(
             id: quizId,
             categoryId: actualAlphabetsId,

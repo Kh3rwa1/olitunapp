@@ -25,10 +25,9 @@ class DashboardEmptyState extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               message,
-              style: AdminTokens.body(isDark).copyWith(
-                fontSize: 13,
-                color: AdminTokens.textTertiary(isDark),
-              ),
+              style: AdminTokens.body(
+                isDark,
+              ).copyWith(fontSize: 13, color: AdminTokens.textTertiary(isDark)),
             ),
           ],
         ),

@@ -303,7 +303,6 @@ class _QuestionEditorSheetState extends State<QuestionEditorSheet> {
       ),
     );
   }
-
 }
 
 class TypeChip extends StatelessWidget {

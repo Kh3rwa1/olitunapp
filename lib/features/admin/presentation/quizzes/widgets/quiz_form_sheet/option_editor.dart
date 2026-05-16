@@ -68,8 +68,9 @@ class McqOptionEditor extends StatelessWidget {
                       ),
                       isDense: true,
                     ),
-                    style:
-                        AdminTokens.bodyStrong(isDark).copyWith(fontSize: 13),
+                    style: AdminTokens.bodyStrong(
+                      isDark,
+                    ).copyWith(fontSize: 13),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -94,8 +95,9 @@ class McqOptionEditor extends StatelessWidget {
                       ),
                       isDense: true,
                     ),
-                    style:
-                        AdminTokens.bodyStrong(isDark).copyWith(fontSize: 13),
+                    style: AdminTokens.bodyStrong(
+                      isDark,
+                    ).copyWith(fontSize: 13),
                   ),
                 ),
               ],

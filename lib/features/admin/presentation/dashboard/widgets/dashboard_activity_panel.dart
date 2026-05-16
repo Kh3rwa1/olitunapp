@@ -7,7 +7,6 @@ import '../../../../../shared/providers/providers.dart';
 import 'activity_row.dart';
 import 'dashboard_empty_state.dart';
 
-
 class DashboardActivityPanel extends ConsumerWidget {
   final bool isDark;
   const DashboardActivityPanel({super.key, required this.isDark});

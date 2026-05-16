@@ -5,7 +5,6 @@ import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
@@ -20,12 +19,11 @@ void main() {
         promptLatin: 'Sound of this?',
         optionsOlChiki: ['a', 'e', 'i', 'o'],
         optionsLatin: ['a', 'e', 'i', 'o'],
-        correctIndex: 0,
       ),
     ],
   );
 
-  final mockStats = UserStatsEntity(
+  const mockStats = UserStatsEntity(
     practicedLetters: {},
     completedLessons: {},
     quizHistory: {},
@@ -45,7 +43,7 @@ void main() {
             (ref) => MockQuizzesNotifier(const AsyncValue.loading()),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
+            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
         ],
       ),
@@ -63,7 +61,7 @@ void main() {
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
+            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
         ],
       ),
@@ -86,7 +84,7 @@ void main() {
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
+            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
         ],
       ),

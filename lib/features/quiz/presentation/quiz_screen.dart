@@ -36,7 +36,7 @@ class QuizScreen extends ConsumerWidget {
           return const QuizEmptyView();
         }
 
-        final state = ref.watch(quizSessionNotifierProvider);
+        final state = ref.watch(quizSessionNotifierProvider(quizId));
         if (state.isQuizComplete) {
           return QuizCompleteScreen(
             score: state.score,
@@ -44,7 +44,7 @@ class QuizScreen extends ConsumerWidget {
           );
         }
 
-        final notifier = ref.read(quizSessionNotifierProvider.notifier);
+        final notifier = ref.read(quizSessionNotifierProvider(quizId).notifier);
         final question = quiz.questions[state.currentQuestion];
         final totalQs = quiz.questions.length;
 

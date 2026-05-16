@@ -38,9 +38,10 @@ class QuizSessionState {
   }
 }
 
-class QuizSessionNotifier extends AutoDisposeNotifier<QuizSessionState> {
+class QuizSessionNotifier
+    extends AutoDisposeFamilyNotifier<QuizSessionState, String> {
   @override
-  QuizSessionState build() {
+  QuizSessionState build(String quizId) {
     return const QuizSessionState();
   }
 
@@ -95,7 +96,7 @@ class QuizSessionNotifier extends AutoDisposeNotifier<QuizSessionState> {
   }
 }
 
-final quizSessionNotifierProvider =
-    NotifierProvider.autoDispose<QuizSessionNotifier, QuizSessionState>(
+final quizSessionNotifierProvider = NotifierProvider.autoDispose
+    .family<QuizSessionNotifier, QuizSessionState, String>(
       QuizSessionNotifier.new,
     );

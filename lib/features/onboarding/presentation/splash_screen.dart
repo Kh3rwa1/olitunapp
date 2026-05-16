@@ -52,7 +52,21 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
       }
 
-      // 2. Desktop/web wide screens skip onboarding entirely
+      // 2. Check authentication status
+      debugPrint('Splash: checking auth status...');
+      final authRepo = ref.read(authRepositoryProvider);
+      final isLoggedInResult = await authRepo.isLoggedIn();
+      final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
+      debugPrint('Splash: isLoggedIn = $isLoggedIn');
+
+      if (isLoggedIn) {
+        if (!mounted) return;
+        debugPrint('Splash: navigating to /');
+        context.go('/');
+        return;
+      }
+
+      // 3. Desktop/web wide screens skip onboarding entirely
       if (!mounted) return;
       final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
       debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
@@ -71,22 +85,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         ref.read(onboardingProvider.notifier).completeOnboarding();
       }
 
-      // Check authentication status
-      debugPrint('Splash: checking auth status...');
-      final authRepo = ref.read(authRepositoryProvider);
-      final isLoggedInResult = await authRepo.isLoggedIn();
-      final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
-      debugPrint('Splash: isLoggedIn = $isLoggedIn');
-
-      if (isLoggedIn) {
-        if (!mounted) return;
-        debugPrint('Splash: navigating to /');
-        context.go('/');
-      } else {
-        if (!mounted) return;
-        debugPrint('Splash: navigating to /welcome (not logged in)');
-        context.go('/welcome');
-      }
+      // If we got here and not logged in, go to welcome
+      if (!mounted) return;
+      debugPrint('Splash: navigating to /welcome (fallback)');
+      context.go('/welcome');
     }
   }
 

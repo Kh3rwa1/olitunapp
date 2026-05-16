@@ -45,7 +45,7 @@ class QuizSessionNotifier
     return const QuizSessionState();
   }
 
-  void selectAnswer(int index, QuizQuestion question) {
+  void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
     if (state.isAnswered) return;
 
     final isCorrect = index == question.correctIndex;
@@ -53,12 +53,8 @@ class QuizSessionNotifier
     if (isCorrect) {
       newScore++;
       HapticFeedback.mediumImpact();
-      Future.delayed(
-        const Duration(milliseconds: 90),
-        HapticFeedback.lightImpact,
-      );
     } else {
-      HapticFeedback.mediumImpact();
+      HapticFeedback.heavyImpact();
     }
 
     state = state.copyWith(
@@ -66,6 +62,14 @@ class QuizSessionNotifier
       isAnswered: true,
       score: newScore,
     );
+
+    // Auto-advance after 1.2 seconds so user can see the feedback
+    Future.delayed(const Duration(milliseconds: 1200), () {
+      // Only advance if we are still on the same question and not complete
+      if (state.isAnswered && !state.isQuizComplete) {
+        nextQuestion(quiz);
+      }
+    });
   }
 
   void nextQuestion(QuizModel quiz) {

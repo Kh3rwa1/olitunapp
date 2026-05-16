@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
-import '../../../core/motion/motion.dart';
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
 import 'widgets/quiz_complete_screen.dart';
@@ -113,43 +111,15 @@ class QuizScreen extends ConsumerWidget {
                             question: question,
                             isSelected: state.selectedAnswer == index,
                             isAnswered: state.isAnswered,
-                            onTap: () => notifier.selectAnswer(index, question),
+                            onTap: () =>
+                                notifier.selectAnswer(index, question, quiz),
                           ),
                         ),
                       ),
                     ],
                   ),
                 ),
-                if (state.isAnswered)
-                  PressableScale(
-                    onTap: () => notifier.nextQuestion(quiz),
-                    haptic: HapticIntensity.selection,
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      decoration: BoxDecoration(
-                        gradient: AppColors.heroGradient,
-                        borderRadius: BorderRadius.circular(16),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.primary.withValues(alpha: 0.4),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          AppLocalizations.of(context)!.continueButton,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ).animate().fadeIn(duration: 300.ms).slideY(begin: 0.2),
+                const SizedBox(height: 16),
               ],
             ),
           ),

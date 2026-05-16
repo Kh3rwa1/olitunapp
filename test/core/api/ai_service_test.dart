@@ -82,9 +82,15 @@ void main() {
       expect(result.translation, contains('too long'));
     });
 
-    test('throws StateError when URL is not configured', () async {
-      final service = AiService();
-      expect(() => service.translate('hello'), throwsA(isA<StateError>()));
+    test('returns error result on connection failure', () async {
+      // With the new default URL, it no longer throws StateError.
+      // Instead, it attempts a request and fails gracefully.
+      final mock = MockClient((_) async => throw Exception('Network down'));
+      final service = AiService(client: mock);
+      final result = await service.translate('hello');
+      expect(result, isNotNull);
+      expect(result!.isError, isTrue);
+      expect(result.translation, contains('Connection error'));
     });
   });
 

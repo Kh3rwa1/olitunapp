@@ -24,8 +24,16 @@ class QuizScreen extends ConsumerWidget {
     return quizAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, stack) =>
-          Scaffold(body: Center(child: Text('Error: $error'))),
+      error: (error, stack) => _QuizStateScaffold(
+        isDark: isDark,
+        icon: Icons.cloud_off_rounded,
+        title: 'Could not load quiz',
+        message: 'Check your connection and try again.',
+        primaryLabel: 'Try again',
+        primaryIcon: Icons.refresh_rounded,
+        onPrimary: () => ref.invalidate(quizFutureProvider(quizId)),
+        onClose: () => context.canPop() ? context.pop() : context.go('/'),
+      ),
       data: (quiz) {
         if (quiz == null) {
           return const QuizEmptyView(isNotFound: true);
@@ -56,7 +64,8 @@ class QuizScreen extends ConsumerWidget {
                 Icons.close_rounded,
                 color: isDark ? Colors.white : Colors.black,
               ),
-              onPressed: () => context.go('/'),
+              onPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
             ),
             title: Text(
               quiz.title ?? AppLocalizations.of(context)!.quiz,
@@ -125,6 +134,95 @@ class QuizScreen extends ConsumerWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class _QuizStateScaffold extends StatelessWidget {
+  const _QuizStateScaffold({
+    required this.isDark,
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.primaryLabel,
+    required this.primaryIcon,
+    required this.onPrimary,
+    required this.onClose,
+  });
+
+  final bool isDark;
+  final IconData icon;
+  final String title;
+  final String message;
+  final String primaryLabel;
+  final IconData primaryIcon;
+  final VoidCallback onPrimary;
+  final VoidCallback onClose;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: Icon(
+            Icons.close_rounded,
+            color: isDark ? Colors.white : Colors.black,
+          ),
+          onPressed: onClose,
+        ),
+      ),
+      body: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Icon(icon, size: 42, color: AppColors.primary),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: onPrimary,
+                icon: Icon(primaryIcon),
+                label: Text(primaryLabel),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }

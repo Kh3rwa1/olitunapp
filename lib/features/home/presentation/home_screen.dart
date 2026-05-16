@@ -296,54 +296,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              'Johar, $userName!',
-              style: TextStyle(
-                fontSize: 30,
-                fontWeight: FontWeight.w900,
-                letterSpacing: -1.0,
-                color: isDark ? Colors.white : Colors.black,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Johar, $userName!',
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
               ),
-            ),
-            const SizedBox(height: 6),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-              decoration: BoxDecoration(
-                color: AppColors.glass(context, opacity: 0.05),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: AppColors.glass(context)),
-              ),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(
-                    Icons.auto_awesome_rounded,
-                    size: 14,
-                    color: AppColors.primary,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Daily Progress: $dailyProgress%',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.w700,
-                      color: isDark ? Colors.white70 : Colors.black54,
+              const SizedBox(height: 6),
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
+                decoration: BoxDecoration(
+                  color: AppColors.glass(context, opacity: 0.05),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(color: AppColors.glass(context)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(
+                      Icons.auto_awesome_rounded,
+                      size: 14,
+                      color: AppColors.primary,
                     ),
-                  ),
-                ],
+                    const SizedBox(width: 8),
+                    Flexible(
+                      child: Text(
+                        'Daily Progress: $dailyProgress%',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         if (!isDesktop)
-          CircleIconButton(
-            icon: Icons.notifications_none_rounded,
-            onPressed: () {},
-            size: 52,
-            backgroundColor: AppColors.glass(context, opacity: 0.05),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: CircleIconButton(
+              icon: Icons.notifications_none_rounded,
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Notifications are coming soon.'),
+                    behavior: SnackBarBehavior.floating,
+                  ),
+                );
+              },
+              size: 52,
+              backgroundColor: AppColors.glass(context, opacity: 0.05),
+            ),
           ),
       ],
     );

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
 
@@ -51,10 +52,16 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ),
         title: categories.when(
           data: (data) {
-            final category = data.firstWhere(
-              (c) => c.id == widget.categoryId,
-              orElse: () => data.first,
-            );
+            final category = _findCategory(data, widget.categoryId);
+            if (category == null) {
+              return Text(
+                'Lessons',
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              );
+            }
             return Hero(
               tag: MotionTokens.heroTag('category', category.id),
               child: Material(
@@ -75,9 +82,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       ),
       body: lessons.when(
         data: (data) {
-          final category = categories.value?.firstWhere(
-            (c) => c.id == widget.categoryId,
-            orElse: () => categories.value!.first,
+          final category = _findCategory(
+            categories.value ?? const <CategoryEntity>[],
+            widget.categoryId,
           );
 
           return data.isEmpty
@@ -140,6 +147,15 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ),
       ),
     );
+  }
+
+  CategoryEntity? _findCategory(List<CategoryEntity> categories, String id) {
+    for (final category in categories) {
+      if (category.id == id) {
+        return category;
+      }
+    }
+    return null;
   }
 
   Widget _buildEmptyState(bool isDark, [dynamic category]) {

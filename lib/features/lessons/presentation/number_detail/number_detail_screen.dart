@@ -167,7 +167,11 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       ),
       error: (error, stack) => Scaffold(
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        body: Center(child: Text('Error: $error')),
+        body: _DetailLoadError(
+          title: 'Could not load numbers',
+          isDark: isDark,
+          onBack: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
       ),
       data: (allNumbers) {
         // Resolve the current lesson to scope numbers
@@ -652,6 +656,59 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DetailLoadError extends StatelessWidget {
+  const _DetailLoadError({
+    required this.title,
+    required this.isDark,
+    required this.onBack,
+  });
+
+  final String title;
+  final bool isDark;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 56,
+              color: isDark ? Colors.white38 : Colors.black26,
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
+            ),
+            const SizedBox(height: 22),
+            TextButton.icon(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text('Go back'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

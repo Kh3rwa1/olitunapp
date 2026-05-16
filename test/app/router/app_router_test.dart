@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/app/router/app_router.dart';
+import 'package:itun/features/main/presentation/main_shell/main_shell_screen.dart';
 
 void main() {
   group('adminHostRedirectFor', () {
@@ -50,6 +51,18 @@ void main() {
         adminAccessRedirectFor(isAdmin: false, path: '/lessons/cat_alphabet'),
         isNull,
       );
+    });
+  });
+
+  group('shellTabIndexForPath', () {
+    test('maps shell routes to their visible tabs', () {
+      expect(shellTabIndexForPath('/'), 0);
+      expect(shellTabIndexForPath('/profile'), 2);
+    });
+
+    test('ignores routes handled outside the shell tabs', () {
+      expect(shellTabIndexForPath('/lesson/abc'), isNull);
+      expect(shellTabIndexForPath('/admin'), isNull);
     });
   });
 }

@@ -87,6 +87,34 @@ void main() {
     expect(find.text('Lesson 1'), findsOneWidget);
     expect(find.text('This is the first letter of Ol Chiki.'), findsOneWidget);
   });
+
+  testWidgets(
+    'LessonDetailScreen shows a not found state for unknown lessons',
+    (tester) async {
+      await tester.pumpWidget(
+        createTestableWidget(
+          child: const LessonDetailScreen(lessonId: 'missing_lesson'),
+          overrides: [
+            lessonNotifierProvider.overrideWith(
+              (ref) => _MockLessonNotifier(
+                const AsyncValue.data([mockLesson]),
+                mockRepo,
+              ),
+            ),
+            lettersProvider.overrideWith((ref) => MockLettersNotifier()),
+            numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
+            wordsProvider.overrideWith((ref) => MockWordsNotifier()),
+            sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
+          ],
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      expect(find.text('Lesson not found'), findsOneWidget);
+      expect(find.text('Lesson 1'), findsNothing);
+    },
+  );
 }
 
 class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>>

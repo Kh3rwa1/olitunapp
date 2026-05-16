@@ -88,8 +88,14 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     return sentencesAsync.when(
       loading: () =>
           const Scaffold(body: Center(child: CircularProgressIndicator())),
-      error: (error, stack) =>
-          Scaffold(body: Center(child: Text('Error: $error'))),
+      error: (error, stack) => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: _DetailLoadError(
+          title: 'Could not load sentences',
+          isDark: isDark,
+          onBack: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
+      ),
       data: (allSentences) {
         final sentences = allSentences.where((s) => s.isActive).toList()
           ..sort((a, b) => a.order.compareTo(b.order));
@@ -505,6 +511,59 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _DetailLoadError extends StatelessWidget {
+  const _DetailLoadError({
+    required this.title,
+    required this.isDark,
+    required this.onBack,
+  });
+
+  final String title;
+  final bool isDark;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              Icons.cloud_off_rounded,
+              size: 56,
+              color: isDark ? Colors.white38 : Colors.black26,
+            ),
+            const SizedBox(height: 18),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(color: isDark ? Colors.white60 : Colors.black54),
+            ),
+            const SizedBox(height: 22),
+            TextButton.icon(
+              onPressed: onBack,
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: const Text('Go back'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

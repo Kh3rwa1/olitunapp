@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../home/presentation/home_screen.dart';
 import '../../../rhymes/presentation/rhyme_screen.dart';
@@ -12,6 +13,13 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../../shared/providers/providers.dart';
+
+@visibleForTesting
+int? shellTabIndexForPath(String path) {
+  if (path == '/') return 0;
+  if (path == '/profile') return 2;
+  return null;
+}
 
 class MainShellScreen extends ConsumerStatefulWidget {
   const MainShellScreen({super.key});
@@ -24,6 +32,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     with WidgetsBindingObserver {
   int _selectedIndex = 0;
   bool _isAppActive = true;
+  String? _syncedRoutePath;
 
   @override
   void initState() {
@@ -64,6 +73,16 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
       _selectedIndex = index;
     });
     ref.read(shellTabIndexProvider.notifier).state = index;
+
+    final nextPath = switch (index) {
+      0 => '/',
+      2 => '/profile',
+      _ => null,
+    };
+    if (nextPath != null && GoRouterState.of(context).uri.path != nextPath) {
+      _syncedRoutePath = nextPath;
+      context.go(nextPath);
+    }
   }
 
   @override
@@ -71,6 +90,20 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final isTablet = ResponsiveLayout.isTablet(context);
+    final routePath = GoRouterState.of(context).uri.path;
+
+    if (_syncedRoutePath != routePath) {
+      _syncedRoutePath = routePath;
+      final routeTab = shellTabIndexForPath(routePath);
+      if (routeTab != null && routeTab != _selectedIndex) {
+        _selectedIndex = routeTab;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            ref.read(shellTabIndexProvider.notifier).state = routeTab;
+          }
+        });
+      }
+    }
 
     // Listen for external tab change requests (e.g. from ProgressScreen "Settings" tile)
     ref.listen<int>(shellTabIndexProvider, (prev, next) {

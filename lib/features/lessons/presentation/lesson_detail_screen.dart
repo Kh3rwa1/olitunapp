@@ -36,31 +36,41 @@ class LessonDetailScreen extends ConsumerWidget {
       ),
       error: (e, s) => Scaffold(
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        body: Center(child: Text('Error: $e')),
+        body: _LessonStateMessage(
+          icon: Icons.cloud_off_rounded,
+          title: 'Could not load this lesson',
+          message: 'Check your connection and try again.',
+          isDark: isDark,
+          onBack: () => context.canPop() ? context.pop() : context.go('/'),
+        ),
       ),
       data: (data) {
         if (data.isEmpty) {
-          return Scaffold(
-            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-            appBar: AppBar(
-              backgroundColor: Colors.transparent,
-              elevation: 0,
-              leading: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_rounded,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-                onPressed: () => context.pop(),
-              ),
+          return _LessonStateScaffold(
+            isDark: isDark,
+            child: _LessonStateMessage(
+              icon: Icons.school_outlined,
+              title: 'No lessons available',
+              message: 'New learning content will appear here soon.',
+              isDark: isDark,
+              onBack: () => context.canPop() ? context.pop() : context.go('/'),
             ),
-            body: const Center(child: Text('No lessons available')),
           );
         }
 
-        final lesson = data.firstWhere(
-          (l) => l.id == lessonId,
-          orElse: () => data.first,
-        );
+        final lesson = _findLesson(data, lessonId);
+        if (lesson == null) {
+          return _LessonStateScaffold(
+            isDark: isDark,
+            child: _LessonStateMessage(
+              icon: Icons.search_off_rounded,
+              title: 'Lesson not found',
+              message: 'This lesson may have been moved or removed.',
+              isDark: isDark,
+              onBack: () => context.canPop() ? context.pop() : context.go('/'),
+            ),
+          );
+        }
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -170,6 +180,15 @@ class LessonDetailScreen extends ConsumerWidget {
     );
   }
 
+  LessonEntity? _findLesson(List<LessonEntity> lessons, String id) {
+    for (final lesson in lessons) {
+      if (lesson.id == id) {
+        return lesson;
+      }
+    }
+    return null;
+  }
+
   Widget _buildChip(IconData icon, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -250,6 +269,92 @@ class LessonDetailScreen extends ConsumerWidget {
       default:
         return VocabularyListContent(lessonId: lesson.id);
     }
+  }
+}
+
+class _LessonStateScaffold extends StatelessWidget {
+  const _LessonStateScaffold({required this.isDark, required this.child});
+
+  final bool isDark;
+  final Widget child;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      body: child,
+    );
+  }
+}
+
+class _LessonStateMessage extends StatelessWidget {
+  const _LessonStateMessage({
+    required this.icon,
+    required this.title,
+    required this.message,
+    required this.isDark,
+    required this.onBack,
+  });
+
+  final IconData icon;
+  final String title;
+  final String message;
+  final bool isDark;
+  final VoidCallback onBack;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.all(28),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 84,
+                height: 84,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(24),
+                ),
+                child: Icon(icon, size: 42, color: AppColors.primary),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                title,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                message,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 14,
+                  height: 1.45,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+              const SizedBox(height: 24),
+              FilledButton.icon(
+                onPressed: onBack,
+                icon: const Icon(Icons.arrow_back_rounded),
+                label: const Text('Go back'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 

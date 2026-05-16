@@ -35,7 +35,10 @@ class QuizListScreen extends ConsumerWidget {
             Expanded(
               child: quizzesAsync.when(
                 loading: () => const Center(child: CircularProgressIndicator()),
-                error: (e, s) => Center(child: Text('Error: $e')),
+                error: (e, s) => _QuizListErrorState(
+                  isDark: isDark,
+                  onRetry: () => ref.invalidate(quizzesProvider),
+                ),
                 data: (quizzes) {
                   final statsAsync = ref.watch(userStatsProvider);
                   final stats = statsAsync.value;
@@ -277,6 +280,70 @@ class QuizListScreen extends ConsumerWidget {
         ],
       ),
     ).animate().fadeIn(duration: 500.ms).scale(begin: const Offset(0.9, 0.9));
+  }
+}
+
+class _QuizListErrorState extends StatelessWidget {
+  const _QuizListErrorState({required this.isDark, required this.onRetry});
+
+  final bool isDark;
+  final VoidCallback onRetry;
+
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(28),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 84,
+              height: 84,
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.10),
+                borderRadius: BorderRadius.circular(24),
+              ),
+              child: const Icon(
+                Icons.quiz_rounded,
+                size: 42,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'Could not load quizzes',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Check your connection and try again.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                height: 1.45,
+                color: isDark ? Colors.white60 : Colors.black54,
+              ),
+            ),
+            const SizedBox(height: 24),
+            FilledButton.icon(
+              onPressed: onRetry,
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Retry'),
+              style: FilledButton.styleFrom(
+                backgroundColor: AppColors.primary,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -7,18 +7,19 @@ import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
+import '../providers/rhyme_audio_provider.dart';
+
 /// Premium featured rhyme card with glassmorphism and audio visualizer.
-class FeaturedRhymeCard extends StatefulWidget {
+class FeaturedRhymeCard extends ConsumerStatefulWidget {
   final RhymeModel rhyme;
   const FeaturedRhymeCard({super.key, required this.rhyme});
 
   @override
-  State<FeaturedRhymeCard> createState() => _FeaturedRhymeCardState();
+  ConsumerState<FeaturedRhymeCard> createState() => _FeaturedRhymeCardState();
 }
 
-class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
+class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
     with SingleTickerProviderStateMixin {
-  bool _isPlaying = false;
   late final AnimationController _playPulseController;
 
   @override
@@ -38,6 +39,9 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
 
   @override
   Widget build(BuildContext context) {
+    final audioState = ref.watch(rhymeAudioProvider);
+    final isPlaying =
+        audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
     const color = AppColors.primary;
 
     return GlassCard(
@@ -59,7 +63,7 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
                 left: 0,
                 right: 0,
                 child: EnchantedVisualizer(
-                  isPlaying: _isPlaying,
+                  isPlaying: isPlaying,
                   color: Colors.white.withValues(alpha: 0.3),
                 ),
               ),
@@ -108,7 +112,7 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
                               .scale(begin: const Offset(0.8, 0.8)),
                         ],
                         const Spacer(),
-                        PlayingIndicator(isPlaying: _isPlaying),
+                        PlayingIndicator(isPlaying: isPlaying),
                       ],
                     ),
                     const SizedBox(height: 16),
@@ -143,7 +147,12 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
                           onPressed: () {
                             HapticFeedback.mediumImpact();
                             _playPulseController.forward(from: 0);
-                            setState(() => _isPlaying = !_isPlaying);
+                            ref
+                                .read(rhymeAudioProvider.notifier)
+                                .togglePlay(
+                                  widget.rhyme.id,
+                                  widget.rhyme.audioUrl,
+                                );
                           },
                           icon: AnimatedSwitcher(
                             duration: const Duration(milliseconds: 300),
@@ -159,10 +168,10 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
                                   ),
                                 ),
                             child: Icon(
-                              _isPlaying
+                              isPlaying
                                   ? Icons.stop_rounded
                                   : Icons.play_arrow_rounded,
-                              key: ValueKey(_isPlaying),
+                              key: ValueKey(isPlaying),
                               color: color,
                             ),
                           ),
@@ -171,8 +180,8 @@ class _FeaturedRhymeCardState extends State<FeaturedRhymeCard>
                             transitionBuilder: (child, anim) =>
                                 FadeTransition(opacity: anim, child: child),
                             child: Text(
-                              _isPlaying ? 'PAUSE' : 'LISTEN NOW',
-                              key: ValueKey(_isPlaying),
+                              isPlaying ? 'PAUSE' : 'LISTEN NOW',
+                              key: ValueKey(isPlaying),
                             ),
                           ),
                           style: ElevatedButton.styleFrom(

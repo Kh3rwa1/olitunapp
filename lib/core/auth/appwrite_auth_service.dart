@@ -162,10 +162,14 @@ class AppwriteAuthService {
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
     try {
-      await _restoreWebSession();
-      await _account.getSession(sessionId: 'current');
+      if (kIsWeb) {
+        await _restoreWebSession();
+      }
+      final session = await _account.getSession(sessionId: 'current');
+      debugPrint('Appwrite: Session active for user ${session.userId} ✅');
       return true;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('Appwrite: No active session found: $e');
       return false;
     }
   }

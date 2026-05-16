@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/error/exceptions.dart';
@@ -110,8 +111,11 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<bool> isLoggedIn() async {
     return authService.isLoggedIn().timeout(
-      const Duration(seconds: 3),
-      onTimeout: () => false,
+      const Duration(seconds: 10),
+      onTimeout: () {
+        debugPrint('Appwrite: isLoggedIn check timed out');
+        return false;
+      },
     );
   }
 

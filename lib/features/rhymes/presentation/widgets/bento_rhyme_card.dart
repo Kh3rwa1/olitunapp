@@ -8,19 +8,20 @@ import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
+import '../providers/rhyme_audio_provider.dart';
+
 /// Bento-grid rhyme card with play toggle and mini visualizer.
-class BentoRhymeCard extends StatefulWidget {
+class BentoRhymeCard extends ConsumerStatefulWidget {
   final RhymeModel rhyme;
   final int index;
   const BentoRhymeCard({super.key, required this.rhyme, required this.index});
 
   @override
-  State<BentoRhymeCard> createState() => _BentoRhymeCardState();
+  ConsumerState<BentoRhymeCard> createState() => _BentoRhymeCardState();
 }
 
-class _BentoRhymeCardState extends State<BentoRhymeCard>
+class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
     with SingleTickerProviderStateMixin {
-  bool _isPlaying = false;
   late final AnimationController _iconBounceController;
 
   @override
@@ -49,6 +50,9 @@ class _BentoRhymeCardState extends State<BentoRhymeCard>
 
   @override
   Widget build(BuildContext context) {
+    final audioState = ref.watch(rhymeAudioProvider);
+    final isPlaying =
+        audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
     final color = _palette[widget.index % _palette.length];
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -68,7 +72,7 @@ class _BentoRhymeCardState extends State<BentoRhymeCard>
             child: SizedBox(
               height: 60,
               child: EnchantedVisualizer(
-                isPlaying: _isPlaying,
+                isPlaying: isPlaying,
                 color: color.withValues(alpha: 0.2),
               ),
             ),
@@ -104,7 +108,9 @@ class _BentoRhymeCardState extends State<BentoRhymeCard>
                       onTap: () {
                         HapticFeedback.lightImpact();
                         _iconBounceController.forward(from: 0);
-                        setState(() => _isPlaying = !_isPlaying);
+                        ref
+                            .read(rhymeAudioProvider.notifier)
+                            .togglePlay(widget.rhyme.id, widget.rhyme.audioUrl);
                       },
                       child: AnimatedBuilder(
                         animation: _iconBounceController,
@@ -123,10 +129,10 @@ class _BentoRhymeCardState extends State<BentoRhymeCard>
                           transitionBuilder: (child, anim) =>
                               ScaleTransition(scale: anim, child: child),
                           child: Icon(
-                            _isPlaying
+                            isPlaying
                                 ? Icons.pause_circle_filled_rounded
                                 : Icons.play_circle_fill_rounded,
-                            key: ValueKey(_isPlaying),
+                            key: ValueKey(isPlaying),
                             color: color,
                             size: 28,
                           ),

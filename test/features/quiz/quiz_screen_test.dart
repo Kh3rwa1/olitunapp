@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
@@ -18,8 +20,20 @@ void main() {
         promptLatin: 'Sound of this?',
         optionsOlChiki: ['a', 'e', 'i', 'o'],
         optionsLatin: ['a', 'e', 'i', 'o'],
+        correctIndex: 0,
       ),
     ],
+  );
+
+  final mockStats = UserStatsEntity(
+    practicedLetters: {},
+    completedLessons: {},
+    quizHistory: {},
+    categoryMastery: {},
+    totalLearningMinutes: 0,
+    lastActiveDate: '',
+    currentStreak: 0,
+    totalStars: 0,
   );
 
   testWidgets('QuizScreen renders loading state initially', (tester) async {
@@ -29,6 +43,9 @@ void main() {
         overrides: [
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(const AsyncValue.loading()),
+          ),
+          userStatsProvider.overrideWith(
+            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
           ),
         ],
       ),
@@ -44,6 +61,9 @@ void main() {
         overrides: [
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+          ),
+          userStatsProvider.overrideWith(
+            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
           ),
         ],
       ),
@@ -65,6 +85,9 @@ void main() {
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
+          userStatsProvider.overrideWith(
+            (ref) => MockUserStatsNotifier(AsyncValue.data(mockStats)),
+          ),
         ],
       ),
     );
@@ -73,17 +96,18 @@ void main() {
 
     // Tap first option ('a' which is correct)
     await tester.tap(find.text('a'));
+
+    // Check if correct indicator appears
+    await tester.pump();
+    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+
+    // Wait for the auto-advance delay (1.2 seconds)
+    await tester.pump(const Duration(milliseconds: 1500));
     await tester.pumpAndSettle();
 
-    // Check if "Continue" button appeared (it usually does after an answer is selected)
-    // Looking at QuizScreen logic... _selectedAnswer != null
-    expect(
-      find.byIcon(Icons.check_circle_rounded),
-      findsWidgets,
-    ); // Option selection indicators
-
-    // Wait for any remaining timers (e.g. HapticFeedback delays or flutter_animate)
-    await tester.pump(const Duration(milliseconds: 500));
+    // Now it should be on the completion screen
+    expect(find.text('100%'), findsOneWidget);
+    expect(find.byIcon(Icons.star_rounded), findsOneWidget);
   });
 }
 
@@ -91,4 +115,15 @@ class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
     with Mock
     implements QuizzesNotifier {
   MockQuizzesNotifier(super.state);
+}
+
+class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
+    with Mock
+    implements UserStatsNotifier {
+  MockUserStatsNotifier(super.state);
+
+  @override
+  Future<void> saveQuizResult(QuizResultEntity result) async {}
+  @override
+  Future<void> addStars(int count) async {}
 }

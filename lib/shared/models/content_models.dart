@@ -1,1 +1,11 @@
-export 'content_models/content_models.dart';
+export 'content/category_model.dart';
+export 'content/banner_model.dart';
+export 'content/letter_model.dart';
+export 'content/number_model.dart';
+export 'content/word_model.dart';
+export 'content/lesson_model.dart';
+export 'content/quiz_model.dart';
+export 'content/sticker_model.dart';
+export 'content/sentence_model.dart';
+export 'content/progress_model.dart';
+export 'content/media_model.dart';

@@ -134,7 +134,14 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         await _saveQuizzes(_defaultQuizzes);
       }
     } catch (e, stack) {
-      debugPrint('Failed to load quizzes from Appwrite: $e');
+      if (e is AppwriteException && e.code == 404) {
+        debugPrint(
+          'Quizzes collection ("$_collectionId") not found in Appwrite. '
+          'Default quizzes will be used. Please run the setup script if this is a new project.',
+        );
+      } else {
+        debugPrint('Failed to load quizzes from Appwrite: $e');
+      }
       if (!(state.value?.isNotEmpty ?? false)) {
         state = AsyncValue.error(e, stack);
       }

@@ -13,14 +13,13 @@ import 'l10n/generated/app_localizations.dart';
 
 Future<void> main() async {
   try {
-    WidgetsFlutterBinding.ensureInitialized();
-
-    // Fail fast if Appwrite config is missing; release builds must not silently
-    // point at the wrong backend or an empty project.
-    AppwriteConfig.validate();
-
     await runZonedGuarded(
       () async {
+        WidgetsFlutterBinding.ensureInitialized();
+
+        // Fail fast if Appwrite config is missing; release builds must not silently
+        // point at the wrong backend or an empty project.
+        AppwriteConfig.validate();
         FlutterError.onError = (details) {
           FlutterError.presentError(details);
           CrashReporting.recordFlutterError(details);

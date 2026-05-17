@@ -114,6 +114,45 @@ void main() {
     });
   });
 
+  group('deleteAccount', () {
+    test('returns NetworkFailure when offline', () async {
+      when(() => network.isConnected).thenAnswer((_) async => false);
+
+      final result = await repo.deleteAccount();
+
+      result.match(
+        (f) => expect(f, isA<NetworkFailure>()),
+        (_) => fail('expected Left'),
+      );
+      verifyNever(() => remote.deleteAccount());
+    });
+
+    test('returns Right(null) on success', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(() => remote.deleteAccount()).thenAnswer((_) async {});
+
+      final result = await repo.deleteAccount();
+
+      expect(result.isRight(), true);
+      verify(() => remote.deleteAccount()).called(1);
+    });
+
+    test('maps ServerException to ServerFailure', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(
+        () => remote.deleteAccount(),
+      ).thenThrow(ServerException(message: 'delete failed', code: 401));
+
+      final result = await repo.deleteAccount();
+
+      result.match((f) {
+        expect(f, isA<ServerFailure>());
+        expect(f.message, 'delete failed');
+        expect(f.code, 401);
+      }, (_) => fail('expected Left'));
+    });
+  });
+
   group('getCurrentUser', () {
     test('returns Right(null) when remote returns null (no session)', () async {
       when(() => remote.getCurrentUser()).thenAnswer((_) async => null);

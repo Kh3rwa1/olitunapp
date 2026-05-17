@@ -186,6 +186,12 @@ class AppwriteAuthService {
     await prefs.remove(_webSessionSecretKey);
   }
 
+  Future<void> _clearLocalSessionState() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasLocalSessionKey, false);
+    await _clearWebSession();
+  }
+
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // ─── Session Management ───
@@ -259,20 +265,26 @@ class AppwriteAuthService {
   /// Sign out — delete current session
   Future<void> signOut() async {
     try {
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setBool(_hasLocalSessionKey, false);
+      await _restoreWebSession();
       await _account.deleteSession(sessionId: 'current');
     } catch (e) {
       debugPrint('Appwrite: Sign out error: $e');
     } finally {
-      await _clearWebSession();
+      await _clearLocalSessionState();
     }
   }
 
-  /// Delete user account permanently
+  /// Block the current account and clear all local session state.
+  ///
+  /// Appwrite's client Account API permanently blocks the current user via
+  /// updateStatus. Full user-record deletion requires the server-side Users API.
   Future<void> deleteAccount() async {
-    await _account.updateStatus();
-    await signOut();
+    try {
+      await _restoreWebSession();
+      await _account.updateStatus();
+    } finally {
+      await _clearLocalSessionState();
+    }
   }
 }
 

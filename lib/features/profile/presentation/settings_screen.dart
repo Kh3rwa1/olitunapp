@@ -690,6 +690,12 @@ class SettingsScreen extends ConsumerWidget {
                   (_) async {
                     // Clear all local data
                     await ref.read(sharedPreferencesProvider).clear();
+                    ref.invalidate(isAuthenticatedProvider);
+                    ref.invalidate(userStatsProvider);
+                    ref.invalidate(userNameProvider);
+                    ref.invalidate(userAvatarEmojiProvider);
+                    ref.invalidate(userAvatarColorIndexProvider);
+                    ref.invalidate(memberSinceProvider);
 
                     // Navigate to welcome screen
                     if (context.mounted) {

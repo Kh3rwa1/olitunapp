@@ -3,10 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:share_plus/share_plus.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
+import '../domain/entities/user_stats_entity.dart';
 import 'settings_screen.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
@@ -135,7 +137,13 @@ class ProgressScreen extends ConsumerWidget {
 
                         _buildSectionHeader('ACCOUNT', isDark),
                         const SizedBox(height: 12),
-                        _buildActionTiles(context, ref, isDark),
+                        _buildActionTiles(
+                          context,
+                          ref,
+                          isDark,
+                          stats,
+                          userName,
+                        ),
                         SizedBox(height: isDesktop ? 32 : 120),
                       ],
                     ),
@@ -163,7 +171,13 @@ class ProgressScreen extends ConsumerWidget {
     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05, end: 0);
   }
 
-  Widget _buildActionTiles(BuildContext context, WidgetRef ref, bool isDark) {
+  Widget _buildActionTiles(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDark,
+    UserStatsEntity stats,
+    String userName,
+  ) {
     return GridView.count(
       crossAxisCount: 3,
       mainAxisSpacing: 12,
@@ -192,18 +206,7 @@ class ProgressScreen extends ConsumerWidget {
             label: 'Share',
             color: AppColors.primary,
             isDark: isDark,
-            onTap: () {
-              HapticFeedback.lightImpact();
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: const Text('Coming soon!'),
-                  behavior: SnackBarBehavior.floating,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              );
-            },
+            onTap: () => _shareProgress(context, userName, stats),
           ),
         ),
         AnimatedBentoChild(
@@ -222,6 +225,50 @@ class ProgressScreen extends ConsumerWidget {
         ),
       ],
     );
+  }
+
+  Future<void> _shareProgress(
+    BuildContext context,
+    String userName,
+    UserStatsEntity stats,
+  ) async {
+    final renderObject = context.findRenderObject();
+    final origin = renderObject is RenderBox
+        ? renderObject.localToGlobal(Offset.zero) & renderObject.size
+        : null;
+    final progress = (stats.overallProgress * 100).round();
+    final accuracy = (stats.quizAccuracy * 100).round();
+    final message = [
+      '$userName is learning Ol Chiki script on Olitun.',
+      'Level: ${stats.learnerLevel}',
+      'Overall progress: $progress%',
+      'Streak: ${stats.currentStreak} days',
+      'Stars earned: ${stats.totalStars}',
+      'Lessons completed: ${stats.lessonsCompletedCount}',
+      'Quiz accuracy: $accuracy%',
+    ].join('\n');
+
+    try {
+      await SharePlus.instance.share(
+        ShareParams(
+          title: 'Olitun progress',
+          subject: 'My Olitun learning progress',
+          text: message,
+          sharePositionOrigin: origin,
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: const Text('Could not open share sheet'),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
+    }
   }
 
   void _showEditNameDialog(

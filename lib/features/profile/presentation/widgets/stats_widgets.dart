@@ -285,10 +285,11 @@ class SkillProgressCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 8),
+      constraints: const BoxConstraints(minHeight: 124),
+      padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 12),
       decoration: BoxDecoration(
         color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(18),
         border: Border.all(
           color: isDark
               ? Colors.white.withValues(alpha: 0.06)
@@ -305,10 +306,11 @@ class SkillProgressCard extends StatelessWidget {
               ],
       ),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           SizedBox(
-            width: 48,
-            height: 48,
+            width: 52,
+            height: 52,
             child: TweenAnimationBuilder<double>(
               tween: Tween(begin: 0, end: progress),
               duration: Duration(milliseconds: 1000 + delay),
@@ -339,11 +341,13 @@ class SkillProgressCard extends StatelessWidget {
           Text(
             label,
             style: GoogleFonts.inter(
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: FontWeight.w700,
               color: isDark ? Colors.white38 : Colors.black38,
             ),
             textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -378,23 +382,36 @@ class SkillsGrid extends StatelessWidget {
       SkillData('Bakhed', stats.rhymesProgress, AppColors.primary),
     ];
 
-    return Row(
-      children: skills.asMap().entries.map((entry) {
-        final i = entry.key;
-        final skill = entry.value;
-        return Expanded(
-          child: Padding(
-            padding: EdgeInsets.only(right: i < skills.length - 1 ? 10 : 0),
-            child: SkillProgressCard(
-              label: skill.label,
-              progress: skill.progress,
-              color: skill.color,
-              isDark: isDark,
-              delay: i * 100,
-            ),
-          ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final columns = width >= 760
+            ? 5
+            : width >= 520
+            ? 3
+            : 2;
+        const gap = 12.0;
+        final itemWidth = (width - gap * (columns - 1)) / columns;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: skills.asMap().entries.map((entry) {
+            final i = entry.key;
+            final skill = entry.value;
+            return SizedBox(
+              width: itemWidth,
+              child: SkillProgressCard(
+                label: skill.label,
+                progress: skill.progress,
+                color: skill.color,
+                isDark: isDark,
+                delay: i * 100,
+              ),
+            );
+          }).toList(),
         );
-      }).toList(),
+      },
     );
   }
 }

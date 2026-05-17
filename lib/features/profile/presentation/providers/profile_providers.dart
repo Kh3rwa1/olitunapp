@@ -285,10 +285,11 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final ref = _ref;
     if (ref == null) return;
 
+    ref.read(userNameProvider.notifier).state = name;
     final result = await _repository.updateDisplayName(name);
     result.fold(
-      (failure) => null,
-      (_) => ref.read(userNameProvider.notifier).state = name,
+      (failure) => debugPrint('Profile: Failed to save display name: $failure'),
+      (_) {},
     );
   }
 

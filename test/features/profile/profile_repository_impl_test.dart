@@ -121,19 +121,30 @@ void main() {
   );
 
   test(
-    'updateDisplayName surfaces Left when auth.isLoggedIn returns Left',
+    'updateDisplayName still writes local name when auth status check fails',
     () async {
       when(
         () => auth.isLoggedIn(),
       ).thenAnswer((_) async => const Left(NetworkFailure()));
 
       final res = await repo.updateDisplayName('Kanhu');
-      expect(res.isLeft(), isTrue);
-      res.match(
-        (failure) => expect(failure, isA<NetworkFailure>()),
-        (_) => fail('should be left'),
-      );
+      expect(res.isRight(), isTrue);
       expect(prefs.getString('user_name'), 'Kanhu');
+    },
+  );
+
+  test(
+    'updateDisplayName keeps local name when cloud display name sync fails',
+    () async {
+      when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
+      when(
+        () => auth.updateDisplayName('Baha'),
+      ).thenAnswer((_) async => const Left(NetworkFailure()));
+
+      final res = await repo.updateDisplayName('Baha');
+      expect(res.isRight(), isTrue);
+      expect(prefs.getString('user_name'), 'Baha');
+      verify(() => auth.updateDisplayName('Baha')).called(1);
     },
   );
 }

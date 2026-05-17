@@ -63,6 +63,7 @@ dependencies:
 
   # Crash & error reporting
   sentry_flutter: ^8.10.0
+  share_plus: ^12.0.2
 
 dev_dependencies:
   flutter_test:

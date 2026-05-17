@@ -6,6 +6,24 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/appwrite_config.dart';
 
+@visibleForTesting
+String googleOAuthUserMessage(String message) {
+  final lowerMessage = message.toLowerCase();
+  if (lowerMessage.contains('key and secret') ||
+      lowerMessage.contains('missing session secret') ||
+      lowerMessage.contains('missing session key')) {
+    return 'Google sign-in is not configured in Appwrite yet. Add the Google OAuth Client ID and Client Secret, then try again.';
+  }
+
+  if (lowerMessage.contains('provider') &&
+      (lowerMessage.contains('disabled') ||
+          lowerMessage.contains('not enabled'))) {
+    return 'Google sign-in is disabled in Appwrite. Enable the Google OAuth provider, then try again.';
+  }
+
+  return message;
+}
+
 class AppwriteAuthService {
   static const String _webSessionSecretKey = 'olitun_appwrite_session_secret';
 
@@ -71,19 +89,27 @@ class AppwriteAuthService {
   Future<void> signInWithGoogle() async {
     debugPrint('Appwrite: Starting Google OAuth');
 
-    if (kIsWeb) {
-      final origin = Uri.base.origin;
-      final result = await _account.createOAuth2Session(
-        provider: OAuthProvider.google,
-        success: '$origin/splash',
-        failure: '$origin/welcome',
-        scopes: ['email', 'profile'],
-      );
-      await _completeWebOAuth(result);
-    } else {
-      await _account.createOAuth2Session(
-        provider: OAuthProvider.google,
-        scopes: ['email', 'profile'],
+    try {
+      if (kIsWeb) {
+        final origin = Uri.base.origin;
+        final result = await _account.createOAuth2Session(
+          provider: OAuthProvider.google,
+          success: '$origin/splash',
+          failure: '$origin/welcome',
+          scopes: ['email', 'profile'],
+        );
+        await _completeWebOAuth(result);
+      } else {
+        await _account.createOAuth2Session(
+          provider: OAuthProvider.google,
+          scopes: ['email', 'profile'],
+        );
+      }
+    } on AppwriteException catch (e) {
+      throw AppwriteException(
+        googleOAuthUserMessage(e.message ?? e.toString()),
+        e.code,
+        e.type,
       );
     }
   }

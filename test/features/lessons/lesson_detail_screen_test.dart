@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/lesson_detail_screen.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
+import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -20,6 +23,26 @@ class _MockLessonNotifier extends LessonNotifier {
 
   @override
   Future<void> loadLessons() async {}
+}
+
+class _MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
+    with Mock
+    implements UserStatsNotifier {
+  _MockUserStatsNotifier()
+    : super(
+        const AsyncValue.data(
+          UserStatsEntity(
+            practicedLetters: {},
+            completedLessons: {},
+            quizHistory: {},
+            categoryMastery: {},
+            totalLearningMinutes: 0,
+            lastActiveDate: '',
+            currentStreak: 0,
+            totalStars: 0,
+          ),
+        ),
+      );
 }
 
 void main() {
@@ -45,10 +68,15 @@ void main() {
   );
 
   testWidgets('LessonDetailScreen shows loading state', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
     await tester.pumpWidget(
       createTestableWidget(
         child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(const AsyncValue.loading(), mockRepo),
           ),
@@ -64,10 +92,15 @@ void main() {
   });
 
   testWidgets('LessonDetailScreen shows lesson content', (tester) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+
     await tester.pumpWidget(
       createTestableWidget(
         child: const LessonDetailScreen(lessonId: 'test_lesson_1'),
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(
               const AsyncValue.data([mockLesson]),
@@ -91,10 +124,15 @@ void main() {
   testWidgets(
     'LessonDetailScreen shows a not found state for unknown lessons',
     (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
       await tester.pumpWidget(
         createTestableWidget(
           child: const LessonDetailScreen(lessonId: 'missing_lesson'),
           overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
             lessonNotifierProvider.overrideWith(
               (ref) => _MockLessonNotifier(
                 const AsyncValue.data([mockLesson]),

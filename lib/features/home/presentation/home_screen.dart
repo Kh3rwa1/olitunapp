@@ -15,6 +15,31 @@ import 'package:go_router/go_router.dart';
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
 
+@visibleForTesting
+LessonEntity? continueLessonFor({
+  required List<LessonEntity> lessons,
+  required Set<String> completedLessonIds,
+  String? lastOpenedLessonId,
+}) {
+  final normalizedLastOpened = lastOpenedLessonId?.trim();
+  if (normalizedLastOpened != null && normalizedLastOpened.isNotEmpty) {
+    for (final lesson in lessons) {
+      if (lesson.id == normalizedLastOpened &&
+          !completedLessonIds.contains(lesson.id)) {
+        return lesson;
+      }
+    }
+  }
+
+  for (final lesson in lessons) {
+    if (!completedLessonIds.contains(lesson.id)) {
+      return lesson;
+    }
+  }
+
+  return null;
+}
+
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key});
 
@@ -57,13 +82,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final completedIds =
         ref.watch(userStatsProvider).value?.completedLessons ?? {};
     final allLessons = lessonsAsync.value ?? [];
-    LessonEntity? nextLesson;
-    for (final l in allLessons) {
-      if (!completedIds.contains(l.id)) {
-        nextLesson = l;
-        break;
-      }
-    }
+    final nextLesson = continueLessonFor(
+      lessons: allLessons,
+      completedLessonIds: completedIds,
+      lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
+    );
     final heroTitle = nextLesson?.titleLatin ?? 'Start Learning';
     final quizCount = quizzesAsync.value?.length ?? 0;
 

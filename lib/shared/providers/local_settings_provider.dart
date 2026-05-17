@@ -18,6 +18,13 @@ final appLanguageProvider = StateProvider<String>((ref) {
   return ref.read(sharedPreferencesProvider).getString('app_language') ?? 'en';
 });
 
+final lastOpenedLessonIdProvider = StateProvider<String?>((ref) {
+  final value = ref
+      .read(sharedPreferencesProvider)
+      .getString('last_opened_lesson_id');
+  return value == null || value.isEmpty ? null : value;
+});
+
 final soundEnabledProvider = StateProvider<bool>((ref) {
   return ref.read(sharedPreferencesProvider).getBool('sound_enabled') ?? true;
 });
@@ -35,6 +42,17 @@ void updateScriptMode(WidgetRef ref, String mode) {
 void updateAppLanguage(WidgetRef ref, String languageCode) {
   ref.read(sharedPreferencesProvider).setString('app_language', languageCode);
   ref.read(appLanguageProvider.notifier).state = languageCode;
+}
+
+void updateLastOpenedLesson(WidgetRef ref, String lessonId) {
+  final normalized = lessonId.trim();
+  if (normalized.isEmpty) return;
+  if (ref.read(lastOpenedLessonIdProvider) == normalized) return;
+
+  ref
+      .read(sharedPreferencesProvider)
+      .setString('last_opened_lesson_id', normalized);
+  ref.read(lastOpenedLessonIdProvider.notifier).state = normalized;
 }
 
 void toggleSound(WidgetRef ref) {

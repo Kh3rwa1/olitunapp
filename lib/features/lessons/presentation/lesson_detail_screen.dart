@@ -72,6 +72,14 @@ class LessonDetailScreen extends ConsumerWidget {
           );
         }
 
+        final completedLessons =
+            ref.watch(userStatsProvider).value?.completedLessons ?? {};
+        if (!completedLessons.contains(lesson.id)) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            updateLastOpenedLesson(ref, lesson.id);
+          });
+        }
+
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
           body: CustomScrollView(

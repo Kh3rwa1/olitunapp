@@ -110,6 +110,7 @@ void main() {
           lessonNotifierProvider.overrideWith((ref) => MockLessonNotifier()),
           quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
           userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
+          lastOpenedLessonIdProvider.overrideWith((ref) => null),
           bannersProvider.overrideWith((ref) => MockBannersNotifier()),
 
           wordsProvider.overrideWith((ref) => MockWordsNotifier()),
@@ -124,5 +125,48 @@ void main() {
     await tester.pump(const Duration(seconds: 5));
     expect(find.text('Johar, Test User!'), findsOneWidget);
     expect(find.text('Daily Progress: 0%'), findsOneWidget);
+  });
+
+  group('continueLessonFor', () {
+    const lessons = [
+      LessonEntity(
+        id: 'lesson_numbers',
+        categoryId: 'numbers',
+        titleOlChiki: '᱑',
+        titleLatin: 'Numbers',
+      ),
+      LessonEntity(
+        id: 'lesson_letters',
+        categoryId: 'alphabets',
+        titleOlChiki: 'ᱚ',
+        titleLatin: 'Letters',
+      ),
+      LessonEntity(
+        id: 'lesson_words',
+        categoryId: 'words',
+        titleOlChiki: 'ᱟ',
+        titleLatin: 'Words',
+      ),
+    ];
+
+    test('prefers the last opened unfinished lesson', () {
+      final result = continueLessonFor(
+        lessons: lessons,
+        completedLessonIds: const {},
+        lastOpenedLessonId: 'lesson_words',
+      );
+
+      expect(result?.id, 'lesson_words');
+    });
+
+    test('falls back when the last opened lesson is completed', () {
+      final result = continueLessonFor(
+        lessons: lessons,
+        completedLessonIds: const {'lesson_words'},
+        lastOpenedLessonId: 'lesson_words',
+      );
+
+      expect(result?.id, 'lesson_numbers');
+    });
   });
 }

@@ -45,4 +45,31 @@ void main() {
       expect(prefs.getString('app_language'), 'sat');
     });
   });
+
+  group('last opened lesson setting', () {
+    testWidgets('persists and publishes the last opened lesson id', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      late WidgetRef capturedRef;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: Consumer(
+            builder: (context, ref, child) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      updateLastOpenedLesson(capturedRef, ' lesson_letters ');
+
+      expect(capturedRef.read(lastOpenedLessonIdProvider), 'lesson_letters');
+      expect(prefs.getString('last_opened_lesson_id'), 'lesson_letters');
+    });
+  });
 }

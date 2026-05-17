@@ -111,7 +111,12 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                         _iconBounceController.forward(from: 0);
                         ref
                             .read(rhymeAudioProvider.notifier)
-                            .togglePlay(widget.rhyme.id, widget.rhyme.audioUrl);
+                            .togglePlay(
+                              widget.rhyme.id,
+                              widget.rhyme.audioUrl,
+                              title: widget.rhyme.titleLatin,
+                              artworkUrl: widget.rhyme.thumbnailUrl,
+                            );
                       },
                       child: AnimatedBuilder(
                         animation: _iconBounceController,

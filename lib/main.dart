@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'app/router/app_router.dart';
 import 'core/config/appwrite_config.dart';
 import 'core/observability/crash_reporting.dart';
@@ -54,6 +55,14 @@ Future<void> main() async {
         ]);
 
         await CrashReporting.init();
+
+        await JustAudioBackground.init(
+          androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
+          androidNotificationChannelName: 'Bakhed playback',
+          androidNotificationChannelDescription:
+              'Controls for long Bakhed audio playback',
+          androidNotificationOngoing: true,
+        );
 
         runApp(
           ProviderScope(

@@ -153,6 +153,8 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                 .togglePlay(
                                   widget.rhyme.id,
                                   widget.rhyme.audioUrl,
+                                  title: widget.rhyme.titleLatin,
+                                  artworkUrl: widget.rhyme.thumbnailUrl,
                                 );
                           },
                           icon: AnimatedSwitcher(
@@ -170,7 +172,7 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                 ),
                             child: Icon(
                               isPlaying
-                                  ? Icons.stop_rounded
+                                  ? Icons.pause_rounded
                                   : Icons.play_arrow_rounded,
                               key: ValueKey(isPlaying),
                               color: color,

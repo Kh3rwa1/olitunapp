@@ -64,6 +64,8 @@ dependencies:
   # Crash & error reporting
   sentry_flutter: ^8.10.0
   share_plus: ^12.0.2
+  just_audio: ^0.10.5
+  just_audio_background: ^0.0.1-beta.17
 
 dev_dependencies:
   flutter_test:

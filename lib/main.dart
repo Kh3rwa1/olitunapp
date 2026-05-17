@@ -11,6 +11,17 @@ import 'core/theme/app_theme.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'l10n/generated/app_localizations.dart';
 
+@visibleForTesting
+Locale appLocaleForLanguage(String languageCode) {
+  switch (languageCode) {
+    case 'sat':
+      return const Locale('sat');
+    case 'en':
+    default:
+      return const Locale('en');
+  }
+}
+
 Future<void> main() async {
   try {
     await runZonedGuarded(
@@ -106,6 +117,7 @@ class OlitunApp extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final router = ref.watch(routerProvider);
     final themeMode = ref.watch(themeModeProvider);
+    final languageCode = ref.watch(appLanguageProvider);
 
     return MaterialApp.router(
       title: 'Olitun',
@@ -115,6 +127,7 @@ class OlitunApp extends ConsumerWidget {
       themeMode: _getThemeMode(themeMode),
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
+      locale: appLocaleForLanguage(languageCode),
       routerConfig: router,
     );
   }

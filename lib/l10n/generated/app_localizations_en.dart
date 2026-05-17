@@ -72,6 +72,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get scriptMode => 'Script Mode';
 
   @override
+  String get appLanguage => 'App Language';
+
+  @override
+  String get chooseLanguage => 'Choose Language';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get languageChanged => 'Language updated';
+
+  @override
   String get sound => 'Sound';
 
   @override

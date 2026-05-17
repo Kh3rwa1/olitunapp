@@ -307,3 +307,41 @@ class ScriptOption extends StatelessWidget {
     );
   }
 }
+
+class LanguageOption extends StatelessWidget {
+  final String label;
+  final String value;
+  final String current;
+  final WidgetRef ref;
+  final bool isDark;
+
+  const LanguageOption({
+    super.key,
+    required this.label,
+    required this.value,
+    required this.current,
+    required this.ref,
+    required this.isDark,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isSelected = value == current;
+    return ListTile(
+      title: Text(
+        label,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+          color: isDark ? Colors.white : Colors.black,
+        ),
+      ),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
+          : null,
+      onTap: () {
+        updateAppLanguage(ref, value);
+        Navigator.pop(context);
+      },
+    );
+  }
+}

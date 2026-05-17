@@ -212,6 +212,30 @@ abstract class AppLocalizations {
   /// **'Script Mode'**
   String get scriptMode;
 
+  /// No description provided for @appLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'App Language'**
+  String get appLanguage;
+
+  /// No description provided for @chooseLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose Language'**
+  String get chooseLanguage;
+
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @languageChanged.
+  ///
+  /// In en, this message translates to:
+  /// **'Language updated'**
+  String get languageChanged;
+
   /// No description provided for @sound.
   ///
   /// In en, this message translates to:

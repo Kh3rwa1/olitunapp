@@ -14,6 +14,10 @@ final scriptModeProvider = StateProvider<String>((ref) {
   return ref.read(sharedPreferencesProvider).getString('script_mode') ?? 'both';
 });
 
+final appLanguageProvider = StateProvider<String>((ref) {
+  return ref.read(sharedPreferencesProvider).getString('app_language') ?? 'en';
+});
+
 final soundEnabledProvider = StateProvider<bool>((ref) {
   return ref.read(sharedPreferencesProvider).getBool('sound_enabled') ?? true;
 });
@@ -26,6 +30,11 @@ void updateThemeMode(WidgetRef ref, String mode) {
 void updateScriptMode(WidgetRef ref, String mode) {
   ref.read(sharedPreferencesProvider).setString('script_mode', mode);
   ref.read(scriptModeProvider.notifier).state = mode;
+}
+
+void updateAppLanguage(WidgetRef ref, String languageCode) {
+  ref.read(sharedPreferencesProvider).setString('app_language', languageCode);
+  ref.read(appLanguageProvider.notifier).state = languageCode;
 }
 
 void toggleSound(WidgetRef ref) {

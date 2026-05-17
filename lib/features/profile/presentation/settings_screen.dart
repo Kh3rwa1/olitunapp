@@ -19,6 +19,7 @@ class SettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
     final scriptMode = ref.watch(scriptModeProvider);
+    final appLanguage = ref.watch(appLanguageProvider);
     final soundEnabled = ref.watch(soundEnabledProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
@@ -59,6 +60,7 @@ class SettingsScreen extends ConsumerWidget {
             ref,
             themeMode,
             scriptMode,
+            appLanguage,
             soundEnabled,
             isDark,
           )
@@ -68,6 +70,7 @@ class SettingsScreen extends ConsumerWidget {
             ref,
             themeMode,
             scriptMode,
+            appLanguage,
             soundEnabled,
             isDark,
           ),
@@ -111,6 +114,7 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     String themeMode,
     String scriptMode,
+    String appLanguage,
     bool soundEnabled,
     bool isDark,
   ) {
@@ -137,6 +141,15 @@ class SettingsScreen extends ConsumerWidget {
                       subtitle: _getThemeLabel(context, themeMode),
                       isDark: isDark,
                       onTap: () => _showThemeDialog(context, ref, themeMode),
+                    ),
+                    const SizedBox(height: 10),
+                    SettingTile(
+                      icon: Icons.language_rounded,
+                      title: AppLocalizations.of(context)!.appLanguage,
+                      subtitle: _getLanguageLabel(context, appLanguage),
+                      isDark: isDark,
+                      onTap: () =>
+                          _showLanguageDialog(context, ref, appLanguage),
                     ),
                   ],
                 ),
@@ -236,6 +249,7 @@ class SettingsScreen extends ConsumerWidget {
     WidgetRef ref,
     String themeMode,
     String scriptMode,
+    String appLanguage,
     bool soundEnabled,
     bool isDark,
   ) {
@@ -253,6 +267,14 @@ class SettingsScreen extends ConsumerWidget {
               subtitle: _getThemeLabel(context, themeMode),
               isDark: isDark,
               onTap: () => _showThemeDialog(context, ref, themeMode),
+            ),
+            const SizedBox(height: 10),
+            SettingTile(
+              icon: Icons.language_rounded,
+              title: AppLocalizations.of(context)!.appLanguage,
+              subtitle: _getLanguageLabel(context, appLanguage),
+              isDark: isDark,
+              onTap: () => _showLanguageDialog(context, ref, appLanguage),
             ),
           ],
         ),
@@ -466,6 +488,62 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
+  void _showLanguageDialog(
+    BuildContext context,
+    WidgetRef ref,
+    String current,
+  ) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              AppLocalizations.of(context)!.chooseLanguage,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : Colors.black,
+              ),
+            ),
+            const SizedBox(height: 20),
+            LanguageOption(
+              label: AppLocalizations.of(context)!.english,
+              value: 'en',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            LanguageOption(
+              label: AppLocalizations.of(context)!.santali,
+              value: 'sat',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
   String _getThemeLabel(BuildContext context, String mode) {
     final l10n = AppLocalizations.of(context)!;
     switch (mode) {
@@ -487,6 +565,17 @@ class SettingsScreen extends ConsumerWidget {
         return l10n.latinOnly;
       default:
         return l10n.bothScripts;
+    }
+  }
+
+  String _getLanguageLabel(BuildContext context, String languageCode) {
+    final l10n = AppLocalizations.of(context)!;
+    switch (languageCode) {
+      case 'sat':
+        return l10n.santali;
+      case 'en':
+      default:
+        return l10n.english;
     }
   }
 

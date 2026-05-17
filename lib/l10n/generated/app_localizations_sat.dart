@@ -72,6 +72,18 @@ class AppLocalizationsSat extends AppLocalizations {
   String get scriptMode => 'Ol Mode';
 
   @override
+  String get appLanguage => 'App Bhasa';
+
+  @override
+  String get chooseLanguage => 'Bhasa bachao me';
+
+  @override
+  String get english => 'English';
+
+  @override
+  String get languageChanged => 'Bhasa badal ena';
+
+  @override
   String get sound => 'Sadam';
 
   @override

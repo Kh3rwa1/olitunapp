@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Native launch surface. Match Flutter's splash screen to avoid a green pre-splash flash. -->
-    <color name="splash_background">#FFFFFF</color>
+    <!-- Native launch surface for dark mode. Match Flutter's splash screen. -->
+    <color name="splash_background">#0F172A</color>
     <!-- Adaptive icon background color -->
     <color name="ic_launcher_background">#1EE088</color>
 </resources>

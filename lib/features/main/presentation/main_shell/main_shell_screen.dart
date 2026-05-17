@@ -69,9 +69,9 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
   ];
 
   void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
+    if (index == _selectedIndex) return;
+
+    setState(() => _selectedIndex = index);
     ref.read(shellTabIndexProvider.notifier).state = index;
 
     final nextPath = switch (index) {
@@ -81,7 +81,11 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     };
     if (nextPath != null && GoRouterState.of(context).uri.path != nextPath) {
       _syncedRoutePath = nextPath;
-      context.go(nextPath);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && GoRouterState.of(context).uri.path != nextPath) {
+          context.go(nextPath);
+        }
+      });
     }
   }
 
@@ -119,10 +123,13 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
       onPopInvokedWithResult: (didPop, result) {
         if (didPop) return;
         if (_selectedIndex > 0) {
-          setState(() {
-            _selectedIndex = 0;
-          });
+          setState(() => _selectedIndex = 0);
           ref.read(shellTabIndexProvider.notifier).state = 0;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (mounted && GoRouterState.of(context).uri.path != '/') {
+              context.go('/');
+            }
+          });
         }
       },
       child: Scaffold(
@@ -228,11 +235,14 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
           ),
         ),
         Positioned.fill(
-          child: EnchantedVisualizer(
-            isPlaying: shouldAnimate,
-            color: AppColors.primary,
-            showWaves: false,
-            height: 400,
+          child: TickerMode(
+            enabled: shouldAnimate,
+            child: EnchantedVisualizer(
+              isPlaying: shouldAnimate,
+              color: AppColors.primary,
+              showWaves: false,
+              height: 400,
+            ),
           ),
         ),
       ],
@@ -901,32 +911,74 @@ class _RightPanelStatState extends State<_RightPanelStat> {
   }
 }
 
-/// Cross-fade switcher: all tabs stay mounted (so scroll/form state
-/// is preserved per [IndexedStack] semantics); active tab fades in
-/// while previous fades out. Inactive tabs ignore pointers. Honors
-/// reduce-motion.
-class _ShellTabSwitcher extends StatelessWidget {
+/// Lightweight tab switcher. Every tab stays mounted so scroll/form state is
+/// preserved, but only the active tab and the outgoing tab are painted during
+/// the short handoff. Hidden tabs are offstage and have tickers paused, which
+/// keeps heavy Home/Bakhed/Profile animations from causing bottom-tab jank.
+class _ShellTabSwitcher extends StatefulWidget {
   const _ShellTabSwitcher({required this.index, required this.screens});
 
   final int index;
   final List<Widget> screens;
 
   @override
+  State<_ShellTabSwitcher> createState() => _ShellTabSwitcherState();
+}
+
+class _ShellTabSwitcherState extends State<_ShellTabSwitcher> {
+  int? _outgoingIndex;
+
+  @override
+  void didUpdateWidget(covariant _ShellTabSwitcher oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.index != widget.index) {
+      _outgoingIndex = oldWidget.index;
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final reduce = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
-    final dur = Duration(milliseconds: reduce ? 1 : 220);
+    final duration = Duration(milliseconds: reduce ? 1 : 160);
+    const curve = Curves.easeOutCubic;
+
     return Stack(
-      children: List.generate(screens.length, (i) {
-        final active = i == index;
-        return IgnorePointer(
-          ignoring: !active,
-          child: AnimatedOpacity(
-            duration: dur,
-            curve: Curves.easeOutCubic,
-            opacity: active ? 1.0 : 0.0,
-            child: KeyedSubtree(
-              key: PageStorageKey<String>('shell-tab-$i'),
-              child: screens[i],
+      fit: StackFit.expand,
+      children: List.generate(widget.screens.length, (i) {
+        final isActive = i == widget.index;
+        final isOutgoing = i == _outgoingIndex && !isActive;
+        final shouldBuildOnstage = isActive || isOutgoing;
+        final offset = isActive
+            ? Offset.zero
+            : Offset(i < widget.index ? -0.015 : 0.015, 0);
+
+        return Offstage(
+          offstage: !shouldBuildOnstage,
+          child: IgnorePointer(
+            ignoring: !isActive,
+            child: AnimatedOpacity(
+              duration: duration,
+              curve: curve,
+              opacity: isActive ? 1 : 0,
+              onEnd: () {
+                if (mounted && _outgoingIndex == i) {
+                  setState(() => _outgoingIndex = null);
+                }
+              },
+              child: AnimatedSlide(
+                duration: duration,
+                curve: curve,
+                offset: offset,
+                child: TickerMode(
+                  enabled: isActive,
+                  child: RepaintBoundary(
+                    child: KeyedSubtree(
+                      key: PageStorageKey<String>('shell-tab-$i'),
+                      child: widget.screens[i],
+                    ),
+                  ),
+                ),
+              ),
             ),
           ),
         );

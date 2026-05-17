@@ -90,6 +90,24 @@ GoRoute _peerRoute({
   );
 }
 
+/// Shell routes share the same mounted tab scaffold. They should not run a
+/// full page transition when the bottom navigation updates the URL, otherwise
+/// the tab animation and router animation fight each other.
+GoRoute _shellRoute({
+  required String path,
+  String? name,
+  required Widget Function(BuildContext, GoRouterState) child,
+}) {
+  return GoRoute(
+    path: path,
+    name: name,
+    pageBuilder: (context, state) => NoTransitionPage<void>(
+      key: const ValueKey<String>('main-shell-route'),
+      child: child(context, state),
+    ),
+  );
+}
+
 /// Modal-style: translator, login. Slide-up + fade-in.
 GoRoute _modalRoute({
   required String path,
@@ -152,18 +170,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: RouteNames.login,
         child: (_, _) => const EmailAuthScreen(),
       ),
-      _peerRoute(
+      _shellRoute(
         path: '/',
         name: RouteNames.home,
         child: (_, _) => const MainShellScreen(),
       ),
-      _peerRoute(
+      _shellRoute(
         path: '/categories',
         name: RouteNames.categories,
         child: (_, _) => const MainShellScreen(),
       ),
       _drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
-      _peerRoute(
+      _shellRoute(
         path: '/profile',
         name: RouteNames.profile,
         child: (_, _) => const MainShellScreen(),

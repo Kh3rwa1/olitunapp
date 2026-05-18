@@ -166,6 +166,8 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                           border: InputBorder.none,
                           counterText: '',
                           contentPadding: EdgeInsets.zero,
+                          filled: false,
+                          fillColor: Colors.transparent,
                         ),
                       ),
                     ),

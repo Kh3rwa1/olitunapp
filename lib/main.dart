@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -134,7 +136,12 @@ class OlitunApp extends ConsumerWidget {
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,
       themeMode: _getThemeMode(themeMode),
-      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      localizationsDelegates: const [
+        ...AppLocalizations.localizationsDelegates,
+        FallbackMaterialLocalizationsDelegate(),
+        FallbackCupertinoLocalizationsDelegate(),
+        FallbackWidgetsLocalizationsDelegate(),
+      ],
       supportedLocales: AppLocalizations.supportedLocales,
       locale: appLocaleForLanguage(languageCode),
       routerConfig: router,
@@ -151,4 +158,70 @@ class OlitunApp extends ConsumerWidget {
         return ThemeMode.system;
     }
   }
+}
+
+class FallbackMaterialLocalizationsDelegate
+    extends LocalizationsDelegate<MaterialLocalizations> {
+  const FallbackMaterialLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'sat';
+
+  @override
+  Future<MaterialLocalizations> load(Locale locale) async {
+    return SynchronousFuture<MaterialLocalizations>(
+      const FallbackMaterialLocalizations(),
+    );
+  }
+
+  @override
+  bool shouldReload(FallbackMaterialLocalizationsDelegate old) => false;
+}
+
+class FallbackMaterialLocalizations extends DefaultMaterialLocalizations {
+  const FallbackMaterialLocalizations();
+}
+
+class FallbackCupertinoLocalizationsDelegate
+    extends LocalizationsDelegate<CupertinoLocalizations> {
+  const FallbackCupertinoLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'sat';
+
+  @override
+  Future<CupertinoLocalizations> load(Locale locale) async {
+    return SynchronousFuture<CupertinoLocalizations>(
+      const FallbackCupertinoLocalizations(),
+    );
+  }
+
+  @override
+  bool shouldReload(FallbackCupertinoLocalizationsDelegate old) => false;
+}
+
+class FallbackCupertinoLocalizations extends DefaultCupertinoLocalizations {
+  const FallbackCupertinoLocalizations();
+}
+
+class FallbackWidgetsLocalizationsDelegate
+    extends LocalizationsDelegate<WidgetsLocalizations> {
+  const FallbackWidgetsLocalizationsDelegate();
+
+  @override
+  bool isSupported(Locale locale) => locale.languageCode == 'sat';
+
+  @override
+  Future<WidgetsLocalizations> load(Locale locale) async {
+    return SynchronousFuture<WidgetsLocalizations>(
+      const FallbackWidgetsLocalizations(),
+    );
+  }
+
+  @override
+  bool shouldReload(FallbackWidgetsLocalizationsDelegate old) => false;
+}
+
+class FallbackWidgetsLocalizations extends DefaultWidgetsLocalizations {
+  const FallbackWidgetsLocalizations();
 }

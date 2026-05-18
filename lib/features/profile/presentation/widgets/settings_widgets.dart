@@ -263,8 +263,8 @@ class ThemeOption extends StatelessWidget {
           ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
           : null,
       onTap: () {
-        updateThemeMode(ref, value);
         Navigator.pop(context);
+        updateThemeMode(ref, value);
       },
     );
   }
@@ -301,8 +301,8 @@ class ScriptOption extends StatelessWidget {
           ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
           : null,
       onTap: () {
-        updateScriptMode(ref, value);
         Navigator.pop(context);
+        updateScriptMode(ref, value);
       },
     );
   }
@@ -339,8 +339,8 @@ class LanguageOption extends StatelessWidget {
           ? const Icon(Icons.check_circle_rounded, color: AppColors.primary)
           : null,
       onTap: () {
-        updateAppLanguage(ref, value);
         Navigator.pop(context);
+        updateAppLanguage(ref, value);
       },
     );
   }

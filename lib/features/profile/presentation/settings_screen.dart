@@ -610,9 +610,9 @@ class SettingsScreen extends ConsumerWidget {
           ElevatedButton(
             onPressed: () {
               HapticFeedback.mediumImpact();
+              Navigator.pop(context);
               // Reset progress by clearing the stored data
               ref.read(userStatsProvider.notifier).resetProgress();
-              Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.error,

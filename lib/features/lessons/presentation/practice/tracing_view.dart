@@ -198,6 +198,7 @@ class _TracingViewState extends State<TracingView>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final practiceChar = normalizePracticeCharacter(widget.letterChar);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -232,11 +233,12 @@ class _TracingViewState extends State<TracingView>
                             // Background letter
                             Center(
                               child: Text(
-                                widget.letterChar,
+                                practiceChar,
                                 style: TextStyle(
                                   fontSize: boardSize * 0.56,
                                   color: Colors.grey.withValues(alpha: 0.14),
                                   fontWeight: FontWeight.w700,
+                                  fontFamily: 'OlChiki',
                                 ),
                               ),
                             ),
@@ -244,7 +246,7 @@ class _TracingViewState extends State<TracingView>
                             Positioned.fill(
                               child: CustomPaint(
                                 painter: _GuidePainter(
-                                  letterChar: widget.letterChar,
+                                  letterChar: practiceChar,
                                   color: isDark
                                       ? Colors.white.withValues(alpha: 0.18)
                                       : Colors.black.withValues(alpha: 0.18),

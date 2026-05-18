@@ -6,6 +6,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/main.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/shared/utils/localized_content.dart';
 
 void main() {
   group('app language settings', () {
@@ -43,6 +44,38 @@ void main() {
 
       expect(capturedRef.read(appLanguageProvider), 'sat');
       expect(prefs.getString('app_language'), 'sat');
+      expect(capturedRef.read(scriptModeProvider), 'olchiki');
+      expect(capturedRef.read(effectiveScriptModeProvider), 'olchiki');
+    });
+
+    testWidgets('switching back to English restores mixed script display', (
+      tester,
+    ) async {
+      SharedPreferences.setMockInitialValues({
+        'app_language': 'sat',
+        'script_mode': 'olchiki',
+      });
+      final prefs = await SharedPreferences.getInstance();
+      late WidgetRef capturedRef;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+          child: Consumer(
+            builder: (context, ref, child) {
+              capturedRef = ref;
+              return const SizedBox.shrink();
+            },
+          ),
+        ),
+      );
+
+      updateAppLanguage(capturedRef, 'en');
+
+      expect(capturedRef.read(appLanguageProvider), 'en');
+      expect(prefs.getString('app_language'), 'en');
+      expect(capturedRef.read(scriptModeProvider), 'both');
+      expect(capturedRef.read(effectiveScriptModeProvider), 'both');
     });
   });
 
@@ -70,6 +103,27 @@ void main() {
 
       expect(capturedRef.read(lastOpenedLessonIdProvider), 'lesson_letters');
       expect(prefs.getString('last_opened_lesson_id'), 'lesson_letters');
+    });
+  });
+
+  group('localized content text', () {
+    test('uses Ol Chiki as primary text in Ol Chiki mode', () {
+      expect(
+        primaryLocalizedText(
+          olChiki: 'ᱵᱟᱠᱷᱮᱬ',
+          latin: 'Bakhed',
+          scriptMode: 'olchiki',
+        ),
+        'ᱵᱟᱠᱷᱮᱬ',
+      );
+      expect(
+        secondaryLocalizedText(
+          olChiki: 'ᱵᱟᱠᱷᱮᱬ',
+          latin: 'Bakhed',
+          scriptMode: 'olchiki',
+        ),
+        isNull,
+      );
     });
   });
 }

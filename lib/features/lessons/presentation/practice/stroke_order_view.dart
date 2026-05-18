@@ -35,6 +35,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final practiceChar = normalizePracticeCharacter(widget.letterChar);
 
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -62,11 +63,12 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                       children: [
                         Center(
                           child: Text(
-                            widget.letterChar,
+                            practiceChar,
                             style: TextStyle(
                               fontSize: boardSize * 0.56,
                               color: Colors.grey.withValues(alpha: 0.12),
                               fontWeight: FontWeight.w700,
+                              fontFamily: 'OlChiki',
                             ),
                           ),
                         ),
@@ -75,7 +77,7 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                             painter: StrokePainter(
                               progress: _animation,
                               color: const Color(0xFF35C7B5),
-                              letter: widget.letterChar,
+                              letter: practiceChar,
                             ),
                           ),
                         ),

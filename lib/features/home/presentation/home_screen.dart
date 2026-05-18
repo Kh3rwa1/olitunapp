@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../shared/utils/localized_content.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
@@ -77,6 +78,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final lessonsAsync = ref.watch(lessonNotifierProvider);
     final quizzesAsync = ref.watch(quizzesProvider);
     final bannersAsync = ref.watch(bannersProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
 
     // Derive the next incomplete lesson for the hero card.
     final completedIds =
@@ -87,7 +89,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       completedLessonIds: completedIds,
       lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
     );
-    final heroTitle = nextLesson?.titleLatin ?? 'Start Learning';
+    final heroTitle = nextLesson == null
+        ? 'Start Learning'
+        : primaryLocalizedText(
+            olChiki: nextLesson.titleOlChiki,
+            latin: nextLesson.titleLatin,
+            scriptMode: scriptMode,
+          );
     final quizCount = quizzesAsync.value?.length ?? 0;
 
     final stats = statsAsync.value;

@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../shared/utils/localized_content.dart';
 import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
@@ -74,6 +75,12 @@ class LessonDetailScreen extends ConsumerWidget {
 
         final completedLessons =
             ref.watch(userStatsProvider).value?.completedLessons ?? {};
+        final scriptMode = ref.watch(effectiveScriptModeProvider);
+        final lessonTitle = primaryLocalizedText(
+          olChiki: lesson.titleOlChiki,
+          latin: lesson.titleLatin,
+          scriptMode: scriptMode,
+        );
         if (!completedLessons.contains(lesson.id)) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             updateLastOpenedLesson(ref, lesson.id);
@@ -97,9 +104,15 @@ class LessonDetailScreen extends ConsumerWidget {
                   icon: const Icon(Icons.arrow_back_rounded),
                   onPressed: () => context.pop(),
                 ),
-                title: Text(lesson.titleLatin),
+                title: Text(
+                  lessonTitle,
+                  style: TextStyle(
+                    fontFamily: primaryLocalizedFontFamily(scriptMode),
+                  ),
+                ),
                 heroChild: _LessonHeroSummary(
                   lesson: lesson,
+                  scriptMode: scriptMode,
                   buildChip: _buildChip,
                 ),
               ),
@@ -369,9 +382,14 @@ class _LessonStateMessage extends StatelessWidget {
 /// Centered hero summary shown inside the expanded sliver header on
 /// the lesson detail screen.
 class _LessonHeroSummary extends StatelessWidget {
-  const _LessonHeroSummary({required this.lesson, required this.buildChip});
+  const _LessonHeroSummary({
+    required this.lesson,
+    required this.scriptMode,
+    required this.buildChip,
+  });
 
   final LessonEntity lesson;
+  final String scriptMode;
   final Widget Function(IconData, String) buildChip;
 
   @override
@@ -380,15 +398,25 @@ class _LessonHeroSummary extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (lesson.titleOlChiki.isNotEmpty)
+        if (secondaryLocalizedText(
+              olChiki: lesson.titleOlChiki,
+              latin: lesson.titleLatin,
+              scriptMode: scriptMode,
+            ) !=
+            null)
           Padding(
             padding: const EdgeInsets.only(bottom: 6),
             child: Text(
-              lesson.titleOlChiki,
+              secondaryLocalizedText(
+                olChiki: lesson.titleOlChiki,
+                latin: lesson.titleLatin,
+                scriptMode: scriptMode,
+              )!,
               style: TextStyle(
                 fontSize: 22,
                 fontWeight: FontWeight.w700,
                 color: Colors.white.withValues(alpha: 0.92),
+                fontFamily: 'OlChiki',
               ),
             ),
           ),

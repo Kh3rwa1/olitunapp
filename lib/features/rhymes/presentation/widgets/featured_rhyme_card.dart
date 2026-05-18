@@ -4,6 +4,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
@@ -44,6 +46,17 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
     final isPlaying =
         audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
     const color = AppColors.primary;
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final primaryTitle = primaryLocalizedText(
+      olChiki: widget.rhyme.titleOlChiki,
+      latin: widget.rhyme.titleLatin,
+      scriptMode: scriptMode,
+    );
+    final secondaryTitle = secondaryLocalizedText(
+      olChiki: widget.rhyme.titleOlChiki,
+      latin: widget.rhyme.titleLatin,
+      scriptMode: scriptMode,
+    );
 
     return GlassCard(
           blur: 24,
@@ -118,31 +131,37 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                     ),
                     const SizedBox(height: 16),
                     Text(
-                          widget.rhyme.titleLatin,
-                          style: GoogleFonts.fredoka(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white,
-                            letterSpacing: -1,
-                            height: 1,
-                          ),
+                          primaryTitle,
+                          style:
+                              (scriptMode == 'olchiki'
+                                      ? const TextStyle(fontFamily: 'OlChiki')
+                                      : GoogleFonts.fredoka())
+                                  .copyWith(
+                                    fontSize: 28,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                    letterSpacing: 0,
+                                    height: 1,
+                                  ),
                         )
                         .animate()
                         .fadeIn(delay: 300.ms, duration: 500.ms)
                         .slideX(begin: -0.08, curve: Curves.easeOutCubic),
-                    const SizedBox(height: 4),
-                    Text(
-                          widget.rhyme.titleOlChiki,
-                          style: const TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.w700,
-                            color: Colors.white70,
-                            fontFamily: 'OlChiki',
-                          ),
-                        )
-                        .animate()
-                        .fadeIn(delay: 450.ms, duration: 500.ms)
-                        .slideX(begin: -0.06, curve: Curves.easeOutCubic),
+                    if (secondaryTitle != null) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                            secondaryTitle,
+                            style: const TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w700,
+                              color: Colors.white70,
+                              fontFamily: 'OlChiki',
+                            ),
+                          )
+                          .animate()
+                          .fadeIn(delay: 450.ms, duration: 500.ms)
+                          .slideX(begin: -0.06, curve: Curves.easeOutCubic),
+                    ],
                     const SizedBox(height: 24),
                     ElevatedButton.icon(
                           onPressed: () {
@@ -153,7 +172,7 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                 .togglePlay(
                                   widget.rhyme.id,
                                   widget.rhyme.audioUrl,
-                                  title: widget.rhyme.titleLatin,
+                                  title: primaryTitle,
                                   artworkUrl: widget.rhyme.thumbnailUrl,
                                 );
                           },

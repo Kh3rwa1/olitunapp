@@ -193,7 +193,9 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
             onPressed: () {
               HapticFeedback.heavyImpact();
               final word = words[_currentIndex];
-              context.push('/practice/${word.wordOlChiki}/${word.wordLatin}');
+              final practiceChar = Uri.encodeComponent(word.wordOlChiki);
+              final practiceName = Uri.encodeComponent(word.wordLatin);
+              context.push('/practice/$practiceChar/$practiceName');
             },
             backgroundColor: accentColor,
             elevation: 4,

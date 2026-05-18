@@ -18,6 +18,12 @@ final appLanguageProvider = StateProvider<String>((ref) {
   return ref.read(sharedPreferencesProvider).getString('app_language') ?? 'en';
 });
 
+final effectiveScriptModeProvider = Provider<String>((ref) {
+  final languageCode = ref.watch(appLanguageProvider);
+  if (languageCode == 'sat') return 'olchiki';
+  return ref.watch(scriptModeProvider);
+});
+
 final lastOpenedLessonIdProvider = StateProvider<String?>((ref) {
   final value = ref
       .read(sharedPreferencesProvider)
@@ -40,8 +46,21 @@ void updateScriptMode(WidgetRef ref, String mode) {
 }
 
 void updateAppLanguage(WidgetRef ref, String languageCode) {
-  ref.read(sharedPreferencesProvider).setString('app_language', languageCode);
-  ref.read(appLanguageProvider.notifier).state = languageCode;
+  final normalized = languageCode == 'sat' ? 'sat' : 'en';
+  final prefs = ref.read(sharedPreferencesProvider);
+  final previousLanguage = ref.read(appLanguageProvider);
+
+  prefs.setString('app_language', normalized);
+  ref.read(appLanguageProvider.notifier).state = normalized;
+
+  if (normalized == 'sat') {
+    prefs.setString('script_mode', 'olchiki');
+    ref.read(scriptModeProvider.notifier).state = 'olchiki';
+  } else if (previousLanguage == 'sat' &&
+      ref.read(scriptModeProvider) == 'olchiki') {
+    prefs.setString('script_mode', 'both');
+    ref.read(scriptModeProvider.notifier).state = 'both';
+  }
 }
 
 void updateLastOpenedLesson(WidgetRef ref, String lessonId) {

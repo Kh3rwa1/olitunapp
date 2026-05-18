@@ -5,6 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
@@ -56,6 +58,17 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
         audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
     final color = _palette[widget.index % _palette.length];
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final primaryTitle = primaryLocalizedText(
+      olChiki: widget.rhyme.titleOlChiki,
+      latin: widget.rhyme.titleLatin,
+      scriptMode: scriptMode,
+    );
+    final secondaryTitle = secondaryLocalizedText(
+      olChiki: widget.rhyme.titleOlChiki,
+      latin: widget.rhyme.titleLatin,
+      scriptMode: scriptMode,
+    );
 
     return GlassCard(
       blur: 12,
@@ -114,7 +127,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                             .togglePlay(
                               widget.rhyme.id,
                               widget.rhyme.audioUrl,
-                              title: widget.rhyme.titleLatin,
+                              title: primaryTitle,
                               artworkUrl: widget.rhyme.thumbnailUrl,
                             );
                       },
@@ -165,34 +178,42 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                       .slideX(begin: 0.15),
                 const SizedBox(height: 4),
                 Text(
-                      widget.rhyme.titleLatin,
-                      style: GoogleFonts.fredoka(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : AppColors.primaryDark,
-                        height: 1.1,
-                      ),
+                      primaryTitle,
+                      style:
+                          (scriptMode == 'olchiki'
+                                  ? const TextStyle(fontFamily: 'OlChiki')
+                                  : GoogleFonts.fredoka())
+                              .copyWith(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w700,
+                                color: isDark
+                                    ? Colors.white
+                                    : AppColors.primaryDark,
+                                height: 1.1,
+                              ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     )
                     .animate()
                     .fadeIn(delay: 300.ms, duration: 500.ms)
                     .slideY(begin: 0.15, curve: Curves.easeOutCubic),
-                const SizedBox(height: 2),
-                Text(
-                      widget.rhyme.titleOlChiki,
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white54 : Colors.black45,
-                        fontFamily: 'OlChiki',
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                    .animate()
-                    .fadeIn(delay: 450.ms, duration: 500.ms)
-                    .slideY(begin: 0.10, curve: Curves.easeOutCubic),
+                if (secondaryTitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                        secondaryTitle,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                          fontFamily: 'OlChiki',
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                      .animate()
+                      .fadeIn(delay: 450.ms, duration: 500.ms)
+                      .slideY(begin: 0.10, curve: Curves.easeOutCubic),
+                ],
               ],
             ),
           ),

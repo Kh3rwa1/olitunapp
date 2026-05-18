@@ -79,5 +79,21 @@ void main() {
       expect(asciiPoints.length, olChikiPoints.length);
       expect(asciiPoints.first, olChikiPoints.first);
     });
+
+    test('normalizes Latin labels and Ol Chiki words to Ol Chiki glyphs', () {
+      expect(normalizePracticeCharacter('La'), 'ᱚ');
+      expect(normalizePracticeCharacter('Aah'), 'ᱟ');
+      expect(normalizePracticeCharacter('t'), 'ᱛ');
+      expect(normalizePracticeCharacter('ᱡᱚᱦᱟᱨ'), 'ᱡ');
+      expect(normalizePracticeCharacter(Uri.encodeComponent('ᱛ')), 'ᱛ');
+    });
+
+    test('has authored guides for common Ol Chiki letters beyond numerals', () {
+      for (final character in ['ᱛ', 'ᱞ', 'ᱢ', 'ᱥ', 'ᱦ', 'ᱨ']) {
+        final path = buildPracticeGuidePath(const Size.square(200), character);
+        final points = samplePath(path, samplesPerMetric: 64);
+        expect(points, isNotEmpty, reason: '$character should be traceable');
+      }
+    });
   });
 }

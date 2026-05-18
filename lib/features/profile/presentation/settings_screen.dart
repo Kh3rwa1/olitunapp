@@ -18,7 +18,7 @@ class SettingsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final themeMode = ref.watch(themeModeProvider);
-    final scriptMode = ref.watch(scriptModeProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
     final appLanguage = ref.watch(appLanguageProvider);
     final soundEnabled = ref.watch(soundEnabledProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;

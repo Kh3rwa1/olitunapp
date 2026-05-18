@@ -624,6 +624,271 @@ final Map<String, List<StrokeSegment>> olChikiStrokes = {
       ],
     ),
   ],
+
+  // ᱛ - At (t) - Forked vertical with lower hook
+  'ᱛ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.50, 0.18), Offset(0.50, 0.82)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.28, 0.34), Offset(0.72, 0.34)],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.82),
+        Offset(0.68, 0.82),
+        Offset(0.74, 0.68),
+        Offset(0.62, 0.58),
+      ],
+    ),
+  ],
+
+  // ᱞ - El (l) - Tall curve with inner cross stroke
+  'ᱞ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.62, 0.18),
+        Offset(0.34, 0.22),
+        Offset(0.28, 0.76),
+        Offset(0.62, 0.82),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.34, 0.52), Offset(0.72, 0.52)],
+    ),
+  ],
+
+  // ᱢ - Am (m) - Twin-arch form
+  'ᱢ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.24, 0.80), Offset(0.24, 0.30)],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.24, 0.30),
+        Offset(0.36, 0.14),
+        Offset(0.50, 0.14),
+        Offset(0.50, 0.48),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.48),
+        Offset(0.52, 0.16),
+        Offset(0.76, 0.18),
+        Offset(0.76, 0.80),
+      ],
+    ),
+  ],
+
+  // ᱣ - Aw (w) - Rounded bowl with right stem
+  'ᱣ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.26, 0.24),
+        Offset(0.22, 0.80),
+        Offset(0.62, 0.86),
+        Offset(0.70, 0.50),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.70, 0.20), Offset(0.70, 0.82)],
+    ),
+  ],
+
+  // ᱥ - Is (s) - Flowing S curve
+  'ᱥ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.72, 0.24),
+        Offset(0.34, 0.10),
+        Offset(0.24, 0.42),
+        Offset(0.50, 0.50),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.50),
+        Offset(0.84, 0.62),
+        Offset(0.66, 0.94),
+        Offset(0.26, 0.76),
+      ],
+    ),
+  ],
+
+  // ᱦ - Ih (h) - Left stem with rounded shoulder
+  'ᱦ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.28, 0.18), Offset(0.28, 0.82)],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.28, 0.46),
+        Offset(0.42, 0.24),
+        Offset(0.76, 0.28),
+        Offset(0.76, 0.82),
+      ],
+    ),
+  ],
+
+  // ᱫ - Ud (d) - Broad lower curve
+  'ᱫ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.70, 0.20), Offset(0.70, 0.78)],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.70, 0.78),
+        Offset(0.30, 0.86),
+        Offset(0.22, 0.48),
+        Offset(0.56, 0.42),
+      ],
+    ),
+  ],
+
+  // ᱨ - Ir (r) - Rising curve with short arm
+  'ᱨ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.30, 0.80),
+        Offset(0.30, 0.36),
+        Offset(0.58, 0.20),
+        Offset(0.76, 0.38),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.42, 0.52), Offset(0.74, 0.74)],
+    ),
+  ],
+
+  // ᱭ - Oy (y) - Descending fork
+  'ᱭ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.28, 0.22), Offset(0.52, 0.54)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.76, 0.22), Offset(0.52, 0.54)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.52, 0.54), Offset(0.52, 0.84)],
+    ),
+  ],
+
+  // ᱲ - Ur (r) - Curved retroflex form
+  'ᱲ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.70, 0.24),
+        Offset(0.26, 0.16),
+        Offset(0.24, 0.58),
+        Offset(0.56, 0.58),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.56, 0.58),
+        Offset(0.76, 0.60),
+        Offset(0.74, 0.86),
+        Offset(0.36, 0.80),
+      ],
+    ),
+  ],
+
+  // ᱶ - nasalization mark
+  'ᱶ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.34, 0.42),
+        Offset(0.44, 0.28),
+        Offset(0.66, 0.28),
+        Offset(0.72, 0.48),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.72, 0.48),
+        Offset(0.66, 0.70),
+        Offset(0.40, 0.72),
+        Offset(0.34, 0.54),
+      ],
+    ),
+  ],
+
+  // ᱷ - aspiration mark
+  'ᱷ': [
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.42, 0.24), Offset(0.42, 0.76)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.62, 0.24), Offset(0.62, 0.76)],
+    ),
+    const StrokeSegment(
+      type: 'line',
+      points: [Offset(0.36, 0.50), Offset(0.68, 0.50)],
+    ),
+  ],
+
+  // ᱸ - mu tudag mark
+  'ᱸ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.34, 0.60),
+        Offset(0.44, 0.36),
+        Offset(0.66, 0.36),
+        Offset(0.76, 0.60),
+      ],
+    ),
+  ],
+
+  // ᱹ - gaahlaa ttuddaag mark
+  'ᱹ': [
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.38),
+        Offset(0.40, 0.38),
+        Offset(0.40, 0.62),
+        Offset(0.50, 0.62),
+      ],
+    ),
+    const StrokeSegment(
+      type: 'cubic',
+      points: [
+        Offset(0.50, 0.62),
+        Offset(0.60, 0.62),
+        Offset(0.60, 0.38),
+        Offset(0.50, 0.38),
+      ],
+    ),
+  ],
 };
 
 /// Build a Flutter Path from stroke segments

@@ -225,9 +225,13 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
           floatingActionButton: FloatingActionButton(
             onPressed: () {
               HapticFeedback.heavyImpact();
-              context.push(
-                '/practice/${currentLetter.charOlChiki}/${currentLetter.transliterationLatin}',
+              final practiceChar = Uri.encodeComponent(
+                currentLetter.charOlChiki,
               );
+              final practiceName = Uri.encodeComponent(
+                currentLetter.transliterationLatin,
+              );
+              context.push('/practice/$practiceChar/$practiceName');
             },
             backgroundColor: accentColor,
             elevation: 4,

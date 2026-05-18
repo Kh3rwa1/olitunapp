@@ -9,6 +9,7 @@ import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/motion/branded_refresh.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../domain/rhyme_model.dart';
 
 import 'widgets/whimsical_background.dart';
@@ -125,6 +126,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
   // ─── Header ─────────────────────────────────────────────
   Widget _buildHeader(bool isDark) {
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final l10n = AppLocalizations.of(context)!;
+    final eyebrow = scriptMode == 'olchiki' ? 'ᱥᱟᱱᱛᱟᱲᱤ' : 'Santali';
+    final title = scriptMode == 'olchiki' ? l10n.rhymes : 'Bakhed';
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -134,7 +140,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                      'Santali',
+                      eyebrow,
                       style: GoogleFonts.fredoka(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
@@ -154,14 +160,20 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       color: AppColors.primary.withValues(alpha: 0.3),
                     ),
                 Text(
-                      'Bakhed',
-                      style: GoogleFonts.fredoka(
-                        fontSize: 48,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: -1.5,
-                        height: 1,
-                        color: isDark ? Colors.white : AppColors.primaryDark,
-                      ),
+                      title,
+                      style:
+                          (scriptMode == 'olchiki'
+                                  ? const TextStyle(fontFamily: 'OlChiki')
+                                  : GoogleFonts.fredoka())
+                              .copyWith(
+                                fontSize: 48,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0,
+                                height: 1,
+                                color: isDark
+                                    ? Colors.white
+                                    : AppColors.primaryDark,
+                              ),
                     )
                     .animate()
                     .fadeIn(delay: 200.ms, duration: 600.ms)

@@ -14,10 +14,13 @@ Path buildPracticeGuidePath(Size size, String letter) {
   }
 
   // Fallback: generate a simple placeholder for unknown letters
-  return _buildFallbackPath(size, letter);
+  return _buildFallbackPath(size, character);
 }
 
 String normalizePracticeCharacter(String value) {
+  final decoded = value.contains('%')
+      ? Uri.decodeComponent(value).trim()
+      : value.trim();
   const asciiToOlChikiDigits = {
     '0': '᱐',
     '1': '᱑',
@@ -31,7 +34,70 @@ String normalizePracticeCharacter(String value) {
     '9': '᱙',
   };
 
-  return asciiToOlChikiDigits[value] ?? value;
+  const latinToOlChiki = {
+    'la': 'ᱚ',
+    'a': 'ᱟ',
+    'aah': 'ᱟ',
+    'aa': 'ᱟ',
+    'li': 'ᱤ',
+    'i': 'ᱤ',
+    'lu': 'ᱩ',
+    'u': 'ᱩ',
+    'le': 'ᱮ',
+    'e': 'ᱮ',
+    'lo': 'ᱳ',
+    'o': 'ᱳ',
+    'ok': 'ᱠ',
+    'k': 'ᱠ',
+    'ol': 'ᱜ',
+    'g': 'ᱜ',
+    'ong': 'ᱝ',
+    'ng': 'ᱝ',
+    'uc': 'ᱪ',
+    'c': 'ᱪ',
+    'oj': 'ᱡ',
+    'j': 'ᱡ',
+    'at': 'ᱛ',
+    't': 'ᱛ',
+    'el': 'ᱞ',
+    'l': 'ᱞ',
+    'am': 'ᱢ',
+    'm': 'ᱢ',
+    'aw': 'ᱣ',
+    'w': 'ᱣ',
+    'is': 'ᱥ',
+    's': 'ᱥ',
+    'ih': 'ᱦ',
+    'h': 'ᱦ',
+    'ud': 'ᱫ',
+    'd': 'ᱫ',
+    'ir': 'ᱨ',
+    'r': 'ᱨ',
+    'ot': 'ᱴ',
+    'od': 'ᱰ',
+    'en': 'ᱱ',
+    'n': 'ᱱ',
+    'op': 'ᱯ',
+    'p': 'ᱯ',
+    'ob': 'ᱵ',
+    'b': 'ᱵ',
+    'oy': 'ᱭ',
+    'y': 'ᱭ',
+    'ur': 'ᱲ',
+  };
+
+  final digit = asciiToOlChikiDigits[decoded];
+  if (digit != null) return digit;
+
+  final exactStroke = olChikiStrokes[decoded];
+  if (exactStroke != null) return decoded;
+
+  final olChikiMatch = RegExp(r'[\u1C50-\u1C7F]').firstMatch(decoded);
+  if (olChikiMatch != null) {
+    return olChikiMatch.group(0)!;
+  }
+
+  return latinToOlChiki[decoded.toLowerCase()] ?? decoded;
 }
 
 /// Fallback path for letters without stroke data

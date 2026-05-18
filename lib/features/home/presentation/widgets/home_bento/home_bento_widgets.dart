@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/motion/motion.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../shared/providers/local_settings_provider.dart';
+import '../../../../../shared/utils/localized_content.dart';
 import '../../../../../shared/widgets/animated_buttons.dart';
 
 import '../../../../../shared/widgets/bento_grid.dart';
@@ -82,7 +85,7 @@ class HomeBentoStatCard extends StatelessWidget {
                 fontSize: isHero ? 28 : 22,
                 fontWeight: FontWeight.w900,
                 color: isDark ? Colors.white : Colors.black,
-                letterSpacing: -0.5,
+                letterSpacing: 0,
               ),
             ),
             const SizedBox(height: 2),
@@ -300,7 +303,7 @@ class HomeContentGrid extends StatelessWidget {
 // ═══════════════════════════════════════════════════════════
 // BENTO CATEGORY CARD — individual learning path tile
 // ═══════════════════════════════════════════════════════════
-class _BentoCategoryCard extends StatelessWidget {
+class _BentoCategoryCard extends ConsumerWidget {
   final CategoryEntity category;
   final List<Color> gradientColors;
 
@@ -327,8 +330,19 @@ class _BentoCategoryCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final primaryTitle = primaryLocalizedText(
+      olChiki: category.titleOlChiki,
+      latin: category.titleLatin,
+      scriptMode: scriptMode,
+    );
+    final secondaryTitle = secondaryLocalizedText(
+      olChiki: category.titleOlChiki,
+      latin: category.titleLatin,
+      scriptMode: scriptMode,
+    );
 
     return PressableScale(
       onTap: () {
@@ -363,28 +377,31 @@ class _BentoCategoryCard extends StatelessWidget {
             ),
             const Spacer(),
             Text(
-              category.titleLatin,
+              primaryTitle,
               style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.w900,
                 color: isDark ? Colors.white : Colors.black,
-                letterSpacing: -0.5,
+                letterSpacing: 0,
+                fontFamily: primaryLocalizedFontFamily(scriptMode),
               ),
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
             ),
-            const SizedBox(height: 2),
-            Text(
-              category.titleOlChiki,
-              style: TextStyle(
-                fontSize: 11,
-                fontWeight: FontWeight.w600,
-                fontFamily: 'OlChiki',
-                color: isDark ? Colors.white38 : Colors.black38,
+            if (secondaryTitle != null) ...[
+              const SizedBox(height: 2),
+              Text(
+                secondaryTitle,
+                style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w600,
+                  fontFamily: 'OlChiki',
+                  color: isDark ? Colors.white38 : Colors.black38,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
+            ],
           ],
         ),
       ),

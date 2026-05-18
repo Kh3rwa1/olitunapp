@@ -7,6 +7,7 @@ import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import 'stroke_order_view.dart';
+import 'practice_guide.dart';
 import 'tracing_view.dart';
 
 class PracticeScreen extends ConsumerStatefulWidget {
@@ -30,15 +31,20 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   void _onPracticeComplete() {
     if (_hasCompletedPractice) return; // Only award once per session
     _hasCompletedPractice = true;
+    final practiceChar = normalizePracticeCharacter(widget.letterChar);
 
     // Mark letter as practiced
-    ref.read(userStatsProvider.notifier).practiceLetter(widget.letterChar);
+    ref.read(userStatsProvider.notifier).practiceLetter(practiceChar);
     ref.read(userStatsProvider.notifier).addStars(10);
   }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final practiceChar = normalizePracticeCharacter(widget.letterChar);
+    final practiceName = widget.letterName.contains('%')
+        ? Uri.decodeComponent(widget.letterName)
+        : widget.letterName;
 
     return Scaffold(
       extendBodyBehindAppBar: true,
@@ -93,13 +99,14 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                             ),
                           ),
                           Text(
-                            '${widget.letterName}  ${widget.letterChar}',
+                            '$practiceName  $practiceChar',
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                               color: isDark ? Colors.white : Colors.black,
+                              fontFamily: 'OlChiki',
                             ),
                           ),
                         ],
@@ -151,11 +158,11 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                       child: _selectedIndex == 0
                           ? StrokeOrderView(
                               key: const ValueKey('watch_view'),
-                              letterChar: widget.letterChar,
+                              letterChar: practiceChar,
                             )
                           : TracingView(
                               key: const ValueKey('trace_view'),
-                              letterChar: widget.letterChar,
+                              letterChar: practiceChar,
                               onComplete: _onPracticeComplete,
                             ),
                     ),

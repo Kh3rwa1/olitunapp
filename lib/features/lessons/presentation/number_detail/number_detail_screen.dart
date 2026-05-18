@@ -271,7 +271,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             onPressed: () {
               HapticFeedback.heavyImpact();
               final number = numbers[_currentIndex];
-              context.push('/practice/${number.numeral}/${number.nameLatin}');
+              final practiceChar = Uri.encodeComponent(number.numeral);
+              final practiceName = Uri.encodeComponent(number.nameLatin);
+              context.push('/practice/$practiceChar/$practiceName');
             },
             backgroundColor: accentColor,
             elevation: 4,

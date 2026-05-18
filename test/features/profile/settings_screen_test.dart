@@ -37,7 +37,9 @@ class LocalizedSettingsTestWrapper extends ConsumerWidget {
 }
 
 void main() {
-  testWidgets('SettingsScreen changes language and theme without exceptions', (WidgetTester tester) async {
+  testWidgets('SettingsScreen changes language and theme without exceptions', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -47,9 +49,7 @@ void main() {
 
     await tester.pumpWidget(
       ProviderScope(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
         child: const LocalizedSettingsTestWrapper(),
       ),
     );

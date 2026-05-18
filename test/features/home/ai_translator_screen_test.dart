@@ -6,7 +6,9 @@ import 'package:itun/core/storage/hive_service.dart';
 import '../../test_utils.dart';
 
 void main() {
-  testWidgets('AiTranslatorScreen renders correctly without exceptions', (WidgetTester tester) async {
+  testWidgets('AiTranslatorScreen renders correctly without exceptions', (
+    WidgetTester tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -17,9 +19,7 @@ void main() {
     await tester.pumpWidget(
       createTestableWidget(
         child: const AiTranslatorScreen(),
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       ),
     );
 

@@ -233,6 +233,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         child: (_, state) => PracticeScreen(
           letterChar: state.pathParameters['char'] ?? '',
           letterName: state.pathParameters['name'] ?? '',
+          startInTrace: state.uri.queryParameters['mode'] == 'trace',
         ),
       ),
       _modalRoute(

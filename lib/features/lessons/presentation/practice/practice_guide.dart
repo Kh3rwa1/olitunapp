@@ -175,6 +175,8 @@ List<Offset> samplePath(Path path, {int samplesPerMetric = 48}) {
 }
 
 class TraceScore {
+  static const double autoAdvanceThreshold = 0.70;
+
   final double overall;
   final double coverage;
   final double precision;
@@ -203,6 +205,8 @@ class TraceScore {
         precision >= 0.64 &&
         startAccuracy >= 0.45;
   }
+
+  bool get shouldAutoAdvance => overall >= autoAdvanceThreshold;
 }
 
 double computeTraceProgress({

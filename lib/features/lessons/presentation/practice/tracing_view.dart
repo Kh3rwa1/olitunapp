@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
 import '../../data/ol_chiki_strokes.dart';
 
@@ -96,7 +97,7 @@ class _TracingViewState extends State<TracingView>
     final score = computeTraceScore(
       guidePoints: guidePoints,
       tracedPoints: _points,
-      tolerance: boardSize * 0.07,
+      tolerance: boardSize * 0.09,
     );
 
     setState(() {
@@ -116,19 +117,23 @@ class _TracingViewState extends State<TracingView>
     final score = computeTraceScore(
       guidePoints: guidePoints,
       tracedPoints: _points,
-      tolerance: boardSize * 0.07,
+      tolerance: boardSize * 0.09,
     );
 
+    var didComplete = false;
     setState(() {
       _score = score;
       _progress = score.overall;
-      if (score.isComplete && !_showCelebration) {
+      if (score.shouldAutoAdvance && !_showCelebration) {
         _showCelebration = true;
-        HapticFeedback.heavyImpact();
-        // Notify parent that practice is complete
-        widget.onComplete?.call();
+        didComplete = true;
       }
     });
+
+    if (didComplete) {
+      HapticFeedback.heavyImpact();
+      widget.onComplete?.call();
+    }
   }
 
   void _appendTracePoint(Offset localPosition, double boardSize) {
@@ -163,7 +168,7 @@ class _TracingViewState extends State<TracingView>
 
   String _feedbackText() {
     if (_showCelebration) {
-      return 'Amazing! Your trace is super accurate!';
+      return 'Great trace. Moving to the next one...';
     }
     if (_points.isEmpty) {
       return 'Tap the start point and trace the shape';
@@ -230,26 +235,28 @@ class _TracingViewState extends State<TracingView>
                         ),
                         child: Stack(
                           children: [
-                            // Background letter
-                            Center(
-                              child: Text(
-                                practiceChar,
-                                style: TextStyle(
-                                  fontSize: boardSize * 0.56,
-                                  color: Colors.grey.withValues(alpha: 0.14),
-                                  fontWeight: FontWeight.w700,
-                                  fontFamily: 'OlChiki',
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: OlChikiGlyphGuidePainter(
+                                  character: practiceChar,
+                                  fillColor:
+                                      (isDark ? Colors.white : Colors.black)
+                                          .withValues(
+                                            alpha: isDark ? 0.20 : 0.13,
+                                          ),
+                                  outlineColor: const Color(
+                                    0xFF35C7B5,
+                                  ).withValues(alpha: 0.24),
                                 ),
                               ),
                             ),
-                            // Guide path
                             Positioned.fill(
                               child: CustomPaint(
                                 painter: _GuidePainter(
                                   letterChar: practiceChar,
                                   color: isDark
-                                      ? Colors.white.withValues(alpha: 0.18)
-                                      : Colors.black.withValues(alpha: 0.18),
+                                      ? Colors.white.withValues(alpha: 0.10)
+                                      : Colors.black.withValues(alpha: 0.08),
                                 ),
                               ),
                             ),
@@ -276,7 +283,7 @@ class _TracingViewState extends State<TracingView>
                                 },
                                 child: CustomPaint(
                                   painter: TracingPainter(
-                                    points: _points,
+                                    points: List<Offset?>.unmodifiable(_points),
                                     color: const Color(0xFF35C7B5),
                                   ),
                                 ),
@@ -456,7 +463,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
                 const Text('🌟', style: TextStyle(fontSize: 64)),
                 const SizedBox(height: 12),
                 const Text(
-                  'Perfect!',
+                  'Nice!',
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,

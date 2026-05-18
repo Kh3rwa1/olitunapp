@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
 
 class StrokeOrderView extends StatefulWidget {
@@ -61,14 +62,15 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
                     ),
                     child: Stack(
                       children: [
-                        Center(
-                          child: Text(
-                            practiceChar,
-                            style: TextStyle(
-                              fontSize: boardSize * 0.56,
-                              color: Colors.grey.withValues(alpha: 0.12),
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'OlChiki',
+                        Positioned.fill(
+                          child: CustomPaint(
+                            painter: OlChikiGlyphGuidePainter(
+                              character: practiceChar,
+                              fillColor: (isDark ? Colors.white : Colors.black)
+                                  .withValues(alpha: isDark ? 0.18 : 0.12),
+                              outlineColor: const Color(
+                                0xFF35C7B5,
+                              ).withValues(alpha: 0.22),
                             ),
                           ),
                         ),
@@ -128,7 +130,7 @@ class StrokePainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final guidePaint = Paint()
-      ..color = Colors.grey.withValues(alpha: 0.25)
+      ..color = Colors.grey.withValues(alpha: 0.12)
       ..style = PaintingStyle.stroke
       ..strokeWidth = size.width * 0.04
       ..strokeCap = StrokeCap.round;

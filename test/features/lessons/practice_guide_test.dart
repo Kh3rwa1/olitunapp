@@ -65,6 +65,29 @@ void main() {
       expect(score.isComplete, isFalse);
       expect(score.startAccuracy, 0);
     });
+
+    test(
+      'allows practice to auto-advance once the trace reaches 70 percent',
+      () {
+        const readyScore = TraceScore(
+          overall: 0.70,
+          coverage: 0.60,
+          precision: 0.60,
+          startAccuracy: 0.60,
+          completion: 0.60,
+        );
+        const almostReadyScore = TraceScore(
+          overall: 0.69,
+          coverage: 1,
+          precision: 1,
+          startAccuracy: 1,
+          completion: 1,
+        );
+
+        expect(readyScore.shouldAutoAdvance, isTrue);
+        expect(almostReadyScore.shouldAutoAdvance, isFalse);
+      },
+    );
   });
 
   group('buildPracticeGuidePath', () {

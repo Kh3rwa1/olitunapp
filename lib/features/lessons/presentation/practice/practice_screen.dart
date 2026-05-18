@@ -5,6 +5,8 @@ import 'package:go_router/go_router.dart';
 
 import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/models/content/letter_model.dart';
+import '../../../../shared/models/content/number_model.dart';
 import '../../../../shared/providers/providers.dart';
 import 'stroke_order_view.dart';
 import 'practice_guide.dart';
@@ -13,11 +15,13 @@ import 'tracing_view.dart';
 class PracticeScreen extends ConsumerStatefulWidget {
   final String letterChar;
   final String letterName;
+  final bool startInTrace;
 
   const PracticeScreen({
     super.key,
     required this.letterChar,
     required this.letterName,
+    this.startInTrace = false,
   });
 
   @override
@@ -25,17 +29,87 @@ class PracticeScreen extends ConsumerStatefulWidget {
 }
 
 class _PracticeScreenState extends ConsumerState<PracticeScreen> {
-  int _selectedIndex = 0;
+  late int _selectedIndex;
   bool _hasCompletedPractice = false;
+  bool _isAdvancing = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedIndex = widget.startInTrace ? 1 : 0;
+  }
 
   void _onPracticeComplete() {
-    if (_hasCompletedPractice) return; // Only award once per session
-    _hasCompletedPractice = true;
     final practiceChar = normalizePracticeCharacter(widget.letterChar);
 
-    // Mark letter as practiced
-    ref.read(userStatsProvider.notifier).practiceLetter(practiceChar);
-    ref.read(userStatsProvider.notifier).addStars(10);
+    if (!_hasCompletedPractice) {
+      _hasCompletedPractice = true;
+      ref.read(userStatsProvider.notifier).practiceLetter(practiceChar);
+      ref.read(userStatsProvider.notifier).addStars(10);
+    }
+
+    if (_isAdvancing) return;
+    _isAdvancing = true;
+    _advanceAfterCompletion(practiceChar);
+  }
+
+  Future<void> _advanceAfterCompletion(String practiceChar) async {
+    await Future<void>.delayed(const Duration(milliseconds: 850));
+    if (!mounted) return;
+
+    final target = _nextPracticeTarget(practiceChar);
+    if (target != null) {
+      final encodedChar = Uri.encodeComponent(target.character);
+      final encodedName = Uri.encodeComponent(target.name);
+      context.pushReplacement('/practice/$encodedChar/$encodedName?mode=trace');
+      return;
+    }
+
+    if (context.canPop()) {
+      context.pop();
+    } else {
+      context.go('/');
+    }
+  }
+
+  _PracticeTarget? _nextPracticeTarget(String currentChar) {
+    final letters = [
+      for (final letter
+          in ref.read(lettersProvider).valueOrNull ?? const <LetterModel>[])
+        if (letter.isActive && letter.charOlChiki.isNotEmpty) letter,
+    ]..sort((a, b) => a.order.compareTo(b.order));
+
+    final letterIndex = letters.indexWhere(
+      (letter) => normalizePracticeCharacter(letter.charOlChiki) == currentChar,
+    );
+    if (letterIndex >= 0 && letterIndex < letters.length - 1) {
+      final next = letters[letterIndex + 1];
+      return _PracticeTarget(
+        character: next.charOlChiki,
+        name: next.transliterationLatin.isNotEmpty
+            ? next.transliterationLatin
+            : next.charOlChiki,
+      );
+    }
+
+    final numbers = [
+      for (final number
+          in ref.read(numbersProvider).valueOrNull ?? const <NumberModel>[])
+        if (number.isActive && number.numeral.isNotEmpty) number,
+    ]..sort((a, b) => a.order.compareTo(b.order));
+
+    final numberIndex = numbers.indexWhere(
+      (number) => normalizePracticeCharacter(number.numeral) == currentChar,
+    );
+    if (numberIndex >= 0 && numberIndex < numbers.length - 1) {
+      final next = numbers[numberIndex + 1];
+      return _PracticeTarget(
+        character: next.numeral,
+        name: next.nameLatin.isNotEmpty ? next.nameLatin : next.numeral,
+      );
+    }
+
+    return null;
   }
 
   @override
@@ -175,6 +249,13 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
       ),
     );
   }
+}
+
+class _PracticeTarget {
+  final String character;
+  final String name;
+
+  const _PracticeTarget({required this.character, required this.name});
 }
 
 class _GlassIconButton extends StatelessWidget {

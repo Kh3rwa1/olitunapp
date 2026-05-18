@@ -1,1 +1,2 @@
-export 'animated_buttons/animated_buttons.dart';
+// Compatibility export pointing to the new modular buttons system.
+export 'buttons/animated_buttons.dart';

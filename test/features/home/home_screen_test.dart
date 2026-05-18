@@ -11,7 +11,6 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/shared/models/content_models.dart';
-import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import '../../test_utils.dart';
 
 class MockCategoryNotifier

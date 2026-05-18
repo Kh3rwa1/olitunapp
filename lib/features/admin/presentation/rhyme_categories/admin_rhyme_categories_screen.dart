@@ -154,9 +154,7 @@ class _AdminRhymeCategoriesScreenState
 
   void _showSubcategoryDialog(String categoryId, RhymeSubcategoryModel? sub) {
     final subcats = ref.read(rhymeSubcategoriesProvider).value ?? [];
-    final catSubs = subcats
-        .where((s) => s.categoryId == categoryId)
-        .toList();
+    final catSubs = subcats.where((s) => s.categoryId == categoryId).toList();
 
     showModalBottomSheet(
       context: context,

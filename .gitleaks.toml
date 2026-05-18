@@ -1,0 +1,25 @@
+# .gitleaks.toml
+# Gitleaks configuration for Olitun
+# https://github.com/gitleaks/gitleaks
+
+[extend]
+# Use the default gitleaks config as a base
+useDefault = true
+
+[allowlist]
+description = "Known historical false positives — already cleaned from current codebase"
+
+# The Stack Auth publishable key (pck_*) is a CLIENT-SIDE key intentionally
+# designed to be public, similar to a Stripe publishable key. It does not
+# grant any privileged server-side access.
+regexes = [
+  "pck_[a-z0-9]+",
+]
+
+# Suppress findings in old commits that have already been cleaned up.
+# These files no longer exist in the current codebase.
+commits = [
+  "bc526f6835dae5047565adb9b1c1dbf8b9a6e50b",
+  "e0fe05d091eed72eda3f35d45746452b19f45442",
+  "6bdde56ea8a4c5fcc576c49710a13f05c8f6c875",
+]

@@ -145,7 +145,10 @@ final routerProvider = Provider<GoRouter>((ref) {
       path: path,
       name: name,
       redirect: adminRedirect,
-      builder: builder,
+      pageBuilder: (context, state) => NoTransitionPage<void>(
+        key: state.pageKey,
+        child: builder(context, state),
+      ),
     );
   }
 

@@ -22,6 +22,29 @@
       "enabled": true,
       "logging": true,
       "scopes": []
+    },
+    {
+      "$id": "delete-account",
+      "name": "delete-account",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/delete-account",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "users.write"
+      ]
     }
   ]
 }

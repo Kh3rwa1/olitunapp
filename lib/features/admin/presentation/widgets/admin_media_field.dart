@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import '../../../../../core/storage/upload_service.dart';
+import '../../../../core/storage/upload_service.dart';
 
 /// Reusable media upload row used for audio, image, and animation fields
-/// in admin letter/lesson/category forms.
+/// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
 ///
-/// Handles file picking, upload via [AppwriteStorageUploadService], and
-/// shows success/error feedback. Caller receives the final URL via [onUploaded].
-class LetterMediaField extends ConsumerStatefulWidget {
+/// Handles file picking, upload via [AppwriteStorageUploadService], shows success/error feedback,
+/// and provides a direct text input for entering custom URLs manually.
+class AdminMediaField extends ConsumerStatefulWidget {
   final String label;
   final String? subtitle;
   final IconData icon;
@@ -20,7 +20,7 @@ class LetterMediaField extends ConsumerStatefulWidget {
   final ValueChanged<String?> onUploaded;
   final Widget Function(String url)? previewBuilder;
 
-  const LetterMediaField({
+  const AdminMediaField({
     super.key,
     required this.label,
     this.subtitle,
@@ -35,10 +35,10 @@ class LetterMediaField extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<LetterMediaField> createState() => _LetterMediaFieldState();
+  ConsumerState<AdminMediaField> createState() => _AdminMediaFieldState();
 }
 
-class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
+class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
   bool _uploading = false;
   late final TextEditingController _urlController;
 
@@ -49,7 +49,7 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
   }
 
   @override
-  void didUpdateWidget(covariant LetterMediaField oldWidget) {
+  void didUpdateWidget(covariant AdminMediaField oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.currentUrl != oldWidget.currentUrl && widget.currentUrl != _urlController.text) {
       _urlController.text = widget.currentUrl ?? '';

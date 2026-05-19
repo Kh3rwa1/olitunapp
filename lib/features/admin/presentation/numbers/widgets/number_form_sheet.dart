@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -32,6 +33,10 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
   late final TextEditingController _pronCtrl;
   late final TextEditingController _orderCtrl;
 
+  String? _audioUrl;
+  String? _imageUrl;
+  String? _animationUrl;
+
   bool get _isEditing => widget.number != null;
 
   @override
@@ -44,6 +49,9 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
     _nameLatinCtrl = TextEditingController(text: n?.nameLatin ?? '');
     _pronCtrl = TextEditingController(text: n?.pronunciation ?? '');
     _orderCtrl = TextEditingController(text: (n?.order ?? 0).toString());
+    _audioUrl = n?.audioUrl;
+    _imageUrl = n?.imageUrl;
+    _animationUrl = n?.animationUrl;
   }
 
   @override
@@ -69,9 +77,9 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
           ? _pronCtrl.text.trim()
           : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-      audioUrl: widget.number?.audioUrl,
-      imageUrl: widget.number?.imageUrl,
-      animationUrl: widget.number?.animationUrl,
+      audioUrl: _audioUrl,
+      imageUrl: _imageUrl,
+      animationUrl: _animationUrl,
     );
     if (_isEditing) {
       ref.read(numbersProvider.notifier).updateNumber(number);
@@ -208,6 +216,52 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
             hint: '0',
             keyboardType: TextInputType.number,
             prefixIcon: Icons.sort_rounded,
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Audio Pronunciation',
+            icon: Icons.audiotrack_rounded,
+            accent: const Color(0xFF3B82F6),
+            currentUrl: _audioUrl,
+            uploadFolder: 'numbers-audio',
+            fileType: FileType.audio,
+            onUploaded: (url) => setState(() => _audioUrl = url),
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Hero Image/GIF (Optional)',
+            subtitle: 'Upload high-quality image or animated GIF',
+            icon: Icons.image_rounded,
+            accent: const Color(0xFF6366F1),
+            currentUrl: _imageUrl,
+            uploadFolder: 'numbers-images',
+            fileType: FileType.image,
+            onUploaded: (url) => setState(() => _imageUrl = url),
+            previewBuilder: (url) => ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                url,
+                height: 120,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const Icon(
+                  Icons.broken_image_rounded,
+                  size: 60,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Lottie Animation (Optional)',
+            subtitle: 'Upload a .json Lottie animation file',
+            icon: Icons.animation_rounded,
+            accent: const Color(0xFF10B981),
+            currentUrl: _animationUrl,
+            uploadFolder: 'animations',
+            fileType: FileType.custom,
+            allowedExtensions: const ['json'],
+            onUploaded: (url) => setState(() => _animationUrl = url),
           ),
         ],
       ),

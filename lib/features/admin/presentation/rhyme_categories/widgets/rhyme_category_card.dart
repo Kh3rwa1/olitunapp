@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../rhymes/domain/rhyme_category_model.dart';
 import '../../widgets/admin_form_widgets.dart';
+import '../../widgets/admin_glass_card.dart';
 
 class RhymeCategoryCard extends StatelessWidget {
   final RhymeCategoryModel category;
@@ -46,14 +47,9 @@ class RhymeCategoryCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    return AdminGlassCard(
       margin: const EdgeInsets.only(bottom: 14),
-      decoration: BoxDecoration(
-        color: AdminTokens.raised(isDark),
-        borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
-        border: Border.all(color: AdminTokens.border(isDark)),
-        boxShadow: AdminTokens.raisedShadow(isDark),
-      ),
+      borderRadius: AdminTokens.radiusLg,
       child: Theme(
         data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(

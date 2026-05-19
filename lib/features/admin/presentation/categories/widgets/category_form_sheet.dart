@@ -2,12 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../categories/presentation/providers/category_notifier.dart';
 import '../../widgets/admin_form_widgets.dart';
-import '../../widgets/admin_upload_field.dart';
 
 class CategoryFormSheet extends ConsumerStatefulWidget {
   final CategoryEntity? category;
@@ -35,8 +35,8 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
   late final TextEditingController _titleLatinCtrl;
   late final TextEditingController _titleOlChikiCtrl;
   late final TextEditingController _descriptionCtrl;
-  late final TextEditingController _iconUrlCtrl;
-  late final TextEditingController _animationUrlCtrl;
+  String? _iconUrl;
+  String? _animationUrl;
   late String _selectedGradient;
   late String _selectedIcon;
 
@@ -54,10 +54,8 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     _descriptionCtrl = TextEditingController(
       text: widget.category?.description ?? '',
     );
-    _iconUrlCtrl = TextEditingController(text: widget.category?.iconUrl ?? '');
-    _animationUrlCtrl = TextEditingController(
-      text: widget.category?.animationUrl ?? '',
-    );
+    _iconUrl = widget.category?.iconUrl;
+    _animationUrl = widget.category?.animationUrl;
     _selectedGradient = widget.category?.gradientPreset ?? 'skyBlue';
     _selectedIcon = widget.category?.iconName ?? 'alphabet';
   }
@@ -67,8 +65,6 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     _titleLatinCtrl.dispose();
     _titleOlChikiCtrl.dispose();
     _descriptionCtrl.dispose();
-    _iconUrlCtrl.dispose();
-    _animationUrlCtrl.dispose();
     super.dispose();
   }
 
@@ -79,9 +75,9 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
       titleLatin: _titleLatinCtrl.text,
       titleOlChiki: _titleOlChikiCtrl.text,
       description: _descriptionCtrl.text,
-      iconUrl: _iconUrlCtrl.text.isNotEmpty ? _iconUrlCtrl.text : null,
-      animationUrl: _animationUrlCtrl.text.isNotEmpty
-          ? _animationUrlCtrl.text
+      iconUrl: _iconUrl != null && _iconUrl!.isNotEmpty ? _iconUrl : null,
+      animationUrl: _animationUrl != null && _animationUrl!.isNotEmpty
+          ? _animationUrl
           : null,
       gradientPreset: _selectedGradient,
       iconName: _selectedIcon,
@@ -188,24 +184,25 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                     maxLines: 2,
                   ),
                   const SizedBox(height: 20),
-                  AdminUploadField(
-                    controller: _iconUrlCtrl,
+                  AdminMediaField(
                     label: 'Icon / Lottie Animation',
                     icon: Icons.animation_rounded,
-                    isDark: isDark,
-                    folder: 'category-icons',
-                    uploadType: AdminUploadType.lottieOrWebm,
-                    dialogSetState: setState,
+                    accent: AppColors.primary,
+                    currentUrl: _iconUrl,
+                    uploadFolder: 'category-icons',
+                    fileType: FileType.any,
+                    onUploaded: (url) => setState(() => _iconUrl = url),
                   ),
                   const SizedBox(height: 20),
-                  AdminUploadField(
-                    controller: _animationUrlCtrl,
+                  AdminMediaField(
                     label: 'Lottie Animation (Optional)',
                     icon: Icons.animation_rounded,
-                    isDark: isDark,
-                    folder: 'animations',
-                    uploadType: AdminUploadType.lottie,
-                    dialogSetState: setState,
+                    accent: const Color(0xFF10B981),
+                    currentUrl: _animationUrl,
+                    uploadFolder: 'animations',
+                    fileType: FileType.custom,
+                    allowedExtensions: const ['json'],
+                    onUploaded: (url) => setState(() => _animationUrl = url),
                   ),
                   const SizedBox(height: 28),
 

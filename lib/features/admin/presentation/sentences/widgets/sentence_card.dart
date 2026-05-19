@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
+import '../../widgets/admin_glass_card.dart';
 
 class SentenceCard extends StatefulWidget {
   final SentenceModel sentence;
@@ -32,29 +33,21 @@ class _SentenceCardState extends State<SentenceCard> {
     return MouseRegion(
       onEnter: (_) => setState(() => _hovering = true),
       onExit: (_) => setState(() => _hovering = false),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
+      child: Container(
         margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AdminTokens.raised(isDark),
-          borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
+        child: AdminGlassCard(
+          padding: const EdgeInsets.all(18),
           border: Border.all(
             color: _hovering
                 ? AppColors.primary.withValues(alpha: 0.4)
-                : AdminTokens.border(isDark),
+                : (isDark
+                    ? Colors.white.withValues(alpha: 0.09)
+                    : Colors.black.withValues(alpha: 0.05)),
           ),
           boxShadow: _hovering
               ? AdminTokens.brandGlow(AppColors.primary, strength: 0.2)
-              : [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
-                    blurRadius: 8,
-                    offset: const Offset(0, 2),
-                  ),
-                ],
-        ),
-        child: Row(
+              : null,
+          child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Container(
@@ -174,6 +167,7 @@ class _SentenceCardState extends State<SentenceCard> {
           ],
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 }

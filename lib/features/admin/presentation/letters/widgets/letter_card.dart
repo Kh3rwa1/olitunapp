@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
+import '../../../../../core/audio/audio_service.dart';
+import '../../widgets/admin_glass_card.dart';
 
 /// Single letter card in the admin grid.
-///
-/// Extracted from the private `_LetterCard` in the original monolithic screen.
-class LetterCard extends StatelessWidget {
+class LetterCard extends ConsumerWidget {
   final LetterModel letter;
   final bool isDark;
   final int index;
@@ -23,53 +25,90 @@ class LetterCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return GestureDetector(
           onTap: onEdit,
           onLongPress: onDelete,
-          child: Container(
-            decoration: BoxDecoration(
-              gradient: AppColors.premiumMint,
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: AppColors.accentMint.withValues(alpha: 0.3),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
+          child: AdminGlassCard(
+            borderRadius: 20,
+            color: isDark
+                ? AppColors.primary.withValues(alpha: 0.12)
+                : Colors.white.withValues(alpha: 0.65),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.primary.withValues(alpha: 0.2)
+                  : AppColors.primary.withValues(alpha: 0.1),
+              width: 1.5,
             ),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                Text(
-                  letter.charOlChiki,
-                  style: const TextStyle(
-                    fontSize: 40,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: 'OlChiki',
-                    color: Colors.white,
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        letter.charOlChiki,
+                        style: TextStyle(
+                          fontSize: 40,
+                          fontWeight: FontWeight.w900,
+                          fontFamily: 'OlChiki',
+                          color: isDark ? Colors.white : AppColors.primary,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.08)
+                              : AppColors.primary.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.12)
+                                : AppColors.primary.withValues(alpha: 0.12),
+                          ),
+                        ),
+                        child: Text(
+                          letter.transliterationLatin,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w700,
+                            color: isDark ? Colors.white70 : AppColors.primary,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.2),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    letter.transliterationLatin,
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
+                if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty)
+                  Positioned(
+                    top: 8,
+                    right: 8,
+                    child: GestureDetector(
+                      onTap: () {
+                        HapticFeedback.mediumImpact();
+                        ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.all(6),
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.1)
+                              : AppColors.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          Icons.volume_up_rounded,
+                          size: 16,
+                          color: isDark ? Colors.white : AppColors.primary,
+                        ),
+                      ),
                     ),
                   ),
-                ),
               ],
             ),
           ),

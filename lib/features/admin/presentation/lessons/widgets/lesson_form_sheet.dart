@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
-
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../shared/providers/providers.dart';
-import '../../widgets/admin_upload_field.dart';
+import '../../widgets/admin_form_widgets.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {
   final LessonEntity? lesson;
@@ -31,11 +31,11 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   late final TextEditingController _descriptionCtrl;
   late final TextEditingController _minutesCtrl;
   late final TextEditingController _orderCtrl;
-  late final TextEditingController _thumbnailCtrl;
 
   String? _selectedCategoryId;
   String _level = 'beginner';
   bool _isActive = true;
+  String? _thumbnailUrl;
 
   bool get _isEditing => widget.lesson != null;
 
@@ -56,9 +56,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
       text: (lesson?.estimatedMinutes ?? 5).toString(),
     );
     _orderCtrl = TextEditingController(text: (lesson?.order ?? 0).toString());
-    _thumbnailCtrl = TextEditingController(
-      text: lesson?.data?['thumbnailUrl'] ?? '',
-    );
+    _thumbnailUrl = lesson?.data?['thumbnailUrl'];
 
     _isActive = lesson?.isActive ?? true;
   }
@@ -70,7 +68,6 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
     _descriptionCtrl.dispose();
     _minutesCtrl.dispose();
     _orderCtrl.dispose();
-    _thumbnailCtrl.dispose();
     super.dispose();
   }
 
@@ -283,13 +280,28 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                   ),
                 ),
                 const SizedBox(height: 14),
-                AdminUploadField(
-                  controller: _thumbnailCtrl,
-                  label: 'Thumbnail',
+                AdminMediaField(
+                  label: 'Thumbnail Image/GIF',
+                  subtitle: 'Upload or enter direct URL for thumbnail',
                   icon: Icons.image_rounded,
-                  isDark: isDark,
-                  folder: 'lesson-thumbnails',
-                  dialogSetState: setState,
+                  accent: const Color(0xFF3B82F6),
+                  currentUrl: _thumbnailUrl,
+                  uploadFolder: 'lesson-thumbnails',
+                  fileType: FileType.image,
+                  onUploaded: (url) => setState(() => _thumbnailUrl = url),
+                  previewBuilder: (url) => ClipRRect(
+                    borderRadius: BorderRadius.circular(10),
+                    child: Image.network(
+                      url,
+                      height: 120,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, _, _) => const Icon(
+                        Icons.broken_image_rounded,
+                        size: 60,
+                        color: Colors.grey,
+                      ),
+                    ),
+                  ),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
@@ -337,32 +349,34 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                                       textOlChiki: 'New Block',
                                     ),
                                   ],
-                              isActive: _isActive,
-                              data: _thumbnailCtrl.text.isNotEmpty
-                                  ? {'thumbnailUrl': _thumbnailCtrl.text}
-                                  : null,
-                            );
+                                isActive: _isActive,
+                                data: _thumbnailUrl != null && _thumbnailUrl!.isNotEmpty
+                                    ? {'thumbnailUrl': _thumbnailUrl!}
+                                    : null,
+                              );
 
-                            if (_isEditing) {
-                              await ref
-                                  .read(lessonNotifierProvider.notifier)
-                                  .updateLesson(newLesson);
-                            } else {
-                              await ref
-                                  .read(lessonNotifierProvider.notifier)
-                                  .addLesson(newLesson);
-                            }
+                              if (_isEditing) {
+                                await ref
+                                    .read(lessonNotifierProvider.notifier)
+                                    .updateLesson(newLesson);
+                              } else {
+                                await ref
+                                    .read(lessonNotifierProvider.notifier)
+                                    .addLesson(newLesson);
+                              }
 
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                    child: Text(_isEditing ? 'Save Changes' : 'Create Lesson'),
+                              if (context.mounted) Navigator.pop(context);
+                            },
+                      child: Text(_isEditing ? 'Save Changes' : 'Create Lesson'),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
   }
 }
+
+

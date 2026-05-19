@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../admin_media_state.dart';
+import '../../widgets/admin_glass_card.dart';
 
 class MediaCard extends StatelessWidget {
   final MediaItem item;
@@ -55,13 +56,8 @@ class MediaCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final accent = _getColor();
-    return Container(
-      decoration: BoxDecoration(
-        color: AdminTokens.raised(isDark),
-        borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
-        border: Border.all(color: AdminTokens.border(isDark)),
-        boxShadow: AdminTokens.raisedShadow(isDark),
-      ),
+    return AdminGlassCard(
+      borderRadius: AdminTokens.radiusLg,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

@@ -30,7 +30,6 @@ class AdminLettersScreen extends ConsumerWidget {
       backgroundColor: Colors.transparent,
       body: Stack(
         children: [
-          Container(color: AdminTokens.base(isDark)),
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,

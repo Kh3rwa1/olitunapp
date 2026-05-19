@@ -3,12 +3,12 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../widgets/admin_form_widgets.dart';
-import '../../widgets/admin_upload_field.dart';
 
 class BannerFormSheet extends ConsumerStatefulWidget {
   final FeaturedBannerModel? banner;
@@ -36,8 +36,8 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
   late final TextEditingController _titleCtrl;
   late final TextEditingController _subtitleCtrl;
   late final TextEditingController _targetRouteCtrl;
-  late final TextEditingController _imageCtrl;
-  late final TextEditingController _animationCtrl;
+  String? _imageUrl;
+  String? _animationUrl;
   late String _selectedGradient;
 
   bool get _isEditing => widget.banner != null;
@@ -50,10 +50,8 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
     _targetRouteCtrl = TextEditingController(
       text: widget.banner?.targetRoute ?? '',
     );
-    _imageCtrl = TextEditingController(text: widget.banner?.imageUrl ?? '');
-    _animationCtrl = TextEditingController(
-      text: widget.banner?.animationUrl ?? '',
-    );
+    _imageUrl = widget.banner?.imageUrl;
+    _animationUrl = widget.banner?.animationUrl;
     _selectedGradient = widget.banner?.gradientPreset ?? 'skyBlue';
   }
 
@@ -62,8 +60,6 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
     _titleCtrl.dispose();
     _subtitleCtrl.dispose();
     _targetRouteCtrl.dispose();
-    _imageCtrl.dispose();
-    _animationCtrl.dispose();
     super.dispose();
   }
 
@@ -73,8 +69,10 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
       id: widget.banner?.id ?? const Uuid().v4(),
       title: _titleCtrl.text,
       subtitle: _subtitleCtrl.text.isNotEmpty ? _subtitleCtrl.text : null,
-      imageUrl: _imageCtrl.text.isNotEmpty ? _imageCtrl.text : null,
-      animationUrl: _animationCtrl.text.isNotEmpty ? _animationCtrl.text : null,
+      imageUrl: _imageUrl != null && _imageUrl!.isNotEmpty ? _imageUrl : null,
+      animationUrl: _animationUrl != null && _animationUrl!.isNotEmpty
+          ? _animationUrl
+          : null,
       gradientPreset: _selectedGradient,
       targetRoute: _targetRouteCtrl.text.isNotEmpty
           ? _targetRouteCtrl.text
@@ -200,23 +198,38 @@ class _BannerFormSheetState extends ConsumerState<BannerFormSheet> {
                     hint: '/lessons/alphabet-intro',
                   ),
                   const SizedBox(height: 24),
-                  AdminUploadField(
-                    controller: _imageCtrl,
+                  AdminMediaField(
                     label: 'Featured Image',
                     icon: Icons.upload_file_rounded,
-                    isDark: isDark,
-                    folder: 'banners',
-                    dialogSetState: setState,
+                    accent: AppColors.primary,
+                    currentUrl: _imageUrl,
+                    uploadFolder: 'banners',
+                    fileType: FileType.image,
+                    onUploaded: (url) => setState(() => _imageUrl = url),
+                    previewBuilder: (url) => ClipRRect(
+                      borderRadius: BorderRadius.circular(10),
+                      child: Image.network(
+                        url,
+                        height: 120,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, _, _) => const Icon(
+                          Icons.broken_image_rounded,
+                          size: 60,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 24),
-                  AdminUploadField(
-                    controller: _animationCtrl,
+                  AdminMediaField(
                     label: 'Lottie Animation (Optional)',
                     icon: Icons.animation_rounded,
-                    isDark: isDark,
-                    folder: 'animations',
-                    uploadType: AdminUploadType.lottie,
-                    dialogSetState: setState,
+                    accent: const Color(0xFF10B981),
+                    currentUrl: _animationUrl,
+                    uploadFolder: 'animations',
+                    fileType: FileType.custom,
+                    allowedExtensions: const ['json'],
+                    onUploaded: (url) => setState(() => _animationUrl = url),
                   ),
                   const SizedBox(height: 32),
                   Text(

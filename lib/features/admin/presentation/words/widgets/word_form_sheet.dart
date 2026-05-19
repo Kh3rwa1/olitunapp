@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
@@ -33,6 +34,10 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
   late final TextEditingController _pronCtrl;
   late final TextEditingController _orderCtrl;
 
+  String? _audioUrl;
+  String? _imageUrl;
+  String? _animationUrl;
+
   bool get _isEditing => widget.word != null;
 
   @override
@@ -46,6 +51,9 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
     _categoryCtrl = TextEditingController(text: w?.category ?? '');
     _pronCtrl = TextEditingController(text: w?.pronunciation ?? '');
     _orderCtrl = TextEditingController(text: (w?.order ?? 0).toString());
+    _audioUrl = w?.audioUrl;
+    _imageUrl = w?.imageUrl;
+    _animationUrl = w?.animationUrl;
   }
 
   @override
@@ -75,9 +83,9 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           ? _pronCtrl.text.trim()
           : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-      audioUrl: widget.word?.audioUrl,
-      imageUrl: widget.word?.imageUrl,
-      animationUrl: widget.word?.animationUrl,
+      audioUrl: _audioUrl,
+      imageUrl: _imageUrl,
+      animationUrl: _animationUrl,
     );
     if (_isEditing) {
       ref.read(wordsProvider.notifier).updateWord(word);
@@ -219,6 +227,52 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
             controller: _pronCtrl,
             label: 'Pronunciation (optional)',
             hint: 'e.g., jo-har',
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Audio Pronunciation',
+            icon: Icons.audiotrack_rounded,
+            accent: const Color(0xFF8B5CF6),
+            currentUrl: _audioUrl,
+            uploadFolder: 'words-audio',
+            fileType: FileType.audio,
+            onUploaded: (url) => setState(() => _audioUrl = url),
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Hero Image/GIF (Optional)',
+            subtitle: 'Upload high-quality image or animated GIF',
+            icon: Icons.image_rounded,
+            accent: const Color(0xFF6366F1),
+            currentUrl: _imageUrl,
+            uploadFolder: 'words-images',
+            fileType: FileType.image,
+            onUploaded: (url) => setState(() => _imageUrl = url),
+            previewBuilder: (url) => ClipRRect(
+              borderRadius: BorderRadius.circular(10),
+              child: Image.network(
+                url,
+                height: 120,
+                fit: BoxFit.contain,
+                errorBuilder: (_, _, _) => const Icon(
+                  Icons.broken_image_rounded,
+                  size: 60,
+                  color: Colors.grey,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+          AdminMediaField(
+            label: 'Lottie Animation (Optional)',
+            subtitle: 'Upload a .json Lottie animation file',
+            icon: Icons.animation_rounded,
+            accent: const Color(0xFF10B981),
+            currentUrl: _animationUrl,
+            uploadFolder: 'animations',
+            fileType: FileType.custom,
+            allowedExtensions: const ['json'],
+            onUploaded: (url) => setState(() => _animationUrl = url),
           ),
         ],
       ),

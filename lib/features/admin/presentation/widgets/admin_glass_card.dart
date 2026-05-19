@@ -22,8 +22,8 @@ class AdminGlassCard extends StatelessWidget {
   final AlignmentGeometry? alignment;
   final EdgeInsetsGeometry? margin;
 
-  /// When true, render the legacy frosted-glass treatment (BackdropFilter +
-  /// translucent fill). When false (default), render a clean raised card.
+  /// When true, render the frosted-glass treatment (BackdropFilter +
+  /// translucent fill). When false, render a clean raised card.
   final bool glass;
 
   /// When true, render with a subtle gradient sheen for hero moments.
@@ -38,12 +38,12 @@ class AdminGlassCard extends StatelessWidget {
     this.height,
     this.borderRadius = AdminTokens.radiusXl,
     this.color,
-    this.opacity = 0.05,
-    this.blur = 18,
+    this.opacity = 0.06,
+    this.blur = 20,
     this.boxShadow,
     this.border,
     this.alignment,
-    this.glass = false,
+    this.glass = true,
     this.elevated = false,
   });
 
@@ -69,18 +69,16 @@ class AdminGlassCard extends StatelessWidget {
             child: Container(
               padding: padding,
               decoration: BoxDecoration(
-                color:
-                    color ??
+                color: color ??
                     (isDark
-                        ? Colors.white.withValues(alpha: opacity)
-                        : Colors.white.withValues(alpha: 0.72)),
+                        ? const Color(0xFF0F1622).withValues(alpha: 0.60)
+                        : Colors.white.withValues(alpha: 0.75)),
                 borderRadius: radius,
-                border:
-                    border ??
+                border: border ??
                     Border.all(
                       color: isDark
-                          ? Colors.white.withValues(alpha: 0.08)
-                          : Colors.white.withValues(alpha: 0.85),
+                          ? Colors.white.withValues(alpha: 0.09)
+                          : Colors.black.withValues(alpha: 0.05),
                     ),
               ),
               child: child,

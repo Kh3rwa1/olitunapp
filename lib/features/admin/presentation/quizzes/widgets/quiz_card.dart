@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../widgets/admin_form_widgets.dart';
+import '../../widgets/admin_glass_card.dart';
 
 class QuizCard extends StatelessWidget {
   final QuizModel quiz;
@@ -21,14 +22,8 @@ class QuizCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: Container(
+      child: AdminGlassCard(
         padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: AdminTokens.raised(isDark),
-          borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
-          border: Border.all(color: AdminTokens.border(isDark)),
-          boxShadow: AdminTokens.raisedShadow(isDark),
-        ),
         child: Row(
           children: [
             Container(

@@ -336,28 +336,36 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
 
       result.fold(
         (failure) {
-          if (mounted) {
-            setState(() => _isLoading = false);
-            String msg = 'Google sign-in failed: ${failure.message}';
-            if (failure.message.contains('user_already_exists')) {
-              msg =
-                  'An account with this email already exists. Please continue with Email.';
-            } else if (failure.message.contains('CANCELED') ||
-                failure.message.contains('canceled')) {
-              msg =
-                  'Google sign-in was canceled. If you recently deleted your account, it may take a few moments to synchronize, or you can try a different Google account.';
-            }
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(msg),
-                backgroundColor: Colors.red,
-                behavior: SnackBarBehavior.floating,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            );
+          if (!mounted) return;
+          setState(() => _isLoading = false);
+
+          final msg = failure.message.toLowerCase();
+
+          // Genuine user dismissal — silently ignore, no snackbar needed.
+          if (msg.contains('canceled') && !msg.contains('appwrite')) return;
+
+          String displayMsg;
+          if (failure.message.contains('user_already_exists') ||
+              (failure.code != null && failure.code == 409)) {
+            displayMsg =
+                'An account with this email already exists. Please sign in with Email instead.';
+          } else if (msg.contains('canceled') || msg.contains('cancelled')) {
+            // OAuth sheet was closed by the system (e.g. back-navigation) — no noise.
+            return;
+          } else {
+            displayMsg = 'Google sign-in failed: ${failure.message}';
           }
+
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(displayMsg),
+              backgroundColor: Colors.red,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+          );
         },
         (_) {
           if (mounted) {
@@ -366,26 +374,25 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
         },
       );
     } catch (e) {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        final errStr = e.toString();
-        String msg =
-            'Google sign-in failed: ${errStr.replaceAll('Exception: ', '')}';
-        if (errStr.contains('CANCELED') || errStr.contains('canceled')) {
-          msg =
-              'Google sign-in was canceled. If you recently deleted your account, it may take a few moments to synchronize, or you can try a different Google account.';
-        }
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      final errStr = e.toString().toLowerCase();
+
+      // Genuine user dismissal — swallow silently.
+      if (errStr.contains('canceled') || errStr.contains('cancelled')) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Google sign-in failed: ${e.toString().replaceAll('Exception: ', '')}',
           ),
-        );
-      }
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ),
+      );
     }
   }
 

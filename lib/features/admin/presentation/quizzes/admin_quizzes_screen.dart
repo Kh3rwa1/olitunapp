@@ -132,7 +132,7 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
   }
 
   Widget _buildBackground(bool isDark) {
-    return Container(color: AdminTokens.base(isDark));
+    return const SizedBox.shrink();
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
-import '../../../../../shared/widgets/gamified_card.dart';
+import '../../widgets/admin_glass_card.dart';
 
 class LessonCard extends StatelessWidget {
   final LessonEntity lesson;
@@ -22,8 +22,7 @@ class LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
-      child: GamifiedCard(
-        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+      child: AdminGlassCard(
         borderRadius: 20,
         padding: const EdgeInsets.all(16),
         child: Row(

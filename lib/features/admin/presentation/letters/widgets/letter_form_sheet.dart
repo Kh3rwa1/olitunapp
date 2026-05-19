@@ -9,7 +9,6 @@ import '../../../../../core/api/ai_service.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../widgets/admin_form_widgets.dart';
-import 'letter_media_field.dart';
 
 /// Bottom sheet for creating/editing a single letter.
 ///
@@ -216,7 +215,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
                 _magicFill(_pronCtrl, (r) => 'like "${r.translation}" in ...'),
           ),
           const SizedBox(height: 24),
-          LetterMediaField(
+          AdminMediaField(
             label: 'Audio Pronunciation',
             icon: Icons.audiotrack_rounded,
             accent: AppColors.primary,
@@ -226,7 +225,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
             onUploaded: (url) => setState(() => _audioUrl = url),
           ),
           const SizedBox(height: 24),
-          LetterMediaField(
+          AdminMediaField(
             label: 'Hero Image/GIF (Optional)',
             subtitle: 'Upload high-quality image or animated GIF',
             icon: Icons.image_rounded,
@@ -250,7 +249,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
             ),
           ),
           const SizedBox(height: 24),
-          LetterMediaField(
+          AdminMediaField(
             label: 'Lottie Animation (Optional)',
             subtitle: 'Upload a .json Lottie animation file',
             icon: Icons.animation_rounded,

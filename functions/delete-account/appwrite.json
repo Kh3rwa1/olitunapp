@@ -1,0 +1,17 @@
+{
+  "name": "delete-account",
+  "runtime": "node-22",
+  "execute": ["users"],
+  "events": [],
+  "schedule": "",
+  "timeout": 15,
+  "enabled": true,
+  "logging": true,
+  "entrypoint": "src/main.js",
+  "commands": "npm install",
+  "scopes": [
+    "users.write"
+  ],
+  "vars": [],
+  "ignore": ["node_modules", ".npm"]
+}

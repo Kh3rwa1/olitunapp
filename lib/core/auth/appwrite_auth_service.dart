@@ -38,6 +38,7 @@ class AppwriteAuthService {
     }
 
     _account = Account(_client);
+    _functions = Functions(_client);
   }
 
   static final AppwriteAuthService _instance = AppwriteAuthService._internal();
@@ -45,6 +46,7 @@ class AppwriteAuthService {
 
   late final Client _client;
   late final Account _account;
+  late final Functions _functions;
 
   Account get account => _account;
   Client get client => _client;
@@ -274,15 +276,25 @@ class AppwriteAuthService {
     }
   }
 
-  /// Permanently wipe user progress data and clear session to allow automatic re-registration later.
+  /// Permanently delete the user account from Appwrite and clear all local state.
   ///
-  /// Rather than blocking/deactivating the user via updateStatus (which locks out OAuth),
-  /// we wipe all cloud preferences/progress data and delete the session to enable a clean slate.
+  /// Calls the 'delete-account' Cloud Function to hard-delete the user record,
+  /// making it possible to sign in again with the same email or OAuth provider without
+  /// hitting a "user already exists" / session conflict.
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-      await _account.updatePrefs(prefs: {});
-      await _account.deleteSession(sessionId: 'current');
+      // Hard-delete the account using our Cloud Function so OAuth (Google)
+      // can create a fresh user record on the next sign-in without conflict.
+      await _functions.createExecution(
+        functionId: 'delete-account',
+      );
+    } on AppwriteException catch (e) {
+      debugPrint('Appwrite: deleteAccount error: $e');
+      // If delete fails, still try to clean up session
+      try {
+        await _account.deleteSession(sessionId: 'current');
+      } catch (_) {}
     } finally {
       await _clearLocalSessionState();
     }

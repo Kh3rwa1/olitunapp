@@ -131,17 +131,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
   }
 
   Widget _buildBackground(bool isDark) {
-    return Container(
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: isDark
-              ? [const Color(0xFF0A0E14), const Color(0xFF0D1117)]
-              : [const Color(0xFFF8FAFC), Colors.white],
-        ),
-      ),
-    );
+    return const SizedBox.shrink();
   }
 
   Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {

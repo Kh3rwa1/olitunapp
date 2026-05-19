@@ -7,6 +7,7 @@ import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../core/audio/audio_service.dart';
 
 /// Grid of Ol Chiki letter cards for the lesson detail screen.
 /// Scoped: only shows letters that appear in the lesson's blocks.
@@ -47,6 +48,9 @@ class LetterGridContent extends ConsumerWidget {
         return ScaleButton(
           onPressed: () {
             HapticFeedback.lightImpact();
+            if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
+              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+            }
             context.push('/letter/$lessonId/${letter.charOlChiki}');
           },
           child: Container(
@@ -273,7 +277,7 @@ class NumberGridContent extends ConsumerWidget {
     List<NumberModel> allNumbers,
     LessonEntity? lesson,
   ) {
-    if (lesson == null || lesson.blocks.isEmpty) {
+    if (lesson == null) {
       return const [];
     }
 
@@ -282,22 +286,41 @@ class NumberGridContent extends ConsumerWidget {
         .map((b) => b.textOlChiki!.trim())
         .toSet();
 
-    if (blockTexts.isEmpty) return const [];
+    if (blockTexts.isNotEmpty) {
+      final scoped = allNumbers
+          .where(
+            (n) =>
+                n.isActive &&
+                blockTexts.any(
+                  (t) =>
+                      t == n.numeral ||
+                      t == n.value.toString() ||
+                      t == n.nameOlChiki ||
+                      t.contains(n.numeral),
+                ),
+          )
+          .toList();
 
-    return allNumbers
-        .where(
-          (n) =>
-              n.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == n.numeral ||
-                    t == n.value.toString() ||
-                    t == n.nameOlChiki ||
-                    t.contains(n.numeral),
-              ),
-        )
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+      if (scoped.isNotEmpty) {
+        return scoped..sort((a, b) => a.order.compareTo(b.order));
+      }
+    }
+
+    // Fallback: If no blocks or no matching numbers were found, fallback to category/range mapping
+    final title = lesson.titleLatin.toLowerCase();
+    List<NumberModel> fallbackList = [];
+    if (title.contains('0-9') || title.contains('single') || title.contains('basic')) {
+      fallbackList = allNumbers.where((n) => n.value >= 0 && n.value <= 9 && n.isActive).toList();
+    } else if (title.contains('10-99') || title.contains('double') || title.contains('tens') || title.contains('10 to 99')) {
+      fallbackList = allNumbers.where((n) => n.value >= 10 && n.value <= 99 && n.isActive).toList();
+    } else if (title.contains('100') || title.contains('hundred') || title.contains('large')) {
+      fallbackList = allNumbers.where((n) => n.value >= 100 && n.isActive).toList();
+    } else {
+      // General fallback if the lesson title or category indicates it's a numbers category
+      fallbackList = allNumbers.where((n) => n.isActive).toList();
+    }
+
+    return fallbackList..sort((a, b) => a.order.compareTo(b.order));
   }
 }
 

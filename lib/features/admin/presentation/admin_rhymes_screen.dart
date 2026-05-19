@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:uuid/uuid.dart';
+import 'package:file_picker/file_picker.dart';
 
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
@@ -10,7 +11,6 @@ import 'widgets/admin_empty_state.dart';
 import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_model.dart';
-import 'widgets/admin_upload_field.dart';
 import 'widgets/admin_form_widgets.dart';
 
 class AdminRhymesScreen extends ConsumerStatefulWidget {
@@ -123,7 +123,7 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
               decoration: BoxDecoration(
                 color: AdminTokens.accentSoft(isDark),
                 borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                border: Border.all(color: AdminTokens.accentBorder(isDark)),
+                border: Border.all(color: AdminTokens.border(isDark)),
               ),
               child: Icon(
                 _getIconForCategory(rhyme.category),
@@ -223,8 +223,8 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     final contentOlChikiController = TextEditingController(
       text: rhyme?.contentOlChiki,
     );
-    final audioController = TextEditingController(text: rhyme?.audioUrl);
-    final thumbController = TextEditingController(text: rhyme?.thumbnailUrl);
+    String? audioUrl = rhyme?.audioUrl;
+    String? thumbnailUrl = rhyme?.thumbnailUrl;
 
     // Load categories and subcategories dynamically
     final categories = ref.read(rhymeCategoriesProvider).value ?? [];
@@ -234,8 +234,6 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
         rhyme?.category ??
         (categories.isNotEmpty ? categories.first.nameLatin : 'General');
     String? selectedSubcategory = rhyme?.subcategory;
-
-    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     showDialog(
       context: context,
@@ -296,24 +294,37 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                       maxLines: 3,
                     ),
                     const SizedBox(height: 16),
-                    AdminUploadField(
-                      controller: audioController,
+                    AdminMediaField(
                       label: 'Audio',
                       icon: Icons.audiotrack_rounded,
-                      isDark: isDark,
-                      folder: 'rhymes-audio',
-                      uploadType: AdminUploadType.audio,
-                      dialogSetState: setDialogState,
+                      accent: const Color(0xFF10B981),
+                      currentUrl: audioUrl,
+                      uploadFolder: 'rhymes-audio',
+                      fileType: FileType.audio,
+                      onUploaded: (url) => setDialogState(() => audioUrl = url),
                     ),
                     const SizedBox(height: 16),
-                    AdminUploadField(
-                      controller: thumbController,
+                    AdminMediaField(
                       label: 'Thumbnail',
                       icon: Icons.image_rounded,
-                      isDark: isDark,
-                      folder: 'rhymes-images',
-                      uploadType: AdminUploadType.lottieOrWebm,
-                      dialogSetState: setDialogState,
+                      accent: const Color(0xFF3B82F6),
+                      currentUrl: thumbnailUrl,
+                      uploadFolder: 'rhymes-images',
+                      fileType: FileType.image,
+                      onUploaded: (url) => setDialogState(() => thumbnailUrl = url),
+                      previewBuilder: (url) => ClipRRect(
+                        borderRadius: BorderRadius.circular(10),
+                        child: Image.network(
+                          url,
+                          height: 120,
+                          fit: BoxFit.contain,
+                          errorBuilder: (_, _, _) => const Icon(
+                            Icons.broken_image_rounded,
+                            size: 60,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 8),
                     // Category dropdown (dynamic)
@@ -378,8 +389,8 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                     titleOlChiki: titleOlChikiController.text,
                     contentLatin: contentLatinController.text,
                     contentOlChiki: contentOlChikiController.text,
-                    audioUrl: audioController.text,
-                    thumbnailUrl: thumbController.text,
+                    audioUrl: audioUrl ?? '',
+                    thumbnailUrl: thumbnailUrl ?? '',
                     category: selectedCategory,
                     subcategory: selectedSubcategory,
                   );
@@ -412,3 +423,4 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     }
   }
 }
+

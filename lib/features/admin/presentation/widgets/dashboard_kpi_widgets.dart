@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
+import 'admin_glass_card.dart';
 
 /// Hero metric card showing total content count with gradient background.
 class DashboardHeroMetric extends StatelessWidget {
@@ -156,14 +157,8 @@ class DashboardKpiCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return AdminGlassCard(
       padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AdminTokens.raised(isDark),
-        borderRadius: BorderRadius.circular(AdminTokens.radiusXl),
-        border: Border.all(color: AdminTokens.border(isDark)),
-        boxShadow: AdminTokens.raisedShadow(isDark),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

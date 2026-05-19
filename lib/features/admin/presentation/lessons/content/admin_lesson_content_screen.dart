@@ -111,14 +111,14 @@ class _AdminLessonContentScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     if (_isLoading) {
-      return Scaffold(
-        backgroundColor: AdminTokens.base(isDark),
-        body: const Center(child: CircularProgressIndicator()),
+      return const Scaffold(
+        backgroundColor: Colors.transparent,
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: AdminTokens.base(isDark),
+      backgroundColor: Colors.transparent,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -132,7 +132,11 @@ class _AdminLessonContentScreenState
         ),
         backgroundColor: Colors.transparent,
         elevation: 0,
-        leading: BackButton(color: AdminTokens.textPrimary(isDark)),
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_rounded),
+          color: AdminTokens.textPrimary(isDark),
+          onPressed: () => context.go('/admin/lessons'),
+        ),
         actions: [
           if (_hasChanges)
             Padding(

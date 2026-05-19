@@ -168,7 +168,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     return categoryId;
   }
 
-  Future<void> practiceLetter(String letter) async {
+  Future<void> practiceLetter(String letter, {double? score}) async {
     final current = state.valueOrNull;
     if (current == null) return;
 
@@ -179,19 +179,40 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       ..add(normalizedLetter);
     var updated = current.copyWith(practicedLetters: updatedLetters);
 
-    // Update alphabet mastery based on practiced letters
-    final masteryPct =
-        (updatedLetters.length / UserStatsEntity.alphabetLetterCount * 100)
-            .clamp(0, 100)
-            .round();
-    final updatedMastery = Map<String, int>.from(updated.categoryMastery)
-      ..['alphabets'] = masteryPct;
-    updated = _withStreakUpdate(
-      updated.copyWith(categoryMastery: updatedMastery),
-    );
+    final isDigit = const ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(normalizedLetter);
+
+    if (isDigit) {
+      final practicedDigits = updatedLetters.where((l) =>
+        const ['᱐', '᱑', '２', '３', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(l)
+      ).length;
+      final masteryPct = (practicedDigits / 10 * 100).clamp(0, 100).round();
+      final updatedMastery = Map<String, int>.from(updated.categoryMastery)
+        ..['numbers'] = masteryPct;
+      updated = _withStreakUpdate(
+        updated.copyWith(categoryMastery: updatedMastery),
+      );
+    } else {
+      final practicedAlphabetLetters = updatedLetters.where((l) =>
+        !const ['᱐', '᱑', '２', '３', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(l)
+      ).length;
+      final masteryPct =
+          (practicedAlphabetLetters / UserStatsEntity.alphabetLetterCount * 100)
+              .clamp(0, 100)
+              .round();
+      final updatedMastery = Map<String, int>.from(updated.categoryMastery)
+        ..['alphabets'] = masteryPct;
+      updated = _withStreakUpdate(
+        updated.copyWith(categoryMastery: updatedMastery),
+      );
+    }
+
+    if (score != null) {
+      debugPrint('[Analytics] Trace Completed: $normalizedLetter with score: ${score.toStringAsFixed(2)}');
+    }
 
     await updateStats(updated);
   }
+
 
   Future<void> addStars(int count) async {
     final current = state.valueOrNull;

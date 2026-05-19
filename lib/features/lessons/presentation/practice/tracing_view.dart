@@ -7,7 +7,7 @@ import '../../data/ol_chiki_strokes.dart';
 
 class TracingView extends StatefulWidget {
   final String letterChar;
-  final VoidCallback? onComplete;
+  final void Function(double score)? onComplete;
 
   const TracingView({super.key, required this.letterChar, this.onComplete});
 
@@ -132,7 +132,7 @@ class _TracingViewState extends State<TracingView>
 
     if (didComplete) {
       HapticFeedback.heavyImpact();
-      widget.onComplete?.call();
+      widget.onComplete?.call(score.overall);
     }
   }
 

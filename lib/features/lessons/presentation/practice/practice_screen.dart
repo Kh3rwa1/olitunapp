@@ -39,13 +39,17 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
     _selectedIndex = widget.startInTrace ? 1 : 0;
   }
 
-  void _onPracticeComplete() {
+  void _onPracticeComplete(double score) {
     final practiceChar = normalizePracticeCharacter(widget.letterChar);
 
     if (!_hasCompletedPractice) {
       _hasCompletedPractice = true;
-      ref.read(userStatsProvider.notifier).practiceLetter(practiceChar);
-      ref.read(userStatsProvider.notifier).addStars(10);
+      ref.read(userStatsProvider.notifier).practiceLetter(practiceChar, score: score);
+      
+      // Calculate proportional stars: 10 base + up to 10 bonus stars based on accuracy
+      const baseStars = 10;
+      final bonusStars = (score * 10).round().clamp(0, 10);
+      ref.read(userStatsProvider.notifier).addStars(baseStars + bonusStars);
     }
 
     if (_isAdvancing) return;

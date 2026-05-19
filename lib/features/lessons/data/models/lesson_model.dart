@@ -101,13 +101,23 @@ class LessonBlockModel extends LessonBlockEntity {
   });
 
   factory LessonBlockModel.fromJson(Map<String, dynamic> json) {
+    final rawData = json['data'];
+    Map<String, dynamic>? parsedData;
+    if (rawData is Map) {
+      parsedData = rawData.cast<String, dynamic>();
+    } else if (rawData is String && rawData.isNotEmpty) {
+      try {
+        parsedData = jsonDecode(rawData) as Map<String, dynamic>?;
+      } catch (_) {}
+    }
+
     return LessonBlockModel(
       type: json['type'] as String? ?? 'text',
       textOlChiki: json['textOlChiki'] as String?,
       textLatin: json['textLatin'] as String?,
       imageUrl: json['imageUrl'] as String?,
       audioUrl: json['audioUrl'] as String?,
-      data: json['data'] as Map<String, dynamic>?,
+      data: parsedData,
     );
   }
 

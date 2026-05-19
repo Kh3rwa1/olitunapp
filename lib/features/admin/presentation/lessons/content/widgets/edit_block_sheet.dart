@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
@@ -49,9 +50,13 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
     final block = widget.block;
     olChikiCtrl = TextEditingController(text: block.textOlChiki ?? '');
     latinCtrl = TextEditingController(text: block.textLatin ?? '');
-    _imageUrl = block.imageUrl;
+    _imageUrl = block.type == 'video'
+        ? (block.imageUrl ?? block.audioUrl)
+        : block.imageUrl;
     _audioUrl = block.audioUrl;
-    _animationUrl = block.data?['animationUrl'];
+    _animationUrl = block.type == 'lottie'
+        ? (block.data?['animationUrl'] ?? block.imageUrl)
+        : block.data?['animationUrl'];
     quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
   }
 
@@ -68,8 +73,16 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
       type: widget.block.type,
       textOlChiki: olChikiCtrl.text.isEmpty ? null : olChikiCtrl.text,
       textLatin: latinCtrl.text.isEmpty ? null : latinCtrl.text,
-      imageUrl: _imageUrl != null && _imageUrl!.isNotEmpty ? _imageUrl : null,
-      audioUrl: _audioUrl != null && _audioUrl!.isNotEmpty ? _audioUrl : null,
+      imageUrl: widget.block.type == 'lottie'
+          ? _animationUrl
+          : (widget.block.type == 'video'
+                ? _imageUrl
+                : (_imageUrl != null && _imageUrl!.isNotEmpty
+                      ? _imageUrl
+                      : null)),
+      audioUrl: widget.block.type == 'video'
+          ? _imageUrl
+          : (_audioUrl != null && _audioUrl!.isNotEmpty ? _audioUrl : null),
       data: {
         if (_animationUrl != null && _animationUrl!.isNotEmpty)
           'animationUrl': _animationUrl,
@@ -307,11 +320,24 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       label: 'Video',
                       icon: Icons.videocam_rounded,
                       accent: const Color(0xFFF59E0B),
-                      currentUrl:
-                          _audioUrl, // Re-using _audioUrl for video URL storage in model
+                      currentUrl: _imageUrl,
                       uploadFolder: 'lesson-video',
                       fileType: FileType.video,
-                      onUploaded: (url) => setState(() => _audioUrl = url),
+                      onUploaded: (url) => setState(() => _imageUrl = url),
+                      previewBuilder: (url) => Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.play_circle_fill_rounded,
+                            size: 48,
+                            color: Color(0xFFF59E0B),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
                   if (block.type == 'quiz') ...[
@@ -331,6 +357,28 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       fileType: FileType.custom,
                       allowedExtensions: const ['json'],
                       onUploaded: (url) => setState(() => _animationUrl = url),
+                      previewBuilder: (url) => Container(
+                        height: 120,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: Colors.grey.withValues(alpha: 0.1),
+                          ),
+                        ),
+                        child: Center(
+                          child: Lottie.network(
+                            url,
+                            height: 100,
+                            fit: BoxFit.contain,
+                            errorBuilder: (_, _, _) => const Icon(
+                              Icons.broken_image_rounded,
+                              size: 48,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ),
+                      ),
                     ),
                   ],
 

@@ -18,9 +18,22 @@ Path buildPracticeGuidePath(Size size, String letter) {
 }
 
 String normalizePracticeCharacter(String value) {
-  final decoded = value.contains('%')
+  var decoded = value.contains('%')
       ? Uri.decodeComponent(value).trim()
       : value.trim();
+
+  // Strip prefixes like "letter_" or "number_"
+  if (decoded.startsWith('letter_')) {
+    decoded = decoded.substring('letter_'.length);
+  } else if (decoded.startsWith('number_')) {
+    decoded = decoded.substring('number_'.length);
+  }
+
+  // If already directly in strokes, return it
+  if (olChikiStrokes.containsKey(decoded)) {
+    return decoded;
+  }
+
   const asciiToOlChikiDigits = {
     '0': '᱐',
     '1': '᱑',
@@ -91,6 +104,14 @@ String normalizePracticeCharacter(String value) {
 
   final exactStroke = olChikiStrokes[decoded];
   if (exactStroke != null) return decoded;
+
+  // Try to find the first character in decoded that is a key in olChikiStrokes
+  for (var i = 0; i < decoded.length; i++) {
+    final char = decoded[i];
+    if (olChikiStrokes.containsKey(char)) {
+      return char;
+    }
+  }
 
   final olChikiMatch = RegExp(r'[\u1C50-\u1C7F]').firstMatch(decoded);
   if (olChikiMatch != null) {
@@ -175,7 +196,7 @@ List<Offset> samplePath(Path path, {int samplesPerMetric = 48}) {
 }
 
 class TraceScore {
-  static const double autoAdvanceThreshold = 0.70;
+  static const double autoAdvanceThreshold = 0.50;
 
   final double overall;
   final double coverage;

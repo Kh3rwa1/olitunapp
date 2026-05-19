@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
-import '../../../../../../shared/widgets/gamified_card.dart';
 
 class LessonBlockCard extends StatelessWidget {
   final int index;
@@ -25,101 +25,477 @@ class LessonBlockCard extends StatelessWidget {
     IconData icon;
     Color color;
     String title;
-    String subtitle;
 
     switch (block.type) {
       case 'text':
         icon = Icons.text_fields_rounded;
         color = Colors.blue;
         title = 'Text Block';
-        subtitle = block.textLatin ?? block.textOlChiki ?? 'Empty text block';
         break;
       case 'image':
         icon = Icons.image_rounded;
         color = AppColors.duoBlue;
         title = 'Image Block';
-        subtitle = block.imageUrl ?? 'No image selected';
         break;
       case 'audio':
         icon = Icons.audiotrack_rounded;
         color = Colors.orange;
         title = 'Audio Block';
-        subtitle = block.audioUrl ?? 'No audio selected';
         break;
       case 'video':
         icon = Icons.videocam_rounded;
         color = Colors.purple;
         title = 'Video Block';
-        subtitle =
-            block.audioUrl ??
-            'No video selected'; // Using audioUrl as per data model
         break;
       case 'lottie':
         icon = Icons.animation_rounded;
         color = const Color(0xFF10B981);
         title = 'Lottie Animation';
-        subtitle = block.data?['animationUrl'] ?? 'No animation selected';
         break;
       case 'quiz':
         icon = Icons.quiz_rounded;
         color = Colors.green;
         title = 'Quiz Block';
-        subtitle = 'Quiz Ref: ${block.data?['quizRefId'] ?? "None"}';
         break;
       default:
         icon = Icons.extension;
         color = Colors.grey;
         title = 'Unknown Block';
-        subtitle = block.type;
     }
 
-    return GamifiedCard(
-      borderRadius: AdminTokens.radiusLg,
-      color: AdminTokens.raised(isDark),
-      padding: const EdgeInsets.all(0),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(10),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
+          width: 1.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
           ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        title: Text(
-          title,
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: isDark ? Colors.white : Colors.black,
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Header Row (Controls & Metadata)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
+            child: Row(
+              children: [
+                // Block Type Chip
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 6,
+                  ),
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    children: [
+                      Icon(icon, color: color, size: 16),
+                      const SizedBox(width: 6),
+                      Text(
+                        '#${index + 1} • $title',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w800,
+                          color: color,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const Spacer(),
+                // Actions (Edit, Delete, Drag Handle)
+                IconButton(
+                  icon: const Icon(Icons.edit_rounded, size: 18),
+                  color: isDark ? Colors.white70 : Colors.black54,
+                  onPressed: onEdit,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Edit details',
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete_outline_rounded, size: 18),
+                  color: Colors.red[400],
+                  onPressed: onDelete,
+                  visualDensity: VisualDensity.compact,
+                  tooltip: 'Delete block',
+                ),
+                const SizedBox(width: 4),
+                Icon(
+                  Icons.drag_handle_rounded,
+                  color: isDark ? Colors.white24 : Colors.black12,
+                  size: 20,
+                ),
+              ],
+            ),
           ),
-        ),
-        subtitle: Text(
-          subtitle,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(color: isDark ? Colors.white54 : Colors.black54),
-        ),
-        trailing: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            IconButton(
-              icon: const Icon(Icons.edit_rounded, size: 20),
-              color: isDark ? Colors.white70 : Colors.black54,
-              onPressed: onEdit,
-            ),
-            IconButton(
-              icon: const Icon(Icons.delete_outline_rounded, size: 20),
-              color: Colors.red[400],
-              onPressed: onDelete,
-            ),
-            Icon(
-              Icons.drag_handle_rounded,
-              color: isDark ? Colors.white24 : Colors.black12,
-            ),
-          ],
-        ),
+          const Divider(height: 1),
+
+          // Block Content Live Visual Preview
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: _buildLivePreview(context),
+          ),
+        ],
       ),
     );
+  }
+
+  Widget _buildLivePreview(BuildContext context) {
+    switch (block.type) {
+      case 'text':
+        final hasText =
+            block.textOlChiki != null && block.textOlChiki!.isNotEmpty;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              hasText ? block.textOlChiki! : 'No Ol Chiki text entered',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w800,
+                color: hasText ? AppColors.primary : Colors.grey,
+              ),
+            ),
+            if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
+              const SizedBox(height: 6),
+              Text(
+                block.textLatin!,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ],
+          ],
+        );
+
+      case 'image':
+        final url = block.imageUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (url != null && url.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.05),
+                  width: double.infinity,
+                  height: 140,
+                  child: Image.network(
+                    url,
+                    fit: BoxFit.contain,
+                    errorBuilder: (ctx, err, trace) => const Center(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.broken_image_rounded,
+                            color: Colors.grey,
+                            size: 36,
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Failed to load image',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              _buildEmptyPreview(Icons.image_outlined, 'No image uploaded yet'),
+            _buildCaption(),
+          ],
+        );
+
+      case 'lottie':
+        final url = block.data?['animationUrl'] ?? block.imageUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (url != null && url.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  color: Colors.white,
+                  width: double.infinity,
+                  height: 140,
+                  child: Center(
+                    child: Lottie.network(
+                      url,
+                      height: 120,
+                      fit: BoxFit.contain,
+                      errorBuilder: (ctx, err, trace) => const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.broken_image_rounded,
+                            color: Colors.grey,
+                            size: 36,
+                          ),
+                          SizedBox(height: 4),
+                          Text(
+                            'Failed to load Lottie animation',
+                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              )
+            else
+              _buildEmptyPreview(
+                Icons.animation_rounded,
+                'No animation uploaded yet',
+              ),
+            _buildCaption(),
+          ],
+        );
+
+      case 'video':
+        // Safe check: Video URL might be in block.imageUrl or block.audioUrl (older versions)
+        final url = block.imageUrl ?? block.audioUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (url != null && url.isNotEmpty)
+              ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Container(
+                  width: double.infinity,
+                  height: 140,
+                  color: Colors.black.withValues(alpha: 0.05),
+                  child: const Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.play_circle_fill_rounded,
+                          size: 44,
+                          color: Colors.purple,
+                        ),
+                        SizedBox(height: 6),
+                        Text(
+                          'Video loaded successfully',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.purple,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              )
+            else
+              _buildEmptyPreview(
+                Icons.videocam_outlined,
+                'No video uploaded yet',
+              ),
+            _buildCaption(),
+          ],
+        );
+
+      case 'audio':
+        final url = block.audioUrl;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (url != null && url.isNotEmpty)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.orange.withValues(alpha: 0.06),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: Colors.orange.withValues(alpha: 0.15),
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(
+                      Icons.music_note_rounded,
+                      color: Colors.orange,
+                      size: 24,
+                    ),
+                    const SizedBox(width: 12),
+                    const Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Audio Track',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.orange,
+                            ),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Audio stream validated & ready',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Colors.orange,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.orange.withValues(alpha: 0.6),
+                      size: 18,
+                    ),
+                  ],
+                ),
+              )
+            else
+              _buildEmptyPreview(
+                Icons.audiotrack_outlined,
+                'No audio uploaded yet',
+              ),
+            _buildCaption(),
+          ],
+        );
+
+      case 'quiz':
+        final refId = block.data?['quizRefId'];
+        return Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: AppColors.premiumPurple,
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(
+                  Icons.quiz_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Quiz Invitation Card',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      refId != null && refId.isNotEmpty
+                          ? 'Ref ID: $refId'
+                          : 'No Quiz Reference Selected',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.arrow_forward_rounded,
+                color: Colors.white,
+                size: 16,
+              ),
+            ],
+          ),
+        );
+
+      default:
+        return Text(
+          'Block preview unavailable for type: ${block.type}',
+          style: const TextStyle(
+            color: Colors.grey,
+            fontStyle: FontStyle.italic,
+          ),
+        );
+    }
+  }
+
+  Widget _buildEmptyPreview(IconData icon, String message) {
+    return Container(
+      width: double.infinity,
+      height: 120,
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.02)
+            : Colors.black.withValues(alpha: 0.02),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.05),
+        ),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: Colors.grey.withValues(alpha: 0.4), size: 32),
+          const SizedBox(height: 8),
+          Text(
+            message,
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.grey,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCaption() {
+    if (block.textLatin != null && block.textLatin!.isNotEmpty) {
+      return Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: Text(
+          'Caption: "${block.textLatin!}"',
+          style: TextStyle(
+            fontSize: 12,
+            fontStyle: FontStyle.italic,
+            color: isDark ? Colors.white38 : Colors.black38,
+          ),
+        ),
+      );
+    }
+    return const SizedBox.shrink();
   }
 }

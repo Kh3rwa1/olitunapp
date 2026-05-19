@@ -325,55 +325,47 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       child: Material(
         type: MaterialType.transparency,
         child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.94, end: 1.0),
+          tween: Tween(begin: 0.90, end: 1.0),
           duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeInOut,
+          curve: Curves.elasticOut,
           builder: (context, scale, child) {
             return Transform.scale(scale: scale, child: child);
           },
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: -0.06, end: 0.06),
-            duration: const Duration(milliseconds: 1700),
-            curve: Curves.easeInOut,
-            builder: (context, turn, child) {
-              return Transform.rotate(angle: turn, child: child);
-            },
-            onEnd: () {
-              if (mounted) setState(() {});
-            },
-            child:
-                number.animationUrl != null && number.animationUrl!.isNotEmpty
-                ? LottieDisplay(
+          child: number.animationUrl != null && number.animationUrl!.isNotEmpty
+              ? SizedBox(
+                  width: 220,
+                  height: 220,
+                  child: LottieDisplay(
                     url: number.animationUrl!,
-                    width: 150,
-                    height: 150,
-                  )
-                : number.imageUrl != null && number.imageUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      number.imageUrl!,
-                      width: 150,
-                      height: 150,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, _, _) => Image.network(
-                        _emojiToPngUrl(emoji),
-                        width: 150,
-                        height: 150,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  )
-                : Image.network(
-                    _emojiToPngUrl(emoji),
-                    width: 150,
-                    height: 150,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, _) =>
-                        Text(emoji, style: const TextStyle(fontSize: 100)),
+                    width: 220,
+                    height: 220,
                   ),
-          ),
+                )
+              : number.imageUrl != null && number.imageUrl!.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.network(
+                    number.imageUrl!,
+                    width: 220,
+                    height: 220,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, _, _) => Image.network(
+                      _emojiToPngUrl(emoji),
+                      width: 220,
+                      height: 220,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                )
+              : Image.network(
+                  _emojiToPngUrl(emoji),
+                  width: 220,
+                  height: 220,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (context, _, _) =>
+                      Text(emoji, style: const TextStyle(fontSize: 120)),
+                ),
         ),
       ),
     );

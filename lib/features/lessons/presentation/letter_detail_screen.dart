@@ -283,57 +283,48 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
       child: Material(
         type: MaterialType.transparency,
         child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.94, end: 1.0),
+          tween: Tween(begin: 0.90, end: 1.0),
           duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeInOut,
+          curve: Curves.elasticOut,
           builder: (context, scale, child) {
             return Transform.scale(scale: scale, child: child);
           },
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: -0.06, end: 0.06),
-            duration: const Duration(milliseconds: 1700),
-            curve: Curves.easeInOut,
-            builder: (context, turn, child) {
-              return Transform.rotate(angle: turn, child: child);
-            },
-            onEnd: () {
-              if (mounted) setState(() {});
-            },
-            // Use animationUrl first, then imageUrl, otherwise fallback to emoji
-            child:
-                letter.animationUrl != null && letter.animationUrl!.isNotEmpty
-                ? LottieDisplay(
+          child: letter.animationUrl != null && letter.animationUrl!.isNotEmpty
+              ? SizedBox(
+                  width: 220,
+                  height: 220,
+                  child: LottieDisplay(
                     url: letter.animationUrl!,
-                    width: 160,
-                    height: 160,
-                  )
-                : letter.imageUrl != null && letter.imageUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      letter.imageUrl!,
-                      width: 160,
-                      height: 160,
-                      fit: BoxFit.contain,
-                      filterQuality: FilterQuality.high,
-                      errorBuilder: (context, _, _) => Image.network(
-                        _emojiToPngUrl(emoji),
-                        width: 160,
-                        height: 160,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                  )
-                : Image.network(
-                    _emojiToPngUrl(emoji),
-                    width: 160,
-                    height: 160,
-                    fit: BoxFit.contain,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, _) =>
-                        Text(emoji, style: const TextStyle(fontSize: 100)),
+                    width: 220,
+                    height: 220,
                   ),
-          ),
+                )
+              : letter.imageUrl != null && letter.imageUrl!.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.network(
+                    letter.imageUrl!,
+                    width: 220,
+                    height: 220,
+                    fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
+                    errorBuilder: (context, _, _) => Image.network(
+                      _emojiToPngUrl(emoji),
+                      width: 220,
+                      height: 220,
+                      fit: BoxFit.contain,
+                    ),
+                  ),
+                )
+              : Image.network(
+                  _emojiToPngUrl(emoji),
+                  width: 220,
+                  height: 220,
+                  fit: BoxFit.contain,
+                  filterQuality: FilterQuality.high,
+                  errorBuilder: (context, _, _) =>
+                      Text(emoji, style: const TextStyle(fontSize: 120)),
+                ),
         ),
       ),
     );

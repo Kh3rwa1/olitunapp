@@ -187,44 +187,36 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
       child: Material(
         type: MaterialType.transparency,
         child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.94, end: 1.0),
+          tween: Tween(begin: 0.90, end: 1.0),
           duration: const Duration(milliseconds: 1200),
-          curve: Curves.easeInOut,
+          curve: Curves.elasticOut,
           builder: (context, scale, child) {
             return Transform.scale(scale: scale, child: child);
           },
-          child: TweenAnimationBuilder<double>(
-            tween: Tween(begin: -0.06, end: 0.06),
-            duration: const Duration(milliseconds: 1700),
-            curve: Curves.easeInOut,
-            builder: (context, turn, child) {
-              return Transform.rotate(angle: turn, child: child);
-            },
-            onEnd: () {
-              if (mounted) setState(() {});
-            },
-            child:
-                sentence.animationUrl != null &&
-                    sentence.animationUrl!.isNotEmpty
-                ? LottieDisplay(
+          child:
+              sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
+              ? SizedBox(
+                  width: 220,
+                  height: 220,
+                  child: LottieDisplay(
                     url: sentence.animationUrl!,
-                    width: 130,
-                    height: 130,
-                  )
-                : sentence.imageUrl != null && sentence.imageUrl!.isNotEmpty
-                ? ClipRRect(
-                    borderRadius: BorderRadius.circular(20),
-                    child: Image.network(
-                      sentence.imageUrl!,
-                      width: 130,
-                      height: 130,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, _, _) =>
-                          Text(emoji, style: const TextStyle(fontSize: 90)),
-                    ),
-                  )
-                : Text(emoji, style: const TextStyle(fontSize: 90)),
-          ),
+                    width: 220,
+                    height: 220,
+                  ),
+                )
+              : sentence.imageUrl != null && sentence.imageUrl!.isNotEmpty
+              ? ClipRRect(
+                  borderRadius: BorderRadius.circular(24),
+                  child: Image.network(
+                    sentence.imageUrl!,
+                    width: 220,
+                    height: 220,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, _, _) =>
+                        Text(emoji, style: const TextStyle(fontSize: 100)),
+                  ),
+                )
+              : Text(emoji, style: const TextStyle(fontSize: 100)),
         ),
       ),
     );

@@ -46,47 +46,78 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
       ],
     ),
     QuizModel(
-      id: 'quiz_numbers_1to10',
+      id: 'quiz_numbers_arithmetic',
       categoryId: 'numbers',
-      title: 'Numbers 1-10',
+      title: 'Arithmetic Mastery',
       order: 1,
       questions: [
         QuizQuestion(
-          promptOlChiki: '᱑',
-          promptLatin: 'What number is this?',
-          optionsOlChiki: ['1', '2', '3', '4'],
-          optionsLatin: ['One', 'Two', 'Three', 'Four'],
+          promptOlChiki: '᱒ + ᱓ = ?',
+          promptLatin: 'What is the sum of ᱒ (2) and ᱓ (3)?',
+          optionsOlChiki: ['᱔', '᱕', '᱖', '᱗'],
+          optionsLatin: ['᱔ (4)', '᱕ (5)', '᱖ (6)', '᱗ (7)'],
+          correctIndex: 1,
         ),
         QuizQuestion(
-          promptOlChiki: '᱕',
-          promptLatin: 'Identify this number:',
-          optionsOlChiki: ['3', '4', '5', '6'],
-          optionsLatin: ['Three', 'Four', 'Five', 'Six'],
+          promptOlChiki: '᱙ - ᱕ = ?',
+          promptLatin: 'What is the result of ᱙ (9) minus ᱕ (5)?',
+          optionsOlChiki: ['᱓', '᱔', '᱕', '᱐'],
+          optionsLatin: ['᱓ (3)', '᱔ (4)', '᱕ (5)', '᱐ (0)'],
+          correctIndex: 1,
+        ),
+        QuizQuestion(
+          promptOlChiki: '᱓ × ᱓ = ?',
+          promptLatin: 'What is the product of ᱓ (3) multiplied by ᱓ (3)?',
+          optionsOlChiki: ['᱖', '᱗', '᱘', '᱙'],
+          optionsLatin: ['᱖ (6)', '᱗ (7)', '᱘ (8)', '᱙ (9)'],
+          correctIndex: 3,
+        ),
+        QuizQuestion(
+          promptOlChiki: '᱘ ÷ ᱒ = ?',
+          promptLatin: 'What is the result of ᱘ (8) divided by ᱒ (2)?',
+          optionsOlChiki: ['᱒', '᱓', '᱔', '᱕'],
+          optionsLatin: ['᱒ (2)', ' (3)', '᱔ (4)', '᱕ (5)'],
           correctIndex: 2,
         ),
       ],
     ),
     QuizModel(
-      id: 'quiz_vowels',
-      categoryId: 'alphabets',
-      title: 'Master the Vowels',
-      level: 'intermediate',
+      id: 'quiz_vocabulary_fill_blank',
+      categoryId: 'cat_vocab',
+      title: 'Sentence',
       order: 2,
-      passingScore: 80,
       questions: [
         QuizQuestion(
-          promptOlChiki: 'ᱤ',
-          promptLatin: 'This is the vowel for:',
-          optionsOlChiki: ['a', 'i', 'u', 'e'],
-          optionsLatin: ['a', 'i', 'u', 'e'],
-          correctIndex: 1,
+          type: 'fill_blank',
+          promptOlChiki: 'Fill in the blank:',
+          promptLatin: 'Choose the word that means "dog" to complete the sentence.',
+          optionsOlChiki: ['ᱥᱮᱛᱟ', 'ᱢᱮᱨᱳᱢ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
+          optionsLatin: ['ᱥᱮᱛᱟ (Dog)', 'ᱢᱮᱨᱳᱢ (Cat)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
+          blankSentenceOlChiki: 'ᱤᱧ ᱢᱤᱫ ___ ᱢᱮᱱᱟᱜᱼᱤᱧᱟ ᱾',
+          blankSentenceLatin: 'I have a dog.',
+          correctAnswer: 'ᱥᱮᱛᱟ',
         ),
         QuizQuestion(
-          promptOlChiki: 'ᱩ',
-          promptLatin: 'Identify this vowel sound:',
-          optionsOlChiki: ['a', 'i', 'u', 'o'],
-          optionsLatin: ['a', 'i', 'u', 'o'],
+          type: 'fill_blank',
+          promptOlChiki: 'Fill in the blank:',
+          promptLatin: 'Choose the correct relationship word to complete the sentence.',
+          optionsOlChiki: ['ᱟᱭᱳ', 'ᱵᱟᱵᱟ', 'ᱫᱟᱫᱟ', 'ᱫᱟᱹᱭ'],
+          optionsLatin: ['ᱟᱭᱳ (Mother)', 'ᱵᱟᱵᱟ (Father)', 'ᱫᱟᱫᱟ (Elder Brother)', 'ᱫᱟᱹᱭ (Elder Sister)'],
+          correctIndex: 1,
+          blankSentenceOlChiki: 'ᱱᱩᱭ ᱫᱚ ᱤᱧᱤᱡ ___ ᱠᱟᱱᱟᱭ ᱾',
+          blankSentenceLatin: 'He is my father.',
+          correctAnswer: 'ᱵᱟᱵᱟ',
+        ),
+        QuizQuestion(
+          type: 'fill_blank',
+          promptOlChiki: 'Fill in the blank:',
+          promptLatin: 'Complete the color statement.',
+          optionsOlChiki: ['ᱦᱮᱱᱫᱮ', 'ᱯᱩᱱᱫ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
+          optionsLatin: ['ᱦᱮᱱᱫᱮ (Black)', 'ᱯᱩᱱᱫ (White)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
           correctIndex: 2,
+          blankSentenceOlChiki: 'ᱡᱮᱞᱮᱠᱟ ᱢᱟᱭᱟᱢ ᱫᱚ ___ ᱜᱮᱭᱟ ᱾',
+          blankSentenceLatin: 'For example, blood is red.',
+          correctAnswer: 'ᱟᱨᱟᱜ',
         ),
       ],
     ),
@@ -198,6 +229,37 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   Future<void> addQuiz(QuizModel item) async => add(item);
   Future<void> updateQuiz(QuizModel item) async => update(item);
   Future<void> deleteQuiz(String id) async => delete(id);
+
+  Future<void> seedToAppwrite() async {
+    state = const AsyncValue.loading();
+    try {
+      final db = ref.read(appwriteDbServiceProvider);
+      
+      final data = await db.listDocuments(
+        _collectionId,
+        queries: [Query.limit(500)],
+      );
+      final existingIds = data.map((doc) => doc['\$id'] as String).toSet();
+      
+      int seededCount = 0;
+      for (final quiz in _defaultQuizzes) {
+        if (!existingIds.contains(quiz.id)) {
+          await db.createDocument(
+            _collectionId,
+            quiz.id,
+            _toAppwritePayload(quiz),
+          );
+          seededCount++;
+        }
+      }
+      debugPrint('Seeded $seededCount new quizzes to Appwrite.');
+      await _loadQuizzes();
+    } catch (e, stack) {
+      debugPrint('Failed to seed default quizzes to Appwrite: $e');
+      state = AsyncValue.error(e, stack);
+      rethrow;
+    }
+  }
 
   Future<void> seed() async {
     state = const AsyncValue.loading();

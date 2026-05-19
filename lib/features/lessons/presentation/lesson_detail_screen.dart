@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
 import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../shared/models/content_models.dart' hide CategoryModel;
 import '../../../shared/utils/localized_content.dart';
 import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
@@ -12,6 +14,7 @@ import '../../../l10n/generated/app_localizations.dart';
 
 import 'widgets/dynamic_block_builder.dart';
 import 'widgets/lesson_content_widgets.dart';
+import '../../../core/motion/confetti_overlay.dart';
 
 class LessonDetailScreen extends ConsumerWidget {
   final String lessonId;
@@ -180,7 +183,16 @@ class LessonDetailScreen extends ConsumerWidget {
                   estimatedMinutes: lesson.estimatedMinutes,
                 );
                 notifier.addStars(25);
-                context.pop();
+                
+                final quizzes = ref.read(quizzesProvider).value ?? [];
+                final quizId = _getQuizIdForCategory(lesson.categoryId, quizzes);
+                
+                _showCompletionSheet(
+                  context: context,
+                  lesson: lesson,
+                  quizId: quizId,
+                  quizzes: quizzes,
+                );
               },
               backgroundColor: AppColors.primary,
               label: const Text(
@@ -430,4 +442,229 @@ class _LessonHeroSummary extends StatelessWidget {
       ],
     );
   }
+}
+
+String? _getQuizIdForCategory(String? categoryId, List<QuizModel> quizzes) {
+  if (categoryId == null) return null;
+  final cleanId = categoryId.toLowerCase();
+  
+  // First, look for an exact match in the categoryId
+  for (final q in quizzes) {
+    if (q.categoryId?.toLowerCase() == cleanId) {
+      return q.id;
+    }
+  }
+  
+  // Fallback to keyword matching
+  if (cleanId.contains('alphabet')) {
+    return quizzes.any((q) => q.id == 'quiz_alphabets_basics')
+        ? 'quiz_alphabets_basics'
+        : null;
+  } else if (cleanId.contains('number')) {
+    return quizzes.any((q) => q.id == 'quiz_numbers_arithmetic')
+        ? 'quiz_numbers_arithmetic'
+        : null;
+  } else if (cleanId.contains('word') || cleanId.contains('vocab')) {
+    return quizzes.any((q) => q.id == 'quiz_vocabulary_fill_blank')
+        ? 'quiz_vocabulary_fill_blank'
+        : null;
+  }
+  return null;
+}
+
+void _showCompletionSheet({
+  required BuildContext context,
+  required LessonEntity lesson,
+  required String? quizId,
+  required List<QuizModel> quizzes,
+}) {
+  final isDark = Theme.of(context).brightness == Brightness.dark;
+  QuizModel? quiz;
+  if (quizId != null) {
+    try {
+      quiz = quizzes.firstWhere((q) => q.id == quizId);
+    } catch (_) {
+      quiz = null;
+    }
+  }
+  
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    barrierColor: Colors.black.withValues(alpha: 0.7),
+    builder: (context) {
+      return Stack(
+        alignment: Alignment.topCenter,
+        clipBehavior: Clip.none,
+        children: [
+          const Positioned(
+            top: -120,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: ConfettiBurst(particleCount: 50),
+          ),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+            decoration: BoxDecoration(
+              color: isDark ? const Color(0xFF0F141C) : Colors.white,
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(32),
+                topRight: Radius.circular(32),
+              ),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05),
+              ),
+              boxShadow: AppColors.largeShadow,
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Floating trophy
+                Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: AppColors.primary.withValues(alpha: 0.3),
+                      width: 2,
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.emoji_events_rounded,
+                    color: AppColors.primary,
+                    size: 44,
+                  ),
+                )
+                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .scale(
+                  begin: const Offset(1.0, 1.0),
+                  end: const Offset(1.1, 1.1),
+                  duration: 1.seconds,
+                  curve: Curves.easeInOutBack,
+                ),
+                const SizedBox(height: 24),
+                
+                // Celebration text
+                Text(
+                  'Lesson Complete!',
+                  style: TextStyle(
+                    fontSize: 26,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : AppColors.pureBlack,
+                    letterSpacing: -0.5,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                
+                // Description & Stars
+                Text(
+                  'Amazing work! You completed this lesson and earned',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 15,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                
+                // Stars reward
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.duoYellow.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppColors.duoYellow.withValues(alpha: 0.3),
+                    ),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.star_rounded, color: AppColors.duoYellow, size: 22),
+                      SizedBox(width: 6),
+                      Text(
+                        '+25 Stars',
+                        style: TextStyle(
+                          color: AppColors.duoYellowDark,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                
+                const SizedBox(height: 32),
+                
+                // Primary action button
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context); // Close sheet
+                      context.pop(); // Pop current LessonDetailScreen
+                      if (quizId != null) {
+                        context.push('/quiz/$quizId');
+                      }
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      elevation: 2,
+                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      quiz != null ? 'Take ${quiz.title} Quiz' : 'Awesome!',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 0.3,
+                      ),
+                    ),
+                  ),
+                ),
+                
+                if (quizId != null) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: TextButton(
+                      onPressed: () {
+                        Navigator.pop(context); // Close sheet
+                        context.pop(); // Pop current LessonDetailScreen
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: isDark ? Colors.white70 : Colors.black54,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      child: const Text(
+                        'Maybe Later',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ],
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }

@@ -50,6 +50,10 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
         isPlaying: playerState.playing,
         processingState: playerState.processingState,
       );
+    }, onError: (Object e) {
+      debugPrint('RhymeAudio: Player stream error: $e');
+      state = const RhymeAudioState();
+      unawaited(_player.stop());
     });
   }
 
@@ -64,7 +68,9 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
       return;
     }
 
-    if (state.playingRhymeId == rhymeId) {
+    if (state.playingRhymeId == rhymeId &&
+        _player.audioSource != null &&
+        _player.processingState != ProcessingState.idle) {
       if (state.isPlaying) {
         await _player.pause();
       } else {
@@ -85,17 +91,27 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
             artUri: _safeUri(artworkUrl),
           ),
         ),
+      ).timeout(const Duration(seconds: 12));
+      
+      state = state.copyWith(
+        playingRhymeId: rhymeId,
+        isPlaying: true,
+        processingState: _player.processingState,
       );
-      state = state.copyWith(playingRhymeId: rhymeId, isPlaying: true);
       unawaited(_player.play());
     } catch (e) {
       debugPrint('RhymeAudio: Error playing $url: $e');
       state = const RhymeAudioState();
+      unawaited(_player.stop());
     }
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    try {
+      await _player.stop();
+    } catch (e) {
+      debugPrint('RhymeAudio: Error stopping player: $e');
+    }
     state = const RhymeAudioState();
   }
 

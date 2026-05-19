@@ -147,4 +147,83 @@ void main() {
       verify(() => auth.updateDisplayName('Baha')).called(1);
     },
   );
+
+  group('Bi-directional Cloud Sync Tests', () {
+    test('getUserStats uploads local stats to cloud when cloud is empty', () async {
+      when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
+      when(() => auth.getUserPrefs()).thenAnswer((_) async => const Right(<String, dynamic>{}));
+      when(() => auth.updateUserPrefs(any())).thenAnswer((_) async => const Right(null));
+
+      const local = UserStatsEntity(
+        practicedLetters: {'x'},
+        completedLessons: {'l1'},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 10,
+        lastActiveDate: '2025-01-01',
+        currentStreak: 2,
+        totalStars: 15,
+      );
+      await prefs.setString(
+        'user_progress_data',
+        jsonEncode(UserStatsModel.fromEntity(local).toJson()),
+      );
+
+      final result = await repo.getUserStats();
+      expect(result.isRight(), isTrue);
+      final returnedStats = result.getOrElse((_) => fail('should be right'));
+      expect(returnedStats.totalStars, 15);
+
+      verify(() => auth.updateUserPrefs(any())).called(1);
+    });
+
+    test('getUserStats merges local and cloud stats when both exist', () async {
+      when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
+      
+      const local = UserStatsEntity(
+        practicedLetters: {'a'},
+        completedLessons: {'l1'},
+        quizHistory: {},
+        categoryMastery: {'numbers': 10},
+        totalLearningMinutes: 5,
+        lastActiveDate: '2025-01-01',
+        currentStreak: 1,
+        totalStars: 10,
+      );
+
+      const cloud = UserStatsEntity(
+        practicedLetters: {'b'},
+        completedLessons: {'l2'},
+        quizHistory: {},
+        categoryMastery: {'alphabets': 20},
+        totalLearningMinutes: 15,
+        lastActiveDate: '2025-01-02',
+        currentStreak: 3,
+        totalStars: 25,
+      );
+
+      when(() => auth.getUserPrefs()).thenAnswer(
+        (_) async => Right(<String, dynamic>{
+          'user_progress_data': jsonEncode(UserStatsModel.fromEntity(cloud).toJson()),
+        }),
+      );
+      when(() => auth.updateUserPrefs(any())).thenAnswer((_) async => const Right(null));
+
+      await prefs.setString(
+        'user_progress_data',
+        jsonEncode(UserStatsModel.fromEntity(local).toJson()),
+      );
+
+      final result = await repo.getUserStats();
+      expect(result.isRight(), isTrue);
+      final merged = result.getOrElse((_) => fail('should be right'));
+
+      expect(merged.totalStars, 25); // Max of 10 and 25
+      expect(merged.currentStreak, 3); // Max of 1 and 3
+      expect(merged.practicedLetters, containsAll({'a', 'b'})); // Union
+      expect(merged.completedLessons, containsAll({'l1', 'l2'})); // Union
+      expect(merged.categoryMastery['numbers'], 10);
+      expect(merged.categoryMastery['alphabets'], 20);
+    });
+  });
 }

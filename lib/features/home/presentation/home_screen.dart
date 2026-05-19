@@ -6,7 +6,6 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../../shared/widgets/animated_buttons.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
-import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../../core/motion/motion.dart';
@@ -129,43 +128,59 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onRefresh: _onRefresh,
         child: Stack(
           children: [
-            // Background Mesh/Glow — skip on desktop (shell already provides it)
+            // High-Performance Background Mesh/Glow (GPU-rendered, 0% CPU overhead)
             if (!isDesktop) ...[
-              const Positioned.fill(
-                child: EnchantedVisualizer(
-                  isPlaying: true,
-                  color: AppColors.primary,
-                  showWaves: false,
-                  height: 300,
+              // Top-Right Primary Glow
+              Positioned(
+                top: -150,
+                right: -150,
+                child: Container(
+                  width: 400,
+                  height: 400,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.primary.withValues(alpha: 0.2),
+                        AppColors.primary.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
                 ),
               ),
+              // Bottom-Left Purple Glow
               Positioned(
-                top: -100,
-                right: -100,
-                child:
-                    Container(
-                          width: 300,
-                          height: 300,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: AppColors.primary.withValues(alpha: 0.15),
-                          ),
-                        )
-                        .animate()
-                        .fadeIn(duration: 1200.ms)
-                        .scale(begin: const Offset(0.5, 0.5)),
+                bottom: 100,
+                left: -150,
+                child: Container(
+                  width: 450,
+                  height: 450,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: RadialGradient(
+                      colors: [
+                        AppColors.accentPurple.withValues(alpha: 0.15),
+                        AppColors.accentPurple.withValues(alpha: 0),
+                      ],
+                    ),
+                  ),
+                ),
               ),
             ],
 
             SafeArea(
               child: SingleChildScrollView(
-                child: ResponsivePageContainer(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isDesktop ? 8 : 0,
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                physics: const AlwaysScrollableScrollPhysics(
+                  parent: BouncingScrollPhysics(),
+                ),
+                child: RepaintBoundary(
+                  child: ResponsivePageContainer(
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(
+                        horizontal: isDesktop ? 8 : 0,
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         // Header
                         _buildHeader(
@@ -310,6 +325,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
             ),
+          ),
           ],
         ),
       ),

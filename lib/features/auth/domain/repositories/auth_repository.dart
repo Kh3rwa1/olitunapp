@@ -34,4 +34,7 @@ abstract class AuthRepository {
   });
 
   Future<Either<Failure, void>> signInWithGoogle();
+
+  Future<Either<Failure, Map<String, dynamic>>> getUserPrefs();
+  Future<Either<Failure, void>> updateUserPrefs(Map<String, dynamic> prefs);
 }

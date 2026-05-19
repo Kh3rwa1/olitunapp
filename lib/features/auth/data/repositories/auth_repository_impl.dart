@@ -187,4 +187,32 @@ class AuthRepositoryImpl implements AuthRepository {
       return const Left(NetworkFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, Map<String, dynamic>>> getUserPrefs() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.getUserPrefs();
+        return Right(result);
+      } on ServerException catch (e) {
+        return Left(_serverFailure(e));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, void>> updateUserPrefs(Map<String, dynamic> prefs) async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.updateUserPrefs(prefs);
+        return const Right(null);
+      } on ServerException catch (e) {
+        return Left(_serverFailure(e));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
 }

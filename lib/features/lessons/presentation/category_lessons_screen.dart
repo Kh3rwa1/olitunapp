@@ -22,10 +22,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   @override
   void initState() {
     super.initState();
-    // Force refresh lessons from API every time this screen opens
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(lessonNotifierProvider.notifier).refresh();
-    });
   }
 
   Future<void> _onRefresh() async {

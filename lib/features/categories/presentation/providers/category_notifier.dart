@@ -16,7 +16,9 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
   }
 
   Future<void> loadCategories() async {
-    state = const AsyncValue.loading();
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
     final result = await _repository.getCategories();
     result.fold(
       (failure) =>

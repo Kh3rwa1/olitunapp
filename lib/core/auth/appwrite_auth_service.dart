@@ -274,14 +274,15 @@ class AppwriteAuthService {
     }
   }
 
-  /// Block the current account and clear all local session state.
+  /// Permanently wipe user progress data and clear session to allow automatic re-registration later.
   ///
-  /// Appwrite's client Account API permanently blocks the current user via
-  /// updateStatus. Full user-record deletion requires the server-side Users API.
+  /// Rather than blocking/deactivating the user via updateStatus (which locks out OAuth),
+  /// we wipe all cloud preferences/progress data and delete the session to enable a clean slate.
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-      await _account.updateStatus();
+      await _account.updatePrefs(prefs: {});
+      await _account.deleteSession(sessionId: 'current');
     } finally {
       await _clearLocalSessionState();
     }

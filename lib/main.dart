@@ -11,6 +11,7 @@ import 'core/config/appwrite_config.dart';
 import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
+import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'l10n/generated/app_localizations.dart';
 
@@ -30,6 +31,9 @@ Future<void> main() async {
     await runZonedGuarded(
       () async {
         WidgetsFlutterBinding.ensureInitialized();
+
+        // Enforce production SSL/TLS and certificate pinning overrides
+        SecureHttpOverrides.initialize();
 
         // Fail fast if Appwrite config is missing; release builds must not silently
         // point at the wrong backend or an empty project.

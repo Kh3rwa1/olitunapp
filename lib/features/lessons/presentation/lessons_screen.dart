@@ -21,10 +21,6 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(categoryNotifierProvider.notifier).refresh();
-      ref.read(lessonNotifierProvider.notifier).refresh();
-    });
   }
 
   @override

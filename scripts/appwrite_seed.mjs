@@ -154,6 +154,123 @@ const rhyme_subcategories = [
   { id: 'rsub_play', categoryId: 'rcat_general', nameOlChiki: 'ᱟᱹᱭᱩᱨ', nameLatin: 'Play Songs', order: 3 },
 ];
 
+const quizzes = [
+  {
+    id: 'quiz_alphabets_basics',
+    categoryId: 'cat_alphabet',
+    title: 'Alphabet Basics',
+    level: 'beginner',
+    order: 0,
+    isActive: true,
+    passingScore: 70,
+    questions: JSON.stringify([
+      {
+        type: 'mcq',
+        promptOlChiki: 'ᱚ',
+        promptLatin: 'Which sound does this letter make?',
+        optionsOlChiki: ['a', 'i', 'u', 'o'],
+        optionsLatin: ['a', 'i', 'u', 'o'],
+        correctIndex: 0
+      },
+      {
+        type: 'mcq',
+        promptOlChiki: 'ᱛ',
+        promptLatin: 'Identify this consonant:',
+        optionsOlChiki: ['at', 'ag', 'al', 'ak'],
+        optionsLatin: ['at', 'ag', 'al', 'ak'],
+        correctIndex: 0
+      }
+    ])
+  },
+  {
+    id: 'quiz_numbers_arithmetic',
+    categoryId: 'cat_numbers',
+    title: 'Arithmetic Mastery',
+    level: 'beginner',
+    order: 1,
+    isActive: true,
+    passingScore: 70,
+    questions: JSON.stringify([
+      {
+        type: 'mcq',
+        promptOlChiki: '᱒ + ᱓ = ?',
+        promptLatin: 'What is the sum of ᱒ (2) and ᱓ (3)?',
+        optionsOlChiki: ['᱔', '᱕', '᱖', '᱗'],
+        optionsLatin: ['᱔ (4)', '᱕ (5)', '᱖ (6)', '᱗ (7)'],
+        correctIndex: 1
+      },
+      {
+        type: 'mcq',
+        promptOlChiki: '᱙ - ᱕ = ?',
+        promptLatin: 'What is the result of ᱙ (9) minus ᱕ (5)?',
+        optionsOlChiki: ['᱓', '᱔', '᱕', '᱐'],
+        optionsLatin: ['᱓ (3)', '᱔ (4)', '᱕ (5)', '᱐ (0)'],
+        correctIndex: 1
+      },
+      {
+        type: 'mcq',
+        promptOlChiki: '᱓ × ᱓ = ?',
+        promptLatin: 'What is the product of ᱓ (3) multiplied by ᱓ (3)?',
+        optionsOlChiki: ['᱖', '᱗', '᱘', '᱙'],
+        optionsLatin: ['᱖ (6)', '᱗ (7)', '᱘ (8)', '᱙ (9)'],
+        correctIndex: 3
+      },
+      {
+        type: 'mcq',
+        promptOlChiki: '᱘ ÷ ᱒ = ?',
+        promptLatin: 'What is the result of ᱘ (8) divided by ᱒ (2)?',
+        optionsOlChiki: ['᱒', '᱓', '᱔', '᱕'],
+        optionsLatin: ['᱒ (2)', ' (3)', '᱔ (4)', '᱕ (5)'],
+        correctIndex: 2
+      }
+    ])
+  },
+  {
+    id: 'quiz_vocabulary_fill_blank',
+    categoryId: 'cat_words',
+    title: 'Duolingo Fill-in-Blank',
+    level: 'beginner',
+    order: 2,
+    isActive: true,
+    passingScore: 70,
+    questions: JSON.stringify([
+      {
+        type: 'fill_blank',
+        promptOlChiki: 'Fill in the blank:',
+        promptLatin: 'Choose the word that means "dog" to complete the sentence.',
+        optionsOlChiki: ['ᱥᱮᱛᱟ', 'ᱢᱮᱨᱳᱢ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
+        optionsLatin: ['ᱥᱮᱛᱟ (Dog)', 'ᱢᱮᱨᱳᱢ (Cat)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
+        correctIndex: 0,
+        blankSentenceOlChiki: 'ᱤᱧ ᱢᱤᱫ ___ ᱢᱮᱱᱟᱜᱼᱤᱧᱟ ᱾',
+        blankSentenceLatin: 'I have a dog.',
+        correctAnswer: 'ᱥᱮᱛᱟ'
+      },
+      {
+        type: 'fill_blank',
+        promptOlChiki: 'Fill in the blank:',
+        promptLatin: 'Choose the correct relationship word to complete the sentence.',
+        optionsOlChiki: ['ᱟᱭᱳ', 'ᱵᱟᱵᱟ', 'ᱫᱟᱫᱟ', 'ᱫᱟᱹᱭ'],
+        optionsLatin: ['ᱟᱭᱳ (Mother)', 'ᱵᱟᱵᱟ (Father)', 'ᱫᱟᱫᱟ (Elder Brother)', 'ᱫᱟᱹᱭ (Elder Sister)'],
+        correctIndex: 1,
+        blankSentenceOlChiki: 'ᱱᱩᱭ ᱫᱚ ᱤᱧᱤᱡ ___ ᱠᱟᱱᱟᱭ ᱾',
+        blankSentenceLatin: 'He is my father.',
+        correctAnswer: 'ᱵᱟᱵᱟ'
+      },
+      {
+        type: 'fill_blank',
+        promptOlChiki: 'Fill in the blank:',
+        promptLatin: 'Complete the color statement.',
+        optionsOlChiki: ['ᱦᱮᱱᱫᱮ', 'ᱯᱩᱱᱫ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
+        optionsLatin: ['ᱦᱮᱱᱫᱮ (Black)', 'ᱯᱩᱱᱫ (White)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
+        correctIndex: 2,
+        blankSentenceOlChiki: 'ᱡᱮᱞᱮᱠᱟ ᱢᱟᱭᱟᱢ ᱫᱚ ___ ᱜᱮᱭᱟ ᱾',
+        blankSentenceLatin: 'For example, blood is red.',
+        correctAnswer: 'ᱟᱨᱟᱜ'
+      }
+    ])
+  }
+];
+
 // ─── Run ───
 async function main() {
   console.log('🚀 Seeding Appwrite database...\n');
@@ -163,6 +280,7 @@ async function main() {
   await importCollection('numbers', numbers);
   await importCollection('rhyme_categories', rhyme_categories);
   await importCollection('rhyme_subcategories', rhyme_subcategories);
+  await importCollection('quizzes', quizzes);
 
   console.log('\n🎉 Seed import complete!');
 }

@@ -27,7 +27,7 @@ class WelcomeScreen extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 28),
               child: Column(
                 children: [
-                  const Spacer(flex: 2),
+                  const Spacer(),
 
                   // Logo and branding
                   _buildLogo()
@@ -38,7 +38,7 @@ class WelcomeScreen extends ConsumerWidget {
                         curve: Curves.easeOutBack,
                       ),
 
-                  const SizedBox(height: 28),
+                  const SizedBox(height: 20),
 
                   // Title
                   ShaderMask(
@@ -48,7 +48,7 @@ class WelcomeScreen extends ConsumerWidget {
                     child: const Text(
                       'Olitun',
                       style: TextStyle(
-                        fontSize: 48,
+                        fontSize: 44,
                         fontWeight: FontWeight.w900,
                         letterSpacing: -2,
                         color: Colors.white,
@@ -56,12 +56,12 @@ class WelcomeScreen extends ConsumerWidget {
                     ),
                   ).animate().fadeIn(delay: 200.ms, duration: 600.ms),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
 
                   Text(
                     'Learn Ol Chiki Script',
                     style: TextStyle(
-                      fontSize: 18,
+                      fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: isDark
                           ? AppColors.textSecondaryDark
@@ -69,7 +69,7 @@ class WelcomeScreen extends ConsumerWidget {
                     ),
                   ).animate().fadeIn(delay: 400.ms, duration: 600.ms),
 
-                  const Spacer(flex: 2),
+                  const Spacer(),
 
                   // Features
                   _buildFeatureCards(isDark),
@@ -79,7 +79,7 @@ class WelcomeScreen extends ConsumerWidget {
                   // CTA Buttons
                   _buildCTAButtons(context, isDark),
 
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 24),
                 ],
               ),
             ),
@@ -179,9 +179,21 @@ class WelcomeScreen extends ConsumerWidget {
 
   Widget _buildFeatureCards(bool isDark) {
     final features = [
-      _FeatureData(Icons.auto_awesome_rounded, 'Interactive', 'Learn by doing'),
-      _FeatureData(Icons.school_rounded, 'Structured', 'Step-by-step lessons'),
-      _FeatureData(Icons.emoji_events_rounded, 'Gamified', 'Earn rewards'),
+      _FeatureData(
+        Icons.auto_awesome_rounded,
+        'Interactive',
+        'Learn by doing',
+      ),
+      _FeatureData(
+        Icons.school_rounded,
+        'Structured',
+        'Step-by-step',
+      ),
+      _FeatureData(
+        Icons.emoji_events_rounded,
+        'Gamified',
+        'Streaks & rewards',
+      ),
     ];
 
     return Row(
@@ -189,71 +201,77 @@ class WelcomeScreen extends ConsumerWidget {
       children: features.asMap().entries.map((entry) {
         final feature = entry.value;
         return Expanded(
-              child: Container(
-                margin: EdgeInsets.only(
-                  left: entry.key == 0 ? 0 : 8,
-                  right: entry.key == features.length - 1 ? 0 : 8,
-                ),
-                padding: const EdgeInsets.symmetric(vertical: 20),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.1)
-                        : Colors.black.withValues(alpha: 0.05),
-                  ),
-                  boxShadow: isDark
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                ),
-                child: Column(
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(
-                        feature.icon,
-                        color: AppColors.primary,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Text(
-                      feature.title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w700,
-                        color: isDark ? Colors.white : Colors.black,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      feature.subtitle,
-                      style: TextStyle(
-                        fontSize: 11,
-                        color: isDark ? Colors.white54 : Colors.black45,
-                      ),
-                    ),
-                  ],
-                ),
+          child: Container(
+            margin: EdgeInsets.only(
+              left: entry.key == 0 ? 0 : 8,
+              right: entry.key == features.length - 1 ? 0 : 8,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 8),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.06)
+                  : Colors.white,
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.1)
+                    : Colors.black.withValues(alpha: 0.05),
               ),
-            )
-            .animate()
-            .fadeIn(delay: (600 + entry.key * 100).ms, duration: 400.ms)
-            .slideY(begin: 0.2);
+              boxShadow: isDark
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.05),
+                        blurRadius: 20,
+                        offset: const Offset(0, 8),
+                      ),
+                    ],
+            ),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(
+                    feature.icon,
+                    color: AppColors.primary,
+                    size: 24,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  feature.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  feature.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        )
+        .animate()
+        .fadeIn(delay: (600 + entry.key * 100).ms, duration: 400.ms)
+        .slideY(begin: 0.2);
       }).toList(),
     );
   }
@@ -329,11 +347,21 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
         (failure) {
           if (mounted) {
             setState(() => _isLoading = false);
-            final msg = failure.message.contains('user_already_exists')
-                ? 'An account with this email already exists. Please continue with Email.'
-                : 'Google sign-in failed: ${failure.message}';
+            String msg = 'Google sign-in failed: ${failure.message}';
+            if (failure.message.contains('user_already_exists')) {
+              msg = 'An account with this email already exists. Please continue with Email.';
+            } else if (failure.message.contains('CANCELED') || failure.message.contains('canceled')) {
+              msg = 'Google sign-in was canceled. If you recently deleted your account, it may take a few moments to synchronize, or you can try a different Google account.';
+            }
             ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(msg), backgroundColor: Colors.red),
+              SnackBar(
+                content: Text(msg),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
             );
           }
         },
@@ -346,12 +374,19 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
+        final errStr = e.toString();
+        String msg = 'Google sign-in failed: ${errStr.replaceAll('Exception: ', '')}';
+        if (errStr.contains('CANCELED') || errStr.contains('canceled')) {
+          msg = 'Google sign-in was canceled. If you recently deleted your account, it may take a few moments to synchronize, or you can try a different Google account.';
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(
-              'Google sign-in failed: ${e.toString().replaceAll('Exception: ', '')}',
-            ),
+            content: Text(msg),
             backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
           ),
         );
       }

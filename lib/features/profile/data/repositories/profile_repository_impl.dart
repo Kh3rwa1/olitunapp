@@ -5,6 +5,7 @@ import '../../../../core/error/failures.dart';
 import '../../../../core/observability/crash_reporting.dart';
 import '../../../auth/domain/repositories/auth_repository.dart';
 import '../../domain/entities/user_stats_entity.dart';
+import '../../domain/entities/quiz_result_entity.dart';
 import '../../domain/repositories/profile_repository.dart';
 import '../models/user_stats_model.dart';
 
@@ -21,26 +22,129 @@ class ProfileRepositoryImpl implements ProfileRepository {
     return f;
   }
 
+  UserStatsEntity _mergeStats(UserStatsEntity a, UserStatsEntity b) {
+    final letters = Set<String>.from(a.practicedLetters)..addAll(b.practicedLetters);
+    final lessons = Set<String>.from(a.completedLessons)..addAll(b.completedLessons);
+    
+    final quizHistory = Map<String, QuizResultEntity>.from(a.quizHistory);
+    b.quizHistory.forEach((key, resultB) {
+      if (quizHistory.containsKey(key)) {
+        final resultA = quizHistory[key]!;
+        if (resultB.score > resultA.score) {
+          quizHistory[key] = resultB;
+        }
+      } else {
+        quizHistory[key] = resultB;
+      }
+    });
+
+    final categoryMastery = Map<String, int>.from(a.categoryMastery);
+    b.categoryMastery.forEach((key, valB) {
+      final valA = categoryMastery[key] ?? 0;
+      categoryMastery[key] = valB > valA ? valB : valA;
+    });
+
+    final totalStars = a.totalStars > b.totalStars ? a.totalStars : b.totalStars;
+    final totalLearningMinutes = a.totalLearningMinutes > b.totalLearningMinutes
+        ? a.totalLearningMinutes
+        : b.totalLearningMinutes;
+    final currentStreak = a.currentStreak > b.currentStreak ? a.currentStreak : b.currentStreak;
+    
+    String lastActiveDate = a.lastActiveDate;
+    if (b.lastActiveDate.isNotEmpty) {
+      if (lastActiveDate.isEmpty || b.lastActiveDate.compareTo(lastActiveDate) > 0) {
+        lastActiveDate = b.lastActiveDate;
+      }
+    }
+
+    return UserStatsEntity(
+      practicedLetters: letters,
+      completedLessons: lessons,
+      quizHistory: quizHistory,
+      categoryMastery: categoryMastery,
+      totalLearningMinutes: totalLearningMinutes,
+      lastActiveDate: lastActiveDate,
+      currentStreak: currentStreak,
+      totalStars: totalStars,
+    );
+  }
+
   @override
   Future<Either<Failure, UserStatsEntity>> getUserStats() async {
     try {
-      final stored = _prefs.getString(_statsKey);
-      if (stored != null) {
-        final model = UserStatsModel.fromJson(jsonDecode(stored));
-        return Right(model);
+      final storedLocal = _prefs.getString(_statsKey);
+      UserStatsEntity? localStats;
+      if (storedLocal != null) {
+        localStats = UserStatsModel.fromJson(jsonDecode(storedLocal));
       }
-      return const Right(
-        UserStatsEntity(
-          practicedLetters: {},
-          completedLessons: {},
-          quizHistory: {},
-          categoryMastery: {},
-          totalLearningMinutes: 0,
-          lastActiveDate: '',
-          currentStreak: 0,
-          totalStars: 0,
-        ),
-      );
+
+      final loggedInResult = await _authRepository.isLoggedIn();
+      final isLoggedIn = loggedInResult.getOrElse((_) => false);
+
+      if (isLoggedIn) {
+        final prefsResult = await _authRepository.getUserPrefs();
+        return await prefsResult.fold(
+          (failure) {
+            return Right(localStats ?? const UserStatsEntity(
+              practicedLetters: {},
+              completedLessons: {},
+              quizHistory: {},
+              categoryMastery: {},
+              totalLearningMinutes: 0,
+              lastActiveDate: '',
+              currentStreak: 0,
+              totalStars: 0,
+            ));
+          },
+          (cloudPrefs) async {
+            final cloudProgressData = cloudPrefs[_statsKey];
+            if (cloudProgressData != null && cloudProgressData is String && cloudProgressData.isNotEmpty) {
+              final cloudStats = UserStatsModel.fromJson(jsonDecode(cloudProgressData));
+              
+              if (localStats != null) {
+                final resolvedStats = _mergeStats(localStats, cloudStats);
+                await _prefs.setString(_statsKey, jsonEncode(UserStatsModel.fromEntity(resolvedStats).toJson()));
+                final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)..[_statsKey] = jsonEncode(UserStatsModel.fromEntity(resolvedStats).toJson());
+                await _authRepository.updateUserPrefs(cloudUpdate);
+                return Right(resolvedStats);
+              } else {
+                await _prefs.setString(_statsKey, jsonEncode(UserStatsModel.fromEntity(cloudStats).toJson()));
+                return Right(cloudStats);
+              }
+            } else {
+              if (localStats != null) {
+                final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)..[_statsKey] = jsonEncode(UserStatsModel.fromEntity(localStats).toJson());
+                await _authRepository.updateUserPrefs(cloudUpdate);
+                return Right(localStats);
+              }
+            }
+            
+            return const Right(
+              UserStatsEntity(
+                practicedLetters: {},
+                completedLessons: {},
+                quizHistory: {},
+                categoryMastery: {},
+                totalLearningMinutes: 0,
+                lastActiveDate: '',
+                currentStreak: 0,
+                totalStars: 0,
+              ),
+            );
+          },
+        );
+      }
+
+      return Right(localStats ?? const UserStatsEntity(
+        practicedLetters: {},
+        completedLessons: {},
+        quizHistory: {},
+        categoryMastery: {},
+        totalLearningMinutes: 0,
+        lastActiveDate: '',
+        currentStreak: 0,
+        totalStars: 0,
+      ));
     } catch (e) {
       return Left(_recordedCacheFailure(e));
     }
@@ -50,16 +154,25 @@ class ProfileRepositoryImpl implements ProfileRepository {
   Future<Either<Failure, void>> updateUserStats(UserStatsEntity stats) async {
     try {
       final model = UserStatsModel.fromEntity(stats);
-      await _prefs.setString(_statsKey, jsonEncode(model.toJson()));
+      final jsonStr = jsonEncode(model.toJson());
+      await _prefs.setString(_statsKey, jsonStr);
 
-      // Sync with cloud if logged in
-      final loggedIn = await _authRepository.isLoggedIn();
-      await loggedIn.fold((failure) => null, (isLoggedIn) async {
-        if (isLoggedIn) {
-          // This assumes the legacy updatePrefs exists or we use a new domain method
-          // For now, we'll assume the AuthRepository handles it or we add it there.
-        }
-      });
+      final loggedInResult = await _authRepository.isLoggedIn();
+      await loggedInResult.fold(
+        (failure) => null,
+        (isLoggedIn) async {
+          if (isLoggedIn) {
+            final prefsResult = await _authRepository.getUserPrefs();
+            await prefsResult.fold(
+              (failure) => null,
+              (cloudPrefs) async {
+                final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)..[_statsKey] = jsonStr;
+                await _authRepository.updateUserPrefs(cloudUpdate);
+              },
+            );
+          }
+        },
+      );
 
       return const Right(null);
     } catch (e) {

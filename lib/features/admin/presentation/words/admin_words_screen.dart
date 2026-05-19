@@ -158,8 +158,70 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
             eyebrow: 'CONTENT · WORDS',
           ),
         ),
+        const SizedBox(width: 16),
+        OutlinedButton.icon(
+          onPressed: () => _handleSeedData(context),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            side: const BorderSide(color: AppColors.primary),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+            ),
+          ),
+          icon: const Icon(Icons.cloud_download_rounded, size: 18),
+          label: const Text(
+            'Seed Default Data',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
       ],
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
+  }
+
+  Future<void> _handleSeedData(BuildContext context) async {
+    final ok = await showAdminConfirmDialog(
+      context: context,
+      title: 'Seed Default Data',
+      message:
+          'This will populate your app with rich sample categories, letters, lessons, and numbers. Existing custom data is preserved and not overwritten.',
+    );
+
+    if (ok == true) {
+      try {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Seeding default data to database...'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
+        await seedAppContent(ref);
+
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Default data seeded successfully!'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to seed data: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Widget _emptyState(BuildContext context, bool isDark) {

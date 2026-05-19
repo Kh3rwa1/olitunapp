@@ -164,8 +164,69 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
             eyebrow: 'CONTENT · QUIZZES',
           ),
         ),
+        const SizedBox(width: 16),
+        OutlinedButton.icon(
+          onPressed: () => _handleSeedQuizzes(context),
+          style: OutlinedButton.styleFrom(
+            foregroundColor: AppColors.primary,
+            side: const BorderSide(color: AppColors.primary),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+            ),
+          ),
+          icon: const Icon(Icons.cloud_download_rounded, size: 18),
+          label: const Text(
+            'Seed Default Quizzes',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+        ),
       ],
     ).animate().fadeIn(duration: 400.ms).slideY(begin: -0.2);
+  }
+
+  Future<void> _handleSeedQuizzes(BuildContext context) async {
+    final ok = await showAdminConfirmDialog(
+      context: context,
+      title: 'Seed Default Quizzes',
+      message: 'This will seed the default Alphabet, Arithmetic, and Sentence quizzes directly into your Appwrite database so you can easily edit them. Existing custom quizzes will be preserved.',
+    );
+    
+    if (ok == true) {
+      try {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Seeding default quizzes to database...'),
+            behavior: SnackBarBehavior.floating,
+            duration: Duration(seconds: 2),
+          ),
+        );
+        
+        await ref.read(quizzesProvider.notifier).seedToAppwrite();
+        
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text('Default quizzes seeded successfully!'),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppColors.primary,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to seed quizzes: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   Widget _buildEmptyState(BuildContext context, bool isDark) {

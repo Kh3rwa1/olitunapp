@@ -22,6 +22,8 @@ abstract class AuthRemoteDataSource {
   Future<String> sendOtp(String email);
   Future<UserModel> verifyOtp({required String userId, required String secret});
   Future<void> signInWithGoogle();
+  Future<Map<String, dynamic>> getUserPrefs();
+  Future<void> updateUserPrefs(Map<String, dynamic> prefs);
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -198,6 +200,35 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Google sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<Map<String, dynamic>> getUserPrefs() async {
+    try {
+      final prefs = await authService.getPrefs();
+      return prefs.data;
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to get user preferences',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<void> updateUserPrefs(Map<String, dynamic> prefs) async {
+    try {
+      await authService.updatePrefs(prefs);
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Failed to update user preferences',
         code: e.code,
       );
     } catch (e) {

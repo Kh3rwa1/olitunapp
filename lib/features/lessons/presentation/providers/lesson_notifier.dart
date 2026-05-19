@@ -28,7 +28,9 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
   }
 
   Future<void> loadLessons() async {
-    state = const AsyncValue.loading();
+    if (!state.hasValue) {
+      state = const AsyncValue.loading();
+    }
     final result = await _repository.getLessons();
     result.fold(
       (failure) =>

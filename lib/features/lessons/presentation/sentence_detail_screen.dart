@@ -277,112 +277,107 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                 ),
               const SizedBox(height: 16),
 
-              // Ol Chiki sentence card
+              // Large Ol Chiki sentence card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      accentColor.withValues(alpha: 0.1),
-                      accentColor.withValues(alpha: 0.2),
+                      accentColor.withValues(alpha: 0.15),
+                      accentColor.withValues(alpha: 0.25),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: accentColor.withValues(alpha: 0.3),
-                    width: 3,
+                    color: accentColor.withValues(alpha: 0.4),
+                    width: 4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: accentColor.withValues(alpha: 0.15),
-                      blurRadius: 24,
-                      offset: const Offset(0, 8),
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Icon(
-                          Icons.translate_rounded,
-                          color: accentColor.withValues(alpha: 0.6),
-                          size: 20,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          'Ol Chiki',
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: accentColor.withValues(alpha: 0.7),
-                          ),
-                        ),
-                      ],
+                child: Center(
+                  child: Text(
+                    sentence.sentenceOlChiki,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 34,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                      letterSpacing: 1,
+                      height: 1.4,
                     ),
-                    const SizedBox(height: 12),
-                    Text(
-                      sentence.sentenceOlChiki,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                        color: accentColor,
-                        letterSpacing: 1,
-                        height: 1.4,
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Latin badge
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 18,
+                ),
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        sentence.sentenceLatin,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1,
+                          fontStyle: FontStyle.italic,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 8,
-                          ),
+                    if (sentence.audioUrl != null) ...[
+                      const SizedBox(width: 12),
+                      PressableScale(
+                        onTap: () {
+                          ref
+                              .read(audioServiceProvider)
+                              .playUrl(sentence.audioUrl!);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(14),
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            sentence.sentenceLatin,
-                            textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
-                              fontStyle: FontStyle.italic,
-                            ),
+                          child: const Icon(
+                            Icons.volume_up_rounded,
+                            color: Colors.white,
+                            size: 24,
                           ),
                         ),
-                        if (sentence.audioUrl != null) ...[
-                          const SizedBox(width: 12),
-                          PressableScale(
-                            onTap: () {
-                              ref
-                                  .read(audioServiceProvider)
-                                  .playUrl(sentence.audioUrl!);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: accentColor,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.volume_up_rounded,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ],
                 ),
               ),

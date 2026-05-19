@@ -351,90 +351,105 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                 ),
               const SizedBox(height: 16),
 
-              // Ol Chiki word card with inline audio
+              // Large Ol Chiki word card
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(24),
+                padding: const EdgeInsets.symmetric(
+                  vertical: 40,
+                  horizontal: 24,
+                ),
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      accentColor.withValues(alpha: 0.1),
-                      accentColor.withValues(alpha: 0.2),
+                      accentColor.withValues(alpha: 0.15),
+                      accentColor.withValues(alpha: 0.25),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                   ),
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(32),
                   border: Border.all(
-                    color: accentColor.withValues(alpha: 0.3),
-                    width: 3,
+                    color: accentColor.withValues(alpha: 0.4),
+                    width: 4,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: accentColor.withValues(alpha: 0.15),
-                      blurRadius: 20,
-                      offset: const Offset(0, 8),
+                      color: accentColor.withValues(alpha: 0.2),
+                      blurRadius: 40,
+                      offset: const Offset(0, 10),
                     ),
                   ],
                 ),
-                child: Column(
+                child: Center(
+                  child: Text(
+                    word.wordOlChiki,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 44,
+                      fontWeight: FontWeight.w900,
+                      color: accentColor,
+                      letterSpacing: 2,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+
+              // Latin badge
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 18,
+                ),
+                decoration: BoxDecoration(
+                  color: accentColor,
+                  borderRadius: BorderRadius.circular(20),
+                  boxShadow: [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 15,
+                      offset: const Offset(0, 6),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Text(
-                      word.wordOlChiki,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 44,
-                        fontWeight: FontWeight.w900,
-                        color: accentColor,
-                        letterSpacing: 2,
+                    Expanded(
+                      child: Text(
+                        word.wordLatin,
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                          color: Colors.white,
+                          letterSpacing: 1,
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 8,
-                          ),
+                    if (word.audioUrl != null) ...[
+                      const SizedBox(width: 12),
+                      PressableScale(
+                        onTap: () {
+                          ref
+                              .read(audioServiceProvider)
+                              .playUrl(word.audioUrl!);
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: accentColor.withValues(alpha: 0.15),
-                            borderRadius: BorderRadius.circular(16),
+                            color: Colors.white.withValues(alpha: 0.25),
+                            borderRadius: BorderRadius.circular(12),
                           ),
-                          child: Text(
-                            word.wordLatin,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: accentColor,
-                            ),
+                          child: const Icon(
+                            Icons.volume_up_rounded,
+                            color: Colors.white,
+                            size: 24,
                           ),
                         ),
-                        if (word.audioUrl != null) ...[
-                          const SizedBox(width: 12),
-                          PressableScale(
-                            onTap: () {
-                              ref
-                                  .read(audioServiceProvider)
-                                  .playUrl(word.audioUrl!);
-                            },
-                            child: Container(
-                              padding: const EdgeInsets.all(8),
-                              decoration: BoxDecoration(
-                                color: accentColor,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Icon(
-                                Icons.volume_up_rounded,
-                                color: Colors.white,
-                                size: 22,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
-                    ),
+                      ),
+                    ],
                   ],
                 ),
               ),

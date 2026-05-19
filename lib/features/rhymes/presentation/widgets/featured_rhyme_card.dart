@@ -72,6 +72,38 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
           ),
           child: Stack(
             children: [
+              // Background Image
+              if (widget.rhyme.thumbnailUrl != null &&
+                  widget.rhyme.thumbnailUrl!.isNotEmpty)
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(40),
+                    child: Image.network(
+                      widget.rhyme.thumbnailUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+              // Dark Gradient Overlay for Readability
+              if (widget.rhyme.thumbnailUrl != null &&
+                  widget.rhyme.thumbnailUrl!.isNotEmpty)
+                Positioned.fill(
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(40),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.black.withValues(alpha: 0.35),
+                          Colors.black.withValues(alpha: 0.75),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
               Positioned(
                 bottom: 0,
                 left: 0,

@@ -79,6 +79,38 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
           : Colors.white.withValues(alpha: 0.7),
       child: Stack(
         children: [
+          // Background Image
+          if (widget.rhyme.thumbnailUrl != null &&
+              widget.rhyme.thumbnailUrl!.isNotEmpty)
+            Positioned.fill(
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(32),
+                child: Image.network(
+                  widget.rhyme.thumbnailUrl!,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) =>
+                      const SizedBox.shrink(),
+                ),
+              ),
+            ),
+          // Dark/Light Overlay for readability
+          if (widget.rhyme.thumbnailUrl != null &&
+              widget.rhyme.thumbnailUrl!.isNotEmpty)
+            Positioned.fill(
+              child: Container(
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(32),
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.black.withValues(alpha: 0.25),
+                      Colors.black.withValues(alpha: 0.75),
+                    ],
+                  ),
+                ),
+              ),
+            ),
           Positioned(
             bottom: 0,
             left: 0,
@@ -87,7 +119,11 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
               height: 60,
               child: EnchantedVisualizer(
                 isPlaying: isPlaying,
-                color: color.withValues(alpha: 0.2),
+                color:
+                    (widget.rhyme.thumbnailUrl != null &&
+                        widget.rhyme.thumbnailUrl!.isNotEmpty)
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : color.withValues(alpha: 0.2),
               ),
             ),
           ),
@@ -102,12 +138,20 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                     Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
-                            color: color.withValues(alpha: 0.15),
+                            color:
+                                (widget.rhyme.thumbnailUrl != null &&
+                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                ? Colors.white.withValues(alpha: 0.2)
+                                : color.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
                             _getIconForCategory(widget.rhyme.category),
-                            color: color,
+                            color:
+                                (widget.rhyme.thumbnailUrl != null &&
+                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                ? Colors.white
+                                : color,
                             size: 16,
                           ),
                         )
@@ -152,7 +196,11 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                                 ? Icons.pause_circle_filled_rounded
                                 : Icons.play_circle_fill_rounded,
                             key: ValueKey(isPlaying),
-                            color: color,
+                            color:
+                                (widget.rhyme.thumbnailUrl != null &&
+                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                ? Colors.white
+                                : color,
                             size: 28,
                           ),
                         ),
@@ -167,7 +215,11 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                         style: GoogleFonts.fredoka(
                           fontSize: 9,
                           fontWeight: FontWeight.w700,
-                          color: color.withValues(alpha: 0.8),
+                          color:
+                              (widget.rhyme.thumbnailUrl != null &&
+                                  widget.rhyme.thumbnailUrl!.isNotEmpty)
+                              ? Colors.white70
+                              : color.withValues(alpha: 0.8),
                           letterSpacing: 1,
                         ),
                         maxLines: 1,
@@ -186,9 +238,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                               .copyWith(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w700,
-                                color: isDark
-                                    ? Colors.white
-                                    : AppColors.primaryDark,
+                                color: Colors.white,
                                 height: 1.1,
                               ),
                       maxLines: 2,
@@ -201,10 +251,10 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                   const SizedBox(height: 2),
                   Text(
                         secondaryTitle,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.w600,
-                          color: isDark ? Colors.white54 : Colors.black45,
+                          color: Colors.white70,
                           fontFamily: 'OlChiki',
                         ),
                         maxLines: 1,

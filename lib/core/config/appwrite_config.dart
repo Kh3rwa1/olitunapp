@@ -19,7 +19,7 @@ class AppwriteConfig {
   );
   static const String _envProjectId = String.fromEnvironment(
     'APPWRITE_PROJECT_ID',
-    defaultValue: '699c2cba0002118996bd',
+    defaultValue: '699495910038e39622c5',
   );
 
   /// Resolved endpoint — never empty after [validate].

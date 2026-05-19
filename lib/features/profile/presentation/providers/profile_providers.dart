@@ -179,12 +179,36 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       ..add(normalizedLetter);
     var updated = current.copyWith(practicedLetters: updatedLetters);
 
-    final isDigit = const ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(normalizedLetter);
+    final isDigit = const [
+      '᱐',
+      '᱑',
+      '᱒',
+      '᱓',
+      '᱔',
+      '᱕',
+      '᱖',
+      '᱗',
+      '᱘',
+      '᱙',
+    ].contains(normalizedLetter);
 
     if (isDigit) {
-      final practicedDigits = updatedLetters.where((l) =>
-        const ['᱐', '᱑', '２', '３', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(l)
-      ).length;
+      final practicedDigits = updatedLetters
+          .where(
+            (l) => const [
+              '᱐',
+              '᱑',
+              '２',
+              '３',
+              '᱔',
+              '᱕',
+              '᱖',
+              '᱗',
+              '᱘',
+              '᱙',
+            ].contains(l),
+          )
+          .length;
       final masteryPct = (practicedDigits / 10 * 100).clamp(0, 100).round();
       final updatedMastery = Map<String, int>.from(updated.categoryMastery)
         ..['numbers'] = masteryPct;
@@ -192,9 +216,22 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         updated.copyWith(categoryMastery: updatedMastery),
       );
     } else {
-      final practicedAlphabetLetters = updatedLetters.where((l) =>
-        !const ['᱐', '᱑', '２', '３', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'].contains(l)
-      ).length;
+      final practicedAlphabetLetters = updatedLetters
+          .where(
+            (l) => !const [
+              '᱐',
+              '᱑',
+              '２',
+              '３',
+              '᱔',
+              '᱕',
+              '᱖',
+              '᱗',
+              '᱘',
+              '᱙',
+            ].contains(l),
+          )
+          .length;
       final masteryPct =
           (practicedAlphabetLetters / UserStatsEntity.alphabetLetterCount * 100)
               .clamp(0, 100)
@@ -207,12 +244,13 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     }
 
     if (score != null) {
-      debugPrint('[Analytics] Trace Completed: $normalizedLetter with score: ${score.toStringAsFixed(2)}');
+      debugPrint(
+        '[Analytics] Trace Completed: $normalizedLetter with score: ${score.toStringAsFixed(2)}',
+      );
     }
 
     await updateStats(updated);
   }
-
 
   Future<void> addStars(int count) async {
     final current = state.valueOrNull;

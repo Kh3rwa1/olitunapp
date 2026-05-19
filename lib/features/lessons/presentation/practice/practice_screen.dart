@@ -44,8 +44,10 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
 
     if (!_hasCompletedPractice) {
       _hasCompletedPractice = true;
-      ref.read(userStatsProvider.notifier).practiceLetter(practiceChar, score: score);
-      
+      ref
+          .read(userStatsProvider.notifier)
+          .practiceLetter(practiceChar, score: score);
+
       // Calculate proportional stars: 10 base + up to 10 bonus stars based on accuracy
       const baseStars = 10;
       final bonusStars = (score * 10).round().clamp(0, 10);

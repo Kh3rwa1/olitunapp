@@ -248,7 +248,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                             setState(() => _selectedGradient = 'sunset'),
                       ),
                       _GradientOption(
-                        gradient: AppColors.skyBlueGradient,
+                        gradient: AppColors.purpleGradient,
                         label: 'Purple',
                         isSelected: _selectedGradient == 'purple',
                         onTap: () =>

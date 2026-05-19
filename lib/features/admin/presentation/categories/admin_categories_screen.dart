@@ -60,6 +60,27 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
+              const SizedBox(width: 12),
+              ElevatedButton.icon(
+                onPressed: () => CategoryFormSheet.show(context, ref, null),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.primary,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  elevation: 0,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                  ),
+                ),
+                icon: const Icon(Icons.add_rounded, size: 18),
+                label: const Text(
+                  'Add Category',
+                  style: TextStyle(fontWeight: FontWeight.w700),
+                ),
+              ),
             ],
           ),
 

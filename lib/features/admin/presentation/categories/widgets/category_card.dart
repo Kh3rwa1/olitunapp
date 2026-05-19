@@ -32,7 +32,7 @@ class CategoryCard extends StatelessWidget {
       case 'sunset':
         return AppColors.sunsetGradient;
       case 'purple':
-        return AppColors.skyBlueGradient;
+        return AppColors.purpleGradient;
       default:
         return AppColors.skyBlueGradient;
     }

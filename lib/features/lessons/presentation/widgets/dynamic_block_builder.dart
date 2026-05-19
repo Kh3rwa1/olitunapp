@@ -428,8 +428,9 @@ class _LottieBlockState extends State<_LottieBlock>
   Widget build(BuildContext context) {
     final animationUrl =
         widget.block.data?['animationUrl'] as String? ?? widget.block.imageUrl;
-    if (animationUrl == null || animationUrl.isEmpty)
+    if (animationUrl == null || animationUrl.isEmpty) {
       return const SizedBox.shrink();
+    }
 
     return Container(
       width: double.infinity,

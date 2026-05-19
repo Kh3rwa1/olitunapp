@@ -286,9 +286,7 @@ class AppwriteAuthService {
       await _restoreWebSession();
       // Hard-delete the account using our Cloud Function so OAuth (Google)
       // can create a fresh user record on the next sign-in without conflict.
-      await _functions.createExecution(
-        functionId: 'delete-account',
-      );
+      await _functions.createExecution(functionId: 'delete-account');
     } on AppwriteException catch (e) {
       debugPrint('Appwrite: deleteAccount error: $e');
       // If delete fails, still try to clean up session

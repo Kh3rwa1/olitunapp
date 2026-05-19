@@ -309,12 +309,25 @@ class NumberGridContent extends ConsumerWidget {
     // Fallback: If no blocks or no matching numbers were found, fallback to category/range mapping
     final title = lesson.titleLatin.toLowerCase();
     List<NumberModel> fallbackList = [];
-    if (title.contains('0-9') || title.contains('single') || title.contains('basic')) {
-      fallbackList = allNumbers.where((n) => n.value >= 0 && n.value <= 9 && n.isActive).toList();
-    } else if (title.contains('10-99') || title.contains('double') || title.contains('tens') || title.contains('10 to 99')) {
-      fallbackList = allNumbers.where((n) => n.value >= 10 && n.value <= 99 && n.isActive).toList();
-    } else if (title.contains('100') || title.contains('hundred') || title.contains('large')) {
-      fallbackList = allNumbers.where((n) => n.value >= 100 && n.isActive).toList();
+    if (title.contains('0-9') ||
+        title.contains('single') ||
+        title.contains('basic')) {
+      fallbackList = allNumbers
+          .where((n) => n.value >= 0 && n.value <= 9 && n.isActive)
+          .toList();
+    } else if (title.contains('10-99') ||
+        title.contains('double') ||
+        title.contains('tens') ||
+        title.contains('10 to 99')) {
+      fallbackList = allNumbers
+          .where((n) => n.value >= 10 && n.value <= 99 && n.isActive)
+          .toList();
+    } else if (title.contains('100') ||
+        title.contains('hundred') ||
+        title.contains('large')) {
+      fallbackList = allNumbers
+          .where((n) => n.value >= 100 && n.isActive)
+          .toList();
     } else {
       // General fallback if the lesson title or category indicates it's a numbers category
       fallbackList = allNumbers.where((n) => n.isActive).toList();

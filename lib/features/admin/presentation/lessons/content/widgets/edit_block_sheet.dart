@@ -258,7 +258,10 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                                     strokeWidth: 2,
                                   ),
                                 )
-                              : const Icon(Icons.auto_awesome_rounded, size: 20),
+                              : const Icon(
+                                  Icons.auto_awesome_rounded,
+                                  size: 20,
+                                ),
                           tooltip: 'Magic Fill (AI Translate)',
                         ),
                       ],
@@ -304,7 +307,8 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       label: 'Video',
                       icon: Icons.videocam_rounded,
                       accent: const Color(0xFFF59E0B),
-                      currentUrl: _audioUrl, // Re-using _audioUrl for video URL storage in model
+                      currentUrl:
+                          _audioUrl, // Re-using _audioUrl for video URL storage in model
                       uploadFolder: 'lesson-video',
                       fileType: FileType.video,
                       onUploaded: (url) => setState(() => _audioUrl = url),

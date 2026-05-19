@@ -349,34 +349,34 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                                       textOlChiki: 'New Block',
                                     ),
                                   ],
-                                isActive: _isActive,
-                                data: _thumbnailUrl != null && _thumbnailUrl!.isNotEmpty
-                                    ? {'thumbnailUrl': _thumbnailUrl!}
-                                    : null,
-                              );
+                              isActive: _isActive,
+                              data:
+                                  _thumbnailUrl != null &&
+                                      _thumbnailUrl!.isNotEmpty
+                                  ? {'thumbnailUrl': _thumbnailUrl!}
+                                  : null,
+                            );
 
-                              if (_isEditing) {
-                                await ref
-                                    .read(lessonNotifierProvider.notifier)
-                                    .updateLesson(newLesson);
-                              } else {
-                                await ref
-                                    .read(lessonNotifierProvider.notifier)
-                                    .addLesson(newLesson);
-                              }
+                            if (_isEditing) {
+                              await ref
+                                  .read(lessonNotifierProvider.notifier)
+                                  .updateLesson(newLesson);
+                            } else {
+                              await ref
+                                  .read(lessonNotifierProvider.notifier)
+                                  .addLesson(newLesson);
+                            }
 
-                              if (context.mounted) Navigator.pop(context);
-                            },
-                      child: Text(_isEditing ? 'Save Changes' : 'Create Lesson'),
-                    ),
+                            if (context.mounted) Navigator.pop(context);
+                          },
+                    child: Text(_isEditing ? 'Save Changes' : 'Create Lesson'),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
-          ],
-        ),
-      );
+          ),
+        ],
+      ),
+    );
   }
 }
-
-

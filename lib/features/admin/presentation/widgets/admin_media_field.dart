@@ -51,7 +51,8 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
   @override
   void didUpdateWidget(covariant AdminMediaField oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.currentUrl != oldWidget.currentUrl && widget.currentUrl != _urlController.text) {
+    if (widget.currentUrl != oldWidget.currentUrl &&
+        widget.currentUrl != _urlController.text) {
       _urlController.text = widget.currentUrl ?? '';
     }
   }
@@ -204,7 +205,11 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
             fillColor: isDark
                 ? Colors.white.withValues(alpha: 0.03)
                 : Colors.black.withValues(alpha: 0.02),
-            prefixIcon: Icon(Icons.link_rounded, size: 18, color: widget.accent),
+            prefixIcon: Icon(
+              Icons.link_rounded,
+              size: 18,
+              color: widget.accent,
+            ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
               borderSide: BorderSide(

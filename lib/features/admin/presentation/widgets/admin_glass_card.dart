@@ -69,12 +69,14 @@ class AdminGlassCard extends StatelessWidget {
             child: Container(
               padding: padding,
               decoration: BoxDecoration(
-                color: color ??
+                color:
+                    color ??
                     (isDark
                         ? const Color(0xFF0F1622).withValues(alpha: 0.60)
                         : Colors.white.withValues(alpha: 0.75)),
                 borderRadius: radius,
-                border: border ??
+                border:
+                    border ??
                     Border.all(
                       color: isDark
                           ? Colors.white.withValues(alpha: 0.09)

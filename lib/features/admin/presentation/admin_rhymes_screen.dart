@@ -311,7 +311,8 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                       currentUrl: thumbnailUrl,
                       uploadFolder: 'rhymes-images',
                       fileType: FileType.image,
-                      onUploaded: (url) => setDialogState(() => thumbnailUrl = url),
+                      onUploaded: (url) =>
+                          setDialogState(() => thumbnailUrl = url),
                       previewBuilder: (url) => ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: Image.network(
@@ -423,4 +424,3 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     }
   }
 }
-

@@ -91,7 +91,9 @@ class LetterCard extends ConsumerWidget {
                     child: GestureDetector(
                       onTap: () {
                         HapticFeedback.mediumImpact();
-                        ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+                        ref
+                            .read(audioServiceProvider)
+                            .playUrl(letter.audioUrl!);
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),

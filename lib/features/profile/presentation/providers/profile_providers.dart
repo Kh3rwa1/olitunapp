@@ -102,8 +102,12 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
           if (user != null && user.name != null && user.name!.isNotEmpty) {
             final currentName = ref.read(userNameProvider);
             final firstName = user.name!.split(' ').first;
-            if (currentName == 'Learner' || currentName == 'Explorer' || currentName != firstName) {
-              debugPrint('ProfileSync: Syncing first name from cloud: $firstName');
+            if (currentName == 'Learner' ||
+                currentName == 'Explorer' ||
+                currentName != firstName) {
+              debugPrint(
+                'ProfileSync: Syncing first name from cloud: $firstName',
+              );
               updateName(firstName);
             }
           }

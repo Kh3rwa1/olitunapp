@@ -62,7 +62,7 @@ class QuizScreen extends ConsumerWidget {
           }
 
           final parts = question.blankSentenceOlChiki?.split('___') ?? ['', ''];
-          
+
           return Container(
             width: double.infinity,
             padding: const EdgeInsets.all(24),
@@ -81,7 +81,9 @@ class QuizScreen extends ConsumerWidget {
               ),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.primary.withValues(alpha: isDark ? 0.05 : 0.08),
+                  color: AppColors.primary.withValues(
+                    alpha: isDark ? 0.05 : 0.08,
+                  ),
                   blurRadius: 20,
                   offset: const Offset(0, 8),
                 ),
@@ -136,12 +138,19 @@ class QuizScreen extends ConsumerWidget {
                     const SizedBox(width: 16),
                     Expanded(
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 16,
+                        ),
                         decoration: BoxDecoration(
-                          color: isDark ? const Color(0xFF1C2C3E) : const Color(0xFFF3F4F6),
+                          color: isDark
+                              ? const Color(0xFF1C2C3E)
+                              : const Color(0xFFF3F4F6),
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
-                            color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.05)
+                                : Colors.black.withValues(alpha: 0.05),
                           ),
                         ),
                         child: Wrap(
@@ -158,19 +167,25 @@ class QuizScreen extends ConsumerWidget {
                                   fontFamily: 'OlChiki',
                                 ),
                               ),
-                            
+
                             // Blank/Pulsing Slot or Filled option
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 250),
-                              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: state.selectedAnswer != null
                                     ? (state.isAnswered
-                                        ? (state.selectedAnswer == question.correctIndex
-                                            ? AppColors.success
-                                            : AppColors.error)
-                                        : AppColors.primary)
-                                    : (isDark ? const Color(0xFF0F1A24) : Colors.white),
+                                          ? (state.selectedAnswer ==
+                                                    question.correctIndex
+                                                ? AppColors.success
+                                                : AppColors.error)
+                                          : AppColors.primary)
+                                    : (isDark
+                                          ? const Color(0xFF0F1A24)
+                                          : Colors.white),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
                                   color: state.selectedAnswer != null
@@ -184,21 +199,25 @@ class QuizScreen extends ConsumerWidget {
                                 boxShadow: state.selectedAnswer != null
                                     ? [
                                         BoxShadow(
-                                          color: (state.isAnswered
-                                              ? (state.selectedAnswer == question.correctIndex
-                                                  ? AppColors.success
-                                                  : AppColors.error)
-                                              : AppColors.primary)
-                                              .withValues(alpha: 0.3),
+                                          color:
+                                              (state.isAnswered
+                                                      ? (state.selectedAnswer ==
+                                                                question
+                                                                    .correctIndex
+                                                            ? AppColors.success
+                                                            : AppColors.error)
+                                                      : AppColors.primary)
+                                                  .withValues(alpha: 0.3),
                                           blurRadius: 8,
                                           offset: const Offset(0, 3),
-                                        )
+                                        ),
                                       ]
                                     : null,
                               ),
                               child: Text(
                                 state.selectedAnswer != null
-                                    ? question.optionsOlChiki[state.selectedAnswer!]
+                                    ? question.optionsOlChiki[state
+                                          .selectedAnswer!]
                                     : '      ', // Empty blank
                                 style: TextStyle(
                                   fontSize: 20,
@@ -229,9 +248,14 @@ class QuizScreen extends ConsumerWidget {
                 if (question.blankSentenceLatin != null) ...[
                   const SizedBox(height: 24),
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.black.withValues(alpha: 0.02),
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.03)
+                          : Colors.black.withValues(alpha: 0.02),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -282,85 +306,100 @@ class QuizScreen extends ConsumerWidget {
                 alignment: WrapAlignment.center,
                 spacing: 12,
                 runSpacing: 16,
-                children: List.generate(
-                  question.optionsOlChiki.length,
-                  (index) {
-                    final isCorrect = index == question.correctIndex;
-                    final isCurrentSelection = state.selectedAnswer == index;
-                    
-                    Color chipColor;
-                    Color textColor;
-                    BorderSide borderSide;
-                    
-                    if (state.isAnswered) {
-                      if (isCorrect) {
-                        chipColor = AppColors.success;
-                        textColor = Colors.white;
-                        borderSide = BorderSide.none;
-                      } else if (isCurrentSelection) {
-                        chipColor = AppColors.error;
-                        textColor = Colors.white;
-                        borderSide = BorderSide.none;
-                      } else {
-                        chipColor = isDark ? const Color(0xFF1C2C3E) : const Color(0xFFF3F4F6);
-                        textColor = isDark ? Colors.white30 : Colors.black26;
-                        borderSide = BorderSide.none;
-                      }
-                    } else {
-                      if (isCurrentSelection) {
-                        chipColor = isDark ? const Color(0xFF0F1A24) : Colors.grey.shade100;
-                        textColor = Colors.transparent;
-                        borderSide = BorderSide(
-                          color: isDark ? Colors.white12 : Colors.grey.shade300,
-                          width: 1.5,
-                        );
-                      } else {
-                        chipColor = isDark ? const Color(0xFF152232) : Colors.white;
-                        textColor = isDark ? Colors.white : Colors.black87;
-                        borderSide = BorderSide(
-                          color: isDark ? Colors.white24 : Colors.grey.shade300,
-                          width: 1.5,
-                        );
-                      }
-                    }
+                children: List.generate(question.optionsOlChiki.length, (
+                  index,
+                ) {
+                  final isCorrect = index == question.correctIndex;
+                  final isCurrentSelection = state.selectedAnswer == index;
 
-                    return GestureDetector(
-                      onTap: (state.isAnswered || isCurrentSelection)
-                          ? null
-                          : () => notifier.selectAnswer(index, question, quiz),
-                      child: AnimatedContainer(
-                        duration: const Duration(milliseconds: 150),
-                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-                        decoration: BoxDecoration(
-                          color: chipColor,
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.fromBorderSide(borderSide),
-                          boxShadow: (!state.isAnswered && !isCurrentSelection)
-                              ? [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: isDark ? 0.25 : 0.08),
-                                    blurRadius: 4,
-                                    offset: const Offset(0, 3),
-                                  )
-                                ]
-                              : null,
-                        ),
-                        child: Text(
-                          question.optionsOlChiki[index],
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w700,
-                            fontFamily: 'OlChiki',
-                            color: textColor,
+                  Color chipColor;
+                  Color textColor;
+                  BorderSide borderSide;
+
+                  if (state.isAnswered) {
+                    if (isCorrect) {
+                      chipColor = AppColors.success;
+                      textColor = Colors.white;
+                      borderSide = BorderSide.none;
+                    } else if (isCurrentSelection) {
+                      chipColor = AppColors.error;
+                      textColor = Colors.white;
+                      borderSide = BorderSide.none;
+                    } else {
+                      chipColor = isDark
+                          ? const Color(0xFF1C2C3E)
+                          : const Color(0xFFF3F4F6);
+                      textColor = isDark ? Colors.white30 : Colors.black26;
+                      borderSide = BorderSide.none;
+                    }
+                  } else {
+                    if (isCurrentSelection) {
+                      chipColor = isDark
+                          ? const Color(0xFF0F1A24)
+                          : Colors.grey.shade100;
+                      textColor = Colors.transparent;
+                      borderSide = BorderSide(
+                        color: isDark ? Colors.white12 : Colors.grey.shade300,
+                        width: 1.5,
+                      );
+                    } else {
+                      chipColor = isDark
+                          ? const Color(0xFF152232)
+                          : Colors.white;
+                      textColor = isDark ? Colors.white : Colors.black87;
+                      borderSide = BorderSide(
+                        color: isDark ? Colors.white24 : Colors.grey.shade300,
+                        width: 1.5,
+                      );
+                    }
+                  }
+
+                  return GestureDetector(
+                        onTap: (state.isAnswered || isCurrentSelection)
+                            ? null
+                            : () =>
+                                  notifier.selectAnswer(index, question, quiz),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 150),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 14,
+                          ),
+                          decoration: BoxDecoration(
+                            color: chipColor,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.fromBorderSide(borderSide),
+                            boxShadow:
+                                (!state.isAnswered && !isCurrentSelection)
+                                ? [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: isDark ? 0.25 : 0.08,
+                                      ),
+                                      blurRadius: 4,
+                                      offset: const Offset(0, 3),
+                                    ),
+                                  ]
+                                : null,
+                          ),
+                          child: Text(
+                            question.optionsOlChiki[index],
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.w700,
+                              fontFamily: 'OlChiki',
+                              color: textColor,
+                            ),
                           ),
                         ),
-                      ),
-                    ).animate(key: ValueKey('chip-$index-${state.selectedAnswer}-${state.isAnswered}')).scale(
-                          begin: const Offset(0.95, 0.95),
-                          duration: 150.ms,
-                        );
-                  },
-                ),
+                      )
+                      .animate(
+                        key: ValueKey(
+                          'chip-$index-${state.selectedAnswer}-${state.isAnswered}',
+                        ),
+                      )
+                      .scale(begin: const Offset(0.95, 0.95), duration: 150.ms);
+                }),
               ),
             ],
           );
@@ -423,9 +462,7 @@ class QuizScreen extends ConsumerWidget {
                     children: [
                       buildQuestionArea(),
                       const SizedBox(height: 32),
-                      Expanded(
-                        child: buildOptionsArea(),
-                      ),
+                      Expanded(child: buildOptionsArea()),
                     ],
                   ),
                 ),

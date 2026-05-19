@@ -189,9 +189,10 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
     final ok = await showAdminConfirmDialog(
       context: context,
       title: 'Seed Default Quizzes',
-      message: 'This will seed the default Alphabet, Arithmetic, and Sentence quizzes directly into your Appwrite database so you can easily edit them. Existing custom quizzes will be preserved.',
+      message:
+          'This will seed the default Alphabet, Arithmetic, and Sentence quizzes directly into your Appwrite database so you can easily edit them. Existing custom quizzes will be preserved.',
     );
-    
+
     if (ok == true) {
       try {
         if (!context.mounted) return;
@@ -202,9 +203,9 @@ class _AdminQuizzesScreenState extends ConsumerState<AdminQuizzesScreen> {
             duration: Duration(seconds: 2),
           ),
         );
-        
+
         await ref.read(quizzesProvider.notifier).seedToAppwrite();
-        
+
         if (!context.mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

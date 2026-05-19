@@ -34,27 +34,30 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
   StreamSubscription<PlayerState>? _playerStateSub;
 
   RhymeAudioNotifier() : super(const RhymeAudioState()) {
-    _playerStateSub = _player.playerStateStream.listen((playerState) {
-      if (!mounted) return;
+    _playerStateSub = _player.playerStateStream.listen(
+      (playerState) {
+        if (!mounted) return;
 
-      if (playerState.processingState == ProcessingState.completed) {
-        state = const RhymeAudioState(
-          processingState: ProcessingState.completed,
+        if (playerState.processingState == ProcessingState.completed) {
+          state = const RhymeAudioState(
+            processingState: ProcessingState.completed,
+          );
+          unawaited(_player.pause());
+          unawaited(_player.seek(Duration.zero));
+          return;
+        }
+
+        state = state.copyWith(
+          isPlaying: playerState.playing,
+          processingState: playerState.processingState,
         );
-        unawaited(_player.pause());
-        unawaited(_player.seek(Duration.zero));
-        return;
-      }
-
-      state = state.copyWith(
-        isPlaying: playerState.playing,
-        processingState: playerState.processingState,
-      );
-    }, onError: (Object e) {
-      debugPrint('RhymeAudio: Player stream error: $e');
-      state = const RhymeAudioState();
-      unawaited(_player.stop());
-    });
+      },
+      onError: (Object e) {
+        debugPrint('RhymeAudio: Player stream error: $e');
+        state = const RhymeAudioState();
+        unawaited(_player.stop());
+      },
+    );
   }
 
   Future<void> togglePlay(
@@ -81,18 +84,20 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
 
     try {
       await _player.stop();
-      await _player.setAudioSource(
-        AudioSource.uri(
-          Uri.parse(url),
-          tag: MediaItem(
-            id: rhymeId,
-            album: 'Olitun Bakhed',
-            title: _notificationTitle(title),
-            artUri: _safeUri(artworkUrl),
-          ),
-        ),
-      ).timeout(const Duration(seconds: 12));
-      
+      await _player
+          .setAudioSource(
+            AudioSource.uri(
+              Uri.parse(url),
+              tag: MediaItem(
+                id: rhymeId,
+                album: 'Olitun Bakhed',
+                title: _notificationTitle(title),
+                artUri: _safeUri(artworkUrl),
+              ),
+            ),
+          )
+          .timeout(const Duration(seconds: 12));
+
       state = state.copyWith(
         playingRhymeId: rhymeId,
         isPlaying: true,

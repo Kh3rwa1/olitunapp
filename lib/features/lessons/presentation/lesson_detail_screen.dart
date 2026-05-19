@@ -183,10 +183,13 @@ class LessonDetailScreen extends ConsumerWidget {
                   estimatedMinutes: lesson.estimatedMinutes,
                 );
                 notifier.addStars(25);
-                
+
                 final quizzes = ref.read(quizzesProvider).value ?? [];
-                final quizId = _getQuizIdForCategory(lesson.categoryId, quizzes);
-                
+                final quizId = _getQuizIdForCategory(
+                  lesson.categoryId,
+                  quizzes,
+                );
+
                 _showCompletionSheet(
                   context: context,
                   lesson: lesson,
@@ -447,14 +450,14 @@ class _LessonHeroSummary extends StatelessWidget {
 String? _getQuizIdForCategory(String? categoryId, List<QuizModel> quizzes) {
   if (categoryId == null) return null;
   final cleanId = categoryId.toLowerCase();
-  
+
   // First, look for an exact match in the categoryId
   for (final q in quizzes) {
     if (q.categoryId?.toLowerCase() == cleanId) {
       return q.id;
     }
   }
-  
+
   // Fallback to keyword matching
   if (cleanId.contains('alphabet')) {
     return quizzes.any((q) => q.id == 'quiz_alphabets_basics')
@@ -487,7 +490,7 @@ void _showCompletionSheet({
       quiz = null;
     }
   }
-  
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -525,31 +528,31 @@ void _showCompletionSheet({
               children: [
                 // Floating trophy
                 Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.15),
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: AppColors.primary.withValues(alpha: 0.3),
-                      width: 2,
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.15),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.3),
+                          width: 2,
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.emoji_events_rounded,
+                        color: AppColors.primary,
+                        size: 44,
+                      ),
+                    )
+                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .scale(
+                      begin: const Offset(1.0, 1.0),
+                      end: const Offset(1.1, 1.1),
+                      duration: 1.seconds,
+                      curve: Curves.easeInOutBack,
                     ),
-                  ),
-                  child: const Icon(
-                    Icons.emoji_events_rounded,
-                    color: AppColors.primary,
-                    size: 44,
-                  ),
-                )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
-                .scale(
-                  begin: const Offset(1.0, 1.0),
-                  end: const Offset(1.1, 1.1),
-                  duration: 1.seconds,
-                  curve: Curves.easeInOutBack,
-                ),
                 const SizedBox(height: 24),
-                
+
                 // Celebration text
                 Text(
                   'Lesson Complete!',
@@ -561,7 +564,7 @@ void _showCompletionSheet({
                   ),
                 ),
                 const SizedBox(height: 8),
-                
+
                 // Description & Stars
                 Text(
                   'Amazing work! You completed this lesson and earned',
@@ -572,10 +575,13 @@ void _showCompletionSheet({
                   ),
                 ),
                 const SizedBox(height: 12),
-                
+
                 // Stars reward
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
                   decoration: BoxDecoration(
                     color: AppColors.duoYellow.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(20),
@@ -586,7 +592,11 @@ void _showCompletionSheet({
                   child: const Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.star_rounded, color: AppColors.duoYellow, size: 22),
+                      Icon(
+                        Icons.star_rounded,
+                        color: AppColors.duoYellow,
+                        size: 22,
+                      ),
                       SizedBox(width: 6),
                       Text(
                         '+25 Stars',
@@ -599,9 +609,9 @@ void _showCompletionSheet({
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 32),
-                
+
                 // Primary action button
                 SizedBox(
                   width: double.infinity,
@@ -633,7 +643,7 @@ void _showCompletionSheet({
                     ),
                   ),
                 ),
-                
+
                 if (quizId != null) ...[
                   const SizedBox(height: 12),
                   SizedBox(
@@ -645,7 +655,9 @@ void _showCompletionSheet({
                         context.pop(); // Pop current LessonDetailScreen
                       },
                       style: TextButton.styleFrom(
-                        foregroundColor: isDark ? Colors.white70 : Colors.black54,
+                        foregroundColor: isDark
+                            ? Colors.white70
+                            : Colors.black54,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(16),
                         ),

@@ -181,151 +181,151 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Header
-                        _buildHeader(
-                          context,
-                          userName: displayUserName,
-                          dailyProgress: dailyProgress,
-                          isDark: isDark,
-                          isDesktop: isDesktop,
-                        ),
-                        const SizedBox(height: 28),
-
-                        // Guest Call to Action (if not logged in)
-                        if (isGuest) ...[
-                          PressableScale(
-                            onTap: () => context.push('/login'),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 24),
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                gradient: AppColors.heroGradientAlt,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: AppColors.glowShadow(
-                                  AppColors.primary,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.person_add_alt_1_rounded,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        const Text(
-                                          'Track Your Progress',
-                                          style: TextStyle(
-                                            color: Colors.white,
-                                            fontWeight: FontWeight.w800,
-                                            fontSize: 16,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          'Create an account to save your learning journey.',
-                                          style: TextStyle(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.9,
-                                            ),
-                                            fontSize: 13,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1),
-                        ],
-
-                        // Featured Banners Carousel
-                        if (bannersAsync.value != null &&
-                            bannersAsync.value!.isNotEmpty) ...[
-                          Builder(
-                            builder: (context) {
-                              final activeBanners = bannersAsync.value!
-                                  .where((b) => b.isActive)
-                                  .toList();
-                              if (activeBanners.isEmpty) {
-                                return const SizedBox.shrink();
-                              }
-                              return Padding(
-                                padding: const EdgeInsets.only(bottom: 24),
-                                child: HomeFeaturedBannerCarousel(
-                                  banners: activeBanners,
-                                ),
-                              );
-                            },
+                        children: [
+                          // Header
+                          _buildHeader(
+                            context,
+                            userName: displayUserName,
+                            dailyProgress: dailyProgress,
+                            isDark: isDark,
+                            isDesktop: isDesktop,
                           ),
-                        ],
+                          const SizedBox(height: 28),
 
-                        // Row 1: Stats Bento Grid (mobile/tablet only)
-                        if (!isDesktop) ...[
-                          _buildStatsBentoGrid(
-                            streak: streak,
-                            stars: stars,
-                            lessonsCompleted: lessonsCompleted,
-                            learningTime: learningTime,
+                          // Guest Call to Action (if not logged in)
+                          if (isGuest) ...[
+                            PressableScale(
+                              onTap: () => context.push('/login'),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 24),
+                                padding: const EdgeInsets.all(20),
+                                decoration: BoxDecoration(
+                                  gradient: AppColors.heroGradientAlt,
+                                  borderRadius: BorderRadius.circular(20),
+                                  boxShadow: AppColors.glowShadow(
+                                    AppColors.primary,
+                                  ),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(12),
+                                      decoration: BoxDecoration(
+                                        color: Colors.white.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.person_add_alt_1_rounded,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            'Track Your Progress',
+                                            style: TextStyle(
+                                              color: Colors.white,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 16,
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            'Create an account to save your learning journey.',
+                                            style: TextStyle(
+                                              color: Colors.white.withValues(
+                                                alpha: 0.9,
+                                              ),
+                                              fontSize: 13,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1),
+                          ],
+
+                          // Featured Banners Carousel
+                          if (bannersAsync.value != null &&
+                              bannersAsync.value!.isNotEmpty) ...[
+                            Builder(
+                              builder: (context) {
+                                final activeBanners = bannersAsync.value!
+                                    .where((b) => b.isActive)
+                                    .toList();
+                                if (activeBanners.isEmpty) {
+                                  return const SizedBox.shrink();
+                                }
+                                return Padding(
+                                  padding: const EdgeInsets.only(bottom: 24),
+                                  child: HomeFeaturedBannerCarousel(
+                                    banners: activeBanners,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+
+                          // Row 1: Stats Bento Grid (mobile/tablet only)
+                          if (!isDesktop) ...[
+                            _buildStatsBentoGrid(
+                              streak: streak,
+                              stars: stars,
+                              lessonsCompleted: lessonsCompleted,
+                              learningTime: learningTime,
+                              isDark: isDark,
+                              isTablet: isTablet,
+                            ),
+                            const SizedBox(height: 20),
+                          ],
+
+                          // Row 2: Hero Journey + Quiz Banner
+                          if (isTablet || isDesktop)
+                            _buildHeroBentoRow(
+                              context,
+                              isDark,
+                              heroTitle,
+                              nextLesson?.id,
+                              quizCount,
+                            )
+                          else ...[
+                            HeroJourneyCard(
+                              heroTitle: heroTitle,
+                              lessonId: nextLesson?.id,
+                              index: 0,
+                            ),
+                            const SizedBox(height: 16),
+                            QuizBannerCard(quizCount: quizCount, index: 1),
+                          ],
+
+                          const SizedBox(height: 20),
+
+                          // Row 3: AI Tools + Categories
+                          _buildContentBentoGrid(
+                            context: context,
+                            categoriesAsync: categoriesAsync,
                             isDark: isDark,
                             isTablet: isTablet,
+                            isDesktop: isDesktop,
                           ),
-                          const SizedBox(height: 20),
+
+                          SizedBox(height: isDesktop ? 32 : 120),
                         ],
-
-                        // Row 2: Hero Journey + Quiz Banner
-                        if (isTablet || isDesktop)
-                          _buildHeroBentoRow(
-                            context,
-                            isDark,
-                            heroTitle,
-                            nextLesson?.id,
-                            quizCount,
-                          )
-                        else ...[
-                          HeroJourneyCard(
-                            heroTitle: heroTitle,
-                            lessonId: nextLesson?.id,
-                            index: 0,
-                          ),
-                          const SizedBox(height: 16),
-                          QuizBannerCard(quizCount: quizCount, index: 1),
-                        ],
-
-                        const SizedBox(height: 20),
-
-                        // Row 3: AI Tools + Categories
-                        _buildContentBentoGrid(
-                          context: context,
-                          categoriesAsync: categoriesAsync,
-                          isDark: isDark,
-                          isTablet: isTablet,
-                          isDesktop: isDesktop,
-                        ),
-
-                        SizedBox(height: isDesktop ? 32 : 120),
-                      ],
+                      ),
                     ),
                   ),
                 ),
               ),
             ),
-          ),
           ],
         ),
       ),

@@ -120,11 +120,15 @@ X2aD1V6P55nJ6A8f6U7T3d3cZ5f58L3Q+X2aD1V6P55nJ6A8f6U7T3d3cZ5f58L
   /// Register secure overrides globally.
   static void initialize() {
     if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
-      debugPrint('[SSL Security] Bypassing SSL Pinning (ALLOW_SELF_SIGNED=true)');
+      debugPrint(
+        '[SSL Security] Bypassing SSL Pinning (ALLOW_SELF_SIGNED=true)',
+      );
       return;
     }
     HttpOverrides.global = SecureHttpOverrides._();
-    debugPrint('[SSL Security] Production SSL Pinning and trust store overrides active.');
+    debugPrint(
+      '[SSL Security] Production SSL Pinning and trust store overrides active.',
+    );
   }
 
   @override
@@ -133,17 +137,23 @@ X2aD1V6P55nJ6A8f6U7T3d3cZ5f58L3Q+X2aD1V6P55nJ6A8f6U7T3d3cZ5f58L
     final secContext = context ?? SecurityContext.defaultContext;
     try {
       secContext.setTrustedCertificatesBytes(utf8.encode(_isrgRootX1Pem));
-      debugPrint('[SSL Security] Injected ISRG Root X1 Pem into secure trust store.');
+      debugPrint(
+        '[SSL Security] Injected ISRG Root X1 Pem into secure trust store.',
+      );
     } catch (e) {
-      debugPrint('[SSL Security] ISRG Root X1 already registered or loading failed: $e');
+      debugPrint(
+        '[SSL Security] ISRG Root X1 already registered or loading failed: $e',
+      );
     }
 
     final client = super.createHttpClient(secContext);
-    
+
     // In production, reject bad handshakes
     client.badCertificateCallback = (cert, host, port) {
-      debugPrint('[SSL Security] REJECTED handshake for $host (Invalid, Expired, or Self-Signed Certificate)');
-      return false; 
+      debugPrint(
+        '[SSL Security] REJECTED handshake for $host (Invalid, Expired, or Self-Signed Certificate)',
+      );
+      return false;
     };
 
     return client;

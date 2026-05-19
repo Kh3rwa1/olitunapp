@@ -203,7 +203,9 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
-  Future<Either<Failure, void>> updateUserPrefs(Map<String, dynamic> prefs) async {
+  Future<Either<Failure, void>> updateUserPrefs(
+    Map<String, dynamic> prefs,
+  ) async {
     if (await networkInfo.isConnected) {
       try {
         await remoteDataSource.updateUserPrefs(prefs);

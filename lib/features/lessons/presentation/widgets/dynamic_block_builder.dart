@@ -253,7 +253,9 @@ class _ImageBlock extends StatelessWidget {
                     return Container(
                       height: 200,
                       color: Colors.grey.withValues(alpha: 0.1),
-                      child: const Center(child: Icon(Icons.broken_image_rounded)),
+                      child: const Center(
+                        child: Icon(Icons.broken_image_rounded),
+                      ),
                     );
                   },
                 ),
@@ -357,7 +359,8 @@ class _LottieBlock extends StatefulWidget {
   State<_LottieBlock> createState() => _LottieBlockState();
 }
 
-class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderStateMixin {
+class _LottieBlockState extends State<_LottieBlock>
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   bool _isPlaying = true;
   bool _isLooping = true;
@@ -366,7 +369,10 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
   @override
   void initState() {
     super.initState();
-    _controller = AnimationController(vsync: this, duration: const Duration(seconds: 2));
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    );
     _controller.addStatusListener((status) {
       if (status == AnimationStatus.completed) {
         if (_isLooping) {
@@ -420,8 +426,10 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
 
   @override
   Widget build(BuildContext context) {
-    final animationUrl = widget.block.data?['animationUrl'] as String? ?? widget.block.imageUrl;
-    if (animationUrl == null || animationUrl.isEmpty) return const SizedBox.shrink();
+    final animationUrl =
+        widget.block.data?['animationUrl'] as String? ?? widget.block.imageUrl;
+    if (animationUrl == null || animationUrl.isEmpty)
+      return const SizedBox.shrink();
 
     return Container(
       width: double.infinity,
@@ -461,12 +469,14 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
                       return Container(
                         height: 200,
                         color: Colors.grey.withValues(alpha: 0.1),
-                        child: const Center(child: Icon(Icons.broken_image_rounded)),
+                        child: const Center(
+                          child: Icon(Icons.broken_image_rounded),
+                        ),
                       );
                     },
                   ),
                 ),
-                
+
                 // Play/Pause subtle floating state indicator overlay
                 AnimatedOpacity(
                   opacity: _isPlaying ? 0.0 : 1.0,
@@ -487,9 +497,9 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
               ],
             ),
           ),
-          
+
           const SizedBox(height: 12),
-          
+
           // Interactive controls bar
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -502,7 +512,10 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
                     onTap: () => _setSpeed(s),
                     child: Container(
                       margin: const EdgeInsets.only(right: 6),
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: isSelected
                             ? AppColors.primary
@@ -514,14 +527,18 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
                         style: TextStyle(
                           fontSize: 12,
                           fontWeight: FontWeight.bold,
-                          color: isSelected ? Colors.white : (widget.isDark ? Colors.white70 : Colors.black87),
+                          color: isSelected
+                              ? Colors.white
+                              : (widget.isDark
+                                    ? Colors.white70
+                                    : Colors.black87),
                         ),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              
+
               // Action buttons (Reset, Loop)
               Row(
                 children: [
@@ -532,7 +549,9 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
                   ),
                   IconButton(
                     icon: Icon(
-                      _isLooping ? Icons.loop_rounded : Icons.play_disabled_rounded,
+                      _isLooping
+                          ? Icons.loop_rounded
+                          : Icons.play_disabled_rounded,
                       size: 20,
                       color: _isLooping ? AppColors.primary : Colors.grey,
                     ),
@@ -549,7 +568,8 @@ class _LottieBlockState extends State<_LottieBlock> with SingleTickerProviderSta
             ],
           ),
 
-          if (widget.block.textLatin != null && widget.block.textLatin!.isNotEmpty) ...[
+          if (widget.block.textLatin != null &&
+              widget.block.textLatin!.isNotEmpty) ...[
             const SizedBox(height: 8),
             Text(
               widget.block.textLatin!,
@@ -586,7 +606,8 @@ class _VideoBlockState extends State<_VideoBlock> {
   @override
   void initState() {
     super.initState();
-    final videoUrl = widget.block.imageUrl ?? widget.block.data?['videoUrl'] as String?;
+    final videoUrl =
+        widget.block.imageUrl ?? widget.block.data?['videoUrl'] as String?;
     if (videoUrl != null && videoUrl.isNotEmpty) {
       _controller = VideoPlayerController.networkUrl(Uri.parse(videoUrl))
         ..initialize().then((_) {
@@ -651,7 +672,9 @@ class _VideoBlockState extends State<_VideoBlock> {
               topRight: Radius.circular(20),
             ),
             child: AspectRatio(
-              aspectRatio: _isInitialized ? _controller!.value.aspectRatio : 16 / 9,
+              aspectRatio: _isInitialized
+                  ? _controller!.value.aspectRatio
+                  : 16 / 9,
               child: Stack(
                 alignment: Alignment.bottomCenter,
                 children: [
@@ -663,7 +686,7 @@ class _VideoBlockState extends State<_VideoBlock> {
                             child: CircularProgressIndicator(strokeWidth: 3),
                           ),
                         ),
-                  
+
                   if (_isInitialized)
                     GestureDetector(
                       onTap: () {
@@ -684,7 +707,9 @@ class _VideoBlockState extends State<_VideoBlock> {
                                   child: Container(
                                     padding: const EdgeInsets.all(16),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.9),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.9,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: Icon(
@@ -719,7 +744,7 @@ class _VideoBlockState extends State<_VideoBlock> {
               ),
             ),
           ),
-          
+
           Padding(
             padding: const EdgeInsets.all(16),
             child: Column(
@@ -737,7 +762,8 @@ class _VideoBlockState extends State<_VideoBlock> {
                           : Colors.grey.withValues(alpha: 0.2),
                     ),
                   ),
-                if (widget.block.textLatin != null && widget.block.textLatin!.isNotEmpty) ...[
+                if (widget.block.textLatin != null &&
+                    widget.block.textLatin!.isNotEmpty) ...[
                   const SizedBox(height: 12),
                   Text(
                     widget.block.textLatin!,
@@ -766,7 +792,8 @@ class _HtmlBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final htmlContent = block.data?['htmlContent'] as String? ?? block.textLatin ?? '';
+    final htmlContent =
+        block.data?['htmlContent'] as String? ?? block.textLatin ?? '';
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
@@ -791,7 +818,9 @@ class _HtmlBlock extends StatelessWidget {
 
   List<Widget> _parseHtmlToWidgets(String htmlText, bool isDark) {
     final List<Widget> widgets = [];
-    final String cleanText = htmlText.replaceAll('\r\n', '\n').replaceAll('\r', '\n');
+    final String cleanText = htmlText
+        .replaceAll('\r\n', '\n')
+        .replaceAll('\r', '\n');
 
     final RegExp blockRegExp = RegExp(
       r'(<(h[1-6]|p|ul|li|br|pre|div|a)[^>]*>[\s\S]*?<\/\2>|<br\s*\/?>)',
@@ -799,14 +828,16 @@ class _HtmlBlock extends StatelessWidget {
     );
 
     if (!cleanText.contains('<')) {
-      widgets.add(Text(
-        cleanText,
-        style: TextStyle(
-          fontSize: 15,
-          height: 1.5,
-          color: isDark ? Colors.white70 : Colors.black87,
+      widgets.add(
+        Text(
+          cleanText,
+          style: TextStyle(
+            fontSize: 15,
+            height: 1.5,
+            color: isDark ? Colors.white70 : Colors.black87,
+          ),
         ),
-      ));
+      );
       return widgets;
     }
 
@@ -815,10 +846,18 @@ class _HtmlBlock extends StatelessWidget {
       if (match.start > lastIndex) {
         final plainText = cleanText.substring(lastIndex, match.start).trim();
         if (plainText.isNotEmpty) {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _renderInlineHtml(plainText, isDark, 15, FontWeight.normal, null),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _renderInlineHtml(
+                plainText,
+                isDark,
+                15,
+                FontWeight.normal,
+                null,
+              ),
+            ),
+          );
         }
       }
 
@@ -835,51 +874,119 @@ class _HtmlBlock extends StatelessWidget {
             : '';
 
         if (tagName == 'h1') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(top: 12, bottom: 8),
-            child: _renderInlineHtml(content, isDark, 24, FontWeight.w800, AppColors.primary),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 12, bottom: 8),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                24,
+                FontWeight.w800,
+                AppColors.primary,
+              ),
+            ),
+          );
         } else if (tagName == 'h2') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(top: 10, bottom: 6),
-            child: _renderInlineHtml(content, isDark, 20, FontWeight.w700, isDark ? Colors.white : Colors.black),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 10, bottom: 6),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                20,
+                FontWeight.w700,
+                isDark ? Colors.white : Colors.black,
+              ),
+            ),
+          );
         } else if (tagName == 'h3') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(top: 8, bottom: 4),
-            child: _renderInlineHtml(content, isDark, 18, FontWeight.w600, isDark ? Colors.white : Colors.black),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(top: 8, bottom: 4),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                18,
+                FontWeight.w600,
+                isDark ? Colors.white : Colors.black,
+              ),
+            ),
+          );
         } else if (tagName == 'p') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _renderInlineHtml(content, isDark, 15, FontWeight.normal, isDark ? Colors.white70 : Colors.black87),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                15,
+                FontWeight.normal,
+                isDark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          );
         } else if (tagName == 'li') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(left: 12, bottom: 6),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('• ', style: TextStyle(fontSize: 16, color: AppColors.primary, fontWeight: FontWeight.bold)),
-                Expanded(child: _renderInlineHtml(content, isDark, 15, FontWeight.normal, isDark ? Colors.white70 : Colors.black87)),
-              ],
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(left: 12, bottom: 6),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    '• ',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Expanded(
+                    child: _renderInlineHtml(
+                      content,
+                      isDark,
+                      15,
+                      FontWeight.normal,
+                      isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ));
+          );
         } else if (tagName == 'pre') {
-          widgets.add(Container(
-            margin: const EdgeInsets.only(bottom: 12),
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: isDark ? Colors.black26 : Colors.grey.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
+          widgets.add(
+            Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.black26
+                    : Colors.grey.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                14,
+                FontWeight.normal,
+                isDark ? Colors.white70 : Colors.black87,
+                isMonospace: true,
+              ),
             ),
-            child: _renderInlineHtml(content, isDark, 14, FontWeight.normal, isDark ? Colors.white70 : Colors.black87, isMonospace: true),
-          ));
+          );
         } else if (tagName == 'div') {
-          widgets.add(Padding(
-            padding: const EdgeInsets.only(bottom: 8),
-            child: _renderInlineHtml(content, isDark, 15, FontWeight.normal, isDark ? Colors.white70 : Colors.black87),
-          ));
+          widgets.add(
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8),
+              child: _renderInlineHtml(
+                content,
+                isDark,
+                15,
+                FontWeight.normal,
+                isDark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          );
         }
       }
 
@@ -889,7 +996,9 @@ class _HtmlBlock extends StatelessWidget {
     if (lastIndex < cleanText.length) {
       final remainingText = cleanText.substring(lastIndex).trim();
       if (remainingText.isNotEmpty) {
-        widgets.add(_renderInlineHtml(remainingText, isDark, 15, FontWeight.normal, null));
+        widgets.add(
+          _renderInlineHtml(remainingText, isDark, 15, FontWeight.normal, null),
+        );
       }
     }
 
@@ -917,15 +1026,17 @@ class _HtmlBlock extends StatelessWidget {
       final plainText = match.group(4);
 
       if (plainText != null && plainText.isNotEmpty) {
-        spans.add(TextSpan(
-          text: plainText,
-          style: TextStyle(
-            fontSize: baseFontSize,
-            fontWeight: baseFontWeight,
-            color: baseColor ?? (isDark ? Colors.white70 : Colors.black87),
-            fontFamily: isMonospace ? 'monospace' : null,
+        spans.add(
+          TextSpan(
+            text: plainText,
+            style: TextStyle(
+              fontSize: baseFontSize,
+              fontWeight: baseFontWeight,
+              color: baseColor ?? (isDark ? Colors.white70 : Colors.black87),
+              fontFamily: isMonospace ? 'monospace' : null,
+            ),
           ),
-        ));
+        );
       } else if (tagContent != null) {
         final String tag = tagMatch!.toLowerCase();
         FontWeight fw = baseFontWeight;
@@ -941,7 +1052,10 @@ class _HtmlBlock extends StatelessWidget {
           dec = TextDecoration.underline;
         } else if (tag == 'span') {
           final fullTag = match.group(1) ?? '';
-          final colorMatch = RegExp(r'color\s*:\s*([^;"]+)', caseSensitive: false).firstMatch(fullTag);
+          final colorMatch = RegExp(
+            r'color\s*:\s*([^;"]+)',
+            caseSensitive: false,
+          ).firstMatch(fullTag);
           if (colorMatch != null) {
             final colorStr = colorMatch.group(1)!.trim().toLowerCase();
             if (colorStr.startsWith('#')) {
@@ -961,22 +1075,22 @@ class _HtmlBlock extends StatelessWidget {
           }
         }
 
-        spans.add(TextSpan(
-          text: tagContent,
-          style: TextStyle(
-            fontSize: baseFontSize,
-            fontWeight: fw,
-            fontStyle: fs,
-            decoration: dec,
-            color: col ?? (isDark ? Colors.white70 : Colors.black87),
-            fontFamily: isMonospace ? 'monospace' : null,
+        spans.add(
+          TextSpan(
+            text: tagContent,
+            style: TextStyle(
+              fontSize: baseFontSize,
+              fontWeight: fw,
+              fontStyle: fs,
+              decoration: dec,
+              color: col ?? (isDark ? Colors.white70 : Colors.black87),
+              fontFamily: isMonospace ? 'monospace' : null,
+            ),
           ),
-        ));
+        );
       }
     }
 
-    return RichText(
-      text: TextSpan(children: spans),
-    );
+    return RichText(text: TextSpan(children: spans));
   }
 }

@@ -90,9 +90,15 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         QuizQuestion(
           type: 'fill_blank',
           promptOlChiki: 'Fill in the blank:',
-          promptLatin: 'Choose the word that means "dog" to complete the sentence.',
+          promptLatin:
+              'Choose the word that means "dog" to complete the sentence.',
           optionsOlChiki: ['ᱥᱮᱛᱟ', 'ᱢᱮᱨᱳᱢ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
-          optionsLatin: ['ᱥᱮᱛᱟ (Dog)', 'ᱢᱮᱨᱳᱢ (Cat)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
+          optionsLatin: [
+            'ᱥᱮᱛᱟ (Dog)',
+            'ᱢᱮᱨᱳᱢ (Cat)',
+            'ᱟᱨᱟᱜ (Red)',
+            'ᱥᱟᱥᱟᱝ (Green)',
+          ],
           blankSentenceOlChiki: 'ᱤᱧ ᱢᱤᱫ ___ ᱢᱮᱱᱟᱜᱼᱤᱧᱟ ᱾',
           blankSentenceLatin: 'I have a dog.',
           correctAnswer: 'ᱥᱮᱛᱟ',
@@ -100,9 +106,15 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         QuizQuestion(
           type: 'fill_blank',
           promptOlChiki: 'Fill in the blank:',
-          promptLatin: 'Choose the correct relationship word to complete the sentence.',
+          promptLatin:
+              'Choose the correct relationship word to complete the sentence.',
           optionsOlChiki: ['ᱟᱭᱳ', 'ᱵᱟᱵᱟ', 'ᱫᱟᱫᱟ', 'ᱫᱟᱹᱭ'],
-          optionsLatin: ['ᱟᱭᱳ (Mother)', 'ᱵᱟᱵᱟ (Father)', 'ᱫᱟᱫᱟ (Elder Brother)', 'ᱫᱟᱹᱭ (Elder Sister)'],
+          optionsLatin: [
+            'ᱟᱭᱳ (Mother)',
+            'ᱵᱟᱵᱟ (Father)',
+            'ᱫᱟᱫᱟ (Elder Brother)',
+            'ᱫᱟᱹᱭ (Elder Sister)',
+          ],
           correctIndex: 1,
           blankSentenceOlChiki: 'ᱱᱩᱭ ᱫᱚ ᱤᱧᱤᱡ ___ ᱠᱟᱱᱟᱭ ᱾',
           blankSentenceLatin: 'He is my father.',
@@ -113,7 +125,12 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
           promptOlChiki: 'Fill in the blank:',
           promptLatin: 'Complete the color statement.',
           optionsOlChiki: ['ᱦᱮᱱᱫᱮ', 'ᱯᱩᱱᱫ', 'ᱟᱨᱟᱜ', 'ᱥᱟᱥᱟᱝ'],
-          optionsLatin: ['ᱦᱮᱱᱫᱮ (Black)', 'ᱯᱩᱱᱫ (White)', 'ᱟᱨᱟᱜ (Red)', 'ᱥᱟᱥᱟᱝ (Green)'],
+          optionsLatin: [
+            'ᱦᱮᱱᱫᱮ (Black)',
+            'ᱯᱩᱱᱫ (White)',
+            'ᱟᱨᱟᱜ (Red)',
+            'ᱥᱟᱥᱟᱝ (Green)',
+          ],
           correctIndex: 2,
           blankSentenceOlChiki: 'ᱡᱮᱞᱮᱠᱟ ᱢᱟᱭᱟᱢ ᱫᱚ ___ ᱜᱮᱭᱟ ᱾',
           blankSentenceLatin: 'For example, blood is red.',
@@ -234,13 +251,13 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
     state = const AsyncValue.loading();
     try {
       final db = ref.read(appwriteDbServiceProvider);
-      
+
       final data = await db.listDocuments(
         _collectionId,
         queries: [Query.limit(500)],
       );
       final existingIds = data.map((doc) => doc['\$id'] as String).toSet();
-      
+
       int seededCount = 0;
       for (final quiz in _defaultQuizzes) {
         if (!existingIds.contains(quiz.id)) {

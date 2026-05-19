@@ -38,30 +38,34 @@ class HomeBentoStatCard extends StatelessWidget {
 
   void _handleTap(BuildContext context) {
     HapticFeedback.mediumImpact();
-    
+
     String title = '';
     String emoji = '';
     String body = '';
-    
+
     final lowerLabel = label.toLowerCase();
     if (lowerLabel.contains('streak')) {
       title = 'Streak Active!';
       emoji = '🔥';
-      body = 'You are on a $value-day learning streak! Keep practicing every single day to cement your Ol Chiki script mastery and unlock rare achievements.';
+      body =
+          'You are on a $value-day learning streak! Keep practicing every single day to cement your Ol Chiki script mastery and unlock rare achievements.';
     } else if (lowerLabel.contains('star')) {
       title = 'Star Collector!';
       emoji = '⭐';
-      body = 'You have collected $value Stars! Keep completing lessons, practicing words, and acing quizzes to increase your star count.';
+      body =
+          'You have collected $value Stars! Keep completing lessons, practicing words, and acing quizzes to increase your star count.';
     } else if (lowerLabel.contains('milestone')) {
       title = 'Milestones Cleared!';
       emoji = '🏆';
-      body = 'You have completed $value lessons! Each milestone represents another standard of fluency you\'ve reached. Keep conquering new sections!';
+      body =
+          'You have completed $value lessons! Each milestone represents another standard of fluency you\'ve reached. Keep conquering new sections!';
     } else {
       title = 'Learning Commitment!';
       emoji = '⏱️';
-      body = 'You have dedicated $value minutes of deep focus to learning! Small, consistent daily practices lead to massive fluency gains.';
+      body =
+          'You have dedicated $value minutes of deep focus to learning! Small, consistent daily practices lead to massive fluency gains.';
     }
-    
+
     _showStatGlowDialog(context, title, emoji, body, color);
   }
 
@@ -70,7 +74,7 @@ class HomeBentoStatCard extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget iconWidget = Icon(icon, color: color, size: isHero ? 22 : 18);
-    
+
     if (icon == Icons.local_fire_department_rounded) {
       iconWidget = iconWidget
           .animate(onPlay: (c) => c.repeat(reverse: true))
@@ -94,12 +98,7 @@ class HomeBentoStatCard extends StatelessWidget {
     } else if (icon == Icons.emoji_events_rounded) {
       iconWidget = iconWidget
           .animate(onPlay: (c) => c.repeat(reverse: true))
-          .moveY(
-            begin: 0,
-            end: -4,
-            duration: 1200.ms,
-            curve: Curves.easeInOut,
-          );
+          .moveY(begin: 0, end: -4, duration: 1200.ms, curve: Curves.easeInOut);
     } else if (icon == Icons.timer_rounded) {
       iconWidget = iconWidget
           .animate(onPlay: (c) => c.repeat(reverse: true))
@@ -188,108 +187,115 @@ void _showStatGlowDialog(
   Color primaryColor,
 ) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
-  
+
   showDialog(
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.75),
     builder: (context) {
       return Center(
-        child: Container(
-          margin: const EdgeInsets.symmetric(horizontal: 32),
-          padding: const EdgeInsets.all(28),
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF141A24) : Colors.white,
-            borderRadius: BorderRadius.circular(30),
-            border: Border.all(
-              color: primaryColor.withValues(alpha: 0.25),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: primaryColor.withValues(alpha: 0.2),
-                blurRadius: 30,
-                offset: const Offset(0, 10),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 72,
-                height: 72,
-                decoration: BoxDecoration(
-                  color: primaryColor.withValues(alpha: 0.12),
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: primaryColor.withValues(alpha: 0.3),
-                    width: 2,
+            child: Container(
+              margin: const EdgeInsets.symmetric(horizontal: 32),
+              padding: const EdgeInsets.all(28),
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF141A24) : Colors.white,
+                borderRadius: BorderRadius.circular(30),
+                border: Border.all(
+                  color: primaryColor.withValues(alpha: 0.25),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: primaryColor.withValues(alpha: 0.2),
+                    blurRadius: 30,
+                    offset: const Offset(0, 10),
                   ),
-                ),
-                child: Center(
-                  child: Text(
-                    emoji,
-                    style: const TextStyle(fontSize: 36),
-                  ),
-                ),
-              )
-              .animate(onPlay: (c) => c.repeat(reverse: true))
-              .scale(
-                begin: const Offset(1.0, 1.0),
-                end: const Offset(1.12, 1.12),
-                duration: 800.ms,
-                curve: Curves.easeOutBack,
-              )
-              .shake(hz: 3, duration: 1600.ms),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : AppColors.pureBlack,
-                  letterSpacing: -0.5,
-                ),
+                ],
               ),
-              const SizedBox(height: 12),
-              Text(
-                body,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.5,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 24),
-              SizedBox(
-                width: double.infinity,
-                height: 48,
-                child: ElevatedButton(
-                  onPressed: () => Navigator.pop(context),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: primaryColor,
-                    foregroundColor: Colors.white,
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                  ),
-                  child: const Text(
-                    'KEEP GOING!',
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                        width: 72,
+                        height: 72,
+                        decoration: BoxDecoration(
+                          color: primaryColor.withValues(alpha: 0.12),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: primaryColor.withValues(alpha: 0.3),
+                            width: 2,
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            emoji,
+                            style: const TextStyle(fontSize: 36),
+                          ),
+                        ),
+                      )
+                      .animate(onPlay: (c) => c.repeat(reverse: true))
+                      .scale(
+                        begin: const Offset(1.0, 1.0),
+                        end: const Offset(1.12, 1.12),
+                        duration: 800.ms,
+                        curve: Curves.easeOutBack,
+                      )
+                      .shake(hz: 3, duration: 1600.ms),
+                  const SizedBox(height: 20),
+                  Text(
+                    title,
+                    textAlign: TextAlign.center,
                     style: TextStyle(
+                      fontSize: 22,
                       fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                      letterSpacing: 0.5,
+                      color: isDark ? Colors.white : AppColors.pureBlack,
+                      letterSpacing: -0.5,
                     ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Text(
+                    body,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      height: 1.5,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: primaryColor,
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      child: const Text(
+                        'KEEP GOING!',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w900,
+                          fontSize: 14,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ),
-      ).animate().scale(begin: const Offset(0.9, 0.9), duration: 250.ms, curve: Curves.easeOutBack).fadeIn();
+            ),
+          )
+          .animate()
+          .scale(
+            begin: const Offset(0.9, 0.9),
+            duration: 250.ms,
+            curve: Curves.easeOutBack,
+          )
+          .fadeIn();
     },
   );
 }

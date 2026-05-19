@@ -149,37 +149,46 @@ void main() {
   );
 
   group('Bi-directional Cloud Sync Tests', () {
-    test('getUserStats uploads local stats to cloud when cloud is empty', () async {
-      when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
-      when(() => auth.getUserPrefs()).thenAnswer((_) async => const Right(<String, dynamic>{}));
-      when(() => auth.updateUserPrefs(any())).thenAnswer((_) async => const Right(null));
+    test(
+      'getUserStats uploads local stats to cloud when cloud is empty',
+      () async {
+        when(
+          () => auth.isLoggedIn(),
+        ).thenAnswer((_) async => const Right(true));
+        when(
+          () => auth.getUserPrefs(),
+        ).thenAnswer((_) async => const Right(<String, dynamic>{}));
+        when(
+          () => auth.updateUserPrefs(any()),
+        ).thenAnswer((_) async => const Right(null));
 
-      const local = UserStatsEntity(
-        practicedLetters: {'x'},
-        completedLessons: {'l1'},
-        quizHistory: {},
-        categoryMastery: {},
-        totalLearningMinutes: 10,
-        lastActiveDate: '2025-01-01',
-        currentStreak: 2,
-        totalStars: 15,
-      );
-      await prefs.setString(
-        'user_progress_data',
-        jsonEncode(UserStatsModel.fromEntity(local).toJson()),
-      );
+        const local = UserStatsEntity(
+          practicedLetters: {'x'},
+          completedLessons: {'l1'},
+          quizHistory: {},
+          categoryMastery: {},
+          totalLearningMinutes: 10,
+          lastActiveDate: '2025-01-01',
+          currentStreak: 2,
+          totalStars: 15,
+        );
+        await prefs.setString(
+          'user_progress_data',
+          jsonEncode(UserStatsModel.fromEntity(local).toJson()),
+        );
 
-      final result = await repo.getUserStats();
-      expect(result.isRight(), isTrue);
-      final returnedStats = result.getOrElse((_) => fail('should be right'));
-      expect(returnedStats.totalStars, 15);
+        final result = await repo.getUserStats();
+        expect(result.isRight(), isTrue);
+        final returnedStats = result.getOrElse((_) => fail('should be right'));
+        expect(returnedStats.totalStars, 15);
 
-      verify(() => auth.updateUserPrefs(any())).called(1);
-    });
+        verify(() => auth.updateUserPrefs(any())).called(1);
+      },
+    );
 
     test('getUserStats merges local and cloud stats when both exist', () async {
       when(() => auth.isLoggedIn()).thenAnswer((_) async => const Right(true));
-      
+
       const local = UserStatsEntity(
         practicedLetters: {'a'},
         completedLessons: {'l1'},
@@ -204,10 +213,14 @@ void main() {
 
       when(() => auth.getUserPrefs()).thenAnswer(
         (_) async => Right(<String, dynamic>{
-          'user_progress_data': jsonEncode(UserStatsModel.fromEntity(cloud).toJson()),
+          'user_progress_data': jsonEncode(
+            UserStatsModel.fromEntity(cloud).toJson(),
+          ),
         }),
       );
-      when(() => auth.updateUserPrefs(any())).thenAnswer((_) async => const Right(null));
+      when(
+        () => auth.updateUserPrefs(any()),
+      ).thenAnswer((_) async => const Right(null));
 
       await prefs.setString(
         'user_progress_data',

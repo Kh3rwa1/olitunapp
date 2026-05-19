@@ -186,6 +186,7 @@ class _AdminLessonContentScreenState
                       100,
                     ),
                     itemCount: _blocks.length,
+                    // ignore: deprecated_member_use
                     onReorder: _moveBlock,
                     proxyDecorator: (child, index, animation) {
                       return Material(
@@ -257,7 +258,7 @@ class _AdminLessonContentScreenState
               children: [
                 GestureDetector(
                   onTap: () => context.go('/admin/lessons'),
-                  child: Text(
+                  child: const Text(
                     'Lessons',
                     style: TextStyle(
                       fontSize: 13,
@@ -403,21 +404,21 @@ class _AdminLessonContentScreenState
                       color: const Color(0xFF10B981).withValues(alpha: 0.1),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: Row(
+                    child: const Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Icon(
                           Icons.check_circle_rounded,
                           size: 14,
-                          color: const Color(0xFF10B981),
+                          color: Color(0xFF10B981),
                         ),
-                        const SizedBox(width: 6),
+                        SizedBox(width: 6),
                         Text(
                           'Saved',
                           style: TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.w700,
-                            color: const Color(0xFF10B981),
+                            color: Color(0xFF10B981),
                           ),
                         ),
                       ],

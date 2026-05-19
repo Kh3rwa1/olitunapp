@@ -76,38 +76,33 @@ class HomeBentoStatCard extends StatelessWidget {
     Widget iconWidget = Icon(icon, color: color, size: isHero ? 22 : 18);
 
     if (icon == Icons.local_fire_department_rounded) {
-      iconWidget = iconWidget
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scale(
-            begin: const Offset(1.0, 1.0),
-            end: const Offset(1.18, 1.18),
-            duration: 900.ms,
-            curve: Curves.easeInOut,
-          )
-          .shake(hz: 3, duration: 1800.ms);
+      iconWidget = iconWidget.animate().scale(
+        begin: const Offset(0.5, 0.5),
+        end: const Offset(1.0, 1.0),
+        duration: 600.ms,
+        curve: Curves.easeOutBack,
+      );
     } else if (icon == Icons.star_rounded) {
-      iconWidget = iconWidget
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .scale(
-            begin: const Offset(1.0, 1.0),
-            end: const Offset(1.15, 1.15),
-            duration: 1000.ms,
-            curve: Curves.easeInOut,
-          )
-          .shake(hz: 1.5, duration: 2.seconds);
+      iconWidget = iconWidget.animate().scale(
+        begin: const Offset(0.5, 0.5),
+        end: const Offset(1.0, 1.0),
+        duration: 700.ms,
+        curve: Curves.easeOutBack,
+      );
     } else if (icon == Icons.emoji_events_rounded) {
-      iconWidget = iconWidget
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .moveY(begin: 0, end: -4, duration: 1200.ms, curve: Curves.easeInOut);
+      iconWidget = iconWidget.animate().moveY(
+        begin: 8,
+        end: 0,
+        duration: 600.ms,
+        curve: Curves.easeOutBack,
+      );
     } else if (icon == Icons.timer_rounded) {
-      iconWidget = iconWidget
-          .animate(onPlay: (c) => c.repeat(reverse: true))
-          .rotate(
-            begin: -0.05,
-            end: 0.05,
-            duration: 1400.ms,
-            curve: Curves.easeInOut,
-          );
+      iconWidget = iconWidget.animate().rotate(
+        begin: -0.25,
+        end: 0,
+        duration: 800.ms,
+        curve: Curves.easeOutBack,
+      );
     }
 
     return AnimatedBentoChild(

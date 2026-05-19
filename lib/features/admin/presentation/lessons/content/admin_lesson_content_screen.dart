@@ -176,6 +176,7 @@ class _AdminLessonContentScreenState
       body: ReorderableListView.builder(
         padding: const EdgeInsets.all(20),
         itemCount: _blocks.length,
+        // ignore: deprecated_member_use
         onReorder: _moveBlock,
         proxyDecorator: (child, index, animation) {
           return Material(

@@ -129,11 +129,7 @@ class CrashReporting {
         category: 'admin.$action',
         message: '$action $entity${entityId != null ? ' ($entityId)' : ''}',
         level: SentryLevel.info,
-        data: {
-          'entity': entity,
-          'entityId': ?entityId,
-          if (metadata != null) ...metadata,
-        },
+        data: {'entity': entity, 'entityId': ?entityId, ...?metadata},
       ),
     );
   }

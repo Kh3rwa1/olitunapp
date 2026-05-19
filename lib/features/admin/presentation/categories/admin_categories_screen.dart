@@ -85,6 +85,7 @@ class _AdminCategoriesScreenState extends ConsumerState<AdminCategoriesScreen> {
     return ReorderableListView.builder(
       padding: const EdgeInsets.only(bottom: 100),
       itemCount: categories.length,
+      // ignore: deprecated_member_use
       onReorder: (oldIndex, newIndex) async {
         if (oldIndex < newIndex) {
           newIndex -= 1;

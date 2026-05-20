@@ -241,6 +241,7 @@ class _AdminLessonContentScreenState
                                         100,
                                       ),
                                       itemCount: _blocks.length,
+                                      // ignore: deprecated_member_use
                                       onReorder: _moveBlock,
                                       proxyDecorator:
                                           (child, index, animation) {
@@ -336,6 +337,7 @@ class _AdminLessonContentScreenState
                                   100,
                                 ),
                                 itemCount: _blocks.length,
+                                // ignore: deprecated_member_use
                                 onReorder: _moveBlock,
                                 proxyDecorator: (child, index, animation) {
                                   return Material(

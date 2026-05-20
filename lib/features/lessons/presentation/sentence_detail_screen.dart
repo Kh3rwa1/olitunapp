@@ -9,8 +9,8 @@ import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/widgets/lottie_display.dart';
 import '../domain/entities/lesson_entity.dart';
+import 'widgets/full_bleed_hero_media.dart';
 
 class SentenceDetailScreen extends ConsumerStatefulWidget {
   final String sentenceId;
@@ -415,38 +415,10 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
       tag: MotionTokens.heroTag('sentence', sentence.id),
       child: Material(
         type: MaterialType.transparency,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.90, end: 1.0),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.elasticOut,
-          builder: (context, scale, child) {
-            return Transform.scale(scale: scale, child: child);
-          },
-          child:
-              sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
-              ? SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: LottieDisplay(
-                    url: sentence.animationUrl!,
-                    width: 220,
-                    height: 220,
-                  ),
-                )
-              : sentence.imageUrl != null && sentence.imageUrl!.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(
-                    sentence.imageUrl!,
-                    width: 220,
-                    height: 220,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, _) =>
-                        Text(emoji, style: const TextStyle(fontSize: 100)),
-                  ),
-                )
-              : Text(emoji, style: const TextStyle(fontSize: 100)),
+        child: FullBleedHeroMedia(
+          animationUrl: sentence.animationUrl,
+          imageUrl: sentence.imageUrl,
+          fallback: Text(emoji, style: const TextStyle(fontSize: 100)),
         ),
       ),
     );
@@ -484,8 +456,9 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                     ),
                   ),
               ],
-              expandedHeight: 300,
+              expandedHeight: 340,
               heroChild: heroIllustration,
+              heroChildFullBleed: true,
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),

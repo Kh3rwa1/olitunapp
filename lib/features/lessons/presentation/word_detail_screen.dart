@@ -9,8 +9,8 @@ import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/widgets/lottie_display.dart';
 import '../domain/entities/lesson_entity.dart';
+import 'widgets/full_bleed_hero_media.dart';
 
 class WordDetailScreen extends ConsumerStatefulWidget {
   final String wordId;
@@ -442,49 +442,18 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
       tag: MotionTokens.heroTag('word', word.id),
       child: Material(
         type: MaterialType.transparency,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.90, end: 1.0),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.elasticOut,
-          builder: (context, scale, child) {
-            return Transform.scale(scale: scale, child: child);
-          },
-          child: word.animationUrl != null && word.animationUrl!.isNotEmpty
-              ? SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: LottieDisplay(
-                    url: word.animationUrl!,
-                    width: 220,
-                    height: 220,
-                  ),
-                )
-              : word.imageUrl != null && word.imageUrl!.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(
-                    word.imageUrl!,
-                    width: 220,
-                    height: 220,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, _) => Image.network(
-                      _emojiToPngUrl(emoji),
-                      width: 220,
-                      height: 220,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                )
-              : Image.network(
-                  _emojiToPngUrl(emoji),
-                  width: 220,
-                  height: 220,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, _, _) =>
-                      Text(emoji, style: const TextStyle(fontSize: 120)),
-                ),
+        child: FullBleedHeroMedia(
+          animationUrl: word.animationUrl,
+          imageUrl: word.imageUrl,
+          fallback: Image.network(
+            _emojiToPngUrl(emoji),
+            width: 168,
+            height: 168,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (context, _, _) =>
+                Text(emoji, style: const TextStyle(fontSize: 120)),
+          ),
         ),
       ),
     );
@@ -523,8 +492,9 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                     ),
                   ),
               ],
-              expandedHeight: 300,
+              expandedHeight: 340,
               heroChild: heroIllustration,
+              heroChildFullBleed: true,
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),

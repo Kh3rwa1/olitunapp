@@ -24,6 +24,7 @@ class ParallaxHeroSliverAppBar extends StatelessWidget {
     this.expandedHeight = 280,
     this.foregroundColor = Colors.white,
     this.glyphColor = Colors.white,
+    this.heroChildFullBleed = false,
   });
 
   final Gradient gradient;
@@ -47,6 +48,10 @@ class ParallaxHeroSliverAppBar extends StatelessWidget {
   /// Centered hero artwork shown in the expanded header.
   /// Typically wrapped in a [Hero] by the caller.
   final Widget? heroChild;
+
+  /// When true, [heroChild] fills the expanded header instead of being
+  /// constrained to a centered illustration slot.
+  final bool heroChildFullBleed;
 
   final double expandedHeight;
   final Color foregroundColor;
@@ -144,10 +149,13 @@ class ParallaxHeroSliverAppBar extends StatelessWidget {
                 ),
               ),
             if (heroChild != null)
-              Padding(
-                padding: const EdgeInsets.fromLTRB(24, 56, 24, 64),
-                child: Center(child: heroChild!),
-              ),
+              if (heroChildFullBleed)
+                Positioned.fill(child: heroChild!)
+              else
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(24, 56, 24, 64),
+                  child: Center(child: heroChild!),
+                ),
           ],
         ),
       ),

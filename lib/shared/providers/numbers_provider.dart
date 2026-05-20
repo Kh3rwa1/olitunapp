@@ -68,8 +68,8 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       id: 'n6',
       numeral: '᱖',
       value: 6,
-      nameOlChiki: 'ᱛᱩᱨᱩᱤ',
-      nameLatin: 'Turui',
+      nameOlChiki: 'ᱛᱩᱨᱩᱭ',
+      nameLatin: 'Turuy',
       order: 6,
     ),
     NumberModel(

@@ -26,15 +26,18 @@ class QuizQuestionCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          Text(
-            question.promptOlChiki,
-            style: const TextStyle(
-              fontSize: 48,
-              fontWeight: FontWeight.w900,
-              fontFamily: 'OlChiki',
-              color: Colors.white,
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            child: Text(
+              question.promptOlChiki,
+              style: const TextStyle(
+                fontSize: 48,
+                fontWeight: FontWeight.w900,
+                fontFamily: 'OlChiki',
+                color: Colors.white,
+              ),
+              textAlign: TextAlign.center,
             ),
-            textAlign: TextAlign.center,
           ),
           if (question.promptLatin != null)
             Padding(

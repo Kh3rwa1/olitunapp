@@ -178,16 +178,30 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
                               letterSpacing: 0.6,
                             ),
                           ),
-                          Text(
-                            '$practiceName  $practiceChar',
+                          Text.rich(
+                            TextSpan(
+                              children: [
+                                TextSpan(
+                                  text: '$practiceName  ',
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                TextSpan(
+                                  text: practiceChar,
+                                  style: TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? Colors.white : Colors.black,
+                                    fontFamily: 'OlChiki',
+                                  ),
+                                ),
+                              ],
+                            ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w900,
-                              color: isDark ? Colors.white : Colors.black,
-                              fontFamily: 'OlChiki',
-                            ),
                           ),
                         ],
                       ),

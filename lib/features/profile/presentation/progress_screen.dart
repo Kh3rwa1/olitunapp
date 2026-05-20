@@ -17,6 +17,9 @@ import 'widgets/profile_hero_card.dart';
 import 'widgets/stats_widgets.dart';
 import 'widgets/quiz_performance_card.dart';
 import 'widgets/edit_name_sheet.dart';
+import 'widgets/streak_calendar.dart';
+import 'widgets/mastery_chart.dart';
+import 'widgets/mastery_milestones.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -103,6 +106,11 @@ class ProgressScreen extends ConsumerWidget {
 
                         const SizedBox(height: 24),
 
+                        // ═══════════════ STREAK CALENDAR ═══════════════
+                        StreakCalendar(stats: stats),
+
+                        const SizedBox(height: 24),
+
                         // ═══════════════ CORE STATS ROW ═══════════════
                         _buildSectionHeader('YOUR STATS', isDark),
                         const SizedBox(height: 14),
@@ -133,6 +141,13 @@ class ProgressScreen extends ConsumerWidget {
                           bestScore: stats.bestQuizScore,
                           isDark: isDark,
                         ),
+                        const SizedBox(height: 20),
+                        MasteryTimelineChart(stats: stats),
+                        const SizedBox(height: 32),
+
+                        _buildSectionHeader('MILESTONES', isDark),
+                        const SizedBox(height: 16),
+                        MasteryMilestonesCard(stats: stats),
                         const SizedBox(height: 32),
 
                         _buildSectionHeader('ACCOUNT', isDark),

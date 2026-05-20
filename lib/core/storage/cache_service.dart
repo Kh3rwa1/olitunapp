@@ -4,7 +4,7 @@ import 'package:hive/hive.dart';
 
 /// Schema version for cache invalidation across app updates.
 /// Bump this when the serialisation format of cached models changes.
-const int cacheSchemaVersion = 2;
+const int cacheSchemaVersion = 4;
 
 /// Envelope that wraps every cached value with TTL and schema metadata.
 class CacheEntry {

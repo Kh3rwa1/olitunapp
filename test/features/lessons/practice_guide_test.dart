@@ -109,6 +109,8 @@ void main() {
       expect(normalizePracticeCharacter('t'), 'ᱛ');
       expect(normalizePracticeCharacter('ᱡᱚᱦᱟᱨ'), 'ᱡ');
       expect(normalizePracticeCharacter(Uri.encodeComponent('ᱛ')), 'ᱛ');
+      expect(normalizePracticeCharacter('Am (m)'), 'ᱢ');
+      expect(normalizePracticeCharacter('At (t)'), 'ᱛ');
     });
 
     test('has authored guides for common Ol Chiki letters beyond numerals', () {

@@ -29,6 +29,9 @@ String normalizePracticeCharacter(String value) {
     decoded = decoded.substring('number_'.length);
   }
 
+  // Strip parenthetical suffixes like " (m)" or " (t)"
+  decoded = decoded.replaceAll(RegExp(r'\s*\(.*?\)\s*'), '').trim();
+
   // If already directly in strokes, return it
   if (olChikiStrokes.containsKey(decoded)) {
     return decoded;
@@ -196,7 +199,7 @@ List<Offset> samplePath(Path path, {int samplesPerMetric = 48}) {
 }
 
 class TraceScore {
-  static const double autoAdvanceThreshold = 0.50;
+  static const double autoAdvanceThreshold = 0.70;
 
   final double overall;
   final double coverage;

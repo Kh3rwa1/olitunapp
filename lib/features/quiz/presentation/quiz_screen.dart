@@ -91,13 +91,16 @@ class QuizScreen extends ConsumerWidget {
             ),
             child: Column(
               children: [
-                Text(
-                  question.promptOlChiki,
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                    letterSpacing: 0.5,
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  child: Text(
+                    question.promptOlChiki,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
                 if (question.promptLatin != null) ...[

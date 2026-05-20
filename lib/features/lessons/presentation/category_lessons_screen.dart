@@ -331,15 +331,17 @@ class _LessonCard extends StatelessWidget {
                               ),
                             ),
                           const SizedBox(height: 8),
-                          const Row(
+                          Row(
                             children: [
-                              Icon(
+                              _buildLevelBadge(lesson.level),
+                              const SizedBox(width: 8),
+                              const Icon(
                                 Icons.cloud_done_rounded,
                                 size: 14,
                                 color: AppColors.primary,
                               ),
-                              SizedBox(width: 4),
-                              Text(
+                              const SizedBox(width: 4),
+                              const Text(
                                 'Available Offline',
                                 style: TextStyle(
                                   fontSize: 11,
@@ -366,5 +368,46 @@ class _LessonCard extends StatelessWidget {
         .animate()
         .fadeIn(delay: (index * 80).ms, duration: 400.ms)
         .slideX(begin: 0.1);
+  }
+
+  Widget _buildLevelBadge(String level) {
+    Color badgeColor;
+    String label;
+
+    switch (level.toLowerCase()) {
+      case 'advanced':
+        badgeColor = AppColors.duoRed;
+        label = 'Advanced';
+        break;
+      case 'intermediate':
+        badgeColor = AppColors.duoOrange;
+        label = 'Intermediate';
+        break;
+      case 'beginner':
+      default:
+        badgeColor = AppColors.duoGreen;
+        label = 'Beginner';
+        break;
+    }
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: badgeColor.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: badgeColor.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.w800,
+          color: badgeColor,
+          letterSpacing: 0.2,
+        ),
+      ),
+    );
   }
 }

@@ -233,6 +233,44 @@ class AppwriteDbService {
     if (height != null) url += '&height=$height';
     return url;
   }
+
+  /// Wipe all content from all collections in the database.
+  Future<void> wipeAllData() async {
+    final collections = [
+      'quizzes',
+      'sentences',
+      'words',
+      'numbers',
+      'letters',
+      'lessons',
+      'categories',
+    ];
+
+    final List<String> errors = [];
+
+    for (final coll in collections) {
+      try {
+        final docs = await listDocuments(coll);
+        for (final doc in docs) {
+          final docId = doc['id'] as String;
+          await deleteDocument(coll, docId);
+        }
+      } catch (e) {
+        errors.add('Failed to wipe collection $coll: $e');
+        CrashReporting.addAppwriteBreadcrumb(
+          operation: 'wipe',
+          collection: coll,
+          documentId: 'all',
+          success: false,
+          error: e.toString(),
+        );
+      }
+    }
+
+    if (errors.isNotEmpty) {
+      throw Exception('Wipe completed with errors:\n${errors.join('\n')}');
+    }
+  }
 }
 
 // Provider

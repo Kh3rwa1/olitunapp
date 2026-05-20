@@ -102,12 +102,19 @@ class AppwriteAuthService {
         );
         await _completeWebOAuth(result);
       } else {
+        final deepLink =
+            'appwrite-callback-${AppwriteConfig.projectId}://';
         await _account.createOAuth2Session(
           provider: OAuthProvider.google,
+          success: deepLink,
+          failure: deepLink,
           scopes: ['email', 'profile'],
         );
       }
     } on AppwriteException catch (e) {
+      debugPrint(
+        'Appwrite OAuth RAW ERROR: message="${e.message}" code=${e.code} type="${e.type}"',
+      );
       throw AppwriteException(
         googleOAuthUserMessage(e.message ?? e.toString()),
         e.code,

@@ -5,6 +5,7 @@ class LessonEntity extends Equatable {
   final String categoryId;
   final String titleOlChiki;
   final String titleLatin;
+  final String level;
   final String? description;
   final int order;
   final int estimatedMinutes;
@@ -17,6 +18,7 @@ class LessonEntity extends Equatable {
     required this.categoryId,
     required this.titleOlChiki,
     required this.titleLatin,
+    this.level = 'beginner',
     this.description,
     this.order = 0,
     this.estimatedMinutes = 5,
@@ -30,6 +32,7 @@ class LessonEntity extends Equatable {
     String? categoryId,
     String? titleOlChiki,
     String? titleLatin,
+    String? level,
     String? description,
     int? order,
     int? estimatedMinutes,
@@ -42,6 +45,7 @@ class LessonEntity extends Equatable {
       categoryId: categoryId ?? this.categoryId,
       titleOlChiki: titleOlChiki ?? this.titleOlChiki,
       titleLatin: titleLatin ?? this.titleLatin,
+      level: level ?? this.level,
       description: description ?? this.description,
       order: order ?? this.order,
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
@@ -57,6 +61,7 @@ class LessonEntity extends Equatable {
     categoryId,
     titleOlChiki,
     titleLatin,
+    level,
     description,
     order,
     estimatedMinutes,

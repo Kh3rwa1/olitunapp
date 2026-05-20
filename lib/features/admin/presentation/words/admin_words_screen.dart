@@ -88,17 +88,10 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                   ),
                   child: wordsAsync.when(
                     data: (words) {
-                      final categories =
-                          words
-                              .where(
-                                (w) =>
-                                    w.category != null &&
-                                    w.category!.isNotEmpty,
-                              )
-                              .map((w) => w.category!)
-                              .toSet()
-                              .toList()
-                            ..sort();
+                      final filterLabels = _buildFilterLabels(
+                        words.map((w) => w.category),
+                        subcategoryLessons,
+                      );
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -109,14 +102,14 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                               onTap: () =>
                                   setState(() => _selectedCategory = null),
                             ),
-                            ...categories.map(
-                              (cat) => Padding(
+                            ...filterLabels.map(
+                              (label) => Padding(
                                 padding: const EdgeInsets.only(left: 12),
                                 child: AdminFilterChip(
-                                  label: cat,
-                                  selected: _selectedCategory == cat,
+                                  label: label,
+                                  selected: _selectedCategory == label,
                                   onTap: () =>
-                                      setState(() => _selectedCategory = cat),
+                                      setState(() => _selectedCategory = label),
                                 ),
                               ),
                             ),
@@ -134,9 +127,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                     data: (words) {
                       final filtered = _selectedCategory == null
                           ? words
-                          : words
-                                .where((w) => w.category == _selectedCategory)
-                                .toList();
+                          : _filterWords(words, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
                           : _buildWordsList(filtered, isDark, isWideScreen);
@@ -309,6 +300,71 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
       HapticFeedback.mediumImpact();
       ref.read(wordsProvider.notifier).deleteWord(word.id);
     }
+  }
+
+  List<String> _buildFilterLabels(
+    Iterable<String?> rowCategories,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    final labels = <String>[];
+    final seen = <String>{};
+
+    void add(String? value) {
+      final label = value?.trim();
+      if (label == null || label.isEmpty) return;
+      if (seen.add(label.toLowerCase())) labels.add(label);
+    }
+
+    for (final lesson in subcategoryLessons) {
+      add(lesson.titleLatin);
+    }
+
+    final categories =
+        rowCategories
+            .where((value) => value != null && value.trim().isNotEmpty)
+            .map((value) => value!.trim())
+            .toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    for (final category in categories) {
+      add(category);
+    }
+
+    return labels;
+  }
+
+  List<WordModel> _filterWords(
+    List<WordModel> words,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    final selected = _selectedCategory;
+    if (selected == null) return words;
+
+    final lesson = subcategoryLessons
+        .where((lesson) => lesson.titleLatin == selected)
+        .firstOrNull;
+    if (lesson == null) {
+      return words.where((word) => word.category == selected).toList();
+    }
+
+    final blockTexts = lesson.blocks
+        .where((block) => block.type == 'text' && block.textOlChiki != null)
+        .map((block) => block.textOlChiki!.trim())
+        .toSet();
+    if (blockTexts.isEmpty) return const [];
+
+    return words
+        .where(
+          (word) =>
+              word.isActive &&
+              blockTexts.any(
+                (text) =>
+                    text == word.wordOlChiki ||
+                    text.contains(word.wordOlChiki) ||
+                    word.wordOlChiki.contains(text),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
   }
 
   Future<void> _addSubcategory(

@@ -89,17 +89,10 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                   ),
                   child: sentencesAsync.when(
                     data: (sentences) {
-                      final categories =
-                          sentences
-                              .where(
-                                (s) =>
-                                    s.category != null &&
-                                    s.category!.isNotEmpty,
-                              )
-                              .map((s) => s.category!)
-                              .toSet()
-                              .toList()
-                            ..sort();
+                      final filterLabels = _buildFilterLabels(
+                        sentences.map((s) => s.category),
+                        subcategoryLessons,
+                      );
                       return SingleChildScrollView(
                         scrollDirection: Axis.horizontal,
                         child: Row(
@@ -110,14 +103,14 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                               onTap: () =>
                                   setState(() => _selectedCategory = null),
                             ),
-                            ...categories.map(
-                              (cat) => Padding(
+                            ...filterLabels.map(
+                              (label) => Padding(
                                 padding: const EdgeInsets.only(left: 12),
                                 child: AdminFilterChip(
-                                  label: cat,
-                                  selected: _selectedCategory == cat,
+                                  label: label,
+                                  selected: _selectedCategory == label,
                                   onTap: () =>
-                                      setState(() => _selectedCategory = cat),
+                                      setState(() => _selectedCategory = label),
                                 ),
                               ),
                             ),
@@ -135,9 +128,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                     data: (sentences) {
                       final filtered = _selectedCategory == null
                           ? sentences
-                          : sentences
-                                .where((s) => s.category == _selectedCategory)
-                                .toList();
+                          : _filterSentences(sentences, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
                           : _buildSentencesList(filtered, isDark, isWideScreen);
@@ -313,6 +304,73 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
       HapticFeedback.mediumImpact();
       ref.read(sentencesProvider.notifier).delete(sentence.id);
     }
+  }
+
+  List<String> _buildFilterLabels(
+    Iterable<String?> rowCategories,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    final labels = <String>[];
+    final seen = <String>{};
+
+    void add(String? value) {
+      final label = value?.trim();
+      if (label == null || label.isEmpty) return;
+      if (seen.add(label.toLowerCase())) labels.add(label);
+    }
+
+    for (final lesson in subcategoryLessons) {
+      add(lesson.titleLatin);
+    }
+
+    final categories =
+        rowCategories
+            .where((value) => value != null && value.trim().isNotEmpty)
+            .map((value) => value!.trim())
+            .toList()
+          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+    for (final category in categories) {
+      add(category);
+    }
+
+    return labels;
+  }
+
+  List<SentenceModel> _filterSentences(
+    List<SentenceModel> sentences,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    final selected = _selectedCategory;
+    if (selected == null) return sentences;
+
+    final lesson = subcategoryLessons
+        .where((lesson) => lesson.titleLatin == selected)
+        .firstOrNull;
+    if (lesson == null) {
+      return sentences
+          .where((sentence) => sentence.category == selected)
+          .toList();
+    }
+
+    final blockTexts = lesson.blocks
+        .where((block) => block.type == 'text' && block.textOlChiki != null)
+        .map((block) => block.textOlChiki!.trim())
+        .toSet();
+    if (blockTexts.isEmpty) return const [];
+
+    return sentences
+        .where(
+          (sentence) =>
+              sentence.isActive &&
+              blockTexts.any(
+                (text) =>
+                    text == sentence.sentenceOlChiki ||
+                    text.contains(sentence.sentenceOlChiki) ||
+                    sentence.sentenceOlChiki.contains(text),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
   }
 
   Future<void> _addSubcategory(

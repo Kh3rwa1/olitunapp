@@ -57,6 +57,81 @@ class VocabSeeder {
             textOlChiki: 'ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ',
             textLatin: 'Sagun Daram – Welcome',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱢᱟᱨᱟᱝ',
+            textLatin: 'Marang – Big / Great',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱩᱰᱤᱧ',
+            textLatin: 'Hudinj – Small',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱜᱩᱱ',
+            textLatin: 'Sagun – Auspicious / Good',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱟᱯᱟᱭ',
+            textLatin: 'Napay – Fine / Good',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱹᱰᱤ',
+            textLatin: 'Adi – Very',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱮᱞᱮᱠᱟ',
+            textLatin: 'Celeka – How',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱧᱩᱛᱩᱢ',
+            textLatin: 'Nyutum – Name',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ',
+            textLatin: 'Inj – I / Me',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ',
+            textLatin: 'Am – You',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱩᱱᱤ',
+            textLatin: 'Uni – He / She',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱩᱭ',
+            textLatin: 'Nuy – This person',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱠᱚᱭ',
+            textLatin: 'Okoy – Who',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱮᱫ',
+            textLatin: 'Ced – What',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱠᱟ',
+            textLatin: 'Oka – Which',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱩᱢᱤᱫᱽ',
+            textLatin: 'Jumid – Unity',
+          ),
         ],
       },
       {
@@ -99,6 +174,71 @@ class VocabSeeder {
             type: 'text',
             textOlChiki: 'ᱢᱤᱥᱮᱨᱟ',
             textLatin: 'Misera – Younger sister',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱚᱲᱚᱢ ᱦᱟᱲᱟᱢ',
+            textLatin: 'Gorom haram – Grandfather',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱚᱲᱚᱢ ᱵᱩᱰᱷᱤ',
+            textLatin: 'Gorom budhi – Grandmother',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱟᱠᱟ',
+            textLatin: 'Kaka – Uncle (father\'s younger brother)',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱟᱠᱤ',
+            textLatin: 'Kaki – Aunt (father\'s younger brother\'s wife)',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱢᱟᱢᱚ',
+            textLatin: 'Mamo – Maternal Uncle',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱟᱛᱚᱢ',
+            textLatin: 'Hatom – Aunt (father\'s sister)',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱚᱝᱜᱚ',
+            textLatin: 'Gongo – Uncle (father\'s elder brother)',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱟᱹᱦᱩ',
+            textLatin: 'Bahu – Wife / Daughter-in-law',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱟᱶᱟᱭ',
+            textLatin: 'Jaway – Husband / Son-in-law',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱮᱴᱟ',
+            textLatin: 'Beta – Son',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱤᱴᱤ',
+            textLatin: 'Biti – Daughter',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱟᱛᱮ',
+            textLatin: 'Gate – Friend',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱚᱯᱚᱱ',
+            textLatin: 'Hopon – Child / Son',
           ),
         ],
       },
@@ -143,6 +283,71 @@ class VocabSeeder {
             textOlChiki: 'ᱴᱟᱠᱟ',
             textLatin: 'Taka – Money',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱚᱢ',
+            textLatin: 'Jom – Eat',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱧᱩ',
+            textLatin: 'Nju – Drink',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱤᱛᱤᱡ',
+            textLatin: 'Gitij – Sleep',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱟᱞᱟᱜ',
+            textLatin: 'Chalag – Go',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱤᱡᱩᱜ',
+            textLatin: 'Hijug – Come',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱟᱹᱢᱤ',
+            textLatin: 'Kami – Work',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱫᱩᱲᱩᱵ',
+            textLatin: 'Durub – Sit',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱸᱜᱚ',
+            textLatin: 'Tengo – Stand',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱞ',
+            textLatin: 'Ol – Write',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱯᱟᱲᱦᱟᱣ',
+            textLatin: 'Parhaw – Read / Study',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱨᱚᱲ',
+            textLatin: 'Ror – Speak / Language',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱱᱚᱜ',
+            textLatin: 'Senog – Depart / Go',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱞᱟᱸᱫᱟ',
+            textLatin: 'Landa – Laugh',
+          ),
         ],
       },
       {
@@ -180,6 +385,76 @@ class VocabSeeder {
             type: 'text',
             textOlChiki: 'ᱞᱤᱞ',
             textLatin: 'Lil – Blue',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱞᱩᱢᱟᱹᱝ',
+            textLatin: 'Lumang – Golden / Silk color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱟᱥᱟ ᱨᱚᱝ',
+            textLatin: 'Hasa rong – Brown / Mud color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱩᱞᱟᱹᱯ',
+            textLatin: 'Gulap – Pink',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱮᱸᱜᱟᱲ',
+            textLatin: 'Bengad – Purple / Eggplant color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱩᱭᱞᱟᱹ',
+            textLatin: 'Kuyla – Charcoal / Deep black',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱟᱸᱫᱚ ᱨᱚᱝ',
+            textLatin: 'Chando rong – Silver / Moon color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱸᱜᱮᱞ ᱨᱚᱝ',
+            textLatin: 'Sengel rong – Orange / Fire color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱠᱟᱢ ᱨᱚᱝ',
+            textLatin: 'Sakam rong – Leaf green',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱨᱢᱟ ᱨᱚᱝ',
+            textLatin: 'Sirma rong – Sky blue',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱢᱮᱫ ᱨᱚᱝ',
+            textLatin: 'Med rong – Eye color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱞᱟᱨ',
+            textLatin: 'Lar – Indigo',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱚᱢᱠᱟᱣ',
+            textLatin: 'Comkaw – Shiny / Bright',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱢᱤᱞᱚᱱ',
+            textLatin: 'Milon – Mixed color',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱷᱟᱹᱱᱰᱤᱭᱟᱹ',
+            textLatin: 'Khandiya – Dark shade / Grey',
           ),
         ],
       },
@@ -234,6 +509,61 @@ class VocabSeeder {
             textOlChiki: 'ᱵᱟᱦᱟ',
             textLatin: 'Baha – Flower',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱟᱹᱛᱤ',
+            textLatin: 'Hati – Elephant',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱩᱞ',
+            textLatin: 'Kul – Lion',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱤᱧ',
+            textLatin: 'Binj – Snake',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱫᱚᱢ',
+            textLatin: 'Sadom – Horse',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱷᱤᱰᱤ',
+            textLatin: 'Bhidi – Sheep',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱠᱟᱰᱟ',
+            textLatin: 'Kada – Buffalo',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱩᱠᱨᱤ',
+            textLatin: 'Sukri – Pig',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱢ',
+            textLatin: 'Sim – Chicken / Hen',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱨᱢᱟ',
+            textLatin: 'Serma – Sky',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱯᱤᱞ',
+            textLatin: 'Ipil – Star',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱸᱜᱮ',
+            textLatin: 'Singe – Sun',
+          ),
         ],
       },
       {
@@ -277,6 +607,71 @@ class VocabSeeder {
             textOlChiki: 'ᱫᱟᱜ ᱨᱤᱛᱩ',
             textLatin: 'Dag ritu – Rainy Season',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱨᱢᱟ',
+            textLatin: 'Serma – Year',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱠᱛᱚ',
+            textLatin: 'Okto – Time',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱧᱤᱫᱟᱹ',
+            textLatin: 'Njida – Night',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱛᱟᱜ',
+            textLatin: 'Setag – Morning',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱴᱤᱠᱤᱱ',
+            textLatin: 'Tikin – Noon',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱹᱭᱩᱵ',
+            textLatin: 'Ayub – Evening',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱨᱟᱵᱟᱝ ᱨᱤᱛᱩ',
+            textLatin: 'Rabang ritu – Winter',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱸᱜᱮ ᱢᱟᱦᱟ',
+            textLatin: 'Singe maha – Sunday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱛᱮ ᱢᱟᱦᱟ',
+            textLatin: 'Ote maha – Monday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱟᱞᱮ ᱢᱟᱦᱟ',
+            textLatin: 'Bale maha – Tuesday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱜᱩᱱ ᱢᱟᱦᱟ',
+            textLatin: 'Sagun maha – Wednesday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱨᱫᱤ ᱢᱟᱦᱟ',
+            textLatin: 'Sardi maha – Thursday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱟᱹᱨᱩᱢ ᱢᱟᱦᱟ',
+            textLatin: 'Jarum maha – Friday',
+          ),
         ],
       },
       {
@@ -319,6 +714,71 @@ class VocabSeeder {
             type: 'text',
             textOlChiki: 'ᱦᱚᱲ',
             textLatin: 'Hor – People',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱩᱨᱩ ᱠᱚᱞᱚᱢ',
+            textLatin: 'Guru kolom – Guru\'s Pen / Scholar',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱞᱟᱠᱪᱟᱨ',
+            textLatin: 'Lakchar – Culture',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱮᱪᱮᱫ',
+            textLatin: 'Seched – Education',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱶᱦᱮᱫ',
+            textLatin: 'Sawhet – Literature',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱚᱢᱟᱡᱽ',
+            textLatin: 'Somaj – Society',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱩᱢᱤᱫᱽ',
+            textLatin: 'Jumid – Unity',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱹᱨᱤ ᱪᱟᱹᱞᱤ',
+            textLatin: 'Ari chali – Customs',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱤᱪᱟᱹᱨ',
+            textLatin: 'Bicar – Justice / Discussion',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱟᱛᱮ ᱠᱚ',
+            textLatin: 'Gate ko – Friends',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱨᱤ ᱫᱷᱚᱨᱚᱢ',
+            textLatin: 'Sari dhorom – Truth path / Traditional religion',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱨᱟᱹᱥᱠᱟᱹ',
+            textLatin: 'Raska – Joy / Happiness',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱨᱦᱟᱣ ᱠᱟᱛᱷᱟ',
+            textLatin: 'Sarhaw katha – Words of appreciation',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱡᱟᱦᱮᱨ ᱛᱷᱟᱱ',
+            textLatin: 'Jaher than – Sacred grove',
           ),
         ],
       },

@@ -298,25 +298,27 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
 
     Widget medallionCard = Container(
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FA),
+        color: data.isUnlocked
+            ? (isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FA))
+            : (isDark
+                  ? Color.lerp(const Color(0xFF151515), data.color, 0.04)
+                  : Color.lerp(const Color(0xFFFCFCFC), data.color, 0.05)),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: data.isUnlocked
-              ? data.color.withValues(alpha: 0.35)
-              : (isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05)),
+              ? data.color.withValues(alpha: 0.45)
+              : data.color.withValues(alpha: 0.20),
           width: 1.5,
         ),
-        boxShadow: data.isUnlocked
-            ? [
-                BoxShadow(
-                  color: data.color.withValues(alpha: 0.08),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
+        boxShadow: [
+          BoxShadow(
+            color: data.isUnlocked
+                ? data.color.withValues(alpha: 0.08)
+                : data.color.withValues(alpha: 0.03),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
       child: Column(
@@ -342,13 +344,11 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                         )
                       : LinearGradient(
                           colors: [
-                            isDark
-                                ? const Color(0xFF2D2D2D)
-                                : const Color(0xFFE0E0E0),
-                            isDark
-                                ? const Color(0xFF1E1E1E)
-                                : const Color(0xFFF1F3F5),
+                            data.color.withValues(alpha: 0.18),
+                            data.color.withValues(alpha: 0.08),
                           ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
                         ),
                   boxShadow: data.isUnlocked
                       ? [
@@ -358,13 +358,18 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                             spreadRadius: 1,
                           ),
                         ]
-                      : [],
+                      : [
+                          BoxShadow(
+                            color: data.color.withValues(alpha: 0.1),
+                            blurRadius: 8,
+                          ),
+                        ],
                 ),
                 child: Icon(
                   data.isUnlocked ? data.icon : Icons.lock_outline_rounded,
                   color: data.isUnlocked
                       ? Colors.white
-                      : (isDark ? Colors.white24 : Colors.black26),
+                      : data.color.withValues(alpha: 0.65),
                   size: 26,
                 ),
               ),
@@ -397,7 +402,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
               letterSpacing: -0.2,
               color: data.isUnlocked
                   ? (isDark ? Colors.white : Colors.black87)
-                  : (isDark ? Colors.white30 : Colors.black38),
+                  : (isDark ? Colors.white70 : Colors.black54),
             ),
             textAlign: TextAlign.center,
             maxLines: 1,
@@ -452,9 +457,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                 style: GoogleFonts.poppins(
                   fontSize: 8.5,
                   fontWeight: FontWeight.w700,
-                  color: data.isUnlocked
-                      ? data.color
-                      : (isDark ? Colors.white24 : Colors.black26),
+                  color: data.color.withValues(alpha: 0.85),
                 ),
                 textAlign: TextAlign.center,
               ),

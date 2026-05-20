@@ -57,6 +57,82 @@ class SentenceSeeder {
             textOlChiki: 'ᱤᱧ ᱫᱚ ᱱᱚᱸᱰᱮᱧ ᱛᱟᱦᱮᱸᱱᱟ',
             textLatin: 'In do nondenj tahena – I live here',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚᱧ ᱪᱟᱞᱟᱜ ᱠᱟᱱᱟ',
+            textLatin: 'Inj donj chalag kana – I am going',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱚᱠᱟᱭ ᱠᱟᱱᱟᱢ?',
+            textLatin: 'Am do okoy kanam? – Who are you?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱩᱱᱤ ᱫᱚ ᱤᱧᱤᱡ ᱵᱚᱠᱚᱧ ᱠᱟᱱᱟᱭ',
+            textLatin: 'Uni do injij bokonj kanay – He is my younger brother',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱩᱭ ᱫᱚ ᱤᱧᱤᱡ ᱜᱟᱛᱮ ᱠᱟᱱᱟᱭ',
+            textLatin: 'Nuy do injij gate kanay – This is my friend',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱚᱠᱟ ᱠᱷᱚᱱ ᱮᱢ ᱦᱮᱡ ᱮᱱᱟ?',
+            textLatin: 'Am do oka khon em hej ena? – Where did you come from?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱟᱹᱛᱩ ᱠᱷᱚᱱ ᱤᱧ ᱦᱮᱡ ᱮᱱᱟ',
+            textLatin: 'Inj do atu khon inj hej ena – I came from the village',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱚᱶᱟ ᱫᱚ ᱪᱮᱫ ᱠᱟᱱᱟ?',
+            textLatin: 'Nowa do ced kana? – What is this?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱚᱶᱟ ᱫᱚ ᱫᱟᱨᱮ ᱠᱟᱱᱟ',
+            textLatin: 'Nowa do dare kana – This is a tree',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱪᱮᱫ ᱮᱢ ᱠᱩᱥᱤᱭᱟᱜᱼᱟ?',
+            textLatin: 'Am do ced em kusiyaga? – What do you like?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱥᱟᱱᱛᱟᱲᱤ ᱨᱚᱲ ᱤᱧ ᱠᱩᱥᱤᱭᱟᱜᱼᱟ',
+            textLatin:
+                'Inj do Santali ror inj kusiyaga – I like speaking Santali',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱟᱢ?',
+            textLatin: 'Am do kamiyam? – Do you work?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱮᱸ, ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱟᱹᱧ',
+            textLatin: 'Hẽ, inj do kamiyanj – Yes, I work',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱩᱱᱤ ᱫᱚ ᱚᱠᱟᱨᱮ ᱢᱮᱱᱟᱭᱟ?',
+            textLatin: 'Uni do okare menaya? – Where is he/she?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱩᱱᱤ ᱫᱚ ᱚᱲᱟᱜ ᱨᱮ ᱢᱮᱱᱟᱭᱟ',
+            textLatin: 'Uni do orag re menaya – He/she is at home',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱧᱮᱞᱮᱫ ᱟᱧᱟᱢ?',
+            textLatin: 'Am do nyeled anyam? – Do you see me?',
+          ),
         ],
       },
       {
@@ -94,6 +170,81 @@ class SentenceSeeder {
             type: 'text',
             textOlChiki: 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ',
             textLatin: 'In do kamiyedanj – I am working',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱛᱩᱢᱫᱟᱜ ᱨᱩ ᱮᱢ ᱵᱟᱰᱟᱭᱟ?',
+            textLatin:
+                'Am tumdag ru em badaya? – Do you know how to play the drum?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱵᱟᱹᱧ ᱵᱟᱰᱟᱭᱟ',
+            textLatin: 'Banj badaya – I do not know',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱪᱮᱫ ᱟᱹᱧ ᱢᱮ',
+            textLatin: 'Daya kate chet anj me – Please teach me',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱮᱸ, ᱜᱟᱯᱟᱧ ᱪᱮᱫ ᱟᱢᱟ',
+            textLatin: 'Hẽ, gapanj chet ama – Yes, I will teach you tomorrow',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱦᱮᱧ ᱫᱚ ᱟᱹᱰᱤ ᱨᱟᱹᱥᱠᱟᱹ ᱫᱤᱱ ᱠᱟᱱᱟ',
+            textLatin:
+                'Tehenj do adi raska din kana – Today is a very joyful day',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱞᱮ ᱚᱲᱟᱜ ᱛᱮ ᱦᱤᱡᱩᱜ ᱢᱮ',
+            textLatin: 'Ale orag te hijug me – Come to our house',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱜᱟᱯᱟ ᱱᱩ ᱦᱤᱡᱩᱜᱼᱟ',
+            textLatin: 'Inj do gapa nu hijuga – I will come tomorrow',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢᱟᱜ ᱚᱞ ᱪᱤᱠᱤ ᱯᱩᱛᱷᱤ ᱮᱢᱟᱧ ᱢᱮ',
+            textLatin:
+                'Amaak Ol Chiki puthi emanj me – Give me your Ol Chiki book',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱚᱶᱟ ᱫᱚ ᱤᱧᱟᱜ ᱯᱩᱛᱷᱤ ᱠᱟᱱᱟ',
+            textLatin: 'Nowa do injaak puthi kana – This is my book',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱛᱤᱨᱭᱳ ᱚᱨᱚᱝ ᱮᱢ ᱠᱩᱥᱤᱭᱟᱜᱼᱟ?',
+            textLatin:
+                'Am do tiryo orong em kusiyaga? – Do you like blowing the flute?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱮᱸ, ᱛᱤᱨᱭᱳ ᱚᱨᱚᱝ ᱫᱚ ᱟᱹᱰᱤ ᱥᱤᱵᱤᱞ ᱜᱮᱭᱟ',
+            textLatin:
+                'Hẽ, tiryo orong do adi sibil geya – Yes, blowing the flute is very sweet',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱫᱚ ᱞᱟᱸᱫᱟᱭᱮᱫᱟᱢ ᱪᱮᱫᱟᱜ?',
+            textLatin: 'Am do landayedam cedag? – Why are you laughing?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱨᱟᱹᱥᱠᱟᱹ ᱮᱱᱟᱧ ᱚᱱᱟᱛᱮ',
+            textLatin: 'Inj do raska enanj onate – I became happy, that\'s why',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱟᱛᱮ, ᱜᱟᱯᱟ ᱵᱚᱱ ᱧᱟᱯᱟᱢᱟ',
+            textLatin: 'Gate, gapa bon njapama – Friend, we will meet tomorrow',
           ),
         ],
       },
@@ -138,6 +289,77 @@ class SentenceSeeder {
             textOlChiki: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱫᱩᱲᱩᱵ ᱢᱮ',
             textLatin: 'Daya kate durub me – Please sit down',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ, ᱚᱲᱟᱜ ᱛᱮ ᱦᱤᱡᱩᱜ ᱢᱮ',
+            textLatin:
+                'Sagun daram, orag te hijug me – Welcome, come inside the house',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢ ᱧᱟᱯᱟᱢ ᱠᱟᱛᱮ ᱟᱹᱰᱤᱧ ᱨᱟᱹᱥᱠᱟᱹ ᱮᱱᱟ',
+            textLatin:
+                'Am njapam kate adinj raska ena – I am very happy to meet you',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱹᱰᱤ ᱟᱹᱰᱤ ᱥᱟᱨᱦᱟᱣ',
+            textLatin: 'Adi adi sarhaw – Thank you very much',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱞᱚᱢ ᱵᱷᱟᱵᱽᱱᱟᱜᱼᱟ, ᱥᱟᱱᱟᱢ ᱱᱟᱯᱟᱭ ᱦᱩᱭᱩᱜᱼᱟ',
+            textLatin:
+                'Alom bhabnaga, sanam napay huyuga – Don\'t worry, everything will be fine',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱱᱚᱶᱟ ᱠᱟᱹᱢᱤ ᱟᱹᱧ ᱢᱮ',
+            textLatin:
+                'Daya kate nowa kami anj me – Please help me with this work',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢᱟᱜ ᱟᱹᱥᱤᱥ ᱫᱚᱦᱚᱭ ᱢᱮ',
+            textLatin: 'Amaak asis dohoy me – Keep your blessings',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧ ᱫᱚ ᱟᱢ ᱥᱟᱨᱦᱟᱣ ᱮᱫ ᱢᱮᱭᱟᱧ',
+            textLatin: 'Inj do am sarhaw ed meyaj – I appreciate you',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱫᱟᱭᱟ ᱠᱟᱛᱮ ᱨᱚᱲ ᱢᱮ',
+            textLatin: 'Daya kate ror me – Please speak',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱟᱯᱟᱭ ᱛᱮ ᱥᱮᱱᱚᱜ ᱢᱮ',
+            textLatin: 'Napay te senog me – Go safely',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱢᱟᱨᱟᱝ ᱦᱚᱲ ᱠᱚ ᱢᱟᱱ ᱮᱢᱟ ᱠᱚ ᱢᱮ',
+            textLatin:
+                'Marang hor ko man ema ko me – Give respect to the elders',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱵᱤᱞ ᱨᱚᱲ ᱛᱮ ᱜᱟᱞᱢᱟᱨᱟᱣ ᱢᱮ',
+            textLatin:
+                'Sibil ror te galmaraw me – Speak with gentle/sweet words',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧᱟᱜ ᱡᱚᱦᱟᱨ ᱦᱟᱛᱟᱣ ᱢᱮ',
+            textLatin: 'Injaak johar hataw me – Accept my greetings',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱟᱹᱜᱩᱱ ᱟᱹᱭᱩᱵ, ᱜᱟᱛᱮ ᱠᱚ',
+            textLatin: 'Sagun ayub, gate ko – Good evening, friends',
+          ),
         ],
       },
       {
@@ -171,6 +393,88 @@ class SentenceSeeder {
             type: 'text',
             textOlChiki: 'ᱛᱤᱱᱟᱹᱜ ᱵᱟᱡᱟᱣ ᱮᱱᱟ?',
             textLatin: 'Tinag bajaw ena? – What time is it?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱤᱛᱚᱜ ᱫᱚ ᱥᱮᱛᱟᱜ ᱟᱠᱟᱱᱟ',
+            textLatin: 'Nitog do setag akana – Now it is morning',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱜᱟᱯᱟ ᱫᱚ ᱨᱟᱵᱟᱝ ᱨᱤᱛᱩ ᱮᱦᱚᱵᱚᱜᱼᱟ',
+            textLatin:
+                'Gapa do rabang ritu ehoboga – Tomorrow winter season starts',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱦᱮᱧ ᱧᱤᱫᱟᱹ ᱫᱚ ᱟᱹᱰᱤ ᱨᱟᱵᱟᱝ ᱠᱟᱱᱟ',
+            textLatin:
+                'Tehenj njida do adi rabang kana – Tonight it is very cold',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱨᱢᱟ ᱨᱮ ᱨᱤᱢᱤᱞ ᱢᱮᱱᱟᱜᱼᱟ',
+            textLatin: 'Sirma re rimil menaga – There are clouds in the sky',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱚᱭ ᱟᱹᱰᱤ ᱡᱩᱨ ᱛᱮ ᱦᱤᱥᱤᱫ ᱠᱟᱱᱟ',
+            textLatin:
+                'Hoy adi jur te hisid kana – The wind is blowing very hard',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱦᱮᱧ ᱫᱚ ᱚᱠᱟ ᱢᱟᱦᱟ ᱠᱟᱱᱟ?',
+            textLatin: 'Tehenj do oka maha kana? – What day is today?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱦᱮᱧ ᱫᱚ ᱥᱟᱹᱜᱩᱱ ᱢᱟᱦᱟ ᱠᱟᱱᱟ',
+            textLatin: 'Tehenj do Sagun maha kana – Today is Wednesday',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱪᱟᱸᱫᱚ ᱟᱹᱰᱤ ᱥᱟᱯᱷᱟ ᱜᱮᱭᱟ',
+            textLatin: 'Chando adi sapha geya – The moon is very clear',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱥᱤᱛᱩᱝ ᱨᱤᱛᱩ ᱨᱮ ᱫᱟᱜ ᱛᱮᱛᱟᱝ ᱮᱫ ᱤᱧᱟ',
+            textLatin:
+                'Situng ritu re dag tetang ed inja – In the summer season, I feel thirsty',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱫᱟᱜ ᱨᱤᱛᱩ ᱨᱮ ᱫᱟᱨᱮ ᱠᱚ ᱦᱟᱹᱨᱭᱟᱹᱲᱚᱜᱼᱟ',
+            textLatin:
+                'Dag ritu re dare ko haryaroga – In the rainy season, the trees turn green',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱚᱞᱟ ᱫᱚ ᱟᱹᱰᱤ ᱡᱩᱨ ᱮ ᱫᱟᱜ ᱠᱮᱫᱟ',
+            textLatin:
+                'Hola do adi jur e dag keda – Yesterday it rained heavily',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱚᱶᱟ ᱥᱮᱨᱢᱟ ᱫᱚ ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ ᱜᱮᱭᱟ',
+            textLatin: 'Nowa serma do adi napay geya – This year is very good',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱛᱮᱦᱮᱧ ᱫᱚ ᱴᱤᱠᱤᱱ ᱚᱠᱛᱚ ᱠᱟᱱᱟ',
+            textLatin: 'Tehenj do tikin okto kana – Today it is noon time',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱹᱭᱩᱵ ᱚᱠᱛᱚ ᱨᱮ ᱜᱟᱛᱮ ᱠᱚ ᱥᱟᱶ ᱧᱟᱯᱟᱢ ᱢᱮ',
+            textLatin:
+                'Ayub okto re gate ko saw njapam me – Meet with friends in the evening time',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱚᱠᱛᱚ ᱫᱚ ᱟᱹᱰᱤ ᱫᱟᱢᱟᱱ ᱜᱮᱭᱟ',
+            textLatin: 'Okto do adi daman geya – Time is very precious',
           ),
         ],
       },
@@ -276,6 +580,30 @@ class SentenceSeeder {
             textLatin:
                 'In do bir tenj chalag kana, sahan lagid – I am going to the forest for firewood.',
           ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱟᱢᱟᱜ ᱟᱹᱛᱩ ᱨᱮ ᱫᱚ ᱡᱷᱟᱹᱞᱤ ᱫᱟᱜ ᱨᱮᱭᱟᱜ ᱡᱷᱟᱨᱱᱟ ᱢᱮᱱᱟᱜᱼᱟ?',
+            textLatin:
+                'Amaak atu re do jhale dag reyag jharna menaga? – Is there a clean waterfall in your village?',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱦᱮᱸ, ᱟᱞᱮ ᱟᱹᱛᱩ ᱨᱮ ᱟᱹᱰᱤ ᱥᱤᱵᱤᱞ ᱫᱟᱜ ᱡᱷᱟᱨᱱᱟ ᱢᱮᱱᱟᱜᱼᱟ',
+            textLatin:
+                'Hẽ, ale atu re adi sibil dag jharna menaga – Yes, there is a very sweet water spring in our village.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱤᱧᱟᱜ ᱫᱚ ᱫᱟᱠᱟ ᱟᱨ ᱩᱛᱩ ᱡᱚᱢ ᱠᱟᱛᱮ ᱠᱟᱹᱢᱤ ᱛᱮᱧ ᱪᱟᱞᱟᱜᱼᱟ',
+            textLatin:
+                'Injaak do daka ar utu jom kate kami tenj chalaga – After eating rice and curry, I will go to my work.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki: 'ᱱᱟᱯᱟᱭ ᱛᱮ ᱠᱟᱹᱢᱤ ᱢᱮ ᱜᱟᱛᱮ, ᱥᱟᱹᱜᱩᱱ ᱫᱤᱱ ᱦᱩᱭᱩᱜ ᱛᱟᱢ',
+            textLatin:
+                'Napay te kami me gate, sagun din huyug tam – Work well friend, have an auspicious day.',
+          ),
         ],
       },
       {
@@ -379,6 +707,34 @@ class SentenceSeeder {
             textOlChiki: 'ᱫᱟᱜ ᱨᱤᱛᱩ ᱨᱮ ᱫᱚ ᱜᱟᱰᱟ ᱫᱟᱜ ᱛᱮ ᱯᱮᱨᱮᱡᱚᱜᱼᱟ',
             textLatin:
                 'Dag ritu re do gada dag te perejoga – In the rainy season, the river overflows with water.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱟᱹᱛᱩ ᱨᱤᱱ ᱦᱚᱲ ᱫᱚ ᱢᱟᱹᱧᱡᱷᱤ ᱛᱷᱟᱱ ᱨᱮ ᱡᱟᱣᱨᱟ ᱠᱟᱛᱮ ᱠᱚ ᱵᱤᱪᱟᱹᱨᱮᱫᱟ',
+            textLatin:
+                'Atu rin hor do Manjhi than re jawra kate bicareda ko – The villagers gather at the headman\'s altar and are discussing.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱥᱚᱦᱨᱟᱭ ᱯᱚᱨᱚᱵ ᱨᱮ ᱠᱩᱲᱤ ᱦᱚᱯᱚᱱ ᱠᱚ ᱦᱟᱥᱟ ᱵᱷᱤᱛ ᱨᱮ ᱪᱤᱛᱟᱹᱨ ᱠᱚ ᱥᱟᱡᱟᱣ ᱮᱫᱟ',
+            textLatin:
+                'Sohrae porob re kuri hopon ko hasa bhit re citar ko sajaw eda – In the Sohrae festival, the women are decorating the clay walls with paintings.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱛᱩᱢᱫᱟᱜ ᱟᱨ ᱴᱟᱢᱟᱠ ᱨᱩ ᱟᱸᱡᱚᱢ ᱠᱟᱛᱮ ᱠᱚᱲᱟ ᱟᱨ ᱠᱩᱲᱤ ᱠᱚ ᱮᱱᱮᱡ ᱮᱫᱟ',
+            textLatin:
+                'Tumdag ar tamak ru anjom kate kora ar kuri ko enej eda – Hearing the clay drum and kettle drum, the boys and girls are dancing.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱟᱹᱛᱩ ᱨᱮᱭᱟᱜ ᱠᱩᱞᱦᱤ ᱫᱚ ᱥᱟᱹᱜᱩᱱ ᱥᱟᱠᱟᱢ ᱟᱨ ᱵᱟᱦᱟ ᱛᱮ ᱠᱚ ᱥᱟᱡᱟᱣ ᱟᱠᱟᱫᱟ',
+            textLatin:
+                'Atu reyag kulhi do sagun sakam ar baha te ko sajaw akada – They have decorated the village street with auspicious leaves and flowers.',
           ),
         ],
       },
@@ -489,9 +845,37 @@ class SentenceSeeder {
           LessonBlockModel(
             type: 'text',
             textOlChiki:
-                'ᱚᱞᱚᱜ ᱯᱟᱲᱦᱟᱣ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱟᱹᱛᱩ ᱟᱨ ᱫᱤᱥᱚᱢ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ ᱩᱡᱽᱞᱟᱹᱣ ᱢᱮ',
+                'ᱚᱞᱚᱜ ᱯᱟᱲᱦᱟᱣ ᱠᱟᱛᱮ ᱟᱢᱟᱜ ᱟᱹᱛᱩ ᱟᱨ ᱫᱤᱥᱚᱢ ᱨᱮᱭᱟᱜ ᱧᱩᱛᱩᱢ ᱩᱡᱽᱣᱟᱹᱞ ᱢᱮ',
             textLatin:
                 'Olog parhaw kate amaak atu ar disom reyag nyutum ujlaw me – By studying well, brighten the name of your village and country.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱥᱟᱹᱨᱤ ᱜᱩᱨᱩ ᱣᱟᱜ ᱥᱮᱪᱮᱫ ᱛᱮ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱡᱤᱣᱤ ᱨᱮ ᱥᱟᱹᱨᱤ ᱥᱟᱹᱱᱛᱤ ᱵᱚᱱ ᱧᱟᱢᱟ',
+            textLatin:
+                'Sari guru waak seched te abo sanam hor jiwi re sari santi bon njama – With the true teacher\'s education, we all find true peace in our lives.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱜᱮᱭᱟᱱ ᱫᱚᱨᱭᱟ ᱨᱮ ᱰᱩᱵᱩᱡ ᱠᱟᱛᱮ ᱟᱢ ᱫᱚ ᱥᱟᱹᱨᱤ ᱫᱷᱚᱨᱚᱢ ᱨᱮᱭᱟᱜ ᱜᱟᱹᱦᱤᱨ ᱠᱟᱛᱷᱟᱢ ᱵᱟᱰᱟᱭ ᱧᱟᱢᱟ',
+            textLatin:
+                'Geyan dorya re dubuj kate am do sari dhorom reyag gahir katham baday njama – By diving into the ocean of knowledge, you will understand the deep truths of the true religion.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱟᱹᱨᱤ ᱪᱟᱹᱞᱤ ᱟᱨ ᱞᱟᱠᱪᱟᱨ ᱵᱟᱧᱪᱟᱣ ᱫᱚᱦᱚ ᱜᱮ ᱥᱟᱹᱨᱤ ᱦᱚᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱨᱟᱝ ᱫᱷᱚᱨᱚᱢ ᱠᱟᱱᱟ',
+            textLatin:
+                'Ari chali ar lakchar bancaw doho ge sari hor hopon aak marang dhorom kana – Preserving customs and culture is the great duty of a true Santal.',
+          ),
+          LessonBlockModel(
+            type: 'text',
+            textOlChiki:
+                'ᱥᱤᱨᱡᱚᱱ ᱫᱩᱞᱟᱹᱲ ᱟᱨ ᱡᱩᱢᱤᱫᱽ ᱜᱮ ᱟᱵᱚ ᱥᱟᱱᱟᱢ ᱦᱚᱲ ᱡᱤᱣᱤ ᱨᱮ ᱥᱟᱹᱨᱤ ᱥᱩᱠᱷ ᱮ ᱮᱢᱟ ᱵᱚᱱᱟ',
+            textLatin:
+                'Sirjon dular ar jumid ge abo sanam hor jiwi re sari sukh e ema bona – Love for nature and unity give true happiness in our lives.',
           ),
         ],
       },

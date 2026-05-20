@@ -187,6 +187,7 @@ class LessonDetailScreen extends ConsumerWidget {
                 final quizzes = ref.read(quizzesProvider).value ?? [];
                 final quizId = _getQuizIdForCategory(
                   lesson.categoryId,
+                  lesson.id,
                   quizzes,
                 );
 
@@ -447,7 +448,65 @@ class _LessonHeroSummary extends StatelessWidget {
   }
 }
 
-String? _getQuizIdForCategory(String? categoryId, List<QuizModel> quizzes) {
+String? _getQuizIdForCategory(
+  String? categoryId,
+  String? lessonId,
+  List<QuizModel> quizzes,
+) {
+  if (lessonId != null) {
+    final cleanLessonId = lessonId.toLowerCase();
+
+    // 1. Vocabulary dynamic quizzes matching
+    if (cleanLessonId.startsWith('lesson_vocab_')) {
+      final suffix = cleanLessonId.replaceFirst('lesson_vocab_', '');
+      final possibleQuizId = 'quiz_dynamic_vocab_$suffix';
+      if (quizzes.any((q) => q.id == possibleQuizId)) {
+        return possibleQuizId;
+      }
+
+      // Fallback hybrid matching for non-standard vocab subcategories
+      if (suffix.contains('beginner')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_beginner')
+            ? 'quiz_dynamic_hybrid_beginner'
+            : null;
+      } else if (suffix.contains('intermediate') ||
+          suffix.contains('conversational')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_intermediate')
+            ? 'quiz_dynamic_hybrid_intermediate'
+            : null;
+      } else if (suffix.contains('advanced') || suffix.contains('folk')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_advanced')
+            ? 'quiz_dynamic_hybrid_advanced'
+            : null;
+      }
+    }
+
+    // 2. Sentences dynamic quizzes matching
+    if (cleanLessonId.startsWith('lesson_sentences_')) {
+      final suffix = cleanLessonId.replaceFirst('lesson_sentences_', '');
+      final possibleQuizId = 'quiz_dynamic_sentences_$suffix';
+      if (quizzes.any((q) => q.id == possibleQuizId)) {
+        return possibleQuizId;
+      }
+
+      // Fallback hybrid matching for non-standard sentence subcategories
+      if (suffix.contains('beginner')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_beginner')
+            ? 'quiz_dynamic_hybrid_beginner'
+            : null;
+      } else if (suffix.contains('intermediate') ||
+          suffix.contains('conversational')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_intermediate')
+            ? 'quiz_dynamic_hybrid_intermediate'
+            : null;
+      } else if (suffix.contains('advanced') || suffix.contains('folk')) {
+        return quizzes.any((q) => q.id == 'quiz_dynamic_hybrid_advanced')
+            ? 'quiz_dynamic_hybrid_advanced'
+            : null;
+      }
+    }
+  }
+
   if (categoryId == null) return null;
   final cleanId = categoryId.toLowerCase();
 
@@ -634,7 +693,12 @@ void _showCompletionSheet({
                       ),
                     ),
                     child: Text(
-                      quiz != null ? 'Take ${quiz.title} Quiz' : 'Awesome!',
+                      quiz != null
+                          ? ((quiz.title != null &&
+                                    quiz.title!.toLowerCase().endsWith('quiz'))
+                                ? 'Take ${quiz.title}'
+                                : 'Take ${quiz.title ?? 'Quiz'} Quiz')
+                          : 'Awesome!',
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,

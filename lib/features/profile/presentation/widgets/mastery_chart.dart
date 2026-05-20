@@ -27,10 +27,12 @@ class MasteryTimelineChart extends ConsumerStatefulWidget {
   const MasteryTimelineChart({super.key, required this.stats});
 
   @override
-  ConsumerState<MasteryTimelineChart> createState() => _MasteryTimelineChartState();
+  ConsumerState<MasteryTimelineChart> createState() =>
+      _MasteryTimelineChartState();
 }
 
-class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> with SingleTickerProviderStateMixin {
+class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
+    with SingleTickerProviderStateMixin {
   int? _selectedIndex = 6; // Default to highlight today (last node)
   late List<ChartDataPoint> _dataPoints;
   late AnimationController _pulseController;
@@ -65,13 +67,15 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
       if (!hasQuizzes) {
         // Premium realistic progression for demo
         final mockAccuracies = [0.55, 0.68, 0.62, 0.78, 0.75, 0.88, 0.90];
-        points.add(ChartDataPoint(
-          dayName: dayStr,
-          accuracy: mockAccuracies[6 - i],
-          quizCount: 0,
-          date: day,
-          isDemo: true,
-        ));
+        points.add(
+          ChartDataPoint(
+            dayName: dayStr,
+            accuracy: mockAccuracies[6 - i],
+            quizCount: 0,
+            date: day,
+            isDemo: true,
+          ),
+        );
       } else {
         int totalCorrect = 0;
         int totalQuestions = 0;
@@ -97,12 +101,14 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
           accuracy = points.isNotEmpty ? points.last.accuracy : 0.0;
         }
 
-        points.add(ChartDataPoint(
-          dayName: dayStr,
-          accuracy: accuracy,
-          quizCount: count,
-          date: day,
-        ));
+        points.add(
+          ChartDataPoint(
+            dayName: dayStr,
+            accuracy: accuracy,
+            quizCount: count,
+            date: day,
+          ),
+        );
       }
     }
     return points;
@@ -140,7 +146,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
         const rightPadding = 15.0;
         const topPadding = 25.0;
         const bottomPadding = 30.0;
-        
+
         final chartWidth = width - leftPadding - rightPadding;
         const chartHeight = height - topPadding - bottomPadding;
         final stepX = chartWidth / 6;
@@ -161,10 +167,13 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
                   opacity: 1.0,
                   child: Container(
                     width: 140,
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
+                    ),
                     decoration: BoxDecoration(
-                      color: isDark 
-                          ? Colors.black.withValues(alpha: 0.8) 
+                      color: isDark
+                          ? Colors.black.withValues(alpha: 0.8)
                           : Colors.white.withValues(alpha: 0.9),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
@@ -189,24 +198,38 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                pt.dayName == 'Sun' ? 'Sunday' : 
-                                pt.dayName == 'Mon' ? 'Monday' : 
-                                pt.dayName == 'Tue' ? 'Tuesday' : 
-                                pt.dayName == 'Wed' ? 'Wednesday' : 
-                                pt.dayName == 'Thu' ? 'Thursday' : 
-                                pt.dayName == 'Fri' ? 'Friday' : 'Saturday',
+                                pt.dayName == 'Sun'
+                                    ? 'Sunday'
+                                    : pt.dayName == 'Mon'
+                                    ? 'Monday'
+                                    : pt.dayName == 'Tue'
+                                    ? 'Tuesday'
+                                    : pt.dayName == 'Wed'
+                                    ? 'Wednesday'
+                                    : pt.dayName == 'Thu'
+                                    ? 'Thursday'
+                                    : pt.dayName == 'Fri'
+                                    ? 'Friday'
+                                    : 'Saturday',
                                 style: TextStyle(
                                   fontFamily: 'Poppins',
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white70 : Colors.black54,
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
                                 ),
                               ),
                               if (pt.isDemo)
                                 Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: 1,
+                                  ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.duoOrange.withValues(alpha: 0.15),
+                                    color: AppColors.duoOrange.withValues(
+                                      alpha: 0.15,
+                                    ),
                                     borderRadius: BorderRadius.circular(4),
                                   ),
                                   child: const Text(
@@ -233,8 +256,8 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            pt.isDemo 
-                                ? 'Sample progress' 
+                            pt.isDemo
+                                ? 'Sample progress'
                                 : '${pt.quizCount} Quizzes taken',
                             style: TextStyle(
                               fontFamily: 'Poppins',
@@ -254,114 +277,130 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart> wit
         }
 
         return Container(
-          width: double.infinity,
-          height: 275,
-          decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF121212) : Colors.white,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(
-              color: isDark 
-                  ? AppColors.darkBorder.withValues(alpha: 0.5) 
-                  : AppColors.lightBorder.withValues(alpha: 0.7),
-              width: 1.5,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                blurRadius: 15,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Mastery Progression',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        hasQuizzes 
-                            ? 'Weekly accuracy tracking wave' 
-                            : 'Baseline curve (Take quizzes to seed live data)',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white38 : Colors.black38,
-                        ),
-                      ),
-                    ],
+              width: double.infinity,
+              height: 275,
+              decoration: BoxDecoration(
+                color: isDark ? const Color(0xFF121212) : Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: isDark
+                      ? AppColors.darkBorder.withValues(alpha: 0.5)
+                      : AppColors.lightBorder.withValues(alpha: 0.7),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                    blurRadius: 15,
+                    offset: const Offset(0, 8),
                   ),
-                  if (!hasQuizzes)
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(10),
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                        ),
-                      ),
-                      child: const Row(
-                        mainAxisSize: MainAxisSize.min,
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.waves_rounded, color: AppColors.primary, size: 14),
-                          SizedBox(width: 6),
-                          Text(
-                            'PREVIEW',
+                          const Text(
+                            'Mastery Progression',
                             style: TextStyle(
                               fontFamily: 'Poppins',
-                              fontSize: 9,
+                              fontSize: 16,
                               fontWeight: FontWeight.w800,
-                              color: AppColors.primary,
-                              letterSpacing: 0.5,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            hasQuizzes
+                                ? 'Weekly accuracy tracking wave'
+                                : 'Baseline curve (Take quizzes to seed live data)',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.white38 : Colors.black38,
                             ),
                           ),
                         ],
                       ),
-                    ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 1800.ms, color: Colors.white24),
-                ],
-              ),
-              const SizedBox(height: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTapDown: (details) => _handleTap(details.localPosition, width, height),
-                  onPanUpdate: (details) => _handleTap(details.localPosition, width, height),
-                  child: Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      Positioned.fill(
-                        child: CustomPaint(
-                          painter: MasteryChartPainter(
-                            points: _dataPoints,
-                            selectedIndex: _selectedIndex,
-                            isDark: isDark,
-                            pulseValue: _pulseController.value,
-                          ),
-                        ),
-                      ),
-                      ?tooltipWidget,
+                      if (!hasQuizzes)
+                        Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 5,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                ),
+                              ),
+                              child: const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.waves_rounded,
+                                    color: AppColors.primary,
+                                    size: 14,
+                                  ),
+                                  SizedBox(width: 6),
+                                  Text(
+                                    'PREVIEW',
+                                    style: TextStyle(
+                                      fontFamily: 'Poppins',
+                                      fontSize: 9,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.primary,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            )
+                            .animate(onPlay: (c) => c.repeat())
+                            .shimmer(duration: 1800.ms, color: Colors.white24),
                     ],
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: GestureDetector(
+                      onTapDown: (details) =>
+                          _handleTap(details.localPosition, width, height),
+                      onPanUpdate: (details) =>
+                          _handleTap(details.localPosition, width, height),
+                      child: Stack(
+                        clipBehavior: Clip.none,
+                        children: [
+                          Positioned.fill(
+                            child: CustomPaint(
+                              painter: MasteryChartPainter(
+                                points: _dataPoints,
+                                selectedIndex: _selectedIndex,
+                                isDark: isDark,
+                                pulseValue: _pulseController.value,
+                              ),
+                            ),
+                          ),
+                          ?tooltipWidget,
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
               ),
-            ],
-          ),
-        ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
+            )
+            .animate()
+            .fadeIn(duration: 400.ms)
+            .slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
       },
     );
   }
@@ -393,8 +432,8 @@ class MasteryChartPainter extends CustomPainter {
 
     // 1. Draw Grid Lines (0%, 25%, 50%, 75%, 100%)
     final gridPaint = Paint()
-      ..color = isDark 
-          ? Colors.white.withValues(alpha: 0.06) 
+      ..color = isDark
+          ? Colors.white.withValues(alpha: 0.06)
           : Colors.black.withValues(alpha: 0.06)
       ..strokeWidth = 1.0;
 
@@ -403,16 +442,19 @@ class MasteryChartPainter extends CustomPainter {
 
     for (int i = 0; i < levels.length; i++) {
       final y = topPadding + chartHeight - (levels[i] * chartHeight);
-      
+
       // Dashed lines helper
       double startX = leftPadding;
       const dashWidth = 5.0;
       const dashSpace = 4.0;
-      
+
       while (startX < size.width - rightPadding) {
         canvas.drawLine(
           Offset(startX, y),
-          Offset((startX + dashWidth).clamp(leftPadding, size.width - rightPadding), y),
+          Offset(
+            (startX + dashWidth).clamp(leftPadding, size.width - rightPadding),
+            y,
+          ),
           gridPaint,
         );
         startX += dashWidth + dashSpace;
@@ -433,7 +475,7 @@ class MasteryChartPainter extends CustomPainter {
       )..layout();
 
       textPainter.paint(
-        canvas, 
+        canvas,
         Offset(leftPadding - textPainter.width - 8, y - textPainter.height / 2),
       );
     }
@@ -502,10 +544,7 @@ class MasteryChartPainter extends CustomPainter {
       ..shader = ui.Gradient.linear(
         const Offset(leftPadding, topPadding),
         Offset(lastX, topPadding),
-        [
-          AppColors.primary,
-          AppColors.primaryLight,
-        ],
+        [AppColors.primary, AppColors.primaryLight],
       )
       ..strokeWidth = 3.5
       ..style = PaintingStyle.stroke
@@ -523,8 +562,8 @@ class MasteryChartPainter extends CustomPainter {
         text: TextSpan(
           text: points[i].dayName,
           style: TextStyle(
-            color: isSelected 
-                ? AppColors.primary 
+            color: isSelected
+                ? AppColors.primary
                 : (isDark ? Colors.white38 : Colors.black45),
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
@@ -537,13 +576,16 @@ class MasteryChartPainter extends CustomPainter {
       textPainter.paint(canvas, Offset(x - textPainter.width / 2, y));
 
       // 7. Draw Nodes on the line
-      final nodeY = topPadding + chartHeight - (points[i].accuracy * chartHeight);
-      
+      final nodeY =
+          topPadding + chartHeight - (points[i].accuracy * chartHeight);
+
       if (isSelected) {
         // Pulse outer glow circle
         final pulseRadius = 8.0 + (pulseValue * 5.0);
         final pulsePaint = Paint()
-          ..color = AppColors.primary.withValues(alpha: 0.25 * (1.0 - pulseValue))
+          ..color = AppColors.primary.withValues(
+            alpha: 0.25 * (1.0 - pulseValue),
+          )
           ..style = PaintingStyle.fill;
         canvas.drawCircle(Offset(x, nodeY), pulseRadius, pulsePaint);
 

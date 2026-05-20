@@ -95,102 +95,108 @@ class MasteryMilestonesCard extends ConsumerWidget {
     ];
 
     return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF121212) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark 
-              ? AppColors.darkBorder.withValues(alpha: 0.5) 
-              : AppColors.lightBorder.withValues(alpha: 0.7),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF121212) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.darkBorder.withValues(alpha: 0.5)
+                  : AppColors.lightBorder.withValues(alpha: 0.7),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'Milestone Achievements',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: -0.2,
-                    ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Milestone Achievements',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 16,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: -0.2,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        'Unlock traditional and modern mastery badges',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 11,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white38 : Colors.black38,
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    'Unlock traditional and modern mastery badges',
-                    style: TextStyle(
-                      fontFamily: 'Poppins',
-                      fontSize: 11,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white38 : Colors.black38,
+                  // Traditional Tag
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                      border: Border.all(
+                        color: AppColors.primary.withValues(alpha: 0.2),
+                      ),
+                    ),
+                    child: const Text(
+                      'CULTURE & FOLK',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 8.5,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        letterSpacing: 0.5,
+                      ),
                     ),
                   ),
                 ],
               ),
-              // Traditional Tag
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.2),
-                  ),
+              const SizedBox(height: 20),
+
+              // 3x2 Bento grid of milestones
+              GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: milestones.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 2,
+                  mainAxisSpacing: 14,
+                  crossAxisSpacing: 14,
+                  childAspectRatio: 0.95,
                 ),
-                child: const Text(
-                  'CULTURE & FOLK',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 8.5,
-                    fontWeight: FontWeight.w800,
-                    color: AppColors.primary,
-                    letterSpacing: 0.5,
-                  ),
-                ),
+                itemBuilder: (context, index) {
+                  final data = milestones[index];
+                  return AnimatedBentoChild(
+                    index: index,
+                    child: _MilestoneMedallion(data: data),
+                  );
+                },
               ),
             ],
           ),
-          const SizedBox(height: 20),
-
-          // 3x2 Bento grid of milestones
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: milestones.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisSpacing: 14,
-              crossAxisSpacing: 14,
-              childAspectRatio: 0.95,
-            ),
-            itemBuilder: (context, index) {
-              final data = milestones[index];
-              return AnimatedBentoChild(
-                index: index,
-                child: _MilestoneMedallion(data: data),
-              );
-            },
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 500.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
+        )
+        .animate()
+        .fadeIn(duration: 500.ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
   }
 }
 
@@ -258,7 +264,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
 
     // Unlocked and tapped -> trigger radial explosion
     HapticFeedback.lightImpact();
-    
+
     _confettiTimer?.cancel();
     setState(() {
       _showConfetti = true;
@@ -283,20 +289,23 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final data = widget.data;
-    
+
     // Calculate progress ratio (capped at 1.0)
-    final progressRatio = (data.currentProgress / data.targetProgress).clamp(0.0, 1.0);
+    final progressRatio = (data.currentProgress / data.targetProgress).clamp(
+      0.0,
+      1.0,
+    );
 
     Widget medallionCard = Container(
       decoration: BoxDecoration(
-        color: isDark
-            ? const Color(0xFF1E1E1E)
-            : const Color(0xFFF8F9FA),
+        color: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FA),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: data.isUnlocked
               ? data.color.withValues(alpha: 0.35)
-              : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+              : (isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.05)),
           width: 1.5,
         ),
         boxShadow: data.isUnlocked
@@ -324,14 +333,21 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                   shape: BoxShape.circle,
                   gradient: data.isUnlocked
                       ? LinearGradient(
-                          colors: [data.color, data.color.withValues(alpha: 0.6)],
+                          colors: [
+                            data.color,
+                            data.color.withValues(alpha: 0.6),
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         )
                       : LinearGradient(
                           colors: [
-                            isDark ? const Color(0xFF2D2D2D) : const Color(0xFFE0E0E0),
-                            isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF1F3F5),
+                            isDark
+                                ? const Color(0xFF2D2D2D)
+                                : const Color(0xFFE0E0E0),
+                            isDark
+                                ? const Color(0xFF1E1E1E)
+                                : const Color(0xFFF1F3F5),
                           ],
                         ),
                   boxShadow: data.isUnlocked
@@ -346,8 +362,8 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                 ),
                 child: Icon(
                   data.isUnlocked ? data.icon : Icons.lock_outline_rounded,
-                  color: data.isUnlocked 
-                      ? Colors.white 
+                  color: data.isUnlocked
+                      ? Colors.white
                       : (isDark ? Colors.white24 : Colors.black26),
                   size: 26,
                 ),
@@ -410,14 +426,19 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                 borderRadius: BorderRadius.circular(4),
                 child: Container(
                   height: 5,
-                  color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.05),
                   child: FractionallySizedBox(
                     alignment: Alignment.centerLeft,
                     widthFactor: progressRatio,
                     child: Container(
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
-                          colors: [data.color, data.color.withValues(alpha: 0.6)],
+                          colors: [
+                            data.color,
+                            data.color.withValues(alpha: 0.6),
+                          ],
                         ),
                         borderRadius: BorderRadius.circular(4),
                       ),
@@ -446,17 +467,19 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
     if (_shakeKey > 0) {
       medallionCard = medallionCard
           .animate(key: ValueKey(_shakeKey))
-          .shake(duration: 350.ms, hz: 6, curve: Curves.easeOutQuad, offset: const Offset(4.0, 0.0));
+          .shake(
+            duration: 350.ms,
+            hz: 6,
+            curve: Curves.easeOutQuad,
+            offset: const Offset(4.0, 0.0),
+          );
     }
 
     return Stack(
       clipBehavior: Clip.none,
       children: [
-        GestureDetector(
-          onTap: _triggerLocalExplosion,
-          child: medallionCard,
-        ),
-        
+        GestureDetector(onTap: _triggerLocalExplosion, child: medallionCard),
+
         // Local Confetti burst rendered right on top of this medallion
         if (_showConfetti)
           const Positioned.fill(

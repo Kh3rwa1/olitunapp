@@ -56,9 +56,15 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         }
         setState(() {
           _currentVideoUrl = settings['onboarding_video_url'] as String?;
-          _archerNameController.text = ref.read(badgeTraditionalArcherNameProvider);
-          _kudumNameController.text = ref.read(badgeTraditionalKudumNameProvider);
-          _kherwalNameController.text = ref.read(badgeTraditionalKherwalNameProvider);
+          _archerNameController.text = ref.read(
+            badgeTraditionalArcherNameProvider,
+          );
+          _kudumNameController.text = ref.read(
+            badgeTraditionalKudumNameProvider,
+          );
+          _kherwalNameController.text = ref.read(
+            badgeTraditionalKherwalNameProvider,
+          );
           _isLoading = false;
         });
       }
@@ -228,7 +234,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                   children: [
                     const AdminPageHeader(
                       title: 'App Settings',
-                      subtitle: 'Manage onboarding, defaults, and app configuration',
+                      subtitle:
+                          'Manage onboarding, defaults, and app configuration',
                       eyebrow: 'SYSTEM · SETTINGS',
                     ),
                     const SizedBox(height: 40),
@@ -259,12 +266,16 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                             Container(
                               padding: const EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: AppColors.success.withValues(alpha: 0.12),
+                                color: AppColors.success.withValues(
+                                  alpha: 0.12,
+                                ),
                                 borderRadius: BorderRadius.circular(
                                   AdminTokens.radiusMd,
                                 ),
                                 border: Border.all(
-                                  color: AppColors.success.withValues(alpha: 0.28),
+                                  color: AppColors.success.withValues(
+                                    alpha: 0.28,
+                                  ),
                                 ),
                               ),
                               child: const Icon(
@@ -315,7 +326,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                             const SizedBox(height: 16),
                             AdminTextField(
                               controller: _kherwalNameController,
-                              label: 'Kherwal Badge (Traditional Elder / Storyteller)',
+                              label:
+                                  'Kherwal Badge (Traditional Elder / Storyteller)',
                               hint: 'Kherwal Elder',
                               prefixIcon: Icons.people_outline_rounded,
                             ),
@@ -362,9 +374,12 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                 children: [
                                   Text(
                                     'Reset Database & Seeding',
-                                    style: AdminTokens.bodyStrong(isDark).copyWith(
-                                      color: isDark ? AppColors.error : AppColors.duoRedDark,
-                                    ),
+                                    style: AdminTokens.bodyStrong(isDark)
+                                        .copyWith(
+                                          color: isDark
+                                              ? AppColors.error
+                                              : AppColors.duoRedDark,
+                                        ),
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
@@ -435,7 +450,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
                             color: AppColors.error.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
                             border: Border.all(
                               color: AppColors.error.withValues(alpha: 0.28),
                             ),
@@ -453,9 +470,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                             children: [
                               Text(
                                 'Are you absolutely sure?',
-                                style: AdminTokens.cardTitle(isDark).copyWith(
-                                  fontSize: 18,
-                                ),
+                                style: AdminTokens.cardTitle(
+                                  isDark,
+                                ).copyWith(fontSize: 18),
                               ),
                               const SizedBox(height: 4),
                               Text(
@@ -505,7 +522,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                     _executeWipeAndSeed();
                                   }
                                 : null,
-                            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
                             child: Opacity(
                               opacity: isEnabled ? 1.0 : 0.45,
                               child: Container(
@@ -569,10 +588,10 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
 
     try {
       final db = ref.read(appwriteDbServiceProvider);
-      
+
       // 1. Wipe all Appwrite data
       await db.wipeAllData();
-      
+
       // 2. Clear local Hive content cache
       await CacheService.clear();
 

@@ -83,7 +83,8 @@ class GreetingSeeder {
           LessonBlockModel(
             type: 'text',
             textOlChiki: 'ᱟᱢ ᱥᱟᱶ ᱧᱟᱯᱟᱢ ᱠᱟᱛᱮ ᱨᱟᱹᱥᱠᱟᱹᱧ ᱵᱩᱡᱷᱟᱹᱣ ᱠᱮᱫᱟ',
-            textLatin: 'Am saw njapam kate raskanj bujhau keda – Nice to meet you!',
+            textLatin:
+                'Am saw njapam kate raskanj bujhau keda – Nice to meet you!',
           ),
         ],
       },

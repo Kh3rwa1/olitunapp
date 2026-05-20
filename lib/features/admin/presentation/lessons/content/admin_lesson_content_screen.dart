@@ -54,7 +54,10 @@ class _AdminLessonContentScreenState
         // Average mockup preview block height + margins is ~160.0
         final targetOffset = index * 160.0;
         _previewScrollController.animateTo(
-          targetOffset.clamp(0.0, _previewScrollController.position.maxScrollExtent),
+          targetOffset.clamp(
+            0.0,
+            _previewScrollController.position.maxScrollExtent,
+          ),
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
         );
@@ -64,7 +67,10 @@ class _AdminLessonContentScreenState
         // Average editor card height + margins is ~140.0
         final targetOffset = index * 140.0;
         _leftScrollController.animateTo(
-          targetOffset.clamp(0.0, _leftScrollController.position.maxScrollExtent),
+          targetOffset.clamp(
+            0.0,
+            _leftScrollController.position.maxScrollExtent,
+          ),
           duration: const Duration(milliseconds: 350),
           curve: Curves.easeOutCubic,
         );
@@ -188,7 +194,9 @@ class _AdminLessonContentScreenState
       _blocks.insert(newIndex, item);
       _hasChanges = true;
     });
-  }  @override
+  }
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width > 1024;
@@ -226,29 +234,45 @@ class _AdminLessonContentScreenState
                                   ? _buildEmptyBlocksState(isDark)
                                   : ReorderableListView.builder(
                                       scrollController: _leftScrollController,
-                                      padding: const EdgeInsets.fromLTRB(32, 12, 32, 100),
+                                      padding: const EdgeInsets.fromLTRB(
+                                        32,
+                                        12,
+                                        32,
+                                        100,
+                                      ),
                                       itemCount: _blocks.length,
                                       onReorder: _moveBlock,
-                                      proxyDecorator: (child, index, animation) {
-                                        return Material(
-                                          elevation: 8,
-                                          color: Colors.transparent,
-                                          borderRadius: BorderRadius.circular(16),
-                                          child: child,
-                                        );
-                                      },
+                                      proxyDecorator:
+                                          (child, index, animation) {
+                                            return Material(
+                                              elevation: 8,
+                                              color: Colors.transparent,
+                                              borderRadius:
+                                                  BorderRadius.circular(16),
+                                              child: child,
+                                            );
+                                          },
                                       itemBuilder: (context, index) {
                                         final block = _blocks[index];
-                                        final isHighlighted = index == _hoveredOrFocusedIndex;
+                                        final isHighlighted =
+                                            index == _hoveredOrFocusedIndex;
                                         return Container(
-                                          key: ValueKey('block_${block.hashCode}_$index'),
-                                          margin: const EdgeInsets.only(bottom: 12),
+                                          key: ValueKey(
+                                            'block_${block.hashCode}_$index',
+                                          ),
+                                          margin: const EdgeInsets.only(
+                                            bottom: 12,
+                                          ),
                                           decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(16),
+                                            borderRadius: BorderRadius.circular(
+                                              16,
+                                            ),
                                             boxShadow: isHighlighted
                                                 ? [
                                                     BoxShadow(
-                                                      color: const Color(0xFF2ECC71).withValues(alpha: 0.35),
+                                                      color: const Color(
+                                                        0xFF2ECC71,
+                                                      ).withValues(alpha: 0.35),
                                                       blurRadius: 16,
                                                       spreadRadius: 2,
                                                     ),
@@ -270,9 +294,13 @@ class _AdminLessonContentScreenState
                                                 context: context,
                                                 block: block,
                                                 onUpdate: (updatedBlock) =>
-                                                    _updateBlock(index, updatedBlock),
+                                                    _updateBlock(
+                                                      index,
+                                                      updatedBlock,
+                                                    ),
                                               ),
-                                              onDelete: () => _removeBlock(index),
+                                              onDelete: () =>
+                                                  _removeBlock(index),
                                             ),
                                           ),
                                         );
@@ -288,10 +316,7 @@ class _AdminLessonContentScreenState
                         color: isDark ? Colors.white12 : Colors.black12,
                       ),
                       // Right Column: Mockup Live Preview (40% width)
-                      Expanded(
-                        flex: 4,
-                        child: _buildMockupPreview(isDark),
-                      ),
+                      Expanded(flex: 4, child: _buildMockupPreview(isDark)),
                     ],
                   )
                 : Column(
@@ -304,7 +329,12 @@ class _AdminLessonContentScreenState
                         child: _blocks.isEmpty
                             ? _buildEmptyBlocksState(isDark)
                             : ReorderableListView.builder(
-                                padding: const EdgeInsets.fromLTRB(16, 12, 16, 100),
+                                padding: const EdgeInsets.fromLTRB(
+                                  16,
+                                  12,
+                                  16,
+                                  100,
+                                ),
                                 itemCount: _blocks.length,
                                 onReorder: _moveBlock,
                                 proxyDecorator: (child, index, animation) {
@@ -318,7 +348,9 @@ class _AdminLessonContentScreenState
                                 itemBuilder: (context, index) {
                                   final block = _blocks[index];
                                   return Container(
-                                    key: ValueKey('block_${block.hashCode}_$index'),
+                                    key: ValueKey(
+                                      'block_${block.hashCode}_$index',
+                                    ),
                                     margin: const EdgeInsets.only(bottom: 12),
                                     child: LessonBlockCard(
                                       index: index,
@@ -444,7 +476,9 @@ class _AdminLessonContentScreenState
                 color: isDark ? const Color(0xFF0A0E14) : Colors.white,
                 border: Border(
                   bottom: BorderSide(
-                    color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                    color: isDark
+                        ? Colors.white10
+                        : Colors.black.withValues(alpha: 0.05),
                   ),
                 ),
               ),
@@ -464,7 +498,9 @@ class _AdminLessonContentScreenState
                         value: 0.45,
                         minHeight: 8,
                         backgroundColor: Color(0xFFE5E7EB),
-                        valueColor: AlwaysStoppedAnimation<Color>(AppColors.primary),
+                        valueColor: AlwaysStoppedAnimation<Color>(
+                          AppColors.primary,
+                        ),
                       ),
                     ),
                   ),
@@ -473,7 +509,11 @@ class _AdminLessonContentScreenState
                   Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(Icons.favorite_rounded, color: Colors.red, size: 14),
+                      const Icon(
+                        Icons.favorite_rounded,
+                        color: Colors.red,
+                        size: 14,
+                      ),
                       const SizedBox(width: 3),
                       Text(
                         '5',
@@ -497,7 +537,10 @@ class _AdminLessonContentScreenState
                     ? _buildMockupEmptyState(isDark)
                     : ListView.builder(
                         controller: _previewScrollController,
-                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 20),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 20,
+                        ),
                         itemCount: _blocks.length,
                         itemBuilder: (context, index) {
                           final block = _blocks[index];
@@ -522,20 +565,28 @@ class _AdminLessonContentScreenState
                                 border: Border.all(
                                   color: isHighlighted
                                       ? const Color(0xFF2ECC71)
-                                      : (isDark ? Colors.white12 : Colors.black.withValues(alpha: 0.05)),
+                                      : (isDark
+                                            ? Colors.white12
+                                            : Colors.black.withValues(
+                                                alpha: 0.05,
+                                              )),
                                   width: isHighlighted ? 2.5 : 1,
                                 ),
                                 boxShadow: isHighlighted
                                     ? [
                                         BoxShadow(
-                                          color: const Color(0xFF2ECC71).withValues(alpha: 0.4),
+                                          color: const Color(
+                                            0xFF2ECC71,
+                                          ).withValues(alpha: 0.4),
                                           blurRadius: 12,
                                           spreadRadius: 1,
                                         ),
                                       ]
                                     : [
                                         BoxShadow(
-                                          color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.03),
+                                          color: Colors.black.withValues(
+                                            alpha: isDark ? 0.15 : 0.03,
+                                          ),
                                           blurRadius: 6,
                                           offset: const Offset(0, 3),
                                         ),
@@ -574,10 +625,7 @@ class _AdminLessonContentScreenState
                 shape: BoxShape.circle,
               ),
               child: const Center(
-                child: Text(
-                  '📝',
-                  style: TextStyle(fontSize: 24),
-                ),
+                child: Text('📝', style: TextStyle(fontSize: 24)),
               ),
             ),
             const SizedBox(height: 16),
@@ -604,6 +652,7 @@ class _AdminLessonContentScreenState
       ),
     );
   }
+
   Widget _buildTopBar(bool isDark, bool isWide) {
     return Container(
       padding: EdgeInsets.fromLTRB(

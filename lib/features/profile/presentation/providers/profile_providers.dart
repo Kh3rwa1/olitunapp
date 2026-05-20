@@ -38,17 +38,23 @@ final userAvatarColorIndexProvider = StateProvider<int>((ref) {
 });
 
 final badgeTraditionalArcherNameProvider = StateProvider<String>((ref) {
-  return ref.watch(sharedPreferencesProvider).getString('badge_traditional_archer_name') ??
+  return ref
+          .watch(sharedPreferencesProvider)
+          .getString('badge_traditional_archer_name') ??
       'Santali Archer';
 });
 
 final badgeTraditionalKudumNameProvider = StateProvider<String>((ref) {
-  return ref.watch(sharedPreferencesProvider).getString('badge_traditional_kudum_name') ??
+  return ref
+          .watch(sharedPreferencesProvider)
+          .getString('badge_traditional_kudum_name') ??
       'Kudum Master';
 });
 
 final badgeTraditionalKherwalNameProvider = StateProvider<String>((ref) {
-  return ref.watch(sharedPreferencesProvider).getString('badge_traditional_kherwal_name') ??
+  return ref
+          .watch(sharedPreferencesProvider)
+          .getString('badge_traditional_kherwal_name') ??
       'Kherwal Elder';
 });
 

@@ -33,8 +33,10 @@ class StreakCalendar extends StatelessWidget {
     // 3. Fallback: If current streak is active, highlight recent consecutive days
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final difference = today.difference(DateTime(day.year, day.month, day.day)).inDays;
-    
+    final difference = today
+        .difference(DateTime(day.year, day.month, day.day))
+        .inDays;
+
     if (difference >= 0 && difference < stats.currentStreak) {
       return true;
     }
@@ -49,7 +51,7 @@ class StreakCalendar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Generate past 7 days ending with today
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
@@ -60,108 +62,311 @@ class StreakCalendar extends StatelessWidget {
     final activeCount = last7Days.where(_isDayActive).length;
 
     return Container(
-      width: double.infinity,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF121212) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark 
-              ? AppColors.darkBorder.withValues(alpha: 0.5) 
-              : AppColors.lightBorder.withValues(alpha: 0.7),
-          width: 1.5,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 15,
-            offset: const Offset(0, 8),
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF121212) : Colors.white,
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: isDark
+                  ? AppColors.darkBorder.withValues(alpha: 0.5)
+                  : AppColors.lightBorder.withValues(alpha: 0.7),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 15,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
-        ],
-      ),
-      padding: const EdgeInsets.all(20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Header Row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Header Row
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: AppColors.duoOrange.withValues(alpha: 0.15),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.local_fire_department_rounded,
-                      color: AppColors.duoOrange,
-                      size: 20,
-                    ).animate(onPlay: (c) => c.repeat()).shimmer(
-                          duration: 2000.ms,
-                          color: Colors.white,
-                        ),
-                  ),
-                  const SizedBox(width: 12),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+                  Row(
                     children: [
-                      const Text(
-                        'Weekly Streak Active',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: -0.2,
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: AppColors.duoOrange.withValues(alpha: 0.15),
+                          shape: BoxShape.circle,
                         ),
+                        child:
+                            const Icon(
+                                  Icons.local_fire_department_rounded,
+                                  color: AppColors.duoOrange,
+                                  size: 20,
+                                )
+                                .animate(onPlay: (c) => c.repeat())
+                                .shimmer(
+                                  duration: 2000.ms,
+                                  color: Colors.white,
+                                ),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Keep learning to grow your flame!',
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white38 : Colors.black38,
-                        ),
+                      const SizedBox(width: 12),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Weekly Streak Active',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: -0.2,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            'Keep learning to grow your flame!',
+                            style: TextStyle(
+                              fontFamily: 'Poppins',
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: isDark ? Colors.white38 : Colors.black38,
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
+                  // Streak badge pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      gradient: const LinearGradient(
+                        colors: [AppColors.duoOrange, AppColors.duoYellow],
+                      ),
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.duoOrange.withValues(alpha: 0.3),
+                          blurRadius: 8,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(
+                          Icons.bolt_rounded,
+                          color: Colors.white,
+                          size: 14,
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${stats.currentStreak} DAYS',
+                          style: GoogleFonts.poppins(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.white,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
-              // Streak badge pill
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [AppColors.duoOrange, AppColors.duoYellow],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.duoOrange.withValues(alpha: 0.3),
-                      blurRadius: 8,
-                      offset: const Offset(0, 4),
+
+              const SizedBox(height: 20),
+
+              // Horizontal grid strip of the past 7 days
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: List.generate(7, (index) {
+                  final day = last7Days[index];
+                  final isActive = _isDayActive(day);
+                  final isToday =
+                      day.year == today.year &&
+                      day.month == today.month &&
+                      day.day == today.day;
+
+                  final dayName = index == 6
+                      ? 'Today'
+                      : _getShortDayName(day.weekday);
+                  final dayNum = day.day.toString();
+
+                  return Expanded(
+                    child: PressableScale(
+                      scale: 0.9,
+                      onTap: () {
+                        // Tap gives feedback and shows message
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 12,
+                          horizontal: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: isActive
+                              ? AppColors.duoOrange.withValues(
+                                  alpha: isDark ? 0.12 : 0.08,
+                                )
+                              : (isToday
+                                    ? (isDark
+                                          ? Colors.white.withValues(alpha: 0.05)
+                                          : Colors.black.withValues(
+                                              alpha: 0.03,
+                                            ))
+                                    : Colors.transparent),
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: isActive
+                                ? AppColors.duoOrange.withValues(alpha: 0.4)
+                                : (isToday
+                                      ? (isDark
+                                            ? Colors.white30
+                                            : Colors.black12)
+                                      : Colors.transparent),
+                            width: 1.5,
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              dayName,
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 10,
+                                fontWeight: isToday
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                color: isActive
+                                    ? AppColors.duoOrange
+                                    : (isToday
+                                          ? (isDark
+                                                ? Colors.white
+                                                : Colors.black87)
+                                          : (isDark
+                                                ? Colors.white38
+                                                : Colors.black38)),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            // Inner visual element
+                            AnimatedContainer(
+                              duration: const Duration(milliseconds: 300),
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: isActive
+                                    ? Colors.transparent
+                                    : (isDark
+                                          ? const Color(0xFF1E1E1E)
+                                          : const Color(0xFFF1F3F5)),
+                                border: Border.all(
+                                  color: isActive
+                                      ? Colors.transparent
+                                      : (isToday
+                                            ? AppColors.primary.withValues(
+                                                alpha: 0.5,
+                                              )
+                                            : Colors.transparent),
+                                  width: 1.5,
+                                ),
+                                boxShadow: isActive
+                                    ? [
+                                        BoxShadow(
+                                          color: AppColors.duoOrange.withValues(
+                                            alpha: 0.35,
+                                          ),
+                                          blurRadius: 10,
+                                          spreadRadius: 1,
+                                        ),
+                                      ]
+                                    : [],
+                              ),
+                              child: Center(
+                                child: isActive
+                                    ? const Icon(
+                                            Icons.local_fire_department_rounded,
+                                            color: AppColors.duoOrange,
+                                            size: 24,
+                                          )
+                                          .animate(onPlay: (c) => c.repeat())
+                                          .scale(
+                                            duration: 1000.ms,
+                                            begin: const Offset(0.9, 0.9),
+                                            end: const Offset(1.1, 1.1),
+                                            curve: Curves.easeInOut,
+                                          )
+                                          .then()
+                                          .scale(
+                                            duration: 1000.ms,
+                                            begin: const Offset(1.1, 1.1),
+                                            end: const Offset(0.9, 0.9),
+                                            curve: Curves.easeInOut,
+                                          )
+                                    : Text(
+                                        dayNum,
+                                        style: TextStyle(
+                                          fontFamily: 'Poppins',
+                                          fontSize: 12,
+                                          fontWeight: isToday
+                                              ? FontWeight.w800
+                                              : FontWeight.w700,
+                                          color: isToday
+                                              ? (isDark
+                                                    ? Colors.white
+                                                    : Colors.black87)
+                                              : (isDark
+                                                    ? Colors.white24
+                                                    : Colors.black26),
+                                        ),
+                                      ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
-                  ],
+                  );
+                }),
+              ),
+
+              const SizedBox(height: 16),
+              // Footer quick status text
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 10,
+                ),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.03)
+                      : Colors.black.withValues(alpha: 0.02),
+                  borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
-                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Icon(
-                      Icons.bolt_rounded,
-                      color: Colors.white,
+                      Icons.stars_rounded,
+                      color: AppColors.duoYellow,
                       size: 14,
                     ),
-                    const SizedBox(width: 4),
+                    const SizedBox(width: 6),
                     Text(
-                      '${stats.currentStreak} DAYS',
-                      style: GoogleFonts.poppins(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 0.5,
+                      'You practiced $activeCount of the last 7 days. Keep the momentum!',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10.5,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white60 : Colors.black54,
                       ),
                     ),
                   ],
@@ -169,167 +374,10 @@ class StreakCalendar extends StatelessWidget {
               ),
             ],
           ),
-          
-          const SizedBox(height: 20),
-
-          // Horizontal grid strip of the past 7 days
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: List.generate(7, (index) {
-              final day = last7Days[index];
-              final isActive = _isDayActive(day);
-              final isToday = day.year == today.year &&
-                  day.month == today.month &&
-                  day.day == today.day;
-              
-              final dayName = index == 6 ? 'Today' : _getShortDayName(day.weekday);
-              final dayNum = day.day.toString();
-
-              return Expanded(
-                child: PressableScale(
-                  scale: 0.9,
-                  onTap: () {
-                    // Tap gives feedback and shows message
-                  },
-                  child: Container(
-                    margin: const EdgeInsets.symmetric(horizontal: 4),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 4),
-                    decoration: BoxDecoration(
-                      color: isActive
-                          ? AppColors.duoOrange.withValues(alpha: isDark ? 0.12 : 0.08)
-                          : (isToday
-                              ? (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03))
-                              : Colors.transparent),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: isActive
-                            ? AppColors.duoOrange.withValues(alpha: 0.4)
-                            : (isToday
-                                ? (isDark ? Colors.white30 : Colors.black12)
-                                : Colors.transparent),
-                        width: 1.5,
-                      ),
-                    ),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          dayName,
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 10,
-                            fontWeight: isToday ? FontWeight.w800 : FontWeight.w600,
-                            color: isActive
-                                ? AppColors.duoOrange
-                                : (isToday
-                                    ? (isDark ? Colors.white : Colors.black87)
-                                    : (isDark ? Colors.white38 : Colors.black38)),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        // Inner visual element
-                        AnimatedContainer(
-                          duration: const Duration(milliseconds: 300),
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            shape: BoxShape.circle,
-                            color: isActive
-                                ? Colors.transparent
-                                : (isDark
-                                    ? const Color(0xFF1E1E1E)
-                                    : const Color(0xFFF1F3F5)),
-                            border: Border.all(
-                              color: isActive
-                                  ? Colors.transparent
-                                  : (isToday
-                                      ? AppColors.primary.withValues(alpha: 0.5)
-                                      : Colors.transparent),
-                              width: 1.5,
-                            ),
-                            boxShadow: isActive
-                                ? [
-                                    BoxShadow(
-                                      color: AppColors.duoOrange.withValues(alpha: 0.35),
-                                      blurRadius: 10,
-                                      spreadRadius: 1,
-                                    ),
-                                  ]
-                                : [],
-                          ),
-                          child: Center(
-                            child: isActive
-                                ? const Icon(
-                                    Icons.local_fire_department_rounded,
-                                    color: AppColors.duoOrange,
-                                    size: 24,
-                                  )
-                                    .animate(onPlay: (c) => c.repeat())
-                                    .scale(
-                                      duration: 1000.ms,
-                                      begin: const Offset(0.9, 0.9),
-                                      end: const Offset(1.1, 1.1),
-                                      curve: Curves.easeInOut,
-                                    )
-                                    .then()
-                                    .scale(
-                                      duration: 1000.ms,
-                                      begin: const Offset(1.1, 1.1),
-                                      end: const Offset(0.9, 0.9),
-                                      curve: Curves.easeInOut,
-                                    )
-                                : Text(
-                                    dayNum,
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 12,
-                                      fontWeight: isToday ? FontWeight.w800 : FontWeight.w700,
-                                      color: isToday
-                                          ? (isDark ? Colors.white : Colors.black87)
-                                          : (isDark ? Colors.white24 : Colors.black26),
-                                    ),
-                                  ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            }),
-          ),
-          
-          const SizedBox(height: 16),
-          // Footer quick status text
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-            decoration: BoxDecoration(
-              color: isDark 
-                  ? Colors.white.withValues(alpha: 0.03) 
-                  : Colors.black.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.stars_rounded, color: AppColors.duoYellow, size: 14),
-                const SizedBox(width: 6),
-                Text(
-                  'You practiced $activeCount of the last 7 days. Keep the momentum!',
-                  style: TextStyle(
-                    fontFamily: 'Poppins',
-                    fontSize: 10.5,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white60 : Colors.black54,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    ).animate().fadeIn(duration: 450.ms).slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
+        )
+        .animate()
+        .fadeIn(duration: 450.ms)
+        .slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
   }
 
   String _getShortDayName(int weekday) {

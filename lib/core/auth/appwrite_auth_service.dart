@@ -102,8 +102,7 @@ class AppwriteAuthService {
         );
         await _completeWebOAuth(result);
       } else {
-        final deepLink =
-            'appwrite-callback-${AppwriteConfig.projectId}://';
+        final deepLink = 'appwrite-callback-${AppwriteConfig.projectId}://';
         await _account.createOAuth2Session(
           provider: OAuthProvider.google,
           success: deepLink,

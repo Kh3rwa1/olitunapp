@@ -794,7 +794,9 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       // Fetch all existing documents in the sentences collection to completely clear legacy records
       final existingDocs = await db.listDocuments('sentences');
-      debugPrint('🧹 Clearing ${existingDocs.length} existing sentences from database before seeding...');
+      debugPrint(
+        '🧹 Clearing ${existingDocs.length} existing sentences from database before seeding...',
+      );
       for (final doc in existingDocs) {
         final docId = doc['id'] as String;
         try {
@@ -807,7 +809,9 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       debugPrint('⚠️ Error clearing sentences collection: $e');
     }
 
-    debugPrint('🌱 Seeding ${_seedSentences.length} clean sentences to database...');
+    debugPrint(
+      '🌱 Seeding ${_seedSentences.length} clean sentences to database...',
+    );
     for (final item in _seedSentences) {
       try {
         final db = ref.read(appwriteDbServiceProvider);

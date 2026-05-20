@@ -1686,12 +1686,32 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
   void deleteWord(String id) => delete(id);
 
   Future<void> seed() async {
+    try {
+      final db = ref.read(appwriteDbServiceProvider);
+      // Fetch all existing documents in the words collection to completely clear legacy records
+      final existingDocs = await db.listDocuments('words');
+      debugPrint(
+        '🧹 Clearing ${existingDocs.length} existing words from database before seeding...',
+      );
+      for (final doc in existingDocs) {
+        final docId = doc['id'] as String;
+        try {
+          await db.deleteDocument('words', docId);
+        } catch (e) {
+          debugPrint('⚠️ Failed to delete word document $docId: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error clearing words collection: $e');
+    }
+
+    debugPrint('🌱 Seeding ${_seedWords.length} clean words to database...');
     for (final item in _seedWords) {
       try {
         final db = ref.read(appwriteDbServiceProvider);
         await db.createDocument('words', item.id, item.toJson());
       } catch (e) {
-        debugPrint('Word already exists or error: $e');
+        debugPrint('⚠️ Error seeding word ${item.id}: $e');
       }
     }
     await _loadWords();

@@ -1,5 +1,5 @@
 {
-    "projectId": "console",
+    "projectId": "699495910038e39622c5",
     "functions": [
         {
             "$id": "6a007db60024418c0997",
@@ -44,7 +44,7 @@
         {
             "$id": "69b2342a00065864275b",
             "name": "olitunapp",
-            "path": "sites/olitunapp",
+            "path": ".",
             "framework": "flutter",
             "enabled": true,
             "logging": true,

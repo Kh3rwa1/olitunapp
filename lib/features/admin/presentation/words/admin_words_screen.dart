@@ -3,10 +3,15 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:uuid/uuid.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../categories/domain/entities/category_entity.dart';
+import '../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../shared/models/content_models.dart';
+import '../lessons/widgets/lesson_form_sheet.dart';
+import '../widgets/admin_content_subcategories.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_form_widgets.dart';
@@ -26,6 +31,17 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
   @override
   Widget build(BuildContext context) {
     final wordsAsync = ref.watch(wordsProvider);
+    final categories = ref.watch(categoryNotifierProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final contentCategory = findAdminContentCategory(
+      categories,
+      AdminContentKind.vocabulary,
+    );
+    final subcategoryLessons = filterAdminContentLessons(
+      lessons,
+      contentCategory,
+      AdminContentKind.vocabulary,
+    );
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -40,6 +56,30 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                 Padding(
                   padding: EdgeInsets.all(isWideScreen ? 32 : 20),
                   child: _buildHeader(context, isDark, isWideScreen),
+                ),
+                Padding(
+                  padding: EdgeInsets.fromLTRB(
+                    isWideScreen ? 32 : 20,
+                    0,
+                    isWideScreen ? 32 : 20,
+                    18,
+                  ),
+                  child: AdminContentSubcategories(
+                    title: 'Vocabulary Subcategories',
+                    subtitle:
+                        'These are the lesson groups shown inside Vocabulary on the mobile app.',
+                    emptyTitle: 'No vocabulary subcategories found',
+                    emptyMessage:
+                        'Seed default data or add a subcategory to make Vocabulary editable.',
+                    lessons: subcategoryLessons,
+                    isDark: isDark,
+                    onAdd: () => _addSubcategory(context, contentCategory),
+                    onSeed: () => _handleSeedData(context),
+                    onEdit: (lesson) =>
+                        LessonFormSheet.show(context, ref, lesson),
+                    onDelete: (lesson) =>
+                        _confirmDeleteSubcategory(context, lesson),
+                  ),
                 ),
                 // Category filter chips
                 Padding(
@@ -268,6 +308,51 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     if (ok == true) {
       HapticFeedback.mediumImpact();
       ref.read(wordsProvider.notifier).deleteWord(word.id);
+    }
+  }
+
+  Future<void> _addSubcategory(
+    BuildContext context,
+    CategoryEntity? contentCategory,
+  ) async {
+    if (contentCategory == null) {
+      await _handleSeedData(context);
+      return;
+    }
+
+    final id = const Uuid().v4();
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final existing = filterAdminContentLessons(
+      lessons,
+      contentCategory,
+      AdminContentKind.vocabulary,
+    );
+    final lesson = LessonEntity(
+      id: id,
+      categoryId: contentCategory.id,
+      titleLatin: 'New Vocabulary Subcategory',
+      titleOlChiki: '',
+      order: existing.length,
+    );
+    await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
+    if (context.mounted) {
+      context.go('/admin/lessons/content/$id');
+    }
+  }
+
+  Future<void> _confirmDeleteSubcategory(
+    BuildContext context,
+    LessonEntity lesson,
+  ) async {
+    final ok = await showAdminConfirmDialog(
+      context: context,
+      title: 'Delete Subcategory',
+      message:
+          'Delete "${lesson.titleLatin}" and its lesson content blocks? Individual word records are not deleted.',
+    );
+    if (ok == true) {
+      HapticFeedback.mediumImpact();
+      await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
     }
   }
 }

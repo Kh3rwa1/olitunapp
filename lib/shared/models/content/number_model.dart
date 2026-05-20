@@ -11,6 +11,7 @@ class NumberModel {
   final String? pronunciation;
   final int order;
   final bool isActive;
+  final String? themeColor;
 
   NumberModel({
     required this.id,
@@ -24,6 +25,7 @@ class NumberModel {
     this.pronunciation,
     this.order = 0,
     this.isActive = true,
+    this.themeColor,
   });
 
   factory NumberModel.fromJson(Map<String, dynamic> data, [String? docId]) {
@@ -39,6 +41,7 @@ class NumberModel {
       pronunciation: data['pronunciation'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
+      themeColor: data['themeColor'] as String?,
     );
   }
 
@@ -55,6 +58,7 @@ class NumberModel {
       'pronunciation': pronunciation,
       'order': order,
       'isActive': isActive,
+      'themeColor': themeColor,
     };
   }
 }

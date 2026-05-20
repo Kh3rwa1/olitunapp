@@ -1,5 +1,6 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -30,6 +31,10 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   late PageController _pageController;
   int _currentIndex = 0;
 
+  // Sound play state
+  bool _isAudioPlaying = false;
+  String? _playingId;
+
   static const _emojiBaseUrl =
       'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
 
@@ -37,7 +42,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   static const Map<String, String> _numberEmojis = {
     '᱑': '☝️',
     '᱒': '✌️',
-    '᱓': '🤟',
+    '': '🤟',
     '᱔': '🍀',
     '᱕': '🖐️',
     '᱖': '🎲',
@@ -51,11 +56,10 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     Color(0xFF2196F3),
     Color(0xFF4CAF50),
     Color(0xFFFFC107),
-    AppColors.duoBlue,
+    Color(0xFF00bcd4),
     Color(0xFFE91E63),
-    Color(0xFF00BCD4),
+    Color(0xFF009688),
     Color(0xFF607D8B),
-    Color(0xFF455A64),
     Color(0xFFFF5722),
     Color(0xFFF44336),
   ];
@@ -82,7 +86,11 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
 
   void _onPageChanged(int index) {
     HapticFeedback.selectionClick();
-    setState(() => _currentIndex = index);
+    setState(() {
+      _currentIndex = index;
+      _isAudioPlaying = false;
+      _playingId = null;
+    });
   }
 
   String _emojiToPngUrl(String emoji) {
@@ -97,21 +105,32 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     return _accentColors[index % _accentColors.length];
   }
 
-  Color _getBackgroundColor(int index, bool isDark) {
-    if (isDark) return const Color(0xFF0A0E14);
-    final colors = [
-      const Color(0xFFE3F2FD),
-      const Color(0xFFE8F5E9),
-      const Color(0xFFFFF8E1),
-      const Color(0xFFF3E5F5),
-      const Color(0xFFFCE4EC),
-      const Color(0xFFE0F7FA),
-      const Color(0xFFFAFAFA),
-      const Color(0xFFECEFF1),
-      const Color(0xFFFFF3E0),
-      const Color(0xFFFFEBEE),
-    ];
-    return colors[index % colors.length];
+  Color _parseThemeColor(String? colorStr, Color fallback) {
+    if (colorStr == null || colorStr.isEmpty) return fallback;
+    try {
+      var hex = colorStr.replaceAll('#', '').trim();
+      if (hex.length == 6) hex = 'FF$hex';
+      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+    } catch (_) {}
+    return fallback;
+  }
+
+  void _playAudio(String url, String id) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isAudioPlaying = true;
+      _playingId = id;
+    });
+
+    await ref.read(audioServiceProvider).playUrl(url);
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted && _playingId == id) {
+      setState(() {
+        _isAudioPlaying = false;
+      });
+    }
   }
 
   /// Scope numbers to only those referenced by the lesson's content blocks.
@@ -120,7 +139,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     LessonEntity? lesson,
   ) {
     if (lesson == null || lesson.blocks.isEmpty) {
-      // Standalone / legacy: show all active numbers
       return allNumbers.where((n) => n.isActive).toList()
         ..sort((a, b) => a.order.compareTo(b.order));
     }
@@ -131,25 +149,23 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         .toSet();
 
     if (blockTexts.isEmpty) {
-      // Lesson exists but has no text blocks — show empty instead of everything
       return const [];
     }
 
-    final matched =
-        allNumbers
-            .where(
-              (n) =>
-                  n.isActive &&
-                  blockTexts.any(
-                    (t) =>
-                        t == n.numeral ||
-                        t == n.value.toString() ||
-                        t == n.nameOlChiki ||
-                        t.contains(n.numeral),
-                  ),
-            )
-            .toList()
-          ..sort((a, b) => a.order.compareTo(b.order));
+    final matched = allNumbers
+        .where(
+          (n) =>
+              n.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == n.numeral ||
+                    t == n.value.toString() ||
+                    t == n.nameOlChiki ||
+                    t.contains(n.numeral),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
 
     return matched;
   }
@@ -174,7 +190,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         ),
       ),
       data: (allNumbers) {
-        // Resolve the current lesson to scope numbers
         final lessons = lessonsAsync.value ?? [];
         final lesson = lessons
             .where((l) => l.id == widget.lessonId)
@@ -216,7 +231,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           );
         }
 
-        // Find initial index from numberId
         if (_currentIndex == 0 && widget.numberId.isNotEmpty) {
           final index = numbers.indexWhere(
             (n) =>
@@ -234,8 +248,14 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           }
         }
 
-        final accentColor = _getAccentColor(_currentIndex);
-        final bgColor = _getBackgroundColor(_currentIndex, isDark);
+        final currentNumber = numbers[_currentIndex];
+        final accentColor = _parseThemeColor(currentNumber.themeColor, _getAccentColor(_currentIndex));
+        final isLightColor = accentColor.computeLuminance() > 0.55;
+        final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
+
+        final bgColor = isDark
+            ? const Color(0xFF0A0E14)
+            : (isLightColor ? const Color(0xFFF8FAFC) : accentColor.withValues(alpha: 0.05));
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -277,7 +297,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: const Icon(Icons.edit_note_rounded, color: Colors.white),
+            child: Icon(Icons.edit_note_rounded, color: textContrastColor),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
@@ -316,9 +336,100 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     );
   }
 
+  Widget _buildBackgroundAura(Color color, bool isDark) {
+    final double auraOpacity = isDark ? 0.15 : 0.25;
+    return Stack(
+      children: [
+        Positioned(
+          top: -80,
+          right: -80,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: auraOpacity),
+                  blurRadius: 100,
+                  spreadRadius: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          left: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: auraOpacity * 0.8),
+                  blurRadius: 120,
+                  spreadRadius: 30,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassCard({
+    required Widget child,
+    required Color themeColor,
+    required bool isDark,
+    double radius = 24,
+    double padding = 20,
+  }) {
+    final isLight = themeColor.computeLuminance() > 0.55;
+    final baseColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : (isLight ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.85));
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            color: baseColor,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : (isLight ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5)),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   Widget _buildNumberPage(NumberModel number, int index, bool isDark) {
-    final accentColor = _getAccentColor(index);
+    final defaultAccent = _getAccentColor(index);
+    final accentColor = _parseThemeColor(number.themeColor, defaultAccent);
+    final isLightColor = accentColor.computeLuminance() > 0.55;
+    final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
+    final contentTextColor = isDark ? Colors.white70 : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+
     final emoji = _numberEmojis[number.numeral] ?? '🔢';
+    final isThisPlaying = _isAudioPlaying && _playingId == number.id;
 
     final heroIllustration = Hero(
       tag: MotionTokens.heroTag('number', number.id),
@@ -349,6 +460,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                     width: 220,
                     height: 220,
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                     errorBuilder: (context, _, _) => Image.network(
                       _emojiToPngUrl(emoji),
                       width: 220,
@@ -370,284 +482,245 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       ),
     );
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      slivers: [
-        ParallaxHeroSliverAppBar(
-          gradient: LinearGradient(
-            colors: [accentColor, accentColor.withValues(alpha: 0.78)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Stack(
+      children: [
+        _buildBackgroundAura(accentColor, isDark),
+        CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          glyph: number.numeral,
-          title: Text(number.nameLatin),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: context.pop,
-          ),
-          actions: [
-            if (number.audioUrl != null)
-              IconButton(
-                icon: const Icon(Icons.volume_up_rounded),
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  ref.read(audioServiceProvider).playUrl(number.audioUrl!);
-                },
+          slivers: [
+            ParallaxHeroSliverAppBar(
+              gradient: LinearGradient(
+                colors: [accentColor, accentColor.withValues(alpha: 0.78)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-          ],
-          expandedHeight: 300,
-          heroChild: heroIllustration,
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate.fixed([
-              Center(
-                child: Text(
-                  'Number ${number.value}',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: isDark ? Colors.white54 : Colors.grey[500],
-                  ),
-                ),
+              foregroundColor: textContrastColor,
+              glyphColor: textContrastColor,
+              glyph: number.numeral,
+              title: Text(number.nameLatin),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: context.pop,
               ),
-              const SizedBox(height: 24),
-
-              // Large Ol Chiki number
-              Container(
-                width: 160,
-                height: 160,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      accentColor.withValues(alpha: 0.15),
-                      accentColor.withValues(alpha: 0.25),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.4),
-                    width: 4,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.2),
-                      blurRadius: 40,
-                      offset: const Offset(0, 10),
+              actions: [
+                if (number.audioUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.volume_up_rounded),
+                      onPressed: () => _playAudio(number.audioUrl!, number.id),
                     ),
-                  ],
-                ),
-                child: Animate(
-                  child: Center(
+                  ),
+              ],
+              expandedHeight: 300,
+              heroChild: heroIllustration,
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate.fixed([
+                  Center(
                     child: Text(
-                      number.numeral,
+                      'Number ${number.value}',
                       style: TextStyle(
-                        fontSize: 80,
-                        fontWeight: FontWeight.w700,
-                        color: accentColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: isDark ? Colors.white54 : Colors.grey[500],
                       ),
                     ),
                   ),
-                ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
-              ),
-              const SizedBox(height: 20),
+                  const SizedBox(height: 24),
 
-              // Ol Chiki name badge
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.4),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Text(
-                      number.nameOlChiki,
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w900,
-                        color: Colors.white,
-                        letterSpacing: 1,
-                      ),
-                    ),
-                    if (number.audioUrl != null) ...[
-                      const SizedBox(width: 12),
-                      PressableScale(
-                        onTap: () {
-                          ref
-                              .read(audioServiceProvider)
-                              .playUrl(number.audioUrl!);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(10),
+                  // Large Ol Chiki number
+                  Center(
+                    child: Container(
+                      width: 180,
+                      height: 180,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor.withValues(alpha: 0.15),
+                            accentColor.withValues(alpha: 0.25),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(36),
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: 0.4),
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.2),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
                           ),
-                          child: const Icon(
-                            Icons.volume_up_rounded,
-                            color: Colors.white,
-                            size: 20,
+                        ],
+                      ),
+                      child: Animate(
+                        child: Center(
+                          child: Text(
+                            number.numeral,
+                            style: TextStyle(
+                              fontSize: 80,
+                              fontWeight: FontWeight.w900,
+                              color: isDark ? Colors.white : accentColor,
+                            ),
                           ),
                         ),
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
+                      ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
 
-              // Pronunciation hint
-              if (number.pronunciation != null &&
-                  number.pronunciation!.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.05)
-                        : Colors.white,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: isDark
-                        ? null
-                        : [
-                            BoxShadow(
-                              color: Colors.black.withValues(alpha: 0.05),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
+                  // Ol Chiki name badge
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
+                        color: accentColor,
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            number.nameOlChiki,
+                            style: TextStyle(
+                              fontSize: 24,
+                              fontWeight: FontWeight.w900,
+                              color: textContrastColor,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          if (number.audioUrl != null) ...[
+                            const SizedBox(width: 12),
+                            SoundWaveIndicator(
+                              color: textContrastColor,
+                              isPlaying: isThisPlaying,
                             ),
                           ],
+                        ],
+                      ),
+                    ),
                   ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                  const SizedBox(height: 24),
+
+                  // Pronunciation hint
+                  if (number.pronunciation != null &&
+                      number.pronunciation!.isNotEmpty) ...[
+                    _buildGlassCard(
+                      themeColor: accentColor,
+                      isDark: isDark,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.record_voice_over_rounded,
-                            color: accentColor,
-                            size: 24,
+                          Row(
+                            children: [
+                              Icon(
+                                  Icons.record_voice_over_rounded,
+                                  color: isDark ? Colors.white : accentColor,
+                                  size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Pronunciation',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : accentColor,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(height: 12),
                           Text(
-                            'Pronunciation',
+                            number.pronunciation!,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
+                              height: 1.5,
+                              color: contentTextColor,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        number.pronunciation!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: isDark ? Colors.white70 : Colors.grey[700],
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-              const SizedBox(height: 16),
-
-              // Value representation (animated dots)
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      accentColor.withValues(alpha: 0.08),
-                      accentColor.withValues(alpha: 0.04),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.15),
-                    width: 2,
-                  ),
-                ),
-                child: Column(
-                  children: [
-                    Text(
-                      'Count',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: accentColor.withValues(alpha: 0.8),
-                      ),
                     ),
-                    const SizedBox(height: 12),
-                    Wrap(
-                      spacing: 12,
-                      runSpacing: 12,
-                      alignment: WrapAlignment.center,
-                      children: List.generate(
-                        number.value,
-                        (i) =>
-                            Animate(
-                                  child: Container(
-                                    width: 24,
-                                    height: 24,
-                                    decoration: BoxDecoration(
-                                      gradient: LinearGradient(
-                                        colors: [
-                                          accentColor,
-                                          accentColor.withValues(alpha: 0.7),
-                                        ],
-                                        begin: Alignment.topLeft,
-                                        end: Alignment.bottomRight,
-                                      ),
-                                      shape: BoxShape.circle,
-                                      boxShadow: [
-                                        BoxShadow(
-                                          color: accentColor.withValues(
-                                            alpha: 0.3,
-                                          ),
-                                          blurRadius: 6,
-                                          offset: const Offset(0, 2),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                )
-                                .fadeIn(
-                                  delay: Duration(milliseconds: 800 + (i * 80)),
-                                )
-                                .scale(
-                                  begin: const Offset(0, 0),
-                                  curve: Curves.easeOutBack,
-                                  delay: Duration(milliseconds: 800 + (i * 80)),
-                                ),
-                      ),
-                    ),
+                    const SizedBox(height: 16),
                   ],
-                ),
+
+                  // Value representation (animated dots)
+                  _buildGlassCard(
+                    themeColor: accentColor,
+                    isDark: isDark,
+                    child: Column(
+                      children: [
+                        Text(
+                          'Count',
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: (isDark ? Colors.white : accentColor).withValues(alpha: 0.8),
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        Wrap(
+                          spacing: 12,
+                          runSpacing: 12,
+                          alignment: WrapAlignment.center,
+                          children: List.generate(
+                            number.value,
+                            (i) => Animate(
+                              child: Container(
+                                width: 24,
+                                height: 24,
+                                decoration: BoxDecoration(
+                                  gradient: LinearGradient(
+                                    colors: [
+                                      accentColor,
+                                      accentColor.withValues(alpha: 0.7),
+                                    ],
+                                    begin: Alignment.topLeft,
+                                    end: Alignment.bottomRight,
+                                  ),
+                                  shape: BoxShape.circle,
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: accentColor.withValues(alpha: 0.3),
+                                      blurRadius: 6,
+                                      offset: const Offset(0, 2),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            )
+                            .fadeIn(delay: Duration(milliseconds: 800 + (i * 80)))
+                            .scale(
+                              begin: const Offset(0, 0),
+                              curve: Curves.easeOutBack,
+                              delay: Duration(milliseconds: 800 + (i * 80)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ]),
               ),
-            ]),
-          ),
+            ),
+          ],
         ),
       ],
     );
@@ -703,6 +776,96 @@ class _DetailLoadError extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class SoundWaveIndicator extends StatefulWidget {
+  final Color color;
+  final bool isPlaying;
+
+  const SoundWaveIndicator({
+    super.key,
+    required this.color,
+    required this.isPlaying,
+  });
+
+  @override
+  State<SoundWaveIndicator> createState() => _SoundWaveIndicatorState();
+}
+
+class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    if (widget.isPlaying) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(SoundWaveIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPlaying) {
+      _controller.repeat();
+    } else {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isPlaying) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          5,
+          (index) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: 3,
+            height: 6,
+            decoration: BoxDecoration(
+              color: widget.color.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (index) {
+            final val = (index * 0.25 + _controller.value) % 1.0;
+            final double height = 6.0 + 16.0 * (0.5 - (0.5 - val).abs());
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 3,
+              height: height,
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

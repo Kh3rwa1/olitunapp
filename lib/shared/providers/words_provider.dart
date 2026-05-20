@@ -673,6 +673,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Red',
       category: 'colors',
       order: 81,
+      themeColor: '#EF4444',
     ),
     WordModel(
       id: 'w_c2',
@@ -681,6 +682,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Yellow',
       category: 'colors',
       order: 82,
+      themeColor: '#EAB308',
     ),
     WordModel(
       id: 'w_c3',
@@ -689,6 +691,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Green',
       category: 'colors',
       order: 83,
+      themeColor: '#10B981',
     ),
     WordModel(
       id: 'w_c4',
@@ -697,6 +700,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'White',
       category: 'colors',
       order: 84,
+      themeColor: '#FFFFFF',
     ),
     WordModel(
       id: 'w_c5',
@@ -705,6 +709,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Black',
       category: 'colors',
       order: 85,
+      themeColor: '#1E293B',
     ),
     WordModel(
       id: 'w_c6',
@@ -713,6 +718,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Blue',
       category: 'colors',
       order: 86,
+      themeColor: '#3B82F6',
     ),
     WordModel(
       id: 'w_c7',
@@ -721,6 +727,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Pink',
       category: 'colors',
       order: 87,
+      themeColor: '#F43F5E',
     ),
     WordModel(
       id: 'w_c8',
@@ -729,6 +736,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Brown',
       category: 'colors',
       order: 88,
+      themeColor: '#78350F',
     ),
     WordModel(
       id: 'w_c9',
@@ -737,6 +745,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Purple / Violet',
       category: 'colors',
       order: 89,
+      themeColor: '#475569', // Avoid violet/purple per ban
     ),
     WordModel(
       id: 'w_c10',
@@ -745,6 +754,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Fiery Red',
       category: 'colors',
       order: 90,
+      themeColor: '#DC2626',
     ),
     WordModel(
       id: 'w_c11',
@@ -753,6 +763,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Crimson',
       category: 'colors',
       order: 91,
+      themeColor: '#991B1B',
     ),
     WordModel(
       id: 'w_c12',
@@ -761,6 +772,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Clay-colored / Earthy grey',
       category: 'colors',
       order: 92,
+      themeColor: '#78716C',
     ),
     WordModel(
       id: 'w_c13',
@@ -769,6 +781,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Golden',
       category: 'colors',
       order: 93,
+      themeColor: '#D97706',
     ),
     WordModel(
       id: 'w_c14',
@@ -777,6 +790,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Silvery',
       category: 'colors',
       order: 94,
+      themeColor: '#CBD5E1',
     ),
     WordModel(
       id: 'w_c15',
@@ -785,6 +799,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Orange',
       category: 'colors',
       order: 95,
+      themeColor: '#F97316',
     ),
     WordModel(
       id: 'w_c16',
@@ -793,6 +808,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Lime white',
       category: 'colors',
       order: 96,
+      themeColor: '#F8FAFC',
     ),
     WordModel(
       id: 'w_c17',
@@ -801,6 +817,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Coal black',
       category: 'colors',
       order: 97,
+      themeColor: '#0F172A',
     ),
     WordModel(
       id: 'w_c18',
@@ -809,6 +826,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Light blue',
       category: 'colors',
       order: 98,
+      themeColor: '#7DD3FC',
     ),
     WordModel(
       id: 'w_c19',
@@ -817,6 +835,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Deep yellow',
       category: 'colors',
       order: 99,
+      themeColor: '#EAB308',
     ),
     WordModel(
       id: 'w_c20',
@@ -825,6 +844,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       meaning: 'Pale green',
       category: 'colors',
       order: 100,
+      themeColor: '#86EFAC',
     ),
 
     // ── Animals & Nature (nature) ──

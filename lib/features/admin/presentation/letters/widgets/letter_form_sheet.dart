@@ -38,6 +38,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
   late final TextEditingController _charCtrl;
   late final TextEditingController _romanCtrl;
   late final TextEditingController _pronCtrl;
+  late final TextEditingController _themeColorCtrl;
 
   String? _audioUrl;
   String? _imageUrl;
@@ -53,6 +54,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       text: widget.letter?.transliterationLatin ?? '',
     );
     _pronCtrl = TextEditingController(text: widget.letter?.pronunciation ?? '');
+    _themeColorCtrl = TextEditingController(text: widget.letter?.themeColor ?? '');
     _audioUrl = widget.letter?.audioUrl;
     _imageUrl = widget.letter?.imageUrl;
     _animationUrl = widget.letter?.animationUrl;
@@ -63,6 +65,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
     _charCtrl.dispose();
     _romanCtrl.dispose();
     _pronCtrl.dispose();
+    _themeColorCtrl.dispose();
     super.dispose();
   }
 
@@ -94,6 +97,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       audioUrl: _audioUrl,
       imageUrl: _imageUrl,
       animationUrl: _animationUrl,
+      themeColor: _themeColorCtrl.text.trim().isNotEmpty ? _themeColorCtrl.text.trim() : null,
     );
     if (_isEditing) {
       ref.read(lettersProvider.notifier).updateLetter(letter);
@@ -215,6 +219,8 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
                 _magicFill(_pronCtrl, (r) => 'like "${r.translation}" in ...'),
           ),
           const SizedBox(height: 24),
+          _buildThemeColorSelector(isDark),
+          const SizedBox(height: 24),
           AdminMediaField(
             label: 'Audio Pronunciation',
             icon: Icons.audiotrack_rounded,
@@ -310,6 +316,105 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildThemeColorSelector(bool isDark) {
+    // Avoid purple/violet per Purple Ban.
+    final presets = [
+      {'name': 'Mint', 'hex': '#10B981'},
+      {'name': 'Teal', 'hex': '#14B8A6'},
+      {'name': 'Sky', 'hex': '#0EA5E9'},
+      {'name': 'Rose', 'hex': '#F43F5E'},
+      {'name': 'Amber', 'hex': '#F59E0B'},
+      {'name': 'Charcoal', 'hex': '#1E293B'},
+      {'name': 'White', 'hex': '#FFFFFF'},
+    ];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Theme Color (Optional)',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: isDark ? Colors.white70 : Colors.black54,
+          ),
+        ),
+        const SizedBox(height: 12),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          physics: const BouncingScrollPhysics(),
+          child: Row(
+            children: [
+              for (final p in presets)
+                GestureDetector(
+                  onTap: () {
+                    HapticFeedback.selectionClick();
+                    setState(() => _themeColorCtrl.text = p['hex']!);
+                  },
+                  child: Container(
+                    width: 40,
+                    height: 40,
+                    margin: const EdgeInsets.only(right: 12),
+                    decoration: BoxDecoration(
+                      color: Color(int.parse(p['hex']!.replaceFirst('#', '0xFF'))),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: _themeColorCtrl.text.toUpperCase() == p['hex']
+                            ? (isDark ? Colors.white : Colors.black)
+                            : (isDark ? Colors.white24 : Colors.black12),
+                        width: _themeColorCtrl.text.toUpperCase() == p['hex'] ? 2 : 1,
+                      ),
+                      boxShadow: [
+                        if (_themeColorCtrl.text.toUpperCase() == p['hex'])
+                          BoxShadow(
+                            color: Color(int.parse(p['hex']!.replaceFirst('#', '0xFF'))).withValues(alpha: 0.4),
+                            blurRadius: 8,
+                            spreadRadius: 2,
+                          )
+                      ],
+                    ),
+                  ),
+                ),
+              GestureDetector(
+                onTap: () {
+                  HapticFeedback.selectionClick();
+                  setState(() => _themeColorCtrl.clear());
+                },
+                child: Container(
+                  width: 40,
+                  height: 40,
+                  margin: const EdgeInsets.only(right: 12),
+                  decoration: BoxDecoration(
+                    color: isDark ? Colors.white10 : Colors.black12,
+                    shape: BoxShape.circle,
+                    border: Border.all(
+                      color: _themeColorCtrl.text.isEmpty
+                          ? (isDark ? Colors.white : Colors.black)
+                          : Colors.transparent,
+                      width: 2,
+                    ),
+                  ),
+                  child: Icon(
+                    Icons.format_color_reset_rounded,
+                    size: 20,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+        AdminTextField(
+          controller: _themeColorCtrl,
+          label: 'Custom HEX Code',
+          hint: 'e.g., #FF5722',
+          prefixIcon: Icons.color_lens_rounded,
+        ),
+      ],
     );
   }
 }

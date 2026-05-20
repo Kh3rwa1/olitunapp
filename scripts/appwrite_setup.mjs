@@ -163,6 +163,7 @@ const collections = [
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'string', key: 'pronunciation', size: 100, required: false },
+      { type: 'string', key: 'themeColor', size: 50, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -182,6 +183,7 @@ const collections = [
       { type: 'string', key: 'pronunciation', size: 100, required: false },
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'string', key: 'themeColor', size: 50, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -202,6 +204,7 @@ const collections = [
       { type: 'string', key: 'pronunciation', size: 100, required: false },
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'string', key: 'themeColor', size: 50, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -222,6 +225,7 @@ const collections = [
       { type: 'string', key: 'pronunciation', size: 255, required: false },
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'string', key: 'themeColor', size: 50, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },

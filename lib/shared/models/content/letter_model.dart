@@ -11,6 +11,7 @@ class LetterModel {
   final int order;
   final bool isActive;
   final String? pronunciation;
+  final String? themeColor;
 
   LetterModel({
     required this.id,
@@ -24,6 +25,7 @@ class LetterModel {
     this.order = 0,
     this.isActive = true,
     this.pronunciation,
+    this.themeColor,
   });
 
   // Convenience getters for backwards compatibility
@@ -47,6 +49,7 @@ class LetterModel {
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
       pronunciation: data['pronunciation'] as String?,
+      themeColor: data['themeColor'] as String?,
     );
   }
 
@@ -63,6 +66,7 @@ class LetterModel {
       'order': order,
       'isActive': isActive,
       'pronunciation': pronunciation,
+      'themeColor': themeColor,
     };
   }
 
@@ -78,6 +82,7 @@ class LetterModel {
     int? order,
     bool? isActive,
     String? pronunciation,
+    String? themeColor,
   }) {
     return LetterModel(
       id: id ?? this.id,
@@ -91,6 +96,7 @@ class LetterModel {
       order: order ?? this.order,
       isActive: isActive ?? this.isActive,
       pronunciation: pronunciation ?? this.pronunciation,
+      themeColor: themeColor ?? this.themeColor,
     );
   }
 }

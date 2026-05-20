@@ -12,6 +12,7 @@ class WordModel {
   final String? pronunciation;
   final int order;
   final bool isActive;
+  final String? themeColor;
 
   WordModel({
     required this.id,
@@ -26,6 +27,7 @@ class WordModel {
     this.pronunciation,
     this.order = 0,
     this.isActive = true,
+    this.themeColor,
   });
 
   factory WordModel.fromJson(Map<String, dynamic> data, [String? docId]) {
@@ -42,6 +44,7 @@ class WordModel {
       pronunciation: data['pronunciation'] as String?,
       order: data['order'] as int? ?? 0,
       isActive: data['isActive'] as bool? ?? true,
+      themeColor: data['themeColor'] as String?,
     );
   }
 
@@ -59,6 +62,7 @@ class WordModel {
       'pronunciation': pronunciation,
       'order': order,
       'isActive': isActive,
+      'themeColor': themeColor,
     };
   }
 }

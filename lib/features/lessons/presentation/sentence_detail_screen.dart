@@ -1,3 +1,5 @@
+import 'dart:async';
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +10,7 @@ import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
+import '../domain/entities/lesson_entity.dart';
 
 class SentenceDetailScreen extends ConsumerStatefulWidget {
   final String sentenceId;
@@ -28,15 +31,20 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   late PageController _pageController;
   int _currentIndex = 0;
 
+  // Sound play state
+  bool _isAudioPlaying = false;
+  String? _playingId;
+
+  // Accent colors for sentences (excluding purple/violet/lavender)
   static const List<Color> _accentColors = [
-    Color(0xFF6C63FF),
-    Color(0xFFFF6584),
-    Color(0xFF00C9A7),
-    Color(0xFFFFB347),
-    Color(0xFF4FC3F7),
-    Color(0xFFE040FB),
-    Color(0xFF69F0AE),
-    Color(0xFFFF8A80),
+    Color(0xFFFF9800), // Amber
+    Color(0xFFFF5722), // Orange/Coral
+    Color(0xFF2196F3), // Blue
+    Color(0xFF4CAF50), // Green
+    Color(0xFFE91E63), // Crimson/Rose
+    Color(0xFF009688), // Teal
+    Color(0xFF03A9F4), // Sky Blue
+    Color(0xFF4DB6AC), // Mint
   ];
 
   static const List<String> _sentenceEmojis = [
@@ -53,7 +61,15 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: _currentIndex);
+
+    SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+    SystemChrome.setSystemUIOverlayStyle(
+      const SystemUiOverlayStyle(
+        statusBarColor: Colors.transparent,
+        statusBarIconBrightness: Brightness.dark,
+      ),
+    );
   }
 
   @override
@@ -63,31 +79,90 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   }
 
   void _onPageChanged(int index) {
-    setState(() => _currentIndex = index);
     HapticFeedback.selectionClick();
+    setState(() {
+      _currentIndex = index;
+      _isAudioPlaying = false;
+      _playingId = null;
+    });
   }
 
   Color _getAccentColor(int index) =>
       _accentColors[index % _accentColors.length];
 
-  Color _getBackgroundColor(int index, bool isDark) {
-    final accent = _getAccentColor(index);
-    return isDark
-        ? Color.lerp(Colors.black, accent, 0.06) ?? Colors.black
-        : Color.lerp(Colors.white, accent, 0.04) ?? Colors.white;
-  }
-
   String _getEmoji(int index) =>
       _sentenceEmojis[index % _sentenceEmojis.length];
+
+  Color _parseThemeColor(String? colorStr, Color fallback) {
+    if (colorStr == null || colorStr.isEmpty) return fallback;
+    try {
+      var hex = colorStr.replaceAll('#', '').trim();
+      if (hex.length == 6) hex = 'FF$hex';
+      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
+    } catch (_) {}
+    return fallback;
+  }
+
+  void _playAudio(String url, String id) async {
+    HapticFeedback.mediumImpact();
+    setState(() {
+      _isAudioPlaying = true;
+      _playingId = id;
+    });
+
+    await ref.read(audioServiceProvider).playUrl(url);
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (mounted && _playingId == id) {
+      setState(() {
+        _isAudioPlaying = false;
+      });
+    }
+  }
+
+  List<SentenceModel> _scopeSentencesToLesson(
+    List<SentenceModel> allSentences,
+    LessonEntity? lesson,
+  ) {
+    if (lesson == null || lesson.blocks.isEmpty) {
+      return allSentences.where((s) => s.isActive).toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+    }
+
+    final blockTexts = lesson.blocks
+        .where((b) => b.type == 'text' && b.textOlChiki != null)
+        .map((b) => b.textOlChiki!.trim())
+        .toSet();
+
+    if (blockTexts.isEmpty) return const [];
+
+    return allSentences
+        .where(
+          (s) =>
+              s.isActive &&
+              blockTexts.any(
+                (t) =>
+                    t == s.sentenceOlChiki ||
+                    t.contains(s.sentenceOlChiki) ||
+                    s.sentenceOlChiki.contains(t),
+              ),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
+  }
 
   @override
   Widget build(BuildContext context) {
     final sentencesAsync = ref.watch(sentencesProvider);
+    final lessonsAsync = ref.watch(lessonNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return sentencesAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: const Center(child: CircularProgressIndicator()),
+      ),
       error: (error, stack) => Scaffold(
         backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
         body: _DetailLoadError(
@@ -97,31 +172,70 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         ),
       ),
       data: (allSentences) {
-        final sentences = allSentences.where((s) => s.isActive).toList()
-          ..sort((a, b) => a.order.compareTo(b.order));
+        final lessons = lessonsAsync.value ?? [];
+        final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+        final sentences = _scopeSentencesToLesson(allSentences, lesson);
 
         if (sentences.isEmpty) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Sentences')),
-            body: const Center(child: Text('No sentences found')),
+            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+            appBar: AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: () => context.pop(),
+              ),
+            ),
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.school_rounded, size: 64, color: Colors.grey[400]),
+                  const SizedBox(height: 16),
+                  Text(
+                    'No sentences available',
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white70 : Colors.grey[600],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Add sentences from the admin panel',
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white38 : Colors.grey[400],
+                    ),
+                  ),
+                ],
+              ),
+            ),
           );
         }
 
-        // Find initial index
-        final startIndex = sentences.indexWhere(
-          (s) => s.id == widget.sentenceId,
-        );
-        if (startIndex >= 0 && _pageController.hasClients == false) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (_pageController.hasClients && _currentIndex != startIndex) {
-              _pageController.jumpToPage(startIndex);
-              setState(() => _currentIndex = startIndex);
-            }
-          });
+        if (_currentIndex == 0 && widget.sentenceId.isNotEmpty) {
+          final index = sentences.indexWhere(
+            (s) => s.id == widget.sentenceId,
+          );
+          if (index >= 0 && _currentIndex != index) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              if (mounted) {
+                setState(() => _currentIndex = index);
+                _pageController.jumpToPage(index);
+              }
+            });
+          }
         }
 
-        final accentColor = _getAccentColor(_currentIndex);
-        final bgColor = _getBackgroundColor(_currentIndex, isDark);
+        final currentSentence = sentences[_currentIndex];
+        final accentColor = _parseThemeColor(currentSentence.themeColor, _getAccentColor(_currentIndex));
+        final isLightColor = accentColor.computeLuminance() > 0.55;
+
+        final bgColor = isDark
+            ? const Color(0xFF0A0E14)
+            : (isLightColor ? const Color(0xFFF8FAFC) : accentColor.withValues(alpha: 0.05));
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -139,7 +253,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                 },
               ),
 
-              // Page indicator
               Positioned(
                 bottom: MediaQuery.of(context).padding.bottom + 24,
                 left: 0,
@@ -159,28 +272,131 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     );
   }
 
-  Widget _buildPageIndicator(int count, Color color, bool isDark) {
+  Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: List.generate(count, (index) {
         final isActive = index == _currentIndex;
         return AnimatedContainer(
           duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
           margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isActive ? 28 : 8,
-          height: 8,
+          width: isActive ? 28 : 10,
+          height: 10,
           decoration: BoxDecoration(
-            color: isActive ? color : color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(4),
+            color: isActive
+                ? accentColor
+                : (isDark ? Colors.white30 : Colors.black26),
+            borderRadius: BorderRadius.circular(5),
+            boxShadow: isActive
+                ? [
+                    BoxShadow(
+                      color: accentColor.withValues(alpha: 0.4),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ]
+                : null,
           ),
         );
       }),
     );
   }
 
+  Widget _buildBackgroundAura(Color color, bool isDark) {
+    final double auraOpacity = isDark ? 0.15 : 0.25;
+    return Stack(
+      children: [
+        Positioned(
+          top: -80,
+          right: -80,
+          child: Container(
+            width: 250,
+            height: 250,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: auraOpacity),
+                  blurRadius: 100,
+                  spreadRadius: 20,
+                ),
+              ],
+            ),
+          ),
+        ),
+        Positioned(
+          bottom: 100,
+          left: -100,
+          child: Container(
+            width: 300,
+            height: 300,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: auraOpacity * 0.8),
+                  blurRadius: 120,
+                  spreadRadius: 30,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildGlassCard({
+    required Widget child,
+    required Color themeColor,
+    required bool isDark,
+    double radius = 24,
+    double padding = 20,
+  }) {
+    final isLight = themeColor.computeLuminance() > 0.55;
+    final baseColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : (isLight ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.85));
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(radius),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+        child: Container(
+          padding: EdgeInsets.all(padding),
+          decoration: BoxDecoration(
+            color: baseColor,
+            borderRadius: BorderRadius.circular(radius),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.08)
+                  : (isLight ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5)),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.15 : 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          child: child,
+        ),
+      ),
+    );
+  }
+
   Widget _buildSentencePage(SentenceModel sentence, int index, bool isDark) {
-    final accentColor = _getAccentColor(index);
+    final defaultAccent = _getAccentColor(index);
+    final accentColor = _parseThemeColor(sentence.themeColor, defaultAccent);
+    final isLightColor = accentColor.computeLuminance() > 0.55;
+    final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
+    final contentTextColor = isDark ? Colors.white70 : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+
     final emoji = _getEmoji(index);
+    final isThisPlaying = _isAudioPlaying && _playingId == sentence.id;
 
     final heroIllustration = Hero(
       tag: MotionTokens.heroTag('sentence', sentence.id),
@@ -193,8 +409,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
           builder: (context, scale, child) {
             return Transform.scale(scale: scale, child: child);
           },
-          child:
-              sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
+          child: sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
               ? SizedBox(
                   width: 220,
                   height: 220,
@@ -212,6 +427,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                     width: 220,
                     height: 220,
                     fit: BoxFit.cover,
+                    filterQuality: FilterQuality.high,
                     errorBuilder: (context, _, _) =>
                         Text(emoji, style: const TextStyle(fontSize: 100)),
                   ),
@@ -221,281 +437,249 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
       ),
     );
 
-    return CustomScrollView(
-      physics: const BouncingScrollPhysics(
-        parent: AlwaysScrollableScrollPhysics(),
-      ),
-      slivers: [
-        ParallaxHeroSliverAppBar(
-          gradient: LinearGradient(
-            colors: [accentColor, accentColor.withValues(alpha: 0.78)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
+    return Stack(
+      children: [
+        _buildBackgroundAura(accentColor, isDark),
+        CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          glyph: emoji,
-          title: Text(sentence.meaning),
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: context.pop,
-          ),
-          actions: [
-            if (sentence.audioUrl != null)
-              IconButton(
-                icon: const Icon(Icons.volume_up_rounded),
-                onPressed: () {
-                  HapticFeedback.mediumImpact();
-                  ref.read(audioServiceProvider).playUrl(sentence.audioUrl!);
-                },
+          slivers: [
+            ParallaxHeroSliverAppBar(
+              gradient: LinearGradient(
+                colors: [accentColor, accentColor.withValues(alpha: 0.78)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
               ),
-          ],
-          heroChild: heroIllustration,
-        ),
-        SliverPadding(
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-          sliver: SliverList(
-            delegate: SliverChildListDelegate.fixed([
-              if (sentence.category != null && sentence.category!.isNotEmpty)
-                Center(
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 14,
-                      vertical: 4,
+              foregroundColor: textContrastColor,
+              glyphColor: textContrastColor,
+              glyph: emoji,
+              title: Text(sentence.meaning),
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded),
+                onPressed: context.pop,
+              ),
+              actions: [
+                if (sentence.audioUrl != null)
+                  Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: IconButton(
+                      icon: const Icon(Icons.volume_up_rounded),
+                      onPressed: () => _playAudio(sentence.audioUrl!, sentence.id),
                     ),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
+                  ),
+              ],
+              expandedHeight: 300,
+              heroChild: heroIllustration,
+            ),
+            SliverPadding(
+              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+              sliver: SliverList(
+                delegate: SliverChildListDelegate.fixed([
+                  if (sentence.category != null && sentence.category!.isNotEmpty) ...[
+                    Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: accentColor.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          sentence.category!.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: isDark ? Colors.white : accentColor,
+                            letterSpacing: 1.5,
+                          ),
+                        ),
+                      ),
                     ),
-                    child: Text(
-                      sentence.category!,
-                      style: TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w600,
+                    const SizedBox(height: 20),
+                  ],
+
+                  // Large Ol Chiki sentence card
+                  Center(
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 36,
+                        horizontal: 24,
+                      ),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor.withValues(alpha: 0.15),
+                            accentColor.withValues(alpha: 0.25),
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(32),
+                        border: Border.all(
+                          color: accentColor.withValues(alpha: 0.4),
+                          width: 4,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.2),
+                            blurRadius: 30,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          sentence.sentenceOlChiki,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.w900,
+                            color: isDark ? Colors.white : accentColor,
+                            letterSpacing: 1,
+                            height: 1.4,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+
+                  // Romanization badge
+                  Center(
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 32,
+                        vertical: 12,
+                      ),
+                      decoration: BoxDecoration(
                         color: accentColor,
-                      ),
-                    ),
-                  ),
-                ),
-              const SizedBox(height: 16),
-
-              // Large Ol Chiki sentence card
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  vertical: 40,
-                  horizontal: 24,
-                ),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      accentColor.withValues(alpha: 0.15),
-                      accentColor.withValues(alpha: 0.25),
-                    ],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(32),
-                  border: Border.all(
-                    color: accentColor.withValues(alpha: 0.4),
-                    width: 4,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.2),
-                      blurRadius: 40,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Center(
-                  child: Text(
-                    sentence.sentenceOlChiki,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 34,
-                      fontWeight: FontWeight.w900,
-                      color: accentColor,
-                      letterSpacing: 1,
-                      height: 1.4,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              // Latin badge
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 24,
-                  vertical: 18,
-                ),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.4),
-                      blurRadius: 15,
-                      offset: const Offset(0, 6),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Expanded(
-                      child: Text(
-                        sentence.sentenceLatin,
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: Colors.white,
-                          letterSpacing: 1,
-                          fontStyle: FontStyle.italic,
-                        ),
-                      ),
-                    ),
-                    if (sentence.audioUrl != null) ...[
-                      const SizedBox(width: 12),
-                      PressableScale(
-                        onTap: () {
-                          ref
-                              .read(audioServiceProvider)
-                              .playUrl(sentence.audioUrl!);
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.25),
-                            borderRadius: BorderRadius.circular(12),
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 6),
                           ),
-                          child: const Icon(
-                            Icons.volume_up_rounded,
-                            color: Colors.white,
-                            size: 24,
-                          ),
-                        ),
+                        ],
                       ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Pronunciation section
-              if (sentence.pronunciation != null &&
-                  sentence.pronunciation!.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 16),
-                  child: Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.05)
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: isDark
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: Colors.black.withValues(alpha: 0.05),
-                                blurRadius: 10,
-                                offset: const Offset(0, 4),
-                              ),
-                            ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Icon(
-                              Icons.record_voice_over_rounded,
-                              color: accentColor,
-                              size: 24,
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Pronunciation',
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Flexible(
+                            child: Text(
+                              sentence.sentenceLatin.toUpperCase(),
+                              textAlign: TextAlign.center,
                               style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: accentColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w900,
+                                color: textContrastColor,
+                                letterSpacing: 1.2,
                               ),
+                            ),
+                          ),
+                          if (sentence.audioUrl != null) ...[
+                            const SizedBox(width: 12),
+                            SoundWaveIndicator(
+                              color: textContrastColor,
+                              isPlaying: isThisPlaying,
                             ),
                           ],
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          sentence.pronunciation!,
-                          style: TextStyle(
-                            fontSize: 16,
-                            height: 1.5,
-                            color: isDark ? Colors.white70 : Colors.grey[700],
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                  const SizedBox(height: 24),
 
-              // Usage / context card
-              if (sentence.usage != null && sentence.usage!.isNotEmpty)
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        accentColor.withValues(alpha: 0.08),
-                        accentColor.withValues(alpha: 0.04),
-                      ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: accentColor.withValues(alpha: 0.15),
-                      width: 2,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
+                  // Pronunciation hint
+                  if (sentence.pronunciation != null &&
+                      sentence.pronunciation!.isNotEmpty) ...[
+                    _buildGlassCard(
+                      themeColor: accentColor,
+                      isDark: isDark,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.lightbulb_outline_rounded,
-                            color: accentColor,
-                            size: 24,
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.record_voice_over_rounded,
+                                color: isDark ? Colors.white : accentColor,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Pronunciation',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : accentColor,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(width: 8),
+                          const SizedBox(height: 12),
                           Text(
-                            'When to use',
+                            sentence.pronunciation!,
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
+                              height: 1.5,
+                              color: contentTextColor,
                             ),
                           ),
                         ],
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        sentence.usage!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: isDark ? Colors.white70 : Colors.grey[700],
-                        ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // Usage hint card
+                  if (sentence.usage != null && sentence.usage!.isNotEmpty) ...[
+                    _buildGlassCard(
+                      themeColor: accentColor,
+                      isDark: isDark,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.lightbulb_outline_rounded,
+                                color: isDark ? Colors.white : accentColor,
+                                size: 24,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'When to use',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: isDark ? Colors.white : accentColor,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            sentence.usage!,
+                            style: TextStyle(
+                              fontSize: 16,
+                              height: 1.5,
+                              color: contentTextColor,
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                ),
-            ]),
-          ),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
+                ]),
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -551,6 +735,96 @@ class _DetailLoadError extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class SoundWaveIndicator extends StatefulWidget {
+  final Color color;
+  final bool isPlaying;
+
+  const SoundWaveIndicator({
+    super.key,
+    required this.color,
+    required this.isPlaying,
+  });
+
+  @override
+  State<SoundWaveIndicator> createState() => _SoundWaveIndicatorState();
+}
+
+class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+    if (widget.isPlaying) {
+      _controller.repeat();
+    }
+  }
+
+  @override
+  void didUpdateWidget(SoundWaveIndicator oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.isPlaying) {
+      _controller.repeat();
+    } else {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!widget.isPlaying) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          5,
+          (index) => Container(
+            margin: const EdgeInsets.symmetric(horizontal: 2),
+            width: 3,
+            height: 6,
+            decoration: BoxDecoration(
+              color: widget.color.withValues(alpha: 0.5),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return AnimatedBuilder(
+      animation: _controller,
+      builder: (context, child) {
+        return Row(
+          mainAxisSize: MainAxisSize.min,
+          children: List.generate(5, (index) {
+            final val = (index * 0.25 + _controller.value) % 1.0;
+            final double height = 6.0 + 16.0 * (0.5 - (0.5 - val).abs());
+            return Container(
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              width: 3,
+              height: height,
+              decoration: BoxDecoration(
+                color: widget.color,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            );
+          }),
+        );
+      },
     );
   }
 }

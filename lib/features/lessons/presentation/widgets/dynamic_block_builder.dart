@@ -88,7 +88,10 @@ class _TextBlock extends ConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    final navRoute = _resolveNavRoute(ref, lessonId, textOlChiki);
+    var navRoute = _resolveNavRoute(ref, lessonId, textOlChiki);
+    if (navRoute == null && block.textLatin != null && block.textLatin!.trim().isNotEmpty) {
+      navRoute = _resolveNavRoute(ref, lessonId, block.textLatin!.trim());
+    }
 
     final content = Container(
       width: double.infinity,
@@ -179,7 +182,9 @@ class _TextBlock extends ConsumerWidget {
     // Check Letters
     final letters = ref.read(lettersProvider).value ?? [];
     final matchedLetter = letters
-        .where((l) => _isFuzzyMatch(text, l.charOlChiki))
+        .where((l) =>
+            _isFuzzyMatch(text, l.charOlChiki) ||
+            _isFuzzyMatch(text, l.transliterationLatin))
         .firstOrNull;
     if (matchedLetter != null) {
       return '/letter/$lessonId/${matchedLetter.charOlChiki}';
@@ -189,7 +194,9 @@ class _TextBlock extends ConsumerWidget {
     final numbers = ref.read(numbersProvider).value ?? [];
     final matchedNumber = numbers.where((n) {
       return _isFuzzyMatch(text, n.numeral) ||
-          _isFuzzyMatch(text, n.value.toString());
+          _isFuzzyMatch(text, n.value.toString()) ||
+          _isFuzzyMatch(text, n.nameOlChiki) ||
+          _isFuzzyMatch(text, n.nameLatin);
     }).firstOrNull;
     if (matchedNumber != null) {
       return '/number/$lessonId/${matchedNumber.id}';
@@ -198,7 +205,10 @@ class _TextBlock extends ConsumerWidget {
     // Check Words
     final words = ref.read(wordsProvider).value ?? [];
     final matchedWord = words
-        .where((w) => _isFuzzyMatch(text, w.wordOlChiki))
+        .where((w) =>
+            _isFuzzyMatch(text, w.wordOlChiki) ||
+            _isFuzzyMatch(text, w.wordLatin) ||
+            _isFuzzyMatch(text, w.meaning))
         .firstOrNull;
     if (matchedWord != null) {
       return '/word/$lessonId/${matchedWord.id}';
@@ -207,7 +217,10 @@ class _TextBlock extends ConsumerWidget {
     // Check Sentences
     final sentences = ref.read(sentencesProvider).value ?? [];
     final matchedSentence = sentences
-        .where((s) => _isFuzzyMatch(text, s.sentenceOlChiki))
+        .where((s) =>
+            _isFuzzyMatch(text, s.sentenceOlChiki) ||
+            _isFuzzyMatch(text, s.sentenceLatin) ||
+            _isFuzzyMatch(text, s.meaning))
         .firstOrNull;
     if (matchedSentence != null) {
       return '/sentence/$lessonId/${matchedSentence.id}';

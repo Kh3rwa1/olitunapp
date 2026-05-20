@@ -187,7 +187,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
       ),
       data: (allLetters) {
         final lessons = lessonsAsync.value ?? [];
-        final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+        final lesson = lessons
+            .where((l) => l.id == widget.lessonId)
+            .firstOrNull;
         final letters = _scopeLettersToLesson(allLetters, lesson);
 
         if (letters.isEmpty) {
@@ -244,13 +246,20 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
         }
 
         final currentLetter = letters[_currentIndex];
-        final accentColor = _parseThemeColor(currentLetter.themeColor, _getAccentColor(_currentIndex));
+        final accentColor = _parseThemeColor(
+          currentLetter.themeColor,
+          _getAccentColor(_currentIndex),
+        );
         final isLightColor = accentColor.computeLuminance() > 0.55;
-        final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
+        final textContrastColor = isLightColor
+            ? const Color(0xFF1A1A1A)
+            : Colors.white;
 
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor ? const Color(0xFFF8FAFC) : accentColor.withValues(alpha: 0.05));
+            : (isLightColor
+                  ? const Color(0xFFF8FAFC)
+                  : accentColor.withValues(alpha: 0.05));
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -295,10 +304,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: Icon(
-              Icons.edit_note_rounded,
-              color: textContrastColor,
-            ),
+            child: Icon(Icons.edit_note_rounded, color: textContrastColor),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
@@ -391,7 +397,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     final isLight = themeColor.computeLuminance() > 0.55;
     final baseColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : (isLight ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.85));
+        : (isLight
+              ? Colors.white.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.85));
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -405,7 +413,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.08)
-                  : (isLight ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5)),
+                  : (isLight
+                        ? themeColor.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.5)),
               width: 1.5,
             ),
             boxShadow: [
@@ -426,8 +436,12 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     final defaultAccent = _getAccentColor(index);
     final accentColor = _parseThemeColor(letter.themeColor, defaultAccent);
     final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
-    final contentTextColor = isDark ? Colors.white70 : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final textContrastColor = isLightColor
+        ? const Color(0xFF1A1A1A)
+        : Colors.white;
+    final contentTextColor = isDark
+        ? Colors.white70
+        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
 
     final emoji = _letterEmojis[letter.charOlChiki] ?? '📖';
     final isThisPlaying = _isAudioPlaying && _playingId == letter.id;
@@ -500,7 +514,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               foregroundColor: textContrastColor,
               glyphColor: textContrastColor,
               glyph: letter.charOlChiki,
-              title: Text(letter.exampleWordLatin ?? letter.transliterationLatin),
+              title: Text(
+                letter.exampleWordLatin ?? letter.transliterationLatin,
+              ),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
                 onPressed: context.pop,
@@ -660,7 +676,8 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                             style: TextStyle(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
-                              color: (isDark ? Colors.white : accentColor).withValues(alpha: 0.8),
+                              color: (isDark ? Colors.white : accentColor)
+                                  .withValues(alpha: 0.8),
                             ),
                           ),
                           const SizedBox(height: 8),

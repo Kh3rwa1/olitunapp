@@ -173,7 +173,9 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
       ),
       data: (allSentences) {
         final lessons = lessonsAsync.value ?? [];
-        final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
+        final lesson = lessons
+            .where((l) => l.id == widget.lessonId)
+            .firstOrNull;
         final sentences = _scopeSentencesToLesson(allSentences, lesson);
 
         if (sentences.isEmpty) {
@@ -216,9 +218,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         }
 
         if (_currentIndex == 0 && widget.sentenceId.isNotEmpty) {
-          final index = sentences.indexWhere(
-            (s) => s.id == widget.sentenceId,
-          );
+          final index = sentences.indexWhere((s) => s.id == widget.sentenceId);
           if (index >= 0 && _currentIndex != index) {
             WidgetsBinding.instance.addPostFrameCallback((_) {
               if (mounted) {
@@ -230,12 +230,17 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         }
 
         final currentSentence = sentences[_currentIndex];
-        final accentColor = _parseThemeColor(currentSentence.themeColor, _getAccentColor(_currentIndex));
+        final accentColor = _parseThemeColor(
+          currentSentence.themeColor,
+          _getAccentColor(_currentIndex),
+        );
         final isLightColor = accentColor.computeLuminance() > 0.55;
 
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor ? const Color(0xFFF8FAFC) : accentColor.withValues(alpha: 0.05));
+            : (isLightColor
+                  ? const Color(0xFFF8FAFC)
+                  : accentColor.withValues(alpha: 0.05));
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -357,7 +362,9 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     final isLight = themeColor.computeLuminance() > 0.55;
     final baseColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : (isLight ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.85));
+        : (isLight
+              ? Colors.white.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.85));
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -371,7 +378,9 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.08)
-                  : (isLight ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5)),
+                  : (isLight
+                        ? themeColor.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.5)),
               width: 1.5,
             ),
             boxShadow: [
@@ -392,8 +401,12 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     final defaultAccent = _getAccentColor(index);
     final accentColor = _parseThemeColor(sentence.themeColor, defaultAccent);
     final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
-    final contentTextColor = isDark ? Colors.white70 : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final textContrastColor = isLightColor
+        ? const Color(0xFF1A1A1A)
+        : Colors.white;
+    final contentTextColor = isDark
+        ? Colors.white70
+        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
 
     final emoji = _getEmoji(index);
     final isThisPlaying = _isAudioPlaying && _playingId == sentence.id;
@@ -409,7 +422,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
           builder: (context, scale, child) {
             return Transform.scale(scale: scale, child: child);
           },
-          child: sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
+          child:
+              sentence.animationUrl != null && sentence.animationUrl!.isNotEmpty
               ? SizedBox(
                   width: 220,
                   height: 220,
@@ -465,7 +479,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                     padding: const EdgeInsets.only(right: 8.0),
                     child: IconButton(
                       icon: const Icon(Icons.volume_up_rounded),
-                      onPressed: () => _playAudio(sentence.audioUrl!, sentence.id),
+                      onPressed: () =>
+                          _playAudio(sentence.audioUrl!, sentence.id),
                     ),
                   ),
               ],
@@ -476,7 +491,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
               sliver: SliverList(
                 delegate: SliverChildListDelegate.fixed([
-                  if (sentence.category != null && sentence.category!.isNotEmpty) ...[
+                  if (sentence.category != null &&
+                      sentence.category!.isNotEmpty) ...[
                     Center(
                       child: Container(
                         padding: const EdgeInsets.symmetric(

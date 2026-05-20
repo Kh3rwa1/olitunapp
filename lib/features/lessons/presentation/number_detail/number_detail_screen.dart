@@ -152,20 +152,21 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       return const [];
     }
 
-    final matched = allNumbers
-        .where(
-          (n) =>
-              n.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == n.numeral ||
-                    t == n.value.toString() ||
-                    t == n.nameOlChiki ||
-                    t.contains(n.numeral),
-              ),
-        )
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
+    final matched =
+        allNumbers
+            .where(
+              (n) =>
+                  n.isActive &&
+                  blockTexts.any(
+                    (t) =>
+                        t == n.numeral ||
+                        t == n.value.toString() ||
+                        t == n.nameOlChiki ||
+                        t.contains(n.numeral),
+                  ),
+            )
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
 
     return matched;
   }
@@ -249,13 +250,20 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         }
 
         final currentNumber = numbers[_currentIndex];
-        final accentColor = _parseThemeColor(currentNumber.themeColor, _getAccentColor(_currentIndex));
+        final accentColor = _parseThemeColor(
+          currentNumber.themeColor,
+          _getAccentColor(_currentIndex),
+        );
         final isLightColor = accentColor.computeLuminance() > 0.55;
-        final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
+        final textContrastColor = isLightColor
+            ? const Color(0xFF1A1A1A)
+            : Colors.white;
 
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor ? const Color(0xFFF8FAFC) : accentColor.withValues(alpha: 0.05));
+            : (isLightColor
+                  ? const Color(0xFFF8FAFC)
+                  : accentColor.withValues(alpha: 0.05));
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -390,7 +398,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     final isLight = themeColor.computeLuminance() > 0.55;
     final baseColor = isDark
         ? Colors.white.withValues(alpha: 0.05)
-        : (isLight ? Colors.white.withValues(alpha: 0.7) : Colors.white.withValues(alpha: 0.85));
+        : (isLight
+              ? Colors.white.withValues(alpha: 0.7)
+              : Colors.white.withValues(alpha: 0.85));
 
     return ClipRRect(
       borderRadius: BorderRadius.circular(radius),
@@ -404,7 +414,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             border: Border.all(
               color: isDark
                   ? Colors.white.withValues(alpha: 0.08)
-                  : (isLight ? themeColor.withValues(alpha: 0.2) : Colors.white.withValues(alpha: 0.5)),
+                  : (isLight
+                        ? themeColor.withValues(alpha: 0.2)
+                        : Colors.white.withValues(alpha: 0.5)),
               width: 1.5,
             ),
             boxShadow: [
@@ -425,8 +437,12 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     final defaultAccent = _getAccentColor(index);
     final accentColor = _parseThemeColor(number.themeColor, defaultAccent);
     final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor ? const Color(0xFF1A1A1A) : Colors.white;
-    final contentTextColor = isDark ? Colors.white70 : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final textContrastColor = isLightColor
+        ? const Color(0xFF1A1A1A)
+        : Colors.white;
+    final contentTextColor = isDark
+        ? Colors.white70
+        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
 
     final emoji = _numberEmojis[number.numeral] ?? '🔢';
     final isThisPlaying = _isAudioPlaying && _playingId == number.id;
@@ -560,18 +576,23 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           ),
                         ],
                       ),
-                      child: Animate(
-                        child: Center(
-                          child: Text(
-                            number.numeral,
-                            style: TextStyle(
-                              fontSize: 80,
-                              fontWeight: FontWeight.w900,
-                              color: isDark ? Colors.white : accentColor,
-                            ),
-                          ),
-                        ),
-                      ).scale(delay: 600.ms, curve: Curves.easeOutBack).fadeIn(),
+                      child:
+                          Animate(
+                                child: Center(
+                                  child: Text(
+                                    number.numeral,
+                                    style: TextStyle(
+                                      fontSize: 80,
+                                      fontWeight: FontWeight.w900,
+                                      color: isDark
+                                          ? Colors.white
+                                          : accentColor,
+                                    ),
+                                  ),
+                                ),
+                              )
+                              .scale(delay: 600.ms, curve: Curves.easeOutBack)
+                              .fadeIn(),
                     ),
                   ),
                   const SizedBox(height: 20),
@@ -631,9 +652,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           Row(
                             children: [
                               Icon(
-                                  Icons.record_voice_over_rounded,
-                                  color: isDark ? Colors.white : accentColor,
-                                  size: 24,
+                                Icons.record_voice_over_rounded,
+                                color: isDark ? Colors.white : accentColor,
+                                size: 24,
                               ),
                               const SizedBox(width: 8),
                               Text(
@@ -672,7 +693,8 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
-                            color: (isDark ? Colors.white : accentColor).withValues(alpha: 0.8),
+                            color: (isDark ? Colors.white : accentColor)
+                                .withValues(alpha: 0.8),
                           ),
                         ),
                         const SizedBox(height: 12),
@@ -682,36 +704,47 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                           alignment: WrapAlignment.center,
                           children: List.generate(
                             number.value,
-                            (i) => Animate(
-                              child: Container(
-                                width: 24,
-                                height: 24,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      accentColor,
-                                      accentColor.withValues(alpha: 0.7),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: accentColor.withValues(alpha: 0.3),
-                                      blurRadius: 6,
-                                      offset: const Offset(0, 2),
+                            (i) =>
+                                Animate(
+                                      child: Container(
+                                        width: 24,
+                                        height: 24,
+                                        decoration: BoxDecoration(
+                                          gradient: LinearGradient(
+                                            colors: [
+                                              accentColor,
+                                              accentColor.withValues(
+                                                alpha: 0.7,
+                                              ),
+                                            ],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          shape: BoxShape.circle,
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: accentColor.withValues(
+                                                alpha: 0.3,
+                                              ),
+                                              blurRadius: 6,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                    .fadeIn(
+                                      delay: Duration(
+                                        milliseconds: 800 + (i * 80),
+                                      ),
+                                    )
+                                    .scale(
+                                      begin: const Offset(0, 0),
+                                      curve: Curves.easeOutBack,
+                                      delay: Duration(
+                                        milliseconds: 800 + (i * 80),
+                                      ),
                                     ),
-                                  ],
-                                ),
-                              ),
-                            )
-                            .fadeIn(delay: Duration(milliseconds: 800 + (i * 80)))
-                            .scale(
-                              begin: const Offset(0, 0),
-                              curve: Curves.easeOutBack,
-                              delay: Duration(milliseconds: 800 + (i * 80)),
-                            ),
                           ),
                         ),
                       ],

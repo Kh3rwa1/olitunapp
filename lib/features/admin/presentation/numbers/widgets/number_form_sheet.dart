@@ -83,7 +83,9 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
       audioUrl: _audioUrl,
       imageUrl: _imageUrl,
       animationUrl: _animationUrl,
-      themeColor: _themeColorCtrl.text.trim().isNotEmpty ? _themeColorCtrl.text.trim() : null,
+      themeColor: _themeColorCtrl.text.trim().isNotEmpty
+          ? _themeColorCtrl.text.trim()
+          : null,
     );
     if (_isEditing) {
       ref.read(numbersProvider.notifier).updateNumber(number);
@@ -346,21 +348,27 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
                     height: 40,
                     margin: const EdgeInsets.only(right: 12),
                     decoration: BoxDecoration(
-                      color: Color(int.parse(p['hex']!.replaceFirst('#', '0xFF'))),
+                      color: Color(
+                        int.parse(p['hex']!.replaceFirst('#', '0xFF')),
+                      ),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: _themeColorCtrl.text.toUpperCase() == p['hex']
                             ? (isDark ? Colors.white : Colors.black)
                             : (isDark ? Colors.white24 : Colors.black12),
-                        width: _themeColorCtrl.text.toUpperCase() == p['hex'] ? 2 : 1,
+                        width: _themeColorCtrl.text.toUpperCase() == p['hex']
+                            ? 2
+                            : 1,
                       ),
                       boxShadow: [
                         if (_themeColorCtrl.text.toUpperCase() == p['hex'])
                           BoxShadow(
-                            color: Color(int.parse(p['hex']!.replaceFirst('#', '0xFF'))).withValues(alpha: 0.4),
+                            color: Color(
+                              int.parse(p['hex']!.replaceFirst('#', '0xFF')),
+                            ).withValues(alpha: 0.4),
                             blurRadius: 8,
                             spreadRadius: 2,
-                          )
+                          ),
                       ],
                     ),
                   ),

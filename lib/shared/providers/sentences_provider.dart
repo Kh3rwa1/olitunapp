@@ -790,12 +790,30 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
   }
 
   Future<void> seed() async {
+    try {
+      final db = ref.read(appwriteDbServiceProvider);
+      // Fetch all existing documents in the sentences collection to completely clear legacy records
+      final existingDocs = await db.listDocuments('sentences');
+      debugPrint('🧹 Clearing ${existingDocs.length} existing sentences from database before seeding...');
+      for (final doc in existingDocs) {
+        final docId = doc['id'] as String;
+        try {
+          await db.deleteDocument('sentences', docId);
+        } catch (e) {
+          debugPrint('⚠️ Failed to delete sentence document $docId: $e');
+        }
+      }
+    } catch (e) {
+      debugPrint('⚠️ Error clearing sentences collection: $e');
+    }
+
+    debugPrint('🌱 Seeding ${_seedSentences.length} clean sentences to database...');
     for (final item in _seedSentences) {
       try {
         final db = ref.read(appwriteDbServiceProvider);
         await db.createDocument('sentences', item.id, item.toJson());
       } catch (e) {
-        debugPrint('Sentence already exists or error: $e');
+        debugPrint('⚠️ Error seeding sentence ${item.id}: $e');
       }
     }
     await _loadSentences();

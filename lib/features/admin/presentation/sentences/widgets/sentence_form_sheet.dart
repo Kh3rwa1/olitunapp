@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../widgets/admin_content_subcategories.dart';
 import '../../widgets/admin_form_widgets.dart';
 
 class SentenceFormSheet extends ConsumerStatefulWidget {
@@ -180,6 +181,23 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
   }
 
   Widget _buildFields(bool isDark) {
+    final categories = ref.watch(categoryNotifierProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final sentences = ref.watch(sentencesProvider).value ?? [];
+    final contentCategory = findAdminContentCategory(
+      categories,
+      AdminContentKind.sentences,
+    );
+    final sentenceLessons = filterAdminContentLessons(
+      lessons,
+      contentCategory,
+      AdminContentKind.sentences,
+    );
+    final categorySuggestions = adminContentCategorySuggestions(
+      existingCategories: sentences.map((s) => s.category),
+      lessons: sentenceLessons,
+    );
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
       child: Column(
@@ -216,11 +234,9 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           Row(
             children: [
               Expanded(
-                child: AdminTextField(
-                  controller: _categoryCtrl,
-                  label: 'Category',
-                  hint: 'e.g., Greeting',
-                  prefixIcon: Icons.label_rounded,
+                child: _buildCategoryComboField(
+                  isDark: isDark,
+                  suggestions: categorySuggestions,
                 ),
               ),
               const SizedBox(width: 16),
@@ -324,6 +340,74 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildCategoryComboField({
+    required bool isDark,
+    required List<String> suggestions,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text('Category / Subcategory', style: AdminTokens.label(isDark)),
+        const SizedBox(height: AdminTokens.space2),
+        TextField(
+          controller: _categoryCtrl,
+          style: AdminTokens.bodyStrong(isDark),
+          decoration: InputDecoration(
+            hintText: 'Choose or type a category',
+            hintStyle: AdminTokens.body(
+              isDark,
+            ).copyWith(color: AdminTokens.textTertiary(isDark)),
+            filled: true,
+            fillColor: AdminTokens.sunken(isDark),
+            prefixIcon: Icon(
+              Icons.label_rounded,
+              size: 20,
+              color: AdminTokens.textTertiary(isDark),
+            ),
+            suffixIcon: suggestions.isEmpty
+                ? null
+                : PopupMenuButton<String>(
+                    tooltip: 'Choose category',
+                    icon: Icon(
+                      Icons.arrow_drop_down_rounded,
+                      color: AdminTokens.textSecondary(isDark),
+                    ),
+                    onSelected: (value) =>
+                        setState(() => _categoryCtrl.text = value),
+                    itemBuilder: (context) => suggestions
+                        .map(
+                          (value) => PopupMenuItem<String>(
+                            value: value,
+                            child: Text(value),
+                          ),
+                        )
+                        .toList(),
+                  ),
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              borderSide: BorderSide(color: AdminTokens.border(isDark)),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              borderSide: BorderSide(color: AdminTokens.border(isDark)),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              borderSide: const BorderSide(
+                color: AdminTokens.accent,
+                width: 1.5,
+              ),
+            ),
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 16,
+              vertical: 14,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

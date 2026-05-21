@@ -7,7 +7,12 @@ import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../../core/api/ai_service.dart';
+import '../../../../../../shared/providers/providers.dart';
 import '../../../widgets/admin_form_widgets.dart';
+import '../../../letters/widgets/letter_form_sheet.dart';
+import '../../../numbers/widgets/number_form_sheet.dart';
+import '../../../sentences/widgets/sentence_form_sheet.dart';
+import '../../../words/widgets/word_form_sheet.dart';
 
 class EditBlockSheet extends ConsumerStatefulWidget {
   final LessonBlockEntity block;
@@ -104,10 +109,173 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
     Navigator.pop(context);
   }
 
+  _LinkedContentMatch? _resolveLinkedContent() {
+    if (widget.block.type != 'text') return null;
+
+    final textCandidates = [
+      widget.block.textOlChiki?.trim() ?? '',
+      widget.block.textLatin?.trim() ?? '',
+    ].where((text) => text.isNotEmpty).toList();
+    if (textCandidates.isEmpty) return null;
+
+    bool matches(String text, String value) {
+      final cleanText = text.toLowerCase().trim();
+      final cleanValue = value.toLowerCase().trim();
+      if (cleanText.isEmpty || cleanValue.isEmpty) return false;
+      return cleanText == cleanValue ||
+          cleanText.contains(cleanValue) ||
+          cleanValue.contains(cleanText);
+    }
+
+    bool anyCandidateMatches(List<String> values) {
+      return textCandidates.any(
+        (text) => values.any((value) => matches(text, value)),
+      );
+    }
+
+    for (final letter in ref.read(lettersProvider).value ?? []) {
+      if (anyCandidateMatches([
+        letter.charOlChiki,
+        letter.transliterationLatin,
+      ])) {
+        return _LinkedContentMatch(
+          icon: Icons.text_fields_rounded,
+          title: 'Linked Letter',
+          subtitle: '${letter.charOlChiki} - ${letter.transliterationLatin}',
+          actionLabel: 'Edit Letter Details',
+          onOpen: () => LetterFormSheet.show(context, ref, letter),
+        );
+      }
+    }
+
+    for (final number in ref.read(numbersProvider).value ?? []) {
+      if (anyCandidateMatches([
+        number.numeral,
+        number.value.toString(),
+        number.nameOlChiki,
+        number.nameLatin,
+      ])) {
+        return _LinkedContentMatch(
+          icon: Icons.pin_rounded,
+          title: 'Linked Number',
+          subtitle: '${number.numeral} - ${number.nameLatin}',
+          actionLabel: 'Edit Number Details',
+          onOpen: () => NumberFormSheet.show(context, ref, number),
+        );
+      }
+    }
+
+    for (final word in ref.read(wordsProvider).value ?? []) {
+      if (anyCandidateMatches([
+        word.wordOlChiki,
+        word.wordLatin,
+        word.meaning,
+      ])) {
+        return _LinkedContentMatch(
+          icon: Icons.menu_book_rounded,
+          title: 'Linked Word',
+          subtitle: '${word.wordLatin} - ${word.meaning}',
+          actionLabel: 'Edit Word Details',
+          onOpen: () => WordFormSheet.show(context, ref, word),
+        );
+      }
+    }
+
+    for (final sentence in ref.read(sentencesProvider).value ?? []) {
+      if (anyCandidateMatches([
+        sentence.sentenceOlChiki,
+        sentence.sentenceLatin,
+        sentence.meaning,
+      ])) {
+        return _LinkedContentMatch(
+          icon: Icons.format_quote_rounded,
+          title: 'Linked Sentence',
+          subtitle: sentence.sentenceLatin,
+          actionLabel: 'Edit Sentence Details',
+          onOpen: () => SentenceFormSheet.show(context, ref, sentence),
+        );
+      }
+    }
+
+    return null;
+  }
+
+  Widget _buildLinkedContentPanel(_LinkedContentMatch match, bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: isDark ? 0.12 : 0.08),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: isDark ? 0.3 : 0.18),
+        ),
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.14),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Icon(match.icon, color: AppColors.primary, size: 22),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  match.title,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  match.subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 12),
+          ElevatedButton.icon(
+            onPressed: match.onOpen,
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.primary,
+              foregroundColor: Colors.white,
+              elevation: 0,
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Icons.edit_rounded, size: 16),
+            label: Text(
+              match.actionLabel,
+              style: const TextStyle(fontWeight: FontWeight.w800),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final block = widget.block;
+    final linkedContent = _resolveLinkedContent();
 
     IconData icon;
     Color iconColor;
@@ -238,6 +406,10 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  if (linkedContent != null) ...[
+                    _buildLinkedContentPanel(linkedContent, isDark),
+                    const SizedBox(height: 20),
+                  ],
                   if (block.type == 'text') ...[
                     AdminTextField(
                       controller: olChikiCtrl,
@@ -500,4 +672,20 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
       ),
     );
   }
+}
+
+class _LinkedContentMatch {
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final String actionLabel;
+  final VoidCallback onOpen;
+
+  const _LinkedContentMatch({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.actionLabel,
+    required this.onOpen,
+  });
 }

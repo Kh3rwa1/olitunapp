@@ -45,8 +45,20 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
         'rhymes',
         queries: [Query.limit(500)],
       );
-      state = AsyncValue.data(data.map(RhymeModel.fromJson).toList());
+      final rhymes = <RhymeModel>[];
+      for (final row in data) {
+        try {
+          final rhyme = RhymeModel.fromJson(row);
+          if (rhyme.id.isNotEmpty && rhyme.titleLatin.isNotEmpty) {
+            rhymes.add(rhyme);
+          }
+        } catch (e) {
+          AppLogger.debug('Skipping malformed rhyme row: $e');
+        }
+      }
+      state = AsyncValue.data(rhymes.isEmpty ? _seedRhymes : rhymes);
     } catch (e) {
+      AppLogger.debug('Error loading rhymes, using seed fallback: $e');
       state = AsyncValue.data(_seedRhymes);
     }
   }

@@ -27,8 +27,10 @@ class RhymeScreen extends ConsumerStatefulWidget {
 
 class _RhymeScreenState extends ConsumerState<RhymeScreen>
     with TickerProviderStateMixin {
-  String? _selectedCategory;
-  String? _selectedSubcategory;
+  String? _selectedCategoryId;
+  String? _selectedCategoryName;
+  String? _selectedSubcategoryId;
+  String? _selectedSubcategoryName;
   late final AnimationController _headerPulseController;
   late final AnimationController _dividerGlowController;
 
@@ -91,7 +93,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                 _buildCategoryChips(categoriesAsync, isDark, isTablet),
 
                 // --- Subcategory chips ---
-                if (_selectedCategory != null)
+                if (_selectedCategoryId != null)
                   _buildSubcategoryChips(subcategoriesAsync, isDark, isTablet),
 
                 const SliverToBoxAdapter(child: SizedBox(height: 24)),
@@ -228,10 +230,12 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                 padding: const EdgeInsets.only(right: 12),
                 child: AnimatedFilterChip(
                   label: 'All',
-                  isSelected: _selectedCategory == null,
+                  isSelected: _selectedCategoryId == null,
                   onTap: () => setState(() {
-                    _selectedCategory = null;
-                    _selectedSubcategory = null;
+                    _selectedCategoryId = null;
+                    _selectedCategoryName = null;
+                    _selectedSubcategoryId = null;
+                    _selectedSubcategoryName = null;
                   }),
                   isDark: isDark,
                 ),
@@ -241,10 +245,12 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                   padding: const EdgeInsets.only(right: 12),
                   child: AnimatedFilterChip(
                     label: cat.nameLatin,
-                    isSelected: _selectedCategory == cat.nameLatin,
+                    isSelected: _selectedCategoryId == cat.id,
                     onTap: () => setState(() {
-                      _selectedCategory = cat.nameLatin;
-                      _selectedSubcategory = null;
+                      _selectedCategoryId = cat.id;
+                      _selectedCategoryName = cat.nameLatin;
+                      _selectedSubcategoryId = null;
+                      _selectedSubcategoryName = null;
                     }),
                     isDark: isDark,
                   ),
@@ -280,11 +286,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   ) {
     return subcategoriesAsync.when(
       data: (allSubcats) {
-        final cats = ref.read(rhymeCategoriesProvider).value ?? [];
-        final matching = cats
-            .where((c) => c.nameLatin == _selectedCategory)
-            .toList();
-        final catId = matching.isNotEmpty ? matching.first.id : '';
+        final catId = _selectedCategoryId ?? '';
         final filtered = allSubcats
             .where((s) => s.categoryId == catId)
             .toList();
@@ -305,9 +307,12 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                   Padding(
                     padding: const EdgeInsets.only(right: 12),
                     child: AnimatedFilterChip(
-                      label: 'All ${_selectedCategory ?? ""}',
-                      isSelected: _selectedSubcategory == null,
-                      onTap: () => setState(() => _selectedSubcategory = null),
+                      label: 'All ${_selectedCategoryName ?? ""}',
+                      isSelected: _selectedSubcategoryId == null,
+                      onTap: () => setState(() {
+                        _selectedSubcategoryId = null;
+                        _selectedSubcategoryName = null;
+                      }),
                       isDark: isDark,
                       small: true,
                     ),
@@ -317,10 +322,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       padding: const EdgeInsets.only(right: 12),
                       child: AnimatedFilterChip(
                         label: sub.nameLatin,
-                        isSelected: _selectedSubcategory == sub.nameLatin,
-                        onTap: () => setState(
-                          () => _selectedSubcategory = sub.nameLatin,
-                        ),
+                        isSelected: _selectedSubcategoryId == sub.id,
+                        onTap: () => setState(() {
+                          _selectedSubcategoryId = sub.id;
+                          _selectedSubcategoryName = sub.nameLatin;
+                        }),
                         isDark: isDark,
                         small: true,
                       ),
@@ -559,14 +565,24 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
   List<RhymeModel> _filterRhymes(List<RhymeModel> rhymes) {
     var filtered = rhymes;
-    if (_selectedCategory != null) {
+    if (_selectedCategoryId != null || _selectedCategoryName != null) {
       filtered = filtered
-          .where((r) => r.category == _selectedCategory)
+          .where(
+            (r) =>
+                r.categoryId == _selectedCategoryId ||
+                r.category == _selectedCategoryId ||
+                r.category == _selectedCategoryName,
+          )
           .toList();
     }
-    if (_selectedSubcategory != null) {
+    if (_selectedSubcategoryId != null || _selectedSubcategoryName != null) {
       filtered = filtered
-          .where((r) => r.subcategory == _selectedSubcategory)
+          .where(
+            (r) =>
+                r.subcategoryId == _selectedSubcategoryId ||
+                r.subcategory == _selectedSubcategoryId ||
+                r.subcategory == _selectedSubcategoryName,
+          )
           .toList();
     }
     return filtered;

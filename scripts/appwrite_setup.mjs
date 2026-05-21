@@ -241,6 +241,8 @@ const collections = [
       { type: 'string', key: 'contentLatin', size: 10000, required: false },
       { type: 'string', key: 'audioUrl', size: 512, required: false },
       { type: 'string', key: 'thumbnailUrl', size: 512, required: false },
+      { type: 'string', key: 'category', size: 50, required: false },
+      { type: 'string', key: 'subcategory', size: 50, required: false },
       { type: 'string', key: 'categoryId', size: 36, required: false },
       { type: 'string', key: 'subcategoryId', size: 36, required: false },
       { type: 'string', key: 'difficulty', size: 10, required: false, default: 'easy' },

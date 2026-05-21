@@ -57,6 +57,7 @@ void main() {
   group('shellTabIndexForPath', () {
     test('maps shell routes to their visible tabs', () {
       expect(shellTabIndexForPath('/'), 0);
+      expect(shellTabIndexForPath('/bakhed'), 1);
       expect(shellTabIndexForPath('/profile'), 2);
     });
 

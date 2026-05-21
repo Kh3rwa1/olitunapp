@@ -212,6 +212,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         name: RouteNames.categories,
         child: (_, _) => const MainShellScreen(),
       ),
+      _shellRoute(path: '/bakhed', child: (_, _) => const MainShellScreen()),
       _drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
       _shellRoute(
         path: '/profile',

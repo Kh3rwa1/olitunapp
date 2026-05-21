@@ -17,6 +17,7 @@ import '../../../../shared/providers/providers.dart';
 @visibleForTesting
 int? shellTabIndexForPath(String path) {
   if (path == '/') return 0;
+  if (path == '/bakhed') return 1;
   if (path == '/profile') return 2;
   return null;
 }
@@ -76,6 +77,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
 
     final nextPath = switch (index) {
       0 => '/',
+      1 => '/bakhed',
       2 => '/profile',
       _ => null,
     };

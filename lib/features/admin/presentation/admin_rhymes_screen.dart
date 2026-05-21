@@ -230,32 +230,39 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     final categories = ref.read(rhymeCategoriesProvider).value ?? [];
     final allSubcategories = ref.read(rhymeSubcategoriesProvider).value ?? [];
 
-    String selectedCategory =
-        rhyme?.category ??
-        (categories.isNotEmpty ? categories.first.nameLatin : 'General');
-    String? selectedSubcategory = rhyme?.subcategory;
+    String? selectedCategoryId =
+        rhyme?.categoryId ??
+        categories
+            .where((c) => c.nameLatin == rhyme?.category)
+            .map((c) => c.id)
+            .firstOrNull ??
+        (categories.isNotEmpty ? categories.first.id : null);
+    String? selectedSubcategoryId =
+        rhyme?.subcategoryId ??
+        allSubcategories
+            .where((s) => s.nameLatin == rhyme?.subcategory)
+            .map((s) => s.id)
+            .firstOrNull;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
           // Filter subcategories by selected category
-          final matchingCat = categories
-              .where((c) => c.nameLatin == selectedCategory)
-              .toList();
-          final catId = matchingCat.isNotEmpty ? matchingCat.first.id : '';
+          final selectedCategory = categories
+              .where((c) => c.id == selectedCategoryId)
+              .firstOrNull;
+          final catId = selectedCategoryId ?? '';
           final filteredSubcats = allSubcategories
               .where((s) => s.categoryId == catId)
               .toList();
 
           // Validate selectedSubcategory
-          final validSubcatNames = filteredSubcats
-              .map((s) => s.nameLatin)
-              .toList();
-          if (selectedSubcategory != null &&
-              !validSubcatNames.contains(selectedSubcategory)) {
-            selectedSubcategory = filteredSubcats.isNotEmpty
-                ? filteredSubcats.first.nameLatin
+          final validSubcatIds = filteredSubcats.map((s) => s.id).toSet();
+          if (selectedSubcategoryId != null &&
+              !validSubcatIds.contains(selectedSubcategoryId)) {
+            selectedSubcategoryId = filteredSubcats.isNotEmpty
+                ? filteredSubcats.first.id
                 : null;
           }
 
@@ -331,23 +338,23 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                     // Category dropdown (dynamic)
                     DropdownButtonFormField<String>(
                       initialValue:
-                          categories.any((c) => c.nameLatin == selectedCategory)
-                          ? selectedCategory
+                          categories.any((c) => c.id == selectedCategoryId)
+                          ? selectedCategoryId
                           : (categories.isNotEmpty
-                                ? categories.first.nameLatin
+                                ? categories.first.id
                                 : null),
                       items: categories
                           .map(
                             (c) => DropdownMenuItem(
-                              value: c.nameLatin,
+                              value: c.id,
                               child: Text(c.nameLatin),
                             ),
                           )
                           .toList(),
                       onChanged: (val) {
                         setDialogState(() {
-                          selectedCategory = val!;
-                          selectedSubcategory = null; // reset subcategory
+                          selectedCategoryId = val;
+                          selectedSubcategoryId = null; // reset subcategory
                         });
                       },
                       decoration: const InputDecoration(labelText: 'Category'),
@@ -355,18 +362,18 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                     const SizedBox(height: 8),
                     // Subcategory dropdown (cascading)
                     DropdownButtonFormField<String>(
-                      initialValue: selectedSubcategory,
+                      initialValue: selectedSubcategoryId,
                       items: filteredSubcats
                           .map(
                             (s) => DropdownMenuItem(
-                              value: s.nameLatin,
+                              value: s.id,
                               child: Text(s.nameLatin),
                             ),
                           )
                           .toList(),
                       onChanged: (val) {
                         setDialogState(() {
-                          selectedSubcategory = val;
+                          selectedSubcategoryId = val;
                         });
                       },
                       decoration: const InputDecoration(
@@ -384,6 +391,9 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
+                  final selectedSubcategory = allSubcategories
+                      .where((s) => s.id == selectedSubcategoryId)
+                      .firstOrNull;
                   final newItem = RhymeModel(
                     id: rhyme?.id ?? const Uuid().v4(),
                     titleLatin: titleLatinController.text,
@@ -392,8 +402,10 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                     contentOlChiki: contentOlChikiController.text,
                     audioUrl: audioUrl ?? '',
                     thumbnailUrl: thumbnailUrl ?? '',
-                    category: selectedCategory,
-                    subcategory: selectedSubcategory,
+                    categoryId: selectedCategoryId,
+                    subcategoryId: selectedSubcategoryId,
+                    category: selectedCategory?.nameLatin,
+                    subcategory: selectedSubcategory?.nameLatin,
                   );
 
                   if (rhyme == null) {

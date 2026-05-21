@@ -6,6 +6,8 @@ class RhymeModel {
   final String contentLatin;
   final String? audioUrl;
   final String? thumbnailUrl;
+  final String? categoryId;
+  final String? subcategoryId;
   final String? category;
   final String? subcategory;
 
@@ -17,21 +19,25 @@ class RhymeModel {
     required this.contentLatin,
     this.audioUrl,
     this.thumbnailUrl,
+    this.categoryId,
+    this.subcategoryId,
     this.category,
     this.subcategory,
   });
 
   factory RhymeModel.fromJson(Map<String, dynamic> json) {
     return RhymeModel(
-      id: json['id'] as String,
-      titleOlChiki: json['titleOlChiki'] as String,
-      titleLatin: json['titleLatin'] as String,
-      contentOlChiki: json['contentOlChiki'] as String,
-      contentLatin: json['contentLatin'] as String,
-      audioUrl: json['audioUrl'] as String?,
-      thumbnailUrl: json['thumbnailUrl'] as String?,
-      category: json['category'] as String?,
-      subcategory: json['subcategory'] as String?,
+      id: _readString(json, 'id') ?? _readString(json, r'$id') ?? '',
+      titleOlChiki: _readString(json, 'titleOlChiki') ?? '',
+      titleLatin: _readString(json, 'titleLatin') ?? '',
+      contentOlChiki: _readString(json, 'contentOlChiki') ?? '',
+      contentLatin: _readString(json, 'contentLatin') ?? '',
+      audioUrl: _readString(json, 'audioUrl'),
+      thumbnailUrl: _readString(json, 'thumbnailUrl'),
+      categoryId: _readString(json, 'categoryId'),
+      subcategoryId: _readString(json, 'subcategoryId'),
+      category: _readString(json, 'category'),
+      subcategory: _readString(json, 'subcategory'),
     );
   }
 
@@ -44,8 +50,17 @@ class RhymeModel {
       'contentLatin': contentLatin,
       'audioUrl': audioUrl,
       'thumbnailUrl': thumbnailUrl,
+      'categoryId': categoryId,
+      'subcategoryId': subcategoryId,
       'category': category,
       'subcategory': subcategory,
     };
+  }
+
+  static String? _readString(Map<String, dynamic> json, String key) {
+    final value = json[key];
+    if (value == null) return null;
+    final text = value.toString();
+    return text.isEmpty ? null : text;
   }
 }

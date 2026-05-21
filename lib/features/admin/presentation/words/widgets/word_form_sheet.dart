@@ -40,7 +40,8 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
   String? _imageUrl;
   String? _animationUrl;
 
-  bool get _isEditing => widget.word != null;
+  bool get _isEditing =>
+      widget.word != null && !widget.word!.id.startsWith('lesson_block_');
 
   @override
   void initState() {
@@ -75,7 +76,7 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
   void _save() {
     HapticFeedback.lightImpact();
     final word = WordModel(
-      id: widget.word?.id ?? const Uuid().v4(),
+      id: _isEditing ? widget.word!.id : const Uuid().v4(),
       wordOlChiki: _wordOlChikiCtrl.text.trim(),
       wordLatin: _wordLatinCtrl.text.trim(),
       meaning: _meaningCtrl.text.trim(),

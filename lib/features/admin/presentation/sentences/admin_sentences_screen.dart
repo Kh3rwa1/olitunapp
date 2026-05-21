@@ -369,7 +369,10 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
           ..sort((a, b) => a.order.compareTo(b.order));
     if (exact.isNotEmpty) return exact;
 
-    return _filterSentencesByCategory(sentences, selectedKey);
+    final categoryMatches = _filterSentencesByCategory(sentences, selectedKey);
+    if (categoryMatches.isNotEmpty) return categoryMatches;
+
+    return _sentencesFromLessonBlocks(lesson);
   }
 
   List<SentenceModel> _filterSentencesByCategory(
@@ -384,6 +387,24 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
+  }
+
+  List<SentenceModel> _sentencesFromLessonBlocks(LessonEntity lesson) {
+    final category = lesson.titleLatin.trim();
+    final blocks = lesson.blocks
+        .where((block) => block.type == 'text')
+        .toList();
+    return [
+      for (var i = 0; i < blocks.length; i++)
+        SentenceModel(
+          id: 'lesson_block_sentence_${lesson.id}_$i',
+          sentenceOlChiki: blocks[i].textOlChiki?.trim() ?? '',
+          sentenceLatin: _latinPart(blocks[i].textLatin),
+          meaning: _meaningPart(blocks[i].textLatin),
+          category: category,
+          order: i,
+        ),
+    ].where((sentence) => sentence.sentenceOlChiki.isNotEmpty).toList();
   }
 
   bool _lessonMatchesSentence(
@@ -452,6 +473,19 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
 
   String _normalizeKey(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  String _latinPart(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return '';
+    return text.split(RegExp(r'\s+[–-]\s+')).first.trim();
+  }
+
+  String _meaningPart(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return '';
+    final parts = text.split(RegExp(r'\s+[–-]\s+'));
+    return parts.length > 1 ? parts.sublist(1).join(' - ').trim() : text;
   }
 
   Future<void> _addSubcategory(

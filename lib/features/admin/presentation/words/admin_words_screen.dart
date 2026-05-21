@@ -365,7 +365,10 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
           ..sort((a, b) => a.order.compareTo(b.order));
     if (exact.isNotEmpty) return exact;
 
-    return _filterWordsByCategory(words, selectedKey);
+    final categoryMatches = _filterWordsByCategory(words, selectedKey);
+    if (categoryMatches.isNotEmpty) return categoryMatches;
+
+    return _wordsFromLessonBlocks(lesson);
   }
 
   List<WordModel> _filterWordsByCategory(List<WordModel> words, String key) {
@@ -374,6 +377,24 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         .where((word) => aliases.contains(_normalizeKey(word.category ?? '')))
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
+  }
+
+  List<WordModel> _wordsFromLessonBlocks(LessonEntity lesson) {
+    final category = lesson.titleLatin.trim();
+    final blocks = lesson.blocks
+        .where((block) => block.type == 'text')
+        .toList();
+    return [
+      for (var i = 0; i < blocks.length; i++)
+        WordModel(
+          id: 'lesson_block_word_${lesson.id}_$i',
+          wordOlChiki: blocks[i].textOlChiki?.trim() ?? '',
+          wordLatin: _latinPart(blocks[i].textLatin),
+          meaning: _meaningPart(blocks[i].textLatin),
+          category: category,
+          order: i,
+        ),
+    ].where((word) => word.wordOlChiki.isNotEmpty).toList();
   }
 
   bool _lessonMatchesWord(
@@ -445,6 +466,19 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
 
   String _normalizeKey(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
+  }
+
+  String _latinPart(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return '';
+    return text.split(RegExp(r'\s+[–-]\s+')).first.trim();
+  }
+
+  String _meaningPart(String? value) {
+    final text = value?.trim() ?? '';
+    if (text.isEmpty) return '';
+    final parts = text.split(RegExp(r'\s+[–-]\s+'));
+    return parts.length > 1 ? parts.sublist(1).join(' - ').trim() : text;
   }
 
   Future<void> _addSubcategory(

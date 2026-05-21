@@ -143,9 +143,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                 final filtered = _selectedCategory == null
                     ? words
                     : _filterWords(words, subcategoryLessons);
-                final selectedLesson = _selectedLesson(
-                  subcategoryLessons,
-                );
+                final selectedLesson = _selectedLesson(subcategoryLessons);
                 if (filtered.isEmpty) {
                   return SliverPadding(
                     padding: EdgeInsets.symmetric(
@@ -347,37 +345,34 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         120,
       ),
       sliver: SliverList(
-        delegate: SliverChildBuilderDelegate(
-          (context, index) {
-            if (hasLessonBlockRows && index == 0) {
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 12),
-                child: AdminLessonBlockInfoBanner(
-                  title: 'Lesson-block drafts',
-                  message:
-                      'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Word record, or use the lesson content editor to change the original block.',
-                  isDark: isDark,
-                ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06),
-              );
-            }
+        delegate: SliverChildBuilderDelegate((context, index) {
+          if (hasLessonBlockRows && index == 0) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 12),
+              child: AdminLessonBlockInfoBanner(
+                title: 'Lesson-block drafts',
+                message:
+                    'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Word record, or use the lesson content editor to change the original block.',
+                isDark: isDark,
+              ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06),
+            );
+          }
 
-            final wordIndex = hasLessonBlockRows ? index - 1 : index;
-            final word = words[wordIndex];
-            final isLessonBlock = _isLessonBlockWord(word);
-            return WordCard(
-              word: word,
-              isDark: isDark,
-              canDelete: !isLessonBlock,
-              sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
-              sourceTooltip: isLessonBlock
-                  ? 'This row comes from a lesson content block. Editing it saves a new Word record.'
-                  : null,
-              onEdit: () => WordFormSheet.show(context, ref, word),
-              onDelete: () => _confirmDelete(context, word),
-            ).animate().fadeIn(delay: (wordIndex * 50).ms).slideY(begin: 0.1);
-          },
-          childCount: itemCount,
-        ),
+          final wordIndex = hasLessonBlockRows ? index - 1 : index;
+          final word = words[wordIndex];
+          final isLessonBlock = _isLessonBlockWord(word);
+          return WordCard(
+            word: word,
+            isDark: isDark,
+            canDelete: !isLessonBlock,
+            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
+            sourceTooltip: isLessonBlock
+                ? 'This row comes from a lesson content block. Editing it saves a new Word record.'
+                : null,
+            onEdit: () => WordFormSheet.show(context, ref, word),
+            onDelete: () => _confirmDelete(context, word),
+          ).animate().fadeIn(delay: (wordIndex * 50).ms).slideY(begin: 0.1);
+        }, childCount: itemCount),
       ),
     );
   }

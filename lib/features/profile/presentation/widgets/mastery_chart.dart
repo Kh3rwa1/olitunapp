@@ -313,7 +313,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                       ),
                     ],
                   ),
-                   const SizedBox(height: 12),
+                  const SizedBox(height: 12),
                   SizedBox(
                     height: height,
                     child: GestureDetector(

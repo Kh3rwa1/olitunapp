@@ -173,7 +173,8 @@ final routerProvider = Provider<GoRouter>((ref) {
       // Check onboarding: if onboarding not completed and we are not on welcome/splash/login/privacy/terms/admin, redirect to /welcome
       final showOnboarding = ref.read(onboardingProvider);
       final path = state.uri.path;
-      final isAllowedDuringOnboarding = path == '/welcome' ||
+      final isAllowedDuringOnboarding =
+          path == '/welcome' ||
           path == '/splash' ||
           path == '/login' ||
           path == '/privacy' ||

@@ -206,7 +206,9 @@ class AppwriteAuthService {
       final connectivityResults = await Connectivity().checkConnectivity();
       if (connectivityResults.contains(ConnectivityResult.none)) {
         final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-        debugPrint('Appwrite: Device is offline. Returning cached session: $hasLocal');
+        debugPrint(
+          'Appwrite: Device is offline. Returning cached session: $hasLocal',
+        );
         return hasLocal;
       }
     } catch (e) {

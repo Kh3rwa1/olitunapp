@@ -105,7 +105,8 @@ class LessonDetailScreen extends ConsumerWidget {
                     : null,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/'),
                 ),
                 title: Text(
                   lessonTitle,
@@ -679,7 +680,9 @@ void _showCompletionSheet({
                     onPressed: () {
                       Navigator.pop(sheetContext); // Close sheet
                       if (quizId != null) {
-                        context.pushReplacement('/quiz/$quizId'); // Replace screen with quiz screen
+                        context.pushReplacement(
+                          '/quiz/$quizId',
+                        ); // Replace screen with quiz screen
                       } else {
                         if (context.canPop()) {
                           context.pop(); // Pop current LessonDetailScreen

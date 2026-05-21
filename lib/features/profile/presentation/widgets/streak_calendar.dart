@@ -120,7 +120,9 @@ class StreakCalendar extends StatelessWidget {
                                   fontFamily: 'Poppins',
                                   fontSize: 11,
                                   fontWeight: FontWeight.w500,
-                                  color: isDark ? Colors.white38 : Colors.black38,
+                                  color: isDark
+                                      ? Colors.white38
+                                      : Colors.black38,
                                 ),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,

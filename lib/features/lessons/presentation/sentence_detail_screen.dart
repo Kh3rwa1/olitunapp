@@ -186,7 +186,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/'),
               ),
             ),
             body: Center(
@@ -443,7 +444,8 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
               title: Text(sentence.meaning),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/'),
               ),
               actions: [
                 if (sentence.audioUrl != null)

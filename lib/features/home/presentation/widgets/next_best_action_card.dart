@@ -32,9 +32,12 @@ class NextBestActionCard extends ConsumerWidget {
     IconData icon = Icons.star_rounded;
     Color color = AppColors.primary;
 
-    final hasCompletedAlphabet = (stats?.completedLessons.any((id) => id.contains('alphabet')) ?? false) ||
+    final hasCompletedAlphabet =
+        (stats?.completedLessons.any((id) => id.contains('alphabet')) ??
+            false) ||
         (stats?.practicedLetters.isNotEmpty ?? false);
-    final hasCompletedNumbers = stats?.completedLessons.any((id) => id.contains('number')) ?? false;
+    final hasCompletedNumbers =
+        stats?.completedLessons.any((id) => id.contains('number')) ?? false;
     final showStartHere = !hasCompletedAlphabet || !hasCompletedNumbers;
 
     if (isGuest || showStartHere) {

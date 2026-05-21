@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
@@ -50,6 +50,6 @@ Future<void> seedAppContent(WidgetRef ref) async {
   } catch (e) {
     // Gracefully catch database exceptions if the quizzes collection is not set up
     // in Appwrite yet, allowing categories, words, and sentences to seed successfully.
-    debugPrint('⚠️ Quizzes seeding skipped/failed: $e');
+    AppLogger.debug('⚠️ Quizzes seeding skipped/failed: $e');
   }
 }

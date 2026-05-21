@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -78,7 +79,7 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
 
       setState(() => _uploading = true);
       final file = result.files.first;
-      debugPrint(
+      AppLogger.debug(
         'Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}',
       );
 
@@ -86,7 +87,7 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
           .read(uploadServiceProvider)
           .uploadMedia(file, widget.uploadFolder);
 
-      debugPrint('Upload result: $url');
+      AppLogger.debug('Upload result: $url');
       if (url != null) {
         _urlController.text = url;
         widget.onUploaded(url);
@@ -102,7 +103,7 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
         );
       }
     } catch (e) {
-      debugPrint('Error picking ${widget.label}: $e');
+      AppLogger.debug('Error picking ${widget.label}: $e');
       setState(() => _uploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

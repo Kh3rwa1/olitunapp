@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +8,7 @@ import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../config/appwrite_config.dart';
 
 @visibleForTesting
@@ -61,6 +63,20 @@ String? adminMaintenanceBackupFileId(Map<String, dynamic> response) {
   return fileId;
 }
 
+@visibleForTesting
+bool isTransientSessionValidationFailure(Object error) {
+  if (error is TimeoutException) return true;
+  if (error is AppwriteException) {
+    return error.code == 0 ||
+        error.type == 'network_failure' ||
+        error.type == 'general_unknown';
+  }
+
+  final message = error.toString();
+  return message.contains('SocketException') ||
+      message.contains('TimeoutException');
+}
+
 class AppwriteAuthService {
   static const String _webSessionSecretKey = 'olitun_appwrite_session_secret';
 
@@ -92,9 +108,9 @@ class AppwriteAuthService {
   Future<void> ping() async {
     try {
       await _client.ping();
-      debugPrint('Appwrite: Ping successful ✅');
+      AppLogger.debug('Appwrite: Ping successful ✅');
     } catch (e) {
-      debugPrint('Appwrite: Ping failed ❌ $e');
+      AppLogger.debug('Appwrite: Ping failed ❌ $e');
     }
   }
 
@@ -103,7 +119,7 @@ class AppwriteAuthService {
   /// Send OTP code to email. Returns userId needed for session creation.
   Future<models.Token> sendOtpCode(String email) async {
     final trimmedEmail = email.trim().toLowerCase();
-    debugPrint('Appwrite: Sending OTP to $trimmedEmail');
+    AppLogger.debug('Appwrite: Sending OTP to $trimmedEmail');
     return await _account.createEmailToken(
       userId: ID.unique(),
       email: trimmedEmail,
@@ -115,7 +131,7 @@ class AppwriteAuthService {
     required String userId,
     required String secret,
   }) async {
-    debugPrint('Appwrite: Verifying OTP for user $userId');
+    AppLogger.debug('Appwrite: Verifying OTP for user $userId');
     return await _account.createSession(userId: userId, secret: secret);
   }
 
@@ -126,7 +142,7 @@ class AppwriteAuthService {
   /// On mobile: opens a browser, then deep-links back via appwrite-callback-{projectId}.
   /// On web: opens a popup, returns through /auth.html, then stores the session.
   Future<void> signInWithGoogle() async {
-    debugPrint('Appwrite: Starting Google OAuth');
+    AppLogger.debug('Appwrite: Starting Google OAuth');
 
     try {
       if (kIsWeb) {
@@ -148,7 +164,7 @@ class AppwriteAuthService {
         );
       }
     } on AppwriteException catch (e) {
-      debugPrint(
+      AppLogger.debug(
         'Appwrite OAuth RAW ERROR: message="${e.message}" code=${e.code} type="${e.type}"',
       );
       throw AppwriteException(
@@ -167,10 +183,10 @@ class AppwriteAuthService {
       } else {
         await _account.createSession(userId: userId, secret: secret);
       }
-      debugPrint('Appwrite: OAuth session created ✅');
+      AppLogger.debug('Appwrite: OAuth session created ✅');
       return true;
     } catch (e) {
-      debugPrint('Appwrite: Failed to create session from token: $e');
+      AppLogger.debug('Appwrite: Failed to create session from token: $e');
       return false;
     }
   }
@@ -248,13 +264,13 @@ class AppwriteAuthService {
       final connectivityResults = await Connectivity().checkConnectivity();
       if (connectivityResults.contains(ConnectivityResult.none)) {
         final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-        debugPrint(
+        AppLogger.debug(
           'Appwrite: Device is offline. Returning cached session: $hasLocal',
         );
         return hasLocal;
       }
     } catch (e) {
-      debugPrint('Appwrite: Error checking connectivity: $e');
+      AppLogger.debug('Appwrite: Error checking connectivity: $e');
     }
 
     try {
@@ -264,36 +280,28 @@ class AppwriteAuthService {
       final session = await _account
           .getSession(sessionId: 'current')
           .timeout(const Duration(seconds: 3));
-      debugPrint('Appwrite: Session active for user ${session.userId} ✅');
+      AppLogger.debug('Appwrite: Session active for user ${session.userId} ✅');
       await prefs.setBool(_hasLocalSessionKey, true);
       return true;
     } catch (e) {
-      debugPrint('Appwrite: isLoggedIn error: $e');
+      AppLogger.debug('Appwrite: isLoggedIn error: $e');
 
-      // If it's a network error or timeout, and we know we had a session,
-      // return true optimistically to avoid kicking the user to login.
+      // Only trust local state for clear network/timeout failures. Other
+      // Appwrite errors must fail closed so strange backend states do not keep
+      // an invalid session alive.
       final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-      if (hasLocal) {
-        if (e is AppwriteException) {
-          // code 0 or empty type often indicates network/timeout issues in Appwrite SDK
-          if (e.code == 0 || e.type == '' || e.type == 'general_unknown') {
-            debugPrint(
-              'Appwrite: Network error, but had local session. Returning true.',
-            );
-            return true;
-          }
-        } else if (e.toString().contains('SocketException') ||
-            e.toString().contains('TimeoutException')) {
-          debugPrint(
-            'Appwrite: Socket/Timeout error, but had local session. Returning true.',
-          );
-          return true;
-        }
+      if (hasLocal && isTransientSessionValidationFailure(e)) {
+        AppLogger.debug(
+          'Appwrite: transient session validation failure; using cached session.',
+        );
+        return true;
       }
 
       // If it's a 401 (Unauthorized), the session is definitely gone.
       if (e is AppwriteException && e.code == 401) {
-        debugPrint('Appwrite: Session expired (401). Clearing local flag.');
+        AppLogger.debug(
+          'Appwrite: Session expired (401). Clearing local flag.',
+        );
         await prefs.setBool(_hasLocalSessionKey, false);
       }
 
@@ -350,7 +358,7 @@ class AppwriteAuthService {
           .deleteSession(sessionId: 'current')
           .timeout(const Duration(seconds: 5));
     } catch (e) {
-      debugPrint('Appwrite: Sign out error: $e');
+      AppLogger.debug('Appwrite: Sign out error: $e');
     } finally {
       await _clearLocalSessionState();
     }
@@ -368,7 +376,7 @@ class AppwriteAuthService {
       // can create a fresh user record on the next sign-in without conflict.
       await _functions.createExecution(functionId: 'delete-account');
     } on AppwriteException catch (e) {
-      debugPrint('Appwrite: deleteAccount error: $e');
+      AppLogger.debug('Appwrite: deleteAccount error: $e');
       // If delete fails, still try to clean up session
       try {
         await _account.deleteSession(sessionId: 'current');

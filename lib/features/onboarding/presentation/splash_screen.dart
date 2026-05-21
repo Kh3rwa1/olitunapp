@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
@@ -23,7 +24,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    debugPrint('Splash: starting _navigateToNext');
+    AppLogger.debug('Splash: starting _navigateToNext');
     // Start routing check immediately without artificial delays
 
     if (mounted) {
@@ -35,7 +36,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         final userId = uri.queryParameters['userId'];
         final secret = uri.queryParameters['secret'];
         if (userId != null && secret != null) {
-          debugPrint('Splash: Found OAuth token, exchanging for session...');
+          AppLogger.debug(
+            'Splash: Found OAuth token, exchanging for session...',
+          );
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
           if (success) {
@@ -53,16 +56,16 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // 2. Check authentication before onboarding. A valid persisted Appwrite
       // session should always restore the learner to the app, even if an older
       // install still has show_onboarding=true in local prefs.
-      debugPrint('Splash: checking auth status...');
+      AppLogger.debug('Splash: checking auth status...');
       final authRepo = ref.read(authRepositoryProvider);
       final isLoggedInResult = await authRepo.isLoggedIn();
       final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
-      debugPrint('Splash: isLoggedIn = $isLoggedIn');
+      AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');
 
       if (isLoggedIn) {
         ref.read(onboardingProvider.notifier).completeOnboarding();
         if (!mounted) return;
-        debugPrint('Splash: navigating to /');
+        AppLogger.debug('Splash: navigating to /');
         context.go('/');
         return;
       }
@@ -70,22 +73,22 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // 3. Desktop/web wide screens skip onboarding entirely
       if (!mounted) return;
       final isDesktopWeb = kIsWeb && MediaQuery.of(context).size.width > 900;
-      debugPrint('Splash: isDesktopWeb = $isDesktopWeb');
+      AppLogger.debug('Splash: isDesktopWeb = $isDesktopWeb');
 
       final showOnboarding = ref.read(onboardingProvider);
-      debugPrint('Splash: showOnboarding = $showOnboarding');
+      AppLogger.debug('Splash: showOnboarding = $showOnboarding');
       if (showOnboarding && !isDesktopWeb) {
-        debugPrint('Splash: navigating to /welcome');
+        AppLogger.debug('Splash: navigating to /welcome');
         context.go('/welcome');
         return;
       }
 
       // If desktop skipped onboarding, mark it as done
       if (showOnboarding && isDesktopWeb) {
-        debugPrint('Splash: marking onboarding complete for desktop');
+        AppLogger.debug('Splash: marking onboarding complete for desktop');
         ref.read(onboardingProvider.notifier).completeOnboarding();
       } else {
-        debugPrint('Splash: navigating to /welcome (not logged in)');
+        AppLogger.debug('Splash: navigating to /welcome (not logged in)');
       }
 
       if (!mounted) return;

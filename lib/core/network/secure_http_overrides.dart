@@ -1,6 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'dart:io';
-
-import 'package:flutter/foundation.dart';
 
 /// Keeps production HTTP clients on the platform's normal certificate
 /// validation path.
@@ -13,21 +12,23 @@ class SecureHttpOverrides extends HttpOverrides {
 
   static void initialize() {
     if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
-      debugPrint(
+      AppLogger.debug(
         '[TLS Security] Self-signed certificates allowed for this build.',
       );
       return;
     }
 
     HttpOverrides.global = SecureHttpOverrides._();
-    debugPrint('[TLS Security] Strict platform certificate validation active.');
+    AppLogger.debug(
+      '[TLS Security] Strict platform certificate validation active.',
+    );
   }
 
   @override
   HttpClient createHttpClient(SecurityContext? context) {
     final client = super.createHttpClient(context);
     client.badCertificateCallback = (cert, host, port) {
-      debugPrint(
+      AppLogger.debug(
         '[TLS Security] Rejected invalid certificate for $host:$port.',
       );
       return false;

@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 
@@ -12,7 +12,7 @@ final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
     }
     return settings;
   } catch (e) {
-    debugPrint('Failed to load app settings: $e');
+    AppLogger.debug('Failed to load app settings: $e');
     return <String, dynamic>{};
   }
 });

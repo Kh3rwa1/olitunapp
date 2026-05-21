@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
@@ -74,7 +75,7 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
 
       setState(() => _uploading = true);
       final file = result.files.first;
-      debugPrint(
+      AppLogger.debug(
         'Picked file: ${file.name}, size: ${file.size}, bytes: ${file.bytes != null}',
       );
 
@@ -82,7 +83,7 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
           .read(uploadServiceProvider)
           .uploadMedia(file, widget.uploadFolder);
 
-      debugPrint('Upload result: $url');
+      AppLogger.debug('Upload result: $url');
       if (url != null) {
         _urlController.text = url;
         widget.onUploaded(url);
@@ -98,7 +99,7 @@ class _LetterMediaFieldState extends ConsumerState<LetterMediaField> {
         );
       }
     } catch (e) {
-      debugPrint('Error picking ${widget.label}: $e');
+      AppLogger.debug('Error picking ${widget.label}: $e');
       setState(() => _uploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

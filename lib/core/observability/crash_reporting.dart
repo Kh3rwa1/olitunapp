@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sentry_flutter/sentry_flutter.dart';
 import '../error/failures.dart';
@@ -22,7 +23,7 @@ class CrashReporting {
 
   static Future<void> init() async {
     if (!isEnabled) {
-      debugPrint('CrashReporting: disabled (no DSN or running in debug).');
+      AppLogger.debug('CrashReporting: disabled (no DSN or running in debug).');
       return;
     }
     await SentryFlutter.init((options) {
@@ -83,7 +84,7 @@ class CrashReporting {
     int? statusCode,
   }) {
     if (!isEnabled) {
-      debugPrint(
+      AppLogger.debug(
         '[Breadcrumb] Appwrite $operation on $collection'
         '${documentId != null ? '/$documentId' : ''}'
         ' → ${success ? 'OK' : 'FAIL: $error'}',
@@ -117,7 +118,7 @@ class CrashReporting {
     Map<String, dynamic>? metadata,
   }) {
     if (!isEnabled) {
-      debugPrint(
+      AppLogger.debug(
         '[Breadcrumb] Admin $action $entity'
         '${entityId != null ? ' ($entityId)' : ''}',
       );
@@ -142,7 +143,7 @@ class CrashReporting {
     String? error,
   }) {
     if (!isEnabled) {
-      debugPrint(
+      AppLogger.debug(
         '[Breadcrumb] Admin maintenance $action'
         '${backupFileId != null ? ' backup=$backupFileId' : ''}'
         ' ${success ? 'OK' : 'FAIL: $error'}',
@@ -174,7 +175,7 @@ class CrashReporting {
     int? sizeBytes,
   }) {
     if (!isEnabled) {
-      debugPrint(
+      AppLogger.debug(
         '[Breadcrumb] Upload $filename → $bucket ${success ? 'OK' : 'FAIL: $error'}',
       );
       return;

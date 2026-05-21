@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:cached_video_player_plus/cached_video_player_plus.dart';
 
@@ -77,7 +78,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
         });
       }
     } catch (e) {
-      debugPrint('Error initializing video player: $e');
+      AppLogger.debug('Error initializing video player: $e');
       // Dispose the controller on error to prevent surface leaks
       if (!_disposed) {
         try {
@@ -124,7 +125,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       try {
         oldController.dispose();
       } catch (e) {
-        debugPrint('Error disposing old video controller: $e');
+        AppLogger.debug('Error disposing old video controller: $e');
       }
     }
 
@@ -144,7 +145,7 @@ class _VideoPlayerWidgetState extends State<VideoPlayerWidget>
       try {
         controller.dispose();
       } catch (e) {
-        debugPrint('Error disposing video controller: $e');
+        AppLogger.debug('Error disposing video controller: $e');
       }
     }
 

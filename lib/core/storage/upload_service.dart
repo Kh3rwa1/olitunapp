@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/foundation.dart';
@@ -75,7 +76,7 @@ class AppwriteStorageUploadService {
               contentType: target.contentType,
             );
 
-      debugPrint(
+      AppLogger.debug(
         'Appwrite upload: ${file.name} (${file.size} bytes) '
         '→ ${target.bucketId}/$filename',
       );
@@ -102,7 +103,7 @@ class AppwriteStorageUploadService {
         error: e.toString(),
         sizeBytes: file.size,
       );
-      debugPrint('AppwriteStorageUploadService error: $e');
+      AppLogger.debug('AppwriteStorageUploadService error: $e');
       rethrow;
     }
   }

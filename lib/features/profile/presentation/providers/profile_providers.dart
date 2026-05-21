@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
@@ -118,7 +119,8 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       final userResult = await authRepo.getCurrentUser();
 
       userResult.fold(
-        (failure) => debugPrint('ProfileSync: Failed to get user: $failure'),
+        (failure) =>
+            AppLogger.debug('ProfileSync: Failed to get user: $failure'),
         (user) {
           if (user != null && user.name != null && user.name!.isNotEmpty) {
             final currentName = ref.read(userNameProvider);
@@ -126,7 +128,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
             if (currentName == 'Learner' ||
                 currentName == 'Explorer' ||
                 currentName != firstName) {
-              debugPrint(
+              AppLogger.debug(
                 'ProfileSync: Syncing first name from cloud: $firstName',
               );
               updateName(firstName);
@@ -135,7 +137,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         },
       );
     } catch (e) {
-      debugPrint('ProfileSync: Error during sync: $e');
+      AppLogger.debug('ProfileSync: Error during sync: $e');
     }
   }
 
@@ -265,7 +267,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     }
 
     if (score != null) {
-      debugPrint(
+      AppLogger.debug(
         '[Analytics] Trace Completed: $normalizedLetter with score: ${score.toStringAsFixed(2)}',
       );
     }
@@ -371,7 +373,8 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     ref.read(userNameProvider.notifier).state = name;
     final result = await _repository.updateDisplayName(name);
     result.fold(
-      (failure) => debugPrint('Profile: Failed to save display name: $failure'),
+      (failure) =>
+          AppLogger.debug('Profile: Failed to save display name: $failure'),
       (_) {},
     );
   }

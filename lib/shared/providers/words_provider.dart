@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
@@ -1677,7 +1677,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await db.createDocument('words', item.id, item.toJson());
       await _loadWords();
     } catch (e) {
-      debugPrint('❌ add word FAILED: $e');
+      AppLogger.debug('❌ add word FAILED: $e');
       rethrow;
     }
   }
@@ -1688,7 +1688,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await db.updateDocument('words', item.id, item.toJson());
       await _loadWords();
     } catch (e) {
-      debugPrint('❌ update word FAILED: $e');
+      AppLogger.debug('❌ update word FAILED: $e');
       rethrow;
     }
   }
@@ -1699,7 +1699,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await db.deleteDocument('words', id);
       await _loadWords();
     } catch (e) {
-      debugPrint('❌ delete word FAILED: $e');
+      AppLogger.debug('❌ delete word FAILED: $e');
       rethrow;
     }
   }
@@ -1713,7 +1713,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       // Fetch all existing documents in the words collection to completely clear legacy records
       final existingDocs = await db.listDocuments('words');
-      debugPrint(
+      AppLogger.debug(
         '🧹 Clearing ${existingDocs.length} existing words from database before seeding...',
       );
       for (final doc in existingDocs) {
@@ -1721,20 +1721,22 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
         try {
           await db.deleteDocument('words', docId);
         } catch (e) {
-          debugPrint('⚠️ Failed to delete word document $docId: $e');
+          AppLogger.debug('⚠️ Failed to delete word document $docId: $e');
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Error clearing words collection: $e');
+      AppLogger.debug('⚠️ Error clearing words collection: $e');
     }
 
-    debugPrint('🌱 Seeding ${_seedWords.length} clean words to database...');
+    AppLogger.debug(
+      '🌱 Seeding ${_seedWords.length} clean words to database...',
+    );
     for (final item in _seedWords) {
       try {
         final db = ref.read(appwriteDbServiceProvider);
         await db.createDocument('words', item.id, item.toJson());
       } catch (e) {
-        debugPrint('⚠️ Error seeding word ${item.id}: $e');
+        AppLogger.debug('⚠️ Error seeding word ${item.id}: $e');
       }
     }
     await _loadWords();

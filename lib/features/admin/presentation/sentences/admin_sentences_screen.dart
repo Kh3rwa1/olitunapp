@@ -127,10 +127,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                   child: sentencesAsync.when(
                     data: (sentences) {
                       final filtered = _selectedCategory == null
-                          ? _filterSentencesForLessons(
-                              sentences,
-                              subcategoryLessons,
-                            )
+                          ? sentences
                           : _filterSentences(sentences, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
@@ -341,25 +338,6 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     return labels;
   }
 
-  List<SentenceModel> _filterSentencesForLessons(
-    List<SentenceModel> sentences,
-    List<LessonEntity> subcategoryLessons,
-  ) {
-    if (subcategoryLessons.isEmpty) return sentences;
-    final allowed = subcategoryLessons
-        .expand(_normalizedTextBlockValues)
-        .toSet();
-    if (allowed.isEmpty) return const [];
-    return sentences
-        .where(
-          (sentence) =>
-              sentence.isActive &&
-              allowed.contains(_normalizeKey(sentence.sentenceOlChiki)),
-        )
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
-  }
-
   List<SentenceModel> _filterSentences(
     List<SentenceModel> sentences,
     List<LessonEntity> subcategoryLessons,
@@ -372,31 +350,104 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         .where((lesson) => _normalizeKey(lesson.titleLatin) == selectedKey)
         .firstOrNull;
     if (lesson == null) {
-      return sentences
-          .where(
-            (sentence) => _normalizeKey(sentence.category ?? '') == selectedKey,
-          )
-          .toList();
+      return _filterSentencesByCategory(sentences, selectedKey);
     }
 
-    final blockTexts = _normalizedTextBlockValues(lesson).toSet();
-    if (blockTexts.isEmpty) return const [];
+    final exact =
+        sentences
+            .where(
+              (sentence) =>
+                  sentence.isActive &&
+                  _lessonMatchesSentence(
+                    lesson,
+                    sentence.sentenceOlChiki,
+                    sentence.sentenceLatin,
+                    sentence.meaning,
+                  ),
+            )
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+    if (exact.isNotEmpty) return exact;
 
+    return _filterSentencesByCategory(sentences, selectedKey);
+  }
+
+  List<SentenceModel> _filterSentencesByCategory(
+    List<SentenceModel> sentences,
+    String key,
+  ) {
+    final aliases = _categoryAliases(key);
     return sentences
         .where(
           (sentence) =>
-              sentence.isActive &&
-              blockTexts.contains(_normalizeKey(sentence.sentenceOlChiki)),
+              aliases.contains(_normalizeKey(sentence.category ?? '')),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
   }
 
-  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) {
-    return lesson.blocks
-        .where((block) => block.type == 'text' && block.textOlChiki != null)
-        .map((block) => _normalizeKey(block.textOlChiki!))
-        .where((text) => text.isNotEmpty);
+  bool _lessonMatchesSentence(
+    LessonEntity lesson,
+    String olChiki,
+    String latin,
+    String meaning,
+  ) {
+    final values = [
+      _normalizeKey(olChiki),
+      _normalizeKey(latin),
+      _normalizeKey(meaning),
+    ].where((value) => value.isNotEmpty).toList();
+    return _normalizedTextBlockValues(lesson).any(
+      (blockText) => values.any(
+        (value) => blockText == value || blockText.contains(value),
+      ),
+    );
+  }
+
+  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) sync* {
+    for (final block in lesson.blocks.where((block) => block.type == 'text')) {
+      final olChiki = _normalizeKey(block.textOlChiki ?? '');
+      if (olChiki.isNotEmpty) yield olChiki;
+      final latin = _normalizeKey(block.textLatin ?? '');
+      if (latin.isNotEmpty) {
+        yield latin;
+        for (final part in latin.split(RegExp(r'\s+[–-]\s+'))) {
+          final value = _normalizeKey(part);
+          if (value.isNotEmpty) yield value;
+        }
+      }
+    }
+  }
+
+  Set<String> _categoryAliases(String key) {
+    final aliases = <String>{key};
+    final words = key.split(' ').toSet();
+    if (words.contains('basic')) aliases.add('basics');
+    if (words.contains('daily') || words.contains('dialogues')) {
+      aliases.add('conversations');
+    }
+    if (words.contains('greetings') || words.contains('politeness')) {
+      aliases.add('polite');
+    }
+    if (words.contains('time') || words.contains('weather')) {
+      aliases.add('time_weather');
+    }
+    if (words.contains('village') || words.contains('social')) {
+      aliases.add('social');
+    }
+    if (words.contains('traditional') || words.contains('ecology')) {
+      aliases.add('ecology');
+    }
+    if (words.contains('modern') || words.contains('conversational')) {
+      aliases.add('modern');
+    }
+    if (words.contains('proverbs') || words.contains('wisdom')) {
+      aliases.add('proverbs');
+    }
+    if (words.contains('cultural')) {
+      aliases.add('culture');
+    }
+    return aliases;
   }
 
   String _normalizeKey(String value) {

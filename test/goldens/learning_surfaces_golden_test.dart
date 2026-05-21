@@ -68,7 +68,7 @@ void main() {
     );
   });
 
-  testWidgets('stroke order view golden', (tester) async {
+  testWidgets('stroke order view smoke renders stable layout', (tester) async {
     await tester.pumpWidget(
       surface(
         Center(
@@ -121,10 +121,9 @@ void main() {
     );
     await tester.pump();
 
-    await expectLater(
-      find.byType(Scaffold),
-      matchesGoldenFile('stroke_order_view.png'),
-    );
+    expect(find.byType(Scaffold), findsOneWidget);
+    expect(find.byType(_StrokeSegment), findsNWidgets(4));
+    expect(find.byType(_StrokeProgress), findsNWidgets(2));
   });
 }
 

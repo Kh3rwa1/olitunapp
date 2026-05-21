@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
+import '../../../circle/presentation/providers/circle_providers.dart';
 
 class RhymeAudioState {
   final String? playingRhymeId;
@@ -44,6 +45,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
   final Ref? _ref;
+  bool _eventTriggeredForCurrent = false;
 
   RhymeAudioNotifier({Ref? ref}) : _ref = ref, super(const RhymeAudioState()) {
     _playerStateSub = _player.playerStateStream.listen(
@@ -89,10 +91,15 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
   void _checkBakhedCompletion() {
     final pos = state.position;
     final dur = state.duration;
-    if (dur > Duration.zero && pos > Duration.zero) {
+    final rhymeId = state.playingRhymeId;
+    if (dur > Duration.zero && pos > Duration.zero && rhymeId != null) {
       final percentage = pos.inMilliseconds / dur.inMilliseconds;
-      if (percentage >= 0.8) {
+      if (percentage >= 0.8 && !_eventTriggeredForCurrent) {
+        _eventTriggeredForCurrent = true;
         _ref?.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
+        _ref
+            ?.read(circleLeaderboardProvider.notifier)
+            .recordEvent('bakhed_completed_80_percent', rhymeId);
       }
     }
   }
@@ -121,6 +128,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
 
     try {
       await _player.stop();
+      _eventTriggeredForCurrent = false;
       await _player
           .setAudioSource(
             AudioSource.uri(

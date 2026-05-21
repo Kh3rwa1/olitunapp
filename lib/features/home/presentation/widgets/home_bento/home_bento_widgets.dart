@@ -12,6 +12,7 @@ import '../../../../../shared/widgets/animated_buttons.dart';
 import '../../../../../shared/widgets/bento_grid.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../../shared/models/content_models.dart';
+import '../../../../profile/presentation/providers/profile_providers.dart';
 
 // ═══════════════════════════════════════════════════════════
 // BENTO STAT CARD — glassmorphism stat tile with hover
@@ -80,6 +81,14 @@ class HomeBentoStatCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final lowerLabel = label.toLowerCase();
+    final isStreak = lowerLabel.contains('streak');
+    int shieldCount = 0;
+    if (isStreak) {
+      final statsAsync = ref.watch(userStatsProvider);
+      shieldCount = statsAsync.value?.streakShields ?? 0;
+    }
+
     Widget iconWidget = Icon(icon, color: color, size: isHero ? 22 : 18);
 
     if (icon == Icons.local_fire_department_rounded) {
@@ -138,7 +147,37 @@ class HomeBentoStatCard extends ConsumerWidget {
                         ),
                         child: iconWidget,
                       ),
-                      if (isHero) ...[
+                      if (isStreak) ...[
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 6,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.blue.withValues(alpha: 0.12),
+                            borderRadius: BorderRadius.circular(10),
+                            border: Border.all(
+                              color: Colors.blue.withValues(alpha: 0.3),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Text('🛡️', style: TextStyle(fontSize: 10)),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$shieldCount/2',
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ] else if (isHero) ...[
                         const Spacer(),
                         Container(
                           padding: const EdgeInsets.symmetric(

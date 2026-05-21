@@ -514,6 +514,7 @@ class QuizScreen extends ConsumerWidget {
                       question.optionsOlChiki[question.correctIndex],
                   correctOptionLatin:
                       question.optionsLatin[question.correctIndex],
+                  explanation: question.explanation,
                   onContinue: () => notifier.nextQuestion(quiz),
                 )
               : null,

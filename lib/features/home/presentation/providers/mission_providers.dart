@@ -112,3 +112,8 @@ final bakhedListenedTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
       return DailyMissionNotifier(ref, 'mission_bakhed_listened_date');
     });
+
+final quickWinCompletedTodayProvider =
+    StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
+      return DailyMissionNotifier(ref, 'mission_quick_win_completed_date');
+    });

@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../core/theme/app_colors.dart';
 
-class QuizFeedbackPanel extends StatelessWidget {
+class QuizFeedbackPanel extends StatefulWidget {
   final bool isCorrect;
   final String correctOptionOlChiki;
   final String correctOptionLatin;
+  final String? explanation;
   final VoidCallback onContinue;
 
   const QuizFeedbackPanel({
@@ -13,32 +15,66 @@ class QuizFeedbackPanel extends StatelessWidget {
     required this.isCorrect,
     required this.correctOptionOlChiki,
     required this.correctOptionLatin,
+    this.explanation,
     required this.onContinue,
   });
+
+  @override
+  State<QuizFeedbackPanel> createState() => _QuizFeedbackPanelState();
+}
+
+class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
+  @override
+  void initState() {
+    super.initState();
+    _triggerHapticFeedback();
+  }
+
+  Future<void> _triggerHapticFeedback() async {
+    try {
+      if (widget.isCorrect) {
+        await HapticFeedback.mediumImpact();
+      } else {
+        await HapticFeedback.heavyImpact();
+        await Future.delayed(const Duration(milliseconds: 80));
+        await HapticFeedback.heavyImpact();
+      }
+    } catch (_) {
+      // Safely ignore haptic errors on simulators
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    final backgroundColor = isCorrect
+    final backgroundColor = widget.isCorrect
         ? (isDark ? const Color(0xFF0F2E1E) : const Color(0xFFE8FDF0))
         : (isDark ? const Color(0xFF3B1E1E) : const Color(0xFFFDE8E8));
 
-    final borderColor = isCorrect
+    final borderColor = widget.isCorrect
         ? (isDark ? const Color(0xFF1B5E20) : const Color(0xFFB9F6CA))
         : (isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFFCDD2));
 
-    final textColor = isCorrect
+    final textColor = widget.isCorrect
         ? (isDark ? const Color(0xFF5DFFA8) : const Color(0xFF1B5E20))
         : (isDark ? const Color(0xFFFF5252) : const Color(0xFFB71C1C));
 
-    final iconColor = isCorrect
+    final iconColor = widget.isCorrect
         ? (isDark ? const Color(0xFF1EE088) : const Color(0xFF2E7D32))
         : (isDark ? const Color(0xFFFF5252) : const Color(0xFFC62828));
 
-    final titleText = isCorrect
+    final titleText = widget.isCorrect
         ? (isDark ? 'Sange! (Correct)' : 'Correct!')
         : 'Incorrect';
+
+    // Premium dynamic fallback explanations for absolute premium experience
+    final String displayExplanation =
+        (widget.explanation != null && widget.explanation!.trim().isNotEmpty)
+        ? widget.explanation!
+        : (widget.isCorrect
+              ? 'Splendid! You matched the correct Ol Chiki glyph "${widget.correctOptionOlChiki}" with its designated latin sound "${widget.correctOptionLatin}". Your learning retention is skyrocketing!'
+              : 'Observe the shape of the character carefully. The glyph "${widget.correctOptionOlChiki}" corresponds directly to the sound "${widget.correctOptionLatin}". Study this relation to solidify your recall.');
 
     return Container(
       width: double.infinity,
@@ -72,13 +108,15 @@ class QuizFeedbackPanel extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isCorrect
+                  color: widget.isCorrect
                       ? AppColors.primary.withValues(alpha: 0.2)
                       : AppColors.error.withValues(alpha: 0.2),
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
-                  isCorrect ? Icons.check_circle_rounded : Icons.cancel_rounded,
+                  widget.isCorrect
+                      ? Icons.check_circle_rounded
+                      : Icons.cancel_rounded,
                   color: iconColor,
                   size: 28,
                 ),
@@ -94,7 +132,7 @@ class QuizFeedbackPanel extends StatelessWidget {
               ),
             ],
           ),
-          if (!isCorrect) ...[
+          if (!widget.isCorrect) ...[
             const SizedBox(height: 12),
             Text(
               'Correct Answer:',
@@ -107,9 +145,9 @@ class QuizFeedbackPanel extends StatelessWidget {
             const SizedBox(height: 4),
             Row(
               children: [
-                if (correctOptionOlChiki.isNotEmpty) ...[
+                if (widget.correctOptionOlChiki.isNotEmpty) ...[
                   Text(
-                    correctOptionOlChiki,
+                    widget.correctOptionOlChiki,
                     style: TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -128,7 +166,7 @@ class QuizFeedbackPanel extends StatelessWidget {
                 ],
                 Expanded(
                   child: Text(
-                    correctOptionLatin,
+                    widget.correctOptionLatin,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
@@ -139,14 +177,69 @@ class QuizFeedbackPanel extends StatelessWidget {
               ],
             ),
           ],
+
+          const SizedBox(height: 12),
+          Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withValues(alpha: 0.04)
+                  : Colors.black.withValues(alpha: 0.02),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.06)
+                    : Colors.black.withValues(alpha: 0.05),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Icon(
+                      Icons.info_outline_rounded,
+                      size: 14,
+                      color: textColor.withValues(alpha: 0.8),
+                    ),
+                    const SizedBox(width: 6),
+                    Text(
+                      'Insight & Guidance:',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: textColor.withValues(alpha: 0.8),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  displayExplanation,
+                  style: TextStyle(
+                    fontSize: 13,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+
           const SizedBox(height: 20),
           SizedBox(
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: onContinue,
+              onPressed: () {
+                try {
+                  HapticFeedback.lightImpact();
+                } catch (_) {}
+                widget.onContinue();
+              },
               style: ElevatedButton.styleFrom(
-                backgroundColor: isCorrect
+                backgroundColor: widget.isCorrect
                     ? AppColors.primary
                     : AppColors.error,
                 foregroundColor: Colors.white,

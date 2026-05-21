@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
+import 'mistake_provider.dart';
 
 class QuizSessionState {
   final int currentQuestion;
@@ -95,6 +96,13 @@ class QuizSessionNotifier
       comboStreak = 0;
       comboMultiplier = 1;
       incorrectIndices.add(state.currentQuestion);
+      ref
+          .read(mistakeProvider.notifier)
+          .recordMistake(
+            quizId: quiz.id,
+            questionIndex: state.currentQuestion,
+            question: question,
+          );
       HapticFeedback.mediumImpact();
     }
 

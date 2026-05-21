@@ -19,7 +19,11 @@ import '../../features/lessons/presentation/sentence_detail_screen.dart';
 import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
+import '../../features/quiz/presentation/mistake_review_screen.dart';
+import '../../features/circle/presentation/weekly_circle_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
+import '../../features/profile/presentation/settings_screen.dart';
+
 import '../../features/legal/presentation/legal_document_screen.dart';
 import '../../features/admin/presentation/admin_login_screen.dart';
 import '../../features/admin/presentation/shell/admin_shell.dart';
@@ -214,11 +218,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       ),
       _shellRoute(path: '/bakhed', child: (_, _) => const MainShellScreen()),
       _drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
+      _drillRoute(
+        path: '/mistakes',
+        child: (_, _) => const MistakeReviewScreen(),
+      ),
+      _drillRoute(path: '/circle', child: (_, _) => const WeeklyCircleScreen()),
+
       _shellRoute(
         path: '/profile',
         name: RouteNames.profile,
         child: (_, _) => const MainShellScreen(),
       ),
+      _drillRoute(path: '/settings', child: (_, _) => const SettingsScreen()),
       _drillRoute(
         path: '/lessons/:categoryId',
         name: RouteNames.lessons,

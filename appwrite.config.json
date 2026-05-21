@@ -60,6 +60,86 @@
                 "databases.write",
                 "files.write"
             ]
+        },
+        {
+            "$id": "assignUserToWeeklyCircle",
+            "name": "assignUserToWeeklyCircle",
+            "runtime": "node-22",
+            "path": "functions/assignUserToWeeklyCircle",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "recordCircleEvent",
+            "name": "recordCircleEvent",
+            "runtime": "node-22",
+            "path": "functions/recordCircleEvent",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "getCircleLeaderboard",
+            "name": "getCircleLeaderboard",
+            "runtime": "node-22",
+            "path": "functions/getCircleLeaderboard",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read"
+            ]
+        },
+        {
+            "$id": "finalizeWeeklyCircles",
+            "name": "finalizeWeeklyCircles",
+            "runtime": "node-22",
+            "path": "functions/finalizeWeeklyCircles",
+            "entrypoint": "src/main.js",
+            "execute": [],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "0 0 * * 1",
+            "timeout": 60,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "users.write",
+                "databases.read",
+                "databases.write"
+            ]
         }
     ],
     "buckets": [

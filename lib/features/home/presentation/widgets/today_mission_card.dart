@@ -13,13 +13,15 @@ class TodayMissionCard extends ConsumerWidget {
     final lessonCompleted = ref.watch(lessonCompletedTodayProvider);
     final quizTaken = ref.watch(quizTakenTodayProvider);
     final bakhedListened = ref.watch(bakhedListenedTodayProvider);
+    final quickWinCompleted = ref.watch(quickWinCompletedTodayProvider);
 
     final completedCount =
         (lessonCompleted ? 1 : 0) +
         (quizTaken ? 1 : 0) +
-        (bakhedListened ? 1 : 0);
+        (bakhedListened ? 1 : 0) +
+        (quickWinCompleted ? 1 : 0);
 
-    final progress = completedCount / 3;
+    final progress = completedCount / 4;
 
     return Container(
       width: double.infinity,
@@ -79,7 +81,7 @@ class TodayMissionCard extends ConsumerWidget {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  '$completedCount/3 Done',
+                  '$completedCount/4 Done',
                   style: TextStyle(
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
@@ -136,6 +138,83 @@ class TodayMissionCard extends ConsumerWidget {
               ref.read(bakhedListenedTodayProvider.notifier).toggle();
             },
           ),
+          const SizedBox(height: 12),
+          _buildMissionItem(
+            context: context,
+            title: 'Quick Win: Review 1 word (takes 20s)',
+            completed: quickWinCompleted,
+            isDark: isDark,
+            onTap: () {
+              ref.read(quickWinCompletedTodayProvider.notifier).toggle();
+            },
+          ),
+          if (progress == 1.0) ...[
+            const SizedBox(height: 20),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: isDark
+                      ? [
+                          AppColors.primary.withValues(alpha: 0.15),
+                          const Color(0xFF1E293B),
+                        ]
+                      : [
+                          AppColors.primary.withValues(alpha: 0.08),
+                          Colors.white,
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      const Text('✨', style: TextStyle(fontSize: 20)),
+                      const SizedBox(width: 8),
+                      Text(
+                        'Tomorrow Preview',
+                        style: TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w900,
+                          color: isDark
+                              ? Colors.white
+                              : const Color(0xFF0F172A),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Learn: Family Words',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.brandTextDark
+                          : AppColors.brandTextLight,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Reward: 30 stars\nCome back tomorrow to continue your streak!',
+                    style: TextStyle(
+                      fontSize: 13,
+                      height: 1.4,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
         ],
       ),
     );

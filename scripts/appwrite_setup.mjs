@@ -315,8 +315,8 @@ const collections = [
     name: 'Translator Rate Limits',
     attrs: [
       { type: 'string', key: 'clientIp', size: 64, required: true },
-      { type: 'integer', key: 'count', required: true, default: 0 },
-      { type: 'integer', key: 'windowStart', required: true, default: 0 },
+      { type: 'integer', key: 'count', required: false, default: 0 },
+      { type: 'integer', key: 'windowStart', required: false, default: 0 },
     ],
     indexes: [
       { key: 'idx_client_ip', type: 'key', attributes: ['clientIp'] },
@@ -331,6 +331,76 @@ const collections = [
     ],
     indexes: [
       { key: 'idx_key', type: 'unique', attributes: ['settingKey'] },
+    ],
+  },
+  // ── Weekly Learning Circle collections ──
+  // Used by cloud functions: assignUserToWeeklyCircle, recordCircleEvent,
+  // getCircleLeaderboard, finalizeWeeklyCircles.
+  {
+    id: 'weekly_circles',
+    name: 'Weekly Circles',
+    attrs: [
+      { type: 'string', key: 'circleId', size: 36, required: true },
+      { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'beginner' },
+      { type: 'string', key: 'activityTier', size: 20, required: false, default: 'medium' },
+      { type: 'string', key: 'scriptMode', size: 20, required: false, default: 'latin' },
+      { type: 'integer', key: 'memberCount', required: false, default: 0 },
+      { type: 'integer', key: 'targetMembers', required: false, default: 20 },
+      { type: 'integer', key: 'maxMembers', required: false, default: 20 },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'open' },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'startsAt', size: 30, required: false },
+      { type: 'string', key: 'endsAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_week_status', type: 'key', attributes: ['weekId', 'status'] },
+      { key: 'idx_ends_status', type: 'key', attributes: ['endsAt', 'status'] },
+    ],
+  },
+  {
+    id: 'circle_members',
+    name: 'Circle Members',
+    attrs: [
+      { type: 'string', key: 'circleId', size: 36, required: true },
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'string', key: 'displayName', size: 255, required: false },
+      { type: 'string', key: 'anonymousName', size: 255, required: false },
+      { type: 'string', key: 'avatarEmoji', size: 20, required: false },
+      { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'beginner' },
+      { type: 'integer', key: 'circlePoints', required: false, default: 0 },
+      { type: 'integer', key: 'starsThisWeek', required: false, default: 0 },
+      { type: 'integer', key: 'lessonsCompleted', required: false, default: 0 },
+      { type: 'integer', key: 'quizzesTaken', required: false, default: 0 },
+      { type: 'integer', key: 'bakhedListened', required: false, default: 0 },
+      { type: 'integer', key: 'missionDaysCompleted', required: false, default: 0 },
+      { type: 'integer', key: 'mistakeReviewsCompleted', required: false, default: 0 },
+      { type: 'integer', key: 'rank', required: false, default: 0 },
+      { type: 'string', key: 'joinedAt', size: 30, required: false },
+      { type: 'string', key: 'lastActiveAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_user_week', type: 'key', attributes: ['userId', 'weekId'] },
+      { key: 'idx_circle_id', type: 'key', attributes: ['circleId'] },
+    ],
+  },
+  {
+    id: 'circle_events',
+    name: 'Circle Events',
+    attrs: [
+      { type: 'string', key: 'circleId', size: 36, required: true },
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'string', key: 'eventType', size: 50, required: true },
+      { type: 'string', key: 'sourceId', size: 100, required: true },
+      { type: 'integer', key: 'points', required: false, default: 0 },
+      { type: 'string', key: 'metadata', size: 4096, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_dup_check', type: 'key', attributes: ['userId', 'weekId', 'eventType', 'sourceId'] },
+      { key: 'idx_circle_week', type: 'key', attributes: ['circleId', 'weekId'] },
     ],
   },
 ];
@@ -397,7 +467,7 @@ async function main() {
       documentSecurity: false,
       permissions,
     });
-    await api('PATCH', `/databases/${DATABASE_ID}/collections/${col.id}`, {
+    await api('PUT', `/databases/${DATABASE_ID}/collections/${col.id}`, {
       name: col.name,
       documentSecurity: false,
       permissions,
@@ -408,27 +478,39 @@ async function main() {
       const path = `/databases/${DATABASE_ID}/collections/${col.id}/attributes`;
       console.log(`  📌 Attr: ${attr.key} (${attr.type})`);
 
-      if (attr.type === 'string') {
-        await api('POST', `${path}/string`, {
-          key: attr.key,
-          size: attr.size,
-          required: attr.required,
-          default: attr.default || null,
-        });
-      } else if (attr.type === 'integer') {
-        await api('POST', `${path}/integer`, {
-          key: attr.key,
-          required: attr.required,
-          default: attr.default ?? null,
-          min: attr.min ?? null,
-          max: attr.max ?? null,
-        });
-      } else if (attr.type === 'boolean') {
-        await api('POST', `${path}/boolean`, {
-          key: attr.key,
-          required: attr.required,
-          default: attr.default ?? null,
-        });
+      try {
+        if (attr.type === 'string') {
+          await api('POST', `${path}/string`, {
+            key: attr.key,
+            size: attr.size,
+            required: attr.required,
+            default: attr.default || null,
+          });
+        } else if (attr.type === 'integer') {
+          await api('POST', `${path}/integer`, {
+            key: attr.key,
+            required: attr.required,
+            default: attr.default ?? null,
+            min: attr.min ?? null,
+            max: attr.max ?? null,
+          });
+        } else if (attr.type === 'boolean') {
+          await api('POST', `${path}/boolean`, {
+            key: attr.key,
+            required: attr.required,
+            default: attr.default ?? null,
+          });
+        }
+      } catch (err) {
+        // Double check if it actually exists
+        try {
+          const existing = await api('GET', `/databases/${DATABASE_ID}/collections/${col.id}/attributes/${attr.key}`);
+          if (existing) {
+            console.log(`  ⏭  Already exists (verified): ${attr.key}`);
+            continue;
+          }
+        } catch (_) {}
+        throw err;
       }
     }
 
@@ -482,7 +564,7 @@ async function main() {
       allowedFileExtensions: bucket.allowedExtensions,
       enabled: true,
     });
-    await api('PATCH', `/storage/buckets/${bucket.id}`, {
+    await api('PUT', `/storage/buckets/${bucket.id}`, {
       name: bucket.name,
       permissions,
       fileSecurity: false,

@@ -11,6 +11,7 @@ import '../../../../core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../shared/widgets/state_widgets.dart';
+import '../../../circle/data/circle_repository.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
@@ -236,6 +237,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     if (lastDate == today) return stats.copyWith(lastActiveDate: today);
 
     int newStreak = 1;
+    int remainingShields = stats.streakShields;
     if (lastDate.isNotEmpty) {
       final parsedLastDay = DateTime.tryParse(lastDate);
       if (parsedLastDay != null) {
@@ -249,11 +251,100 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
           newStreak = stats.currentStreak + 1;
         } else if (diff == 0) {
           newStreak = stats.currentStreak;
+        } else {
+          // Missed days! Use a streak shield if available
+          if (remainingShields > 0) {
+            remainingShields--;
+            newStreak = stats.currentStreak; // Streak preserved!
+            final prefs = _ref?.read(sharedPreferencesProvider);
+            prefs?.setBool('streak_shield_used_banner_pending', true);
+          } else {
+            newStreak = 1;
+          }
         }
       }
     }
 
-    return stats.copyWith(lastActiveDate: today, currentStreak: newStreak);
+    return stats.copyWith(
+      lastActiveDate: today,
+      currentStreak: newStreak,
+      streakShields: remainingShields,
+    );
+  }
+
+  Future<void> recordDailyMissionsCompletedToday() async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    final now = _now();
+    final todayDate = DateTime(now.year, now.month, now.day);
+    final today = todayDate.toIso8601String().substring(0, 10);
+
+    if (current.completedMissionsDates.contains(today)) return;
+
+    final updatedDates = Set<String>.from(current.completedMissionsDates)
+      ..add(today);
+
+    // Calculate weekId of today using ISO-like week number
+    final year = todayDate.year;
+    final firstDayOfYear = DateTime(year);
+    final daysOffset = firstDayOfYear.weekday - 1;
+    final firstMonday = firstDayOfYear.subtract(Duration(days: daysOffset));
+    final daysSinceFirstMonday = todayDate.difference(firstMonday).inDays;
+    final week = (daysSinceFirstMonday / 7).floor() + 1;
+    final weekId = '$year-W$week';
+
+    // Count how many days in this week have completed daily missions
+    int completedDaysThisWeek = 0;
+    for (final dateStr in updatedDates) {
+      final date = DateTime.tryParse(dateStr);
+      if (date != null) {
+        final dYear = date.year;
+        final dFirstDay = DateTime(dYear);
+        final dOffset = dFirstDay.weekday - 1;
+        final dFirstMonday = dFirstDay.subtract(Duration(days: dOffset));
+        final dDaysSince = date.difference(dFirstMonday).inDays;
+        final dWeek = (dDaysSince / 7).floor() + 1;
+        final dWeekId = '$dYear-W$dWeek';
+        if (dWeekId == weekId) {
+          completedDaysThisWeek++;
+        }
+      }
+    }
+
+    int newShields = current.streakShields;
+    final prefs = _ref?.read(sharedPreferencesProvider);
+    final shieldEarnedThisWeekKey = 'shield_earned_week_$weekId';
+    final alreadyEarnedThisWeek =
+        prefs?.getBool(shieldEarnedThisWeekKey) ?? false;
+
+    if (completedDaysThisWeek >= 3 && !alreadyEarnedThisWeek) {
+      if (newShields < 2) {
+        newShields++;
+        await prefs?.setBool(shieldEarnedThisWeekKey, true);
+        await prefs?.setBool('streak_shield_earned_banner_pending', true);
+      }
+    }
+
+    final updated = current.copyWith(
+      completedMissionsDates: updatedDates,
+      streakShields: newShields,
+    );
+
+    // Securely fire weekly circle event (client-side repository checks validation)
+    if (_ref != null) {
+      final circleRepo = _ref.read(circleRepositoryProvider);
+      final userId =
+          _ref.read(sharedPreferencesProvider).getString('user_id') ??
+          'current_user';
+      await circleRepo.recordCircleEvent(
+        userId,
+        'daily_mission_completed',
+        'missions_$today',
+      );
+    }
+
+    await updateStats(updated);
   }
 
   /// Resolves a category key from a categoryId for mastery tracking.

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/motion/motion.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
 import '../../domain/rhyme_model.dart';
@@ -20,6 +21,84 @@ const Map<String, List<String>> _rhymeMeanings = {
   ],
   'seed_2': ['The tethered goat trap', 'Asking for a sickle'],
 };
+
+class BakhedVocab {
+  final String olChiki;
+  final String latin;
+  final String english;
+  final String pronunciation;
+
+  const BakhedVocab({
+    required this.olChiki,
+    required this.latin,
+    required this.english,
+    required this.pronunciation,
+  });
+}
+
+const Map<String, List<BakhedVocab>> _rhymeVocab = {
+  'seed_1': [
+    BakhedVocab(
+      olChiki: 'ᱫᱟᱠᱟ',
+      latin: 'Daka',
+      english: 'Cooked Rice',
+      pronunciation: '[dah-kah]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱵᱤᱨ',
+      latin: 'Bir',
+      english: 'Forest',
+      pronunciation: '[beer]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱦᱚᱨ',
+      latin: 'Hor',
+      english: 'Path / Way',
+      pronunciation: '[hor]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱥᱤᱧ',
+      latin: 'Siñ',
+      english: 'Day',
+      pronunciation: '[seen]',
+    ),
+  ],
+  'seed_2': [
+    BakhedVocab(
+      olChiki: 'ᱢᱮᱨᱚᱢ',
+      latin: 'Merom',
+      english: 'Goat',
+      pronunciation: '[may-rom]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱫᱟᱛᱨᱚᱢ',
+      latin: 'Datrom',
+      english: 'Sickle',
+      pronunciation: '[daht-rom]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱜᱷᱟᱥ',
+      latin: 'Ghas',
+      english: 'Grass',
+      pronunciation: '[ghahs]',
+    ),
+    BakhedVocab(
+      olChiki: 'ᱥᱤᱭᱩᱜ',
+      latin: 'Siyug',
+      english: 'Ploughing',
+      pronunciation: '[see-yoog]',
+    ),
+  ],
+};
+
+const Map<String, String> _rhymeCulture = {
+  'seed_1':
+      'In Santali traditional culture, the forest (Bir) is considered a sacred living deity and the source of life. Opening forest paths symbolises spiritual freedom, abundance, and the connection between the tribe and nature. This rhyme is traditionally chanted during hunting festivals or community gatherings to wish for peace and safe travels.',
+  'seed_2':
+      'Agricultural tools like the Datrom (sickle) hold deep economic and religious value in Santal households. Chants asking for sickle or tools represent the invocation of harvest deities and the industriousness of the community, reminding youngsters of the value of collective farming work.',
+};
+
+enum LyricMode { olChiki, latin, both }
 
 class RhymeDetailSheet extends ConsumerStatefulWidget {
   final RhymeModel rhyme;
@@ -44,6 +123,8 @@ class RhymeDetailSheet extends ConsumerStatefulWidget {
 class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
   double? _dragPositionSeconds;
   bool _isDragging = false;
+  LyricMode _lyricMode = LyricMode.both;
+  bool _showEnglishMeaning = true;
 
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.toString();
@@ -71,6 +152,8 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
     final olChikiLines = widget.rhyme.contentOlChiki.split('\n');
     final latinLines = widget.rhyme.contentLatin.split('\n');
     final meanings = _rhymeMeanings[widget.rhyme.id] ?? const [];
+    final vocabList = _rhymeVocab[widget.rhyme.id] ?? const [];
+    final cultureText = _rhymeCulture[widget.rhyme.id];
 
     // Calculate current position value
     final currentPosition = _isDragging && _dragPositionSeconds != null
@@ -194,79 +277,352 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                   ),
                 ),
 
+                // Lyric Mode Sliding Toggles (Touch Target >= 48dp)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.04),
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                    child: Row(
+                      children: [
+                        ...LyricMode.values.map((mode) {
+                          final isSelected = _lyricMode == mode;
+                          String label = '';
+                          switch (mode) {
+                            case LyricMode.olChiki:
+                              label = 'Ol Chiki';
+                              break;
+                            case LyricMode.latin:
+                              label = 'Latin';
+                              break;
+                            case LyricMode.both:
+                              label = 'Both';
+                              break;
+                          }
+                          return Expanded(
+                            child: PressableScale(
+                              onTap: () {
+                                HapticFeedback.selectionClick();
+                                setState(() {
+                                  _lyricMode = mode;
+                                });
+                              },
+                              child: Container(
+                                height: 38,
+                                alignment: Alignment.center,
+                                decoration: BoxDecoration(
+                                  color: isSelected
+                                      ? (isDark
+                                            ? Colors.white.withValues(
+                                                alpha: 0.1,
+                                              )
+                                            : Colors.white)
+                                      : Colors.transparent,
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: isSelected
+                                      ? [
+                                          BoxShadow(
+                                            color: Colors.black.withValues(
+                                              alpha: 0.05,
+                                            ),
+                                            blurRadius: 4,
+                                            offset: const Offset(0, 2),
+                                          ),
+                                        ]
+                                      : null,
+                                ),
+                                child: Text(
+                                  label,
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    color: isSelected
+                                        ? AppColors.primary
+                                        : (isDark
+                                              ? Colors.white54
+                                              : Colors.black54),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        }),
+                        const SizedBox(width: 4),
+                        // English Translation Toggle
+                        PressableScale(
+                          onTap: () {
+                            HapticFeedback.selectionClick();
+                            setState(() {
+                              _showEnglishMeaning = !_showEnglishMeaning;
+                            });
+                          },
+                          child: Container(
+                            height: 38,
+                            width: 44,
+                            decoration: BoxDecoration(
+                              color: _showEnglishMeaning
+                                  ? AppColors.primary.withValues(alpha: 0.15)
+                                  : Colors.transparent,
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            child: Icon(
+                              Icons.g_translate_rounded,
+                              size: 18,
+                              color: _showEnglishMeaning
+                                  ? AppColors.primary
+                                  : (isDark
+                                        ? Colors.white30
+                                        : Colors.black.withValues(alpha: 0.3)),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+
                 const Divider(height: 1, thickness: 1),
 
-                // Lyrics Content Section (Scrollable)
+                // Lyrics Content & Bento Extensions Section (Scrollable)
                 Expanded(
-                  child: ListView.builder(
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 24,
                     ),
-                    physics: const BouncingScrollPhysics(),
-                    itemCount: latinLines.length,
-                    itemBuilder: (context, index) {
-                      final olChiki = index < olChikiLines.length
-                          ? olChikiLines[index]
-                          : '';
-                      final latin = latinLines[index];
-                      final meaning = index < meanings.length
-                          ? meanings[index]
-                          : 'Culture translation';
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Lyrics presentation
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: latinLines.length,
+                          itemBuilder: (context, index) {
+                            final olChiki = index < olChikiLines.length
+                                ? olChikiLines[index]
+                                : '';
+                            final latin = latinLines[index];
+                            final meaning = index < meanings.length
+                                ? meanings[index]
+                                : 'Culture translation';
 
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 28),
-                        child: Column(
-                          children: [
-                            // 1. Ol Chiki Text
-                            if (olChiki.isNotEmpty)
-                              Text(
-                                    olChiki,
-                                    textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontFamily: 'OlChiki',
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.primary,
-                                      height: 1.3,
+                            final displayOlChiki =
+                                _lyricMode == LyricMode.olChiki ||
+                                _lyricMode == LyricMode.both;
+                            final displayLatin =
+                                _lyricMode == LyricMode.latin ||
+                                _lyricMode == LyricMode.both;
+
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 28),
+                              child: Column(
+                                children: [
+                                  // 1. Ol Chiki Text
+                                  if (olChiki.isNotEmpty && displayOlChiki)
+                                    Text(
+                                          olChiki,
+                                          textAlign: TextAlign.center,
+                                          style: const TextStyle(
+                                            fontFamily: 'OlChiki',
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.primary,
+                                            height: 1.3,
+                                          ),
+                                        )
+                                        .animate()
+                                        .fadeIn(delay: (index * 80).ms)
+                                        .slideY(begin: 0.15),
+                                  if (olChiki.isNotEmpty &&
+                                      displayOlChiki &&
+                                      displayLatin)
+                                    const SizedBox(height: 6),
+                                  // 2. Latin Transliteration
+                                  if (displayLatin)
+                                    Text(
+                                          latin,
+                                          textAlign: TextAlign.center,
+                                          style: GoogleFonts.fredoka(
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? Colors.white.withValues(
+                                                    alpha: 0.9,
+                                                  )
+                                                : Colors.black87,
+                                            height: 1.2,
+                                          ),
+                                        )
+                                        .animate()
+                                        .fadeIn(delay: (index * 80 + 30).ms)
+                                        .slideY(begin: 0.1),
+                                  // 3. English Meaning
+                                  if (_showEnglishMeaning) ...[
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      meaning,
+                                      textAlign: TextAlign.center,
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 14,
+                                        fontStyle: FontStyle.italic,
+                                        color: isDark
+                                            ? Colors.white38
+                                            : Colors.black38,
+                                        height: 1.2,
+                                      ),
+                                    ).animate().fadeIn(
+                                      delay: (index * 80 + 60).ms,
                                     ),
-                                  )
-                                  .animate()
-                                  .fadeIn(delay: (index * 100).ms)
-                                  .slideY(begin: 0.2),
-                            const SizedBox(height: 6),
-                            // 2. Latin Transliteration
-                            Text(
-                                  latin,
-                                  textAlign: TextAlign.center,
-                                  style: GoogleFonts.fredoka(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: isDark
-                                        ? Colors.white.withValues(alpha: 0.9)
-                                        : Colors.black87,
-                                    height: 1.2,
-                                  ),
-                                )
-                                .animate()
-                                .fadeIn(delay: (index * 100 + 50).ms)
-                                .slideY(begin: 0.15),
-                            const SizedBox(height: 6),
-                            // 3. English Meaning
-                            Text(
-                              meaning,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.fredoka(
-                                fontSize: 14,
-                                fontStyle: FontStyle.italic,
-                                color: isDark ? Colors.white38 : Colors.black38,
-                                height: 1.2,
+                                  ],
+                                ],
                               ),
-                            ).animate().fadeIn(delay: (index * 100 + 100).ms),
-                          ],
+                            );
+                          },
                         ),
-                      );
-                    },
+
+                        if (vocabList.isNotEmpty || cultureText != null) ...[
+                          const Divider(height: 48, thickness: 1),
+                        ],
+
+                        // Extracted Vocabulary Section
+                        if (vocabList.isNotEmpty) ...[
+                          Row(
+                            children: [
+                              Container(
+                                padding: const EdgeInsets.all(6),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.1,
+                                  ),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.menu_book_rounded,
+                                  color: AppColors.primary,
+                                  size: 16,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'EXTRACTED VOCABULARY',
+                                style: GoogleFonts.fredoka(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? Colors.white60
+                                      : Colors.black.withValues(alpha: 0.6),
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 14),
+                          SizedBox(
+                            height: 132,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              physics: const BouncingScrollPhysics(),
+                              itemCount: vocabList.length,
+                              separatorBuilder: (context, i) =>
+                                  const SizedBox(width: 12),
+                              itemBuilder: (context, index) {
+                                return VocabCard(
+                                  vocab: vocabList[index],
+                                  isDark: isDark,
+                                );
+                              },
+                            ),
+                          ),
+                          const SizedBox(height: 32),
+                        ],
+
+                        // Cultural Context Note Card
+                        if (cultureText != null) ...[
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(20),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: isDark
+                                    ? [
+                                        Colors.white.withValues(alpha: 0.05),
+                                        Colors.white.withValues(alpha: 0.02),
+                                      ]
+                                    : [
+                                        Colors.white,
+                                        Colors.amber.shade50.withValues(
+                                          alpha: 0.3,
+                                        ),
+                                      ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: isDark
+                                    ? Colors.white10
+                                    : AppColors.primary.withValues(alpha: 0.15),
+                              ),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(8),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary.withValues(
+                                          alpha: 0.1,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.library_books_rounded,
+                                        color: AppColors.primary,
+                                        size: 18,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Text(
+                                      'CULTURAL CONTEXT',
+                                      style: GoogleFonts.fredoka(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.primary,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  cultureText,
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 14,
+                                    height: 1.5,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black87,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 24),
+                        ],
+                      ],
+                    ),
                   ),
                 ),
 
@@ -503,6 +859,129 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
               ],
             ),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class VocabCard extends StatefulWidget {
+  final BakhedVocab vocab;
+  final bool isDark;
+
+  const VocabCard({super.key, required this.vocab, required this.isDark});
+
+  @override
+  State<VocabCard> createState() => _VocabCardState();
+}
+
+class _VocabCardState extends State<VocabCard> {
+  bool _revealed = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return PressableScale(
+      onTap: () {
+        HapticFeedback.mediumImpact();
+        setState(() {
+          _revealed = !_revealed;
+        });
+      },
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeInOut,
+        width: 144,
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: widget.isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _revealed
+                ? AppColors.primary
+                : (widget.isDark
+                      ? Colors.white10
+                      : AppColors.primary.withValues(alpha: 0.12)),
+            width: 1.5,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: _revealed
+                  ? AppColors.primary.withValues(alpha: 0.08)
+                  : Colors.black.withValues(alpha: widget.isDark ? 0.25 : 0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              widget.vocab.olChiki,
+              style: const TextStyle(
+                fontFamily: 'OlChiki',
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.primary,
+              ),
+            ),
+            const SizedBox(height: 4),
+            Text(
+              widget.vocab.latin,
+              style: GoogleFonts.fredoka(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: widget.isDark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+            const SizedBox(height: 8),
+            AnimatedCrossFade(
+              firstChild: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Text(
+                  'Tap to reveal',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+              secondChild: Column(
+                children: [
+                  Text(
+                    widget.vocab.english,
+                    textAlign: TextAlign.center,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: widget.isDark
+                          ? Colors.white.withValues(alpha: 0.9)
+                          : Colors.black87,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    widget.vocab.pronunciation,
+                    style: GoogleFonts.fredoka(
+                      fontSize: 10,
+                      color: widget.isDark ? Colors.white30 : Colors.black38,
+                    ),
+                  ),
+                ],
+              ),
+              crossFadeState: _revealed
+                  ? CrossFadeState.showSecond
+                  : CrossFadeState.showFirst,
+              duration: const Duration(milliseconds: 200),
+            ),
+          ],
         ),
       ),
     );

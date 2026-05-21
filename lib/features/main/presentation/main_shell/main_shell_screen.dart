@@ -8,7 +8,6 @@ import 'package:google_fonts/google_fonts.dart';
 import '../../../home/presentation/home_screen.dart';
 import '../../../rhymes/presentation/rhyme_screen.dart';
 import '../../../profile/presentation/progress_screen.dart';
-import '../../../profile/presentation/settings_screen.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
@@ -67,7 +66,6 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     const HomeScreen(),
     const RhymeScreen(),
     const ProgressScreen(),
-    const SettingsScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -514,17 +512,6 @@ class _DesktopSidebar extends ConsumerWidget {
                 ],
               ),
             ),
-          ),
-
-          const SizedBox(height: 4),
-
-          // Settings at bottom
-          _SidebarNavItem(
-            icon: Icons.settings_rounded,
-            label: 'Settings',
-            isSelected: selectedIndex == 3,
-            onTap: () => onItemTapped(3),
-            isDark: isDark,
           ),
 
           const SizedBox(height: 32),

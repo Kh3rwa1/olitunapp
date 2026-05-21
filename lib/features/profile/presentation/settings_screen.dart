@@ -98,7 +98,13 @@ class SettingsScreen extends ConsumerWidget {
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
-          onPressed: () => context.go('/'),
+          onPressed: () {
+            if (context.canPop()) {
+              context.pop();
+            } else {
+              context.go('/profile');
+            }
+          },
         ),
         title: Text(
           l10n.settings,

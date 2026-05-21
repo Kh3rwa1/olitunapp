@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/motion/motion.dart';
@@ -9,7 +10,6 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../domain/entities/user_stats_entity.dart';
-import 'settings_screen.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 
 // Extracted widgets
@@ -18,6 +18,7 @@ import 'widgets/stats_widgets.dart';
 import 'widgets/quiz_performance_card.dart';
 import 'widgets/edit_name_sheet.dart';
 import 'widgets/streak_calendar.dart';
+import 'widgets/badges_grid_widget.dart';
 import 'widgets/mastery_chart.dart';
 import 'widgets/mastery_milestones.dart';
 import 'widgets/next_milestone_card.dart';
@@ -65,15 +66,35 @@ class ProgressScreen extends ConsumerWidget {
             child: CustomScrollView(
               physics: const BouncingScrollPhysics(),
               slivers: [
-                // Minimal app bar
+                // Beautiful App Bar with Settings Gear Button
                 SliverAppBar(
-                  expandedHeight: 0,
+                  expandedHeight: kToolbarHeight,
                   pinned: true,
                   backgroundColor: isDark
                       ? AppColors.darkBackground
                       : AppColors.lightBackground,
                   elevation: 0,
-                  toolbarHeight: 0,
+                  automaticallyImplyLeading: false,
+                  title: Text(
+                    'Profile',
+                    style: GoogleFonts.fredoka(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                  ),
+                  actions: [
+                    IconButton(
+                      icon: Icon(
+                        Icons.settings_rounded,
+                        color: isDark ? Colors.white70 : Colors.black54,
+                      ),
+                      onPressed: () {
+                        context.push('/settings');
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                  ],
                 ),
 
                 SliverToBoxAdapter(
@@ -122,6 +143,7 @@ class ProgressScreen extends ConsumerWidget {
                         const SizedBox(height: 14),
                         StatsGrid(
                           streak: streak,
+                          streakShields: stats.streakShields,
                           stars: stars,
                           quizzesCompleted: quizzesCompleted,
                           learningTime: learningTime,
@@ -154,6 +176,11 @@ class ProgressScreen extends ConsumerWidget {
                         _buildSectionHeader('MILESTONES', isDark),
                         const SizedBox(height: 16),
                         MasteryMilestonesCard(stats: stats),
+                        const SizedBox(height: 32),
+
+                        _buildSectionHeader('ACHIEVEMENT BADGES', isDark),
+                        const SizedBox(height: 16),
+                        BadgesGridWidget(stats: stats, isDark: isDark),
                         const SizedBox(height: 32),
 
                         _buildSectionHeader('ACCOUNT', isDark),
@@ -238,9 +265,7 @@ class ProgressScreen extends ConsumerWidget {
             color: AppColors.duoOrange,
             isDark: isDark,
             onTap: () {
-              Navigator.of(
-                context,
-              ).push(MaterialPageRoute(builder: (_) => const SettingsScreen()));
+              context.push('/settings');
             },
           ),
         ),

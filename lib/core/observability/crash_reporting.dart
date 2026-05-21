@@ -134,6 +134,37 @@ class CrashReporting {
     );
   }
 
+  /// Record privileged maintenance requests such as content backup and reset.
+  static void addAdminMaintenanceBreadcrumb({
+    required String action,
+    bool success = true,
+    String? backupFileId,
+    String? error,
+  }) {
+    if (!isEnabled) {
+      debugPrint(
+        '[Breadcrumb] Admin maintenance $action'
+        '${backupFileId != null ? ' backup=$backupFileId' : ''}'
+        ' ${success ? 'OK' : 'FAIL: $error'}',
+      );
+      return;
+    }
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        type: 'user',
+        category: 'admin.maintenance',
+        message: 'maintenance $action',
+        level: success ? SentryLevel.info : SentryLevel.error,
+        data: {
+          'action': action,
+          'success': success,
+          'backupFileId': ?backupFileId,
+          'error': ?error,
+        },
+      ),
+    );
+  }
+
   /// Record an upload attempt breadcrumb.
   static void addUploadBreadcrumb({
     required String filename,

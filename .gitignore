@@ -49,20 +49,27 @@ app.*.map.json
 # Security
 .env
 scripts/node_modules/
+functions/*/node_modules/
 run.sh
 build_web_v*.zip
 *.jks
 *.keystore
+android/key.properties
+android/upload-keystore.jks
 
 # Agent / AI
 .agent/
+.gemini/scratch/
 
 # Test artifacts
 coverage/
 test_hive_cache/
+test_hive_*/
+project_sdk_dump.json
 
 # Release artifacts (build locally, don't commit)
 *.apk
 *.aab
 *.ipa
 test_hive_cache_v2/
+sites/

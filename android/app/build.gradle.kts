@@ -1,6 +1,7 @@
 // ✅ CRITICAL: Required imports for signing configuration
 import java.util.Properties
 import java.io.FileInputStream
+import org.gradle.api.GradleException
 
 plugins {
     id("com.android.application")
@@ -14,6 +15,16 @@ val keystoreProperties = Properties()
 if (keystorePropertiesFile.exists()) {
     keystoreProperties.load(FileInputStream(keystorePropertiesFile))
 }
+
+val releaseSigningConfigured = listOf(
+    "keyAlias",
+    "keyPassword",
+    "storeFile",
+    "storePassword"
+).all { (keystoreProperties[it] as String?)?.isNotBlank() == true }
+
+val allowDebugReleaseSigning =
+    providers.gradleProperty("allowDebugReleaseSigning").orNull == "true"
 
 android {
     namespace = "com.ol.itun"
@@ -60,10 +71,20 @@ android {
                 "proguard-rules.pro"
             )
 
-            signingConfig = if (keystoreProperties.isEmpty) {
+            signingConfig = if (releaseSigningConfigured) {
+                signingConfigs.getByName("release")
+            } else if (allowDebugReleaseSigning) {
+                logger.warn(
+                    "Release signing config is missing; using debug signing because " +
+                        "-PallowDebugReleaseSigning=true was provided."
+                )
                 signingConfigs.getByName("debug")
             } else {
-                signingConfigs.getByName("release")
+                throw GradleException(
+                    "Release signing config is missing. Create android/key.properties " +
+                        "with keyAlias, keyPassword, storeFile, and storePassword, or " +
+                        "pass -PallowDebugReleaseSigning=true only for CI build verification."
+                )
             }
         }
     }
@@ -87,4 +108,3 @@ dependencies {
 flutter {
     source = "../.."
 }
-

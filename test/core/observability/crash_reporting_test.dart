@@ -44,6 +44,16 @@ void main() {
       );
     });
 
+    test('addAdminMaintenanceBreadcrumb does not throw when disabled', () {
+      expect(
+        () => CrashReporting.addAdminMaintenanceBreadcrumb(
+          action: 'wipe_content',
+          backupFileId: 'backup-1',
+        ),
+        returnsNormally,
+      );
+    });
+
     test('addUploadBreadcrumb does not throw when disabled', () {
       expect(
         () => CrashReporting.addUploadBreadcrumb(

@@ -12,6 +12,7 @@ class AdminTextField extends StatelessWidget {
     this.keyboardType,
     this.helperText,
     this.prefixIcon,
+    this.onChanged,
   });
 
   final TextEditingController controller;
@@ -21,6 +22,7 @@ class AdminTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final String? helperText;
   final IconData? prefixIcon;
+  final ValueChanged<String>? onChanged;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +36,7 @@ class AdminTextField extends StatelessWidget {
           controller: controller,
           maxLines: maxLines,
           keyboardType: keyboardType,
+          onChanged: onChanged,
           style: AdminTokens.bodyStrong(isDark),
           decoration: InputDecoration(
             hintText: hint,

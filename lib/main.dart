@@ -32,7 +32,7 @@ Future<void> main() async {
       () async {
         WidgetsFlutterBinding.ensureInitialized();
 
-        // Enforce production SSL/TLS and certificate pinning overrides
+        // Enforce strict production TLS certificate validation.
         SecureHttpOverrides.initialize();
 
         // Fail fast if Appwrite config is missing; release builds must not silently

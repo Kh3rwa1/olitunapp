@@ -5,6 +5,8 @@ import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import 'widgets/admin_page_header.dart';
 import 'widgets/admin_form_widgets.dart';
+import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/observability/crash_reporting.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../core/api/appwrite_db_service.dart';
 import '../../../core/storage/cache_service.dart';
@@ -363,40 +365,72 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       icon: Icons.dangerous_rounded,
                       title: 'Danger Zone',
                       subtitle:
-                          'Perform system destructive actions. This will erase the database collections entirely.',
+                          'Perform privileged maintenance actions. Destructive resets create a server-side backup first.',
                       child: Padding(
                         padding: const EdgeInsets.all(20),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Column(
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            final narrow = constraints.maxWidth < 620;
+                            final details = Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Reset Database & Seeding',
+                                  style: AdminTokens.bodyStrong(isDark)
+                                      .copyWith(
+                                        color: isDark
+                                            ? AppColors.error
+                                            : AppColors.duoRedDark,
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  'Create an admin-only backup, wipe content collections, clear the local Hive cache, and run a fresh seeder.',
+                                  style: AdminTokens.body(isDark),
+                                ),
+                              ],
+                            );
+                            final actions = Wrap(
+                              spacing: 12,
+                              runSpacing: 12,
+                              alignment: narrow
+                                  ? WrapAlignment.start
+                                  : WrapAlignment.end,
+                              children: [
+                                AdminSecondaryButton(
+                                  label: 'Backup',
+                                  icon: Icons.cloud_download_rounded,
+                                  onTap: _executeBackupContent,
+                                ),
+                                AdminSecondaryButton(
+                                  label: 'Wipe & Re-seed',
+                                  icon: Icons.delete_forever_rounded,
+                                  destructive: true,
+                                  onTap: () =>
+                                      _showWipeConfirmationDialog(context),
+                                ),
+                              ],
+                            );
+
+                            if (narrow) {
+                              return Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Reset Database & Seeding',
-                                    style: AdminTokens.bodyStrong(isDark)
-                                        .copyWith(
-                                          color: isDark
-                                              ? AppColors.error
-                                              : AppColors.duoRedDark,
-                                        ),
-                                  ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    'This will wipe all documents from categories, lessons, letters, numbers, words, sentences, and quizzes, clear the local Hive cache, and run a fresh seeder.',
-                                    style: AdminTokens.body(isDark),
-                                  ),
+                                  details,
+                                  const SizedBox(height: 16),
+                                  actions,
                                 ],
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            AdminSecondaryButton(
-                              label: 'Wipe & Re-seed',
-                              icon: Icons.delete_forever_rounded,
-                              destructive: true,
-                              onTap: () => _showWipeConfirmationDialog(context),
-                            ),
-                          ],
+                              );
+                            }
+
+                            return Row(
+                              children: [
+                                Expanded(child: details),
+                                const SizedBox(width: 16),
+                                actions,
+                              ],
+                            );
+                          },
                         ),
                       ),
                     ),
@@ -419,13 +453,6 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
           builder: (context, setDialogState) {
             final confirmText = textController.text.trim();
             final isEnabled = confirmText == 'WIPE ALL';
-
-            // Add controller listener to trigger modal redraw when typed value changes
-            textController.addListener(() {
-              if (dialogContext.mounted) {
-                setDialogState(() {});
-              }
-            });
 
             return Dialog(
               backgroundColor: Colors.transparent,
@@ -503,6 +530,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       label: 'Authorization Key',
                       hint: 'WIPE ALL',
                       prefixIcon: Icons.vpn_key_rounded,
+                      onChanged: (_) => setDialogState(() {}),
                     ),
                     const SizedBox(height: 28),
                     Row(
@@ -587,10 +615,18 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     });
 
     try {
-      final db = ref.read(appwriteDbServiceProvider);
+      final auth = ref.read(appwriteAuthServiceProvider);
 
-      // 1. Wipe all Appwrite data
-      await db.wipeAllData();
+      // 1. Wipe Appwrite content through the authenticated admin function.
+      final result = await auth.executeAdminMaintenance(
+        action: 'wipe_content',
+        confirmation: 'WIPE ALL',
+      );
+      final backupFileId = adminMaintenanceBackupFileId(result);
+      CrashReporting.addAdminMaintenanceBreadcrumb(
+        action: 'wipe_content',
+        backupFileId: backupFileId,
+      );
 
       // 2. Clear local Hive content cache
       await CacheService.clear();
@@ -601,7 +637,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text('Database successfully wiped and seeded! ✨'),
+            content: Text(
+              backupFileId == null
+                  ? 'Database successfully wiped and seeded! ✨'
+                  : 'Database wiped and seeded. Backup: $backupFileId ✨',
+            ),
             backgroundColor: AppColors.success,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(
@@ -611,10 +651,76 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         );
       }
     } catch (e) {
+      CrashReporting.addAdminMaintenanceBreadcrumb(
+        action: 'wipe_content',
+        success: false,
+        error: e.toString(),
+      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Wipe & Seeding failed: $e ❌'),
+            backgroundColor: AppColors.error,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        _loadSettings();
+      }
+    }
+  }
+
+  Future<void> _executeBackupContent() async {
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      final auth = ref.read(appwriteAuthServiceProvider);
+      final result = await auth.executeAdminMaintenance(
+        action: 'backup_content',
+        confirmation: 'BACKUP CONTENT',
+      );
+      final backupFileId = adminMaintenanceBackupFileId(result);
+      CrashReporting.addAdminMaintenanceBreadcrumb(
+        action: 'backup_content',
+        backupFileId: backupFileId,
+      );
+
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              backupFileId == null
+                  ? 'Content backup created.'
+                  : 'Content backup created: $backupFileId',
+            ),
+            backgroundColor: AppColors.success,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      CrashReporting.addAdminMaintenanceBreadcrumb(
+        action: 'backup_content',
+        success: false,
+        error: e.toString(),
+      );
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Backup failed: $e'),
             backgroundColor: AppColors.error,
             behavior: SnackBarBehavior.floating,
             shape: RoundedRectangleBorder(

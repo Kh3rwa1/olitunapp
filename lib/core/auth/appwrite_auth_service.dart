@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:appwrite/models.dart' as models;
@@ -17,6 +19,46 @@ String googleOAuthUserMessage(String message) {
   }
 
   return message;
+}
+
+@visibleForTesting
+Map<String, dynamic> parseAdminMaintenanceResponse({
+  required int statusCode,
+  required String body,
+}) {
+  Map<String, dynamic> decoded = const {};
+  if (body.trim().isNotEmpty) {
+    final parsed = jsonDecode(body);
+    if (parsed is! Map<String, dynamic>) {
+      throw AppwriteException(
+        'Unexpected admin maintenance response.',
+        statusCode,
+        'invalid_response',
+      );
+    }
+    decoded = parsed;
+  }
+
+  if (statusCode < 200 || statusCode >= 300 || decoded['success'] != true) {
+    final message = decoded['message']?.toString();
+    throw AppwriteException(
+      message == null || message.isEmpty
+          ? 'Admin maintenance request failed.'
+          : message,
+      statusCode,
+      'admin_maintenance_failed',
+    );
+  }
+
+  return decoded;
+}
+
+String? adminMaintenanceBackupFileId(Map<String, dynamic> response) {
+  final backup = response['backup'];
+  if (backup is! Map<String, dynamic>) return null;
+  final fileId = backup['fileId'];
+  if (fileId is! String || fileId.isEmpty) return null;
+  return fileId;
 }
 
 class AppwriteAuthService {
@@ -334,6 +376,24 @@ class AppwriteAuthService {
     } finally {
       await _clearLocalSessionState();
     }
+  }
+
+  Future<Map<String, dynamic>> executeAdminMaintenance({
+    required String action,
+    required String confirmation,
+  }) async {
+    await _restoreWebSession();
+    final execution = await _functions.createExecution(
+      functionId: 'admin-maintenance',
+      body: jsonEncode({'action': action, 'confirmation': confirmation}),
+      xasync: false,
+      method: ExecutionMethod.pOST,
+    );
+
+    return parseAdminMaintenanceResponse(
+      statusCode: execution.responseStatusCode,
+      body: execution.responseBody,
+    );
   }
 }
 

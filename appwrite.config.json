@@ -38,6 +38,50 @@
             "scopes": [
                 "users.write"
             ]
+        },
+        {
+            "$id": "admin-maintenance",
+            "name": "admin-maintenance",
+            "runtime": "node-22",
+            "path": "functions/admin-maintenance",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "databases.read",
+                "databases.write",
+                "files.write"
+            ]
+        }
+    ],
+    "buckets": [
+        {
+            "$id": "admin_backups",
+            "name": "Admin Backups",
+            "$permissions": [
+                "read(\"team:admins\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "enabled": true,
+            "maximumFileSize": 50000000,
+            "allowedFileExtensions": [
+                "json"
+            ],
+            "compression": "gzip",
+            "encryption": true,
+            "antivirus": true,
+            "transformations": false
         }
     ],
     "sites": [

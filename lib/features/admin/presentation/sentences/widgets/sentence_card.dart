@@ -11,8 +11,6 @@ class SentenceCard extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final bool canDelete;
-  final String? sourceLabel;
-  final String? sourceTooltip;
 
   const SentenceCard({
     super.key,
@@ -21,8 +19,6 @@ class SentenceCard extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
     this.canDelete = true,
-    this.sourceLabel,
-    this.sourceTooltip,
   });
 
   @override
@@ -116,40 +112,23 @@ class _SentenceCardState extends State<SentenceCard> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if ((sentence.category != null &&
-                            sentence.category!.isNotEmpty) ||
-                        widget.sourceLabel != null) ...[
+                    if (sentence.category != null &&
+                        sentence.category!.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
                         children: [
-                          if (sentence.category != null &&
-                              sentence.category!.isNotEmpty)
-                            _Badge(
-                              label: sentence.category!,
-                              color: const Color(0xFF10B981),
-                              background: const Color(
-                                0xFF10B981,
-                              ).withValues(alpha: 0.1),
-                              border: const Color(
-                                0xFF10B981,
-                              ).withValues(alpha: 0.3),
-                            ),
-                          if (widget.sourceLabel != null)
-                            Tooltip(
-                              message: widget.sourceTooltip ?? '',
-                              child: _Badge(
-                                label: widget.sourceLabel!,
-                                color: const Color(0xFFB45309),
-                                background: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: isDark ? 0.18 : 0.12),
-                                border: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: 0.35),
-                              ),
-                            ),
+                          _Badge(
+                            label: sentence.category!,
+                            color: const Color(0xFF10B981),
+                            background: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.1),
+                            border: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.3),
+                          ),
                         ],
                       ),
                     ],

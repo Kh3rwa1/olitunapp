@@ -339,9 +339,6 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     bool isDark,
     bool isWideScreen,
   ) {
-    final hasLessonBlockRows = sentences.any(_isLessonBlockSentence);
-    final itemCount = sentences.length + (hasLessonBlockRows ? 1 : 0);
-
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(
         isWideScreen ? 32 : 20,
@@ -351,33 +348,16 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
       ),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
-          if (hasLessonBlockRows && index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AdminLessonBlockInfoBanner(
-                title: 'Lesson-block drafts',
-                message:
-                    'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Sentence record, or use the lesson content editor to change the original block.',
-                isDark: isDark,
-              ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06),
-            );
-          }
-
-          final sentenceIndex = hasLessonBlockRows ? index - 1 : index;
-          final sentence = sentences[sentenceIndex];
+          final sentence = sentences[index];
           final isLessonBlock = _isLessonBlockSentence(sentence);
           return SentenceCard(
             sentence: sentence,
             isDark: isDark,
             canDelete: !isLessonBlock,
-            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
-            sourceTooltip: isLessonBlock
-                ? 'This row comes from a lesson content block. Editing it saves a new Sentence record.'
-                : null,
             onEdit: () => SentenceFormSheet.show(context, ref, sentence),
             onDelete: () => _confirmDelete(context, sentence),
-          ).animate().fadeIn(delay: (sentenceIndex * 50).ms).slideY(begin: 0.1);
-        }, childCount: itemCount),
+          ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
+        }, childCount: sentences.length),
       ),
     );
   }

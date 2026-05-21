@@ -334,9 +334,6 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     bool isDark,
     bool isWideScreen,
   ) {
-    final hasLessonBlockRows = words.any(_isLessonBlockWord);
-    final itemCount = words.length + (hasLessonBlockRows ? 1 : 0);
-
     return SliverPadding(
       padding: EdgeInsets.fromLTRB(
         isWideScreen ? 32 : 20,
@@ -346,33 +343,16 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
       ),
       sliver: SliverList(
         delegate: SliverChildBuilderDelegate((context, index) {
-          if (hasLessonBlockRows && index == 0) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: AdminLessonBlockInfoBanner(
-                title: 'Lesson-block drafts',
-                message:
-                    'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Word record, or use the lesson content editor to change the original block.',
-                isDark: isDark,
-              ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06),
-            );
-          }
-
-          final wordIndex = hasLessonBlockRows ? index - 1 : index;
-          final word = words[wordIndex];
+          final word = words[index];
           final isLessonBlock = _isLessonBlockWord(word);
           return WordCard(
             word: word,
             isDark: isDark,
             canDelete: !isLessonBlock,
-            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
-            sourceTooltip: isLessonBlock
-                ? 'This row comes from a lesson content block. Editing it saves a new Word record.'
-                : null,
             onEdit: () => WordFormSheet.show(context, ref, word),
             onDelete: () => _confirmDelete(context, word),
-          ).animate().fadeIn(delay: (wordIndex * 50).ms).slideY(begin: 0.1);
-        }, childCount: itemCount),
+          ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
+        }, childCount: words.length),
       ),
     );
   }

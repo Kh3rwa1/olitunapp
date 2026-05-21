@@ -11,8 +11,6 @@ class WordCard extends StatefulWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
   final bool canDelete;
-  final String? sourceLabel;
-  final String? sourceTooltip;
 
   const WordCard({
     super.key,
@@ -21,8 +19,6 @@ class WordCard extends StatefulWidget {
     required this.onEdit,
     required this.onDelete,
     this.canDelete = true,
-    this.sourceLabel,
-    this.sourceTooltip,
   });
 
   @override
@@ -115,35 +111,18 @@ class _WordCardState extends State<WordCard> {
                         isDark,
                       ).copyWith(color: AdminTokens.textSecondary(isDark)),
                     ),
-                    if ((word.category != null && word.category!.isNotEmpty) ||
-                        widget.sourceLabel != null) ...[
+                    if (word.category != null && word.category!.isNotEmpty) ...[
                       const SizedBox(height: 6),
                       Wrap(
                         spacing: 6,
                         runSpacing: 6,
                         children: [
-                          if (word.category != null &&
-                              word.category!.isNotEmpty)
-                            _Badge(
-                              label: word.category!,
-                              color: AppColors.primary,
-                              background: AdminTokens.accentSoft(isDark),
-                              border: AdminTokens.accentBorder(isDark),
-                            ),
-                          if (widget.sourceLabel != null)
-                            Tooltip(
-                              message: widget.sourceTooltip ?? '',
-                              child: _Badge(
-                                label: widget.sourceLabel!,
-                                color: const Color(0xFFB45309),
-                                background: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: isDark ? 0.18 : 0.12),
-                                border: const Color(
-                                  0xFFF59E0B,
-                                ).withValues(alpha: 0.35),
-                              ),
-                            ),
+                          _Badge(
+                            label: word.category!,
+                            color: AppColors.primary,
+                            background: AdminTokens.accentSoft(isDark),
+                            border: AdminTokens.accentBorder(isDark),
+                          ),
                         ],
                       ),
                     ],

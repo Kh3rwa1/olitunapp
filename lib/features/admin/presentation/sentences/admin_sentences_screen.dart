@@ -15,6 +15,7 @@ import '../widgets/admin_content_subcategories.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_form_widgets.dart';
+import '../widgets/admin_lesson_block_info_banner.dart';
 import 'widgets/sentence_form_sheet.dart';
 import 'widgets/sentence_card.dart';
 
@@ -28,6 +29,13 @@ class AdminSentencesScreen extends ConsumerStatefulWidget {
 
 class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
   String? _selectedCategory;
+  final ScrollController _sentencesScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _sentencesScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -256,13 +264,18 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
   }
 
   Widget _emptyState(BuildContext context, bool isDark) {
-    return AdminEmptyState(
-      icon: Icons.format_quote_rounded,
-      title: 'No sentences yet',
-      message: 'Add sentences for conversational practice.',
-      actionLabel: 'Add Sentence',
-      onAction: () => SentenceFormSheet.show(context, ref, null),
-    ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 120),
+      child: AdminEmptyState(
+        icon: Icons.format_quote_rounded,
+        title: 'No sentences yet',
+        message: _selectedCategory == null
+            ? 'Add sentences for conversational practice.'
+            : 'This subcategory has no saved Sentence records or editable lesson blocks yet.',
+        actionLabel: 'Add Sentence',
+        onAction: () => SentenceFormSheet.show(context, ref, null),
+      ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+    );
   }
 
   Widget _buildSentencesList(
@@ -270,25 +283,52 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     bool isDark,
     bool isWideScreen,
   ) {
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        isWideScreen ? 32 : 20,
-        0,
-        isWideScreen ? 32 : 20,
-        100,
+    final hasLessonBlockRows = sentences.any(_isLessonBlockSentence);
+    final itemCount = sentences.length + (hasLessonBlockRows ? 1 : 0);
+
+    return Scrollbar(
+      controller: _sentencesScrollController,
+      thumbVisibility: true,
+      child: ListView.builder(
+        controller: _sentencesScrollController,
+        padding: EdgeInsets.fromLTRB(
+          isWideScreen ? 32 : 20,
+          0,
+          isWideScreen ? 32 : 20,
+          120,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (hasLessonBlockRows && index == 0) {
+            return AdminLessonBlockInfoBanner(
+              title: 'Lesson-block drafts',
+              message:
+                  'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Sentence record, or use the lesson content editor to change the original block.',
+              isDark: isDark,
+            ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06);
+          }
+
+          final sentenceIndex = hasLessonBlockRows ? index - 1 : index;
+          final sentence = sentences[sentenceIndex];
+          final isLessonBlock = _isLessonBlockSentence(sentence);
+          return SentenceCard(
+            sentence: sentence,
+            isDark: isDark,
+            canDelete: !isLessonBlock,
+            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
+            sourceTooltip: isLessonBlock
+                ? 'This row comes from a lesson content block. Editing it saves a new Sentence record.'
+                : null,
+            onEdit: () => SentenceFormSheet.show(context, ref, sentence),
+            onDelete: () => _confirmDelete(context, sentence),
+          ).animate().fadeIn(delay: (sentenceIndex * 50).ms).slideY(begin: 0.1);
+        },
       ),
-      itemCount: sentences.length,
-      itemBuilder: (context, index) {
-        final sentence = sentences[index];
-        return SentenceCard(
-          sentence: sentence,
-          isDark: isDark,
-          onEdit: () => SentenceFormSheet.show(context, ref, sentence),
-          onDelete: () => _confirmDelete(context, sentence),
-        ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
-      },
     );
   }
+
+  bool _isLessonBlockSentence(SentenceModel sentence) =>
+      sentence.id.startsWith('lesson_block_sentence_');
 
   Future<void> _confirmDelete(
     BuildContext context,
@@ -367,12 +407,41 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
             )
             .toList()
           ..sort((a, b) => a.order.compareTo(b.order));
-    if (exact.isNotEmpty) return exact;
+    if (exact.isNotEmpty) {
+      return _mergeSavedSentencesWithLessonBlocks(exact, lesson);
+    }
 
     final categoryMatches = _filterSentencesByCategory(sentences, selectedKey);
-    if (categoryMatches.isNotEmpty) return categoryMatches;
+    if (categoryMatches.isNotEmpty) {
+      return _mergeSavedSentencesWithLessonBlocks(categoryMatches, lesson);
+    }
 
     return _sentencesFromLessonBlocks(lesson);
+  }
+
+  List<SentenceModel> _mergeSavedSentencesWithLessonBlocks(
+    List<SentenceModel> savedSentences,
+    LessonEntity lesson,
+  ) {
+    final drafts = _sentencesFromLessonBlocks(lesson).where(
+      (draft) =>
+          !savedSentences.any((saved) => _sameSentenceRecord(saved, draft)),
+    );
+    return [...savedSentences, ...drafts];
+  }
+
+  bool _sameSentenceRecord(SentenceModel saved, SentenceModel draft) {
+    final savedOlChiki = _normalizeKey(saved.sentenceOlChiki);
+    final draftOlChiki = _normalizeKey(draft.sentenceOlChiki);
+    if (savedOlChiki.isNotEmpty && savedOlChiki == draftOlChiki) return true;
+
+    final savedLatin = _normalizeKey(saved.sentenceLatin);
+    final draftLatin = _normalizeKey(draft.sentenceLatin);
+    if (savedLatin.isNotEmpty && savedLatin == draftLatin) return true;
+
+    final savedMeaning = _normalizeKey(saved.meaning);
+    final draftMeaning = _normalizeKey(draft.meaning);
+    return savedMeaning.isNotEmpty && savedMeaning == draftMeaning;
   }
 
   List<SentenceModel> _filterSentencesByCategory(

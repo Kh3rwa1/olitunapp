@@ -78,7 +78,7 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     HapticFeedback.lightImpact();
     final sentence = SentenceModel(
       id: _isEditing ? widget.sentence!.id : const Uuid().v4(),
@@ -100,11 +100,24 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           ? _themeColorCtrl.text.trim()
           : null,
     );
-    if (_isEditing) {
-      ref.read(sentencesProvider.notifier).update(sentence);
-    } else {
-      ref.read(sentencesProvider.notifier).add(sentence);
+    try {
+      if (_isEditing) {
+        await ref.read(sentencesProvider.notifier).update(sentence);
+      } else {
+        await ref.read(sentencesProvider.notifier).add(sentence);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save sentence: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
     }
+    if (!mounted) return;
     Navigator.pop(context);
   }
 

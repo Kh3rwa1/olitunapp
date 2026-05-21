@@ -121,7 +121,7 @@ void main() {
       verify(() => mockRepo.deleteLesson('l1')).called(1);
     });
 
-    test('addLesson swallows failure silently', () async {
+    test('addLesson surfaces failure', () async {
       when(
         () => mockRepo.getLessons(),
       ).thenAnswer((_) async => Right(sampleLessons));
@@ -133,9 +133,11 @@ void main() {
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
-      // Should not throw.
-      await notifier.addLesson(sampleLessons.first);
-      expect(notifier.state.hasValue, isTrue);
+      await expectLater(
+        notifier.addLesson(sampleLessons.first),
+        throwsA(isA<StateError>()),
+      );
+      expect(notifier.state.hasError, isTrue);
     });
   });
 

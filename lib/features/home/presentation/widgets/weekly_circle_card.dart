@@ -186,6 +186,7 @@ class WeeklyCircleCard extends ConsumerWidget {
                           : Colors.black.withValues(alpha: 0.05),
                       foregroundColor: isDark ? Colors.white : Colors.black87,
                       elevation: 0,
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),

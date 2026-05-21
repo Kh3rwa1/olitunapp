@@ -322,6 +322,7 @@ void _showStatGlowDialog(
                         backgroundColor: primaryColor,
                         foregroundColor: Colors.white,
                         elevation: 0,
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(14),
                         ),

@@ -16,7 +16,6 @@ class NextBestActionCard extends ConsumerWidget {
 
     // Watch statistics and learning status
     final statsAsync = ref.watch(userStatsProvider);
-    final lessonsCompleted = ref.watch(lessonsCompletedProvider);
     final mistakes = ref.watch(mistakeProvider);
 
     final isAuthAsync = ref.watch(isAuthenticatedProvider);
@@ -33,7 +32,12 @@ class NextBestActionCard extends ConsumerWidget {
     IconData icon = Icons.star_rounded;
     Color color = AppColors.primary;
 
-    if (isGuest || lessonsCompleted == 0) {
+    final hasCompletedAlphabet = (stats?.completedLessons.any((id) => id.contains('alphabet')) ?? false) ||
+        (stats?.practicedLetters.isNotEmpty ?? false);
+    final hasCompletedNumbers = stats?.completedLessons.any((id) => id.contains('number')) ?? false;
+    final showStartHere = !hasCompletedAlphabet || !hasCompletedNumbers;
+
+    if (isGuest || showStartHere) {
       badgeText = 'START HERE';
       title = 'Learn your first Ol Chiki letters';
       subtitle = 'Begin with the basic alphabet and unlock Santali writing.';
@@ -41,7 +45,16 @@ class NextBestActionCard extends ConsumerWidget {
       icon = Icons.menu_book_rounded;
       color = AppColors.primary;
       onTap = () {
-        context.push('/categories');
+        if (!hasCompletedAlphabet && hasCompletedNumbers) {
+          context.push('/letter/standalone/all');
+        } else if (hasCompletedAlphabet && !hasCompletedNumbers) {
+          context.push('/number/standalone/all');
+        } else {
+          final route = (DateTime.now().millisecondsSinceEpoch % 2 == 0)
+              ? '/letter/standalone/all'
+              : '/number/standalone/all';
+          context.push(route);
+        }
       };
     } else if (mistakes.isNotEmpty) {
       badgeText = 'PRACTICE NEEDED';
@@ -184,6 +197,7 @@ class NextBestActionCard extends ConsumerWidget {
                   backgroundColor: color,
                   foregroundColor: Colors.white,
                   elevation: 0,
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(16),
                   ),

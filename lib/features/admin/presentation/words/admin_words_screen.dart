@@ -126,7 +126,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                   child: wordsAsync.when(
                     data: (words) {
                       final filtered = _selectedCategory == null
-                          ? _filterWordsForLessons(words, subcategoryLessons)
+                          ? words
                           : _filterWords(words, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
@@ -334,25 +334,6 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     return labels;
   }
 
-  List<WordModel> _filterWordsForLessons(
-    List<WordModel> words,
-    List<LessonEntity> subcategoryLessons,
-  ) {
-    if (subcategoryLessons.isEmpty) return words;
-    final allowed = subcategoryLessons
-        .expand(_normalizedTextBlockValues)
-        .toSet();
-    if (allowed.isEmpty) return const [];
-    return words
-        .where(
-          (word) =>
-              word.isActive &&
-              allowed.contains(_normalizeKey(word.wordOlChiki)),
-        )
-        .toList()
-      ..sort((a, b) => a.order.compareTo(b.order));
-  }
-
   List<WordModel> _filterWords(
     List<WordModel> words,
     List<LessonEntity> subcategoryLessons,
@@ -365,29 +346,101 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         .where((lesson) => _normalizeKey(lesson.titleLatin) == selectedKey)
         .firstOrNull;
     if (lesson == null) {
-      return words
-          .where((word) => _normalizeKey(word.category ?? '') == selectedKey)
-          .toList();
+      return _filterWordsByCategory(words, selectedKey);
     }
 
-    final blockTexts = _normalizedTextBlockValues(lesson).toSet();
-    if (blockTexts.isEmpty) return const [];
+    final exact =
+        words
+            .where(
+              (word) =>
+                  word.isActive &&
+                  _lessonMatchesWord(
+                    lesson,
+                    word.wordOlChiki,
+                    word.wordLatin,
+                    word.meaning,
+                  ),
+            )
+            .toList()
+          ..sort((a, b) => a.order.compareTo(b.order));
+    if (exact.isNotEmpty) return exact;
 
+    return _filterWordsByCategory(words, selectedKey);
+  }
+
+  List<WordModel> _filterWordsByCategory(List<WordModel> words, String key) {
+    final aliases = _categoryAliases(key);
     return words
-        .where(
-          (word) =>
-              word.isActive &&
-              blockTexts.contains(_normalizeKey(word.wordOlChiki)),
-        )
+        .where((word) => aliases.contains(_normalizeKey(word.category ?? '')))
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
   }
 
-  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) {
-    return lesson.blocks
-        .where((block) => block.type == 'text' && block.textOlChiki != null)
-        .map((block) => _normalizeKey(block.textOlChiki!))
-        .where((text) => text.isNotEmpty);
+  bool _lessonMatchesWord(
+    LessonEntity lesson,
+    String olChiki,
+    String latin,
+    String meaning,
+  ) {
+    final values = [
+      _normalizeKey(olChiki),
+      _normalizeKey(latin),
+      _normalizeKey(meaning),
+    ].where((value) => value.isNotEmpty).toList();
+    return _normalizedTextBlockValues(lesson).any(
+      (blockText) => values.any(
+        (value) => blockText == value || blockText.contains(value),
+      ),
+    );
+  }
+
+  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) sync* {
+    for (final block in lesson.blocks.where((block) => block.type == 'text')) {
+      final olChiki = _normalizeKey(block.textOlChiki ?? '');
+      if (olChiki.isNotEmpty) yield olChiki;
+      final latin = _normalizeKey(block.textLatin ?? '');
+      if (latin.isNotEmpty) {
+        yield latin;
+        for (final part in latin.split(RegExp(r'\s+[–-]\s+'))) {
+          final value = _normalizeKey(part);
+          if (value.isNotEmpty) yield value;
+        }
+      }
+    }
+  }
+
+  Set<String> _categoryAliases(String key) {
+    final aliases = <String>{key};
+    final words = key.split(' ').toSet();
+    if (words.contains('greetings')) aliases.add('greeting');
+    if (words.contains('basics')) aliases.add('basic');
+    if (words.contains('family')) aliases.add('family');
+    if (words.contains('daily')) aliases.add('daily');
+    if (words.contains('colors')) aliases.add('colors');
+    if (words.contains('nature') || words.contains('animals')) {
+      aliases.add('nature');
+    }
+    if (words.contains('months') ||
+        words.contains('days') ||
+        words.contains('seasons')) {
+      aliases.add('time');
+    }
+    if (words.contains('trending') || words.contains('popular')) {
+      aliases.add('trending');
+    }
+    if (words.contains('idioms') || words.contains('life')) {
+      aliases.add('daily');
+    }
+    if (words.contains('proverbs') || words.contains('wisdom')) {
+      aliases.add('proverbs');
+    }
+    if (words.contains('modern') || words.contains('conversational')) {
+      aliases.add('modern');
+    }
+    if (words.contains('casual') || words.contains('slang')) {
+      aliases.add('slang');
+    }
+    return aliases;
   }
 
   String _normalizeKey(String value) {

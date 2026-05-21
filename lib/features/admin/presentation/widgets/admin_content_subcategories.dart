@@ -141,9 +141,10 @@ class AdminContentSubcategories extends StatelessWidget {
             )
           else
             SizedBox(
-              height: 164,
+              height: 142,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(bottom: 2),
                 itemCount: lessons.length,
                 separatorBuilder: (_, _) => const SizedBox(width: 12),
                 itemBuilder: (context, index) {
@@ -240,8 +241,8 @@ class _SubcategoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 300,
-      padding: const EdgeInsets.all(14),
+      width: 268,
+      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: AdminTokens.sunken(isDark),
         borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
@@ -253,8 +254,8 @@ class _SubcategoryCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                width: 42,
-                height: 42,
+                width: 38,
+                height: 38,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
                   borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
@@ -298,8 +299,8 @@ class _SubcategoryCard extends StatelessWidget {
           ),
           const Spacer(),
           Wrap(
-            spacing: 8,
-            runSpacing: 8,
+            spacing: 6,
+            runSpacing: 6,
             children: [
               _MetaChip(
                 icon: Icons.sort_rounded,
@@ -313,8 +314,7 @@ class _SubcategoryCard extends StatelessWidget {
               ),
               _MetaChip(
                 icon: Icons.layers_rounded,
-                label:
-                    '${lesson.blocks.length} block${lesson.blocks.length == 1 ? '' : 's'}',
+                label: '${lesson.blocks.length} blocks',
                 isDark: isDark,
               ),
               _MetaChip(
@@ -326,7 +326,7 @@ class _SubcategoryCard extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 8),
           Row(
             children: [
               AdminIconAction(

@@ -53,21 +53,10 @@ class LessonRepositoryImpl implements LessonRepository {
         await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
       } on ServerException catch (e) {
-        return Left(_recordedServerFailure(e));
+        return _getCachedLessonsByCategory(categoryId, e.message, e.code);
       }
     } else {
-      // Fallback to local filtering of all cached lessons
-      try {
-        final cached = await localDataSource.getLessons();
-        return Right(
-          cached
-              .where((l) => l.categoryId == categoryId)
-              .map((m) => m.toEntity())
-              .toList(),
-        );
-      } catch (_) {
-        return const Left(NetworkFailure());
-      }
+      return _getCachedLessonsByCategory(categoryId, 'No internet connection');
     }
   }
 
@@ -84,6 +73,30 @@ class LessonRepositoryImpl implements LessonRepository {
           ServerException(message: originalMessage, code: originalCode),
         ),
       );
+    }
+  }
+
+  Future<Either<Failure, List<LessonEntity>>> _getCachedLessonsByCategory(
+    String categoryId,
+    String originalMessage, [
+    int? originalCode,
+  ]) async {
+    try {
+      final cached = await localDataSource.getLessons();
+      return Right(
+        cached
+            .where((lesson) => lesson.categoryId == categoryId)
+            .map((model) => model.toEntity())
+            .toList(),
+      );
+    } on CacheException {
+      return Left(
+        _recordedServerFailure(
+          ServerException(message: originalMessage, code: originalCode),
+        ),
+      );
+    } catch (_) {
+      return const Left(NetworkFailure());
     }
   }
 

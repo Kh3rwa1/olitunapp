@@ -359,6 +359,18 @@ const buckets = [
     allowedExtensions: ['mp4', 'webm', 'mov'],
     maxFileSize: 104857600, // 100MB
   },
+  {
+    id: 'admin_backups',
+    name: 'Admin Backups',
+    allowedExtensions: ['json'],
+    maxFileSize: 104857600, // 100MB
+    permissions: [
+      `read("team:${ADMIN_TEAM_ID}")`,
+      `create("team:${ADMIN_TEAM_ID}")`,
+      `update("team:${ADMIN_TEAM_ID}")`,
+      `delete("team:${ADMIN_TEAM_ID}")`,
+    ],
+  },
 ];
 
 // ─── MAIN ───
@@ -453,7 +465,7 @@ async function main() {
   console.log('🗂️  Creating storage buckets...');
   for (const bucket of buckets) {
     console.log(`  📁 Bucket: ${bucket.name} (${bucket.id})`);
-    const permissions = [
+    const permissions = bucket.permissions || [
       'read("any")',
       `create("team:${ADMIN_TEAM_ID}")`,
       `update("team:${ADMIN_TEAM_ID}")`,

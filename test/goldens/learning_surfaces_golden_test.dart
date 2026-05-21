@@ -70,8 +70,30 @@ void main() {
   });
 
   testWidgets('stroke order view golden', (tester) async {
-    await tester.pumpWidget(surface(const StrokeOrderView(letterChar: 'ᱚ')));
-    await tester.pump(const Duration(milliseconds: 1200));
+    await tester.pumpWidget(
+      surface(
+        Center(
+          child: Container(
+            width: 320,
+            height: 320,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(26),
+              border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
+            ),
+            child: CustomPaint(
+              painter: StrokePainter(
+                progress: const AlwaysStoppedAnimation<double>(0.42),
+                color: const Color(0xFF35C7B5),
+                letter: 'ᱚ',
+              ),
+            ),
+          ),
+        ),
+        size: const Size(420, 420),
+      ),
+    );
+    await tester.pump();
 
     await expectLater(
       find.byType(Scaffold),

@@ -6,6 +6,14 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+    env:
+      APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+      APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+      TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
+      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
 
     steps:
       - name: Checkout repository
@@ -29,8 +37,37 @@ jobs:
       - name: Generate build runner code
         run: dart run build_runner build --delete-conflicting-outputs
 
+      - name: Check required build config
+        run: |
+          MISSING=""
+          [ -z "$APPWRITE_ENDPOINT" ] && MISSING="$MISSING APPWRITE_ENDPOINT"
+          [ -z "$APPWRITE_PROJECT_ID" ] && MISSING="$MISSING APPWRITE_PROJECT_ID"
+          [ -z "$TRANSLATE_URL" ] && MISSING="$MISSING TRANSLATE_URL"
+          [ -z "$ANDROID_KEYSTORE_BASE64" ] && MISSING="$MISSING ANDROID_KEYSTORE_BASE64"
+          [ -z "$ANDROID_KEY_ALIAS" ] && MISSING="$MISSING ANDROID_KEY_ALIAS"
+          [ -z "$ANDROID_KEY_PASSWORD" ] && MISSING="$MISSING ANDROID_KEY_PASSWORD"
+          [ -z "$ANDROID_STORE_PASSWORD" ] && MISSING="$MISSING ANDROID_STORE_PASSWORD"
+          if [ -n "$MISSING" ]; then
+            echo "::error::Missing required secrets:$MISSING"
+            exit 1
+          fi
+
+      - name: Configure Android signing
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
+
       - name: Build APK
-        run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions
+        run: |
+          flutter build apk --release \
+            --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
+            --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
+            --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

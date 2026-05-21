@@ -44,7 +44,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,
           ),
-          onPressed: () => context.pop(),
+          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
         ),
         title: categories.when(
           data: (data) {
@@ -331,23 +331,30 @@ class _LessonCard extends StatelessWidget {
                               ),
                             ),
                           const SizedBox(height: 8),
-                          Row(
+                          Wrap(
+                            spacing: 8,
+                            runSpacing: 4,
+                            crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               _buildLevelBadge(lesson.level),
-                              const SizedBox(width: 8),
-                              const Icon(
-                                Icons.cloud_done_rounded,
-                                size: 14,
-                                color: AppColors.primary,
-                              ),
-                              const SizedBox(width: 4),
-                              const Text(
-                                'Available Offline',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w600,
-                                  color: AppColors.primary,
-                                ),
+                              const Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.cloud_done_rounded,
+                                    size: 14,
+                                    color: AppColors.primary,
+                                  ),
+                                  SizedBox(width: 4),
+                                  Text(
+                                    'Available Offline',
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w600,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ],
                           ),

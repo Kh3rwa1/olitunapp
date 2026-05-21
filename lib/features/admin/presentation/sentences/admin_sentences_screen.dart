@@ -57,108 +57,132 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                  child: _buildHeader(context, isDark, isWideScreen),
+      body: Scrollbar(
+        controller: _sentencesScrollController,
+        thumbVisibility: true,
+        child: CustomScrollView(
+          controller: _sentencesScrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(isWideScreen ? 32 : 20),
+                child: _buildHeader(context, isDark, isWideScreen),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isWideScreen ? 32 : 20,
+                  0,
+                  isWideScreen ? 32 : 20,
+                  18,
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    isWideScreen ? 32 : 20,
-                    0,
-                    isWideScreen ? 32 : 20,
-                    18,
-                  ),
-                  child: AdminContentSubcategories(
-                    title: 'Sentence Subcategories',
-                    subtitle:
-                        'These are the lesson groups shown inside Sentences on the mobile app.',
-                    emptyTitle: 'No sentence subcategories found',
-                    emptyMessage:
-                        'Seed default data or add a subcategory to make Sentences editable.',
-                    lessons: subcategoryLessons,
-                    isDark: isDark,
-                    onAdd: () => _addSubcategory(context, contentCategory),
-                    onSeed: () => _handleSeedData(context),
-                    onEdit: (lesson) =>
-                        LessonFormSheet.show(context, ref, lesson),
-                    onDelete: (lesson) =>
-                        _confirmDeleteSubcategory(context, lesson),
-                  ),
+                child: AdminContentSubcategories(
+                  title: 'Sentence Subcategories',
+                  subtitle:
+                      'These are the lesson groups shown inside Sentences on the mobile app.',
+                  emptyTitle: 'No sentence subcategories found',
+                  emptyMessage:
+                      'Seed default data or add a subcategory to make Sentences editable.',
+                  lessons: subcategoryLessons,
+                  isDark: isDark,
+                  onAdd: () => _addSubcategory(context, contentCategory),
+                  onSeed: () => _handleSeedData(context),
+                  onEdit: (lesson) =>
+                      LessonFormSheet.show(context, ref, lesson),
+                  onDelete: (lesson) =>
+                      _confirmDeleteSubcategory(context, lesson),
                 ),
-                // Category filter
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWideScreen ? 32 : 20,
-                  ),
-                  child: sentencesAsync.when(
-                    data: (sentences) {
-                      final filterLabels = _buildFilterLabels(
-                        sentences.map((s) => s.category),
-                        subcategoryLessons,
-                      );
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            AdminFilterChip(
-                              label: 'All Sentences',
-                              selected: _selectedCategory == null,
-                              onTap: () =>
-                                  setState(() => _selectedCategory = null),
-                            ),
-                            ...filterLabels.map(
-                              (label) => Padding(
-                                padding: const EdgeInsets.only(left: 12),
-                                child: AdminFilterChip(
-                                  label: label,
-                                  selected: _selectedCategory == label,
-                                  onTap: () =>
-                                      setState(() => _selectedCategory = label),
-                                ),
+              ),
+            ),
+            // Category filter
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? 32 : 20,
+                ),
+                child: sentencesAsync.when(
+                  data: (sentences) {
+                    final filterLabels = _buildFilterLabels(
+                      sentences.map((s) => s.category),
+                      subcategoryLessons,
+                    );
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          AdminFilterChip(
+                            label: 'All Sentences',
+                            selected: _selectedCategory == null,
+                            onTap: () =>
+                                setState(() => _selectedCategory = null),
+                          ),
+                          ...filterLabels.map(
+                            (label) => Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: AdminFilterChip(
+                                label: label,
+                                selected: _selectedCategory == label,
+                                onTap: () =>
+                                    setState(() => _selectedCategory = label),
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                    loading: () => const SizedBox(height: 40),
-                    error: (_, _) => const SizedBox(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(height: 40),
+                  error: (_, _) => const SizedBox(),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            // Sentences List or States
+            sentencesAsync.when(
+              data: (sentences) {
+                final filtered = _selectedCategory == null
+                    ? sentences
+                    : _filterSentences(sentences, subcategoryLessons);
+                final selectedLesson = _selectedLesson(subcategoryLessons);
+                if (filtered.isEmpty) {
+                  return SliverPadding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWideScreen ? 32 : 20,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: _emptyState(context, isDark, selectedLesson),
+                    ),
+                  );
+                }
+                return _buildSliverSentencesList(
+                  filtered,
+                  isDark,
+                  isWideScreen,
+                );
+              },
+              loading: () => const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: sentencesAsync.when(
-                    data: (sentences) {
-                      final filtered = _selectedCategory == null
-                          ? sentences
-                          : _filterSentences(sentences, subcategoryLessons);
-                      final selectedLesson = _selectedLesson(
-                        subcategoryLessons,
-                      );
-                      return filtered.isEmpty
-                          ? _emptyState(context, isDark, selectedLesson)
-                          : _buildSentencesList(filtered, isDark, isWideScreen);
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => Center(
-                      child: SelectableText(
-                        'Error loading sentences: $error',
-                        style: const TextStyle(color: AppColors.error),
-                      ),
+              ),
+              error: (error, _) => SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: SelectableText(
+                      'Error loading sentences: $error',
+                      style: const TextStyle(color: AppColors.error),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => SentenceFormSheet.show(context, ref, null),
@@ -273,7 +297,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     LessonEntity? selectedLesson,
   ) {
     if (selectedLesson != null && selectedLesson.blocks.isNotEmpty) {
-      return SingleChildScrollView(
+      return Padding(
         padding: const EdgeInsets.only(bottom: 120),
         child: AdminLessonBlocksNeedEditingState(
           title: 'Lesson blocks need review',
@@ -287,7 +311,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
       );
     }
 
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 120),
       child: AdminEmptyState(
         icon: Icons.format_quote_rounded,
@@ -310,51 +334,30 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         .firstOrNull;
   }
 
-  Widget _buildSentencesList(
+  Widget _buildSliverSentencesList(
     List<SentenceModel> sentences,
     bool isDark,
     bool isWideScreen,
   ) {
-    final hasLessonBlockRows = sentences.any(_isLessonBlockSentence);
-    final itemCount = sentences.length + (hasLessonBlockRows ? 1 : 0);
-
-    return Scrollbar(
-      controller: _sentencesScrollController,
-      thumbVisibility: true,
-      child: ListView.builder(
-        controller: _sentencesScrollController,
-        padding: EdgeInsets.fromLTRB(
-          isWideScreen ? 32 : 20,
-          0,
-          isWideScreen ? 32 : 20,
-          120,
-        ),
-        itemCount: itemCount,
-        itemBuilder: (context, index) {
-          if (hasLessonBlockRows && index == 0) {
-            return AdminLessonBlockInfoBanner(
-              title: 'Lesson-block drafts',
-              message:
-                  'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Sentence record, or use the lesson content editor to change the original block.',
-              isDark: isDark,
-            ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06);
-          }
-
-          final sentenceIndex = hasLessonBlockRows ? index - 1 : index;
-          final sentence = sentences[sentenceIndex];
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        120,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final sentence = sentences[index];
           final isLessonBlock = _isLessonBlockSentence(sentence);
           return SentenceCard(
             sentence: sentence,
             isDark: isDark,
             canDelete: !isLessonBlock,
-            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
-            sourceTooltip: isLessonBlock
-                ? 'This row comes from a lesson content block. Editing it saves a new Sentence record.'
-                : null,
             onEdit: () => SentenceFormSheet.show(context, ref, sentence),
             onDelete: () => _confirmDelete(context, sentence),
-          ).animate().fadeIn(delay: (sentenceIndex * 50).ms).slideY(begin: 0.1);
-        },
+          ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
+        }, childCount: sentences.length),
       ),
     );
   }

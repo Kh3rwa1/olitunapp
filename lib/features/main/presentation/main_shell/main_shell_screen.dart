@@ -194,10 +194,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     return Stack(
       children: [
         _buildPremiumBackground(isDark),
-        SafeArea(
-          bottom: false,
-          child: _ShellTabSwitcher(index: _selectedIndex, screens: _screens),
-        ),
+        _ShellTabSwitcher(index: _selectedIndex, screens: _screens),
         Positioned(
           left: 0,
           right: 0,

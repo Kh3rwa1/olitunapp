@@ -1,0 +1,14 @@
+{
+  "name": "admin-maintenance",
+  "version": "1.0.0",
+  "description": "Privileged maintenance actions for Olitun admins.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "^24.1.0"
+  }
+}

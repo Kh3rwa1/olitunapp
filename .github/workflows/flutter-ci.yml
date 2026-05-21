@@ -62,6 +62,8 @@ jobs:
         run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
 
       - name: Build Android release
+        env:
+          ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
 
       - name: Upload build artifacts

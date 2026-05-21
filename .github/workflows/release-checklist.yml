@@ -18,6 +18,10 @@ env:
   APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
   APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
   TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
+  ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+  ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+  ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+  ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
 
 jobs:
   # Phase 1: Validate environment
@@ -31,6 +35,10 @@ jobs:
           [ -z "$APPWRITE_ENDPOINT" ] && MISSING="$MISSING APPWRITE_ENDPOINT"
           [ -z "$APPWRITE_PROJECT_ID" ] && MISSING="$MISSING APPWRITE_PROJECT_ID"
           [ -z "$TRANSLATE_URL" ] && MISSING="$MISSING TRANSLATE_URL"
+          [ -z "$ANDROID_KEYSTORE_BASE64" ] && MISSING="$MISSING ANDROID_KEYSTORE_BASE64"
+          [ -z "$ANDROID_KEY_ALIAS" ] && MISSING="$MISSING ANDROID_KEY_ALIAS"
+          [ -z "$ANDROID_KEY_PASSWORD" ] && MISSING="$MISSING ANDROID_KEY_PASSWORD"
+          [ -z "$ANDROID_STORE_PASSWORD" ] && MISSING="$MISSING ANDROID_STORE_PASSWORD"
           if [ -n "$MISSING" ]; then
             echo "::error::Missing required secrets:$MISSING"
             exit 1
@@ -106,6 +114,16 @@ jobs:
             --dart-define=APPWRITE_ENDPOINT=${{ secrets.APPWRITE_ENDPOINT }} \
             --dart-define=APPWRITE_PROJECT_ID=${{ secrets.APPWRITE_PROJECT_ID }} \
             --dart-define=TRANSLATE_URL=${{ secrets.TRANSLATE_URL }}
+
+      - name: Configure Android signing
+        run: |
+          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
+          cat > android/key.properties <<EOF
+          storePassword=$ANDROID_STORE_PASSWORD
+          keyPassword=$ANDROID_KEY_PASSWORD
+          keyAlias=$ANDROID_KEY_ALIAS
+          storeFile=upload-keystore.jks
+          EOF
 
       - name: Build Android release
         run: |

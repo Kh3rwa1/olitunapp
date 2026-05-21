@@ -56,108 +56,128 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                  child: _buildHeader(context, isDark, isWideScreen),
+      body: Scrollbar(
+        controller: _wordsScrollController,
+        thumbVisibility: true,
+        child: CustomScrollView(
+          controller: _wordsScrollController,
+          slivers: [
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.all(isWideScreen ? 32 : 20),
+                child: _buildHeader(context, isDark, isWideScreen),
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(
+                  isWideScreen ? 32 : 20,
+                  0,
+                  isWideScreen ? 32 : 20,
+                  18,
                 ),
-                Padding(
-                  padding: EdgeInsets.fromLTRB(
-                    isWideScreen ? 32 : 20,
-                    0,
-                    isWideScreen ? 32 : 20,
-                    18,
-                  ),
-                  child: AdminContentSubcategories(
-                    title: 'Vocabulary Subcategories',
-                    subtitle:
-                        'These are the lesson groups shown inside Vocabulary on the mobile app.',
-                    emptyTitle: 'No vocabulary subcategories found',
-                    emptyMessage:
-                        'Seed default data or add a subcategory to make Vocabulary editable.',
-                    lessons: subcategoryLessons,
-                    isDark: isDark,
-                    onAdd: () => _addSubcategory(context, contentCategory),
-                    onSeed: () => _handleSeedData(context),
-                    onEdit: (lesson) =>
-                        LessonFormSheet.show(context, ref, lesson),
-                    onDelete: (lesson) =>
-                        _confirmDeleteSubcategory(context, lesson),
-                  ),
+                child: AdminContentSubcategories(
+                  title: 'Vocabulary Subcategories',
+                  subtitle:
+                      'These are the lesson groups shown inside Vocabulary on the mobile app.',
+                  emptyTitle: 'No vocabulary subcategories found',
+                  emptyMessage:
+                      'Seed default data or add a subcategory to make Vocabulary editable.',
+                  lessons: subcategoryLessons,
+                  isDark: isDark,
+                  onAdd: () => _addSubcategory(context, contentCategory),
+                  onSeed: () => _handleSeedData(context),
+                  onEdit: (lesson) =>
+                      LessonFormSheet.show(context, ref, lesson),
+                  onDelete: (lesson) =>
+                      _confirmDeleteSubcategory(context, lesson),
                 ),
-                // Category filter chips
-                Padding(
-                  padding: EdgeInsets.symmetric(
-                    horizontal: isWideScreen ? 32 : 20,
-                  ),
-                  child: wordsAsync.when(
-                    data: (words) {
-                      final filterLabels = _buildFilterLabels(
-                        words.map((w) => w.category),
-                        subcategoryLessons,
-                      );
-                      return SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        child: Row(
-                          children: [
-                            AdminFilterChip(
-                              label: 'All Words',
-                              selected: _selectedCategory == null,
-                              onTap: () =>
-                                  setState(() => _selectedCategory = null),
-                            ),
-                            ...filterLabels.map(
-                              (label) => Padding(
-                                padding: const EdgeInsets.only(left: 12),
-                                child: AdminFilterChip(
-                                  label: label,
-                                  selected: _selectedCategory == label,
-                                  onTap: () =>
-                                      setState(() => _selectedCategory = label),
-                                ),
+              ),
+            ),
+            // Category filter chips
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: isWideScreen ? 32 : 20,
+                ),
+                child: wordsAsync.when(
+                  data: (words) {
+                    final filterLabels = _buildFilterLabels(
+                      words.map((w) => w.category),
+                      subcategoryLessons,
+                    );
+                    return SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        children: [
+                          AdminFilterChip(
+                            label: 'All Words',
+                            selected: _selectedCategory == null,
+                            onTap: () =>
+                                setState(() => _selectedCategory = null),
+                          ),
+                          ...filterLabels.map(
+                            (label) => Padding(
+                              padding: const EdgeInsets.only(left: 12),
+                              child: AdminFilterChip(
+                                label: label,
+                                selected: _selectedCategory == label,
+                                onTap: () =>
+                                    setState(() => _selectedCategory = label),
                               ),
                             ),
-                          ],
-                        ),
-                      );
-                    },
-                    loading: () => const SizedBox(height: 40),
-                    error: (_, _) => const SizedBox(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                  loading: () => const SizedBox(height: 40),
+                  error: (_, _) => const SizedBox(),
+                ),
+              ),
+            ),
+            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            // Words List or States
+            wordsAsync.when(
+              data: (words) {
+                final filtered = _selectedCategory == null
+                    ? words
+                    : _filterWords(words, subcategoryLessons);
+                final selectedLesson = _selectedLesson(subcategoryLessons);
+                if (filtered.isEmpty) {
+                  return SliverPadding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: isWideScreen ? 32 : 20,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: _emptyState(context, isDark, selectedLesson),
+                    ),
+                  );
+                }
+                return _buildSliverWordsList(filtered, isDark, isWideScreen);
+              },
+              loading: () => const SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 48),
+                    child: CircularProgressIndicator(),
                   ),
                 ),
-                const SizedBox(height: 16),
-                Expanded(
-                  child: wordsAsync.when(
-                    data: (words) {
-                      final filtered = _selectedCategory == null
-                          ? words
-                          : _filterWords(words, subcategoryLessons);
-                      final selectedLesson = _selectedLesson(
-                        subcategoryLessons,
-                      );
-                      return filtered.isEmpty
-                          ? _emptyState(context, isDark, selectedLesson)
-                          : _buildWordsList(filtered, isDark, isWideScreen);
-                    },
-                    loading: () =>
-                        const Center(child: CircularProgressIndicator()),
-                    error: (error, _) => Center(
-                      child: SelectableText(
-                        'Error loading words: $error',
-                        style: const TextStyle(color: AppColors.error),
-                      ),
+              ),
+              error: (error, _) => SliverToBoxAdapter(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 48),
+                    child: SelectableText(
+                      'Error loading words: $error',
+                      style: const TextStyle(color: AppColors.error),
                     ),
                   ),
                 ),
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => WordFormSheet.show(context, ref, null),
@@ -272,7 +292,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     LessonEntity? selectedLesson,
   ) {
     if (selectedLesson != null && selectedLesson.blocks.isNotEmpty) {
-      return SingleChildScrollView(
+      return Padding(
         padding: const EdgeInsets.only(bottom: 120),
         child: AdminLessonBlocksNeedEditingState(
           title: 'Lesson blocks need review',
@@ -286,7 +306,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
       );
     }
 
-    return SingleChildScrollView(
+    return Padding(
       padding: const EdgeInsets.only(bottom: 120),
       child: AdminEmptyState(
         icon: Icons.menu_book_rounded,
@@ -309,51 +329,30 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         .firstOrNull;
   }
 
-  Widget _buildWordsList(
+  Widget _buildSliverWordsList(
     List<WordModel> words,
     bool isDark,
     bool isWideScreen,
   ) {
-    final hasLessonBlockRows = words.any(_isLessonBlockWord);
-    final itemCount = words.length + (hasLessonBlockRows ? 1 : 0);
-
-    return Scrollbar(
-      controller: _wordsScrollController,
-      thumbVisibility: true,
-      child: ListView.builder(
-        controller: _wordsScrollController,
-        padding: EdgeInsets.fromLTRB(
-          isWideScreen ? 32 : 20,
-          0,
-          isWideScreen ? 32 : 20,
-          120,
-        ),
-        itemCount: itemCount,
-        itemBuilder: (context, index) {
-          if (hasLessonBlockRows && index == 0) {
-            return AdminLessonBlockInfoBanner(
-              title: 'Lesson-block drafts',
-              message:
-                  'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Word record, or use the lesson content editor to change the original block.',
-              isDark: isDark,
-            ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06);
-          }
-
-          final wordIndex = hasLessonBlockRows ? index - 1 : index;
-          final word = words[wordIndex];
+    return SliverPadding(
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        120,
+      ),
+      sliver: SliverList(
+        delegate: SliverChildBuilderDelegate((context, index) {
+          final word = words[index];
           final isLessonBlock = _isLessonBlockWord(word);
           return WordCard(
             word: word,
             isDark: isDark,
             canDelete: !isLessonBlock,
-            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
-            sourceTooltip: isLessonBlock
-                ? 'This row comes from a lesson content block. Editing it saves a new Word record.'
-                : null,
             onEdit: () => WordFormSheet.show(context, ref, word),
             onDelete: () => _confirmDelete(context, word),
-          ).animate().fadeIn(delay: (wordIndex * 50).ms).slideY(begin: 0.1);
-        },
+          ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
+        }, childCount: words.length),
       ),
     );
   }

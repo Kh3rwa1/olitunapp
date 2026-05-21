@@ -82,12 +82,24 @@ void main() {
       expect(result.translation, contains('too long'));
     });
 
+    test(
+      'returns error result when translation URL is not configured',
+      () async {
+        final service = AiService();
+        final result = await service.translate('hello');
+        expect(result, isNotNull);
+        expect(result!.isError, isTrue);
+        expect(result.translation, contains('not configured'));
+      },
+    );
+
     test('returns error result on connection failure', () async {
-      // With the new default URL, it no longer throws StateError.
-      // Instead, it attempts a request and fails gracefully.
       final mock = MockClient((_) async => throw Exception('Network down'));
       final service = AiService(client: mock);
-      final result = await service.translate('hello');
+      final result = await service.translateFromUrlForTest(
+        'https://example.com/translate',
+        {'text': 'hello', 'from': 'auto', 'to': 'sat'},
+      );
       expect(result, isNotNull);
       expect(result!.isError, isTrue);
       expect(result.translation, contains('Connection error'));
@@ -97,9 +109,6 @@ void main() {
   group('AiService fail-closed', () {
     test('429 returns error result (fail closed)', () async {
       final mock = MockClient((_) async => http.Response('', 429));
-      // We need a URL set — use environment override or test directly
-      // Since TRANSLATE_URL is empty, test via _post indirectly:
-      // The service will throw StateError without URL, so we test _failClosed:
       final result = AiService.failClosedForTest('Rate limit hit');
       expect(result.isError, true);
       expect(result.translation, contains('Rate limit'));

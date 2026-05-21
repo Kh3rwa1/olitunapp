@@ -163,7 +163,7 @@ class UserStatsEntity extends Equatable {
     final weekStart = today.subtract(Duration(days: today.weekday - 1));
 
     return quizHistory.values.where((result) {
-      final completedAt = DateTime.tryParse(result.completedAt);
+      final completedAt = DateTime.tryParse(result.completedAt)?.toLocal();
       if (completedAt == null) return false;
       final completedDay = DateTime(
         completedAt.year,

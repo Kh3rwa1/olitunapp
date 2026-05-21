@@ -154,10 +154,33 @@ void main() {
   });
 
   group('getCurrentUser', () {
+    test('returns NetworkFailure when offline', () async {
+      when(() => network.isConnected).thenAnswer((_) async => false);
+      final result = await repo.getCurrentUser();
+      expect(result, isA<Left<Failure, dynamic>>());
+      result.match(
+        (f) => expect(f, isA<NetworkFailure>()),
+        (_) => fail('expected Left'),
+      );
+      verifyNever(() => remote.getCurrentUser());
+    });
+
     test('returns Right(null) when remote returns null (no session)', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
       when(() => remote.getCurrentUser()).thenAnswer((_) async => null);
       final result = await repo.getCurrentUser();
       result.match((_) => fail('expected Right'), (u) => expect(u, isNull));
+    });
+
+    test('returns Right(UserEntity) on success', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(() => remote.getCurrentUser()).thenAnswer((_) async => user);
+      final result = await repo.getCurrentUser();
+      expect(result.isRight(), true);
+      result.match((_) => fail('expected Right'), (u) {
+        expect(u?.id, 'u1');
+        expect(u?.email, 'a@b.co');
+      });
     });
   });
 }

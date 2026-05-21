@@ -24,9 +24,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _navigateToNext() async {
     debugPrint('Splash: starting _navigateToNext');
-    // Wait for animation and pre-fetching
-    await Future.delayed(const Duration(seconds: 2));
-    debugPrint('Splash: delay finished');
+    // Start routing check immediately without artificial delays
 
     if (mounted) {
       // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)

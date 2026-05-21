@@ -16,6 +16,7 @@ import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_form_widgets.dart';
 import '../widgets/admin_lesson_block_info_banner.dart';
+import '../widgets/admin_lesson_block_text.dart';
 import 'widgets/sentence_form_sheet.dart';
 import 'widgets/sentence_card.dart';
 
@@ -137,8 +138,11 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                       final filtered = _selectedCategory == null
                           ? sentences
                           : _filterSentences(sentences, subcategoryLessons);
+                      final selectedLesson = _selectedLesson(
+                        subcategoryLessons,
+                      );
                       return filtered.isEmpty
-                          ? _emptyState(context, isDark)
+                          ? _emptyState(context, isDark, selectedLesson)
                           : _buildSentencesList(filtered, isDark, isWideScreen);
                     },
                     loading: () =>
@@ -263,7 +267,26 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     }
   }
 
-  Widget _emptyState(BuildContext context, bool isDark) {
+  Widget _emptyState(
+    BuildContext context,
+    bool isDark,
+    LessonEntity? selectedLesson,
+  ) {
+    if (selectedLesson != null && selectedLesson.blocks.isNotEmpty) {
+      return SingleChildScrollView(
+        padding: const EdgeInsets.only(bottom: 120),
+        child: AdminLessonBlocksNeedEditingState(
+          title: 'Lesson blocks need review',
+          message:
+              '"${selectedLesson.titleLatin}" has ${selectedLesson.blocks.length} lesson blocks, but none of them contain enough text to create Sentence rows automatically. Open the content editor to fix or convert those blocks.',
+          actionLabel: 'Edit Lesson Content',
+          isDark: isDark,
+          onAction: () =>
+              context.go('/admin/lessons/content/${selectedLesson.id}'),
+        ),
+      );
+    }
+
     return SingleChildScrollView(
       padding: const EdgeInsets.only(bottom: 120),
       child: AdminEmptyState(
@@ -276,6 +299,15 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         onAction: () => SentenceFormSheet.show(context, ref, null),
       ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
     );
+  }
+
+  LessonEntity? _selectedLesson(List<LessonEntity> subcategoryLessons) {
+    final selected = _selectedCategory;
+    if (selected == null) return null;
+    final selectedKey = _normalizeKey(selected);
+    return subcategoryLessons
+        .where((lesson) => _normalizeKey(lesson.titleLatin) == selectedKey)
+        .firstOrNull;
   }
 
   Widget _buildSentencesList(
@@ -460,20 +492,20 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
 
   List<SentenceModel> _sentencesFromLessonBlocks(LessonEntity lesson) {
     final category = lesson.titleLatin.trim();
-    final blocks = lesson.blocks
-        .where((block) => block.type == 'text')
-        .toList();
     return [
-      for (var i = 0; i < blocks.length; i++)
+      for (final row in adminTextRowsFromLessonBlocks(lesson))
         SentenceModel(
-          id: 'lesson_block_sentence_${lesson.id}_$i',
-          sentenceOlChiki: blocks[i].textOlChiki?.trim() ?? '',
-          sentenceLatin: _latinPart(blocks[i].textLatin),
-          meaning: _meaningPart(blocks[i].textLatin),
+          id: 'lesson_block_sentence_${lesson.id}_${row.index}',
+          sentenceOlChiki: row.olChiki,
+          sentenceLatin: row.latin,
+          meaning: row.meaning,
           category: category,
-          order: i,
+          imageUrl: row.imageUrl,
+          audioUrl: row.audioUrl,
+          animationUrl: row.animationUrl,
+          order: row.index,
         ),
-    ].where((sentence) => sentence.sentenceOlChiki.isNotEmpty).toList();
+    ];
   }
 
   bool _lessonMatchesSentence(
@@ -495,15 +527,17 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
   }
 
   Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) sync* {
-    for (final block in lesson.blocks.where((block) => block.type == 'text')) {
-      final olChiki = _normalizeKey(block.textOlChiki ?? '');
-      if (olChiki.isNotEmpty) yield olChiki;
-      final latin = _normalizeKey(block.textLatin ?? '');
-      if (latin.isNotEmpty) {
-        yield latin;
-        for (final part in latin.split(RegExp(r'\s+[–-]\s+'))) {
-          final value = _normalizeKey(part);
-          if (value.isNotEmpty) yield value;
+    for (final row in adminTextRowsFromLessonBlocks(lesson)) {
+      final values = [
+        _normalizeKey(row.olChiki),
+        _normalizeKey(row.latin),
+        _normalizeKey(row.meaning),
+      ];
+      for (final value in values.where((value) => value.isNotEmpty)) {
+        yield value;
+        for (final part in value.split(RegExp(r'\s+[–-]\s+'))) {
+          final normalizedPart = _normalizeKey(part);
+          if (normalizedPart.isNotEmpty) yield normalizedPart;
         }
       }
     }
@@ -542,19 +576,6 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
 
   String _normalizeKey(String value) {
     return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
-  }
-
-  String _latinPart(String? value) {
-    final text = value?.trim() ?? '';
-    if (text.isEmpty) return '';
-    return text.split(RegExp(r'\s+[–-]\s+')).first.trim();
-  }
-
-  String _meaningPart(String? value) {
-    final text = value?.trim() ?? '';
-    if (text.isEmpty) return '';
-    final parts = text.split(RegExp(r'\s+[–-]\s+'));
-    return parts.length > 1 ? parts.sublist(1).join(' - ').trim() : text;
   }
 
   Future<void> _addSubcategory(

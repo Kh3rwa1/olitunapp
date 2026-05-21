@@ -2,6 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../home/presentation/providers/mission_providers.dart';
 
 class QuizSessionState {
   final int currentQuestion;
@@ -14,6 +15,7 @@ class QuizSessionState {
   final int bestCombo;
   final int comboMultiplier;
   final int bonusStars;
+  final List<int> incorrectQuestionIndices;
 
   const QuizSessionState({
     this.currentQuestion = 0,
@@ -26,6 +28,7 @@ class QuizSessionState {
     this.bestCombo = 0,
     this.comboMultiplier = 1,
     this.bonusStars = 0,
+    this.incorrectQuestionIndices = const [],
   });
 
   QuizSessionState copyWith({
@@ -39,6 +42,7 @@ class QuizSessionState {
     int? bestCombo,
     int? comboMultiplier,
     int? bonusStars,
+    List<int>? incorrectQuestionIndices,
     bool clearSelectedAnswer = false,
   }) {
     return QuizSessionState(
@@ -54,6 +58,8 @@ class QuizSessionState {
       bestCombo: bestCombo ?? this.bestCombo,
       comboMultiplier: comboMultiplier ?? this.comboMultiplier,
       bonusStars: bonusStars ?? this.bonusStars,
+      incorrectQuestionIndices:
+          incorrectQuestionIndices ?? this.incorrectQuestionIndices,
     );
   }
 }
@@ -75,6 +81,7 @@ class QuizSessionNotifier
     var bestCombo = state.bestCombo;
     var comboMultiplier = state.comboMultiplier;
     var bonusStars = state.bonusStars;
+    final incorrectIndices = List<int>.from(state.incorrectQuestionIndices);
 
     if (isCorrect) {
       newScore++;
@@ -82,12 +89,13 @@ class QuizSessionNotifier
       bestCombo = bestCombo > comboStreak ? bestCombo : comboStreak;
       comboMultiplier = (1 + (comboStreak ~/ 3)).clamp(1, 4);
       bonusStars += (comboMultiplier - 1) * 2;
-      HapticFeedback.mediumImpact();
+      HapticFeedback.lightImpact();
     } else {
       hearts = (hearts - 1).clamp(0, 3);
       comboStreak = 0;
       comboMultiplier = 1;
-      HapticFeedback.heavyImpact();
+      incorrectIndices.add(state.currentQuestion);
+      HapticFeedback.mediumImpact();
     }
 
     state = state.copyWith(
@@ -99,15 +107,8 @@ class QuizSessionNotifier
       bestCombo: bestCombo,
       comboMultiplier: comboMultiplier,
       bonusStars: bonusStars,
+      incorrectQuestionIndices: incorrectIndices,
     );
-
-    // Auto-advance after 1.2 seconds so user can see the feedback
-    Future.delayed(const Duration(milliseconds: 1200), () {
-      // Only advance if we are still on the same question and not complete
-      if (state.isAnswered && !state.isQuizComplete) {
-        nextQuestion(quiz);
-      }
-    });
   }
 
   void nextQuestion(QuizModel quiz) {
@@ -130,6 +131,7 @@ class QuizSessionNotifier
         ),
       );
       statsNotifier.addStars((state.score * 5) + state.bonusStars);
+      ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
     }
   }
 

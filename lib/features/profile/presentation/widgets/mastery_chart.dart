@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
 
 class ChartDataPoint {
@@ -43,7 +44,11 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
     _pulseController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1800),
-    )..repeat();
+    );
+    final reduceEffects = ref.read(reduceVisualEffectsProvider);
+    if (!reduceEffects) {
+      _pulseController.repeat();
+    }
   }
 
   @override
@@ -110,6 +115,14 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
+      if (next) {
+        _pulseController.stop();
+      } else {
+        _pulseController.repeat();
+      }
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
     _dataPoints = _getChartData();
     final hasQuizzes = widget.stats.quizHistory.isNotEmpty;

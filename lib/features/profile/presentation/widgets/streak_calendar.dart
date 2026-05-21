@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
 
-class StreakCalendar extends StatelessWidget {
+class StreakCalendar extends ConsumerWidget {
   final UserStatsEntity stats;
 
   const StreakCalendar({super.key, required this.stats});
@@ -38,8 +40,9 @@ class StreakCalendar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
 
     // Generate past 7 days ending with today
     final now = DateTime.now();
@@ -85,17 +88,16 @@ class StreakCalendar extends StatelessWidget {
                             color: AppColors.duoOrange.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child:
-                              const Icon(
-                                    Icons.local_fire_department_rounded,
-                                    color: AppColors.duoOrange,
-                                    size: 20,
-                                  )
-                                  .animate(onPlay: (c) => c.repeat())
-                                  .shimmer(
-                                    duration: 2000.ms,
-                                    color: Colors.white,
-                                  ),
+                          child: const Icon(
+                            Icons.local_fire_department_rounded,
+                            color: AppColors.duoOrange,
+                            size: 20,
+                          )
+                          .animate(onPlay: reduceEffects ? null : (c) => c.repeat())
+                          .shimmer(
+                            duration: 2000.ms,
+                            color: Colors.white,
+                          ),
                         ),
                         const SizedBox(width: 12),
                         Flexible(
@@ -291,24 +293,24 @@ class StreakCalendar extends StatelessWidget {
                               child: Center(
                                 child: isActive
                                     ? const Icon(
-                                            Icons.local_fire_department_rounded,
-                                            color: AppColors.duoOrange,
-                                            size: 20,
-                                          )
-                                          .animate(onPlay: (c) => c.repeat())
-                                          .scale(
-                                            duration: 1000.ms,
-                                            begin: const Offset(0.9, 0.9),
-                                            end: const Offset(1.1, 1.1),
-                                            curve: Curves.easeInOut,
-                                          )
-                                          .then()
-                                          .scale(
-                                            duration: 1000.ms,
-                                            begin: const Offset(1.1, 1.1),
-                                            end: const Offset(0.9, 0.9),
-                                            curve: Curves.easeInOut,
-                                          )
+                                        Icons.local_fire_department_rounded,
+                                        color: AppColors.duoOrange,
+                                        size: 20,
+                                      )
+                                      .animate(onPlay: reduceEffects ? null : (c) => c.repeat())
+                                      .scale(
+                                        duration: 1000.ms,
+                                        begin: const Offset(0.9, 0.9),
+                                        end: const Offset(1.1, 1.1),
+                                        curve: Curves.easeInOut,
+                                      )
+                                      .then()
+                                      .scale(
+                                        duration: 1000.ms,
+                                        begin: const Offset(1.1, 1.1),
+                                        end: const Offset(0.9, 0.9),
+                                        curve: Curves.easeInOut,
+                                      )
                                     : Text(
                                         dayNum,
                                         style: TextStyle(

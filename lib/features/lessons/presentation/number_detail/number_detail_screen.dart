@@ -815,7 +815,7 @@ class _DetailLoadError extends StatelessWidget {
   }
 }
 
-class SoundWaveIndicator extends StatefulWidget {
+class SoundWaveIndicator extends ConsumerStatefulWidget {
   final Color color;
   final bool isPlaying;
 
@@ -826,10 +826,10 @@ class SoundWaveIndicator extends StatefulWidget {
   });
 
   @override
-  State<SoundWaveIndicator> createState() => _SoundWaveIndicatorState();
+  ConsumerState<SoundWaveIndicator> createState() => _SoundWaveIndicatorState();
 }
 
-class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
+class _SoundWaveIndicatorState extends ConsumerState<SoundWaveIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -840,16 +840,21 @@ class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
       vsync: this,
       duration: const Duration(milliseconds: 1000),
     );
-    if (widget.isPlaying) {
-      _controller.repeat();
-    }
+    _updateAnimation();
   }
 
   @override
   void didUpdateWidget(SoundWaveIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (widget.isPlaying) {
-      _controller.repeat();
+    _updateAnimation();
+  }
+
+  void _updateAnimation() {
+    final reduceMotion = ref.read(reduceVisualEffectsProvider);
+    if (widget.isPlaying && !reduceMotion) {
+      if (!_controller.isAnimating) {
+        _controller.repeat();
+      }
     } else {
       _controller.stop();
     }
@@ -863,6 +868,15 @@ class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
 
   @override
   Widget build(BuildContext context) {
+    final reduceMotion = ref.watch(reduceVisualEffectsProvider);
+    if (widget.isPlaying && !reduceMotion) {
+      if (!_controller.isAnimating) {
+        _controller.repeat();
+      }
+    } else {
+      _controller.stop();
+    }
+
     if (!widget.isPlaying) {
       return Row(
         mainAxisSize: MainAxisSize.min,
@@ -890,7 +904,7 @@ class _SoundWaveIndicatorState extends State<SoundWaveIndicator>
             final val = (index * 0.25 + _controller.value) % 1.0;
             final double height = 6.0 + 16.0 * (0.5 - (0.5 - val).abs());
             return Container(
-              margin: const EdgeInsets.symmetric(horizontal: 2),
+               margin: const EdgeInsets.symmetric(horizontal: 2),
               width: 3,
               height: height,
               decoration: BoxDecoration(

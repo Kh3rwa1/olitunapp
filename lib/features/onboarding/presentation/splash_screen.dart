@@ -56,10 +56,18 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // 2. Check authentication before onboarding. A valid persisted Appwrite
       // session should always restore the learner to the app, even if an older
       // install still has show_onboarding=true in local prefs.
+      // Timeout after 5s so the splash never hangs on slow/unreachable backends.
       AppLogger.debug('Splash: checking auth status...');
       final authRepo = ref.read(authRepositoryProvider);
-      final isLoggedInResult = await authRepo.isLoggedIn();
-      final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
+      bool isLoggedIn = false;
+      try {
+        final isLoggedInResult = await authRepo
+            .isLoggedIn()
+            .timeout(const Duration(seconds: 5));
+        isLoggedIn = isLoggedInResult.getOrElse((_) => false);
+      } catch (_) {
+        AppLogger.debug('Splash: auth check timed out, treating as logged out');
+      }
       AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');
 
       if (isLoggedIn) {

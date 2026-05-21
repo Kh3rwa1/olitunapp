@@ -9,6 +9,17 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import '../../../../shared/widgets/state_widgets.dart';
+
+enum SyncStatus { idle, syncing, success, error }
+
+final syncStatusProvider = StateProvider<SyncStatus>((ref) => SyncStatus.idle);
+
+final isStatsSyncedProvider = StateProvider<bool>((ref) {
+  final val = ref.watch(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
+  return val;
+});
 
 final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
@@ -98,6 +109,68 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       super(const AsyncValue.loading()) {
     loadStats();
     _syncProfileFromCloud();
+    _setupConnectivityListener();
+  }
+
+  void _setupConnectivityListener() {
+    final ref = _ref;
+    if (ref == null) return;
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(
+      appConnectivityProvider,
+      (previous, next) {
+        next.whenOrNull(
+          data: (results) {
+            final isOffline = results.contains(ConnectivityResult.none) || results.isEmpty;
+            final previouslyOffline = previous == null ||
+                previous.valueOrNull == null ||
+                previous.valueOrNull!.contains(ConnectivityResult.none) ||
+                previous.valueOrNull!.isEmpty;
+            if (!isOffline && previouslyOffline) {
+              syncPendingStats();
+            }
+          },
+        );
+      },
+    );
+  }
+
+  Future<void> syncPendingStats() async {
+    final ref = _ref;
+    if (ref == null) return;
+
+    ref.read(syncStatusProvider.notifier).state = SyncStatus.syncing;
+    final result = await _repository.syncPendingStats();
+    await result.fold(
+      (failure) async {
+        ref.read(syncStatusProvider.notifier).state = SyncStatus.error;
+        ref.read(isStatsSyncedProvider.notifier).state = false;
+      },
+      (_) async {
+        ref.read(syncStatusProvider.notifier).state = SyncStatus.success;
+        ref.read(isStatsSyncedProvider.notifier).state = true;
+        // Silent reload of stats to get the merged cloud progress without flashing loading state
+        final statsResult = await _repository.getUserStats();
+        statsResult.fold(
+          (failure) => null,
+          (mergedStats) {
+            state = AsyncValue.data(mergedStats);
+            _updateSyncStateFromPrefs();
+          },
+        );
+        Future.delayed(const Duration(seconds: 3), () {
+          if (ref.read(syncStatusProvider) == SyncStatus.success) {
+            ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
+          }
+        });
+      },
+    );
+  }
+
+  void _updateSyncStateFromPrefs() {
+    final ref = _ref;
+    if (ref == null) return;
+    final isSynced = ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
+    ref.read(isStatsSyncedProvider.notifier).state = isSynced;
   }
 
   Future<void> loadStats() async {
@@ -105,7 +178,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     final result = await _repository.getUserStats();
     result.fold(
       (failure) => state = AsyncValue.error(failure, StackTrace.current),
-      (stats) => state = AsyncValue.data(stats),
+      (stats) {
+        state = AsyncValue.data(stats);
+        _updateSyncStateFromPrefs();
+      },
     );
   }
 
@@ -143,7 +219,13 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> updateStats(UserStatsEntity stats) async {
     final result = await _repository.updateUserStats(stats);
-    result.fold((failure) => null, (_) => state = AsyncValue.data(stats));
+    result.fold(
+      (failure) => null,
+      (mergedStats) {
+        state = AsyncValue.data(mergedStats);
+        _updateSyncStateFromPrefs();
+      },
+    );
   }
 
   /// Updates lastActiveDate and currentStreak based on today's date.

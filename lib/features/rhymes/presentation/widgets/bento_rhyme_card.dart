@@ -12,6 +12,8 @@ import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
 import '../providers/rhyme_audio_provider.dart';
+import 'rhyme_detail_sheet.dart';
+
 
 /// Bento-grid rhyme card with play toggle and mini visualizer.
 class BentoRhymeCard extends ConsumerStatefulWidget {
@@ -53,6 +55,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
 
   @override
   Widget build(BuildContext context) {
+    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
     final audioState = ref.watch(rhymeAudioProvider);
     final isPlaying =
         audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
@@ -70,10 +73,15 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
       scriptMode: scriptMode,
     );
 
-    return GlassCard(
-      blur: 12,
-      borderRadius: 32,
-      padding: EdgeInsets.zero,
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        RhymeDetailSheet.show(context, widget.rhyme);
+      },
+      child: GlassCard(
+        blur: 12,
+        borderRadius: 32,
+        padding: EdgeInsets.zero,
       backgroundColor: isDark
           ? color.withValues(alpha: 0.1)
           : Colors.white.withValues(alpha: 0.7),
@@ -155,7 +163,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                             size: 16,
                           ),
                         )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
+                        .animate(onPlay: reduceEffects ? null : (c) => c.repeat(reverse: true))
                         .rotate(
                           begin: -0.03,
                           end: 0.03,
@@ -269,8 +277,9 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
           ),
         ],
       ),
-    );
-  }
+    ),
+  );
+}
 
   IconData _getIconForCategory(String? category) {
     switch (category?.toLowerCase()) {

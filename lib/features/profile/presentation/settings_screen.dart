@@ -21,6 +21,7 @@ class SettingsScreen extends ConsumerWidget {
     final scriptMode = ref.watch(effectiveScriptModeProvider);
     final appLanguage = ref.watch(appLanguageProvider);
     final soundEnabled = ref.watch(soundEnabledProvider);
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
     final isTablet = ResponsiveLayout.isTablet(context);
@@ -62,6 +63,7 @@ class SettingsScreen extends ConsumerWidget {
             scriptMode,
             appLanguage,
             soundEnabled,
+            reduceVisualEffects,
             isDark,
           )
         else
@@ -72,6 +74,7 @@ class SettingsScreen extends ConsumerWidget {
             scriptMode,
             appLanguage,
             soundEnabled,
+            reduceVisualEffects,
             isDark,
           ),
 
@@ -116,6 +119,7 @@ class SettingsScreen extends ConsumerWidget {
     String scriptMode,
     String appLanguage,
     bool soundEnabled,
+    bool reduceVisualEffects,
     bool isDark,
   ) {
     return Wrap(
@@ -198,6 +202,15 @@ class SettingsScreen extends ConsumerWidget {
                       isDark: isDark,
                       onChanged: (value) => toggleSound(ref),
                     ),
+                    const SizedBox(height: 10),
+                    ToggleTile(
+                      icon: Icons.blur_off_rounded,
+                      title: 'Reduce Visual Effects',
+                      subtitle: 'Simplify animations, visualizers, and particle effects for maximum battery life',
+                      value: reduceVisualEffects,
+                      isDark: isDark,
+                      onChanged: (value) => toggleReduceVisualEffects(ref),
+                    ),
                   ],
                 ),
               ),
@@ -251,6 +264,7 @@ class SettingsScreen extends ConsumerWidget {
     String scriptMode,
     String appLanguage,
     bool soundEnabled,
+    bool reduceVisualEffects,
     bool isDark,
   ) {
     return Column(
@@ -308,6 +322,15 @@ class SettingsScreen extends ConsumerWidget {
               value: soundEnabled,
               isDark: isDark,
               onChanged: (value) => toggleSound(ref),
+            ),
+            const SizedBox(height: 10),
+            ToggleTile(
+              icon: Icons.blur_off_rounded,
+              title: 'Reduce Visual Effects',
+              subtitle: 'Simplify animations, visualizers, and particle effects for maximum battery life',
+              value: reduceVisualEffects,
+              isDark: isDark,
+              onChanged: (value) => toggleReduceVisualEffects(ref),
             ),
           ],
         ),

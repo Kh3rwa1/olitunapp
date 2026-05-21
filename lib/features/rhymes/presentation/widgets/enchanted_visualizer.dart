@@ -1,7 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
 
-class EnchantedVisualizer extends StatefulWidget {
+class EnchantedVisualizer extends ConsumerStatefulWidget {
   final bool isPlaying;
   final Color color;
   final bool showWaves;
@@ -18,10 +20,10 @@ class EnchantedVisualizer extends StatefulWidget {
   });
 
   @override
-  State<EnchantedVisualizer> createState() => _EnchantedVisualizerState();
+  ConsumerState<EnchantedVisualizer> createState() => _EnchantedVisualizerState();
 }
 
-class _EnchantedVisualizerState extends State<EnchantedVisualizer>
+class _EnchantedVisualizerState extends ConsumerState<EnchantedVisualizer>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   final List<_Particle> _particles = List.generate(15, (index) => _Particle());
@@ -56,8 +58,48 @@ class _EnchantedVisualizerState extends State<EnchantedVisualizer>
     super.dispose();
   }
 
+  Widget _buildStaticFallback(BuildContext context) {
+    final barColor = widget.color.withValues(alpha: widget.isPlaying ? 0.8 : 0.4);
+    
+    return SizedBox(
+      height: widget.height,
+      child: Center(
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _buildStaticBar(16, barColor),
+            const SizedBox(width: 4),
+            _buildStaticBar(28, barColor),
+            const SizedBox(width: 4),
+            _buildStaticBar(42, barColor),
+            const SizedBox(width: 4),
+            _buildStaticBar(32, barColor),
+            const SizedBox(width: 4),
+            _buildStaticBar(20, barColor),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStaticBar(double height, Color color) {
+    return Container(
+      width: 4,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+    if (reduceVisualEffects) {
+      return _buildStaticFallback(context);
+    }
+
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, child) {

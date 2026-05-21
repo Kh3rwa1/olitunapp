@@ -1,10 +1,12 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'motion_tokens.dart';
+import '../../shared/providers/local_settings_provider.dart';
 
 /// One-shot confetti burst (CustomPainter, no asset/package). Renders
 /// nothing when reduce-motion is on.
-class ConfettiBurst extends StatefulWidget {
+class ConfettiBurst extends ConsumerStatefulWidget {
   const ConfettiBurst({
     super.key,
     this.particleCount = 36,
@@ -23,10 +25,10 @@ class ConfettiBurst extends StatefulWidget {
   final List<Color> colors;
 
   @override
-  State<ConfettiBurst> createState() => _ConfettiBurstState();
+  ConsumerState<ConfettiBurst> createState() => _ConfettiBurstState();
 }
 
-class _ConfettiBurstState extends State<ConfettiBurst>
+class _ConfettiBurstState extends ConsumerState<ConfettiBurst>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctl = AnimationController(
     vsync: this,
@@ -60,7 +62,8 @@ class _ConfettiBurstState extends State<ConfettiBurst>
 
   @override
   Widget build(BuildContext context) {
-    if (RespectMotion.of(context)) {
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+    if (RespectMotion.of(context) || reduceVisualEffects) {
       return const SizedBox.shrink();
     }
     return IgnorePointer(

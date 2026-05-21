@@ -13,6 +13,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../../shared/widgets/minimum_tap_target.dart';
 
 @visibleForTesting
 int? shellTabIndexForPath(String path) {
@@ -287,7 +288,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                _buildNavItem(0, Icons.home_rounded, 'Home'),
+                _buildNavItem(0, Icons.school_rounded, 'Learn'),
                 _buildNavItem(1, Icons.music_note_rounded, 'Bakhed'),
                 _buildNavItem(2, Icons.person_rounded, 'Profile'),
               ],
@@ -307,62 +308,59 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     final isSelected = _selectedIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Semantics(
-      button: true,
+    return MinimumTapTarget(
+      onTap: () {
+        _onItemTapped(index);
+        HapticFeedback.lightImpact();
+      },
       selected: isSelected,
-      label: '$label tab',
-      hint: isSelected ? 'Current tab' : 'Double tap to open $label',
+      semanticLabel: '$label tab',
+      borderRadius: BorderRadius.circular(20),
       child: ExcludeSemantics(
-        child: GestureDetector(
-          onTap: () {
-            _onItemTapped(index);
-            HapticFeedback.lightImpact();
-          },
-          behavior: HitTestBehavior.opaque,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                    duration: 400.ms,
-                    padding: const EdgeInsets.all(10),
-                    curve: Curves.easeOutBack,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? AppColors.primary.withValues(alpha: 0.15)
-                          : Colors.transparent,
-                      borderRadius: BorderRadius.circular(20),
-                      border: isSelected
-                          ? Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.2),
-                            )
-                          : null,
-                    ),
-                    child: Icon(
-                      icon,
-                      color: isSelected
-                          ? AppColors.primary
-                          : (isDark ? Colors.white54 : Colors.black45),
-                      size: isSelected ? 30 : 26,
-                    ),
-                  )
-                  .animate(target: isSelected ? 1 : 0)
-                  .scale(
-                    begin: const Offset(0.9, 0.9),
-                    end: const Offset(1.1, 1.1),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedContainer(
+                  duration: 400.ms,
+                  padding: const EdgeInsets.all(10),
+                  curve: Curves.easeOutBack,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? AppColors.primary.withValues(alpha: 0.15)
+                        : Colors.transparent,
+                    borderRadius: BorderRadius.circular(20),
+                    border: isSelected
+                        ? Border.all(
+                            color: AppColors.primary.withValues(alpha: 0.2),
+                          )
+                        : null,
                   ),
-              const SizedBox(height: 4),
-              Text(
-                label,
-                style: GoogleFonts.fredoka(
-                  fontSize: 10,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark ? Colors.white54 : Colors.black45),
+                  child: Icon(
+                    icon,
+                    color: isSelected
+                        ? AppColors.primary
+                        : (isDark ? Colors.white54 : Colors.black45),
+                    size: isSelected ? 30 : 26,
+                  ),
+                )
+                .animate(target: isSelected ? 1 : 0)
+                .scale(
+                  begin: const Offset(0.9, 0.9),
+                  end: const Offset(1.1, 1.1),
                 ),
+            const SizedBox(height: 4),
+            Text(
+              label,
+              style: GoogleFonts.fredoka(
+                fontSize: 11,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                color: isSelected
+                    ? AppColors.primary
+                    : (isDark ? Colors.white54 : Colors.black45),
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
@@ -442,7 +440,7 @@ class _DesktopSidebar extends ConsumerWidget {
 
           // Nav Items
           _SidebarNavItem(
-            icon: Icons.home_rounded,
+            icon: Icons.school_rounded,
             label: 'Learn',
             isSelected: selectedIndex == 0,
             onTap: () => onItemTapped(0),

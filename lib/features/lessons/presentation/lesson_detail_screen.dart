@@ -1,3 +1,5 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,18 +13,71 @@ import '../../../core/motion/motion_tokens.dart';
 import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/state_widgets.dart';
+import '../../home/presentation/providers/mission_providers.dart';
 
 import 'widgets/dynamic_block_builder.dart';
 import 'widgets/lesson_content_widgets.dart';
 import '../../../core/motion/confetti_overlay.dart';
 
-class LessonDetailScreen extends ConsumerWidget {
+bool get _isTesting {
+  if (kIsWeb) return false;
+  try {
+    return Platform.environment.containsKey('FLUTTER_TEST');
+  } catch (_) {
+    return false;
+  }
+}
+
+class LessonDetailScreen extends ConsumerStatefulWidget {
   final String lessonId;
 
   const LessonDetailScreen({super.key, required this.lessonId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<LessonDetailScreen> createState() => _LessonDetailScreenState();
+}
+
+class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
+  final ScrollController _scrollController = ScrollController();
+  double _scrollProgress = 0.0;
+  bool _isScrollCompleted = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_onScroll);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _onScroll() {
+    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+    final maxScroll = _scrollController.position.maxScrollExtent;
+    final currentScroll = _scrollController.position.pixels;
+
+    double progress = 0.0;
+    if (maxScroll > 0) {
+      progress = (currentScroll / maxScroll).clamp(0.0, 1.0);
+    } else {
+      progress = 1.0;
+    }
+
+    setState(() {
+      _scrollProgress = progress;
+      if (_scrollProgress >= 0.90) {
+        _isScrollCompleted = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final lessons = ref.watch(lessonNotifierProvider);
 
     // Watch content providers to ensure data is available for dynamic block matching.
@@ -30,48 +85,40 @@ class LessonDetailScreen extends ConsumerWidget {
     ref.watch(numbersProvider);
     ref.watch(wordsProvider);
     ref.watch(sentencesProvider);
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return lessons.when(
-      loading: () => Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        body: const Center(child: CircularProgressIndicator()),
+      loading: () => const Scaffold(
+        body: AppLoadingState(type: AppLoadingType.page),
       ),
       error: (e, s) => Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-        body: _LessonStateMessage(
-          icon: Icons.cloud_off_rounded,
-          title: 'Could not load this lesson',
-          message: 'Check your connection and try again.',
-          isDark: isDark,
-          onBack: () => context.canPop() ? context.pop() : context.go('/'),
+        body: AppErrorState(
+          message: 'Could not load this lesson.',
+          onRetry: () => ref.read(lessonNotifierProvider.notifier).refresh(),
         ),
       ),
       data: (data) {
         if (data.isEmpty) {
-          return _LessonStateScaffold(
-            isDark: isDark,
-            child: _LessonStateMessage(
-              icon: Icons.school_outlined,
+          return Scaffold(
+            body: AppEmptyState(
               title: 'No lessons available',
-              message: 'New learning content will appear here soon.',
-              isDark: isDark,
-              onBack: () => context.canPop() ? context.pop() : context.go('/'),
+              description: 'New learning content will appear here soon.',
+              buttonText: 'Back to Home',
+              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              icon: Icons.school_outlined,
             ),
           );
         }
 
-        final lesson = _findLesson(data, lessonId);
+        final lesson = _findLesson(data, widget.lessonId);
         if (lesson == null) {
-          return _LessonStateScaffold(
-            isDark: isDark,
-            child: _LessonStateMessage(
-              icon: Icons.search_off_rounded,
+          return Scaffold(
+            body: AppEmptyState(
               title: 'Lesson not found',
-              message: 'This lesson may have been moved or removed.',
-              isDark: isDark,
-              onBack: () => context.canPop() ? context.pop() : context.go('/'),
+              description: 'This lesson may have been moved or removed.',
+              buttonText: 'Back to Home',
+              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              icon: Icons.search_off_rounded,
             ),
           );
         }
@@ -90,9 +137,31 @@ class LessonDetailScreen extends ConsumerWidget {
           });
         }
 
+        // Calculate dynamic steps
+        final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
+        final activeStep = (_scrollProgress * totalSteps).ceil().clamp(1, totalSteps);
+
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-          body: CustomScrollView(
+          body: Stack(
+            children: [
+              NotificationListener<ScrollMetricsNotification>(
+                onNotification: (notification) {
+                  final metrics = notification.metrics;
+                  if (metrics.maxScrollExtent == 0 && !_isScrollCompleted) {
+                    Future.microtask(() {
+                      if (mounted) {
+                        setState(() {
+                          _isScrollCompleted = true;
+                          _scrollProgress = 1.0;
+                        });
+                      }
+                    });
+                  }
+                  return false;
+                },
+                child: CustomScrollView(
+                  controller: _scrollController,
             physics: const BouncingScrollPhysics(
               parent: AlwaysScrollableScrollPhysics(),
             ),
@@ -118,6 +187,16 @@ class LessonDetailScreen extends ConsumerWidget {
                   lesson: lesson,
                   scriptMode: scriptMode,
                   buildChip: _buildChip,
+                ),
+              ),
+
+              // Progress bar and steps indicator
+              SliverToBoxAdapter(
+                child: _ProgressHeader(
+                  progress: _scrollProgress,
+                  isDark: isDark,
+                  activeStep: activeStep,
+                  totalSteps: totalSteps,
                 ),
               ),
 
@@ -172,43 +251,71 @@ class LessonDetailScreen extends ConsumerWidget {
               ),
             ],
           ),
-          floatingActionButton: Container(
+        ),
+        const Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: OfflineStatusBanner(),
+          ),
+        ],
+      ),
+      floatingActionButton: Container(
             margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
             width: double.infinity,
             child: FloatingActionButton.extended(
-              onPressed: () {
-                final notifier = ref.read(userStatsProvider.notifier);
-                notifier.completeLesson(
-                  lesson.id,
-                  categoryId: lesson.categoryId,
-                  estimatedMinutes: lesson.estimatedMinutes,
-                );
-                notifier.addStars(25);
+              onPressed: _isScrollCompleted
+                  ? () {
+                      final notifier = ref.read(userStatsProvider.notifier);
+                      notifier.completeLesson(
+                        lesson.id,
+                        categoryId: lesson.categoryId,
+                        estimatedMinutes: lesson.estimatedMinutes,
+                      );
+                      notifier.addStars(25);
+                      ref.read(lessonCompletedTodayProvider.notifier).setCompleted(true);
 
-                final quizzes = ref.read(quizzesProvider).value ?? [];
-                final quizId = _getQuizIdForCategory(
-                  lesson.categoryId,
-                  lesson.id,
-                  quizzes,
-                );
+                      final quizzes = ref.read(quizzesProvider).value ?? [];
+                      final quizId = _getQuizIdForCategory(
+                        lesson.categoryId,
+                        lesson.id,
+                        quizzes,
+                      );
 
-                _showCompletionSheet(
-                  context: context,
-                  lesson: lesson,
-                  quizId: quizId,
-                  quizzes: quizzes,
-                );
-              },
-              backgroundColor: AppColors.primary,
-              label: const Text(
-                'Complete Lesson',
+                      // Find next lesson to allow routing!
+                      final currentIdx = data.indexOf(lesson);
+                      final nextLessonId = (currentIdx != -1 && currentIdx + 1 < data.length)
+                          ? data[currentIdx + 1].id
+                          : null;
+
+                      _showCompletionSheet(
+                        context: context,
+                        lesson: lesson,
+                        quizId: quizId,
+                        quizzes: quizzes,
+                        nextLessonId: nextLessonId,
+                      );
+                    }
+                  : null,
+              backgroundColor: _isScrollCompleted
+                  ? AppColors.primary
+                  : (isDark ? Colors.white10 : Colors.black12),
+              label: Text(
+                _isScrollCompleted ? 'Complete Lesson' : 'Finish the lesson to complete',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
-                  color: Colors.white,
+                  color: _isScrollCompleted
+                      ? Colors.white
+                      : (isDark ? Colors.white30 : Colors.black38),
                 ),
               ),
-              icon: const Icon(Icons.check_circle_rounded, color: Colors.white),
+              icon: Icon(
+                Icons.check_circle_rounded,
+                color: _isScrollCompleted
+                    ? Colors.white
+                    : (isDark ? Colors.white30 : Colors.black38),
+              ),
             ),
           ),
           floatingActionButtonLocation:
@@ -310,92 +417,6 @@ class LessonDetailScreen extends ConsumerWidget {
   }
 }
 
-class _LessonStateScaffold extends StatelessWidget {
-  const _LessonStateScaffold({required this.isDark, required this.child});
-
-  final bool isDark;
-  final Widget child;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      body: child,
-    );
-  }
-}
-
-class _LessonStateMessage extends StatelessWidget {
-  const _LessonStateMessage({
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.isDark,
-    required this.onBack,
-  });
-
-  final IconData icon;
-  final String title;
-  final String message;
-  final bool isDark;
-  final VoidCallback onBack;
-
-  @override
-  Widget build(BuildContext context) {
-    return SafeArea(
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 84,
-                height: 84,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Icon(icon, size: 42, color: AppColors.primary),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.45,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: onBack,
-                icon: const Icon(Icons.arrow_back_rounded),
-                label: const Text('Go back'),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 /// Centered hero summary shown inside the expanded sliver header on
 /// the lesson detail screen.
 class _LessonHeroSummary extends StatelessWidget {
@@ -445,6 +466,67 @@ class _LessonHeroSummary extends StatelessWidget {
           ],
         ),
       ],
+    );
+  }
+}
+
+class _ProgressHeader extends StatelessWidget {
+  final double progress;
+  final bool isDark;
+  final int activeStep;
+  final int totalSteps;
+
+  const _ProgressHeader({
+    required this.progress,
+    required this.isDark,
+    required this.activeStep,
+    required this.totalSteps,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Step $activeStep of $totalSteps',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.white70 : Colors.black87,
+                ),
+              ),
+              Text(
+                '${(progress * 100).toInt()}% completed',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: progress,
+              minHeight: 6,
+              backgroundColor: isDark ? Colors.white10 : Colors.black12,
+              valueColor: AlwaysStoppedAnimation<Color>(
+                isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -540,6 +622,7 @@ void _showCompletionSheet({
   required LessonEntity lesson,
   required String? quizId,
   required List<QuizModel> quizzes,
+  required String? nextLessonId,
 }) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   QuizModel? quiz;
@@ -551,67 +634,95 @@ void _showCompletionSheet({
     }
   }
 
+  Widget buildBentoCard({
+    required Widget child,
+    required Color backgroundColor,
+    required Color borderColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: backgroundColor,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: borderColor, width: 1.5),
+      ),
+      child: child,
+    );
+  }
+
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.7),
     builder: (sheetContext) {
-      return Stack(
-        alignment: Alignment.topCenter,
-        clipBehavior: Clip.none,
-        children: [
-          const Positioned(
-            top: -120,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: ConfettiBurst(particleCount: 50),
-          ),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
-            decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF0F141C) : Colors.white,
-              borderRadius: const BorderRadius.only(
-                topLeft: Radius.circular(32),
-                topRight: Radius.circular(32),
+      return Consumer(
+        builder: (context, ref, _) {
+          final reduceEffects = ref.watch(reduceVisualEffectsProvider);
+
+          return Stack(
+            alignment: Alignment.topCenter,
+            clipBehavior: Clip.none,
+            children: [
+              const Positioned(
+                top: -120,
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: ConfettiBurst(particleCount: 50),
               ),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.05)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
-              boxShadow: AppColors.largeShadow,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                // Floating trophy
-                Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.15),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.3),
-                          width: 2,
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.emoji_events_rounded,
-                        color: AppColors.primary,
-                        size: 44,
-                      ),
-                    )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .scale(
-                      begin: const Offset(1.0, 1.0),
-                      end: const Offset(1.1, 1.1),
-                      duration: 1.seconds,
-                      curve: Curves.easeInOutBack,
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                decoration: BoxDecoration(
+                  color: isDark ? const Color(0xFF0F141C) : Colors.white,
+                  borderRadius: const BorderRadius.only(
+                    topLeft: Radius.circular(32),
+                    topRight: Radius.circular(32),
+                  ),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                  boxShadow: AppColors.largeShadow,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Floating trophy
+                    Builder(
+                      builder: (context) {
+                        final trophy = Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.3),
+                              width: 2,
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.emoji_events_rounded,
+                            color: AppColors.primary,
+                            size: 44,
+                          ),
+                        );
+                        if (reduceEffects || _isTesting) {
+                          return trophy;
+                        }
+                        return trophy
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .scale(
+                              begin: const Offset(1.0, 1.0),
+                              end: const Offset(1.1, 1.1),
+                              duration: 1.seconds,
+                              curve: Curves.easeInOutBack,
+                            );
+                      },
                     ),
-                const SizedBox(height: 24),
+                    const SizedBox(height: 24),
 
                 // Celebration text
                 Text(
@@ -625,7 +736,7 @@ void _showCompletionSheet({
                 ),
                 const SizedBox(height: 8),
 
-                // Description & Stars
+                // Description
                 Text(
                   'Amazing work! You completed this lesson and earned',
                   textAlign: TextAlign.center,
@@ -634,43 +745,131 @@ void _showCompletionSheet({
                     color: isDark ? Colors.white70 : Colors.black87,
                   ),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: 18),
 
-                // Stars reward
+                // Bento grid row
+                Row(
+                  children: [
+                    // Stars Bento
+                    Expanded(
+                      child: buildBentoCard(
+                        backgroundColor: AppColors.duoYellow.withValues(alpha: 0.12),
+                        borderColor: AppColors.duoYellow.withValues(alpha: 0.25),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.star_rounded,
+                              color: AppColors.duoYellow,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Stars Earned',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              '+25 Stars',
+                              style: TextStyle(
+                                color: AppColors.duoYellowDark,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    // Progress Bento
+                    Expanded(
+                      child: buildBentoCard(
+                        backgroundColor: AppColors.primary.withValues(alpha: 0.12),
+                        borderColor: AppColors.primary.withValues(alpha: 0.25),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.check_circle_rounded,
+                              color: AppColors.primary,
+                              size: 28,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Scroll Depth',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white60 : Colors.black54,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '100% Done',
+                              style: TextStyle(
+                                color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 16,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 12),
+                // Full-width Bottom Bento
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: AppColors.duoYellow.withValues(alpha: 0.15),
+                    color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.3) : const Color(0xFFF1F5F9),
                     borderRadius: BorderRadius.circular(20),
                     border: Border.all(
-                      color: AppColors.duoYellow.withValues(alpha: 0.3),
+                      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
                     ),
                   ),
-                  child: const Row(
-                    mainAxisSize: MainAxisSize.min,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(
-                        Icons.star_rounded,
-                        color: AppColors.duoYellow,
-                        size: 22,
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.auto_awesome_rounded,
+                            color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                            size: 16,
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Santali Mastery',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                            ),
+                          ),
+                        ],
                       ),
-                      SizedBox(width: 6),
+                      const SizedBox(height: 6),
                       Text(
-                        '+25 Stars',
+                        'You are officially on your way to mastering Ol Chiki! Laha se!',
                         style: TextStyle(
-                          color: AppColors.duoYellowDark,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
+                          fontSize: 13,
+                          height: 1.4,
+                          color: isDark ? Colors.white70 : Colors.black87,
                         ),
                       ),
                     ],
                   ),
                 ),
 
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
 
                 // Primary action button
                 SizedBox(
@@ -680,12 +879,12 @@ void _showCompletionSheet({
                     onPressed: () {
                       Navigator.pop(sheetContext); // Close sheet
                       if (quizId != null) {
-                        context.pushReplacement(
-                          '/quiz/$quizId',
-                        ); // Replace screen with quiz screen
+                        context.pushReplacement('/quiz/$quizId');
+                      } else if (nextLessonId != null) {
+                        context.pushReplacement('/lessons/$nextLessonId');
                       } else {
                         if (context.canPop()) {
-                          context.pop(); // Pop current LessonDetailScreen
+                          context.pop();
                         } else {
                           context.go('/');
                         }
@@ -702,11 +901,8 @@ void _showCompletionSheet({
                     ),
                     child: Text(
                       quiz != null
-                          ? ((quiz.title != null &&
-                                    quiz.title!.toLowerCase().endsWith('quiz'))
-                                ? 'Take ${quiz.title}'
-                                : 'Take ${quiz.title ?? 'Quiz'} Quiz')
-                          : 'Awesome!',
+                          ? 'Take ${quiz.title ?? 'Quiz'}'
+                          : (nextLessonId != null ? 'Next Lesson' : 'Johar (Finish)'),
                       style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
@@ -716,42 +912,74 @@ void _showCompletionSheet({
                   ),
                 ),
 
-                if (quizId != null) ...[
+                // Secondary action buttons
+                if (quizId != null || nextLessonId != null) ...[
                   const SizedBox(height: 12),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 48,
-                    child: TextButton(
-                      onPressed: () {
-                        Navigator.pop(sheetContext); // Close sheet
-                        if (context.canPop()) {
-                          context.pop(); // Pop current LessonDetailScreen
-                        } else {
-                          context.go('/');
-                        }
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: isDark
-                            ? Colors.white70
-                            : Colors.black54,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  Row(
+                    children: [
+                      if (quizId != null && nextLessonId != null) ...[
+                        Expanded(
+                          child: OutlinedButton(
+                            onPressed: () {
+                              Navigator.pop(sheetContext);
+                              context.pushReplacement('/lessons/$nextLessonId');
+                            },
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: isDark ? Colors.white70 : Colors.black87,
+                              side: BorderSide(
+                                color: isDark ? Colors.white24 : Colors.black26,
+                              ),
+                              padding: const EdgeInsets.symmetric(vertical: 14),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                              ),
+                            ),
+                            child: const Text(
+                              'Next Lesson',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                      ],
+                      Expanded(
+                        child: TextButton(
+                          onPressed: () {
+                            Navigator.pop(sheetContext);
+                            if (context.canPop()) {
+                              context.pop();
+                            } else {
+                              context.go('/');
+                            }
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: isDark ? Colors.white60 : Colors.black54,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: const Text(
+                            'Maybe Later',
+                            style: TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'Maybe Later',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ],
               ],
             ),
           ),
         ],
+      );
+        },
       );
     },
   );

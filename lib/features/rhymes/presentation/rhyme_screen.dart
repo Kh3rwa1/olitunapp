@@ -2,6 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
@@ -10,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/motion/branded_refresh.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/state_widgets.dart';
 import '../domain/rhyme_model.dart';
 
 import 'widgets/whimsical_background.dart';
@@ -40,11 +42,17 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     _headerPulseController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 3),
-    )..repeat(reverse: true);
+    );
     _dividerGlowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
-    )..repeat();
+    );
+
+    final reduceEffects = ref.read(reduceVisualEffectsProvider);
+    if (!reduceEffects) {
+      _headerPulseController.repeat(reverse: true);
+      _dividerGlowController.repeat();
+    }
   }
 
   @override
@@ -56,6 +64,26 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
+      if (next) {
+        _headerPulseController.stop();
+        _dividerGlowController.stop();
+      } else {
+        _headerPulseController.repeat(reverse: true);
+        _dividerGlowController.repeat();
+      }
+    });
+
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (previous, next) {
+      final prevOffline = previous?.value?.contains(ConnectivityResult.none) ?? true;
+      final nextOnline = next.value != null && !next.value!.contains(ConnectivityResult.none);
+      if (prevOffline && nextOnline) {
+        ref.invalidate(rhymesProvider);
+        ref.invalidate(rhymeCategoriesProvider);
+        ref.invalidate(rhymeSubcategoriesProvider);
+      }
+    });
+
     final rhymesAsync = ref.watch(rhymesProvider);
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
     final subcategoriesAsync = ref.watch(rhymeSubcategoriesProvider);
@@ -65,63 +93,73 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
-      body: WhimsicalBackground(
-        child: SafeArea(
-          child: BrandedRefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(rhymesProvider);
-              ref.invalidate(rhymeCategoriesProvider);
-              ref.invalidate(rhymeSubcategoriesProvider);
-            },
-            child: CustomScrollView(
-              physics: const BouncingScrollPhysics(),
-              slivers: [
-                // --- Premium Layered Header ---
-                SliverToBoxAdapter(
-                  child: ResponsivePageContainer(
-                    padding: EdgeInsets.fromLTRB(
-                      isTablet ? 32 : 24,
-                      32,
-                      isTablet ? 32 : 24,
-                      24,
+      body: Stack(
+        children: [
+          WhimsicalBackground(
+            child: SafeArea(
+              child: BrandedRefreshIndicator(
+                onRefresh: () async {
+                  ref.invalidate(rhymesProvider);
+                  ref.invalidate(rhymeCategoriesProvider);
+                  ref.invalidate(rhymeSubcategoriesProvider);
+                },
+                child: CustomScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  slivers: [
+                    // --- Premium Layered Header ---
+                    SliverToBoxAdapter(
+                      child: ResponsivePageContainer(
+                        padding: EdgeInsets.fromLTRB(
+                          isTablet ? 32 : 24,
+                          32,
+                          isTablet ? 32 : 24,
+                          24,
+                        ),
+                        child: _buildHeader(isDark),
+                      ),
                     ),
-                    child: _buildHeader(isDark),
-                  ),
-                ),
 
-                // --- Category Filter chips ---
-                _buildCategoryChips(categoriesAsync, isDark, isTablet),
+                    // --- Category Filter chips ---
+                    _buildCategoryChips(categoriesAsync, isDark, isTablet),
 
-                // --- Subcategory chips ---
-                if (_selectedCategoryId != null)
-                  _buildSubcategoryChips(subcategoriesAsync, isDark, isTablet),
+                    // --- Subcategory chips ---
+                    if (_selectedCategoryId != null)
+                      _buildSubcategoryChips(subcategoriesAsync, isDark, isTablet),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                // --- Featured Card ---
-                _buildFeaturedSection(rhymesAsync, isTablet),
+                    // --- Featured Card ---
+                    _buildFeaturedSection(rhymesAsync, isTablet),
 
-                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                    const SliverToBoxAdapter(child: SizedBox(height: 40)),
 
-                // --- Section Title ---
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.symmetric(
-                      horizontal: isTablet ? 32 : 24,
+                    // --- Section Title ---
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: EdgeInsets.symmetric(
+                          horizontal: isTablet ? 32 : 24,
+                        ),
+                        child: _buildDiscoverHeader(isDark),
+                      ).animate().fadeIn(delay: 600.ms),
                     ),
-                    child: _buildDiscoverHeader(isDark),
-                  ).animate().fadeIn(delay: 600.ms),
+                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
+
+                    // --- Bento Grid ---
+                    _buildBentoGrid(rhymesAsync, isDark, isTablet, isDesktop),
+
+                    const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                  ],
                 ),
-                const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                // --- Bento Grid ---
-                _buildBentoGrid(rhymesAsync, isDark, isTablet, isDesktop),
-
-                const SliverToBoxAdapter(child: SizedBox(height: 120)),
-              ],
+              ),
             ),
           ),
-        ),
+          const Positioned(
+            top: 16,
+            left: 16,
+            right: 16,
+            child: OfflineStatusBanner(),
+          ),
+        ],
       ),
     );
   }
@@ -459,14 +497,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             : <RhymeModel>[];
 
         if (gridItems.isEmpty) {
-          return SliverFillRemaining(
+          return const SliverFillRemaining(
             hasScrollBody: false,
-            child: Center(
-              child: Text(
-                'More coming soon! ✨',
-                style: TextStyle(
-                  color: isDark ? Colors.white24 : Colors.black26,
-                ),
+            child: Padding(
+              padding: EdgeInsets.all(24.0),
+              child: AppEmptyState(
+                title: 'No rhymes found',
+                description: 'New traditional Bakhed and songs are coming soon!',
+                icon: Icons.music_note_rounded,
               ),
             ),
           );
@@ -510,58 +548,26 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         );
       },
-      loading: () => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      loading: () => SliverToBoxAdapter(
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
+          child: const AppLoadingState(
+            type: AppLoadingType.grid,
+          ),
+        ),
+      ),
       error: (e, st) => SliverToBoxAdapter(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: _buildErrorCard(isDark),
+          child: AppErrorState(
+            message: 'Could not load the rhymes list.',
+            onRetry: () => ref.refresh(rhymesProvider),
+          ),
         ),
       ),
     );
   }
 
-  Widget _buildErrorCard(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: isDark
-            ? Colors.red.withValues(alpha: 0.08)
-            : Colors.red.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isDark
-              ? Colors.red.withValues(alpha: 0.2)
-              : Colors.red.withValues(alpha: 0.1),
-        ),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(
-            Icons.wifi_off_rounded,
-            size: 36,
-            color: isDark ? Colors.red.shade300 : Colors.red.shade400,
-          ),
-          const SizedBox(height: 12),
-          Text(
-            'Could not load bakhed',
-            style: TextStyle(
-              fontWeight: FontWeight.w600,
-              color: isDark ? Colors.white : Colors.black87,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            'Check your connection and try again',
-            style: TextStyle(
-              fontSize: 13,
-              color: isDark ? Colors.white54 : Colors.black45,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 
   List<RhymeModel> _filterRhymes(List<RhymeModel> rhymes) {
     var filtered = rhymes;

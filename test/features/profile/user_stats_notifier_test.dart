@@ -15,6 +15,12 @@ void main() {
 
   setUp(() {
     mockRepo = _MockProfileRepo();
+    when(
+      () => mockRepo.updateUserStats(any()),
+    ).thenAnswer((invocation) async {
+      final stats = invocation.positionalArguments[0] as UserStatsEntity;
+      return Right(stats);
+    });
   });
 
   setUpAll(() {
@@ -72,9 +78,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -88,9 +92,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -121,9 +123,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -140,9 +140,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -157,9 +155,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -184,9 +180,7 @@ void main() {
           ),
         ),
       );
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(
         mockRepo,
@@ -204,9 +198,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -221,9 +213,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -246,9 +236,7 @@ void main() {
         when(
           () => mockRepo.getUserStats(),
         ).thenAnswer((_) async => const Right(baseStats));
-        when(
-          () => mockRepo.updateUserStats(any()),
-        ).thenAnswer((_) async => const Right(null));
+
 
         final notifier = UserStatsNotifier(mockRepo);
         await Future.delayed(Duration.zero);
@@ -282,9 +270,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);
@@ -307,9 +293,7 @@ void main() {
       when(
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
-      when(
-        () => mockRepo.updateUserStats(any()),
-      ).thenAnswer((_) async => const Right(null));
+
 
       final notifier = UserStatsNotifier(mockRepo);
       await Future.delayed(Duration.zero);

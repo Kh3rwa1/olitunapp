@@ -161,6 +161,74 @@ class AppTheme {
         space: 1,
       ),
 
+      // Standardized accessible visual components (M3 Specs)
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.charcoal,
+        contentTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: Colors.white,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.lightSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.lightSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        elevation: 0,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimaryLight,
+        ),
+        contentTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: AppColors.textSecondaryLight,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.lightSurfaceVariant,
+        disabledColor: AppColors.textDisabledLight,
+        selectedColor: AppColors.primary.withValues(alpha: 0.15),
+        secondarySelectedColor: AppColors.primary.withValues(alpha: 0.25),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide.none,
+        labelStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimaryLight,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.white,
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+
       // Text Theme
       textTheme: _textTheme(
         AppColors.textPrimaryLight,
@@ -305,6 +373,74 @@ class AppTheme {
         color: AppColors.darkBorder,
         thickness: 1,
         space: 1,
+      ),
+
+      // Standardized accessible visual components (M3 Specs)
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: AppColors.softBlack,
+        contentTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: Colors.white,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      ),
+      bottomSheetTheme: const BottomSheetThemeData(
+        backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+        ),
+      ),
+      dialogTheme: DialogThemeData(
+        backgroundColor: AppColors.darkSurface,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        elevation: 0,
+        titleTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 20,
+          fontWeight: FontWeight.w700,
+          color: AppColors.textPrimaryDark,
+        ),
+        contentTextStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 14,
+          color: AppColors.textSecondaryDark,
+        ),
+      ),
+      chipTheme: ChipThemeData(
+        backgroundColor: AppColors.darkSurfaceVariant,
+        disabledColor: AppColors.textDisabledDark,
+        selectedColor: AppColors.primary.withValues(alpha: 0.15),
+        secondarySelectedColor: AppColors.primary.withValues(alpha: 0.25),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        side: BorderSide.none,
+        labelStyle: const TextStyle(
+          fontFamily: 'Poppins',
+          fontSize: 12,
+          fontWeight: FontWeight.w600,
+          color: AppColors.textPrimaryDark,
+        ),
+      ),
+      filledButtonTheme: FilledButtonThemeData(
+        style: FilledButton.styleFrom(
+          backgroundColor: AppColors.primary,
+          foregroundColor: Colors.black, // High contrast on Mint Green
+          elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          textStyle: const TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
       ),
 
       // Text Theme

@@ -1,15 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
+import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
+import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
-import 'package:itun/core/widgets/shimmer_loading.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
 void main() {
+  late SharedPreferences mockPrefs;
+
+  setUp(() async {
+    SharedPreferences.setMockInitialValues({});
+    mockPrefs = await SharedPreferences.getInstance();
+  });
+
   final mockQuiz = QuizModel(
     id: 'test_quiz',
     categoryId: 'alphabets',
@@ -40,6 +50,7 @@ void main() {
       createTestableWidget(
         child: const QuizScreen(quizId: 'test_quiz'),
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(const AsyncValue.loading()),
           ),
@@ -50,8 +61,8 @@ void main() {
       ),
     );
 
-    expect(find.byType(Skeleton), findsWidgets);
-    expect(find.byType(CircularProgressIndicator), findsNothing);
+    expect(find.byType(AppLoadingState), findsOneWidget);
+    expect(find.byType(CircularProgressIndicator), findsOneWidget);
   });
 
   testWidgets('QuizScreen renders question and options', (tester) async {
@@ -59,6 +70,7 @@ void main() {
       createTestableWidget(
         child: const QuizScreen(quizId: 'test_quiz'),
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
@@ -81,10 +93,19 @@ void main() {
   });
 
   testWidgets('Selecting an answer and completing quiz', (tester) async {
+    // Set standard mobile screen dimensions
+    tester.view.physicalSize = const Size(450, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
     await tester.pumpWidget(
       createTestableWidget(
         child: const QuizScreen(quizId: 'test_quiz'),
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
             (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
@@ -102,11 +123,20 @@ void main() {
 
     // Check if correct indicator appears
     await tester.pump();
-    expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+    expect(
+      find.descendant(
+        of: find.byType(QuizOptionTile),
+        matching: find.byIcon(Icons.check_circle_rounded),
+      ),
+      findsOneWidget,
+    );
     expect(find.text('1'), findsWidgets);
 
-    // Wait for the auto-advance delay (1.2 seconds)
-    await tester.pump(const Duration(milliseconds: 1500));
+    // Let the feedback panel finish animating into view
+    await tester.pumpAndSettle();
+
+    // Tap the 'Continue' button on the feedback panel to advance
+    await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
     // Now it should be on the completion screen

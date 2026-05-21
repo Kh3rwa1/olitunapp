@@ -28,11 +28,11 @@ Locale appLocaleForLanguage(String languageCode) {
 }
 
 Future<void> main() async {
-  try {
-    await runZonedGuarded(
-      () async {
-        WidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
+  runZonedGuarded(
+    () async {
+      try {
         // Enforce strict production TLS certificate validation.
         SecureHttpOverrides.initialize();
 
@@ -77,53 +77,54 @@ Future<void> main() async {
             child: const OlitunApp(),
           ),
         );
-      },
-      (error, stack) {
-        AppLogger.debug('Uncaught zone error: $error');
-        CrashReporting.recordError(error, stack);
-      },
-    );
-  } catch (e, stack) {
-    AppLogger.debug('Fatal initialization error: $e\n$stack');
-    runApp(
-      MaterialApp(
-        home: Scaffold(
-          backgroundColor: Colors.red.shade900,
-          body: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: SingleChildScrollView(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(
-                      Icons.error_outline,
-                      color: Colors.white,
-                      size: 48,
+      } catch (e, stack) {
+        AppLogger.debug('Fatal initialization error: $e\n$stack');
+        runApp(
+          MaterialApp(
+            home: Scaffold(
+              backgroundColor: Colors.red.shade900,
+              body: SafeArea(
+                child: Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(
+                          Icons.error_outline,
+                          color: Colors.white,
+                          size: 48,
+                        ),
+                        const SizedBox(height: 16),
+                        const Text(
+                          'Initialization Failed',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          e.toString(),
+                          style:
+                              const TextStyle(color: Colors.white, fontSize: 16),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
-                      'Initialization Failed',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                      e.toString(),
-                      style: const TextStyle(color: Colors.white, fontSize: 16),
-                    ),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
-      ),
-    );
-  }
+        );
+      }
+    },
+    (error, stack) {
+      AppLogger.debug('Uncaught zone error: $error');
+      CrashReporting.recordError(error, stack);
+    },
+  );
 }
 
 class OlitunApp extends ConsumerWidget {

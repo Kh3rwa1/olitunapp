@@ -33,90 +33,127 @@ class LetterGridContent extends ConsumerWidget {
       );
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 180,
-        mainAxisSpacing: 16,
-        crossAxisSpacing: 16,
-        childAspectRatio: 0.9,
-      ),
-      itemCount: letters.length,
-      itemBuilder: (context, index) {
-        final letter = letters[index];
-        return ScaleButton(
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
-              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
-            }
-            context.push('/letter/$lessonId/${letter.charOlChiki}');
-          },
-          child: Container(
-            padding: const EdgeInsets.all(16),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                width: 1.5,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        const maxExtent = 180.0;
+        const spacing = 16.0;
+        int columns = ((width + spacing) / (maxExtent + spacing)).floor();
+        if (columns < 1) columns = 1;
+
+        final cardWidth = (width - (spacing * (columns - 1))) / columns;
+        final cardHeight = cardWidth / 0.9;
+        final rowsCount = (letters.length / columns).ceil();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(rowsCount, (rowIndex) {
+            final start = rowIndex * columns;
+            final end = (start + columns < letters.length) ? start + columns : letters.length;
+            final rowLetters = letters.sublist(start, end);
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: rowIndex < rowsCount - 1 ? spacing : 0),
+              child: Row(
+                children: List.generate(columns, (colIndex) {
+                  final hasItem = colIndex < rowLetters.length;
+                  final rightPadding = colIndex < columns - 1 ? spacing : 0.0;
+
+                  if (!hasItem) {
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: rightPadding),
+                        child: const SizedBox.shrink(),
+                      ),
+                    );
+                  }
+
+                  final letter = rowLetters[colIndex];
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: rightPadding),
+                      child: SizedBox(
+                        height: cardHeight,
+                        child: ScaleButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
+                              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+                            }
+                            context.push('/letter/$lessonId/${letter.charOlChiki}');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+                              borderRadius: BorderRadius.circular(24),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        letter.charOlChiki,
+                                        style: const TextStyle(
+                                          fontSize: 48,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.primary,
+                                          height: 1.1,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 8),
+                                      Text(
+                                        letter.transliterationLatin.toUpperCase(),
+                                        style: TextStyle(
+                                          fontSize: 18,
+                                          fontWeight: FontWeight.bold,
+                                          color: isDark ? Colors.white70 : Colors.black87,
+                                          letterSpacing: 1.5,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 12,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
-                  blurRadius: 15,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        letter.charOlChiki,
-                        style: const TextStyle(
-                          fontSize: 48,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        letter.transliterationLatin.toUpperCase(),
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 12,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+            );
+          }),
         );
       },
     );
@@ -178,94 +215,131 @@ class NumberGridContent extends ConsumerWidget {
       );
     }
 
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-        maxCrossAxisExtent: 150,
-        mainAxisSpacing: 14,
-        crossAxisSpacing: 14,
-        childAspectRatio: 0.85,
-      ),
-      itemCount: numbers.length,
-      itemBuilder: (context, index) {
-        final number = numbers[index];
-        return ScaleButton(
-          onPressed: () {
-            HapticFeedback.lightImpact();
-            context.push('/number/$lessonId/${number.id}');
-          },
-          child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
-                width: 1.5,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        const maxExtent = 150.0;
+        const spacing = 14.0;
+        int columns = ((width + spacing) / (maxExtent + spacing)).floor();
+        if (columns < 1) columns = 1;
+
+        final cardWidth = (width - (spacing * (columns - 1))) / columns;
+        final cardHeight = cardWidth / 0.85;
+        final rowsCount = (numbers.length / columns).ceil();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: List.generate(rowsCount, (rowIndex) {
+            final start = rowIndex * columns;
+            final end = (start + columns < numbers.length) ? start + columns : numbers.length;
+            final rowNumbers = numbers.sublist(start, end);
+
+            return Padding(
+              padding: EdgeInsets.only(bottom: rowIndex < rowsCount - 1 ? spacing : 0),
+              child: Row(
+                children: List.generate(columns, (colIndex) {
+                  final hasItem = colIndex < rowNumbers.length;
+                  final rightPadding = colIndex < columns - 1 ? spacing : 0.0;
+
+                  if (!hasItem) {
+                    return Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.only(right: rightPadding),
+                        child: const SizedBox.shrink(),
+                      ),
+                    );
+                  }
+
+                  final number = rowNumbers[colIndex];
+                  return Expanded(
+                    child: Padding(
+                      padding: EdgeInsets.only(right: rightPadding),
+                      child: SizedBox(
+                        height: cardHeight,
+                        child: ScaleButton(
+                          onPressed: () {
+                            HapticFeedback.lightImpact();
+                            context.push('/number/$lessonId/${number.id}');
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.all(14),
+                            decoration: BoxDecoration(
+                              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(alpha: 0.15),
+                                width: 1.5,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                                  blurRadius: 12,
+                                  offset: const Offset(0, 4),
+                                ),
+                              ],
+                            ),
+                            child: Stack(
+                              children: [
+                                Center(
+                                  child: Column(
+                                    mainAxisAlignment: MainAxisAlignment.center,
+                                    children: [
+                                      Text(
+                                        number.numeral,
+                                        style: const TextStyle(
+                                          fontSize: 36,
+                                          fontWeight: FontWeight.w900,
+                                          color: AppColors.primary,
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Text(
+                                        '${number.value}',
+                                        style: TextStyle(
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.w800,
+                                          color: isDark ? Colors.white : Colors.black87,
+                                        ),
+                                      ),
+                                      Text(
+                                        number.nameLatin,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.w500,
+                                          color: isDark ? Colors.white54 : Colors.black45,
+                                        ),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                Positioned(
+                                  top: 0,
+                                  right: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(4),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 10,
+                                      color: AppColors.primary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                }),
               ),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-                  blurRadius: 12,
-                  offset: const Offset(0, 4),
-                ),
-              ],
-            ),
-            child: Stack(
-              children: [
-                Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        number.numeral,
-                        style: const TextStyle(
-                          fontSize: 36,
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        '${number.value}',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w800,
-                          color: isDark ? Colors.white : Colors.black87,
-                        ),
-                      ),
-                      Text(
-                        number.nameLatin,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
-                          color: isDark ? Colors.white54 : Colors.black45,
-                        ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ],
-                  ),
-                ),
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Container(
-                    padding: const EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.arrow_forward_ios_rounded,
-                      size: 10,
-                      color: AppColors.primary,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
+            );
+          }),
         );
       },
     );

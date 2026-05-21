@@ -11,6 +11,7 @@ import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
 import '../providers/rhyme_audio_provider.dart';
+import 'rhyme_detail_sheet.dart';
 
 /// Premium featured rhyme card with glassmorphism and audio visualizer.
 class FeaturedRhymeCard extends ConsumerStatefulWidget {
@@ -58,221 +59,227 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
       scriptMode: scriptMode,
     );
 
-    return GlassCard(
-          blur: 24,
-          borderRadius: 40,
-          padding: EdgeInsets.zero,
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              color.withValues(alpha: 0.8),
-              color.withValues(alpha: 0.6),
-            ],
-          ),
-          child: Stack(
-            children: [
-              // Background Image
-              if (widget.rhyme.thumbnailUrl != null &&
-                  widget.rhyme.thumbnailUrl!.isNotEmpty)
-                Positioned.fill(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(40),
-                    child: Image.network(
-                      widget.rhyme.thumbnailUrl!,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) =>
-                          const SizedBox.shrink(),
+    return GestureDetector(
+      onTap: () {
+        HapticFeedback.lightImpact();
+        RhymeDetailSheet.show(context, widget.rhyme);
+      },
+      child: GlassCard(
+            blur: 24,
+            borderRadius: 40,
+            padding: EdgeInsets.zero,
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                color.withValues(alpha: 0.8),
+                color.withValues(alpha: 0.6),
+              ],
+            ),
+            child: Stack(
+              children: [
+                // Background Image
+                if (widget.rhyme.thumbnailUrl != null &&
+                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                  Positioned.fill(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: Image.network(
+                        widget.rhyme.thumbnailUrl!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const SizedBox.shrink(),
+                      ),
                     ),
                   ),
+                // Dark Gradient Overlay for Readability
+                if (widget.rhyme.thumbnailUrl != null &&
+                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                  Positioned.fill(
+                    child: Container(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.35),
+                            Colors.black.withValues(alpha: 0.75),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                Positioned(
+                  bottom: 0,
+                  left: 0,
+                  right: 0,
+                  child: EnchantedVisualizer(
+                    isPlaying: isPlaying,
+                    color: Colors.white.withValues(alpha: 0.3),
+                  ),
                 ),
-              // Dark Gradient Overlay for Readability
-              if (widget.rhyme.thumbnailUrl != null &&
-                  widget.rhyme.thumbnailUrl!.isNotEmpty)
-                Positioned.fill(
+                Positioned(
+                  top: -50,
+                  right: -50,
                   child: Container(
+                    width: 200,
+                    height: 200,
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(40),
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
+                      shape: BoxShape.circle,
+                      gradient: RadialGradient(
                         colors: [
-                          Colors.black.withValues(alpha: 0.35),
-                          Colors.black.withValues(alpha: 0.75),
+                          Colors.white.withValues(alpha: 0.15),
+                          Colors.white.withValues(alpha: 0),
                         ],
                       ),
                     ),
                   ),
                 ),
-              Positioned(
-                bottom: 0,
-                left: 0,
-                right: 0,
-                child: EnchantedVisualizer(
-                  isPlaying: isPlaying,
-                  color: Colors.white.withValues(alpha: 0.3),
-                ),
-              ),
-              Positioned(
-                top: -50,
-                right: -50,
-                child: Container(
-                  width: 200,
-                  height: 200,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        Colors.white.withValues(alpha: 0.15),
-                        Colors.white.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.all(24.0),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        _buildBadge(
-                              'FEATURED',
-                              Colors.white.withValues(alpha: 0.2),
-                            )
-                            .animate()
-                            .fadeIn(delay: 200.ms, duration: 400.ms)
-                            .slideX(begin: -0.3)
-                            .scale(begin: const Offset(0.8, 0.8)),
-                        if (widget.rhyme.subcategory != null) ...[
-                          const SizedBox(width: 8),
+                Padding(
+                  padding: const EdgeInsets.all(24.0),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
                           _buildBadge(
-                                widget.rhyme.subcategory?.toUpperCase() ?? '',
-                                Colors.white.withValues(alpha: 0.1),
+                                'FEATURED',
+                                Colors.white.withValues(alpha: 0.2),
                               )
                               .animate()
-                              .fadeIn(delay: 400.ms, duration: 400.ms)
+                              .fadeIn(delay: 200.ms, duration: 400.ms)
                               .slideX(begin: -0.3)
                               .scale(begin: const Offset(0.8, 0.8)),
+                          if (widget.rhyme.subcategory != null) ...[
+                            const SizedBox(width: 8),
+                            _buildBadge(
+                                  widget.rhyme.subcategory?.toUpperCase() ?? '',
+                                  Colors.white.withValues(alpha: 0.1),
+                                )
+                                .animate()
+                                .fadeIn(delay: 400.ms, duration: 400.ms)
+                                .slideX(begin: -0.3)
+                                .scale(begin: const Offset(0.8, 0.8)),
+                          ],
+                          const Spacer(),
+                          PlayingIndicator(isPlaying: isPlaying),
                         ],
-                        const Spacer(),
-                        PlayingIndicator(isPlaying: isPlaying),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
-                    Text(
-                          primaryTitle,
-                          style:
-                              (scriptMode == 'olchiki'
-                                      ? const TextStyle(fontFamily: 'OlChiki')
-                                      : GoogleFonts.fredoka())
-                                  .copyWith(
-                                    fontSize: 28,
-                                    fontWeight: FontWeight.w700,
-                                    color: Colors.white,
-                                    letterSpacing: 0,
-                                    height: 1,
-                                  ),
-                        )
-                        .animate()
-                        .fadeIn(delay: 300.ms, duration: 500.ms)
-                        .slideX(begin: -0.08, curve: Curves.easeOutCubic),
-                    if (secondaryTitle != null) ...[
-                      const SizedBox(height: 4),
+                      ),
+                      const SizedBox(height: 16),
                       Text(
-                            secondaryTitle,
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w700,
-                              color: Colors.white70,
-                              fontFamily: 'OlChiki',
-                            ),
+                            primaryTitle,
+                            style:
+                                (scriptMode == 'olchiki'
+                                        ? const TextStyle(fontFamily: 'OlChiki')
+                                        : GoogleFonts.fredoka())
+                                    .copyWith(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      color: Colors.white,
+                                      letterSpacing: 0,
+                                      height: 1,
+                                    ),
                           )
                           .animate()
-                          .fadeIn(delay: 450.ms, duration: 500.ms)
-                          .slideX(begin: -0.06, curve: Curves.easeOutCubic),
-                    ],
-                    const SizedBox(height: 24),
-                    ElevatedButton.icon(
-                          onPressed: () {
-                            HapticFeedback.mediumImpact();
-                            _playPulseController.forward(from: 0);
-                            ref
-                                .read(rhymeAudioProvider.notifier)
-                                .togglePlay(
-                                  widget.rhyme.id,
-                                  widget.rhyme.audioUrl,
-                                  title: primaryTitle,
-                                  artworkUrl: widget.rhyme.thumbnailUrl,
-                                );
-                          },
-                          icon: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            transitionBuilder: (child, anim) =>
-                                RotationTransition(
-                                  turns: Tween(
-                                    begin: 0.75,
-                                    end: 1.0,
-                                  ).animate(anim),
-                                  child: ScaleTransition(
-                                    scale: anim,
-                                    child: child,
+                          .fadeIn(delay: 300.ms, duration: 500.ms)
+                          .slideX(begin: -0.08, curve: Curves.easeOutCubic),
+                      if (secondaryTitle != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                              secondaryTitle,
+                              style: const TextStyle(
+                                fontSize: 24,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white70,
+                                fontFamily: 'OlChiki',
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 450.ms, duration: 500.ms)
+                            .slideX(begin: -0.06, curve: Curves.easeOutCubic),
+                      ],
+                      const SizedBox(height: 24),
+                      ElevatedButton.icon(
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              _playPulseController.forward(from: 0);
+                              ref
+                                  .read(rhymeAudioProvider.notifier)
+                                  .togglePlay(
+                                    widget.rhyme.id,
+                                    widget.rhyme.audioUrl,
+                                    title: primaryTitle,
+                                    artworkUrl: widget.rhyme.thumbnailUrl,
+                                  );
+                            },
+                            icon: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 300),
+                              transitionBuilder: (child, anim) =>
+                                  RotationTransition(
+                                    turns: Tween(
+                                      begin: 0.75,
+                                      end: 1.0,
+                                    ).animate(anim),
+                                    child: ScaleTransition(
+                                      scale: anim,
+                                      child: child,
+                                    ),
                                   ),
-                                ),
-                            child: Icon(
-                              isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              key: ValueKey(isPlaying),
-                              color: color,
+                              child: Icon(
+                                isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
+                                key: ValueKey(isPlaying),
+                                color: color,
+                              ),
                             ),
+                            label: AnimatedSwitcher(
+                              duration: const Duration(milliseconds: 250),
+                              transitionBuilder: (child, anim) =>
+                                  FadeTransition(opacity: anim, child: child),
+                              child: Text(
+                                isPlaying ? 'PAUSE' : 'LISTEN NOW',
+                                key: ValueKey(isPlaying),
+                              ),
+                            ),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.white,
+                              foregroundColor: color,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                                vertical: 14,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              elevation: 10,
+                              shadowColor: Colors.black26,
+                            ),
+                          )
+                          .animate(onPlay: ref.watch(reduceVisualEffectsProvider) ? null : (c) => c.repeat(reverse: true))
+                          .scale(
+                            begin: const Offset(1, 1),
+                            end: const Offset(1.03, 1.03),
+                            duration: 2.seconds,
+                          )
+                          .then()
+                          .shimmer(
+                            delay: 3.seconds,
+                            duration: 1500.ms,
+                            color: Colors.white.withValues(alpha: 0.15),
                           ),
-                          label: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 250),
-                            transitionBuilder: (child, anim) =>
-                                FadeTransition(opacity: anim, child: child),
-                            child: Text(
-                              isPlaying ? 'PAUSE' : 'LISTEN NOW',
-                              key: ValueKey(isPlaying),
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            foregroundColor: color,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 24,
-                              vertical: 14,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            elevation: 10,
-                            shadowColor: Colors.black26,
-                          ),
-                        )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .scale(
-                          begin: const Offset(1, 1),
-                          end: const Offset(1.03, 1.03),
-                          duration: 2.seconds,
-                        )
-                        .then()
-                        .shimmer(
-                          delay: 3.seconds,
-                          duration: 1500.ms,
-                          color: Colors.white.withValues(alpha: 0.15),
-                        ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
-        )
-        .animate(autoPlay: false, onInit: (c) => c.forward())
-        .fadeIn()
-        .scale(curve: Curves.easeOutBack);
+              ],
+            ),
+          )
+          .animate(autoPlay: false, onInit: (c) => c.forward())
+          .fadeIn()
+          .scale(curve: Curves.easeOutBack),
+    );
   }
 
   Widget _buildBadge(String text, Color color) {
@@ -296,15 +303,15 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
 }
 
 /// Animated equalizer bars shown when a rhyme is playing.
-class PlayingIndicator extends StatefulWidget {
+class PlayingIndicator extends ConsumerStatefulWidget {
   final bool isPlaying;
   const PlayingIndicator({super.key, required this.isPlaying});
 
   @override
-  State<PlayingIndicator> createState() => _PlayingIndicatorState();
+  ConsumerState<PlayingIndicator> createState() => _PlayingIndicatorState();
 }
 
-class _PlayingIndicatorState extends State<PlayingIndicator>
+class _PlayingIndicatorState extends ConsumerState<PlayingIndicator>
     with TickerProviderStateMixin {
   late final List<AnimationController> _barControllers;
   final _barCount = 3;
@@ -330,6 +337,8 @@ class _PlayingIndicatorState extends State<PlayingIndicator>
   }
 
   void _startBars() {
+    final reduceEffects = ref.read(reduceVisualEffectsProvider);
+    if (reduceEffects) return;
     for (final c in _barControllers) {
       c.repeat(reverse: true);
     }
@@ -351,6 +360,16 @@ class _PlayingIndicatorState extends State<PlayingIndicator>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
+      if (next) {
+        _stopBars();
+      } else if (widget.isPlaying) {
+        _startBars();
+      }
+    });
+
+    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
+
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 350),
       transitionBuilder: (child, anim) => ScaleTransition(
@@ -399,7 +418,7 @@ class _PlayingIndicatorState extends State<PlayingIndicator>
                     size: 20,
                   ),
                 )
-                .animate(onPlay: (c) => c.repeat(reverse: true))
+                .animate(onPlay: reduceEffects ? null : (c) => c.repeat(reverse: true))
                 .rotate(begin: -0.05, end: 0.05, duration: 2.seconds),
     );
   }

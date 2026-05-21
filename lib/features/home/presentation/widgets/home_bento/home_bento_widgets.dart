@@ -107,66 +107,74 @@ class HomeBentoStatCard extends StatelessWidget {
 
     return AnimatedBentoChild(
       index: index,
-      child: PressableScale(
-        onTap: () => _handleTap(context),
-        child: BentoCell(
-          padding: EdgeInsets.all(isHero ? 20 : 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Row(
+      child: Semantics(
+        button: true,
+        label: '$label card',
+        value: '$value$suffix',
+        hint: 'Double tap for details',
+        child: ExcludeSemantics(
+          child: PressableScale(
+            onTap: () => _handleTap(context),
+            child: BentoCell(
+              padding: EdgeInsets.all(isHero ? 20 : 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: iconWidget,
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: iconWidget,
+                      ),
+                      if (isHero) ...[
+                        const Spacer(),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 3,
+                          ),
+                          decoration: BoxDecoration(
+                            color: color.withValues(alpha: 0.08),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: Icon(
+                            Icons.trending_up_rounded,
+                            color: color,
+                            size: 14,
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
-                  if (isHero) ...[
-                    const Spacer(),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 3,
-                      ),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      child: Icon(
-                        Icons.trending_up_rounded,
-                        color: color,
-                        size: 14,
-                      ),
+                  const SizedBox(height: 12),
+                  AnimatedCounter(
+                    value: value,
+                    suffix: suffix,
+                    style: TextStyle(
+                      fontSize: isHero ? 28 : 22,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : Colors.black,
+                      letterSpacing: 0,
                     ),
-                  ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    label.toUpperCase(),
+                    style: TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white38 : Colors.black38,
+                      letterSpacing: 0.8,
+                    ),
+                  ),
                 ],
               ),
-              const SizedBox(height: 12),
-              AnimatedCounter(
-                value: value,
-                suffix: suffix,
-                style: TextStyle(
-                  fontSize: isHero ? 28 : 22,
-                  fontWeight: FontWeight.w900,
-                  color: isDark ? Colors.white : Colors.black,
-                  letterSpacing: 0,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                label.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 9,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white38 : Colors.black38,
-                  letterSpacing: 0.8,
-                ),
-              ),
-            ],
+            ),
           ),
         ),
       ),
@@ -534,65 +542,73 @@ class _BentoCategoryCard extends ConsumerWidget {
       scriptMode: scriptMode,
     );
 
-    return PressableScale(
-      onTap: () {
-        final title = category.titleLatin.toLowerCase();
-        final isAlphabet =
-            category.iconName == 'alphabet' ||
-            title.contains('alphabet') ||
-            title.contains('letter');
-        if (isAlphabet) {
-          context.push('/letter/standalone/all');
-        } else {
-          context.push('/lessons/${category.id}');
-        }
-      },
-      child: BentoCell(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    gradientColors[0].withValues(alpha: 0.15),
-                    gradientColors[1].withValues(alpha: 0.08),
-                  ],
+    return Semantics(
+      button: true,
+      label: 'Learning path: $primaryTitle',
+      value: secondaryTitle,
+      hint: 'Double tap to open',
+      child: ExcludeSemantics(
+        child: PressableScale(
+          onTap: () {
+            final title = category.titleLatin.toLowerCase();
+            final isAlphabet =
+                category.iconName == 'alphabet' ||
+                title.contains('alphabet') ||
+                title.contains('letter');
+            if (isAlphabet) {
+              context.push('/letter/standalone/all');
+            } else {
+              context.push('/lessons/${category.id}');
+            }
+          },
+          child: BentoCell(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        gradientColors[0].withValues(alpha: 0.15),
+                        gradientColors[1].withValues(alpha: 0.08),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(_getIcon(), color: gradientColors[0], size: 22),
                 ),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(_getIcon(), color: gradientColors[0], size: 22),
-            ),
-            const Spacer(),
-            Text(
-              primaryTitle,
-              style: TextStyle(
-                fontSize: 14,
-                fontWeight: FontWeight.w900,
-                color: isDark ? Colors.white : Colors.black,
-                letterSpacing: 0,
-                fontFamily: primaryLocalizedFontFamily(scriptMode),
-              ),
-              maxLines: 2,
-              overflow: TextOverflow.ellipsis,
-            ),
-            if (secondaryTitle != null) ...[
-              const SizedBox(height: 2),
-              Text(
-                secondaryTitle,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: FontWeight.w600,
-                  fontFamily: 'OlChiki',
-                  color: isDark ? Colors.white38 : Colors.black38,
+                const Spacer(),
+                Text(
+                  primaryTitle,
+                  style: TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w900,
+                    color: isDark ? Colors.white : Colors.black,
+                    letterSpacing: 0,
+                    fontFamily: primaryLocalizedFontFamily(scriptMode),
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-            ],
-          ],
+                if (secondaryTitle != null) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    secondaryTitle,
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                      fontFamily: 'OlChiki',
+                      color: isDark ? Colors.white38 : Colors.black38,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ],
+            ),
+          ),
         ),
       ),
     );
@@ -626,81 +642,89 @@ class HeroJourneyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBentoChild(
       index: index,
-      child: PressableScale(
-        onTap: () => _onTap(context),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(28),
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: AppColors.fluidShadow,
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -20,
-                bottom: -20,
-                child:
-                    Icon(
-                          Icons.rocket_launch_rounded,
-                          size: 120,
-                          color: Colors.white.withValues(alpha: 0.15),
-                        )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .moveY(begin: 0, end: -10, duration: 2.seconds),
+      child: Semantics(
+        button: true,
+        label: 'Continue learning',
+        value: heroTitle,
+        hint: 'Double tap to resume your next lesson',
+        child: ExcludeSemantics(
+          child: PressableScale(
+            onTap: () => _onTap(context),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(28),
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primary, AppColors.primaryDark],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: AppColors.fluidShadow,
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Stack(
                 children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 5,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Text(
-                      'CONTINUE LEARNING',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: 1.5,
-                        fontSize: 10,
+                  Positioned(
+                    right: -20,
+                    bottom: -20,
+                    child:
+                        Icon(
+                              Icons.rocket_launch_rounded,
+                              size: 120,
+                              color: Colors.white.withValues(alpha: 0.15),
+                            )
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .moveY(begin: 0, end: -10, duration: 2.seconds),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 5,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Text(
+                          'CONTINUE LEARNING',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: 1.5,
+                            fontSize: 10,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    heroTitle.contains(' ')
-                        ? heroTitle.replaceFirst(' ', '\n')
-                        : heroTitle,
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 26,
-                      letterSpacing: -0.5,
-                      height: 1.15,
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-                  DuoButton(
-                    text: 'RESUME JOURNEY',
-                    color: Colors.white,
-                    onPressed: () => _onTap(context),
-                    width: double.infinity,
-                    height: 52,
+                      const SizedBox(height: 12),
+                      Text(
+                        heroTitle.contains(' ')
+                            ? heroTitle.replaceFirst(' ', '\n')
+                            : heroTitle,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 26,
+                          letterSpacing: -0.5,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      DuoButton(
+                        text: 'RESUME JOURNEY',
+                        color: Colors.white,
+                        onPressed: () => _onTap(context),
+                        width: double.infinity,
+                        height: 52,
+                      ),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -725,133 +749,141 @@ class QuizBannerCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return AnimatedBentoChild(
       index: index,
-      child: PressableScale(
-        onTap: () => context.push('/quizzes'),
-        child: Container(
-          width: double.infinity,
-          padding: const EdgeInsets.all(24),
-          clipBehavior: Clip.hardEdge,
-          decoration: BoxDecoration(
-            gradient: const LinearGradient(
-              colors: [AppColors.primaryLight, AppColors.primary],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            borderRadius: BorderRadius.circular(28),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.35),
-                blurRadius: 20,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              Positioned(
-                right: -10,
-                bottom: -10,
-                child:
-                    Icon(
-                          Icons.quiz_rounded,
-                          size: 80,
-                          color: Colors.white.withValues(alpha: 0.2),
-                        )
-                        .animate(onPlay: (c) => c.repeat(reverse: true))
-                        .moveY(
-                          begin: 0,
-                          end: -8,
-                          duration: 1800.ms,
-                          curve: Curves.easeInOut,
-                        ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.emoji_events_rounded,
-                          size: 14,
-                          color: Colors.white,
-                        ),
-                        SizedBox(width: 4),
-                        Text(
-                          'DAILY QUIZ',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 1,
-                            fontSize: 10,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Test Your\nKnowledge!',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w900,
-                      fontSize: 22,
-                      letterSpacing: -0.5,
-                      height: 1.15,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Text(
-                    '$quizCount Quizzes Available',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.8),
-                      fontWeight: FontWeight.w600,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 18,
-                      vertical: 12,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(
-                          Icons.play_arrow_rounded,
-                          color: AppColors.primary,
-                          size: 20,
-                        ),
-                        SizedBox(width: 6),
-                        Text(
-                          'START',
-                          style: TextStyle(
-                            color: AppColors.primaryDark,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 13,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
+      child: Semantics(
+        button: true,
+        label: 'Daily quiz',
+        value: '$quizCount quizzes available',
+        hint: 'Double tap to choose a quiz',
+        child: ExcludeSemantics(
+          child: PressableScale(
+            onTap: () => context.push('/quizzes'),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              clipBehavior: Clip.hardEdge,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.primaryLight, AppColors.primary],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(28),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.primary.withValues(alpha: 0.35),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
                   ),
                 ],
               ),
-            ],
+              child: Stack(
+                children: [
+                  Positioned(
+                    right: -10,
+                    bottom: -10,
+                    child:
+                        Icon(
+                              Icons.quiz_rounded,
+                              size: 80,
+                              color: Colors.white.withValues(alpha: 0.2),
+                            )
+                            .animate(onPlay: (c) => c.repeat(reverse: true))
+                            .moveY(
+                              begin: 0,
+                              end: -8,
+                              duration: 1800.ms,
+                              curve: Curves.easeInOut,
+                            ),
+                  ),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.emoji_events_rounded,
+                              size: 14,
+                              color: Colors.white,
+                            ),
+                            SizedBox(width: 4),
+                            Text(
+                              'DAILY QUIZ',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 1,
+                                fontSize: 10,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      const Text(
+                        'Test Your\nKnowledge!',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 22,
+                          letterSpacing: -0.5,
+                          height: 1.15,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        '$quizCount Quizzes Available',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.8),
+                          fontWeight: FontWeight.w600,
+                          fontSize: 13,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 18,
+                          vertical: 12,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              color: AppColors.primary,
+                              size: 20,
+                            ),
+                            SizedBox(width: 6),
+                            Text(
+                              'START',
+                              style: TextStyle(
+                                color: AppColors.primaryDark,
+                                fontWeight: FontWeight.w900,
+                                fontSize: 13,
+                                letterSpacing: 0.5,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),

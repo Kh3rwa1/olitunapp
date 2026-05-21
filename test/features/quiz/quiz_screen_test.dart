@@ -5,6 +5,7 @@ import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/core/widgets/shimmer_loading.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
@@ -49,7 +50,8 @@ void main() {
       ),
     );
 
-    expect(find.byType(CircularProgressIndicator), findsOneWidget);
+    expect(find.byType(Skeleton), findsWidgets);
+    expect(find.byType(CircularProgressIndicator), findsNothing);
   });
 
   testWidgets('QuizScreen renders question and options', (tester) async {
@@ -70,6 +72,9 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Test Alphabet Quiz'), findsOneWidget);
+    expect(find.text('3'), findsOneWidget);
+    expect(find.text('0'), findsOneWidget);
+    expect(find.text('x1'), findsOneWidget);
     expect(find.text('Sound of this?'), findsOneWidget);
     expect(find.text('a'), findsOneWidget);
     expect(find.text('e'), findsOneWidget);
@@ -98,6 +103,7 @@ void main() {
     // Check if correct indicator appears
     await tester.pump();
     expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+    expect(find.text('1'), findsWidgets);
 
     // Wait for the auto-advance delay (1.2 seconds)
     await tester.pump(const Duration(milliseconds: 1500));

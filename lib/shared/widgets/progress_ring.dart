@@ -81,7 +81,7 @@ class _ProgressRingState extends State<ProgressRing>
         widget.backgroundColor ??
         (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant);
 
-    final progressColor = widget.progressColor ?? AppColors.primaryCyan;
+    final progressColor = widget.progressColor ?? AppColors.primary;
 
     return SizedBox(
       width: widget.size,
@@ -196,7 +196,7 @@ class MiniProgressBar extends StatelessWidget {
         backgroundColor ??
         (isDark ? AppColors.darkSurfaceVariant : AppColors.lightSurfaceVariant);
 
-    final progColor = progressColor ?? AppColors.primaryCyan;
+    final progColor = progressColor ?? AppColors.primary;
 
     return Container(
       width: width,

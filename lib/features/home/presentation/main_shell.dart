@@ -146,7 +146,7 @@ class _NavBarItem extends StatelessWidget {
         ),
         decoration: BoxDecoration(
           color: isSelected
-              ? AppColors.primaryCyan.withValues(alpha: 0.1)
+              ? AppColors.primary.withValues(alpha: 0.1)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(AppConstants.radiusMedium),
         ),
@@ -156,7 +156,7 @@ class _NavBarItem extends StatelessWidget {
             Icon(
               isSelected ? item.activeIcon : item.icon,
               color: isSelected
-                  ? AppColors.primaryCyan
+                  ? AppColors.primary
                   : AppColors.textTertiaryLight,
               size: 24,
             ),
@@ -168,7 +168,7 @@ class _NavBarItem extends StatelessWidget {
                   fontFamily: 'Poppins',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
-                  color: AppColors.primaryCyan,
+                  color: AppColors.primary,
                 ),
               ),
             ],

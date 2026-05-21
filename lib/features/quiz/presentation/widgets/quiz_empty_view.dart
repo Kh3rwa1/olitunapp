@@ -13,7 +13,7 @@ class QuizEmptyView extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

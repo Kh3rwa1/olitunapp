@@ -688,7 +688,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
         borderRadius: BorderRadius.circular(16),
         boxShadow: [
           BoxShadow(
-            color: const Color(0xFFFF6B4B).withValues(alpha: 0.4),
+            color: AppColors.accentCoral.withValues(alpha: 0.4),
             blurRadius: 16,
             offset: const Offset(0, 6),
           ),

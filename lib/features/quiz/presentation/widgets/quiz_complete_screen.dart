@@ -22,7 +22,7 @@ class QuizCompleteScreen extends StatelessWidget {
     final isPassing = percentage >= 70;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       body: Stack(
         children: [
           SafeArea(

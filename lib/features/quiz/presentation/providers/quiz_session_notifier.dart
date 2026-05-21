@@ -9,6 +9,11 @@ class QuizSessionState {
   final int? selectedAnswer;
   final bool isAnswered;
   final bool isQuizComplete;
+  final int hearts;
+  final int comboStreak;
+  final int bestCombo;
+  final int comboMultiplier;
+  final int bonusStars;
 
   const QuizSessionState({
     this.currentQuestion = 0,
@@ -16,6 +21,11 @@ class QuizSessionState {
     this.selectedAnswer,
     this.isAnswered = false,
     this.isQuizComplete = false,
+    this.hearts = 3,
+    this.comboStreak = 0,
+    this.bestCombo = 0,
+    this.comboMultiplier = 1,
+    this.bonusStars = 0,
   });
 
   QuizSessionState copyWith({
@@ -24,6 +34,11 @@ class QuizSessionState {
     int? selectedAnswer,
     bool? isAnswered,
     bool? isQuizComplete,
+    int? hearts,
+    int? comboStreak,
+    int? bestCombo,
+    int? comboMultiplier,
+    int? bonusStars,
     bool clearSelectedAnswer = false,
   }) {
     return QuizSessionState(
@@ -34,6 +49,11 @@ class QuizSessionState {
           : (selectedAnswer ?? this.selectedAnswer),
       isAnswered: isAnswered ?? this.isAnswered,
       isQuizComplete: isQuizComplete ?? this.isQuizComplete,
+      hearts: hearts ?? this.hearts,
+      comboStreak: comboStreak ?? this.comboStreak,
+      bestCombo: bestCombo ?? this.bestCombo,
+      comboMultiplier: comboMultiplier ?? this.comboMultiplier,
+      bonusStars: bonusStars ?? this.bonusStars,
     );
   }
 }
@@ -50,10 +70,23 @@ class QuizSessionNotifier
 
     final isCorrect = index == question.correctIndex;
     int newScore = state.score;
+    var hearts = state.hearts;
+    var comboStreak = state.comboStreak;
+    var bestCombo = state.bestCombo;
+    var comboMultiplier = state.comboMultiplier;
+    var bonusStars = state.bonusStars;
+
     if (isCorrect) {
       newScore++;
+      comboStreak++;
+      bestCombo = bestCombo > comboStreak ? bestCombo : comboStreak;
+      comboMultiplier = (1 + (comboStreak ~/ 3)).clamp(1, 4);
+      bonusStars += (comboMultiplier - 1) * 2;
       HapticFeedback.mediumImpact();
     } else {
+      hearts = (hearts - 1).clamp(0, 3);
+      comboStreak = 0;
+      comboMultiplier = 1;
       HapticFeedback.heavyImpact();
     }
 
@@ -61,6 +94,11 @@ class QuizSessionNotifier
       selectedAnswer: index,
       isAnswered: true,
       score: newScore,
+      hearts: hearts,
+      comboStreak: comboStreak,
+      bestCombo: bestCombo,
+      comboMultiplier: comboMultiplier,
+      bonusStars: bonusStars,
     );
 
     // Auto-advance after 1.2 seconds so user can see the feedback
@@ -91,7 +129,7 @@ class QuizSessionNotifier
           completedAt: DateTime.now().toIso8601String(),
         ),
       );
-      statsNotifier.addStars(state.score * 5);
+      statsNotifier.addStars((state.score * 5) + state.bonusStars);
     }
   }
 

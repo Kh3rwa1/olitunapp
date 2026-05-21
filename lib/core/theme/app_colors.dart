@@ -78,6 +78,12 @@ class AppColors {
   // Feedback colors
   static const Color quizCorrect = Color(0xFF4CAF50);
   static const Color quizIncorrect = Color(0xFFE57373);
+  static const Color quizDarkBackground = Color(0xFF0A0E14);
+  static const Color quizDarkCard = Color(0xFF152232);
+  static const Color quizDarkCardAlt = Color(0xFF0F1A24);
+  static const Color quizDarkBubble = Color(0xFF1C2C3E);
+  static const Color quizLightSuccessSurface = Color(0xFFF0FDF4);
+  static const Color quizLightBubble = Color(0xFFF3F4F6);
 
   // Next button gradient
   static const LinearGradient quizNextButton = LinearGradient(
@@ -387,9 +393,7 @@ class AppColors {
     ),
   ];
 
-  // For backward compatibility
-  static const Color primaryCyan = primary;
-  static const Color primaryTeal = primaryDark;
+  // Legacy compatibility names kept only where they are still meaningful.
   static const Color primaryDeep = richBlack;
   static const Color accentGold = accentYellow;
   static const Color accentPeach = Color(0xFFFFAB91);

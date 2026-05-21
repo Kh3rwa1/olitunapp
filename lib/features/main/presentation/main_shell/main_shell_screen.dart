@@ -307,55 +307,63 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
     final isSelected = _selectedIndex == index;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTap: () {
-        _onItemTapped(index);
-        HapticFeedback.lightImpact();
-      },
-      behavior: HitTestBehavior.opaque,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          AnimatedContainer(
-                duration: 400.ms,
-                padding: const EdgeInsets.all(10),
-                curve: Curves.easeOutBack,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? AppColors.primary.withValues(alpha: 0.15)
-                      : Colors.transparent,
-                  borderRadius: BorderRadius.circular(20),
-                  border: isSelected
-                      ? Border.all(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                        )
-                      : null,
-                ),
-                child: Icon(
-                  icon,
+    return Semantics(
+      button: true,
+      selected: isSelected,
+      label: '$label tab',
+      hint: isSelected ? 'Current tab' : 'Double tap to open $label',
+      child: ExcludeSemantics(
+        child: GestureDetector(
+          onTap: () {
+            _onItemTapped(index);
+            HapticFeedback.lightImpact();
+          },
+          behavior: HitTestBehavior.opaque,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              AnimatedContainer(
+                    duration: 400.ms,
+                    padding: const EdgeInsets.all(10),
+                    curve: Curves.easeOutBack,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? AppColors.primary.withValues(alpha: 0.15)
+                          : Colors.transparent,
+                      borderRadius: BorderRadius.circular(20),
+                      border: isSelected
+                          ? Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                            )
+                          : null,
+                    ),
+                    child: Icon(
+                      icon,
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isDark ? Colors.white54 : Colors.black45),
+                      size: isSelected ? 30 : 26,
+                    ),
+                  )
+                  .animate(target: isSelected ? 1 : 0)
+                  .scale(
+                    begin: const Offset(0.9, 0.9),
+                    end: const Offset(1.1, 1.1),
+                  ),
+              const SizedBox(height: 4),
+              Text(
+                label,
+                style: GoogleFonts.fredoka(
+                  fontSize: 10,
+                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                   color: isSelected
                       ? AppColors.primary
                       : (isDark ? Colors.white54 : Colors.black45),
-                  size: isSelected ? 30 : 26,
                 ),
-              )
-              .animate(target: isSelected ? 1 : 0)
-              .scale(
-                begin: const Offset(0.9, 0.9),
-                end: const Offset(1.1, 1.1),
               ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: GoogleFonts.fredoka(
-              fontSize: 10,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-              color: isSelected
-                  ? AppColors.primary
-                  : (isDark ? Colors.white54 : Colors.black45),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -561,60 +569,73 @@ class _SidebarNavItemState extends State<_SidebarNavItem> {
         onEnter: (_) => setState(() => _isHovered = true),
         onExit: (_) => setState(() => _isHovered = false),
         cursor: SystemMouseCursors.click,
-        child: GestureDetector(
-          onTap: widget.onTap,
-          child: AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-            decoration: BoxDecoration(
-              color: isActive
-                  ? AppColors.primary.withValues(alpha: 0.12)
-                  : hovered
-                  ? (widget.isDark ? Colors.white : Colors.black).withValues(
-                      alpha: 0.04,
-                    )
-                  : Colors.transparent,
-              borderRadius: BorderRadius.circular(14),
-              border: isActive
-                  ? Border.all(color: AppColors.primary.withValues(alpha: 0.15))
-                  : null,
-            ),
-            child: Row(
-              children: [
-                Icon(
-                  widget.icon,
-                  size: 22,
+        child: Semantics(
+          button: true,
+          selected: widget.isSelected,
+          label: '${widget.label} navigation item',
+          child: ExcludeSemantics(
+            child: GestureDetector(
+              onTap: widget.onTap,
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 200),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
+                decoration: BoxDecoration(
                   color: isActive
-                      ? AppColors.primary
-                      : widget.isDark
-                      ? Colors.white54
-                      : Colors.black45,
+                      ? AppColors.primary.withValues(alpha: 0.12)
+                      : hovered
+                      ? (widget.isDark ? Colors.white : Colors.black)
+                            .withValues(alpha: 0.04)
+                      : Colors.transparent,
+                  borderRadius: BorderRadius.circular(14),
+                  border: isActive
+                      ? Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.15),
+                        )
+                      : null,
                 ),
-                const SizedBox(width: 14),
-                Text(
-                  widget.label,
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
-                    color: isActive
-                        ? AppColors.primary
-                        : widget.isDark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-                if (isActive) ...[
-                  const Spacer(),
-                  Container(
-                    width: 6,
-                    height: 6,
-                    decoration: const BoxDecoration(
-                      color: AppColors.primary,
-                      shape: BoxShape.circle,
+                child: Row(
+                  children: [
+                    Icon(
+                      widget.icon,
+                      size: 22,
+                      color: isActive
+                          ? AppColors.primary
+                          : widget.isDark
+                          ? Colors.white54
+                          : Colors.black45,
                     ),
-                  ),
-                ],
-              ],
+                    const SizedBox(width: 14),
+                    Text(
+                      widget.label,
+                      style: GoogleFonts.inter(
+                        fontSize: 15,
+                        fontWeight: isActive
+                            ? FontWeight.w700
+                            : FontWeight.w500,
+                        color: isActive
+                            ? AppColors.primary
+                            : widget.isDark
+                            ? Colors.white70
+                            : Colors.black54,
+                      ),
+                    ),
+                    if (isActive) ...[
+                      const Spacer(),
+                      Container(
+                        width: 6,
+                        height: 6,
+                        decoration: const BoxDecoration(
+                          color: AppColors.primary,
+                          shape: BoxShape.circle,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
             ),
           ),
         ),

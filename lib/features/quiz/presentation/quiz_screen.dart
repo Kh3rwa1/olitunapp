@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/widgets/shimmer_loading.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
@@ -23,8 +24,7 @@ class QuizScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return quizAsync.when(
-      loading: () =>
-          const Scaffold(body: Center(child: CircularProgressIndicator())),
+      loading: () => _QuizLoadingScaffold(isDark: isDark),
       error: (error, stack) => _QuizStateScaffold(
         isDark: isDark,
         icon: Icons.cloud_off_rounded,
@@ -69,8 +69,8 @@ class QuizScreen extends ConsumerWidget {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF152232), const Color(0xFF0F1A24)]
-                    : [const Color(0xFFF0FDF4), Colors.white],
+                    ? [AppColors.quizDarkCard, AppColors.quizDarkCardAlt]
+                    : [AppColors.quizLightSuccessSurface, Colors.white],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -147,8 +147,8 @@ class QuizScreen extends ConsumerWidget {
                         ),
                         decoration: BoxDecoration(
                           color: isDark
-                              ? const Color(0xFF1C2C3E)
-                              : const Color(0xFFF3F4F6),
+                              ? AppColors.quizDarkBubble
+                              : AppColors.quizLightBubble,
                           borderRadius: BorderRadius.circular(20),
                           border: Border.all(
                             color: isDark
@@ -187,7 +187,7 @@ class QuizScreen extends ConsumerWidget {
                                                 : AppColors.error)
                                           : AppColors.primary)
                                     : (isDark
-                                          ? const Color(0xFF0F1A24)
+                                          ? AppColors.quizDarkCardAlt
                                           : Colors.white),
                                 borderRadius: BorderRadius.circular(12),
                                 border: Border.all(
@@ -279,15 +279,17 @@ class QuizScreen extends ConsumerWidget {
 
         Widget buildOptionsArea() {
           if (!isFillBlank) {
-            return ListView.builder(
-              itemCount: question.optionsLatin.length,
-              itemBuilder: (_, index) => QuizOptionTile(
-                index: index,
-                currentQuestion: state.currentQuestion,
-                question: question,
-                isSelected: state.selectedAnswer == index,
-                isAnswered: state.isAnswered,
-                onTap: () => notifier.selectAnswer(index, question, quiz),
+            return Column(
+              children: List.generate(
+                question.optionsLatin.length,
+                (index) => QuizOptionTile(
+                  index: index,
+                  currentQuestion: state.currentQuestion,
+                  question: question,
+                  isSelected: state.selectedAnswer == index,
+                  isAnswered: state.isAnswered,
+                  onTap: () => notifier.selectAnswer(index, question, quiz),
+                ),
               ),
             );
           }
@@ -330,15 +332,15 @@ class QuizScreen extends ConsumerWidget {
                       borderSide = BorderSide.none;
                     } else {
                       chipColor = isDark
-                          ? const Color(0xFF1C2C3E)
-                          : const Color(0xFFF3F4F6);
+                          ? AppColors.quizDarkBubble
+                          : AppColors.quizLightBubble;
                       textColor = isDark ? Colors.white30 : Colors.black26;
                       borderSide = BorderSide.none;
                     }
                   } else {
                     if (isCurrentSelection) {
                       chipColor = isDark
-                          ? const Color(0xFF0F1A24)
+                          ? AppColors.quizDarkCardAlt
                           : Colors.grey.shade100;
                       textColor = Colors.transparent;
                       borderSide = BorderSide(
@@ -347,7 +349,7 @@ class QuizScreen extends ConsumerWidget {
                       );
                     } else {
                       chipColor = isDark
-                          ? const Color(0xFF152232)
+                          ? AppColors.quizDarkCard
                           : Colors.white;
                       textColor = isDark ? Colors.white : Colors.black87;
                       borderSide = BorderSide(
@@ -357,41 +359,60 @@ class QuizScreen extends ConsumerWidget {
                     }
                   }
 
-                  return GestureDetector(
-                        onTap: (state.isAnswered || isCurrentSelection)
-                            ? null
-                            : () =>
-                                  notifier.selectAnswer(index, question, quiz),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 150),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 14,
-                          ),
-                          decoration: BoxDecoration(
-                            color: chipColor,
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.fromBorderSide(borderSide),
-                            boxShadow:
-                                (!state.isAnswered && !isCurrentSelection)
-                                ? [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(
-                                        alpha: isDark ? 0.25 : 0.08,
-                                      ),
-                                      blurRadius: 4,
-                                      offset: const Offset(0, 3),
-                                    ),
-                                  ]
-                                : null,
-                          ),
-                          child: Text(
-                            question.optionsOlChiki[index],
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: 'OlChiki',
-                              color: textColor,
+                  return Semantics(
+                        button: true,
+                        enabled: !state.isAnswered && !isCurrentSelection,
+                        selected: isCurrentSelection,
+                        label:
+                            'Missing word option ${index + 1}: ${question.optionsOlChiki[index]}',
+                        value: state.isAnswered
+                            ? (isCorrect
+                                  ? 'Correct answer'
+                                  : (isCurrentSelection
+                                        ? 'Incorrect answer'
+                                        : ''))
+                            : null,
+                        child: ExcludeSemantics(
+                          child: GestureDetector(
+                            onTap: (state.isAnswered || isCurrentSelection)
+                                ? null
+                                : () => notifier.selectAnswer(
+                                    index,
+                                    question,
+                                    quiz,
+                                  ),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 150),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 14,
+                              ),
+                              decoration: BoxDecoration(
+                                color: chipColor,
+                                borderRadius: BorderRadius.circular(16),
+                                border: Border.fromBorderSide(borderSide),
+                                boxShadow:
+                                    (!state.isAnswered && !isCurrentSelection)
+                                    ? [
+                                        BoxShadow(
+                                          color: Colors.black.withValues(
+                                            alpha: isDark ? 0.25 : 0.08,
+                                          ),
+                                          blurRadius: 4,
+                                          offset: const Offset(0, 3),
+                                        ),
+                                      ]
+                                    : null,
+                              ),
+                              child: Text(
+                                question.optionsOlChiki[index],
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w700,
+                                  fontFamily: 'OlChiki',
+                                  color: textColor,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -409,11 +430,12 @@ class QuizScreen extends ConsumerWidget {
         }
 
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
             leading: IconButton(
+              tooltip: 'Close quiz',
               icon: Icon(
                 Icons.close_rounded,
                 color: isDark ? Colors.white : Colors.black,
@@ -429,24 +451,9 @@ class QuizScreen extends ConsumerWidget {
               ),
             ),
             actions: [
-              Container(
-                margin: const EdgeInsets.only(right: 16),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  '${state.currentQuestion + 1}/$totalQs',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
-                    color: AppColors.primary,
-                  ),
-                ),
+              _QuizCountPill(
+                current: state.currentQuestion + 1,
+                total: totalQs,
               ),
             ],
           ),
@@ -459,22 +466,209 @@ class QuizScreen extends ConsumerWidget {
                   total: totalQs,
                   isDark: isDark,
                 ),
-                const SizedBox(height: 40),
+                const SizedBox(height: 16),
+                _QuizSessionHud(state: state, isDark: isDark),
+                const SizedBox(height: 28),
                 Expanded(
-                  child: Column(
-                    children: [
-                      buildQuestionArea(),
-                      const SizedBox(height: 32),
-                      Expanded(child: buildOptionsArea()),
-                    ],
+                  child: SingleChildScrollView(
+                    physics: const BouncingScrollPhysics(),
+                    child: Column(
+                      children: [
+                        buildQuestionArea(),
+                        const SizedBox(height: 32),
+                        buildOptionsArea(),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
-                const SizedBox(height: 16),
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _QuizLoadingScaffold extends StatelessWidget {
+  const _QuizLoadingScaffold({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: const SizedBox.shrink(),
+        title: const Skeleton(width: 140, height: 18, borderRadius: 8),
+        actions: const [
+          Padding(
+            padding: EdgeInsets.only(right: 16),
+            child: Skeleton(width: 56, height: 32),
+          ),
+        ],
+      ),
+      body: const SingleChildScrollView(
+        physics: NeverScrollableScrollPhysics(),
+        child: Padding(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            children: [
+              Skeleton(width: double.infinity, height: 8, borderRadius: 8),
+              SizedBox(height: 16),
+              Row(
+                children: [
+                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
+                  SizedBox(width: 10),
+                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
+                  SizedBox(width: 10),
+                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
+                ],
+              ),
+              SizedBox(height: 28),
+              Skeleton(width: double.infinity, height: 180, borderRadius: 24),
+              SizedBox(height: 32),
+              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
+              SizedBox(height: 12),
+              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
+              SizedBox(height: 12),
+              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
+              SizedBox(height: 12),
+              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuizCountPill extends StatelessWidget {
+  const _QuizCountPill({required this.current, required this.total});
+
+  final int current;
+  final int total;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Quiz progress',
+      value: 'Question $current of $total',
+      child: ExcludeSemantics(
+        child: Container(
+          margin: const EdgeInsets.only(right: 16),
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            color: AppColors.primary.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Text(
+            '$current/$total',
+            style: const TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              color: AppColors.primary,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _QuizSessionHud extends StatelessWidget {
+  const _QuizSessionHud({required this.state, required this.isDark});
+
+  final QuizSessionState state;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      container: true,
+      label: 'Quiz session stats',
+      value:
+          '${state.hearts} hearts, ${state.comboStreak} answer combo, ${state.comboMultiplier} times multiplier',
+      child: ExcludeSemantics(
+        child: Row(
+          children: [
+            Expanded(
+              child: _HudChip(
+                icon: Icons.favorite_rounded,
+                label: '${state.hearts}',
+                accent: AppColors.duoRed,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _HudChip(
+                icon: Icons.local_fire_department_rounded,
+                label: '${state.comboStreak}',
+                accent: AppColors.duoOrange,
+                isDark: isDark,
+              ),
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: _HudChip(
+                icon: Icons.bolt_rounded,
+                label: 'x${state.comboMultiplier}',
+                accent: AppColors.duoYellow,
+                isDark: isDark,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _HudChip extends StatelessWidget {
+  const _HudChip({
+    required this.icon,
+    required this.label,
+    required this.accent,
+    required this.isDark,
+  });
+
+  final IconData icon;
+  final String label;
+  final Color accent;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 180),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.06)
+            : accent.withValues(alpha: 0.10),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: accent.withValues(alpha: 0.22)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(icon, color: accent, size: 18),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: TextStyle(
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -503,7 +697,7 @@ class _QuizStateScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

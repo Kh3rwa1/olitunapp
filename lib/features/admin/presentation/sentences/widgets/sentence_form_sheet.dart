@@ -44,7 +44,9 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
   String? _imageUrl;
   String? _animationUrl;
 
-  bool get _isEditing => widget.sentence != null;
+  bool get _isEditing =>
+      widget.sentence != null &&
+      !widget.sentence!.id.startsWith('lesson_block_');
 
   @override
   void initState() {
@@ -79,7 +81,7 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
   void _save() {
     HapticFeedback.lightImpact();
     final sentence = SentenceModel(
-      id: widget.sentence?.id ?? const Uuid().v4(),
+      id: _isEditing ? widget.sentence!.id : const Uuid().v4(),
       sentenceOlChiki: _olChikiCtrl.text.trim(),
       sentenceLatin: _latinCtrl.text.trim(),
       meaning: _meaningCtrl.text.trim(),

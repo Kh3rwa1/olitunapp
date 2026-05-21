@@ -15,6 +15,7 @@ import '../widgets/admin_content_subcategories.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_form_widgets.dart';
+import '../widgets/admin_lesson_block_info_banner.dart';
 import 'widgets/word_form_sheet.dart';
 import 'widgets/word_card.dart';
 
@@ -27,6 +28,13 @@ class AdminWordsScreen extends ConsumerStatefulWidget {
 
 class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
   String? _selectedCategory;
+  final ScrollController _wordsScrollController = ScrollController();
+
+  @override
+  void dispose() {
+    _wordsScrollController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -255,13 +263,18 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
   }
 
   Widget _emptyState(BuildContext context, bool isDark) {
-    return AdminEmptyState(
-      icon: Icons.menu_book_rounded,
-      title: 'No words yet',
-      message: 'Add vocabulary words to build the learning dictionary.',
-      actionLabel: 'Add Word',
-      onAction: () => WordFormSheet.show(context, ref, null),
-    ).animate().fadeIn(delay: 200.ms, duration: 500.ms);
+    return SingleChildScrollView(
+      padding: const EdgeInsets.only(bottom: 120),
+      child: AdminEmptyState(
+        icon: Icons.menu_book_rounded,
+        title: 'No words yet',
+        message: _selectedCategory == null
+            ? 'Add vocabulary words to build the learning dictionary.'
+            : 'This subcategory has no saved Word records or editable lesson blocks yet.',
+        actionLabel: 'Add Word',
+        onAction: () => WordFormSheet.show(context, ref, null),
+      ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
+    );
   }
 
   Widget _buildWordsList(
@@ -269,25 +282,52 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     bool isDark,
     bool isWideScreen,
   ) {
-    return ListView.builder(
-      padding: EdgeInsets.fromLTRB(
-        isWideScreen ? 32 : 20,
-        0,
-        isWideScreen ? 32 : 20,
-        100,
+    final hasLessonBlockRows = words.any(_isLessonBlockWord);
+    final itemCount = words.length + (hasLessonBlockRows ? 1 : 0);
+
+    return Scrollbar(
+      controller: _wordsScrollController,
+      thumbVisibility: true,
+      child: ListView.builder(
+        controller: _wordsScrollController,
+        padding: EdgeInsets.fromLTRB(
+          isWideScreen ? 32 : 20,
+          0,
+          isWideScreen ? 32 : 20,
+          120,
+        ),
+        itemCount: itemCount,
+        itemBuilder: (context, index) {
+          if (hasLessonBlockRows && index == 0) {
+            return AdminLessonBlockInfoBanner(
+              title: 'Lesson-block drafts',
+              message:
+                  'This subcategory stores some content only as lesson blocks. Edit a draft to save it as a reusable Word record, or use the lesson content editor to change the original block.',
+              isDark: isDark,
+            ).animate().fadeIn(duration: 250.ms).slideY(begin: 0.06);
+          }
+
+          final wordIndex = hasLessonBlockRows ? index - 1 : index;
+          final word = words[wordIndex];
+          final isLessonBlock = _isLessonBlockWord(word);
+          return WordCard(
+            word: word,
+            isDark: isDark,
+            canDelete: !isLessonBlock,
+            sourceLabel: isLessonBlock ? 'Lesson block draft' : null,
+            sourceTooltip: isLessonBlock
+                ? 'This row comes from a lesson content block. Editing it saves a new Word record.'
+                : null,
+            onEdit: () => WordFormSheet.show(context, ref, word),
+            onDelete: () => _confirmDelete(context, word),
+          ).animate().fadeIn(delay: (wordIndex * 50).ms).slideY(begin: 0.1);
+        },
       ),
-      itemCount: words.length,
-      itemBuilder: (context, index) {
-        final word = words[index];
-        return WordCard(
-          word: word,
-          isDark: isDark,
-          onEdit: () => WordFormSheet.show(context, ref, word),
-          onDelete: () => _confirmDelete(context, word),
-        ).animate().fadeIn(delay: (index * 50).ms).slideY(begin: 0.1);
-      },
     );
   }
+
+  bool _isLessonBlockWord(WordModel word) =>
+      word.id.startsWith('lesson_block_word_');
 
   Future<void> _confirmDelete(BuildContext context, WordModel word) async {
     final ok = await showAdminConfirmDialog(
@@ -363,12 +403,40 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
             )
             .toList()
           ..sort((a, b) => a.order.compareTo(b.order));
-    if (exact.isNotEmpty) return exact;
+    if (exact.isNotEmpty) {
+      return _mergeSavedWordsWithLessonBlocks(exact, lesson);
+    }
 
     final categoryMatches = _filterWordsByCategory(words, selectedKey);
-    if (categoryMatches.isNotEmpty) return categoryMatches;
+    if (categoryMatches.isNotEmpty) {
+      return _mergeSavedWordsWithLessonBlocks(categoryMatches, lesson);
+    }
 
     return _wordsFromLessonBlocks(lesson);
+  }
+
+  List<WordModel> _mergeSavedWordsWithLessonBlocks(
+    List<WordModel> savedWords,
+    LessonEntity lesson,
+  ) {
+    final drafts = _wordsFromLessonBlocks(lesson).where(
+      (draft) => !savedWords.any((saved) => _sameWordRecord(saved, draft)),
+    );
+    return [...savedWords, ...drafts];
+  }
+
+  bool _sameWordRecord(WordModel saved, WordModel draft) {
+    final savedOlChiki = _normalizeKey(saved.wordOlChiki);
+    final draftOlChiki = _normalizeKey(draft.wordOlChiki);
+    if (savedOlChiki.isNotEmpty && savedOlChiki == draftOlChiki) return true;
+
+    final savedLatin = _normalizeKey(saved.wordLatin);
+    final draftLatin = _normalizeKey(draft.wordLatin);
+    if (savedLatin.isNotEmpty && savedLatin == draftLatin) return true;
+
+    final savedMeaning = _normalizeKey(saved.meaning);
+    final draftMeaning = _normalizeKey(draft.meaning);
+    return savedMeaning.isNotEmpty && savedMeaning == draftMeaning;
   }
 
   List<WordModel> _filterWordsByCategory(List<WordModel> words, String key) {

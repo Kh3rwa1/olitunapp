@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
@@ -9,6 +10,9 @@ class WordCard extends StatefulWidget {
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool canDelete;
+  final String? sourceLabel;
+  final String? sourceTooltip;
 
   const WordCard({
     super.key,
@@ -16,6 +20,9 @@ class WordCard extends StatefulWidget {
     required this.isDark,
     required this.onEdit,
     required this.onDelete,
+    this.canDelete = true,
+    this.sourceLabel,
+    this.sourceTooltip,
   });
 
   @override
@@ -27,7 +34,7 @@ class _WordCardState extends State<WordCard> {
 
   @override
   Widget build(BuildContext context) {
-    final w = widget.word;
+    final word = widget.word;
     final isDark = widget.isDark;
 
     return MouseRegion(
@@ -67,7 +74,7 @@ class _WordCardState extends State<WordCard> {
                 ),
                 child: Center(
                   child: Text(
-                    w.wordOlChiki.isNotEmpty ? w.wordOlChiki[0] : '?',
+                    word.wordOlChiki.isNotEmpty ? word.wordOlChiki[0] : '?',
                     style: const TextStyle(
                       fontSize: 22,
                       fontWeight: FontWeight.w900,
@@ -81,17 +88,19 @@ class _WordCardState extends State<WordCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      crossAxisAlignment: WrapCrossAlignment.center,
+                      spacing: 8,
+                      runSpacing: 4,
                       children: [
                         Text(
-                          w.wordOlChiki,
+                          word.wordOlChiki,
                           style: AdminTokens.cardTitle(
                             isDark,
                           ).copyWith(fontSize: 17),
                         ),
-                        const SizedBox(width: 8),
                         Text(
-                          w.wordLatin,
+                          word.wordLatin,
                           style: AdminTokens.body(isDark).copyWith(
                             color: AppColors.primary,
                             fontWeight: FontWeight.w600,
@@ -101,34 +110,41 @@ class _WordCardState extends State<WordCard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      w.meaning,
+                      word.meaning,
                       style: AdminTokens.body(
                         isDark,
                       ).copyWith(color: AdminTokens.textSecondary(isDark)),
                     ),
-                    if (w.category != null && w.category!.isNotEmpty) ...[
+                    if ((word.category != null && word.category!.isNotEmpty) ||
+                        widget.sourceLabel != null) ...[
                       const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AdminTokens.accentSoft(isDark),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: AdminTokens.accentBorder(isDark),
-                          ),
-                        ),
-                        child: Text(
-                          w.category!,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: AppColors.primary,
-                            letterSpacing: 0.3,
-                          ),
-                        ),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          if (word.category != null &&
+                              word.category!.isNotEmpty)
+                            _Badge(
+                              label: word.category!,
+                              color: AppColors.primary,
+                              background: AdminTokens.accentSoft(isDark),
+                              border: AdminTokens.accentBorder(isDark),
+                            ),
+                          if (widget.sourceLabel != null)
+                            Tooltip(
+                              message: widget.sourceTooltip ?? '',
+                              child: _Badge(
+                                label: widget.sourceLabel!,
+                                color: const Color(0xFFB45309),
+                                background: const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: isDark ? 0.18 : 0.12),
+                                border: const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: 0.35),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ],
@@ -144,15 +160,16 @@ class _WordCardState extends State<WordCard> {
                   onPressed: widget.onEdit,
                   tooltip: 'Edit',
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 18,
-                    color: AppColors.error,
+                if (widget.canDelete)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: AppColors.error,
+                    ),
+                    onPressed: widget.onDelete,
+                    tooltip: 'Delete',
                   ),
-                  onPressed: widget.onDelete,
-                  tooltip: 'Delete',
-                ),
               ] else
                 IconButton(
                   icon: Icon(
@@ -163,6 +180,41 @@ class _WordCardState extends State<WordCard> {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({
+    required this.label,
+    required this.color,
+    required this.background,
+    required this.border,
+  });
+
+  final String label;
+  final Color color;
+  final Color background;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.3,
         ),
       ),
     );

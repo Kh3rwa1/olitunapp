@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
@@ -9,6 +10,9 @@ class SentenceCard extends StatefulWidget {
   final bool isDark;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
+  final bool canDelete;
+  final String? sourceLabel;
+  final String? sourceTooltip;
 
   const SentenceCard({
     super.key,
@@ -16,6 +20,9 @@ class SentenceCard extends StatefulWidget {
     required this.isDark,
     required this.onEdit,
     required this.onDelete,
+    this.canDelete = true,
+    this.sourceLabel,
+    this.sourceTooltip,
   });
 
   @override
@@ -27,7 +34,7 @@ class _SentenceCardState extends State<SentenceCard> {
 
   @override
   Widget build(BuildContext context) {
-    final s = widget.sentence;
+    final sentence = widget.sentence;
     final isDark = widget.isDark;
 
     return MouseRegion(
@@ -80,7 +87,7 @@ class _SentenceCardState extends State<SentenceCard> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      s.sentenceOlChiki,
+                      sentence.sentenceOlChiki,
                       style: AdminTokens.cardTitle(
                         isDark,
                       ).copyWith(fontSize: 15, height: 1.4),
@@ -89,7 +96,7 @@ class _SentenceCardState extends State<SentenceCard> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      s.sentenceLatin,
+                      sentence.sentenceLatin,
                       style: AdminTokens.body(isDark).copyWith(
                         color: AppColors.primary,
                         fontWeight: FontWeight.w600,
@@ -100,7 +107,7 @@ class _SentenceCardState extends State<SentenceCard> {
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      '→ ${s.meaning}',
+                      '-> ${sentence.meaning}',
                       style: AdminTokens.body(isDark).copyWith(
                         color: AdminTokens.textSecondary(isDark),
                         fontStyle: FontStyle.italic,
@@ -109,31 +116,41 @@ class _SentenceCardState extends State<SentenceCard> {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    if (s.category != null && s.category!.isNotEmpty) ...[
+                    if ((sentence.category != null &&
+                            sentence.category!.isNotEmpty) ||
+                        widget.sourceLabel != null) ...[
                       const SizedBox(height: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF10B981).withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(
-                            color: const Color(
-                              0xFF10B981,
-                            ).withValues(alpha: 0.3),
-                          ),
-                        ),
-                        child: Text(
-                          s.category!,
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w700,
-                            color: Color(0xFF10B981),
-                            letterSpacing: 0.3,
-                          ),
-                        ),
+                      Wrap(
+                        spacing: 6,
+                        runSpacing: 6,
+                        children: [
+                          if (sentence.category != null &&
+                              sentence.category!.isNotEmpty)
+                            _Badge(
+                              label: sentence.category!,
+                              color: const Color(0xFF10B981),
+                              background: const Color(
+                                0xFF10B981,
+                              ).withValues(alpha: 0.1),
+                              border: const Color(
+                                0xFF10B981,
+                              ).withValues(alpha: 0.3),
+                            ),
+                          if (widget.sourceLabel != null)
+                            Tooltip(
+                              message: widget.sourceTooltip ?? '',
+                              child: _Badge(
+                                label: widget.sourceLabel!,
+                                color: const Color(0xFFB45309),
+                                background: const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: isDark ? 0.18 : 0.12),
+                                border: const Color(
+                                  0xFFF59E0B,
+                                ).withValues(alpha: 0.35),
+                              ),
+                            ),
+                        ],
                       ),
                     ],
                   ],
@@ -149,15 +166,16 @@ class _SentenceCardState extends State<SentenceCard> {
                   onPressed: widget.onEdit,
                   tooltip: 'Edit',
                 ),
-                IconButton(
-                  icon: const Icon(
-                    Icons.delete_outline_rounded,
-                    size: 18,
-                    color: AppColors.error,
+                if (widget.canDelete)
+                  IconButton(
+                    icon: const Icon(
+                      Icons.delete_outline_rounded,
+                      size: 18,
+                      color: AppColors.error,
+                    ),
+                    onPressed: widget.onDelete,
+                    tooltip: 'Delete',
                   ),
-                  onPressed: widget.onDelete,
-                  tooltip: 'Delete',
-                ),
               ] else
                 IconButton(
                   icon: Icon(
@@ -168,6 +186,41 @@ class _SentenceCardState extends State<SentenceCard> {
                 ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Badge extends StatelessWidget {
+  const _Badge({
+    required this.label,
+    required this.color,
+    required this.background,
+    required this.border,
+  });
+
+  final String label;
+  final Color color;
+  final Color background;
+  final Color border;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+      decoration: BoxDecoration(
+        color: background,
+        borderRadius: BorderRadius.circular(6),
+        border: Border.all(color: border),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontSize: 11,
+          fontWeight: FontWeight.w800,
+          color: color,
+          letterSpacing: 0.3,
         ),
       ),
     );

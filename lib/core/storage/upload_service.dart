@@ -39,6 +39,7 @@ class AppwriteStorageUploadService {
     'mp4': UploadTarget('videos', 'video/mp4', UploadCategory.video),
     'webm': UploadTarget('videos', 'video/webm', UploadCategory.video),
     'mov': UploadTarget('videos', 'video/quicktime', UploadCategory.video),
+    'm4v': UploadTarget('videos', 'video/x-m4v', UploadCategory.video),
   };
 
   Future<String?> uploadMedia(PlatformFile file, String folder) async {

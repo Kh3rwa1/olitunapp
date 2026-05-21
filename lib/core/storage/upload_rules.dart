@@ -32,7 +32,7 @@ class UploadRules {
     'm4a',
   };
   static const Set<String> animationExtensions = {'json', 'lottie'};
-  static const Set<String> videoExtensions = {'mp4', 'webm', 'mov'};
+  static const Set<String> videoExtensions = {'mp4', 'webm', 'mov', 'm4v'};
 
   /// Characters allowed in filenames after sanitisation.
   static final RegExp _safeFilename = RegExp(r'^[A-Za-z0-9._-]+$');

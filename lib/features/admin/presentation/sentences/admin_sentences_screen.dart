@@ -127,7 +127,10 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                   child: sentencesAsync.when(
                     data: (sentences) {
                       final filtered = _selectedCategory == null
-                          ? sentences
+                          ? _filterSentencesForLessons(
+                              sentences,
+                              subcategoryLessons,
+                            )
                           : _filterSentences(sentences, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
@@ -323,17 +326,38 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
       add(lesson.titleLatin);
     }
 
-    final categories =
-        rowCategories
-            .where((value) => value != null && value.trim().isNotEmpty)
-            .map((value) => value!.trim())
-            .toList()
-          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    for (final category in categories) {
-      add(category);
+    if (labels.isEmpty) {
+      final categories =
+          rowCategories
+              .where((value) => value != null && value.trim().isNotEmpty)
+              .map((value) => value!.trim())
+              .toList()
+            ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      for (final category in categories) {
+        add(category);
+      }
     }
 
     return labels;
+  }
+
+  List<SentenceModel> _filterSentencesForLessons(
+    List<SentenceModel> sentences,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    if (subcategoryLessons.isEmpty) return sentences;
+    final allowed = subcategoryLessons
+        .expand(_normalizedTextBlockValues)
+        .toSet();
+    if (allowed.isEmpty) return const [];
+    return sentences
+        .where(
+          (sentence) =>
+              sentence.isActive &&
+              allowed.contains(_normalizeKey(sentence.sentenceOlChiki)),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
   }
 
   List<SentenceModel> _filterSentences(
@@ -342,35 +366,41 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
   ) {
     final selected = _selectedCategory;
     if (selected == null) return sentences;
+    final selectedKey = _normalizeKey(selected);
 
     final lesson = subcategoryLessons
-        .where((lesson) => lesson.titleLatin == selected)
+        .where((lesson) => _normalizeKey(lesson.titleLatin) == selectedKey)
         .firstOrNull;
     if (lesson == null) {
       return sentences
-          .where((sentence) => sentence.category == selected)
+          .where(
+            (sentence) => _normalizeKey(sentence.category ?? '') == selectedKey,
+          )
           .toList();
     }
 
-    final blockTexts = lesson.blocks
-        .where((block) => block.type == 'text' && block.textOlChiki != null)
-        .map((block) => block.textOlChiki!.trim())
-        .toSet();
+    final blockTexts = _normalizedTextBlockValues(lesson).toSet();
     if (blockTexts.isEmpty) return const [];
 
     return sentences
         .where(
           (sentence) =>
               sentence.isActive &&
-              blockTexts.any(
-                (text) =>
-                    text == sentence.sentenceOlChiki ||
-                    text.contains(sentence.sentenceOlChiki) ||
-                    sentence.sentenceOlChiki.contains(text),
-              ),
+              blockTexts.contains(_normalizeKey(sentence.sentenceOlChiki)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
+  }
+
+  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) {
+    return lesson.blocks
+        .where((block) => block.type == 'text' && block.textOlChiki != null)
+        .map((block) => _normalizeKey(block.textOlChiki!))
+        .where((text) => text.isNotEmpty);
+  }
+
+  String _normalizeKey(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
 
   Future<void> _addSubcategory(

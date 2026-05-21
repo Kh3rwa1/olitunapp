@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:video_player/video_player.dart';
 import 'package:lottie/lottie.dart';
+import '../../../../core/accessibility/learning_semantics.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
@@ -96,72 +97,82 @@ class _TextBlock extends ConsumerWidget {
       navRoute = _resolveNavRoute(ref, lessonId, block.textLatin!.trim());
     }
 
-    final content = Container(
-      width: double.infinity,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-      decoration: BoxDecoration(
-        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: navRoute != null
-              ? AppColors.primary.withValues(alpha: 0.4)
-              : Colors.grey.withValues(alpha: 0.1),
-          width: navRoute != null ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
+    final content = Semantics(
+      label: LearningSemantics.olChikiText(
+        text: block.textOlChiki!,
+        latin: block.textLatin,
       ),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  block.textOlChiki!,
-                  style: TextStyle(
-                    fontSize: (block.textOlChiki!.length < 5) ? 36 : 22,
-                    fontWeight: FontWeight.w800,
+      button: navRoute != null,
+      child: ExcludeSemantics(
+        child: Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          decoration: BoxDecoration(
+            color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: navRoute != null
+                  ? AppColors.primary.withValues(alpha: 0.4)
+                  : Colors.grey.withValues(alpha: 0.1),
+              width: navRoute != null ? 1.5 : 1,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      block.textOlChiki!,
+                      style: TextStyle(
+                        fontSize: (block.textOlChiki!.length < 5) ? 36 : 22,
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.primary,
+                        height: 1.2,
+                      ),
+                    ),
+                    if (block.textLatin != null &&
+                        block.textLatin!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        block.textLatin!,
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+              if (navRoute != null) ...[
+                const SizedBox(width: 12),
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: 16,
                     color: AppColors.primary,
-                    height: 1.2,
                   ),
                 ),
-                if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
-                  const SizedBox(height: 8),
-                  Text(
-                    block.textLatin!,
-                    style: TextStyle(
-                      fontSize: 17,
-                      fontWeight: FontWeight.w500,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                      letterSpacing: 0.3,
-                    ),
-                  ),
-                ],
               ],
-            ),
+            ],
           ),
-          if (navRoute != null) ...[
-            const SizedBox(width: 12),
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.1),
-                shape: BoxShape.circle,
-              ),
-              child: const Icon(
-                Icons.arrow_forward_ios_rounded,
-                size: 16,
-                color: AppColors.primary,
-              ),
-            ),
-          ],
-        ],
+        ),
       ),
     );
 

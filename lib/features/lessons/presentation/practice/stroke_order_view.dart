@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/accessibility/learning_semantics.dart';
 import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
 
@@ -48,42 +49,55 @@ class _StrokeOrderViewState extends State<StrokeOrderView>
             children: [
               Expanded(
                 child: Center(
-                  child: Container(
-                    width: boardSize,
-                    height: boardSize,
-                    decoration: BoxDecoration(
-                      color: isDark ? const Color(0xFF111A28) : Colors.white,
-                      borderRadius: BorderRadius.circular(26),
-                      border: Border.all(
-                        color: isDark
-                            ? Colors.white.withValues(alpha: 0.10)
-                            : Colors.black.withValues(alpha: 0.05),
+                  child: Semantics(
+                    key: const ValueKey('stroke-order-semantics'),
+                    container: true,
+                    image: true,
+                    label: LearningSemantics.strokeOrder(practiceChar),
+                    child: ExcludeSemantics(
+                      child: Container(
+                        width: boardSize,
+                        height: boardSize,
+                        decoration: BoxDecoration(
+                          color: isDark
+                              ? const Color(0xFF111A28)
+                              : Colors.white,
+                          borderRadius: BorderRadius.circular(26),
+                          border: Border.all(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.10)
+                                : Colors.black.withValues(alpha: 0.05),
+                          ),
+                        ),
+                        child: Stack(
+                          children: [
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: OlChikiGlyphGuidePainter(
+                                  character: practiceChar,
+                                  fillColor:
+                                      (isDark ? Colors.white : Colors.black)
+                                          .withValues(
+                                            alpha: isDark ? 0.18 : 0.12,
+                                          ),
+                                  outlineColor: const Color(
+                                    0xFF35C7B5,
+                                  ).withValues(alpha: 0.22),
+                                ),
+                              ),
+                            ),
+                            Positioned.fill(
+                              child: CustomPaint(
+                                painter: StrokePainter(
+                                  progress: _animation,
+                                  color: const Color(0xFF35C7B5),
+                                  letter: practiceChar,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    child: Stack(
-                      children: [
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: OlChikiGlyphGuidePainter(
-                              character: practiceChar,
-                              fillColor: (isDark ? Colors.white : Colors.black)
-                                  .withValues(alpha: isDark ? 0.18 : 0.12),
-                              outlineColor: const Color(
-                                0xFF35C7B5,
-                              ).withValues(alpha: 0.22),
-                            ),
-                          ),
-                        ),
-                        Positioned.fill(
-                          child: CustomPaint(
-                            painter: StrokePainter(
-                              progress: _animation,
-                              color: const Color(0xFF35C7B5),
-                              letter: practiceChar,
-                            ),
-                          ),
-                        ),
-                      ],
                     ),
                   ),
                 ),

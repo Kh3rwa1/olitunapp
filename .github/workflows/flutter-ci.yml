@@ -55,6 +55,19 @@ jobs:
       - name: Smoke tests
         run: flutter test test/smoke
 
+      - name: Staging Appwrite smoke test
+        env:
+          STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
+          STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
+        run: |
+          if [ -z "$STAGING_APPWRITE_ENDPOINT" ] || [ -z "$STAGING_APPWRITE_PROJECT_ID" ]; then
+            echo "Skipping staging Appwrite smoke test; secrets are not configured."
+            exit 0
+          fi
+          flutter test test/integration/appwrite_staging_smoke_test.dart \
+            --dart-define=STAGING_APPWRITE_ENDPOINT="$STAGING_APPWRITE_ENDPOINT" \
+            --dart-define=STAGING_APPWRITE_PROJECT_ID="$STAGING_APPWRITE_PROJECT_ID"
+
       - name: Check outdated dependencies
         run: flutter pub outdated --no-dev-dependencies || true
 

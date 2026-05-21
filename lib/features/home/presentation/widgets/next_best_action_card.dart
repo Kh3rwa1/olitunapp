@@ -24,23 +24,26 @@ class NextBestActionCard extends ConsumerWidget {
     final streak = stats?.currentStreak ?? 0;
 
     // Determine the state and copy
-    String badgeText = '';
-    String title = '';
-    String subtitle = '';
-    String ctaText = '';
+    String badgeText = 'NEXT';
+    String title = 'Continue learning';
+    String subtitle = 'Choose one small practice step for today.';
+    String ctaText = 'Continue';
     VoidCallback onTap = () {};
     IconData icon = Icons.star_rounded;
     Color color = AppColors.primary;
 
+    final lessons = stats?.completedLessons;
+    final completedAlphabet =
+        lessons != null && lessons.any((id) => id.contains('alphabet'));
     final hasCompletedAlphabet =
-        (stats?.completedLessons.any((id) => id.contains('alphabet')) ??
-            false) ||
-        (stats?.practicedLetters.isNotEmpty ?? false);
-    final hasCompletedNumbers =
-        stats?.completedLessons.any((id) => id.contains('number')) ?? false;
-    final showStartHere = !hasCompletedAlphabet || !hasCompletedNumbers;
+        (stats?.alphabetProgress ?? 0) >= 1 || completedAlphabet;
 
-    if (isGuest || showStartHere) {
+    final completedNumbers =
+        lessons != null && lessons.any((id) => id.contains('number'));
+    final hasCompletedNumbers =
+        (stats?.numbersProgress ?? 0) >= 1 || completedNumbers;
+
+    if (isGuest || !hasCompletedAlphabet) {
       badgeText = 'START HERE';
       title = 'Learn your first Ol Chiki letters';
       subtitle = 'Begin with the basic alphabet and unlock Santali writing.';
@@ -48,16 +51,17 @@ class NextBestActionCard extends ConsumerWidget {
       icon = Icons.menu_book_rounded;
       color = AppColors.primary;
       onTap = () {
-        if (!hasCompletedAlphabet && hasCompletedNumbers) {
-          context.push('/letter/standalone/all');
-        } else if (hasCompletedAlphabet && !hasCompletedNumbers) {
-          context.push('/number/standalone/all');
-        } else {
-          final route = (DateTime.now().millisecondsSinceEpoch % 2 == 0)
-              ? '/letter/standalone/all'
-              : '/number/standalone/all';
-          context.push(route);
-        }
+        context.push('/letter/standalone/all');
+      };
+    } else if (!hasCompletedNumbers) {
+      badgeText = 'NEXT STEP';
+      title = 'Practice Santali numbers';
+      subtitle = 'Build confidence with everyday counting and number words.';
+      ctaText = 'Practice Numbers';
+      icon = Icons.pin_rounded;
+      color = AppColors.duoBlue;
+      onTap = () {
+        context.push('/number/standalone/all');
       };
     } else if (mistakes.isNotEmpty) {
       badgeText = 'PRACTICE NEEDED';

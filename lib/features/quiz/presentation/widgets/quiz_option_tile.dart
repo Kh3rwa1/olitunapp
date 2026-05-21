@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../../../../core/accessibility/learning_semantics.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
@@ -45,86 +46,105 @@ class QuizOptionTile extends StatelessWidget {
 
     return Padding(
           padding: const EdgeInsets.only(bottom: 12),
-          child: PressableScale(
+          child: Semantics(
+            key: ValueKey('quiz-option-semantics-$index'),
+            container: true,
+            button: true,
             enabled: !isAnswered,
-            haptic: HapticIntensity.none,
-            onTap: isAnswered ? null : onTap,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              padding: const EdgeInsets.all(18),
-              decoration: BoxDecoration(
-                color: bgColor,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(
-                  color: isSelected
-                      ? AppColors.primary
-                      : (isDark
-                            ? Colors.white10
-                            : Colors.black.withValues(alpha: 0.05)),
-                  width: isSelected ? 2 : 1,
-                ),
-                boxShadow: isSelected && !isAnswered
-                    ? [
-                        BoxShadow(
-                          color: AppColors.primary.withValues(alpha: 0.2),
-                          blurRadius: 15,
-                        ),
-                      ]
-                    : null,
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 36,
-                    height: 36,
-                    decoration: BoxDecoration(
-                      color: (isAnswered && isCorrect)
-                          ? Colors.white
-                          : (isSelected
-                                ? AppColors.primary
-                                : Colors.transparent),
-                      borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                        color: isSelected || (isAnswered && isCorrect)
-                            ? Colors.transparent
-                            : (isDark ? Colors.white24 : Colors.black12),
-                      ),
+            selected: isSelected,
+            label: LearningSemantics.quizOption(
+              index: index,
+              option: question.optionsLatin[index],
+              isSelected: isSelected,
+              isAnswered: isAnswered,
+              isCorrect: isCorrect,
+            ),
+            child: ExcludeSemantics(
+              child: PressableScale(
+                enabled: !isAnswered,
+                haptic: HapticIntensity.none,
+                onTap: isAnswered ? null : onTap,
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  padding: const EdgeInsets.all(18),
+                  decoration: BoxDecoration(
+                    color: bgColor,
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(
+                      color: isSelected
+                          ? AppColors.primary
+                          : (isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05)),
+                      width: isSelected ? 2 : 1,
                     ),
-                    child: Center(
-                      child: Text(
-                        String.fromCharCode(65 + index),
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
+                    boxShadow: isSelected && !isAnswered
+                        ? [
+                            BoxShadow(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                              blurRadius: 15,
+                            ),
+                          ]
+                        : null,
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 36,
+                        height: 36,
+                        decoration: BoxDecoration(
                           color: (isAnswered && isCorrect)
-                              ? AppColors.success
+                              ? Colors.white
                               : (isSelected
-                                    ? Colors.white
-                                    : (isDark
-                                          ? Colors.white54
-                                          : Colors.black45)),
+                                    ? AppColors.primary
+                                    : Colors.transparent),
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(
+                            color: isSelected || (isAnswered && isCorrect)
+                                ? Colors.transparent
+                                : (isDark ? Colors.white24 : Colors.black12),
+                          ),
+                        ),
+                        child: Center(
+                          child: Text(
+                            String.fromCharCode(65 + index),
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: (isAnswered && isCorrect)
+                                  ? AppColors.success
+                                  : (isSelected
+                                        ? Colors.white
+                                        : (isDark
+                                              ? Colors.white54
+                                              : Colors.black45)),
+                            ),
+                          ),
                         ),
                       ),
-                    ),
-                  ),
-                  const SizedBox(width: 14),
-                  Expanded(
-                    child: Text(
-                      question.optionsLatin[index],
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: (isAnswered && (isCorrect || isSelected))
-                            ? Colors.white
-                            : (isDark ? Colors.white : Colors.black),
+                      const SizedBox(width: 14),
+                      Expanded(
+                        child: Text(
+                          question.optionsLatin[index],
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: (isAnswered && (isCorrect || isSelected))
+                                ? Colors.white
+                                : (isDark ? Colors.white : Colors.black),
+                          ),
+                        ),
                       ),
-                    ),
+                      if (isAnswered && isCorrect)
+                        const Icon(
+                          Icons.check_circle_rounded,
+                          color: Colors.white,
+                        ),
+                      if (isAnswered && isSelected && !isCorrect)
+                        const Icon(Icons.cancel_rounded, color: Colors.white),
+                    ],
                   ),
-                  if (isAnswered && isCorrect)
-                    const Icon(Icons.check_circle_rounded, color: Colors.white),
-                  if (isAnswered && isSelected && !isCorrect)
-                    const Icon(Icons.cancel_rounded, color: Colors.white),
-                ],
+                ),
               ),
             ),
           ),

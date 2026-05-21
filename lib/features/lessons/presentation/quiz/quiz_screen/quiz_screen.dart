@@ -319,7 +319,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        body: AppLoadingState(type: AppLoadingType.page, message: 'Loading Quiz...'),
+        body: AppLoadingState(
+          type: AppLoadingType.page,
+          message: 'Loading Quiz...',
+        ),
       );
     }
 
@@ -362,7 +365,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
                   const SizedBox(height: 32),
 
                   // 2x2 Answer Grid
-                  Expanded(child: _buildAnswerGrid(options, question.correctIndex)),
+                  Expanded(
+                    child: _buildAnswerGrid(options, question.correctIndex),
+                  ),
 
                   // Next Button
                   if (_answered) _buildNextButton(),

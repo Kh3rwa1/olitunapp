@@ -92,7 +92,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       if (lessonsCompleted == 0) return HomeLearnerState.guestNew;
       return HomeLearnerState.guestReturning;
     }
-    
+
     if (lessonsCompleted == 0) {
       return HomeLearnerState.beginnerNew;
     }
@@ -125,9 +125,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
     // Seamless automatic background data sync when recovering connection
-    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (previous, next) {
-      final prevOffline = previous?.value?.contains(ConnectivityResult.none) ?? true;
-      final nextOnline = next.value != null && !next.value!.contains(ConnectivityResult.none);
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
+      previous,
+      next,
+    ) {
+      final prevOffline =
+          previous?.value?.contains(ConnectivityResult.none) ?? true;
+      final nextOnline =
+          next.value != null && !next.value!.contains(ConnectivityResult.none);
       if (prevOffline && nextOnline) {
         _onRefresh();
         ref.read(userStatsProvider.notifier).syncPendingStats();
@@ -143,7 +148,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       completedLessonIds: completedIds,
       lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
     );
-    
+
     final isAuthAsync = ref.watch(isAuthenticatedProvider);
     final isGuest = isAuthAsync.value == false;
     final stats = statsAsync.value;

@@ -107,8 +107,10 @@ Future<void> main() async {
                         const SizedBox(height: 16),
                         Text(
                           e.toString(),
-                          style:
-                              const TextStyle(color: Colors.white, fontSize: 16),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
                         ),
                       ],
                     ),

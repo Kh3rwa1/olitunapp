@@ -386,7 +386,11 @@ class _HeroQuizCard extends ConsumerWidget {
                       size: 100,
                       color: Colors.white.withValues(alpha: 0.15),
                     )
-                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
+                    .animate(
+                      onPlay: reduceVisualEffects
+                          ? null
+                          : (c) => c.repeat(reverse: true),
+                    )
                     .moveY(begin: 0, end: -8, duration: 1800.ms)
                     .scale(
                       begin: const Offset(1, 1),
@@ -403,7 +407,11 @@ class _HeroQuizCard extends ConsumerWidget {
                       size: 18,
                       color: Colors.white.withValues(alpha: 0.5),
                     )
-                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
+                    .animate(
+                      onPlay: reduceVisualEffects
+                          ? null
+                          : (c) => c.repeat(reverse: true),
+                    )
                     .fadeIn(duration: 600.ms)
                     .then()
                     .fadeOut(duration: 600.ms),
@@ -502,7 +510,11 @@ class _HeroQuizCard extends ConsumerWidget {
                       ],
                     ),
                   )
-                  .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
+                  .animate(
+                    onPlay: reduceVisualEffects
+                        ? null
+                        : (c) => c.repeat(reverse: true),
+                  )
                   .shimmer(
                     delay: 2.seconds,
                     duration: 1500.ms,

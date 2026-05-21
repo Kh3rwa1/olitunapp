@@ -73,7 +73,9 @@ class AppLoadingState extends ConsumerWidget {
           child: CircularProgressIndicator(
             strokeWidth: 4,
             valueColor: const AlwaysStoppedAnimation<Color>(AppColors.primary),
-            backgroundColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+            backgroundColor: isDark
+                ? Colors.white10
+                : Colors.black.withValues(alpha: 0.05),
           ),
         );
 
@@ -92,7 +94,9 @@ class AppLoadingState extends ConsumerWidget {
                 if (_isTesting || reduceEffects)
                   loaderWidget
                 else
-                  loaderWidget.animate(onPlay: (c) => c.repeat()).rotate(duration: 2.seconds),
+                  loaderWidget
+                      .animate(onPlay: (c) => c.repeat())
+                      .rotate(duration: 2.seconds),
                 const SizedBox(height: 24),
                 Text(
                   message ?? 'Johar... Loading',
@@ -139,11 +143,7 @@ class AppEmptyState extends ConsumerWidget {
         color: AppColors.primary.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        size: 40,
-        color: AppColors.primary,
-      ),
+      child: Icon(icon, size: 40, color: AppColors.primary),
     );
 
     return Center(
@@ -245,11 +245,7 @@ class AppErrorState extends ConsumerWidget {
         color: AppColors.duoRed.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(
-        icon,
-        size: 40,
-        color: AppColors.duoRed,
-      ),
+      child: Icon(icon, size: 40, color: AppColors.duoRed),
     );
 
     return Center(
@@ -269,10 +265,7 @@ class AppErrorState extends ConsumerWidget {
               else
                 errorIconWidget
                     .animate(onPlay: (c) => c.repeat(reverse: true))
-                    .shake(
-                      hz: 1.5,
-                      duration: 2.seconds,
-                    ),
+                    .shake(hz: 1.5, duration: 2.seconds),
               const SizedBox(height: 20),
               Text(
                 'Etom Badiyena! (Something went wrong)',
@@ -344,7 +337,8 @@ class OfflineStatusBanner extends ConsumerWidget {
 
     return connectivityAsync.when(
       data: (results) {
-        final isOffline = results.contains(ConnectivityResult.none) || results.isEmpty;
+        final isOffline =
+            results.contains(ConnectivityResult.none) || results.isEmpty;
 
         final Color backgroundColor;
         final IconData iconData;
@@ -395,11 +389,7 @@ class OfflineStatusBanner extends ConsumerWidget {
           }
         }
 
-        Widget iconWidget = Icon(
-          iconData,
-          color: Colors.white,
-          size: 20,
-        );
+        Widget iconWidget = Icon(iconData, color: Colors.white, size: 20);
 
         if (!(_isTesting || reduceEffects)) {
           if (showProgress) {
@@ -414,66 +404,78 @@ class OfflineStatusBanner extends ConsumerWidget {
           } else if (isOffline || syncStatus == SyncStatus.error) {
             iconWidget = iconWidget
                 .animate(onPlay: (c) => c.repeat(reverse: true))
-                .scale(begin: const Offset(1, 1), end: const Offset(1.15, 1.15), duration: 1.seconds);
+                .scale(
+                  begin: const Offset(1, 1),
+                  end: const Offset(1.15, 1.15),
+                  duration: 1.seconds,
+                );
           }
         }
 
         return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-          decoration: BoxDecoration(
-            color: backgroundColor,
-            borderRadius: BorderRadius.circular(16),
-            boxShadow: const [
-              BoxShadow(
-                color: Colors.black26,
-                blurRadius: 8,
-                offset: Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Row(
-            children: [
-              iconWidget,
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  text,
-                  style: GoogleFonts.fredoka(
-                    color: Colors.white,
-                    fontSize: 13,
-                    fontWeight: FontWeight.w600,
+              duration: const Duration(milliseconds: 300),
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              decoration: BoxDecoration(
+                color: backgroundColor,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: const [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 8,
+                    offset: Offset(0, 3),
                   ),
-                ),
+                ],
               ),
-              if (buttonText != null) ...[
-                const SizedBox(width: 8),
-                GestureDetector(
-                  onTap: onButtonTap,
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
+              child: Row(
+                children: [
+                  iconWidget,
+                  const SizedBox(width: 12),
+                  Expanded(
                     child: Text(
-                      buttonText,
+                      text,
                       style: GoogleFonts.fredoka(
                         color: Colors.white,
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
-                ),
-              ],
-            ],
-          ),
-        )
-        .animate()
-        .slideY(begin: 1.0, end: 0, duration: 400.ms, curve: Curves.easeOutBack)
-        .fadeIn();
+                  if (buttonText != null) ...[
+                    const SizedBox(width: 8),
+                    GestureDetector(
+                      onTap: onButtonTap,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          buttonText,
+                          style: GoogleFonts.fredoka(
+                            color: Colors.white,
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            )
+            .animate()
+            .slideY(
+              begin: 1.0,
+              end: 0,
+              duration: 400.ms,
+              curve: Curves.easeOutBack,
+            )
+            .fadeIn();
       },
       loading: () => const SizedBox.shrink(),
       error: (error, stackTrace) => const SizedBox.shrink(),

@@ -40,7 +40,9 @@ class QuizCompleteScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final percentage = totalQuestions > 0 ? (score / totalQuestions * 100).round() : 0;
+    final percentage = totalQuestions > 0
+        ? (score / totalQuestions * 100).round()
+        : 0;
     final isPassing = percentage >= 70;
     final totalStars = (score * 5) + bonusStars;
     final reduceEffects = ref.watch(reduceVisualEffectsProvider);
@@ -76,7 +78,9 @@ class QuizCompleteScreen extends ConsumerWidget {
         barrierColor: Colors.black.withValues(alpha: 0.7),
         builder: (sheetContext) {
           return Container(
-            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.75),
+            constraints: BoxConstraints(
+              maxHeight: MediaQuery.of(context).size.height * 0.75,
+            ),
             padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
             decoration: BoxDecoration(
               color: isDark ? const Color(0xFF0F141C) : Colors.white,
@@ -125,15 +129,16 @@ class QuizCompleteScreen extends ConsumerWidget {
                     shrinkWrap: true,
                     physics: const BouncingScrollPhysics(),
                     itemCount: incorrectQuestionIndices.length,
-                    separatorBuilder: (context, index) => const SizedBox(height: 16),
+                    separatorBuilder: (context, index) =>
+                        const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final qIdx = incorrectQuestionIndices[index];
                       final q = questions[qIdx];
                       final correctAns = q.optionsLatin[q.correctIndex];
                       final correctAnsOlChiki =
                           q.optionsOlChiki.length > q.correctIndex
-                              ? q.optionsOlChiki[q.correctIndex]
-                              : '';
+                          ? q.optionsOlChiki[q.correctIndex]
+                          : '';
 
                       return Container(
                         padding: const EdgeInsets.all(16),
@@ -290,10 +295,11 @@ class QuizCompleteScreen extends ConsumerWidget {
                                   shape: BoxShape.circle,
                                   boxShadow: [
                                     BoxShadow(
-                                      color: (isPassing
-                                              ? AppColors.success
-                                              : AppColors.warning)
-                                          .withValues(alpha: 0.35),
+                                      color:
+                                          (isPassing
+                                                  ? AppColors.success
+                                                  : AppColors.warning)
+                                              .withValues(alpha: 0.35),
                                       blurRadius: 30,
                                       offset: const Offset(0, 12),
                                     ),
@@ -313,7 +319,9 @@ class QuizCompleteScreen extends ConsumerWidget {
                               }
 
                               return trophy
-                                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                                  .animate(
+                                    onPlay: (c) => c.repeat(reverse: true),
+                                  )
                                   .scale(
                                     begin: const Offset(1.0, 1.0),
                                     end: const Offset(1.06, 1.06),
@@ -337,7 +345,9 @@ class QuizCompleteScreen extends ConsumerWidget {
                         ).animate().fadeIn(duration: 400.ms),
                         const SizedBox(height: 6),
                         Text(
-                          AppLocalizations.of(context)!.youScored(score, totalQuestions),
+                          AppLocalizations.of(
+                            context,
+                          )!.youScored(score, totalQuestions),
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.w600,
@@ -357,10 +367,12 @@ class QuizCompleteScreen extends ConsumerWidget {
                           children: [
                             // 1. Score Bento
                             buildBentoCard(
-                              backgroundColor:
-                                  AppColors.primary.withValues(alpha: 0.10),
-                              borderColor:
-                                  AppColors.primary.withValues(alpha: 0.20),
+                              backgroundColor: AppColors.primary.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderColor: AppColors.primary.withValues(
+                                alpha: 0.20,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -398,18 +410,23 @@ class QuizCompleteScreen extends ConsumerWidget {
                             // 2. Accuracy Bento
                             buildBentoCard(
                               backgroundColor:
-                                  (isPassing ? AppColors.success : AppColors.error)
+                                  (isPassing
+                                          ? AppColors.success
+                                          : AppColors.error)
                                       .withValues(alpha: 0.10),
                               borderColor:
-                                  (isPassing ? AppColors.success : AppColors.error)
+                                  (isPassing
+                                          ? AppColors.success
+                                          : AppColors.error)
                                       .withValues(alpha: 0.20),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.track_changes_rounded,
-                                    color:
-                                        isPassing ? AppColors.success : AppColors.error,
+                                    color: isPassing
+                                        ? AppColors.success
+                                        : AppColors.error,
                                     size: 24,
                                   ),
                                   const SizedBox(height: 6),
@@ -429,8 +446,9 @@ class QuizCompleteScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
-                                      color:
-                                          isPassing ? AppColors.success : AppColors.error,
+                                      color: isPassing
+                                          ? AppColors.success
+                                          : AppColors.error,
                                     ),
                                   ),
                                 ],
@@ -439,10 +457,12 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                             // 3. Stars Bento
                             buildBentoCard(
-                              backgroundColor:
-                                  AppColors.duoYellow.withValues(alpha: 0.10),
-                              borderColor:
-                                  AppColors.duoYellow.withValues(alpha: 0.20),
+                              backgroundColor: AppColors.duoYellow.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderColor: AppColors.duoYellow.withValues(
+                                alpha: 0.20,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -477,10 +497,12 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                             // 4. Streak Bento
                             buildBentoCard(
-                              backgroundColor:
-                                  AppColors.duoOrange.withValues(alpha: 0.10),
-                              borderColor:
-                                  AppColors.duoOrange.withValues(alpha: 0.20),
+                              backgroundColor: AppColors.duoOrange.withValues(
+                                alpha: 0.10,
+                              ),
+                              borderColor: AppColors.duoOrange.withValues(
+                                alpha: 0.20,
+                              ),
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -522,7 +544,9 @@ class QuizCompleteScreen extends ConsumerWidget {
                             width: double.infinity,
                             decoration: BoxDecoration(
                               color: isDark
-                                  ? const Color(0xFF1E293B).withValues(alpha: 0.3)
+                                  ? const Color(
+                                      0xFF1E293B,
+                                    ).withValues(alpha: 0.3)
                                   : const Color(0xFFF8FAFC),
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
@@ -591,7 +615,9 @@ class QuizCompleteScreen extends ConsumerWidget {
                                         size: 14,
                                         color: isDark
                                             ? Colors.white30
-                                            : Colors.black.withValues(alpha: 0.3),
+                                            : Colors.black.withValues(
+                                                alpha: 0.3,
+                                              ),
                                       ),
                                     ],
                                   ),

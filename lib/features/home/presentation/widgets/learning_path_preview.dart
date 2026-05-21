@@ -25,7 +25,7 @@ class LearningPathPreview extends ConsumerWidget {
     if (lessons.isEmpty) return const SizedBox.shrink();
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     // Take up to 4 lessons to show a clean path preview
     final previewLessons = lessons.take(4).toList();
 
@@ -35,9 +35,7 @@ class LearningPathPreview extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black12,
-        ),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
@@ -88,7 +86,9 @@ class LearningPathPreview extends ConsumerWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w900,
-                    color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                    color: isDark
+                        ? AppColors.brandTextDark
+                        : AppColors.brandTextLight,
                   ),
                 ),
               ),
@@ -102,9 +102,13 @@ class LearningPathPreview extends ConsumerWidget {
             itemBuilder: (context, index) {
               final lesson = previewLessons[index];
               final isCompleted = completedLessonIds.contains(lesson.id);
-              final isCurrent = currentLessonId == lesson.id || 
+              final isCurrent =
+                  currentLessonId == lesson.id ||
                   (currentLessonId == null && index == 0 && !isCompleted);
-              final isLocked = !isCompleted && !isCurrent && index > 0 && 
+              final isLocked =
+                  !isCompleted &&
+                  !isCurrent &&
+                  index > 0 &&
                   !completedLessonIds.contains(previewLessons[index - 1].id);
 
               final title = primaryLocalizedText(
@@ -143,7 +147,7 @@ class LearningPathPreview extends ConsumerWidget {
     Color iconColor;
     Color bgColor;
     IconData icon;
-    
+
     if (isCompleted) {
       iconColor = Colors.white;
       bgColor = AppColors.primary;
@@ -155,7 +159,9 @@ class LearningPathPreview extends ConsumerWidget {
     } else {
       iconColor = isDark ? Colors.white30 : Colors.black38;
       bgColor = isDark ? Colors.white10 : Colors.black12;
-      icon = isLocked ? Icons.lock_rounded : Icons.radio_button_unchecked_rounded;
+      icon = isLocked
+          ? Icons.lock_rounded
+          : Icons.radio_button_unchecked_rounded;
     }
 
     return IntrinsicHeight(
@@ -166,7 +172,9 @@ class LearningPathPreview extends ConsumerWidget {
           Column(
             children: [
               MinimumTapTarget(
-                onTap: isLocked ? null : () => context.push('/lessons/$lessonId'),
+                onTap: isLocked
+                    ? null
+                    : () => context.push('/lessons/$lessonId'),
                 borderRadius: BorderRadius.circular(20),
                 child: Container(
                   width: 32,
@@ -183,22 +191,18 @@ class LearningPathPreview extends ConsumerWidget {
                         ),
                     ],
                   ),
-                  child: Center(
-                    child: Icon(
-                      icon,
-                      color: iconColor,
-                      size: 16,
-                    ),
-                  ),
+                  child: Center(child: Icon(icon, color: iconColor, size: 16)),
                 ),
               ),
               if (!isLast)
                 Expanded(
                   child: Container(
                     width: 3,
-                    color: isCompleted 
-                        ? AppColors.primary.withValues(alpha: 0.5) 
-                        : (isDark ? Colors.white.withValues(alpha: 0.15) : Colors.black12),
+                    color: isCompleted
+                        ? AppColors.primary.withValues(alpha: 0.5)
+                        : (isDark
+                              ? Colors.white.withValues(alpha: 0.15)
+                              : Colors.black12),
                   ),
                 ),
             ],
@@ -209,16 +213,23 @@ class LearningPathPreview extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.only(bottom: 20),
               child: GestureDetector(
-                onTap: isLocked ? null : () => context.push('/lessons/$lessonId'),
+                onTap: isLocked
+                    ? null
+                    : () => context.push('/lessons/$lessonId'),
                 child: Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                   decoration: BoxDecoration(
-                    color: isCurrent 
-                        ? AppColors.primary.withValues(alpha: isDark ? 0.1 : 0.05)
+                    color: isCurrent
+                        ? AppColors.primary.withValues(
+                            alpha: isDark ? 0.1 : 0.05,
+                          )
                         : Colors.transparent,
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                      color: isCurrent 
+                      color: isCurrent
                           ? AppColors.primary.withValues(alpha: 0.3)
                           : Colors.transparent,
                     ),
@@ -234,10 +245,14 @@ class LearningPathPreview extends ConsumerWidget {
                               title,
                               style: TextStyle(
                                 fontSize: 14,
-                                fontWeight: isCurrent ? FontWeight.bold : FontWeight.w600,
-                                color: isLocked 
+                                fontWeight: isCurrent
+                                    ? FontWeight.bold
+                                    : FontWeight.w600,
+                                color: isLocked
                                     ? (isDark ? Colors.white30 : Colors.black38)
-                                    : (isDark ? Colors.white : const Color(0xFF1E293B)),
+                                    : (isDark
+                                          ? Colors.white
+                                          : const Color(0xFF1E293B)),
                               ),
                             ),
                           ],
@@ -245,7 +260,10 @@ class LearningPathPreview extends ConsumerWidget {
                       ),
                       if (isCompleted)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
                             color: AppColors.primary.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
@@ -261,9 +279,16 @@ class LearningPathPreview extends ConsumerWidget {
                         )
                       else if (isCurrent)
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: (isDark ? AppColors.brandTextDark : AppColors.brandTextLight).withValues(alpha: 0.15),
+                            color:
+                                (isDark
+                                        ? AppColors.brandTextDark
+                                        : AppColors.brandTextLight)
+                                    .withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
@@ -271,7 +296,9 @@ class LearningPathPreview extends ConsumerWidget {
                             style: TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                              color: isDark
+                                  ? AppColors.brandTextDark
+                                  : AppColors.brandTextLight,
                             ),
                           ),
                         ),

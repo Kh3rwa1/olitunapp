@@ -904,7 +904,7 @@ class _SoundWaveIndicatorState extends ConsumerState<SoundWaveIndicator>
             final val = (index * 0.25 + _controller.value) % 1.0;
             final double height = 6.0 + 16.0 * (0.5 - (0.5 - val).abs());
             return Container(
-               margin: const EdgeInsets.symmetric(horizontal: 2),
+              margin: const EdgeInsets.symmetric(horizontal: 2),
               width: 3,
               height: height,
               decoration: BoxDecoration(

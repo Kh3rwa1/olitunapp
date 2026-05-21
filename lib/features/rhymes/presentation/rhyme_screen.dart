@@ -74,9 +74,14 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       }
     });
 
-    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (previous, next) {
-      final prevOffline = previous?.value?.contains(ConnectivityResult.none) ?? true;
-      final nextOnline = next.value != null && !next.value!.contains(ConnectivityResult.none);
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
+      previous,
+      next,
+    ) {
+      final prevOffline =
+          previous?.value?.contains(ConnectivityResult.none) ?? true;
+      final nextOnline =
+          next.value != null && !next.value!.contains(ConnectivityResult.none);
       if (prevOffline && nextOnline) {
         ref.invalidate(rhymesProvider);
         ref.invalidate(rhymeCategoriesProvider);
@@ -124,7 +129,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
                     // --- Subcategory chips ---
                     if (_selectedCategoryId != null)
-                      _buildSubcategoryChips(subcategoriesAsync, isDark, isTablet),
+                      _buildSubcategoryChips(
+                        subcategoriesAsync,
+                        isDark,
+                        isTablet,
+                      ),
 
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
@@ -503,7 +512,8 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               padding: EdgeInsets.all(24.0),
               child: AppEmptyState(
                 title: 'No rhymes found',
-                description: 'New traditional Bakhed and songs are coming soon!',
+                description:
+                    'New traditional Bakhed and songs are coming soon!',
                 icon: Icons.music_note_rounded,
               ),
             ),
@@ -551,9 +561,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       loading: () => SliverToBoxAdapter(
         child: Padding(
           padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-          child: const AppLoadingState(
-            type: AppLoadingType.grid,
-          ),
+          child: const AppLoadingState(type: AppLoadingType.grid),
         ),
       ),
       error: (e, st) => SliverToBoxAdapter(
@@ -567,7 +575,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       ),
     );
   }
-
 
   List<RhymeModel> _filterRhymes(List<RhymeModel> rhymes) {
     var filtered = rhymes;

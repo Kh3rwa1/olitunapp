@@ -6,7 +6,9 @@ import '../../../../core/storage/hive_service.dart';
 
 Future<String> fetchServerDate() async {
   try {
-    final uri1 = Uri.parse('https://timeapi.io/api/Time/current/zone?timeZone=UTC');
+    final uri1 = Uri.parse(
+      'https://timeapi.io/api/Time/current/zone?timeZone=UTC',
+    );
     final response1 = await http.get(uri1).timeout(const Duration(seconds: 3));
     if (response1.statusCode == 200) {
       final data = jsonDecode(response1.body);
@@ -35,12 +37,15 @@ Future<String> fetchServerDate() async {
   return DateTime.now().toUtc().toIso8601String().substring(0, 10);
 }
 
-final currentDateProvider = StateNotifierProvider<CurrentDateNotifier, String>((ref) {
+final currentDateProvider = StateNotifierProvider<CurrentDateNotifier, String>((
+  ref,
+) {
   return CurrentDateNotifier();
 });
 
 class CurrentDateNotifier extends StateNotifier<String> {
-  CurrentDateNotifier() : super(DateTime.now().toUtc().toIso8601String().substring(0, 10)) {
+  CurrentDateNotifier()
+    : super(DateTime.now().toUtc().toIso8601String().substring(0, 10)) {
     syncDate();
   }
 

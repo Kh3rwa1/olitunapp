@@ -18,10 +18,7 @@ const Map<String, List<String>> _rhymeMeanings = {
     'Everything is cooked and ready',
     'All the paths of the forest are open',
   ],
-  'seed_2': [
-    'The tethered goat trap',
-    'Asking for a sickle',
-  ],
+  'seed_2': ['The tethered goat trap', 'Asking for a sickle'],
 };
 
 class RhymeDetailSheet extends ConsumerStatefulWidget {
@@ -57,7 +54,8 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final audioState = ref.watch(rhymeAudioProvider);
-    final isPlaying = audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
+    final isPlaying =
+        audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
@@ -80,13 +78,20 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
         : audioState.position;
 
     // Bound duration safely
-    final totalDuration = audioState.duration.inSeconds > 0 ? audioState.duration : const Duration(seconds: 1);
-    final positionSeconds = currentPosition.inSeconds.toDouble().clamp(0.0, totalDuration.inSeconds.toDouble());
+    final totalDuration = audioState.duration.inSeconds > 0
+        ? audioState.duration
+        : const Duration(seconds: 1);
+    final positionSeconds = currentPosition.inSeconds.toDouble().clamp(
+      0.0,
+      totalDuration.inSeconds.toDouble(),
+    );
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0F1424).withValues(alpha: 0.95) : const Color(0xFFFAF9F6).withValues(alpha: 0.98),
+        color: isDark
+            ? const Color(0xFF0F1424).withValues(alpha: 0.95)
+            : const Color(0xFFFAF9F6).withValues(alpha: 0.98),
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -124,7 +129,10 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
 
                 // Top Header (Rhyme title & category)
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 8,
+                  ),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -134,14 +142,19 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                           children: [
                             Text(
                               primaryTitle,
-                              style: (scriptMode == 'olchiki'
-                                      ? const TextStyle(fontFamily: 'OlChiki')
-                                      : GoogleFonts.fredoka())
-                                  .copyWith(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w700,
-                                    color: isDark ? Colors.white : AppColors.primaryDark,
-                                  ),
+                              style:
+                                  (scriptMode == 'olchiki'
+                                          ? const TextStyle(
+                                              fontFamily: 'OlChiki',
+                                            )
+                                          : GoogleFonts.fredoka())
+                                      .copyWith(
+                                        fontSize: 24,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? Colors.white
+                                            : AppColors.primaryDark,
+                                      ),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                             ),
@@ -165,7 +178,9 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                         icon: Container(
                           padding: const EdgeInsets.all(6),
                           decoration: BoxDecoration(
-                            color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                            color: isDark
+                                ? Colors.white10
+                                : Colors.black.withValues(alpha: 0.05),
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
@@ -184,13 +199,20 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                 // Lyrics Content Section (Scrollable)
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 24),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 24,
+                    ),
                     physics: const BouncingScrollPhysics(),
                     itemCount: latinLines.length,
                     itemBuilder: (context, index) {
-                      final olChiki = index < olChikiLines.length ? olChikiLines[index] : '';
+                      final olChiki = index < olChikiLines.length
+                          ? olChikiLines[index]
+                          : '';
                       final latin = latinLines[index];
-                      final meaning = index < meanings.length ? meanings[index] : 'Culture translation';
+                      final meaning = index < meanings.length
+                          ? meanings[index]
+                          : 'Culture translation';
 
                       return Padding(
                         padding: const EdgeInsets.only(bottom: 28),
@@ -199,28 +221,36 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                             // 1. Ol Chiki Text
                             if (olChiki.isNotEmpty)
                               Text(
-                                olChiki,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  fontFamily: 'OlChiki',
-                                  fontSize: 28,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.primary,
-                                  height: 1.3,
-                                ),
-                              ).animate().fadeIn(delay: (index * 100).ms).slideY(begin: 0.2),
+                                    olChiki,
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontFamily: 'OlChiki',
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.primary,
+                                      height: 1.3,
+                                    ),
+                                  )
+                                  .animate()
+                                  .fadeIn(delay: (index * 100).ms)
+                                  .slideY(begin: 0.2),
                             const SizedBox(height: 6),
                             // 2. Latin Transliteration
                             Text(
-                              latin,
-                              textAlign: TextAlign.center,
-                              style: GoogleFonts.fredoka(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
-                                height: 1.2,
-                              ),
-                            ).animate().fadeIn(delay: (index * 100 + 50).ms).slideY(begin: 0.15),
+                                  latin,
+                                  textAlign: TextAlign.center,
+                                  style: GoogleFonts.fredoka(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white.withValues(alpha: 0.9)
+                                        : Colors.black87,
+                                    height: 1.2,
+                                  ),
+                                )
+                                .animate()
+                                .fadeIn(delay: (index * 100 + 50).ms)
+                                .slideY(begin: 0.15),
                             const SizedBox(height: 6),
                             // 3. English Meaning
                             Text(
@@ -274,12 +304,20 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                             child: SliderTheme(
                               data: SliderThemeData(
                                 activeTrackColor: AppColors.primary,
-                                inactiveTrackColor: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.06),
+                                inactiveTrackColor: isDark
+                                    ? Colors.white10
+                                    : Colors.black.withValues(alpha: 0.06),
                                 thumbColor: AppColors.primary,
                                 trackHeight: 4,
-                                thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 7),
-                                overlayColor: AppColors.primary.withValues(alpha: 0.2),
-                                overlayShape: const RoundSliderOverlayShape(overlayRadius: 14),
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 7,
+                                ),
+                                overlayColor: AppColors.primary.withValues(
+                                  alpha: 0.2,
+                                ),
+                                overlayShape: const RoundSliderOverlayShape(
+                                  overlayRadius: 14,
+                                ),
                               ),
                               child: Slider(
                                 max: totalDuration.inSeconds.toDouble(),
@@ -292,7 +330,9 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                 },
                                 onChangeEnd: (val) async {
                                   HapticFeedback.lightImpact();
-                                  await ref.read(rhymeAudioProvider.notifier).seek(Duration(seconds: val.toInt()));
+                                  await ref
+                                      .read(rhymeAudioProvider.notifier)
+                                      .seek(Duration(seconds: val.toInt()));
                                   setState(() {
                                     _isDragging = false;
                                     _dragPositionSeconds = null;
@@ -327,19 +367,28 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                           IconButton(
                             onPressed: () async {
                               HapticFeedback.mediumImpact();
-                              final target = currentPosition - const Duration(seconds: 10);
-                              final clampedTarget = target < Duration.zero ? Duration.zero : target;
-                              await ref.read(rhymeAudioProvider.notifier).seek(clampedTarget);
+                              final target =
+                                  currentPosition - const Duration(seconds: 10);
+                              final clampedTarget = target < Duration.zero
+                                  ? Duration.zero
+                                  : target;
+                              await ref
+                                  .read(rhymeAudioProvider.notifier)
+                                  .seek(clampedTarget);
                             },
                             icon: const Icon(Icons.replay_10_rounded),
-                            color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.9)
+                                : Colors.black87,
                             iconSize: 28,
                           ),
                           // Main Play/Pause (Big target >= 48dp)
                           GestureDetector(
                             onTap: () {
                               HapticFeedback.heavyImpact();
-                              ref.read(rhymeAudioProvider.notifier).togglePlay(
+                              ref
+                                  .read(rhymeAudioProvider.notifier)
+                                  .togglePlay(
                                     widget.rhyme.id,
                                     widget.rhyme.audioUrl,
                                     title: primaryTitle,
@@ -361,7 +410,9 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                 ],
                               ),
                               child: Icon(
-                                isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                                isPlaying
+                                    ? Icons.pause_rounded
+                                    : Icons.play_arrow_rounded,
                                 color: Colors.white,
                                 size: 36,
                               ),
@@ -371,12 +422,19 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                           IconButton(
                             onPressed: () async {
                               HapticFeedback.mediumImpact();
-                              final target = currentPosition + const Duration(seconds: 10);
-                              final clampedTarget = target > totalDuration ? totalDuration : target;
-                              await ref.read(rhymeAudioProvider.notifier).seek(clampedTarget);
+                              final target =
+                                  currentPosition + const Duration(seconds: 10);
+                              final clampedTarget = target > totalDuration
+                                  ? totalDuration
+                                  : target;
+                              await ref
+                                  .read(rhymeAudioProvider.notifier)
+                                  .seek(clampedTarget);
                             },
                             icon: const Icon(Icons.forward_10_rounded),
-                            color: isDark ? Colors.white.withValues(alpha: 0.9) : Colors.black87,
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.9)
+                                : Colors.black87,
                             iconSize: 28,
                           ),
                           // Repeat (Decorative/premium)
@@ -392,34 +450,49 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                       // CTA Bridge back to related vocabulary/lessons (touch target >= 48dp)
                       const SizedBox(height: 20),
                       ElevatedButton.icon(
-                        onPressed: () {
-                          HapticFeedback.mediumImpact();
-                          Navigator.pop(context);
-                          ref.read(shellTabIndexProvider.notifier).state = 0;
-                          context.go('/');
-                        },
-                        icon: const Icon(Icons.menu_book_rounded, size: 20),
-                        label: Text(
-                          'BRIDGE TO LESSONS & VOCABULARY',
-                          style: GoogleFonts.fredoka(
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 1.2,
-                            fontSize: 13,
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: isDark ? Colors.white.withValues(alpha: 0.08) : AppColors.primary.withValues(alpha: 0.1),
-                          foregroundColor: isDark ? Colors.white : AppColors.primaryDark,
-                          elevation: 0,
-                          minimumSize: const Size(double.infinity, 50),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(16),
-                            side: BorderSide(
-                              color: isDark ? Colors.white10 : AppColors.primary.withValues(alpha: 0.2),
+                            onPressed: () {
+                              HapticFeedback.mediumImpact();
+                              Navigator.pop(context);
+                              ref.read(shellTabIndexProvider.notifier).state =
+                                  0;
+                              context.go('/');
+                            },
+                            icon: const Icon(Icons.menu_book_rounded, size: 20),
+                            label: Text(
+                              'BRIDGE TO LESSONS & VOCABULARY',
+                              style: GoogleFonts.fredoka(
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 1.2,
+                                fontSize: 13,
+                              ),
                             ),
-                          ),
-                        ),
-                      ).animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true)).scale(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: isDark
+                                  ? Colors.white.withValues(alpha: 0.08)
+                                  : AppColors.primary.withValues(alpha: 0.1),
+                              foregroundColor: isDark
+                                  ? Colors.white
+                                  : AppColors.primaryDark,
+                              elevation: 0,
+                              minimumSize: const Size(double.infinity, 50),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                  color: isDark
+                                      ? Colors.white10
+                                      : AppColors.primary.withValues(
+                                          alpha: 0.2,
+                                        ),
+                                ),
+                              ),
+                            ),
+                          )
+                          .animate(
+                            onPlay: reduceVisualEffects
+                                ? null
+                                : (c) => c.repeat(reverse: true),
+                          )
+                          .scale(
                             begin: const Offset(1, 1),
                             end: const Offset(1.02, 1.02),
                             duration: 2500.ms,

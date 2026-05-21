@@ -54,9 +54,7 @@ class QuizFeedbackPanel extends StatelessWidget {
           topLeft: Radius.circular(24),
           topRight: Radius.circular(24),
         ),
-        border: Border(
-          top: BorderSide(color: borderColor, width: 2),
-        ),
+        border: Border(top: BorderSide(color: borderColor, width: 2)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.08),
@@ -148,7 +146,9 @@ class QuizFeedbackPanel extends StatelessWidget {
             child: ElevatedButton(
               onPressed: onContinue,
               style: ElevatedButton.styleFrom(
-                backgroundColor: isCorrect ? AppColors.primary : AppColors.error,
+                backgroundColor: isCorrect
+                    ? AppColors.primary
+                    : AppColors.error,
                 foregroundColor: Colors.white,
                 elevation: 0,
                 shape: RoundedRectangleBorder(

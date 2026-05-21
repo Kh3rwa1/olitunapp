@@ -61,9 +61,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       final authRepo = ref.read(authRepositoryProvider);
       bool isLoggedIn = false;
       try {
-        final isLoggedInResult = await authRepo
-            .isLoggedIn()
-            .timeout(const Duration(seconds: 5));
+        final isLoggedInResult = await authRepo.isLoggedIn().timeout(
+          const Duration(seconds: 5),
+        );
         isLoggedIn = isLoggedInResult.getOrElse((_) => false);
       } catch (_) {
         AppLogger.debug('Splash: auth check timed out, treating as logged out');

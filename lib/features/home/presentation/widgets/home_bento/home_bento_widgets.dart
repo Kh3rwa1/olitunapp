@@ -66,7 +66,14 @@ class HomeBentoStatCard extends ConsumerWidget {
           'You have dedicated $value minutes of deep focus to learning! Small, consistent daily practices lead to massive fluency gains.';
     }
 
-    _showStatGlowDialog(context, title, emoji, body, color, ref.read(reduceVisualEffectsProvider));
+    _showStatGlowDialog(
+      context,
+      title,
+      emoji,
+      body,
+      color,
+      ref.read(reduceVisualEffectsProvider),
+    );
   }
 
   @override
@@ -126,7 +133,7 @@ class HomeBentoStatCard extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                           color: color.withValues(alpha: 0.12),
+                          color: color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: iconWidget,
@@ -207,12 +214,7 @@ void _showStatGlowDialog(
             width: 2,
           ),
         ),
-        child: Center(
-          child: Text(
-            emoji,
-            style: const TextStyle(fontSize: 36),
-          ),
-        ),
+        child: Center(child: Text(emoji, style: const TextStyle(fontSize: 36))),
       );
 
       if (!reduceVisualEffects) {
@@ -744,7 +746,6 @@ class HeroJourneyCard extends ConsumerWidget {
   }
 }
 
-
 // ═══════════════════════════════════════════════════════════
 // QUIZ BANNER CARD — daily quiz prompt
 // ═══════════════════════════════════════════════════════════
@@ -1059,22 +1060,26 @@ class _HomeFeaturedBannerCarouselState
                             bottom: -10,
                             child: Consumer(
                               builder: (context, ref, child) {
-                                final reduceEffects = ref.watch(reduceVisualEffectsProvider);
-                                return Icon(
-                                  Icons.star_rounded,
-                                  size: 80,
-                                  color: Colors.white.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                )
-                                .animate(
-                                  onPlay: reduceEffects ? null : (c) => c.repeat(reverse: true),
-                                )
-                                .moveY(
-                                  begin: 0,
-                                  end: -5,
-                                  duration: 2.seconds,
+                                final reduceEffects = ref.watch(
+                                  reduceVisualEffectsProvider,
                                 );
+                                return Icon(
+                                      Icons.star_rounded,
+                                      size: 80,
+                                      color: Colors.white.withValues(
+                                        alpha: 0.2,
+                                      ),
+                                    )
+                                    .animate(
+                                      onPlay: reduceEffects
+                                          ? null
+                                          : (c) => c.repeat(reverse: true),
+                                    )
+                                    .moveY(
+                                      begin: 0,
+                                      end: -5,
+                                      duration: 2.seconds,
+                                    );
                               },
                             ),
                           ),

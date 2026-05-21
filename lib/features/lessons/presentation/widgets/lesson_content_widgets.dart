@@ -49,11 +49,15 @@ class LetterGridContent extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(rowsCount, (rowIndex) {
             final start = rowIndex * columns;
-            final end = (start + columns < letters.length) ? start + columns : letters.length;
+            final end = (start + columns < letters.length)
+                ? start + columns
+                : letters.length;
             final rowLetters = letters.sublist(start, end);
 
             return Padding(
-              padding: EdgeInsets.only(bottom: rowIndex < rowsCount - 1 ? spacing : 0),
+              padding: EdgeInsets.only(
+                bottom: rowIndex < rowsCount - 1 ? spacing : 0,
+              ),
               child: Row(
                 children: List.generate(columns, (colIndex) {
                   final hasItem = colIndex < rowLetters.length;
@@ -77,23 +81,34 @@ class LetterGridContent extends ConsumerWidget {
                         child: ScaleButton(
                           onPressed: () {
                             HapticFeedback.lightImpact();
-                            if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
-                              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+                            if (letter.audioUrl != null &&
+                                letter.audioUrl!.isNotEmpty) {
+                              ref
+                                  .read(audioServiceProvider)
+                                  .playUrl(letter.audioUrl!);
                             }
-                            context.push('/letter/$lessonId/${letter.charOlChiki}');
+                            context.push(
+                              '/letter/$lessonId/${letter.charOlChiki}',
+                            );
                           },
                           child: Container(
                             padding: const EdgeInsets.all(16),
                             decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+                              color: isDark
+                                  ? AppColors.darkSurfaceElevated
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(24),
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.15),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.15,
+                                ),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.06),
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.2 : 0.06,
+                                  ),
                                   blurRadius: 15,
                                   offset: const Offset(0, 6),
                                 ),
@@ -116,11 +131,14 @@ class LetterGridContent extends ConsumerWidget {
                                       ),
                                       const SizedBox(height: 8),
                                       Text(
-                                        letter.transliterationLatin.toUpperCase(),
+                                        letter.transliterationLatin
+                                            .toUpperCase(),
                                         style: TextStyle(
                                           fontSize: 18,
                                           fontWeight: FontWeight.bold,
-                                          color: isDark ? Colors.white70 : Colors.black87,
+                                          color: isDark
+                                              ? Colors.white70
+                                              : Colors.black87,
                                           letterSpacing: 1.5,
                                         ),
                                       ),
@@ -133,7 +151,9 @@ class LetterGridContent extends ConsumerWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(
@@ -231,11 +251,15 @@ class NumberGridContent extends ConsumerWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: List.generate(rowsCount, (rowIndex) {
             final start = rowIndex * columns;
-            final end = (start + columns < numbers.length) ? start + columns : numbers.length;
+            final end = (start + columns < numbers.length)
+                ? start + columns
+                : numbers.length;
             final rowNumbers = numbers.sublist(start, end);
 
             return Padding(
-              padding: EdgeInsets.only(bottom: rowIndex < rowsCount - 1 ? spacing : 0),
+              padding: EdgeInsets.only(
+                bottom: rowIndex < rowsCount - 1 ? spacing : 0,
+              ),
               child: Row(
                 children: List.generate(columns, (colIndex) {
                   final hasItem = colIndex < rowNumbers.length;
@@ -264,15 +288,21 @@ class NumberGridContent extends ConsumerWidget {
                           child: Container(
                             padding: const EdgeInsets.all(14),
                             decoration: BoxDecoration(
-                              color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+                              color: isDark
+                                  ? AppColors.darkSurfaceElevated
+                                  : Colors.white,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: AppColors.primary.withValues(alpha: 0.15),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.15,
+                                ),
                                 width: 1.5,
                               ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
+                                  color: Colors.black.withValues(
+                                    alpha: isDark ? 0.2 : 0.05,
+                                  ),
                                   blurRadius: 12,
                                   offset: const Offset(0, 4),
                                 ),
@@ -298,7 +328,9 @@ class NumberGridContent extends ConsumerWidget {
                                         style: TextStyle(
                                           fontSize: 20,
                                           fontWeight: FontWeight.w800,
-                                          color: isDark ? Colors.white : Colors.black87,
+                                          color: isDark
+                                              ? Colors.white
+                                              : Colors.black87,
                                         ),
                                       ),
                                       Text(
@@ -306,7 +338,9 @@ class NumberGridContent extends ConsumerWidget {
                                         style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.w500,
-                                          color: isDark ? Colors.white54 : Colors.black45,
+                                          color: isDark
+                                              ? Colors.white54
+                                              : Colors.black45,
                                         ),
                                         overflow: TextOverflow.ellipsis,
                                       ),
@@ -319,7 +353,9 @@ class NumberGridContent extends ConsumerWidget {
                                   child: Container(
                                     padding: const EdgeInsets.all(4),
                                     decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(alpha: 0.1),
+                                      color: AppColors.primary.withValues(
+                                        alpha: 0.1,
+                                      ),
                                       shape: BoxShape.circle,
                                     ),
                                     child: const Icon(

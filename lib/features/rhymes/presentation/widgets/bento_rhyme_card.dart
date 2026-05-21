@@ -14,7 +14,6 @@ import 'enchanted_visualizer.dart';
 import '../providers/rhyme_audio_provider.dart';
 import 'rhyme_detail_sheet.dart';
 
-
 /// Bento-grid rhyme card with play toggle and mini visualizer.
 class BentoRhymeCard extends ConsumerStatefulWidget {
   final RhymeModel rhyme;
@@ -82,204 +81,208 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
         blur: 12,
         borderRadius: 32,
         padding: EdgeInsets.zero,
-      backgroundColor: isDark
-          ? color.withValues(alpha: 0.1)
-          : Colors.white.withValues(alpha: 0.7),
-      child: Stack(
-        children: [
-          // Background Image
-          if (widget.rhyme.thumbnailUrl != null &&
-              widget.rhyme.thumbnailUrl!.isNotEmpty)
-            Positioned.fill(
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(32),
-                child: Image.network(
-                  widget.rhyme.thumbnailUrl!,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) =>
-                      const SizedBox.shrink(),
-                ),
-              ),
-            ),
-          // Dark/Light Overlay for readability
-          if (widget.rhyme.thumbnailUrl != null &&
-              widget.rhyme.thumbnailUrl!.isNotEmpty)
-            Positioned.fill(
-              child: Container(
-                decoration: BoxDecoration(
+        backgroundColor: isDark
+            ? color.withValues(alpha: 0.1)
+            : Colors.white.withValues(alpha: 0.7),
+        child: Stack(
+          children: [
+            // Background Image
+            if (widget.rhyme.thumbnailUrl != null &&
+                widget.rhyme.thumbnailUrl!.isNotEmpty)
+              Positioned.fill(
+                child: ClipRRect(
                   borderRadius: BorderRadius.circular(32),
-                  gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.black.withValues(alpha: 0.25),
-                      Colors.black.withValues(alpha: 0.75),
-                    ],
+                  child: Image.network(
+                    widget.rhyme.thumbnailUrl!,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const SizedBox.shrink(),
                   ),
                 ),
               ),
-            ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: SizedBox(
-              height: 60,
-              child: EnchantedVisualizer(
-                isPlaying: isPlaying,
-                color:
-                    (widget.rhyme.thumbnailUrl != null &&
-                        widget.rhyme.thumbnailUrl!.isNotEmpty)
-                    ? Colors.white.withValues(alpha: 0.2)
-                    : color.withValues(alpha: 0.2),
+            // Dark/Light Overlay for readability
+            if (widget.rhyme.thumbnailUrl != null &&
+                widget.rhyme.thumbnailUrl!.isNotEmpty)
+              Positioned.fill(
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    gradient: LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.black.withValues(alpha: 0.25),
+                        Colors.black.withValues(alpha: 0.75),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              child: SizedBox(
+                height: 60,
+                child: EnchantedVisualizer(
+                  isPlaying: isPlaying,
+                  color:
+                      (widget.rhyme.thumbnailUrl != null &&
+                          widget.rhyme.thumbnailUrl!.isNotEmpty)
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : color.withValues(alpha: 0.2),
+                ),
               ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color:
-                                (widget.rhyme.thumbnailUrl != null &&
-                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
-                                ? Colors.white.withValues(alpha: 0.2)
-                                : color.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color:
+                                  (widget.rhyme.thumbnailUrl != null &&
+                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                  ? Colors.white.withValues(alpha: 0.2)
+                                  : color.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: Icon(
+                              _getIconForCategory(widget.rhyme.category),
+                              color:
+                                  (widget.rhyme.thumbnailUrl != null &&
+                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                  ? Colors.white
+                                  : color,
+                              size: 16,
+                            ),
+                          )
+                          .animate(
+                            onPlay: reduceEffects
+                                ? null
+                                : (c) => c.repeat(reverse: true),
+                          )
+                          .rotate(
+                            begin: -0.03,
+                            end: 0.03,
+                            duration: 3.seconds,
+                            curve: Curves.easeInOutSine,
                           ),
-                          child: Icon(
-                            _getIconForCategory(widget.rhyme.category),
-                            color:
-                                (widget.rhyme.thumbnailUrl != null &&
-                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
-                                ? Colors.white
-                                : color,
-                            size: 16,
-                          ),
-                        )
-                        .animate(onPlay: reduceEffects ? null : (c) => c.repeat(reverse: true))
-                        .rotate(
-                          begin: -0.03,
-                          end: 0.03,
-                          duration: 3.seconds,
-                          curve: Curves.easeInOutSine,
-                        ),
-                    GestureDetector(
-                      onTap: () {
-                        HapticFeedback.lightImpact();
-                        _iconBounceController.forward(from: 0);
-                        ref
-                            .read(rhymeAudioProvider.notifier)
-                            .togglePlay(
-                              widget.rhyme.id,
-                              widget.rhyme.audioUrl,
-                              title: primaryTitle,
-                              artworkUrl: widget.rhyme.thumbnailUrl,
-                            );
-                      },
-                      child: AnimatedBuilder(
-                        animation: _iconBounceController,
-                        builder: (context, child) {
-                          final bounce =
-                              1.0 +
-                              0.2 *
-                                  math.sin(
-                                    _iconBounceController.value * math.pi,
-                                  ) *
-                                  (1 - _iconBounceController.value);
-                          return Transform.scale(scale: bounce, child: child);
+                      GestureDetector(
+                        onTap: () {
+                          HapticFeedback.lightImpact();
+                          _iconBounceController.forward(from: 0);
+                          ref
+                              .read(rhymeAudioProvider.notifier)
+                              .togglePlay(
+                                widget.rhyme.id,
+                                widget.rhyme.audioUrl,
+                                title: primaryTitle,
+                                artworkUrl: widget.rhyme.thumbnailUrl,
+                              );
                         },
-                        child: AnimatedSwitcher(
-                          duration: const Duration(milliseconds: 300),
-                          transitionBuilder: (child, anim) =>
-                              ScaleTransition(scale: anim, child: child),
-                          child: Icon(
-                            isPlaying
-                                ? Icons.pause_circle_filled_rounded
-                                : Icons.play_circle_fill_rounded,
-                            key: ValueKey(isPlaying),
-                            color:
-                                (widget.rhyme.thumbnailUrl != null &&
-                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
-                                ? Colors.white
-                                : color,
-                            size: 28,
+                        child: AnimatedBuilder(
+                          animation: _iconBounceController,
+                          builder: (context, child) {
+                            final bounce =
+                                1.0 +
+                                0.2 *
+                                    math.sin(
+                                      _iconBounceController.value * math.pi,
+                                    ) *
+                                    (1 - _iconBounceController.value);
+                            return Transform.scale(scale: bounce, child: child);
+                          },
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            transitionBuilder: (child, anim) =>
+                                ScaleTransition(scale: anim, child: child),
+                            child: Icon(
+                              isPlaying
+                                  ? Icons.pause_circle_filled_rounded
+                                  : Icons.play_circle_fill_rounded,
+                              key: ValueKey(isPlaying),
+                              color:
+                                  (widget.rhyme.thumbnailUrl != null &&
+                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                  ? Colors.white
+                                  : color,
+                              size: 28,
+                            ),
                           ),
                         ),
                       ),
-                    ),
+                    ],
+                  ),
+                  const Spacer(),
+                  if (widget.rhyme.subcategory != null)
+                    Text(
+                          widget.rhyme.subcategory?.toUpperCase() ?? '',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w700,
+                            color:
+                                (widget.rhyme.thumbnailUrl != null &&
+                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                                ? Colors.white70
+                                : color.withValues(alpha: 0.8),
+                            letterSpacing: 1,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                        .animate()
+                        .fadeIn(delay: 200.ms, duration: 400.ms)
+                        .slideX(begin: 0.15),
+                  const SizedBox(height: 4),
+                  Text(
+                        primaryTitle,
+                        style:
+                            (scriptMode == 'olchiki'
+                                    ? const TextStyle(fontFamily: 'OlChiki')
+                                    : GoogleFonts.fredoka())
+                                .copyWith(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.white,
+                                  height: 1.1,
+                                ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      )
+                      .animate()
+                      .fadeIn(delay: 300.ms, duration: 500.ms)
+                      .slideY(begin: 0.15, curve: Curves.easeOutCubic),
+                  if (secondaryTitle != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                          secondaryTitle,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white70,
+                            fontFamily: 'OlChiki',
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        )
+                        .animate()
+                        .fadeIn(delay: 450.ms, duration: 500.ms)
+                        .slideY(begin: 0.10, curve: Curves.easeOutCubic),
                   ],
-                ),
-                const Spacer(),
-                if (widget.rhyme.subcategory != null)
-                  Text(
-                        widget.rhyme.subcategory?.toUpperCase() ?? '',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 9,
-                          fontWeight: FontWeight.w700,
-                          color:
-                              (widget.rhyme.thumbnailUrl != null &&
-                                  widget.rhyme.thumbnailUrl!.isNotEmpty)
-                              ? Colors.white70
-                              : color.withValues(alpha: 0.8),
-                          letterSpacing: 1,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                      .animate()
-                      .fadeIn(delay: 200.ms, duration: 400.ms)
-                      .slideX(begin: 0.15),
-                const SizedBox(height: 4),
-                Text(
-                      primaryTitle,
-                      style:
-                          (scriptMode == 'olchiki'
-                                  ? const TextStyle(fontFamily: 'OlChiki')
-                                  : GoogleFonts.fredoka())
-                              .copyWith(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w700,
-                                color: Colors.white,
-                                height: 1.1,
-                              ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    )
-                    .animate()
-                    .fadeIn(delay: 300.ms, duration: 500.ms)
-                    .slideY(begin: 0.15, curve: Curves.easeOutCubic),
-                if (secondaryTitle != null) ...[
-                  const SizedBox(height: 2),
-                  Text(
-                        secondaryTitle,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white70,
-                          fontFamily: 'OlChiki',
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      )
-                      .animate()
-                      .fadeIn(delay: 450.ms, duration: 500.ms)
-                      .slideY(begin: 0.10, curve: Curves.easeOutCubic),
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   IconData _getIconForCategory(String? category) {
     switch (category?.toLowerCase()) {

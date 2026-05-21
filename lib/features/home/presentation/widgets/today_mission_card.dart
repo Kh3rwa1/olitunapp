@@ -14,7 +14,8 @@ class TodayMissionCard extends ConsumerWidget {
     final quizTaken = ref.watch(quizTakenTodayProvider);
     final bakhedListened = ref.watch(bakhedListenedTodayProvider);
 
-    final completedCount = (lessonCompleted ? 1 : 0) +
+    final completedCount =
+        (lessonCompleted ? 1 : 0) +
         (quizTaken ? 1 : 0) +
         (bakhedListened ? 1 : 0);
 
@@ -26,9 +27,7 @@ class TodayMissionCard extends ConsumerWidget {
       decoration: BoxDecoration(
         color: isDark ? const Color(0xFF1E293B) : Colors.white,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black12,
-        ),
+        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.05),
@@ -69,7 +68,10 @@ class TodayMissionCard extends ConsumerWidget {
                 ],
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 4,
+                ),
                 decoration: BoxDecoration(
                   color: progress == 1.0
                       ? AppColors.primary.withValues(alpha: 0.2)
@@ -82,7 +84,9 @@ class TodayMissionCard extends ConsumerWidget {
                     fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: progress == 1.0
-                        ? (isDark ? AppColors.brandTextDark : AppColors.brandTextLight)
+                        ? (isDark
+                              ? AppColors.brandTextDark
+                              : AppColors.brandTextLight)
                         : (isDark ? Colors.white70 : Colors.black87),
                   ),
                 ),
@@ -152,12 +156,16 @@ class TodayMissionCard extends ConsumerWidget {
         decoration: BoxDecoration(
           color: completed
               ? AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.05)
-              : (isDark ? Colors.white.withValues(alpha: 0.02) : Colors.black.withValues(alpha: 0.01)),
+              : (isDark
+                    ? Colors.white.withValues(alpha: 0.02)
+                    : Colors.black.withValues(alpha: 0.01)),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: completed
                 ? AppColors.primary.withValues(alpha: 0.3)
-                : (isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05)),
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.05)),
           ),
         ),
         child: Row(
@@ -169,17 +177,15 @@ class TodayMissionCard extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: completed ? AppColors.primary : Colors.transparent,
                 border: Border.all(
-                  color: completed ? AppColors.primary : (isDark ? Colors.white38 : Colors.black38),
+                  color: completed
+                      ? AppColors.primary
+                      : (isDark ? Colors.white38 : Colors.black38),
                   width: 2,
                 ),
                 shape: BoxShape.circle,
               ),
               child: completed
-                  ? const Icon(
-                      Icons.check,
-                      size: 14,
-                      color: Colors.white,
-                    )
+                  ? const Icon(Icons.check, size: 14, color: Colors.white)
                   : null,
             ),
             const SizedBox(width: 14),

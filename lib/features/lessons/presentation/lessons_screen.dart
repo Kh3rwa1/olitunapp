@@ -351,7 +351,11 @@ class _HeroCategoryCard extends ConsumerWidget {
                       size: 120,
                       color: Colors.white.withValues(alpha: 0.15),
                     )
-                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
+                    .animate(
+                      onPlay: reduceVisualEffects
+                          ? null
+                          : (c) => c.repeat(reverse: true),
+                    )
                     .moveY(begin: 0, end: -8, duration: 2.seconds)
                     .scale(
                       begin: const Offset(1, 1),
@@ -478,7 +482,11 @@ class _HeroCategoryCard extends ConsumerWidget {
                       ],
                     ),
                   )
-                  .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
+                  .animate(
+                    onPlay: reduceVisualEffects
+                        ? null
+                        : (c) => c.repeat(reverse: true),
+                  )
                   .shimmer(
                     delay: 2.seconds,
                     duration: 1500.ms,

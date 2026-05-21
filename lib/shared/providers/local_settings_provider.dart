@@ -1,17 +1,13 @@
 import 'dart:ui' show PlatformDispatcher;
-import 'package:flutter/widgets.dart' show WidgetsBinding, WidgetsBindingObserver;
+import 'package:flutter/widgets.dart'
+    show WidgetsBinding, WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/hive_service.dart';
 
 // ============== APP SETTINGS ==============
 // These are global app settings, not specific to the user profile stats.
 
-enum LearnerLevel {
-  beginner,
-  familiar,
-  basicReader,
-  advanced;
-}
+enum LearnerLevel { beginner, familiar, basicReader, advanced }
 
 final learnerLevelProvider = StateProvider<LearnerLevel>((ref) {
   final val = ref.read(sharedPreferencesProvider).getString('learner_level');
@@ -26,10 +22,12 @@ final dailyGoalMinutesProvider = StateProvider<int>((ref) {
 });
 
 final userReduceVisualEffectsProvider = StateProvider<bool>((ref) {
-  return ref.read(sharedPreferencesProvider).getBool('reduce_visual_effects') ?? false;
+  return ref.read(sharedPreferencesProvider).getBool('reduce_visual_effects') ??
+      false;
 });
 
-class SystemReduceMotionNotifier extends StateNotifier<bool> with WidgetsBindingObserver {
+class SystemReduceMotionNotifier extends StateNotifier<bool>
+    with WidgetsBindingObserver {
   SystemReduceMotionNotifier() : super(false) {
     WidgetsBinding.instance.addObserver(this);
     _updateState();
@@ -37,7 +35,8 @@ class SystemReduceMotionNotifier extends StateNotifier<bool> with WidgetsBinding
 
   void _updateState() {
     try {
-      state = PlatformDispatcher.instance.accessibilityFeatures.disableAnimations;
+      state =
+          PlatformDispatcher.instance.accessibilityFeatures.disableAnimations;
     } catch (_) {
       state = false;
     }
@@ -55,9 +54,10 @@ class SystemReduceMotionNotifier extends StateNotifier<bool> with WidgetsBinding
   }
 }
 
-final systemReduceMotionProvider = StateNotifierProvider<SystemReduceMotionNotifier, bool>((ref) {
-  return SystemReduceMotionNotifier();
-});
+final systemReduceMotionProvider =
+    StateNotifierProvider<SystemReduceMotionNotifier, bool>((ref) {
+      return SystemReduceMotionNotifier();
+    });
 
 final reduceVisualEffectsProvider = Provider<bool>((ref) {
   final userPref = ref.watch(userReduceVisualEffectsProvider);
@@ -153,6 +153,8 @@ void updateDailyGoalMinutes(WidgetRef ref, int minutes) {
 
 void toggleReduceVisualEffects(WidgetRef ref) {
   final current = ref.read(userReduceVisualEffectsProvider);
-  ref.read(sharedPreferencesProvider).setBool('reduce_visual_effects', !current);
+  ref
+      .read(sharedPreferencesProvider)
+      .setBool('reduce_visual_effects', !current);
   ref.read(userReduceVisualEffectsProvider.notifier).state = !current;
 }

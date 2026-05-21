@@ -88,16 +88,21 @@ class StreakCalendar extends ConsumerWidget {
                             color: AppColors.duoOrange.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
-                            Icons.local_fire_department_rounded,
-                            color: AppColors.duoOrange,
-                            size: 20,
-                          )
-                          .animate(onPlay: reduceEffects ? null : (c) => c.repeat())
-                          .shimmer(
-                            duration: 2000.ms,
-                            color: Colors.white,
-                          ),
+                          child:
+                              const Icon(
+                                    Icons.local_fire_department_rounded,
+                                    color: AppColors.duoOrange,
+                                    size: 20,
+                                  )
+                                  .animate(
+                                    onPlay: reduceEffects
+                                        ? null
+                                        : (c) => c.repeat(),
+                                  )
+                                  .shimmer(
+                                    duration: 2000.ms,
+                                    color: Colors.white,
+                                  ),
                         ),
                         const SizedBox(width: 12),
                         Flexible(
@@ -293,24 +298,28 @@ class StreakCalendar extends ConsumerWidget {
                               child: Center(
                                 child: isActive
                                     ? const Icon(
-                                        Icons.local_fire_department_rounded,
-                                        color: AppColors.duoOrange,
-                                        size: 20,
-                                      )
-                                      .animate(onPlay: reduceEffects ? null : (c) => c.repeat())
-                                      .scale(
-                                        duration: 1000.ms,
-                                        begin: const Offset(0.9, 0.9),
-                                        end: const Offset(1.1, 1.1),
-                                        curve: Curves.easeInOut,
-                                      )
-                                      .then()
-                                      .scale(
-                                        duration: 1000.ms,
-                                        begin: const Offset(1.1, 1.1),
-                                        end: const Offset(0.9, 0.9),
-                                        curve: Curves.easeInOut,
-                                      )
+                                            Icons.local_fire_department_rounded,
+                                            color: AppColors.duoOrange,
+                                            size: 20,
+                                          )
+                                          .animate(
+                                            onPlay: reduceEffects
+                                                ? null
+                                                : (c) => c.repeat(),
+                                          )
+                                          .scale(
+                                            duration: 1000.ms,
+                                            begin: const Offset(0.9, 0.9),
+                                            end: const Offset(1.1, 1.1),
+                                            curve: Curves.easeInOut,
+                                          )
+                                          .then()
+                                          .scale(
+                                            duration: 1000.ms,
+                                            begin: const Offset(1.1, 1.1),
+                                            end: const Offset(0.9, 0.9),
+                                            curve: Curves.easeInOut,
+                                          )
                                     : Text(
                                         dayNum,
                                         style: TextStyle(

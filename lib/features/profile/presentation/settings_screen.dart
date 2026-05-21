@@ -206,7 +206,8 @@ class SettingsScreen extends ConsumerWidget {
                     ToggleTile(
                       icon: Icons.blur_off_rounded,
                       title: 'Reduce Visual Effects',
-                      subtitle: 'Simplify animations, visualizers, and particle effects for maximum battery life',
+                      subtitle:
+                          'Simplify animations, visualizers, and particle effects for maximum battery life',
                       value: reduceVisualEffects,
                       isDark: isDark,
                       onChanged: (value) => toggleReduceVisualEffects(ref),
@@ -327,7 +328,8 @@ class SettingsScreen extends ConsumerWidget {
             ToggleTile(
               icon: Icons.blur_off_rounded,
               title: 'Reduce Visual Effects',
-              subtitle: 'Simplify animations, visualizers, and particle effects for maximum battery life',
+              subtitle:
+                  'Simplify animations, visualizers, and particle effects for maximum battery life',
               value: reduceVisualEffects,
               isDark: isDark,
               onChanged: (value) => toggleReduceVisualEffects(ref),

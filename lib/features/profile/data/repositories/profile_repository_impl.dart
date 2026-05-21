@@ -125,9 +125,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
                   ..[_statsKey] = jsonEncode(
                     UserStatsModel.fromEntity(resolvedStats).toJson(),
                   );
-                final cloudResult = await _authRepository.updateUserPrefs(cloudUpdate);
+                final cloudResult = await _authRepository.updateUserPrefs(
+                  cloudUpdate,
+                );
                 await cloudResult.fold(
-                  (failure) async => await _prefs.setBool('is_stats_synced', false),
+                  (failure) async =>
+                      await _prefs.setBool('is_stats_synced', false),
                   (_) async => await _prefs.setBool('is_stats_synced', true),
                 );
                 return Right(resolvedStats);
@@ -145,9 +148,12 @@ class ProfileRepositoryImpl implements ProfileRepository {
                   ..[_statsKey] = jsonEncode(
                     UserStatsModel.fromEntity(localStats).toJson(),
                   );
-                final cloudResult = await _authRepository.updateUserPrefs(cloudUpdate);
+                final cloudResult = await _authRepository.updateUserPrefs(
+                  cloudUpdate,
+                );
                 await cloudResult.fold(
-                  (failure) async => await _prefs.setBool('is_stats_synced', false),
+                  (failure) async =>
+                      await _prefs.setBool('is_stats_synced', false),
                   (_) async => await _prefs.setBool('is_stats_synced', true),
                 );
                 return Right(localStats);
@@ -191,7 +197,9 @@ class ProfileRepositoryImpl implements ProfileRepository {
   }
 
   @override
-  Future<Either<Failure, UserStatsEntity>> updateUserStats(UserStatsEntity stats) async {
+  Future<Either<Failure, UserStatsEntity>> updateUserStats(
+    UserStatsEntity stats,
+  ) async {
     try {
       final model = UserStatsModel.fromEntity(stats);
       final jsonStr = jsonEncode(model.toJson());
@@ -204,34 +212,30 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
       if (isLoggedIn) {
         final prefsResult = await _authRepository.getUserPrefs();
-        await prefsResult.fold(
-          (failure) => null,
-          (cloudPrefs) async {
-            final cloudProgressData = cloudPrefs[_statsKey];
-            if (cloudProgressData != null &&
-                cloudProgressData is String &&
-                cloudProgressData.isNotEmpty) {
-              final cloudStats = UserStatsModel.fromJson(
-                jsonDecode(cloudProgressData),
-              );
-              finalStats = _mergeStats(stats, cloudStats);
-            }
-            final finalJsonStr = jsonEncode(
-              UserStatsModel.fromEntity(finalStats).toJson(),
+        await prefsResult.fold((failure) => null, (cloudPrefs) async {
+          final cloudProgressData = cloudPrefs[_statsKey];
+          if (cloudProgressData != null &&
+              cloudProgressData is String &&
+              cloudProgressData.isNotEmpty) {
+            final cloudStats = UserStatsModel.fromJson(
+              jsonDecode(cloudProgressData),
             );
-            await _prefs.setString(_statsKey, finalJsonStr);
+            finalStats = _mergeStats(stats, cloudStats);
+          }
+          final finalJsonStr = jsonEncode(
+            UserStatsModel.fromEntity(finalStats).toJson(),
+          );
+          await _prefs.setString(_statsKey, finalJsonStr);
 
-            final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-              ..[_statsKey] = finalJsonStr;
-            final updateResult = await _authRepository.updateUserPrefs(cloudUpdate);
-            updateResult.fold(
-              (failure) => null,
-              (_) {
-                synced = true;
-              },
-            );
-          },
-        );
+          final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
+            ..[_statsKey] = finalJsonStr;
+          final updateResult = await _authRepository.updateUserPrefs(
+            cloudUpdate,
+          );
+          updateResult.fold((failure) => null, (_) {
+            synced = true;
+          });
+        });
       } else {
         synced = true;
       }
@@ -268,37 +272,31 @@ class ProfileRepositoryImpl implements ProfileRepository {
       final localStats = UserStatsModel.fromJson(jsonDecode(storedLocal));
 
       final prefsResult = await _authRepository.getUserPrefs();
-      return await prefsResult.fold(
-        Left.new,
-        (cloudPrefs) async {
-          UserStatsEntity finalStats = localStats;
-          final cloudProgressData = cloudPrefs[_statsKey];
-          if (cloudProgressData != null &&
-              cloudProgressData is String &&
-              cloudProgressData.isNotEmpty) {
-            final cloudStats = UserStatsModel.fromJson(
-              jsonDecode(cloudProgressData),
-            );
-            finalStats = _mergeStats(localStats, cloudStats);
-          }
-
-          final finalJsonStr = jsonEncode(
-            UserStatsModel.fromEntity(finalStats).toJson(),
+      return await prefsResult.fold(Left.new, (cloudPrefs) async {
+        UserStatsEntity finalStats = localStats;
+        final cloudProgressData = cloudPrefs[_statsKey];
+        if (cloudProgressData != null &&
+            cloudProgressData is String &&
+            cloudProgressData.isNotEmpty) {
+          final cloudStats = UserStatsModel.fromJson(
+            jsonDecode(cloudProgressData),
           );
-          await _prefs.setString(_statsKey, finalJsonStr);
+          finalStats = _mergeStats(localStats, cloudStats);
+        }
 
-          final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
-            ..[_statsKey] = finalJsonStr;
-          final updateResult = await _authRepository.updateUserPrefs(cloudUpdate);
-          return await updateResult.fold(
-            Left.new,
-            (_) async {
-              await _prefs.setBool('is_stats_synced', true);
-              return const Right(null);
-            },
-          );
-        },
-      );
+        final finalJsonStr = jsonEncode(
+          UserStatsModel.fromEntity(finalStats).toJson(),
+        );
+        await _prefs.setString(_statsKey, finalJsonStr);
+
+        final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
+          ..[_statsKey] = finalJsonStr;
+        final updateResult = await _authRepository.updateUserPrefs(cloudUpdate);
+        return await updateResult.fold(Left.new, (_) async {
+          await _prefs.setBool('is_stats_synced', true);
+          return const Right(null);
+        });
+      });
     } catch (e) {
       return Left(_recordedCacheFailure(e));
     }

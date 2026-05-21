@@ -17,7 +17,8 @@ enum SyncStatus { idle, syncing, success, error }
 final syncStatusProvider = StateProvider<SyncStatus>((ref) => SyncStatus.idle);
 
 final isStatsSyncedProvider = StateProvider<bool>((ref) {
-  final val = ref.watch(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
+  final val =
+      ref.watch(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
   return val;
 });
 
@@ -115,23 +116,25 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   void _setupConnectivityListener() {
     final ref = _ref;
     if (ref == null) return;
-    ref.listen<AsyncValue<List<ConnectivityResult>>>(
-      appConnectivityProvider,
-      (previous, next) {
-        next.whenOrNull(
-          data: (results) {
-            final isOffline = results.contains(ConnectivityResult.none) || results.isEmpty;
-            final previouslyOffline = previous == null ||
-                previous.valueOrNull == null ||
-                previous.valueOrNull!.contains(ConnectivityResult.none) ||
-                previous.valueOrNull!.isEmpty;
-            if (!isOffline && previouslyOffline) {
-              syncPendingStats();
-            }
-          },
-        );
-      },
-    );
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
+      previous,
+      next,
+    ) {
+      next.whenOrNull(
+        data: (results) {
+          final isOffline =
+              results.contains(ConnectivityResult.none) || results.isEmpty;
+          final previouslyOffline =
+              previous == null ||
+              previous.valueOrNull == null ||
+              previous.valueOrNull!.contains(ConnectivityResult.none) ||
+              previous.valueOrNull!.isEmpty;
+          if (!isOffline && previouslyOffline) {
+            syncPendingStats();
+          }
+        },
+      );
+    });
   }
 
   Future<void> syncPendingStats() async {
@@ -150,13 +153,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         ref.read(isStatsSyncedProvider.notifier).state = true;
         // Silent reload of stats to get the merged cloud progress without flashing loading state
         final statsResult = await _repository.getUserStats();
-        statsResult.fold(
-          (failure) => null,
-          (mergedStats) {
-            state = AsyncValue.data(mergedStats);
-            _updateSyncStateFromPrefs();
-          },
-        );
+        statsResult.fold((failure) => null, (mergedStats) {
+          state = AsyncValue.data(mergedStats);
+          _updateSyncStateFromPrefs();
+        });
         Future.delayed(const Duration(seconds: 3), () {
           if (ref.read(syncStatusProvider) == SyncStatus.success) {
             ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
@@ -169,7 +169,8 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   void _updateSyncStateFromPrefs() {
     final ref = _ref;
     if (ref == null) return;
-    final isSynced = ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
+    final isSynced =
+        ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
     ref.read(isStatsSyncedProvider.notifier).state = isSynced;
   }
 
@@ -219,13 +220,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   Future<void> updateStats(UserStatsEntity stats) async {
     final result = await _repository.updateUserStats(stats);
-    result.fold(
-      (failure) => null,
-      (mergedStats) {
-        state = AsyncValue.data(mergedStats);
-        _updateSyncStateFromPrefs();
-      },
-    );
+    result.fold((failure) => null, (mergedStats) {
+      state = AsyncValue.data(mergedStats);
+      _updateSyncStateFromPrefs();
+    });
   }
 
   /// Updates lastActiveDate and currentStreak based on today's date.

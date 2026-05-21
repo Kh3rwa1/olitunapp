@@ -25,7 +25,10 @@ class QuizScreen extends ConsumerWidget {
 
     return quizAsync.when(
       loading: () => const Scaffold(
-        body: AppLoadingState(type: AppLoadingType.page, message: 'Loading Quiz...'),
+        body: AppLoadingState(
+          type: AppLoadingType.page,
+          message: 'Loading Quiz...',
+        ),
       ),
       error: (error, stack) => Scaffold(
         body: AppErrorState(
@@ -38,9 +41,11 @@ class QuizScreen extends ConsumerWidget {
           return Scaffold(
             body: AppEmptyState(
               title: 'Quiz is Empty',
-              description: 'This learning quiz does not have any questions yet.',
+              description:
+                  'This learning quiz does not have any questions yet.',
               buttonText: 'Back to Home',
-              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              onButtonPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
               icon: Icons.quiz_outlined,
             ),
           );
@@ -505,8 +510,10 @@ class QuizScreen extends ConsumerWidget {
           bottomNavigationBar: state.isAnswered
               ? QuizFeedbackPanel(
                   isCorrect: state.selectedAnswer == question.correctIndex,
-                  correctOptionOlChiki: question.optionsOlChiki[question.correctIndex],
-                  correctOptionLatin: question.optionsLatin[question.correctIndex],
+                  correctOptionOlChiki:
+                      question.optionsOlChiki[question.correctIndex],
+                  correctOptionLatin:
+                      question.optionsLatin[question.correctIndex],
                   onContinue: () => notifier.nextQuestion(quiz),
                 )
               : null,
@@ -515,7 +522,6 @@ class QuizScreen extends ConsumerWidget {
     );
   }
 }
-
 
 class _QuizCountPill extends StatelessWidget {
   const _QuizCountPill({required this.current, required this.total});

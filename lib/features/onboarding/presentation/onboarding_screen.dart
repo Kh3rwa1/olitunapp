@@ -106,11 +106,15 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final showAnimations = !reduceMotion && !reduceVisualEffects;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0B0F19) : const Color(0xFFF8FAFC),
+      backgroundColor: isDark
+          ? const Color(0xFF0B0F19)
+          : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
           // 1. Background Video / Gradient
-          if (showAnimations && (videoPath.endsWith('.mp4') || videoPath.startsWith('http')) && _currentStep == 0)
+          if (showAnimations &&
+              (videoPath.endsWith('.mp4') || videoPath.startsWith('http')) &&
+              _currentStep == 0)
             Positioned.fill(child: VideoPlayerWidget(assetPath: videoPath)),
 
           // 2. Dark/Light Overlay Gradient
@@ -153,7 +157,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               children: [
                 // Top Progress Bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 12,
+                  ),
                   child: Row(
                     children: [
                       // Back Button (hidden on Step 0)
@@ -178,9 +185,13 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                           child: LinearProgressIndicator(
                             value: (_currentStep + 1) / 4,
                             minHeight: 6,
-                            backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                            backgroundColor: isDark
+                                ? Colors.white10
+                                : Colors.black12,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                              isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                              isDark
+                                  ? AppColors.brandTextDark
+                                  : AppColors.brandTextLight,
                             ),
                           ),
                         ),
@@ -192,7 +203,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         borderRadius: BorderRadius.circular(12),
                         semanticLabel: 'Skip Onboarding',
                         child: Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           child: Text(
                             'Skip',
                             style: TextStyle(
@@ -223,7 +237,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
                 // Bottom Navigation CTA Button
                 Padding(
-                  padding: const EdgeInsets.only(left: 24, right: 24, bottom: 24),
+                  padding: const EdgeInsets.only(
+                    left: 24,
+                    right: 24,
+                    bottom: 24,
+                  ),
                   child: MinimumTapTarget(
                     onTap: () {
                       HapticFeedback.lightImpact();
@@ -402,7 +420,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.10))
+                        ? (isDark
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.primary.withValues(alpha: 0.10))
                         : (isDark ? const Color(0xFF1E293B) : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
@@ -432,7 +452,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         child: Icon(
                           item.icon,
-                          color: isSelected ? AppColors.primary : (isDark ? Colors.white70 : Colors.black54),
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark ? Colors.white70 : Colors.black54),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -445,7 +467,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -453,7 +477,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               item.subtitle,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF64748B),
                               ),
                             ),
                           ],
@@ -532,7 +558,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.10))
+                        ? (isDark
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.primary.withValues(alpha: 0.10))
                         : (isDark ? const Color(0xFF1E293B) : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
@@ -562,7 +590,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         child: Icon(
                           item.icon,
-                          color: isSelected ? AppColors.primary : (isDark ? Colors.white70 : Colors.black54),
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark ? Colors.white70 : Colors.black54),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -575,7 +605,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -583,7 +615,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               item.subtitle,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF64748B),
                               ),
                             ),
                           ],
@@ -668,7 +702,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
                     color: isSelected
-                        ? (isDark ? AppColors.primary.withValues(alpha: 0.15) : AppColors.primary.withValues(alpha: 0.10))
+                        ? (isDark
+                              ? AppColors.primary.withValues(alpha: 0.15)
+                              : AppColors.primary.withValues(alpha: 0.10))
                         : (isDark ? const Color(0xFF1E293B) : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
@@ -698,7 +734,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ),
                         child: Icon(
                           item.icon,
-                          color: isSelected ? AppColors.primary : (isDark ? Colors.white70 : Colors.black54),
+                          color: isSelected
+                              ? AppColors.primary
+                              : (isDark ? Colors.white70 : Colors.black54),
                         ),
                       ),
                       const SizedBox(width: 16),
@@ -711,7 +749,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white : const Color(0xFF0F172A),
+                                color: isDark
+                                    ? Colors.white
+                                    : const Color(0xFF0F172A),
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -719,7 +759,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                               item.subtitle,
                               style: TextStyle(
                                 fontSize: 13,
-                                color: isDark ? Colors.white60 : const Color(0xFF64748B),
+                                color: isDark
+                                    ? Colors.white60
+                                    : const Color(0xFF64748B),
                               ),
                             ),
                           ],

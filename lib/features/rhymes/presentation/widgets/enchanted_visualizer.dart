@@ -20,7 +20,8 @@ class EnchantedVisualizer extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<EnchantedVisualizer> createState() => _EnchantedVisualizerState();
+  ConsumerState<EnchantedVisualizer> createState() =>
+      _EnchantedVisualizerState();
 }
 
 class _EnchantedVisualizerState extends ConsumerState<EnchantedVisualizer>
@@ -59,8 +60,10 @@ class _EnchantedVisualizerState extends ConsumerState<EnchantedVisualizer>
   }
 
   Widget _buildStaticFallback(BuildContext context) {
-    final barColor = widget.color.withValues(alpha: widget.isPlaying ? 0.8 : 0.4);
-    
+    final barColor = widget.color.withValues(
+      alpha: widget.isPlaying ? 0.8 : 0.4,
+    );
+
     return SizedBox(
       height: widget.height,
       child: Center(

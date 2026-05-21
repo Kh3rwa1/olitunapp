@@ -57,7 +57,10 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   }
 
   void _onScroll() {
-    if (!_scrollController.hasClients || !_scrollController.position.hasContentDimensions) return;
+    if (!_scrollController.hasClients ||
+        !_scrollController.position.hasContentDimensions) {
+      return;
+    }
     final maxScroll = _scrollController.position.maxScrollExtent;
     final currentScroll = _scrollController.position.pixels;
 
@@ -88,9 +91,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return lessons.when(
-      loading: () => const Scaffold(
-        body: AppLoadingState(type: AppLoadingType.page),
-      ),
+      loading: () =>
+          const Scaffold(body: AppLoadingState(type: AppLoadingType.page)),
       error: (e, s) => Scaffold(
         body: AppErrorState(
           message: 'Could not load this lesson.',
@@ -104,7 +106,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               title: 'No lessons available',
               description: 'New learning content will appear here soon.',
               buttonText: 'Back to Home',
-              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              onButtonPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
               icon: Icons.school_outlined,
             ),
           );
@@ -117,7 +120,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               title: 'Lesson not found',
               description: 'This lesson may have been moved or removed.',
               buttonText: 'Back to Home',
-              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              onButtonPressed: () =>
+                  context.canPop() ? context.pop() : context.go('/'),
               icon: Icons.search_off_rounded,
             ),
           );
@@ -139,7 +143,10 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
         // Calculate dynamic steps
         final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
-        final activeStep = (_scrollProgress * totalSteps).ceil().clamp(1, totalSteps);
+        final activeStep = (_scrollProgress * totalSteps).ceil().clamp(
+          1,
+          totalSteps,
+        );
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -162,105 +169,105 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 },
                 child: CustomScrollView(
                   controller: _scrollController,
-            physics: const BouncingScrollPhysics(
-              parent: AlwaysScrollableScrollPhysics(),
-            ),
-            slivers: [
-              ParallaxHeroSliverAppBar(
-                gradient: AppColors.heroGradient,
-                heroTag: MotionTokens.heroTag('lesson', lesson.id),
-                glyph: lesson.titleOlChiki.isNotEmpty
-                    ? lesson.titleOlChiki.characters.first
-                    : null,
-                leading: IconButton(
-                  icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () =>
-                      context.canPop() ? context.pop() : context.go('/'),
-                ),
-                title: Text(
-                  lessonTitle,
-                  style: TextStyle(
-                    fontFamily: primaryLocalizedFontFamily(scriptMode),
+                  physics: const BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
                   ),
-                ),
-                heroChild: _LessonHeroSummary(
-                  lesson: lesson,
-                  scriptMode: scriptMode,
-                  buildChip: _buildChip,
-                ),
-              ),
-
-              // Progress bar and steps indicator
-              SliverToBoxAdapter(
-                child: _ProgressHeader(
-                  progress: _scrollProgress,
-                  isDark: isDark,
-                  activeStep: activeStep,
-                  totalSteps: totalSteps,
-                ),
-              ),
-
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate.fixed([
-                    // Description section
-                    if (lesson.description != null &&
-                        lesson.description!.isNotEmpty) ...[
-                      Text(
-                        AppLocalizations.of(context)!.aboutThisLesson,
+                  slivers: [
+                    ParallaxHeroSliverAppBar(
+                      gradient: AppColors.heroGradient,
+                      heroTag: MotionTokens.heroTag('lesson', lesson.id),
+                      glyph: lesson.titleOlChiki.isNotEmpty
+                          ? lesson.titleOlChiki.characters.first
+                          : null,
+                      leading: IconButton(
+                        icon: const Icon(Icons.arrow_back_rounded),
+                        onPressed: () =>
+                            context.canPop() ? context.pop() : context.go('/'),
+                      ),
+                      title: Text(
+                        lessonTitle,
                         style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white : Colors.black,
+                          fontFamily: primaryLocalizedFontFamily(scriptMode),
                         ),
                       ),
-                      const SizedBox(height: 12),
-                      Text(
-                        lesson.description!,
-                        style: TextStyle(
-                          fontSize: 15,
-                          height: 1.6,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                        ),
-                      ),
-                      const SizedBox(height: 24),
-                    ],
-
-                    // Content section based on category
-                    FadeInSlide(
-                      duration: const Duration(milliseconds: 800),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _getSectionTitle(context, lesson.categoryId),
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                          _buildContent(lesson, isDark),
-                        ],
+                      heroChild: _LessonHeroSummary(
+                        lesson: lesson,
+                        scriptMode: scriptMode,
+                        buildChip: _buildChip,
                       ),
                     ),
-                  ]),
+
+                    // Progress bar and steps indicator
+                    SliverToBoxAdapter(
+                      child: _ProgressHeader(
+                        progress: _scrollProgress,
+                        isDark: isDark,
+                        activeStep: activeStep,
+                        totalSteps: totalSteps,
+                      ),
+                    ),
+
+                    SliverPadding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
+                      sliver: SliverList(
+                        delegate: SliverChildListDelegate.fixed([
+                          // Description section
+                          if (lesson.description != null &&
+                              lesson.description!.isNotEmpty) ...[
+                            Text(
+                              AppLocalizations.of(context)!.aboutThisLesson,
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                color: isDark ? Colors.white : Colors.black,
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            Text(
+                              lesson.description!,
+                              style: TextStyle(
+                                fontSize: 15,
+                                height: 1.6,
+                                color: isDark ? Colors.white70 : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 24),
+                          ],
+
+                          // Content section based on category
+                          FadeInSlide(
+                            duration: const Duration(milliseconds: 800),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  _getSectionTitle(context, lesson.categoryId),
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w700,
+                                    color: isDark ? Colors.white : Colors.black,
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                _buildContent(lesson, isDark),
+                              ],
+                            ),
+                          ),
+                        ]),
+                      ),
+                    ),
+                  ],
                 ),
+              ),
+              const Positioned(
+                top: 16,
+                left: 16,
+                right: 16,
+                child: OfflineStatusBanner(),
               ),
             ],
           ),
-        ),
-        const Positioned(
-            top: 16,
-            left: 16,
-            right: 16,
-            child: OfflineStatusBanner(),
-          ),
-        ],
-      ),
-      floatingActionButton: Container(
+          floatingActionButton: Container(
             margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
             width: double.infinity,
             child: FloatingActionButton.extended(
@@ -273,7 +280,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                         estimatedMinutes: lesson.estimatedMinutes,
                       );
                       notifier.addStars(25);
-                      ref.read(lessonCompletedTodayProvider.notifier).setCompleted(true);
+                      ref
+                          .read(lessonCompletedTodayProvider.notifier)
+                          .setCompleted(true);
 
                       final quizzes = ref.read(quizzesProvider).value ?? [];
                       final quizId = _getQuizIdForCategory(
@@ -284,7 +293,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
                       // Find next lesson to allow routing!
                       final currentIdx = data.indexOf(lesson);
-                      final nextLessonId = (currentIdx != -1 && currentIdx + 1 < data.length)
+                      final nextLessonId =
+                          (currentIdx != -1 && currentIdx + 1 < data.length)
                           ? data[currentIdx + 1].id
                           : null;
 
@@ -301,7 +311,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                   ? AppColors.primary
                   : (isDark ? Colors.white10 : Colors.black12),
               label: Text(
-                _isScrollCompleted ? 'Complete Lesson' : 'Finish the lesson to complete',
+                _isScrollCompleted
+                    ? 'Complete Lesson'
+                    : 'Finish the lesson to complete',
                 style: TextStyle(
                   fontWeight: FontWeight.w700,
                   fontSize: 16,
@@ -508,7 +520,9 @@ class _ProgressHeader extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
-                  color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                  color: isDark
+                      ? AppColors.brandTextDark
+                      : AppColors.brandTextLight,
                 ),
               ),
             ],
@@ -672,7 +686,10 @@ void _showCompletionSheet({
                 child: ConfettiBurst(particleCount: 50),
               ),
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 24,
+                  vertical: 32,
+                ),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF0F141C) : Colors.white,
                   borderRadius: const BorderRadius.only(
@@ -724,261 +741,297 @@ void _showCompletionSheet({
                     ),
                     const SizedBox(height: 24),
 
-                // Celebration text
-                Text(
-                  'Lesson Complete!',
-                  style: TextStyle(
-                    fontSize: 26,
-                    fontWeight: FontWeight.w900,
-                    color: isDark ? Colors.white : AppColors.pureBlack,
-                    letterSpacing: -0.5,
-                  ),
-                ),
-                const SizedBox(height: 8),
-
-                // Description
-                Text(
-                  'Amazing work! You completed this lesson and earned',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 15,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                  ),
-                ),
-                const SizedBox(height: 18),
-
-                // Bento grid row
-                Row(
-                  children: [
-                    // Stars Bento
-                    Expanded(
-                      child: buildBentoCard(
-                        backgroundColor: AppColors.duoYellow.withValues(alpha: 0.12),
-                        borderColor: AppColors.duoYellow.withValues(alpha: 0.25),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.star_rounded,
-                              color: AppColors.duoYellow,
-                              size: 28,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Stars Earned',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white60 : Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              '+25 Stars',
-                              style: TextStyle(
-                                color: AppColors.duoYellowDark,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
+                    // Celebration text
+                    Text(
+                      'Lesson Complete!',
+                      style: TextStyle(
+                        fontSize: 26,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : AppColors.pureBlack,
+                        letterSpacing: -0.5,
                       ),
                     ),
-                    const SizedBox(width: 12),
-                    // Progress Bento
-                    Expanded(
-                      child: buildBentoCard(
-                        backgroundColor: AppColors.primary.withValues(alpha: 0.12),
-                        borderColor: AppColors.primary.withValues(alpha: 0.25),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(
-                              Icons.check_circle_rounded,
-                              color: AppColors.primary,
-                              size: 28,
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              'Scroll Depth',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: isDark ? Colors.white60 : Colors.black54,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              '100% Done',
-                              style: TextStyle(
-                                color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                // Full-width Bottom Bento
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B).withValues(alpha: 0.3) : const Color(0xFFF1F5F9),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.05),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.auto_awesome_rounded,
-                            color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-                            size: 16,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Santali Mastery',
-                            style: TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 6),
-                      Text(
-                        'You are officially on your way to mastering Ol Chiki! Laha se!',
-                        style: TextStyle(
-                          fontSize: 13,
-                          height: 1.4,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                    const SizedBox(height: 8),
 
-                const SizedBox(height: 24),
-
-                // Primary action button
-                SizedBox(
-                  width: double.infinity,
-                  height: 52,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(sheetContext); // Close sheet
-                      if (quizId != null) {
-                        context.pushReplacement('/quiz/$quizId');
-                      } else if (nextLessonId != null) {
-                        context.pushReplacement('/lessons/$nextLessonId');
-                      } else {
-                        if (context.canPop()) {
-                          context.pop();
-                        } else {
-                          context.go('/');
-                        }
-                      }
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 2,
-                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    // Description
+                    Text(
+                      'Amazing work! You completed this lesson and earned',
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: isDark ? Colors.white70 : Colors.black87,
                       ),
                     ),
-                    child: Text(
-                      quiz != null
-                          ? 'Take ${quiz.title ?? 'Quiz'}'
-                          : (nextLessonId != null ? 'Next Lesson' : 'Johar (Finish)'),
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 0.3,
-                      ),
-                    ),
-                  ),
-                ),
+                    const SizedBox(height: 18),
 
-                // Secondary action buttons
-                if (quizId != null || nextLessonId != null) ...[
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      if (quizId != null && nextLessonId != null) ...[
+                    // Bento grid row
+                    Row(
+                      children: [
+                        // Stars Bento
                         Expanded(
-                          child: OutlinedButton(
-                            onPressed: () {
-                              Navigator.pop(sheetContext);
-                              context.pushReplacement('/lessons/$nextLessonId');
-                            },
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: isDark ? Colors.white70 : Colors.black87,
-                              side: BorderSide(
-                                color: isDark ? Colors.white24 : Colors.black26,
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 14),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16),
-                              ),
+                          child: buildBentoCard(
+                            backgroundColor: AppColors.duoYellow.withValues(
+                              alpha: 0.12,
                             ),
-                            child: const Text(
-                              'Next Lesson',
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w700,
-                              ),
+                            borderColor: AppColors.duoYellow.withValues(
+                              alpha: 0.25,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.star_rounded,
+                                  color: AppColors.duoYellow,
+                                  size: 28,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Stars Earned',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                const Text(
+                                  '+25 Stars',
+                                  style: TextStyle(
+                                    color: AppColors.duoYellowDark,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
                         const SizedBox(width: 12),
+                        // Progress Bento
+                        Expanded(
+                          child: buildBentoCard(
+                            backgroundColor: AppColors.primary.withValues(
+                              alpha: 0.12,
+                            ),
+                            borderColor: AppColors.primary.withValues(
+                              alpha: 0.25,
+                            ),
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.check_circle_rounded,
+                                  color: AppColors.primary,
+                                  size: 28,
+                                ),
+                                const SizedBox(height: 6),
+                                Text(
+                                  'Scroll Depth',
+                                  style: TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
+                                  ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  '100% Done',
+                                  style: TextStyle(
+                                    color: isDark
+                                        ? AppColors.brandTextDark
+                                        : AppColors.brandTextLight,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 16,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                       ],
-                      Expanded(
-                        child: TextButton(
-                          onPressed: () {
-                            Navigator.pop(sheetContext);
+                    ),
+                    const SizedBox(height: 12),
+                    // Full-width Bottom Bento
+                    Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? const Color(0xFF1E293B).withValues(alpha: 0.3)
+                            : const Color(0xFFF1F5F9),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.05)
+                              : Colors.black.withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Icon(
+                                Icons.auto_awesome_rounded,
+                                color: isDark
+                                    ? AppColors.brandTextDark
+                                    : AppColors.brandTextLight,
+                                size: 16,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'Santali Mastery',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  color: isDark
+                                      ? AppColors.brandTextDark
+                                      : AppColors.brandTextLight,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 6),
+                          Text(
+                            'You are officially on your way to mastering Ol Chiki! Laha se!',
+                            style: TextStyle(
+                              fontSize: 13,
+                              height: 1.4,
+                              color: isDark ? Colors.white70 : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // Primary action button
+                    SizedBox(
+                      width: double.infinity,
+                      height: 52,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          Navigator.pop(sheetContext); // Close sheet
+                          if (quizId != null) {
+                            context.pushReplacement('/quiz/$quizId');
+                          } else if (nextLessonId != null) {
+                            context.pushReplacement('/lessons/$nextLessonId');
+                          } else {
                             if (context.canPop()) {
                               context.pop();
                             } else {
                               context.go('/');
                             }
-                          },
-                          style: TextButton.styleFrom(
-                            foregroundColor: isDark ? Colors.white60 : Colors.black54,
-                            padding: const EdgeInsets.symmetric(vertical: 14),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(16),
-                            ),
+                          }
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          foregroundColor: Colors.white,
+                          elevation: 2,
+                          shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(16),
                           ),
-                          child: const Text(
-                            'Maybe Later',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                            ),
+                        ),
+                        child: Text(
+                          quiz != null
+                              ? 'Take ${quiz.title ?? 'Quiz'}'
+                              : (nextLessonId != null
+                                    ? 'Next Lesson'
+                                    : 'Johar (Finish)'),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.3,
                           ),
                         ),
                       ),
+                    ),
+
+                    // Secondary action buttons
+                    if (quizId != null || nextLessonId != null) ...[
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          if (quizId != null && nextLessonId != null) ...[
+                            Expanded(
+                              child: OutlinedButton(
+                                onPressed: () {
+                                  Navigator.pop(sheetContext);
+                                  context.pushReplacement(
+                                    '/lessons/$nextLessonId',
+                                  );
+                                },
+                                style: OutlinedButton.styleFrom(
+                                  foregroundColor: isDark
+                                      ? Colors.white70
+                                      : Colors.black87,
+                                  side: BorderSide(
+                                    color: isDark
+                                        ? Colors.white24
+                                        : Colors.black26,
+                                  ),
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                                child: const Text(
+                                  'Next Lesson',
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                          ],
+                          Expanded(
+                            child: TextButton(
+                              onPressed: () {
+                                Navigator.pop(sheetContext);
+                                if (context.canPop()) {
+                                  context.pop();
+                                } else {
+                                  context.go('/');
+                                }
+                              },
+                              style: TextButton.styleFrom(
+                                foregroundColor: isDark
+                                    ? Colors.white60
+                                    : Colors.black54,
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 14,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                              child: const Text(
+                                'Maybe Later',
+                                style: TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
                     ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      );
+                  ],
+                ),
+              ),
+            ],
+          );
         },
       );
     },

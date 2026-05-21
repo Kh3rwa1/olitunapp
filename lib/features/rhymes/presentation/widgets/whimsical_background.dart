@@ -8,7 +8,8 @@ class WhimsicalBackground extends ConsumerStatefulWidget {
   const WhimsicalBackground({super.key, required this.child});
 
   @override
-  ConsumerState<WhimsicalBackground> createState() => _WhimsicalBackgroundState();
+  ConsumerState<WhimsicalBackground> createState() =>
+      _WhimsicalBackgroundState();
 }
 
 class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>

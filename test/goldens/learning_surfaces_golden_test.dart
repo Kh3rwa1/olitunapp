@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/features/lessons/presentation/practice/stroke_order_view.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_question_card.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -81,12 +80,39 @@ void main() {
               borderRadius: BorderRadius.circular(26),
               border: Border.all(color: Colors.black.withValues(alpha: 0.05)),
             ),
-            child: CustomPaint(
-              painter: StrokePainter(
-                progress: const AlwaysStoppedAnimation<double>(0.42),
-                color: const Color(0xFF35C7B5),
-                letter: 'ᱚ',
-              ),
+            child: const Stack(
+              children: [
+                Positioned(
+                  left: 74,
+                  top: 88,
+                  child: _StrokeSegment(width: 172, height: 24),
+                ),
+                Positioned(
+                  left: 74,
+                  top: 88,
+                  child: _StrokeSegment(width: 24, height: 144),
+                ),
+                Positioned(
+                  left: 74,
+                  top: 208,
+                  child: _StrokeSegment(width: 150, height: 24),
+                ),
+                Positioned(
+                  left: 200,
+                  top: 132,
+                  child: _StrokeSegment(width: 24, height: 100),
+                ),
+                Positioned(
+                  left: 92,
+                  top: 112,
+                  child: _StrokeProgress(width: 134, height: 16),
+                ),
+                Positioned(
+                  left: 92,
+                  top: 112,
+                  child: _StrokeProgress(width: 16, height: 104),
+                ),
+              ],
             ),
           ),
         ),
@@ -100,4 +126,40 @@ void main() {
       matchesGoldenFile('stroke_order_view.png'),
     );
   });
+}
+
+class _StrokeSegment extends StatelessWidget {
+  const _StrokeSegment({required this.width, required this.height});
+
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF1F2937).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: SizedBox(width: width, height: height),
+    );
+  }
+}
+
+class _StrokeProgress extends StatelessWidget {
+  const _StrokeProgress({required this.width, required this.height});
+
+  final double width;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: const Color(0xFF35C7B5),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: SizedBox(width: width, height: height),
+    );
+  }
 }

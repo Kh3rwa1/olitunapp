@@ -6,6 +6,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../../../../shared/widgets/state_widgets.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String? quizId;
@@ -318,16 +319,19 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
   Widget build(BuildContext context) {
     if (_isLoading) {
       return const Scaffold(
-        backgroundColor: AppColors.quizBackground,
-        body: Center(child: CircularProgressIndicator()),
+        body: AppLoadingState(type: AppLoadingType.page, message: 'Loading Quiz...'),
       );
     }
 
     if (_questions.isEmpty) {
       return Scaffold(
-        backgroundColor: AppColors.quizBackground,
-        appBar: AppBar(title: const Text('Quiz')),
-        body: const Center(child: Text('No questions found.')),
+        body: AppEmptyState(
+          title: 'Quiz is Empty',
+          description: 'This learning quiz does not have any questions yet.',
+          buttonText: 'Back to Quizzes',
+          onButtonPressed: () => context.go('/quizzes'),
+          icon: Icons.quiz_outlined,
+        ),
       );
     }
 
@@ -339,30 +343,40 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
     return Scaffold(
       backgroundColor: AppColors.quizBackground,
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            children: [
-              // Header
-              _buildHeader(),
-              const SizedBox(height: 16),
+        child: Stack(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+              child: Column(
+                children: [
+                  // Header
+                  _buildHeader(),
+                  const SizedBox(height: 16),
 
-              // Progress Dots
-              _buildProgressDots(),
-              const SizedBox(height: 24),
+                  // Progress Dots
+                  _buildProgressDots(),
+                  const SizedBox(height: 24),
 
-              // Question Card with Ol Chiki character
-              _buildQuestionCard(question),
-              const SizedBox(height: 32),
+                  // Question Card with Ol Chiki character
+                  _buildQuestionCard(question),
+                  const SizedBox(height: 32),
 
-              // 2x2 Answer Grid
-              Expanded(child: _buildAnswerGrid(options, question.correctIndex)),
+                  // 2x2 Answer Grid
+                  Expanded(child: _buildAnswerGrid(options, question.correctIndex)),
 
-              // Next Button
-              if (_answered) _buildNextButton(),
-              const SizedBox(height: 12),
-            ],
-          ),
+                  // Next Button
+                  if (_answered) _buildNextButton(),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+            const Positioned(
+              top: 4,
+              left: 0,
+              right: 0,
+              child: OfflineStatusBanner(),
+            ),
+          ],
         ),
       ),
     );

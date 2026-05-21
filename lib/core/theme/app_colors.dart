@@ -117,6 +117,15 @@ class AppColors {
   static const Color darkBorderSubtle = Color(0xFF252525);
 
   // ============== TEXT COLORS ==============
+  // Accessible brand & semantic text/icon colors
+  static const Color brandTextLight = Color(0xFF007A45);
+  static const Color brandTextDark = Color(0xFF5DFFA8);
+  static const Color brandIconLight = Color(0xFF009B5A);
+  static const Color brandIconDark = Color(0xFF1EE088);
+  static const Color successTextLight = Color(0xFF1B7F3A);
+  static const Color warningTextLight = Color(0xFF8A5B00);
+  static const Color errorTextLight = Color(0xFFB3261E);
+
   // Light mode text
   static const Color textPrimaryLight = Color(0xFF000000);
   static const Color textSecondaryLight = Color(0xFF424242);

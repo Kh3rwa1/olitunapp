@@ -283,7 +283,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
 
 // ═══════════════ HERO CATEGORY CARD ═══════════════
 
-class _HeroCategoryCard extends StatelessWidget {
+class _HeroCategoryCard extends ConsumerWidget {
   final dynamic category;
   final bool isDark;
 
@@ -322,8 +322,9 @@ class _HeroCategoryCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final gradient = _getGradient(category.gradientPreset);
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
 
     return BentoCell(
       gradient: gradient,
@@ -350,7 +351,7 @@ class _HeroCategoryCard extends StatelessWidget {
                       size: 120,
                       color: Colors.white.withValues(alpha: 0.15),
                     )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
                     .moveY(begin: 0, end: -8, duration: 2.seconds)
                     .scale(
                       begin: const Offset(1, 1),
@@ -477,7 +478,7 @@ class _HeroCategoryCard extends StatelessWidget {
                       ],
                     ),
                   )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
                   .shimmer(
                     delay: 2.seconds,
                     duration: 1500.ms,

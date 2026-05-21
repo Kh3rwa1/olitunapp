@@ -20,6 +20,7 @@ import 'widgets/edit_name_sheet.dart';
 import 'widgets/streak_calendar.dart';
 import 'widgets/mastery_chart.dart';
 import 'widgets/mastery_milestones.dart';
+import 'widgets/next_milestone_card.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -108,6 +109,11 @@ class ProgressScreen extends ConsumerWidget {
 
                         // ═══════════════ STREAK CALENDAR ═══════════════
                         StreakCalendar(stats: stats),
+
+                        const SizedBox(height: 24),
+
+                        // ═══════════════ NEXT MILESTONE ═══════════════
+                        const NextMilestoneCard(),
 
                         const SizedBox(height: 24),
 
@@ -254,13 +260,15 @@ class ProgressScreen extends ConsumerWidget {
     final progress = (stats.overallProgress * 100).round();
     final accuracy = (stats.quizAccuracy * 100).round();
     final message = [
-      '$userName is learning Ol Chiki script on Olitun.',
-      'Level: ${stats.learnerLevel}',
-      'Overall progress: $progress%',
-      'Streak: ${stats.currentStreak} days',
-      'Stars earned: ${stats.totalStars}',
-      'Lessons completed: ${stats.lessonsCompletedCount}',
-      'Quiz accuracy: $accuracy%',
+      'Johar! 🙏 I just completed the Ol Chiki Script lesson on Olitun! Join me in mastering Santali.',
+      '',
+      '$userName\'s Progress Dashboard:',
+      '• Level: ${stats.learnerLevel}',
+      '• Overall progress: $progress%',
+      '• Streak: ${stats.currentStreak} days',
+      '• Stars earned: ${stats.totalStars}',
+      '• Lessons completed: ${stats.lessonsCompletedCount}',
+      '• Quiz accuracy: $accuracy%',
     ].join('\n');
 
     try {

@@ -349,14 +349,15 @@ class _QuizListErrorState extends StatelessWidget {
 
 // ═══════════════ HERO QUIZ CARD ═══════════════
 
-class _HeroQuizCard extends StatelessWidget {
+class _HeroQuizCard extends ConsumerWidget {
   final QuizModel quiz;
   final bool isDark;
 
   const _HeroQuizCard({required this.quiz, required this.isDark});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     return BentoCell(
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
@@ -385,7 +386,7 @@ class _HeroQuizCard extends StatelessWidget {
                       size: 100,
                       color: Colors.white.withValues(alpha: 0.15),
                     )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
                     .moveY(begin: 0, end: -8, duration: 1800.ms)
                     .scale(
                       begin: const Offset(1, 1),
@@ -402,7 +403,7 @@ class _HeroQuizCard extends StatelessWidget {
                       size: 18,
                       color: Colors.white.withValues(alpha: 0.5),
                     )
-                    .animate(onPlay: (c) => c.repeat(reverse: true))
+                    .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
                     .fadeIn(duration: 600.ms)
                     .then()
                     .fadeOut(duration: 600.ms),
@@ -501,7 +502,7 @@ class _HeroQuizCard extends StatelessWidget {
                       ],
                     ),
                   )
-                  .animate(onPlay: (c) => c.repeat(reverse: true))
+                  .animate(onPlay: reduceVisualEffects ? null : (c) => c.repeat(reverse: true))
                   .shimmer(
                     delay: 2.seconds,
                     duration: 1500.ms,

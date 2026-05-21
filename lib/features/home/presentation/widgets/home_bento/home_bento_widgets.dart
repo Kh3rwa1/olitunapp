@@ -16,7 +16,7 @@ import '../../../../../shared/models/content_models.dart';
 // ═══════════════════════════════════════════════════════════
 // BENTO STAT CARD — glassmorphism stat tile with hover
 // ═══════════════════════════════════════════════════════════
-class HomeBentoStatCard extends StatelessWidget {
+class HomeBentoStatCard extends ConsumerWidget {
   final IconData icon;
   final int value;
   final String suffix;
@@ -36,7 +36,7 @@ class HomeBentoStatCard extends StatelessWidget {
     this.isHero = false,
   });
 
-  void _handleTap(BuildContext context) {
+  void _handleTap(BuildContext context, WidgetRef ref) {
     HapticFeedback.mediumImpact();
 
     String title = '';
@@ -66,11 +66,11 @@ class HomeBentoStatCard extends StatelessWidget {
           'You have dedicated $value minutes of deep focus to learning! Small, consistent daily practices lead to massive fluency gains.';
     }
 
-    _showStatGlowDialog(context, title, emoji, body, color);
+    _showStatGlowDialog(context, title, emoji, body, color, ref.read(reduceVisualEffectsProvider));
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     Widget iconWidget = Icon(icon, color: color, size: isHero ? 22 : 18);
@@ -114,7 +114,7 @@ class HomeBentoStatCard extends StatelessWidget {
         hint: 'Double tap for details',
         child: ExcludeSemantics(
           child: PressableScale(
-            onTap: () => _handleTap(context),
+            onTap: () => _handleTap(context, ref),
             child: BentoCell(
               padding: EdgeInsets.all(isHero ? 20 : 16),
               child: Column(
@@ -126,7 +126,7 @@ class HomeBentoStatCard extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: color.withValues(alpha: 0.12),
+                           color: color.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(12),
                         ),
                         child: iconWidget,
@@ -188,6 +188,7 @@ void _showStatGlowDialog(
   String emoji,
   String body,
   Color primaryColor,
+  bool reduceVisualEffects,
 ) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -195,6 +196,37 @@ void _showStatGlowDialog(
     context: context,
     barrierColor: Colors.black.withValues(alpha: 0.75),
     builder: (context) {
+      Widget emojiContainer = Container(
+        width: 72,
+        height: 72,
+        decoration: BoxDecoration(
+          color: primaryColor.withValues(alpha: 0.12),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: primaryColor.withValues(alpha: 0.3),
+            width: 2,
+          ),
+        ),
+        child: Center(
+          child: Text(
+            emoji,
+            style: const TextStyle(fontSize: 36),
+          ),
+        ),
+      );
+
+      if (!reduceVisualEffects) {
+        emojiContainer = emojiContainer
+            .animate(onPlay: (c) => c.repeat(reverse: true))
+            .scale(
+              begin: const Offset(1.0, 1.0),
+              end: const Offset(1.12, 1.12),
+              duration: 800.ms,
+              curve: Curves.easeOutBack,
+            )
+            .shake(hz: 3, duration: 1600.ms);
+      }
+
       return Center(
             child: Container(
               margin: const EdgeInsets.symmetric(horizontal: 32),
@@ -217,32 +249,7 @@ void _showStatGlowDialog(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  Container(
-                        width: 72,
-                        height: 72,
-                        decoration: BoxDecoration(
-                          color: primaryColor.withValues(alpha: 0.12),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                            color: primaryColor.withValues(alpha: 0.3),
-                            width: 2,
-                          ),
-                        ),
-                        child: Center(
-                          child: Text(
-                            emoji,
-                            style: const TextStyle(fontSize: 36),
-                          ),
-                        ),
-                      )
-                      .animate(onPlay: (c) => c.repeat(reverse: true))
-                      .scale(
-                        begin: const Offset(1.0, 1.0),
-                        end: const Offset(1.12, 1.12),
-                        duration: 800.ms,
-                        curve: Curves.easeOutBack,
-                      )
-                      .shake(hz: 3, duration: 1600.ms),
+                  emojiContainer,
                   const SizedBox(height: 20),
                   Text(
                     title,
@@ -618,7 +625,7 @@ class _BentoCategoryCard extends ConsumerWidget {
 // ═══════════════════════════════════════════════════════════
 // HERO JOURNEY CARD — main "continue" CTA
 // ═══════════════════════════════════════════════════════════
-class HeroJourneyCard extends StatelessWidget {
+class HeroJourneyCard extends ConsumerWidget {
   final String heroTitle;
   final String? lessonId;
   final int index;
@@ -639,7 +646,9 @@ class HeroJourneyCard extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+
     return AnimatedBentoChild(
       index: index,
       child: Semantics(
@@ -668,14 +677,17 @@ class HeroJourneyCard extends StatelessWidget {
                   Positioned(
                     right: -20,
                     bottom: -20,
-                    child:
-                        Icon(
-                              Icons.rocket_launch_rounded,
-                              size: 120,
-                              color: Colors.white.withValues(alpha: 0.15),
-                            )
-                            .animate(onPlay: (c) => c.repeat(reverse: true))
-                            .moveY(begin: 0, end: -10, duration: 2.seconds),
+                    child: () {
+                      final iconWidget = Icon(
+                        Icons.rocket_launch_rounded,
+                        size: 120,
+                        color: Colors.white.withValues(alpha: 0.15),
+                      );
+                      if (reduceVisualEffects) return iconWidget;
+                      return iconWidget
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .moveY(begin: 0, end: -10, duration: 2.seconds);
+                    }(),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -732,10 +744,11 @@ class HeroJourneyCard extends StatelessWidget {
   }
 }
 
+
 // ═══════════════════════════════════════════════════════════
 // QUIZ BANNER CARD — daily quiz prompt
 // ═══════════════════════════════════════════════════════════
-class QuizBannerCard extends StatelessWidget {
+class QuizBannerCard extends ConsumerWidget {
   final int quizCount;
   final int index;
 
@@ -746,7 +759,9 @@ class QuizBannerCard extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+
     return AnimatedBentoChild(
       index: index,
       child: Semantics(
@@ -781,19 +796,22 @@ class QuizBannerCard extends StatelessWidget {
                   Positioned(
                     right: -10,
                     bottom: -10,
-                    child:
-                        Icon(
-                              Icons.quiz_rounded,
-                              size: 80,
-                              color: Colors.white.withValues(alpha: 0.2),
-                            )
-                            .animate(onPlay: (c) => c.repeat(reverse: true))
-                            .moveY(
-                              begin: 0,
-                              end: -8,
-                              duration: 1800.ms,
-                              curve: Curves.easeInOut,
-                            ),
+                    child: () {
+                      final iconWidget = Icon(
+                        Icons.quiz_rounded,
+                        size: 80,
+                        color: Colors.white.withValues(alpha: 0.2),
+                      );
+                      if (reduceVisualEffects) return iconWidget;
+                      return iconWidget
+                          .animate(onPlay: (c) => c.repeat(reverse: true))
+                          .moveY(
+                            begin: 0,
+                            end: -8,
+                            duration: 1800.ms,
+                            curve: Curves.easeInOut,
+                          );
+                    }(),
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -1039,22 +1057,26 @@ class _HomeFeaturedBannerCarouselState
                           Positioned(
                             right: -10,
                             bottom: -10,
-                            child:
-                                Icon(
-                                      Icons.star_rounded,
-                                      size: 80,
-                                      color: Colors.white.withValues(
-                                        alpha: 0.2,
-                                      ),
-                                    )
-                                    .animate(
-                                      onPlay: (c) => c.repeat(reverse: true),
-                                    )
-                                    .moveY(
-                                      begin: 0,
-                                      end: -5,
-                                      duration: 2.seconds,
-                                    ),
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final reduceEffects = ref.watch(reduceVisualEffectsProvider);
+                                return Icon(
+                                  Icons.star_rounded,
+                                  size: 80,
+                                  color: Colors.white.withValues(
+                                    alpha: 0.2,
+                                  ),
+                                )
+                                .animate(
+                                  onPlay: reduceEffects ? null : (c) => c.repeat(reverse: true),
+                                )
+                                .moveY(
+                                  begin: 0,
+                                  end: -5,
+                                  duration: 2.seconds,
+                                );
+                              },
+                            ),
                           ),
                       ],
                     ),

@@ -3,15 +3,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/widgets/shimmer_loading.dart';
 import '../../../l10n/generated/app_localizations.dart';
+import '../../../shared/widgets/state_widgets.dart';
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
-import 'widgets/quiz_complete_screen.dart';
-import 'widgets/quiz_empty_view.dart';
 import 'widgets/quiz_option_tile.dart';
 import 'widgets/quiz_progress_bar.dart';
 import 'widgets/quiz_question_card.dart';
+import 'widgets/quiz_feedback_panel.dart';
+import 'widgets/quiz_complete_screen.dart';
 
 class QuizScreen extends ConsumerWidget {
   final String quizId;
@@ -24,23 +24,26 @@ class QuizScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return quizAsync.when(
-      loading: () => _QuizLoadingScaffold(isDark: isDark),
-      error: (error, stack) => _QuizStateScaffold(
-        isDark: isDark,
-        icon: Icons.cloud_off_rounded,
-        title: 'Could not load quiz',
-        message: 'Check your connection and try again.',
-        primaryLabel: 'Try again',
-        primaryIcon: Icons.refresh_rounded,
-        onPrimary: () => ref.invalidate(quizFutureProvider(quizId)),
-        onClose: () => context.canPop() ? context.pop() : context.go('/'),
+      loading: () => const Scaffold(
+        body: AppLoadingState(type: AppLoadingType.page, message: 'Loading Quiz...'),
+      ),
+      error: (error, stack) => Scaffold(
+        body: AppErrorState(
+          message: 'Could not load the quiz.',
+          onRetry: () => ref.invalidate(quizFutureProvider(quizId)),
+        ),
       ),
       data: (quiz) {
-        if (quiz == null) {
-          return const QuizEmptyView(isNotFound: true);
-        }
-        if (quiz.questions.isEmpty) {
-          return const QuizEmptyView();
+        if (quiz == null || quiz.questions.isEmpty) {
+          return Scaffold(
+            body: AppEmptyState(
+              title: 'Quiz is Empty',
+              description: 'This learning quiz does not have any questions yet.',
+              buttonText: 'Back to Home',
+              onButtonPressed: () => context.canPop() ? context.pop() : context.go('/'),
+              icon: Icons.quiz_outlined,
+            ),
+          );
         }
 
         final state = ref.watch(quizSessionNotifierProvider(quizId));
@@ -48,6 +51,10 @@ class QuizScreen extends ConsumerWidget {
           return QuizCompleteScreen(
             score: state.score,
             totalQuestions: quiz.questions.length,
+            bestCombo: state.bestCombo,
+            bonusStars: state.bonusStars,
+            incorrectQuestionIndices: state.incorrectQuestionIndices,
+            questions: quiz.questions,
           );
         }
 
@@ -457,95 +464,58 @@ class QuizScreen extends ConsumerWidget {
               ),
             ],
           ),
-          body: Padding(
-            padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                QuizProgressBar(
-                  current: state.currentQuestion + 1,
-                  total: totalQs,
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 16),
-                _QuizSessionHud(state: state, isDark: isDark),
-                const SizedBox(height: 28),
-                Expanded(
-                  child: SingleChildScrollView(
-                    physics: const BouncingScrollPhysics(),
-                    child: Column(
-                      children: [
-                        buildQuestionArea(),
-                        const SizedBox(height: 32),
-                        buildOptionsArea(),
-                        const SizedBox(height: 16),
-                      ],
+          body: Stack(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    QuizProgressBar(
+                      current: state.currentQuestion + 1,
+                      total: totalQs,
+                      isDark: isDark,
                     ),
-                  ),
+                    const SizedBox(height: 16),
+                    _QuizSessionHud(state: state, isDark: isDark),
+                    const SizedBox(height: 28),
+                    Expanded(
+                      child: SingleChildScrollView(
+                        physics: const BouncingScrollPhysics(),
+                        child: Column(
+                          children: [
+                            buildQuestionArea(),
+                            const SizedBox(height: 32),
+                            buildOptionsArea(),
+                            const SizedBox(height: 16),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: OfflineStatusBanner(),
+              ),
+            ],
           ),
+          bottomNavigationBar: state.isAnswered
+              ? QuizFeedbackPanel(
+                  isCorrect: state.selectedAnswer == question.correctIndex,
+                  correctOptionOlChiki: question.optionsOlChiki[question.correctIndex],
+                  correctOptionLatin: question.optionsLatin[question.correctIndex],
+                  onContinue: () => notifier.nextQuestion(quiz),
+                )
+              : null,
         );
       },
     );
   }
 }
 
-class _QuizLoadingScaffold extends StatelessWidget {
-  const _QuizLoadingScaffold({required this.isDark});
-
-  final bool isDark;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: const SizedBox.shrink(),
-        title: const Skeleton(width: 140, height: 18, borderRadius: 8),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 16),
-            child: Skeleton(width: 56, height: 32),
-          ),
-        ],
-      ),
-      body: const SingleChildScrollView(
-        physics: NeverScrollableScrollPhysics(),
-        child: Padding(
-          padding: EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Skeleton(width: double.infinity, height: 8, borderRadius: 8),
-              SizedBox(height: 16),
-              Row(
-                children: [
-                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
-                  SizedBox(width: 10),
-                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
-                  SizedBox(width: 10),
-                  Expanded(child: Skeleton(height: 44, borderRadius: 16)),
-                ],
-              ),
-              SizedBox(height: 28),
-              Skeleton(width: double.infinity, height: 180, borderRadius: 24),
-              SizedBox(height: 32),
-              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
-              SizedBox(height: 12),
-              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
-              SizedBox(height: 12),
-              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
-              SizedBox(height: 12),
-              Skeleton(width: double.infinity, height: 72, borderRadius: 16),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
 
 class _QuizCountPill extends StatelessWidget {
   const _QuizCountPill({required this.current, required this.total});
@@ -668,95 +638,6 @@ class _HudChip extends StatelessWidget {
             ),
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _QuizStateScaffold extends StatelessWidget {
-  const _QuizStateScaffold({
-    required this.isDark,
-    required this.icon,
-    required this.title,
-    required this.message,
-    required this.primaryLabel,
-    required this.primaryIcon,
-    required this.onPrimary,
-    required this.onClose,
-  });
-
-  final bool isDark;
-  final IconData icon;
-  final String title;
-  final String message;
-  final String primaryLabel;
-  final IconData primaryIcon;
-  final VoidCallback onPrimary;
-  final VoidCallback onClose;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.close_rounded,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-          onPressed: onClose,
-        ),
-      ),
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(28),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                width: 84,
-                height: 84,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.10),
-                  borderRadius: BorderRadius.circular(24),
-                ),
-                child: Icon(icon, size: 42, color: AppColors.primary),
-              ),
-              const SizedBox(height: 24),
-              Text(
-                title,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 22,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                message,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 14,
-                  height: 1.45,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                ),
-              ),
-              const SizedBox(height: 24),
-              FilledButton.icon(
-                onPressed: onPrimary,
-                icon: Icon(primaryIcon),
-                label: Text(primaryLabel),
-                style: FilledButton.styleFrom(
-                  backgroundColor: AppColors.primary,
-                  foregroundColor: Colors.white,
-                ),
-              ),
-            ],
-          ),
-        ),
       ),
     );
   }

@@ -86,7 +86,7 @@ void main() {
     );
   });
 
-  test('updateUserStats persists data and returns Right(null)', () async {
+  test('updateUserStats persists data and returns Right(stats)', () async {
     const stats = UserStatsEntity(
       practicedLetters: {'x'},
       completedLessons: {},
@@ -99,6 +99,10 @@ void main() {
     );
     final res = await repo.updateUserStats(stats);
     expect(res.isRight(), isTrue);
+    res.match(
+      (_) => fail('should be right'),
+      (returnedStats) => expect(returnedStats.totalStars, 5),
+    );
     final stored = prefs.getString('user_progress_data');
     expect(stored, isNotNull);
     expect(stored, contains('"totalStars":5'));

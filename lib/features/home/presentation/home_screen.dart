@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/localized_content.dart';
@@ -12,8 +13,21 @@ import '../../../core/motion/motion.dart';
 import '../../lessons/domain/entities/lesson_entity.dart';
 
 import 'package:go_router/go_router.dart';
+import '../../../shared/widgets/state_widgets.dart';
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
+import 'widgets/today_mission_card.dart';
+import 'widgets/learning_path_preview.dart';
+
+enum HomeLearnerState {
+  guestNew,
+  guestReturning,
+  beginnerNew,
+  activeLearner,
+  streakRisk,
+  advancedLearner,
+  completedToday,
+}
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -67,6 +81,37 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     await ref.read(lessonNotifierProvider.notifier).refresh();
   }
 
+  HomeLearnerState _deriveLearnerState({
+    required bool isGuest,
+    required int streak,
+    required int lessonsCompleted,
+    required int stars,
+    required LearnerLevel learnerLevel,
+  }) {
+    if (isGuest) {
+      if (lessonsCompleted == 0) return HomeLearnerState.guestNew;
+      return HomeLearnerState.guestReturning;
+    }
+    
+    if (lessonsCompleted == 0) {
+      return HomeLearnerState.beginnerNew;
+    }
+
+    if (streak > 0 && stars > 100) {
+      return HomeLearnerState.advancedLearner;
+    }
+
+    if (streak > 3) {
+      return HomeLearnerState.activeLearner;
+    }
+
+    if (streak == 1 && stars < 20) {
+      return HomeLearnerState.streakRisk;
+    }
+
+    return HomeLearnerState.activeLearner;
+  }
+
   @override
   Widget build(BuildContext context) {
     final userName = ref.watch(userNameProvider);
@@ -79,6 +124,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final bannersAsync = ref.watch(bannersProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
+    // Seamless automatic background data sync when recovering connection
+    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (previous, next) {
+      final prevOffline = previous?.value?.contains(ConnectivityResult.none) ?? true;
+      final nextOnline = next.value != null && !next.value!.contains(ConnectivityResult.none);
+      if (prevOffline && nextOnline) {
+        _onRefresh();
+        ref.read(userStatsProvider.notifier).syncPendingStats();
+      }
+    });
+
     // Derive the next incomplete lesson for the hero card.
     final completedIds =
         ref.watch(userStatsProvider).value?.completedLessons ?? {};
@@ -88,21 +143,39 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       completedLessonIds: completedIds,
       lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
     );
-    final heroTitle = nextLesson == null
-        ? 'Start Learning'
-        : primaryLocalizedText(
-            olChiki: nextLesson.titleOlChiki,
-            latin: nextLesson.titleLatin,
-            scriptMode: scriptMode,
-          );
-    final quizCount = quizzesAsync.value?.length ?? 0;
-
+    
+    final isAuthAsync = ref.watch(isAuthenticatedProvider);
+    final isGuest = isAuthAsync.value == false;
     final stats = statsAsync.value;
     final streak = stats?.currentStreak ?? 0;
     final learningTime = stats?.totalLearningMinutes ?? 0;
+    final learnerLevel = ref.watch(learnerLevelProvider);
 
-    final isAuthAsync = ref.watch(isAuthenticatedProvider);
-    final isGuest = isAuthAsync.value == false;
+    final learnerState = _deriveLearnerState(
+      isGuest: isGuest,
+      streak: streak,
+      lessonsCompleted: lessonsCompleted,
+      stars: stars,
+      learnerLevel: learnerLevel,
+    );
+
+    String heroTitle = 'Start your Ol Chiki journey';
+    if (learnerState == HomeLearnerState.guestNew) {
+      heroTitle = 'Start your Ol Chiki journey';
+    } else if (learnerState == HomeLearnerState.beginnerNew) {
+      heroTitle = 'Start with your first Ol Chiki letter';
+    } else if (learnerState == HomeLearnerState.streakRisk) {
+      heroTitle = 'Keep your streak alive';
+    } else if (nextLesson != null) {
+      final lessonTitle = primaryLocalizedText(
+        olChiki: nextLesson.titleOlChiki,
+        latin: nextLesson.titleLatin,
+        scriptMode: scriptMode,
+      );
+      heroTitle = 'Continue: $lessonTitle';
+    }
+    final quizCount = quizzesAsync.value?.length ?? 0;
+
     final displayUserName = isGuest ? 'Explorer' : userName;
 
     final dailyProgress = stats != null
@@ -159,14 +232,21 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     shape: BoxShape.circle,
                     gradient: RadialGradient(
                       colors: [
-                        AppColors.accentPurple.withValues(alpha: 0.15),
-                        AppColors.accentPurple.withValues(alpha: 0),
+                        AppColors.duoYellow.withValues(alpha: 0.15),
+                        AppColors.duoYellow.withValues(alpha: 0),
                       ],
                     ),
                   ),
                 ),
               ),
             ],
+
+            const Positioned(
+              top: 16,
+              left: 16,
+              right: 16,
+              child: OfflineStatusBanner(),
+            ),
 
             SafeArea(
               child: SingleChildScrollView(
@@ -275,8 +355,53 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ],
 
-                          // Row 1: Stats Bento Grid (mobile/tablet only)
-                          if (!isDesktop) ...[
+                          if (isTablet || isDesktop) ...[
+                            // Row 1: Stats Bento Grid (tablet only)
+                            if (!isDesktop) ...[
+                              _buildStatsBentoGrid(
+                                streak: streak,
+                                stars: stars,
+                                lessonsCompleted: lessonsCompleted,
+                                learningTime: learningTime,
+                                isDark: isDark,
+                                isTablet: isTablet,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+
+                            // Row 2: Hero Journey + Quiz Banner
+                            _buildHeroBentoRow(
+                              context,
+                              isDark,
+                              heroTitle,
+                              nextLesson?.id,
+                              quizCount,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Row 3: Discover / Categories
+                            _buildContentBentoGrid(
+                              context: context,
+                              categoriesAsync: categoriesAsync,
+                              isDark: isDark,
+                              isTablet: isTablet,
+                              isDesktop: isDesktop,
+                            ),
+                          ] else ...[
+                            // MOBILE VIEW: Premium, guided pedagogical hierarchy
+                            // 1. Primary Hero Card (Continue learning)
+                            HeroJourneyCard(
+                              heroTitle: heroTitle,
+                              lessonId: nextLesson?.id,
+                              index: 0,
+                            ),
+                            const SizedBox(height: 16),
+
+                            // 2. Today's Mission Bento Card
+                            const TodayMissionCard(),
+                            const SizedBox(height: 20),
+
+                            // 3. Stats Grid (Day Streak, Stars, etc.)
                             _buildStatsBentoGrid(
                               streak: streak,
                               stars: stars,
@@ -286,37 +411,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               isTablet: isTablet,
                             ),
                             const SizedBox(height: 20),
-                          ],
 
-                          // Row 2: Hero Journey + Quiz Banner
-                          if (isTablet || isDesktop)
-                            _buildHeroBentoRow(
-                              context,
-                              isDark,
-                              heroTitle,
-                              nextLesson?.id,
-                              quizCount,
-                            )
-                          else ...[
-                            HeroJourneyCard(
-                              heroTitle: heroTitle,
-                              lessonId: nextLesson?.id,
-                              index: 0,
-                            ),
-                            const SizedBox(height: 16),
+                            // 4. Learning Path Preview (Vertical timeline of lessons)
+                            if (allLessons.isNotEmpty) ...[
+                              LearningPathPreview(
+                                lessons: allLessons,
+                                completedLessonIds: completedIds,
+                                currentLessonId: nextLesson?.id,
+                                scriptMode: scriptMode,
+                              ),
+                              const SizedBox(height: 20),
+                            ],
+
+                            // 5. Quiz banner
                             QuizBannerCard(quizCount: quizCount, index: 1),
+                            const SizedBox(height: 20),
+
+                            // 6. Discover / Categories
+                            _buildContentBentoGrid(
+                              context: context,
+                              categoriesAsync: categoriesAsync,
+                              isDark: isDark,
+                              isTablet: isTablet,
+                              isDesktop: isDesktop,
+                            ),
                           ],
-
-                          const SizedBox(height: 20),
-
-                          // Row 3: AI Tools + Categories
-                          _buildContentBentoGrid(
-                            context: context,
-                            categoriesAsync: categoriesAsync,
-                            isDark: isDark,
-                            isTablet: isTablet,
-                            isDesktop: isDesktop,
-                          ),
 
                           SizedBox(height: isDesktop ? 32 : 120),
                         ],
@@ -615,33 +734,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             );
           },
           loading: () => _buildContentSkeleton(cols),
-          error: (e, st) => Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.red.withValues(alpha: 0.08)
-                  : Colors.red.withValues(alpha: 0.05),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.red.withValues(alpha: 0.15)),
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(
-                  Icons.wifi_off_rounded,
-                  color: Colors.red.withValues(alpha: 0.6),
-                  size: 32,
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  'Could not load learning paths',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white70 : Colors.black54,
-                  ),
-                ),
-              ],
-            ),
+          error: (e, st) => AppErrorState(
+            message: 'Could not load learning paths',
+            onRetry: _onRefresh,
           ),
         ),
       ],

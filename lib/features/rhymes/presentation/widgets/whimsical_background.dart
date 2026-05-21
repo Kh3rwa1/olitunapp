@@ -1,15 +1,17 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../shared/providers/providers.dart';
 
-class WhimsicalBackground extends StatefulWidget {
+class WhimsicalBackground extends ConsumerStatefulWidget {
   final Widget child;
   const WhimsicalBackground({super.key, required this.child});
 
   @override
-  State<WhimsicalBackground> createState() => _WhimsicalBackgroundState();
+  ConsumerState<WhimsicalBackground> createState() => _WhimsicalBackgroundState();
 }
 
-class _WhimsicalBackgroundState extends State<WhimsicalBackground>
+class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
 
@@ -19,7 +21,11 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
     _controller = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 20),
-    )..repeat();
+    );
+    final reduceEffects = ref.read(reduceVisualEffectsProvider);
+    if (!reduceEffects) {
+      _controller.repeat();
+    }
   }
 
   @override
@@ -30,6 +36,14 @@ class _WhimsicalBackgroundState extends State<WhimsicalBackground>
 
   @override
   Widget build(BuildContext context) {
+    ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
+      if (next) {
+        _controller.stop();
+      } else {
+        _controller.repeat();
+      }
+    });
+
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Stack(

@@ -10,7 +10,7 @@ class StreakCalendar extends StatelessWidget {
 
   const StreakCalendar({super.key, required this.stats});
 
-  /// Checks if a given date was active based on quiz history, last active date, or current streak.
+  /// Checks if a given date was active based on quiz history or last active date.
   bool _isDayActive(DateTime day) {
     final targetStr = _formatDateKey(day);
 
@@ -21,24 +21,13 @@ class StreakCalendar extends StatelessWidget {
 
     // 2. Check if a quiz was completed on this day
     for (final result in stats.quizHistory.values) {
-      final completedDate = DateTime.tryParse(result.completedAt);
+      final completedDate = DateTime.tryParse(result.completedAt)?.toLocal();
       if (completedDate != null) {
         final compStr = _formatDateKey(completedDate);
         if (compStr == targetStr) {
           return true;
         }
       }
-    }
-
-    // 3. Fallback: If current streak is active, highlight recent consecutive days
-    final now = DateTime.now();
-    final today = DateTime(now.year, now.month, now.day);
-    final difference = today
-        .difference(DateTime(day.year, day.month, day.day))
-        .inDays;
-
-    if (difference >= 0 && difference < stats.currentStreak) {
-      return true;
     }
 
     return false;
@@ -86,55 +75,63 @@ class StreakCalendar extends StatelessWidget {
             children: [
               // Header Row
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.duoOrange.withValues(alpha: 0.15),
-                          shape: BoxShape.circle,
+                  Flexible(
+                    child: Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: AppColors.duoOrange.withValues(alpha: 0.15),
+                            shape: BoxShape.circle,
+                          ),
+                          child:
+                              const Icon(
+                                    Icons.local_fire_department_rounded,
+                                    color: AppColors.duoOrange,
+                                    size: 20,
+                                  )
+                                  .animate(onPlay: (c) => c.repeat())
+                                  .shimmer(
+                                    duration: 2000.ms,
+                                    color: Colors.white,
+                                  ),
                         ),
-                        child:
-                            const Icon(
-                                  Icons.local_fire_department_rounded,
-                                  color: AppColors.duoOrange,
-                                  size: 20,
-                                )
-                                .animate(onPlay: (c) => c.repeat())
-                                .shimmer(
-                                  duration: 2000.ms,
-                                  color: Colors.white,
+                        const SizedBox(width: 12),
+                        Flexible(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Weekly Streak Active',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.2,
                                 ),
-                      ),
-                      const SizedBox(width: 12),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Weekly Streak Active',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
-                            ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                'Keep learning to grow your flame!',
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                  color: isDark ? Colors.white38 : Colors.black38,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 2),
-                          Text(
-                            'Keep learning to grow your flame!',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? Colors.white38 : Colors.black38,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   // Streak badge pill
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -203,7 +200,7 @@ class StreakCalendar extends StatelessWidget {
                         // Tap gives feedback and shows message
                       },
                       child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 4),
+                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
                         padding: const EdgeInsets.symmetric(
                           vertical: 12,
                           horizontal: 4,
@@ -258,8 +255,8 @@ class StreakCalendar extends StatelessWidget {
                             // Inner visual element
                             AnimatedContainer(
                               duration: const Duration(milliseconds: 300),
-                              width: 38,
-                              height: 38,
+                              width: 32,
+                              height: 32,
                               decoration: BoxDecoration(
                                 shape: BoxShape.circle,
                                 color: isActive
@@ -283,7 +280,7 @@ class StreakCalendar extends StatelessWidget {
                                           color: AppColors.duoOrange.withValues(
                                             alpha: 0.35,
                                           ),
-                                          blurRadius: 10,
+                                          blurRadius: 8,
                                           spreadRadius: 1,
                                         ),
                                       ]
@@ -294,7 +291,7 @@ class StreakCalendar extends StatelessWidget {
                                     ? const Icon(
                                             Icons.local_fire_department_rounded,
                                             color: AppColors.duoOrange,
-                                            size: 24,
+                                            size: 20,
                                           )
                                           .animate(onPlay: (c) => c.repeat())
                                           .scale(
@@ -314,7 +311,7 @@ class StreakCalendar extends StatelessWidget {
                                         dayNum,
                                         style: TextStyle(
                                           fontFamily: 'Poppins',
-                                          fontSize: 12,
+                                          fontSize: 11,
                                           fontWeight: isToday
                                               ? FontWeight.w800
                                               : FontWeight.w700,
@@ -360,13 +357,17 @@ class StreakCalendar extends StatelessWidget {
                       size: 14,
                     ),
                     const SizedBox(width: 6),
-                    Text(
-                      'You practiced $activeCount of the last 7 days. Keep the momentum!',
-                      style: TextStyle(
-                        fontFamily: 'Poppins',
-                        fontSize: 10.5,
-                        fontWeight: FontWeight.w600,
-                        color: isDark ? Colors.white60 : Colors.black54,
+                    Flexible(
+                      child: Text(
+                        'You practiced $activeCount of the last 7 days. Keep the momentum!',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 10.5,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white60 : Colors.black54,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ],

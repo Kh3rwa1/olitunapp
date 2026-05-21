@@ -4,17 +4,12 @@ import 'package:appwrite/models.dart' as models;
 import 'package:appwrite/enums.dart';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../config/appwrite_config.dart';
 
 @visibleForTesting
 String googleOAuthUserMessage(String message) {
   final lowerMessage = message.toLowerCase();
-  if (lowerMessage.contains('key and secret') ||
-      lowerMessage.contains('missing session secret') ||
-      lowerMessage.contains('missing session key')) {
-    return 'Google sign-in is not configured in Appwrite yet. Add the Google OAuth Client ID and Client Secret, then try again.';
-  }
-
   if (lowerMessage.contains('provider') &&
       (lowerMessage.contains('disabled') ||
           lowerMessage.contains('not enabled'))) {
@@ -208,10 +203,23 @@ class AppwriteAuthService {
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     try {
+      final connectivityResults = await Connectivity().checkConnectivity();
+      if (connectivityResults.contains(ConnectivityResult.none)) {
+        final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
+        debugPrint('Appwrite: Device is offline. Returning cached session: $hasLocal');
+        return hasLocal;
+      }
+    } catch (e) {
+      debugPrint('Appwrite: Error checking connectivity: $e');
+    }
+
+    try {
       if (kIsWeb) {
         await _restoreWebSession();
       }
-      final session = await _account.getSession(sessionId: 'current');
+      final session = await _account
+          .getSession(sessionId: 'current')
+          .timeout(const Duration(seconds: 3));
       debugPrint('Appwrite: Session active for user ${session.userId} ✅');
       await prefs.setBool(_hasLocalSessionKey, true);
       return true;
@@ -251,30 +259,52 @@ class AppwriteAuthService {
 
   /// Get current user profile
   Future<models.User> getMe() async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
     await _restoreWebSession();
-    return await _account.get();
+    return await _account.get().timeout(const Duration(seconds: 3));
   }
 
   /// Update user display name
   Future<models.User> updateName(String name) async {
-    return await _account.updateName(name: name);
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
+    return await _account
+        .updateName(name: name)
+        .timeout(const Duration(seconds: 3));
   }
 
   /// Update user preferences (for progress sync)
   Future<void> updatePrefs(Map<String, dynamic> prefs) async {
-    await _account.updatePrefs(prefs: prefs);
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
+    await _account
+        .updatePrefs(prefs: prefs)
+        .timeout(const Duration(seconds: 3));
   }
 
   /// Get user preferences
   Future<models.Preferences> getPrefs() async {
-    return await _account.getPrefs();
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
+    return await _account.getPrefs().timeout(const Duration(seconds: 3));
   }
 
   /// Sign out — delete current session
   Future<void> signOut() async {
     try {
       await _restoreWebSession();
-      await _account.deleteSession(sessionId: 'current');
+      await _account
+          .deleteSession(sessionId: 'current')
+          .timeout(const Duration(seconds: 5));
     } catch (e) {
       debugPrint('Appwrite: Sign out error: $e');
     } finally {

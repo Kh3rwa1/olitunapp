@@ -80,11 +80,15 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, UserEntity?>> getCurrentUser() async {
-    try {
-      final result = await remoteDataSource.getCurrentUser();
-      return Right(result?.toEntity());
-    } on ServerException catch (e) {
-      return Left(_serverFailure(e));
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.getCurrentUser();
+        return Right(result?.toEntity());
+      } on ServerException catch (e) {
+        return Left(_serverFailure(e));
+      }
+    } else {
+      return const Left(NetworkFailure());
     }
   }
 

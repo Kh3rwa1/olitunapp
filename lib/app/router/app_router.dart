@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../core/motion/page_transitions.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
@@ -154,9 +156,35 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/splash',
-    redirect: (context, state) =>
-        adminHostRedirectFor(Uri.base.host, state.uri.path),
+    initialLocation: '/',
+    redirect: (context, state) {
+      final hostRedirect = adminHostRedirectFor(Uri.base.host, state.uri.path);
+      if (hostRedirect != null) return hostRedirect;
+
+      // On Web: if OAuth token is present, route to /splash to exchange it
+      if (kIsWeb) {
+        final userId = state.uri.queryParameters['userId'];
+        final secret = state.uri.queryParameters['secret'];
+        if (userId != null && secret != null && state.uri.path != '/splash') {
+          return '/splash';
+        }
+      }
+
+      // Check onboarding: if onboarding not completed and we are not on welcome/splash/login/privacy/terms/admin, redirect to /welcome
+      final showOnboarding = ref.read(onboardingProvider);
+      final path = state.uri.path;
+      final isAllowedDuringOnboarding = path == '/welcome' ||
+          path == '/splash' ||
+          path == '/login' ||
+          path == '/privacy' ||
+          path == '/terms' ||
+          path.startsWith('/admin');
+
+      if (showOnboarding && !isAllowedDuringOnboarding) {
+        return '/welcome';
+      }
+      return null;
+    },
     routes: [
       _peerRoute(
         path: '/splash',

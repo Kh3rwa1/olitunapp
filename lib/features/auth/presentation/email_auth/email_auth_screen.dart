@@ -128,11 +128,13 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
             _errorMessage = failure.message;
           });
         },
-        (_) {
+        (_) async {
           if (mounted) {
-            ref.read(onboardingProvider.notifier).completeOnboarding();
+            await ref.read(onboardingProvider.notifier).completeOnboarding();
             ref.invalidate(isAuthenticatedProvider);
-            context.go('/');
+            if (mounted) {
+              context.go('/');
+            }
           }
         },
       );
@@ -144,9 +146,12 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     }
   }
 
-  void _handleSkip() {
+  Future<void> _handleSkip() async {
     HapticFeedback.lightImpact();
-    context.go('/');
+    await ref.read(onboardingProvider.notifier).completeOnboarding();
+    if (mounted) {
+      context.go('/');
+    }
   }
 
   @override

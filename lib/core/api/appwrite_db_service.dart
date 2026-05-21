@@ -1,12 +1,13 @@
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import '../config/appwrite_config.dart';
 import '../auth/appwrite_auth_service.dart';
 import '../observability/crash_reporting.dart';
 import 'appwrite_query_paging.dart';
 
 class AppwriteDbService {
-  static const Duration _readTimeout = Duration(seconds: 6);
+  static const Duration _readTimeout = Duration(seconds: 3);
   static const Duration _writeTimeout = Duration(seconds: 15);
 
   final TablesDB _tablesDB;
@@ -31,6 +32,11 @@ class AppwriteDbService {
     bool paginate = true,
     int pageSize = AppwriteQueryPaging.defaultPageSize,
   }) async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
+
     AppwriteQueryPaging.validatePageSize(pageSize);
 
     if (!paginate || AppwriteQueryPaging.containsManualPagination(queries)) {
@@ -98,6 +104,10 @@ class AppwriteDbService {
     String collectionId,
     String documentId,
   ) async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
     final row = await _tablesDB
         .getRow(
           databaseId: AppwriteConfig.databaseId,
@@ -116,6 +126,10 @@ class AppwriteDbService {
     String documentId,
     Map<String, dynamic> data,
   ) async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
     // Remove 'id' from data payload — Appwrite uses documentId separately
     final payload = Map<String, dynamic>.from(data)..remove('id');
     // Remove null values
@@ -154,6 +168,10 @@ class AppwriteDbService {
     String documentId,
     Map<String, dynamic> data,
   ) async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
     final payload = Map<String, dynamic>.from(data)..remove('id');
     payload.removeWhere((key, value) => value == null);
 
@@ -186,6 +204,10 @@ class AppwriteDbService {
 
   /// Delete a document
   Future<void> deleteDocument(String collectionId, String documentId) async {
+    final connectivityResults = await Connectivity().checkConnectivity();
+    if (connectivityResults.contains(ConnectivityResult.none)) {
+      throw AppwriteException('No internet connection', 0, 'network_failure');
+    }
     try {
       await _tablesDB
           .deleteRow(

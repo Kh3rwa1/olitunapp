@@ -200,7 +200,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.pop(),
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
             ),
             body: Center(
@@ -519,7 +519,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               ),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: context.pop,
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
               actions: [
                 if (letter.audioUrl != null)

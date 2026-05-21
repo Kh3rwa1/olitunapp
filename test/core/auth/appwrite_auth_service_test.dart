@@ -3,14 +3,13 @@ import 'package:itun/core/auth/appwrite_auth_service.dart';
 
 void main() {
   group('googleOAuthUserMessage', () {
-    test('maps missing OAuth secrets to an actionable setup message', () {
+    test('passes through raw OAuth errors for diagnosis', () {
       final message = googleOAuthUserMessage(
         'Invalid OAuth2 Response. Key and Secret not available.',
       );
 
-      expect(message, contains('Google sign-in is not configured in Appwrite'));
-      expect(message, contains('Client ID'));
-      expect(message, contains('Client Secret'));
+      // Raw error is now surfaced directly instead of being remapped
+      expect(message, contains('Key and Secret'));
     });
 
     test('preserves unknown provider errors', () {

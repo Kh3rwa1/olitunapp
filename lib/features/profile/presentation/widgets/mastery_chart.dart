@@ -57,59 +57,36 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
     final now = DateTime.now();
     final weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-    // Check if there are no quizzes completed in user's history
-    final bool hasQuizzes = widget.stats.quizHistory.isNotEmpty;
-
     for (int i = 6; i >= 0; i--) {
       final day = now.subtract(Duration(days: i));
       final dayStr = weekdays[day.weekday % 7];
 
-      if (!hasQuizzes) {
-        // Premium realistic progression for demo
-        final mockAccuracies = [0.55, 0.68, 0.62, 0.78, 0.75, 0.88, 0.90];
-        points.add(
-          ChartDataPoint(
-            dayName: dayStr,
-            accuracy: mockAccuracies[6 - i],
-            quizCount: 0,
-            date: day,
-            isDemo: true,
-          ),
-        );
-      } else {
-        int totalCorrect = 0;
-        int totalQuestions = 0;
-        int count = 0;
+      int totalCorrect = 0;
+      int totalQuestions = 0;
+      int count = 0;
 
-        for (final result in widget.stats.quizHistory.values) {
-          final completedDate = DateTime.tryParse(result.completedAt);
-          if (completedDate != null &&
-              completedDate.year == day.year &&
-              completedDate.month == day.month &&
-              completedDate.day == day.day) {
-            totalCorrect += result.score.clamp(0, result.totalQuestions);
-            totalQuestions += result.totalQuestions;
-            count++;
-          }
+      for (final result in widget.stats.quizHistory.values) {
+        final completedDate = DateTime.tryParse(result.completedAt)?.toLocal();
+        if (completedDate != null &&
+            completedDate.year == day.year &&
+            completedDate.month == day.month &&
+            completedDate.day == day.day) {
+          totalCorrect += result.score.clamp(0, result.totalQuestions);
+          totalQuestions += result.totalQuestions;
+          count++;
         }
-
-        double accuracy = 0.0;
-        if (totalQuestions > 0) {
-          accuracy = totalCorrect / totalQuestions;
-        } else {
-          // Carry over previous day's accuracy to keep line continuous
-          accuracy = points.isNotEmpty ? points.last.accuracy : 0.0;
-        }
-
-        points.add(
-          ChartDataPoint(
-            dayName: dayStr,
-            accuracy: accuracy,
-            quizCount: count,
-            date: day,
-          ),
-        );
       }
+
+      final accuracy = totalQuestions > 0 ? totalCorrect / totalQuestions : 0.0;
+
+      points.add(
+        ChartDataPoint(
+          dayName: dayStr,
+          accuracy: accuracy,
+          quizCount: count,
+          date: day,
+        ),
+      );
     }
     return points;
   }
@@ -140,7 +117,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
     return LayoutBuilder(
       builder: (context, constraints) {
         final width = constraints.maxWidth;
-        const height = 240.0;
+        const height = 180.0;
 
         const leftPadding = 45.0;
         const rightPadding = 15.0;
@@ -301,77 +278,44 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Mastery Progression',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.2,
+                      Flexible(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Mastery Progression',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 16,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: -0.2,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            hasQuizzes
-                                ? 'Weekly accuracy tracking wave'
-                                : 'Baseline curve (Take quizzes to seed live data)',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
-                              color: isDark ? Colors.white38 : Colors.black38,
+                            const SizedBox(height: 2),
+                            Text(
+                              hasQuizzes
+                                  ? 'Weekly accuracy tracking'
+                                  : 'Take quizzes to see your progress',
+                              style: TextStyle(
+                                fontFamily: 'Poppins',
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: isDark ? Colors.white38 : Colors.black38,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
-                      if (!hasQuizzes)
-                        Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 5,
-                              ),
-                              decoration: BoxDecoration(
-                                color: AppColors.primary.withValues(alpha: 0.1),
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: AppColors.primary.withValues(
-                                    alpha: 0.2,
-                                  ),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.waves_rounded,
-                                    color: AppColors.primary,
-                                    size: 14,
-                                  ),
-                                  SizedBox(width: 6),
-                                  Text(
-                                    'PREVIEW',
-                                    style: TextStyle(
-                                      fontFamily: 'Poppins',
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.primary,
-                                      letterSpacing: 0.5,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            )
-                            .animate(onPlay: (c) => c.repeat())
-                            .shimmer(duration: 1800.ms, color: Colors.white24),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  Expanded(
+                   const SizedBox(height: 12),
+                  SizedBox(
+                    height: height,
                     child: GestureDetector(
                       onTapDown: (details) =>
                           _handleTap(details.localPosition, width, height),

@@ -37,9 +37,11 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     super.dispose();
   }
 
-  void _completeOnboarding() {
-    ref.read(onboardingProvider.notifier).completeOnboarding();
-    context.go('/');
+  Future<void> _completeOnboarding() async {
+    await ref.read(onboardingProvider.notifier).completeOnboarding();
+    if (mounted) {
+      context.go('/');
+    }
   }
 
   /// Determine if this is a desktop/wide screen where video onboarding is skipped

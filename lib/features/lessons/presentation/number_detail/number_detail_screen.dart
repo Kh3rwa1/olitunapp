@@ -205,7 +205,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.pop(),
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
             ),
             body: Center(
@@ -518,7 +518,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               title: Text(number.nameLatin),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: context.pop,
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
               actions: [
                 if (number.audioUrl != null)

@@ -18,9 +18,9 @@ class OnboardingNotifier extends StateNotifier<bool> {
   }
 
   Future<void> completeOnboarding() async {
+    state = false;
     await _ref
         .read(sharedPreferencesProvider)
         .setBool('show_onboarding', false);
-    state = false;
   }
 }

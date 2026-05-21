@@ -105,7 +105,7 @@ class LessonDetailScreen extends ConsumerWidget {
                     : null,
                 leading: IconButton(
                   icon: const Icon(Icons.arrow_back_rounded),
-                  onPressed: () => context.pop(),
+                  onPressed: () => context.canPop() ? context.pop() : context.go('/'),
                 ),
                 title: Text(
                   lessonTitle,
@@ -555,7 +555,7 @@ void _showCompletionSheet({
     isScrollControlled: true,
     backgroundColor: Colors.transparent,
     barrierColor: Colors.black.withValues(alpha: 0.7),
-    builder: (context) {
+    builder: (sheetContext) {
       return Stack(
         alignment: Alignment.topCenter,
         clipBehavior: Clip.none,
@@ -677,10 +677,15 @@ void _showCompletionSheet({
                   height: 52,
                   child: ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context); // Close sheet
-                      context.pop(); // Pop current LessonDetailScreen
+                      Navigator.pop(sheetContext); // Close sheet
                       if (quizId != null) {
-                        context.push('/quiz/$quizId');
+                        context.pushReplacement('/quiz/$quizId'); // Replace screen with quiz screen
+                      } else {
+                        if (context.canPop()) {
+                          context.pop(); // Pop current LessonDetailScreen
+                        } else {
+                          context.go('/');
+                        }
                       }
                     },
                     style: ElevatedButton.styleFrom(
@@ -715,8 +720,12 @@ void _showCompletionSheet({
                     height: 48,
                     child: TextButton(
                       onPressed: () {
-                        Navigator.pop(context); // Close sheet
-                        context.pop(); // Pop current LessonDetailScreen
+                        Navigator.pop(sheetContext); // Close sheet
+                        if (context.canPop()) {
+                          context.pop(); // Pop current LessonDetailScreen
+                        } else {
+                          context.go('/');
+                        }
                       },
                       style: TextButton.styleFrom(
                         foregroundColor: isDark

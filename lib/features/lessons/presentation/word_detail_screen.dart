@@ -199,7 +199,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () => context.pop(),
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
             ),
             body: Center(
@@ -480,7 +480,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
               title: Text(word.meaning),
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: context.pop,
+                onPressed: () => context.canPop() ? context.pop() : context.go('/'),
               ),
               actions: [
                 if (word.audioUrl != null)

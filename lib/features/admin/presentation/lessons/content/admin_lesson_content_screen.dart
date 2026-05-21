@@ -7,6 +7,7 @@ import '../../../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../lessons/presentation/widgets/dynamic_block_builder.dart';
+import 'controllers/block_reorder_controller.dart';
 import 'widgets/lesson_block_card.dart';
 import 'widgets/add_block_sheet.dart';
 import 'widgets/edit_block_sheet.dart';
@@ -197,12 +198,8 @@ class _AdminLessonContentScreenState
   }
 
   void _moveBlock(int oldIndex, int newIndex) {
-    if (oldIndex < newIndex) {
-      newIndex -= 1;
-    }
     setState(() {
-      final item = _blocks.removeAt(oldIndex);
-      _blocks.insert(newIndex, item);
+      _blocks = reorderLessonBlocks(_blocks, oldIndex, newIndex);
       _hasChanges = true;
     });
   }

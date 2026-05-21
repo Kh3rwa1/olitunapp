@@ -3,13 +3,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
+import 'settings/controllers/admin_maintenance_controller.dart';
 import 'widgets/admin_page_header.dart';
 import 'widgets/admin_form_widgets.dart';
-import '../../../core/auth/appwrite_auth_service.dart';
-import '../../../core/observability/crash_reporting.dart';
 import '../../../core/storage/upload_service.dart';
 import '../../../core/api/appwrite_db_service.dart';
-import '../../../core/storage/cache_service.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../../shared/providers/providers.dart';
 
@@ -615,24 +613,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     });
 
     try {
-      final auth = ref.read(appwriteAuthServiceProvider);
-
-      // 1. Wipe Appwrite content through the authenticated admin function.
-      final result = await auth.executeAdminMaintenance(
-        action: 'wipe_content',
-        confirmation: 'WIPE ALL',
-      );
-      final backupFileId = adminMaintenanceBackupFileId(result);
-      CrashReporting.addAdminMaintenanceBreadcrumb(
-        action: 'wipe_content',
-        backupFileId: backupFileId,
-      );
-
-      // 2. Clear local Hive content cache
-      await CacheService.clear();
-
-      // 3. Re-seed the database
-      await seedAppContent(ref);
+      final backupFileId = await AdminMaintenanceController(ref).wipeAndSeed();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -651,11 +632,6 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         );
       }
     } catch (e) {
-      CrashReporting.addAdminMaintenanceBreadcrumb(
-        action: 'wipe_content',
-        success: false,
-        error: e.toString(),
-      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -684,16 +660,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     });
 
     try {
-      final auth = ref.read(appwriteAuthServiceProvider);
-      final result = await auth.executeAdminMaintenance(
-        action: 'backup_content',
-        confirmation: 'BACKUP CONTENT',
-      );
-      final backupFileId = adminMaintenanceBackupFileId(result);
-      CrashReporting.addAdminMaintenanceBreadcrumb(
-        action: 'backup_content',
-        backupFileId: backupFileId,
-      );
+      final backupFileId = await AdminMaintenanceController(
+        ref,
+      ).backupContent();
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -712,11 +681,6 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         );
       }
     } catch (e) {
-      CrashReporting.addAdminMaintenanceBreadcrumb(
-        action: 'backup_content',
-        success: false,
-        error: e.toString(),
-      );
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

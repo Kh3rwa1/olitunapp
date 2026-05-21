@@ -766,6 +766,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await _loadSentences();
     } catch (e) {
       debugPrint('❌ add sentence FAILED: $e');
+      rethrow;
     }
   }
 
@@ -776,6 +777,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await _loadSentences();
     } catch (e) {
       debugPrint('❌ update sentence FAILED: $e');
+      rethrow;
     }
   }
 
@@ -786,6 +788,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await _loadSentences();
     } catch (e) {
       debugPrint('❌ delete sentence FAILED: $e');
+      rethrow;
     }
   }
 

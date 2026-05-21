@@ -374,7 +374,18 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();
-      ref.read(sentencesProvider.notifier).delete(sentence.id);
+      try {
+        await ref.read(sentencesProvider.notifier).delete(sentence.id);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete sentence: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -601,9 +612,20 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
       titleOlChiki: '',
       order: existing.length,
     );
-    await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
-    if (context.mounted) {
-      context.go('/admin/lessons/content/$id');
+    try {
+      await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
+      if (context.mounted) {
+        context.go('/admin/lessons/content/$id');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add subcategory: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -619,7 +641,18 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();
-      await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+      try {
+        await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete subcategory: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 }

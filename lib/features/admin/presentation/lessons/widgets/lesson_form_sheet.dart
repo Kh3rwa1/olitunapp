@@ -357,14 +357,26 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                                   : null,
                             );
 
-                            if (_isEditing) {
-                              await ref
-                                  .read(lessonNotifierProvider.notifier)
-                                  .updateLesson(newLesson);
-                            } else {
-                              await ref
-                                  .read(lessonNotifierProvider.notifier)
-                                  .addLesson(newLesson);
+                            try {
+                              if (_isEditing) {
+                                await ref
+                                    .read(lessonNotifierProvider.notifier)
+                                    .updateLesson(newLesson);
+                              } else {
+                                await ref
+                                    .read(lessonNotifierProvider.notifier)
+                                    .addLesson(newLesson);
+                              }
+                            } catch (e) {
+                              if (!context.mounted) return;
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Failed to save lesson: $e'),
+                                  backgroundColor: Colors.red,
+                                  behavior: SnackBarBehavior.floating,
+                                ),
+                              );
+                              return;
                             }
 
                             if (context.mounted) Navigator.pop(context);

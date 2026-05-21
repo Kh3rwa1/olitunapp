@@ -370,7 +370,18 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();
-      ref.read(wordsProvider.notifier).deleteWord(word.id);
+      try {
+        await ref.read(wordsProvider.notifier).deleteWord(word.id);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete word: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 
@@ -593,9 +604,20 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
       titleOlChiki: '',
       order: existing.length,
     );
-    await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
-    if (context.mounted) {
-      context.go('/admin/lessons/content/$id');
+    try {
+      await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
+      if (context.mounted) {
+        context.go('/admin/lessons/content/$id');
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to add subcategory: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
     }
   }
 
@@ -611,7 +633,18 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();
-      await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+      try {
+        await ref.read(lessonNotifierProvider.notifier).deleteLesson(lesson.id);
+      } catch (e) {
+        if (!context.mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to delete subcategory: $e'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
     }
   }
 }

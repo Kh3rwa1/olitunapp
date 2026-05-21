@@ -1678,6 +1678,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await _loadWords();
     } catch (e) {
       debugPrint('❌ add word FAILED: $e');
+      rethrow;
     }
   }
 
@@ -1688,6 +1689,7 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await _loadWords();
     } catch (e) {
       debugPrint('❌ update word FAILED: $e');
+      rethrow;
     }
   }
 
@@ -1698,12 +1700,13 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
       await _loadWords();
     } catch (e) {
       debugPrint('❌ delete word FAILED: $e');
+      rethrow;
     }
   }
 
-  void addWord(WordModel item) => add(item);
-  void updateWord(WordModel item) => update(item);
-  void deleteWord(String id) => delete(id);
+  Future<void> addWord(WordModel item) => add(item);
+  Future<void> updateWord(WordModel item) => update(item);
+  Future<void> deleteWord(String id) => delete(id);
 
   Future<void> seed() async {
     try {

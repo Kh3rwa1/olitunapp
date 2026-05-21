@@ -62,17 +62,26 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
 
   Future<void> addLesson(LessonEntity lesson) async {
     final result = await _repository.createLesson(lesson);
-    result.fold((failure) => null, (_) => loadLessons());
+    await result.fold<Future<void>>((failure) async {
+      state = AsyncValue.error(failure.message, StackTrace.current);
+      throw StateError(failure.message);
+    }, (_) => loadLessons());
   }
 
   Future<void> updateLesson(LessonEntity lesson) async {
     final result = await _repository.updateLesson(lesson);
-    result.fold((failure) => null, (_) => loadLessons());
+    await result.fold<Future<void>>((failure) async {
+      state = AsyncValue.error(failure.message, StackTrace.current);
+      throw StateError(failure.message);
+    }, (_) => loadLessons());
   }
 
   Future<void> deleteLesson(String id) async {
     final result = await _repository.deleteLesson(id);
-    result.fold((failure) => null, (_) => loadLessons());
+    await result.fold<Future<void>>((failure) async {
+      state = AsyncValue.error(failure.message, StackTrace.current);
+      throw StateError(failure.message);
+    }, (_) => loadLessons());
   }
 
   Future<void> seed() async {

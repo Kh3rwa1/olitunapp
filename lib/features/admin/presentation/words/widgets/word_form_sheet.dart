@@ -73,7 +73,7 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
     super.dispose();
   }
 
-  void _save() {
+  Future<void> _save() async {
     HapticFeedback.lightImpact();
     final word = WordModel(
       id: _isEditing ? widget.word!.id : const Uuid().v4(),
@@ -95,11 +95,24 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           ? _themeColorCtrl.text.trim()
           : null,
     );
-    if (_isEditing) {
-      ref.read(wordsProvider.notifier).updateWord(word);
-    } else {
-      ref.read(wordsProvider.notifier).addWord(word);
+    try {
+      if (_isEditing) {
+        await ref.read(wordsProvider.notifier).updateWord(word);
+      } else {
+        await ref.read(wordsProvider.notifier).addWord(word);
+      }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to save word: $e'),
+          backgroundColor: Colors.red,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+      return;
     }
+    if (!mounted) return;
     Navigator.pop(context);
   }
 

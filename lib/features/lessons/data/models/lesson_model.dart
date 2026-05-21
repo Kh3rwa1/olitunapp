@@ -20,7 +20,8 @@ class LessonModel extends LessonEntity {
     final dynamic rawBlocks = json['blocks'];
     List<dynamic> blocksJson = [];
     if (rawBlocks is String && rawBlocks.isNotEmpty) {
-      blocksJson = jsonDecode(rawBlocks);
+      final decoded = jsonDecode(rawBlocks);
+      if (decoded is List) blocksJson = decoded;
     } else if (rawBlocks is List) {
       blocksJson = rawBlocks;
     }
@@ -37,9 +38,10 @@ class LessonModel extends LessonEntity {
       order: json['order'] as int? ?? 0,
       estimatedMinutes: json['estimatedMinutes'] as int? ?? 5,
       isActive: json['isActive'] as bool? ?? true,
-      data: json['data'] as Map<String, dynamic>?,
+      data: _parseData(json['data']),
       blocks: blocksJson
-          .map((e) => LessonBlockModel.fromJson(e as Map<String, dynamic>))
+          .whereType<Map>()
+          .map((e) => LessonBlockModel.fromJson(e.cast<String, dynamic>()))
           .toList(),
     );
   }
@@ -95,6 +97,17 @@ class LessonModel extends LessonEntity {
   }
 }
 
+Map<String, dynamic>? _parseData(dynamic rawData) {
+  if (rawData is Map) return rawData.cast<String, dynamic>();
+  if (rawData is String && rawData.isNotEmpty) {
+    try {
+      final decoded = jsonDecode(rawData);
+      if (decoded is Map) return decoded.cast<String, dynamic>();
+    } catch (_) {}
+  }
+  return null;
+}
+
 class LessonBlockModel extends LessonBlockEntity {
   const LessonBlockModel({
     required super.type,
@@ -106,15 +119,7 @@ class LessonBlockModel extends LessonBlockEntity {
   });
 
   factory LessonBlockModel.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'];
-    Map<String, dynamic>? parsedData;
-    if (rawData is Map) {
-      parsedData = rawData.cast<String, dynamic>();
-    } else if (rawData is String && rawData.isNotEmpty) {
-      try {
-        parsedData = jsonDecode(rawData) as Map<String, dynamic>?;
-      } catch (_) {}
-    }
+    final parsedData = _parseData(json['data']);
 
     return LessonBlockModel(
       type: json['type'] as String? ?? 'text',

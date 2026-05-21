@@ -1,1 +1,0 @@
-Generate database/schema.sql

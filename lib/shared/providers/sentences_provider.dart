@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
@@ -765,7 +765,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await db.createDocument('sentences', item.id, item.toJson());
       await _loadSentences();
     } catch (e) {
-      debugPrint('❌ add sentence FAILED: $e');
+      AppLogger.debug('❌ add sentence FAILED: $e');
       rethrow;
     }
   }
@@ -776,7 +776,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await db.updateDocument('sentences', item.id, item.toJson());
       await _loadSentences();
     } catch (e) {
-      debugPrint('❌ update sentence FAILED: $e');
+      AppLogger.debug('❌ update sentence FAILED: $e');
       rethrow;
     }
   }
@@ -787,7 +787,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       await db.deleteDocument('sentences', id);
       await _loadSentences();
     } catch (e) {
-      debugPrint('❌ delete sentence FAILED: $e');
+      AppLogger.debug('❌ delete sentence FAILED: $e');
       rethrow;
     }
   }
@@ -797,7 +797,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
       final db = ref.read(appwriteDbServiceProvider);
       // Fetch all existing documents in the sentences collection to completely clear legacy records
       final existingDocs = await db.listDocuments('sentences');
-      debugPrint(
+      AppLogger.debug(
         '🧹 Clearing ${existingDocs.length} existing sentences from database before seeding...',
       );
       for (final doc in existingDocs) {
@@ -805,14 +805,14 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
         try {
           await db.deleteDocument('sentences', docId);
         } catch (e) {
-          debugPrint('⚠️ Failed to delete sentence document $docId: $e');
+          AppLogger.debug('⚠️ Failed to delete sentence document $docId: $e');
         }
       }
     } catch (e) {
-      debugPrint('⚠️ Error clearing sentences collection: $e');
+      AppLogger.debug('⚠️ Error clearing sentences collection: $e');
     }
 
-    debugPrint(
+    AppLogger.debug(
       '🌱 Seeding ${_seedSentences.length} clean sentences to database...',
     );
     for (final item in _seedSentences) {
@@ -820,7 +820,7 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
         final db = ref.read(appwriteDbServiceProvider);
         await db.createDocument('sentences', item.id, item.toJson());
       } catch (e) {
-        debugPrint('⚠️ Error seeding sentence ${item.id}: $e');
+        AppLogger.debug('⚠️ Error seeding sentence ${item.id}: $e');
       }
     }
     await _loadSentences();

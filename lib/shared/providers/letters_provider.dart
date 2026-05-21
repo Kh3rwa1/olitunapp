@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
@@ -96,7 +96,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         );
       }
     } catch (e) {
-      debugPrint('❌ _loadLetters network FAILED: $e');
+      AppLogger.debug('❌ _loadLetters network FAILED: $e');
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_deduplicate(_seedLetters));
       }
@@ -124,7 +124,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       await db.createDocument('letters', item.id, item.toJson());
       await _loadLetters();
     } catch (e) {
-      debugPrint('❌ add letter FAILED: $e');
+      AppLogger.debug('❌ add letter FAILED: $e');
     }
   }
 
@@ -134,7 +134,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       await db.updateDocument('letters', item.id, item.toJson());
       await _loadLetters();
     } catch (e) {
-      debugPrint('❌ update letter FAILED: $e');
+      AppLogger.debug('❌ update letter FAILED: $e');
     }
   }
 
@@ -144,7 +144,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       await db.deleteDocument('letters', id);
       await _loadLetters();
     } catch (e) {
-      debugPrint('❌ delete letter FAILED: $e');
+      AppLogger.debug('❌ delete letter FAILED: $e');
     }
   }
 

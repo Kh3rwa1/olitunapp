@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
@@ -46,7 +46,7 @@ class BannersNotifier
         banners.map((e) => e.toJson()).toList(),
       );
     } catch (e, stack) {
-      debugPrint('❌ load banners FAILED: $e');
+      AppLogger.debug('❌ load banners FAILED: $e');
       if (cached == null) {
         state = AsyncValue.error(e, stack);
       }
@@ -59,7 +59,7 @@ class BannersNotifier
       await db.createDocument('banners', item.id, item.toJson());
       await _loadBanners();
     } catch (e) {
-      debugPrint('❌ add banner FAILED: $e');
+      AppLogger.debug('❌ add banner FAILED: $e');
     }
   }
 
@@ -69,7 +69,7 @@ class BannersNotifier
       await db.updateDocument('banners', item.id, item.toJson());
       await _loadBanners();
     } catch (e) {
-      debugPrint('❌ update banner FAILED: $e');
+      AppLogger.debug('❌ update banner FAILED: $e');
     }
   }
 
@@ -79,7 +79,7 @@ class BannersNotifier
       await db.deleteDocument('banners', id);
       await _loadBanners();
     } catch (e) {
-      debugPrint('❌ delete banner FAILED: $e');
+      AppLogger.debug('❌ delete banner FAILED: $e');
     }
   }
 

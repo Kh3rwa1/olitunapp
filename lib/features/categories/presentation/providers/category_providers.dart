@@ -10,7 +10,7 @@ import '../../data/repositories/category_repository_impl.dart';
 final categoryRemoteDataSourceProvider = Provider<CategoryRemoteDataSource>((
   ref,
 ) {
-  final client = AppwriteAuthService().client;
+  final client = ref.watch(appwriteAuthServiceProvider).client;
   return CategoryRemoteDataSourceImpl(Databases(client));
 });
 

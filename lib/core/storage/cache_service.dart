@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:hive/hive.dart';
@@ -77,7 +78,7 @@ class CacheService {
       );
       await box.put(key, jsonEncode(entry.toJson()));
     } catch (e) {
-      debugPrint('[Cache] write error ($key): $e');
+      AppLogger.debug('[Cache] write error ($key): $e');
       rethrow;
     }
   }
@@ -102,7 +103,7 @@ class CacheService {
       }
       return null;
     } catch (e) {
-      debugPrint('[Cache] read error ($key): $e');
+      AppLogger.debug('[Cache] read error ($key): $e');
       return null;
     }
   }
@@ -124,7 +125,7 @@ class CacheService {
           .map((e) => fromJson(e as Map<String, dynamic>))
           .toList(growable: false);
     } catch (e) {
-      debugPrint('[Cache] read list error ($key): $e');
+      AppLogger.debug('[Cache] read list error ($key): $e');
       return null;
     }
   }
@@ -170,7 +171,9 @@ class CacheService {
       }
     }
     await box.deleteAll(keysToDelete);
-    debugPrint('[Cache] evictStale: removed ${keysToDelete.length} entries');
+    AppLogger.debug(
+      '[Cache] evictStale: removed ${keysToDelete.length} entries',
+    );
     return keysToDelete.length;
   }
 

@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
 import '../../../core/config/appwrite_config.dart';
@@ -45,7 +45,7 @@ class AdminAuthService {
       const adminId = AppwriteConfig.adminTeamId;
       return teamIds.any((id) => id == adminId);
     } catch (e) {
-      debugPrint('AdminAuth: membership lookup failed: $e');
+      AppLogger.debug('AdminAuth: membership lookup failed: $e');
       return false;
     }
   }
@@ -75,7 +75,7 @@ class AdminAuthService {
       }
       return isAdmin;
     } catch (e) {
-      debugPrint('AdminAuth: sign-in failed: $e');
+      AppLogger.debug('AdminAuth: sign-in failed: $e');
       return false;
     }
   }

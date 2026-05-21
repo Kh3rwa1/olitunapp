@@ -8,11 +8,17 @@ import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
+import 'package:itun/shared/quiz_engine/quiz_engine.dart';
 
 /// Concrete lightweight fake implementation of AppwriteDbService to supply test data.
 class FakeAppwriteDbService implements AppwriteDbService {
   List<Map<String, dynamic>> wordsData = [];
   List<Map<String, dynamic>> sentencesData = [];
+  List<Map<String, dynamic>> quizzesData = [];
+  int quizListRequests = 0;
+  int createRequests = 0;
+  int updateRequests = 0;
+  int deleteRequests = 0;
 
   @override
   Future<List<Map<String, dynamic>>> listDocuments(
@@ -25,8 +31,40 @@ class FakeAppwriteDbService implements AppwriteDbService {
       return wordsData;
     } else if (collectionId == 'sentences') {
       return sentencesData;
+    } else if (collectionId == 'quizzes') {
+      quizListRequests++;
+      return quizzesData;
     }
     return [];
+  }
+
+  @override
+  Future<void> createDocument(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+  ) async {
+    createRequests++;
+    quizzesData.add({...data, 'id': documentId});
+  }
+
+  @override
+  Future<void> updateDocument(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+  ) async {
+    updateRequests++;
+    final index = quizzesData.indexWhere((doc) => doc['id'] == documentId);
+    if (index >= 0) {
+      quizzesData[index] = {...data, 'id': documentId};
+    }
+  }
+
+  @override
+  Future<void> deleteDocument(String collectionId, String documentId) async {
+    deleteRequests++;
+    quizzesData.removeWhere((doc) => doc['id'] == documentId);
   }
 
   @override
@@ -49,6 +87,7 @@ void main() {
 
     setUp(() async {
       fakeDb = FakeAppwriteDbService();
+      await CacheService.clear();
       SharedPreferences.setMockInitialValues({});
       prefs = await SharedPreferences.getInstance();
     });
@@ -397,6 +436,95 @@ void main() {
         for (final id in hybridIds) {
           expect(quizzes.any((q) => q.id == id), isFalse);
         }
+      },
+    );
+
+    test('quiz engine can be tested directly without Riverpod or Appwrite', () {
+      final quizzes = QuizEngine.compile(
+        baseQuizzes: const [],
+        words: dummyWords,
+        sentences: dummySentences,
+      );
+
+      expect(quizzes.any((q) => q.categoryId == 'alphabets'), isTrue);
+      expect(quizzes.any((q) => q.categoryId == 'numbers'), isTrue);
+      expect(
+        quizzes.where((q) => q.id.startsWith('quiz_dynamic_vocab_')).length,
+        greaterThanOrEqualTo(5),
+      );
+      expect(
+        quizzes
+            .expand((q) => q.questions)
+            .where((q) => q.type == 'fill_blank')
+            .length,
+        greaterThan(0),
+      );
+    });
+
+    test(
+      'admin CRUD updates quizzes optimistically without full reloads',
+      () async {
+        fakeDb.quizzesData = [
+          QuizModel(
+            id: 'existing_quiz',
+            categoryId: 'custom',
+            title: 'Existing Quiz',
+          ).toJson(),
+        ];
+
+        final container = ProviderContainer(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            appwriteDbServiceProvider.overrideWithValue(fakeDb),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        await waitForQuizzes(container);
+        expect(fakeDb.quizListRequests, 1);
+
+        final notifier = container.read(quizzesProvider.notifier);
+        await notifier.add(
+          QuizModel(id: 'new_quiz', categoryId: 'custom', title: 'New Quiz'),
+        );
+        expect(fakeDb.createRequests, 1);
+        expect(fakeDb.quizListRequests, 1);
+        expect(
+          container
+              .read(quizzesProvider)
+              .value!
+              .any((quiz) => quiz.id == 'new_quiz'),
+          isTrue,
+        );
+
+        await notifier.update(
+          QuizModel(
+            id: 'new_quiz',
+            categoryId: 'custom',
+            title: 'Updated Quiz',
+          ),
+        );
+        expect(fakeDb.updateRequests, 1);
+        expect(fakeDb.quizListRequests, 1);
+        expect(
+          container
+              .read(quizzesProvider)
+              .value!
+              .firstWhere((quiz) => quiz.id == 'new_quiz')
+              .title,
+          'Updated Quiz',
+        );
+
+        await notifier.delete('new_quiz');
+        expect(fakeDb.deleteRequests, 1);
+        expect(fakeDb.quizListRequests, 1);
+        expect(
+          container
+              .read(quizzesProvider)
+              .value!
+              .any((quiz) => quiz.id == 'new_quiz'),
+          isFalse,
+        );
       },
     );
   });

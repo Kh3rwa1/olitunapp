@@ -1,0 +1,550 @@
+import '../models/content_models.dart';
+
+class QuizCatalog {
+  const QuizCatalog._();
+
+  static final List<QuizModel> defaultQuizzes = [
+    QuizModel(
+      id: 'quiz_alphabets_basics',
+      categoryId: 'alphabets',
+      title: 'Alphabet Basics',
+      questions: [
+        QuizQuestion(
+          promptOlChiki: 'ᱚ',
+          promptLatin: 'Which sound does this letter make?',
+          optionsOlChiki: ['a', 'i', 'u', 'o'],
+          optionsLatin: ['a', 'i', 'u', 'o'],
+        ),
+        QuizQuestion(
+          promptOlChiki: 'ᱛ',
+          promptLatin: 'Identify this consonant:',
+          optionsOlChiki: ['at', 'ag', 'al', 'ak'],
+          optionsLatin: ['at', 'ag', 'al', 'ak'],
+        ),
+      ],
+    ),
+    QuizModel(
+      id: 'quiz_numbers_arithmetic',
+      categoryId: 'numbers',
+      title: 'Arithmetic Mastery',
+      order: 1,
+      questions: [
+        QuizQuestion(
+          promptOlChiki: '᱒ + ᱓ = ?',
+          promptLatin: 'What is the sum of ᱒ (2) and ᱓ (3)?',
+          optionsOlChiki: ['4', '5', '6', '7'],
+          optionsLatin: ['4', '5', '6', '7'],
+          correctIndex: 1,
+        ),
+        QuizQuestion(
+          promptOlChiki: '᱙ - ᱕ = ?',
+          promptLatin: 'What is the result of ᱙ (9) minus ᱕ (5)?',
+          optionsOlChiki: ['3', '4', '5', '0'],
+          optionsLatin: ['3', '4', '5', '0'],
+          correctIndex: 1,
+        ),
+        QuizQuestion(
+          promptOlChiki: '᱓ × ᱓ = ?',
+          promptLatin: 'What is the product of ᱓ (3) multiplied by ᱓ (3)?',
+          optionsOlChiki: ['6', '7', '8', '9'],
+          optionsLatin: ['6', '7', '8', '9'],
+          correctIndex: 3,
+        ),
+        QuizQuestion(
+          promptOlChiki: '᱘ ÷ ᱒ = ?',
+          promptLatin: 'What is the result of ᱘ (8) divided by ᱒ (2)?',
+          optionsOlChiki: ['2', '3', '4', '5'],
+          optionsLatin: ['2', '3', '4', '5'],
+          correctIndex: 2,
+        ),
+      ],
+    ),
+  ];
+}
+
+class QuizEngine {
+  const QuizEngine._();
+
+  static const List<_VocabQuizSpec> _vocabSpecs = [
+    _VocabQuizSpec(
+      idSuffix: 'basics',
+      keys: ['greeting', 'basic'],
+      title: 'Greetings & Basics Quiz',
+      level: 'beginner',
+      order: 2,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'family',
+      keys: ['family'],
+      title: 'Family & Relationships Quiz',
+      level: 'beginner',
+      order: 3,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'daily',
+      keys: ['daily'],
+      title: 'Daily Use Words Quiz',
+      level: 'intermediate',
+      order: 4,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'colors',
+      keys: ['colors'],
+      title: 'Colors Quiz',
+      level: 'beginner',
+      order: 5,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'nature',
+      keys: ['nature'],
+      title: 'Animals & Nature Quiz',
+      level: 'intermediate',
+      order: 6,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'time',
+      keys: ['time'],
+      title: 'Months & Seasons Quiz',
+      level: 'advanced',
+      order: 7,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'trending',
+      keys: ['trending'],
+      title: 'Trending Words Quiz',
+      level: 'advanced',
+      order: 8,
+    ),
+    _VocabQuizSpec(
+      idSuffix: 'body',
+      keys: ['body'],
+      title: 'Body Parts Quiz',
+      level: 'intermediate',
+      order: 9,
+    ),
+  ];
+
+  static const List<_SentenceQuizSpec> _sentenceSpecs = [
+    _SentenceQuizSpec(
+      idSuffix: 'basics',
+      key: 'basics',
+      title: 'Basic Sentences Quiz',
+      level: 'beginner',
+      order: 10,
+    ),
+    _SentenceQuizSpec(
+      idSuffix: 'conversations',
+      key: 'conversations',
+      title: 'Daily Conversations Quiz',
+      level: 'intermediate',
+      order: 11,
+    ),
+    _SentenceQuizSpec(
+      idSuffix: 'polite',
+      key: 'polite',
+      title: 'Greetings & Politeness Quiz',
+      level: 'beginner',
+      order: 12,
+    ),
+    _SentenceQuizSpec(
+      idSuffix: 'time_weather',
+      key: 'time_weather',
+      title: 'Time & Weather Quiz',
+      level: 'advanced',
+      order: 13,
+    ),
+  ];
+
+  static const List<_HybridQuizSpec> _hybridSpecs = [
+    _HybridQuizSpec(
+      id: 'quiz_dynamic_hybrid_beginner',
+      categoryId: 'cat_vocab',
+      title: 'Daily Mixed Challenge',
+      level: 'beginner',
+      order: 14,
+      wordKeys: ['greeting', 'basic', 'family', 'colors'],
+      sentenceKeys: ['basics', 'polite'],
+      targetCount: 10,
+    ),
+    _HybridQuizSpec(
+      id: 'quiz_dynamic_hybrid_intermediate',
+      categoryId: 'cat_sentences',
+      title: 'Mastery Mixed Challenge',
+      level: 'intermediate',
+      order: 15,
+      wordKeys: ['daily', 'nature', 'body'],
+      sentenceKeys: ['conversations'],
+      targetCount: 10,
+    ),
+    _HybridQuizSpec(
+      id: 'quiz_dynamic_hybrid_advanced',
+      categoryId: 'cat_sentences',
+      title: 'Grand Mixed Challenge',
+      level: 'advanced',
+      order: 16,
+      wordKeys: ['time', 'trending'],
+      sentenceKeys: ['time_weather'],
+      targetCount: 12,
+    ),
+  ];
+
+  static List<QuizModel> compile({
+    required List<QuizModel> baseQuizzes,
+    required List<WordModel> words,
+    required List<SentenceModel> sentences,
+  }) {
+    final compiled = <QuizModel>[
+      for (final quiz in baseQuizzes)
+        if (quiz.categoryId != 'cat_vocab' &&
+            quiz.categoryId != 'cat_sentences')
+          quiz,
+    ];
+
+    _addMissingDefaults(compiled);
+    compiled.addAll(_compileVocabularyQuizzes(words));
+    compiled.addAll(_compileSentenceQuizzes(sentences, words));
+    compiled.addAll(_compileHybridQuizzes(words, sentences));
+    return compiled;
+  }
+
+  static List<QuizQuestion> sentenceQuestions(
+    List<SentenceModel> sentences,
+    List<WordModel> words,
+  ) {
+    return [
+      for (final sentence in sentences) ?_sentenceQuestion(sentence, words),
+    ];
+  }
+
+  static List<WordModel> wordDistractors(
+    WordModel correctWord,
+    List<WordModel> allWords,
+  ) {
+    final sameCategory = allWords.where((word) {
+      final correctCategory = correctWord.category;
+      final candidateCategory = word.category;
+      if (word.id == correctWord.id) return false;
+      if (correctCategory == 'greeting' || correctCategory == 'basic') {
+        return candidateCategory == 'greeting' || candidateCategory == 'basic';
+      }
+      return candidateCategory == correctCategory;
+    }).toList();
+
+    final fallback = allWords.where((word) {
+      return word.id != correctWord.id &&
+          !sameCategory.any((candidate) => candidate.id == word.id);
+    });
+
+    return (<WordModel>[
+      ...sameCategory,
+      ...fallback,
+    ]..shuffle()).take(3).toList();
+  }
+
+  static void _addMissingDefaults(List<QuizModel> compiled) {
+    for (final categoryId in const ['alphabets', 'numbers']) {
+      if (!compiled.any((quiz) => quiz.categoryId == categoryId)) {
+        compiled.addAll(
+          QuizCatalog.defaultQuizzes.where(
+            (quiz) => quiz.categoryId == categoryId,
+          ),
+        );
+      }
+    }
+  }
+
+  static Iterable<QuizModel> _compileVocabularyQuizzes(List<WordModel> words) {
+    return [
+      for (final spec in _vocabSpecs)
+        if (_wordsForKeys(words, spec.keys) case final pool
+            when pool.isNotEmpty)
+          QuizModel(
+            id: 'quiz_dynamic_vocab_${spec.idSuffix}',
+            categoryId: 'cat_vocab',
+            title: spec.title,
+            level: spec.level,
+            order: spec.order,
+            questions: _wordQuestions(pool.takeShuffled(10), words),
+          ),
+    ];
+  }
+
+  static Iterable<QuizModel> _compileSentenceQuizzes(
+    List<SentenceModel> sentences,
+    List<WordModel> words,
+  ) {
+    return [
+      for (final spec in _sentenceSpecs)
+        if (sentenceQuestions(_sentencesForKeys(sentences, [spec.key]), words)
+            case final questions when questions.isNotEmpty)
+          QuizModel(
+            id: 'quiz_dynamic_sentences_${spec.idSuffix}',
+            categoryId: 'cat_sentences',
+            title: spec.title,
+            level: spec.level,
+            order: spec.order,
+            questions: questions.take(10).toList(),
+          ),
+    ];
+  }
+
+  static Iterable<QuizModel> _compileHybridQuizzes(
+    List<WordModel> words,
+    List<SentenceModel> sentences,
+  ) {
+    return [
+      for (final spec in _hybridSpecs) ?_hybridQuiz(spec, words, sentences),
+    ];
+  }
+
+  static QuizModel? _hybridQuiz(
+    _HybridQuizSpec spec,
+    List<WordModel> allWords,
+    List<SentenceModel> allSentences,
+  ) {
+    final wordPool = _wordsForKeys(allWords, spec.wordKeys);
+    final sentencePool = _sentencesForKeys(allSentences, spec.sentenceKeys);
+    if (wordPool.isEmpty && sentencePool.isEmpty) return null;
+
+    final splitCount = (spec.targetCount / 2).round();
+    final questions = <QuizQuestion>[
+      ..._wordQuestions(wordPool.takeShuffled(splitCount), allWords),
+      ...sentenceQuestions(sentencePool.takeShuffled(splitCount), allWords),
+    ];
+
+    questions.addAll(
+      _wordQuestions(
+        _unusedWords(
+          wordPool,
+          questions,
+        ).takeShuffled(spec.targetCount - questions.length),
+        allWords,
+      ),
+    );
+
+    questions.addAll(
+      _wordQuestions(
+        _unusedWords(
+          allWords,
+          questions,
+        ).takeShuffled(spec.targetCount - questions.length),
+        allWords,
+      ),
+    );
+
+    if (questions.isEmpty) return null;
+
+    questions.shuffle();
+    return QuizModel(
+      id: spec.id,
+      categoryId: spec.categoryId,
+      title: spec.title,
+      level: spec.level,
+      order: spec.order,
+      questions: questions.take(spec.targetCount).toList(),
+    );
+  }
+
+  static List<WordModel> _unusedWords(
+    List<WordModel> words,
+    List<QuizQuestion> questions,
+  ) {
+    final prompts = questions.map((question) => question.promptOlChiki).toSet();
+    return words.where((word) => !prompts.contains(word.wordOlChiki)).toList();
+  }
+
+  static List<QuizQuestion> _wordQuestions(
+    List<WordModel> words,
+    List<WordModel> allWords,
+  ) {
+    return [for (final word in words) _wordQuestion(word, allWords)];
+  }
+
+  static QuizQuestion _wordQuestion(WordModel word, List<WordModel> allWords) {
+    final options = <WordModel>[word, ...wordDistractors(word, allWords)]
+      ..shuffle();
+    return QuizQuestion(
+      promptOlChiki: word.wordOlChiki,
+      promptLatin: 'Choose the correct English meaning for this word.',
+      optionsOlChiki: options.map((option) => option.wordOlChiki).toList(),
+      optionsLatin: options
+          .map((option) => '${option.wordOlChiki} (${option.meaning})')
+          .toList(),
+      correctIndex: options.indexWhere((option) => option.id == word.id),
+    );
+  }
+
+  static QuizQuestion? _sentenceQuestion(
+    SentenceModel sentence,
+    List<WordModel> words,
+  ) {
+    final matchedWord = words
+        .where(
+          (word) =>
+              word.wordOlChiki.length >= 2 &&
+              sentence.sentenceOlChiki.contains(word.wordOlChiki),
+        )
+        .firstOrNull;
+
+    if (matchedWord != null) {
+      return _matchedSentenceQuestion(sentence, matchedWord, words);
+    }
+
+    final targetWord = sentence.sentenceOlChiki
+        .split(RegExp(r'\s+'))
+        .map((word) => word.replaceAll(RegExp(r'[᱾,?.!\-#%&()]'), '').trim())
+        .where((word) => word.length >= 3)
+        .firstOrNull;
+    if (targetWord == null) return null;
+
+    final options = <String>[
+      targetWord,
+      ...words.takeShuffled(3).map((word) => word.wordOlChiki),
+    ];
+    return _fillBlankQuestion(
+      sentence: sentence,
+      targetWord: targetWord,
+      optionsOlChiki: options,
+      optionsLatin: options,
+      promptLatin: 'Complete the sentence with the correct word.',
+    );
+  }
+
+  static QuizQuestion _matchedSentenceQuestion(
+    SentenceModel sentence,
+    WordModel matchedWord,
+    List<WordModel> words,
+  ) {
+    final options = <WordModel>[
+      matchedWord,
+      ...wordDistractors(matchedWord, words),
+    ]..shuffle();
+
+    return _fillBlankQuestion(
+      sentence: sentence,
+      targetWord: matchedWord.wordOlChiki,
+      optionsOlChiki: options.map((word) => word.wordOlChiki).toList(),
+      optionsLatin: options
+          .map((word) => '${word.wordOlChiki} (${word.meaning})')
+          .toList(),
+      promptLatin:
+          'Choose the word that means "${matchedWord.meaning}" to complete the sentence.',
+    );
+  }
+
+  static QuizQuestion _fillBlankQuestion({
+    required SentenceModel sentence,
+    required String targetWord,
+    required List<String> optionsOlChiki,
+    required List<String> optionsLatin,
+    required String promptLatin,
+  }) {
+    final indices = List<int>.generate(optionsOlChiki.length, (index) => index)
+      ..shuffle();
+    final shuffledOptionsOlChiki = [
+      for (final index in indices) optionsOlChiki[index],
+    ];
+    final shuffledOptionsLatin = [
+      for (final index in indices) optionsLatin[index],
+    ];
+
+    return QuizQuestion(
+      type: 'fill_blank',
+      promptOlChiki: 'Fill in the blank:',
+      promptLatin: promptLatin,
+      optionsOlChiki: shuffledOptionsOlChiki,
+      optionsLatin: shuffledOptionsLatin,
+      correctIndex: indices.indexOf(0),
+      blankSentenceOlChiki: sentence.sentenceOlChiki.replaceAll(
+        targetWord,
+        '___',
+      ),
+      blankSentenceLatin: sentence.meaning,
+      correctAnswer: targetWord,
+    );
+  }
+
+  static List<WordModel> _wordsForKeys(
+    List<WordModel> words,
+    List<String> keys,
+  ) {
+    return words.where((word) => keys.contains(word.category)).toList();
+  }
+
+  static List<SentenceModel> _sentencesForKeys(
+    List<SentenceModel> sentences,
+    List<String> keys,
+  ) {
+    return sentences
+        .where((sentence) => keys.contains(sentence.category))
+        .toList();
+  }
+}
+
+class _VocabQuizSpec {
+  const _VocabQuizSpec({
+    required this.idSuffix,
+    required this.keys,
+    required this.title,
+    required this.level,
+    required this.order,
+  });
+
+  final String idSuffix;
+  final List<String> keys;
+  final String title;
+  final String level;
+  final int order;
+}
+
+class _SentenceQuizSpec {
+  const _SentenceQuizSpec({
+    required this.idSuffix,
+    required this.key,
+    required this.title,
+    required this.level,
+    required this.order,
+  });
+
+  final String idSuffix;
+  final String key;
+  final String title;
+  final String level;
+  final int order;
+}
+
+class _HybridQuizSpec {
+  const _HybridQuizSpec({
+    required this.id,
+    required this.categoryId,
+    required this.title,
+    required this.level,
+    required this.order,
+    required this.wordKeys,
+    required this.sentenceKeys,
+    required this.targetCount,
+  });
+
+  final String id;
+  final String categoryId;
+  final String title;
+  final String level;
+  final int order;
+  final List<String> wordKeys;
+  final List<String> sentenceKeys;
+  final int targetCount;
+}
+
+extension _ShuffledTake<T> on List<T> {
+  List<T> takeShuffled(int count) {
+    if (count <= 0 || isEmpty) return const [];
+    return (List<T>.from(this)..shuffle()).take(count).toList();
+  }
+}
+
+extension _FirstOrNull<T> on Iterable<T> {
+  T? get firstOrNull {
+    final iterator = this.iterator;
+    return iterator.moveNext() ? iterator.current : null;
+  }
+}

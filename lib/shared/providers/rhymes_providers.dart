@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
@@ -57,7 +57,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       await db.createDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
     } catch (e) {
-      debugPrint('❌ add rhyme FAILED: $e');
+      AppLogger.debug('❌ add rhyme FAILED: $e');
     }
   }
 
@@ -67,7 +67,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       await db.updateDocument('rhymes', item.id, item.toJson());
       await _loadRhymes();
     } catch (e) {
-      debugPrint('❌ update rhyme FAILED: $e');
+      AppLogger.debug('❌ update rhyme FAILED: $e');
     }
   }
 
@@ -77,7 +77,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       await db.deleteDocument('rhymes', id);
       await _loadRhymes();
     } catch (e) {
-      debugPrint('❌ delete rhyme FAILED: $e');
+      AppLogger.debug('❌ delete rhyme FAILED: $e');
     }
   }
 
@@ -113,7 +113,7 @@ class RhymeCategoriesNotifier
       );
       state = AsyncValue.data(data.map(RhymeCategoryModel.fromJson).toList());
     } catch (e, st) {
-      debugPrint('Error loading rhyme categories: $e');
+      AppLogger.debug('Error loading rhyme categories: $e');
       state = AsyncValue.error(e, st);
     }
   }
@@ -124,7 +124,7 @@ class RhymeCategoriesNotifier
       await db.createDocument('rhyme_categories', item.id, item.toJson());
       await _load();
     } catch (e) {
-      debugPrint('Error adding rhyme category: $e');
+      AppLogger.debug('Error adding rhyme category: $e');
       rethrow;
     }
   }
@@ -135,7 +135,7 @@ class RhymeCategoriesNotifier
       await db.updateDocument('rhyme_categories', item.id, item.toJson());
       await _load();
     } catch (e) {
-      debugPrint('Error updating rhyme category: $e');
+      AppLogger.debug('Error updating rhyme category: $e');
       rethrow;
     }
   }
@@ -146,7 +146,7 @@ class RhymeCategoriesNotifier
       await db.deleteDocument('rhyme_categories', id);
       await _load();
     } catch (e) {
-      debugPrint('Error deleting rhyme category: $e');
+      AppLogger.debug('Error deleting rhyme category: $e');
       rethrow;
     }
   }
@@ -179,7 +179,7 @@ class RhymeSubcategoriesNotifier
         data.map(RhymeSubcategoryModel.fromJson).toList(),
       );
     } catch (e, st) {
-      debugPrint('Error loading rhyme subcategories: $e');
+      AppLogger.debug('Error loading rhyme subcategories: $e');
       state = AsyncValue.error(e, st);
     }
   }
@@ -190,7 +190,7 @@ class RhymeSubcategoriesNotifier
       await db.createDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
     } catch (e) {
-      debugPrint('Error adding rhyme subcategory: $e');
+      AppLogger.debug('Error adding rhyme subcategory: $e');
       rethrow;
     }
   }
@@ -201,7 +201,7 @@ class RhymeSubcategoriesNotifier
       await db.updateDocument('rhyme_subcategories', item.id, item.toJson());
       await _load();
     } catch (e) {
-      debugPrint('Error updating rhyme subcategory: $e');
+      AppLogger.debug('Error updating rhyme subcategory: $e');
       rethrow;
     }
   }
@@ -212,7 +212,7 @@ class RhymeSubcategoriesNotifier
       await db.deleteDocument('rhyme_subcategories', id);
       await _load();
     } catch (e) {
-      debugPrint('Error deleting rhyme subcategory: $e');
+      AppLogger.debug('Error deleting rhyme subcategory: $e');
       rethrow;
     }
   }

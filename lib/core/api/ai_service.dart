@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -104,7 +105,7 @@ class AiService {
       );
 
       if (response.statusCode == 429) {
-        debugPrint('AiService: 429 rate-limited on $endpointName');
+        AppLogger.debug('AiService: 429 rate-limited on $endpointName');
         // Fail closed — surface the error to the caller in all modes.
         return TranslateResult(
           translation: 'Rate limit reached. Please try again later.',
@@ -114,7 +115,9 @@ class AiService {
       // Function HTTP endpoint returns 200; the Executions REST API
       // returns 201 with an Execution object wrapping the body.
       if (response.statusCode != 200 && response.statusCode != 201) {
-        debugPrint('AiService HTTP ${response.statusCode}: ${response.body}');
+        AppLogger.debug(
+          'AiService HTTP ${response.statusCode}: ${response.body}',
+        );
         return _failClosed(
           'Service error (${response.statusCode}). Please try again.',
         );
@@ -127,7 +130,7 @@ class AiService {
 
       final int? innerStatusCode = parsed['_appwriteStatusCode'] as int?;
       if (innerStatusCode == 429 || response.statusCode == 429) {
-        debugPrint('AiService: 429 rate-limited on $endpointName');
+        AppLogger.debug('AiService: 429 rate-limited on $endpointName');
         return TranslateResult(
           translation: 'Rate limit reached. Please try again later.',
           isError: true,
@@ -135,7 +138,7 @@ class AiService {
       }
 
       if (parsed['success'] != true || parsed['data'] == null) {
-        debugPrint('AiService API error: ${parsed['message']}');
+        AppLogger.debug('AiService API error: ${parsed['message']}');
         return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
       }
       final d = parsed['data'] as Map<String, dynamic>;
@@ -145,7 +148,7 @@ class AiService {
         cached: d['cached'] == true,
       );
     } catch (e) {
-      debugPrint('AiService error: $e');
+      AppLogger.debug('AiService error: $e');
       return _failClosed('Connection error. Please check your network.');
     }
   }
@@ -195,7 +198,7 @@ Map<String, dynamic>? _unwrapAppwriteExecution(String body) {
     }
     return raw;
   } catch (e) {
-    debugPrint('AiService: response parse failed: $e');
+    AppLogger.debug('AiService: response parse failed: $e');
     return null;
   }
 }

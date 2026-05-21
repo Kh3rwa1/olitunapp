@@ -1,4 +1,6 @@
 import 'package:appwrite/appwrite.dart';
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 
@@ -55,6 +57,36 @@ void main() {
           'backup': {'fileId': 'backup-1'},
         }),
         'backup-1',
+      );
+    });
+  });
+
+  group('isTransientSessionValidationFailure', () {
+    test('allows cached session only for network and timeout failures', () {
+      expect(
+        isTransientSessionValidationFailure(
+          AppwriteException('offline', 0, 'network_failure'),
+        ),
+        isTrue,
+      );
+      expect(
+        isTransientSessionValidationFailure(TimeoutException('slow')),
+        isTrue,
+      );
+    });
+
+    test('fails closed for non-auth Appwrite errors', () {
+      expect(
+        isTransientSessionValidationFailure(
+          AppwriteException('bad request', 400, 'general_argument_invalid'),
+        ),
+        isFalse,
+      );
+      expect(
+        isTransientSessionValidationFailure(
+          AppwriteException('forbidden', 403, 'user_unauthorized'),
+        ),
+        isFalse,
       );
     });
   });

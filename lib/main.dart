@@ -1,3 +1,4 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
@@ -78,12 +79,12 @@ Future<void> main() async {
         );
       },
       (error, stack) {
-        debugPrint('Uncaught zone error: $error');
+        AppLogger.debug('Uncaught zone error: $error');
         CrashReporting.recordError(error, stack);
       },
     );
   } catch (e, stack) {
-    debugPrint('Fatal initialization error: $e\n$stack');
+    AppLogger.debug('Fatal initialization error: $e\n$stack');
     runApp(
       MaterialApp(
         home: Scaffold(

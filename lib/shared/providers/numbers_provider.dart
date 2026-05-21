@@ -1,5 +1,5 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
@@ -134,7 +134,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       await db.createDocument('numbers', item.id, item.toJson());
       await _loadNumbers();
     } catch (e) {
-      debugPrint('❌ add number FAILED: $e');
+      AppLogger.debug('❌ add number FAILED: $e');
     }
   }
 
@@ -144,7 +144,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       await db.updateDocument('numbers', item.id, item.toJson());
       await _loadNumbers();
     } catch (e) {
-      debugPrint('❌ update number FAILED: $e');
+      AppLogger.debug('❌ update number FAILED: $e');
     }
   }
 
@@ -154,7 +154,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       await db.deleteDocument('numbers', id);
       await _loadNumbers();
     } catch (e) {
-      debugPrint('❌ delete number FAILED: $e');
+      AppLogger.debug('❌ delete number FAILED: $e');
     }
   }
 
@@ -168,7 +168,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
         final db = ref.read(appwriteDbServiceProvider);
         await db.createDocument('numbers', item.id, item.toJson());
       } catch (e) {
-        debugPrint('Number already exists or error: $e');
+        AppLogger.debug('Number already exists or error: $e');
       }
     }
     await _loadNumbers();

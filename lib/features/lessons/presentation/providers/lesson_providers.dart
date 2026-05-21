@@ -8,7 +8,7 @@ import '../../data/datasources/lesson_remote_datasource.dart';
 import '../../data/repositories/lesson_repository_impl.dart';
 
 final lessonRemoteDataSourceProvider = Provider<LessonRemoteDataSource>((ref) {
-  final client = AppwriteAuthService().client;
+  final client = ref.watch(appwriteAuthServiceProvider).client;
   return LessonRemoteDataSourceImpl(Databases(client));
 });
 

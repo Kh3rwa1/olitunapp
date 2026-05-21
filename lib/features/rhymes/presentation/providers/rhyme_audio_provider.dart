@@ -1,6 +1,6 @@
+import 'package:itun/core/logging/app_logger.dart';
 import 'dart:async';
 
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -53,7 +53,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
         );
       },
       onError: (Object e) {
-        debugPrint('RhymeAudio: Player stream error: $e');
+        AppLogger.debug('RhymeAudio: Player stream error: $e');
         state = const RhymeAudioState();
         unawaited(_player.stop());
       },
@@ -67,7 +67,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     String? artworkUrl,
   }) async {
     if (url == null || url.trim().isEmpty) {
-      debugPrint('RhymeAudio: No URL provided for $rhymeId');
+      AppLogger.debug('RhymeAudio: No URL provided for $rhymeId');
       return;
     }
 
@@ -105,7 +105,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
       );
       unawaited(_player.play());
     } catch (e) {
-      debugPrint('RhymeAudio: Error playing $url: $e');
+      AppLogger.debug('RhymeAudio: Error playing $url: $e');
       state = const RhymeAudioState();
       unawaited(_player.stop());
     }
@@ -115,7 +115,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     try {
       await _player.stop();
     } catch (e) {
-      debugPrint('RhymeAudio: Error stopping player: $e');
+      AppLogger.debug('RhymeAudio: Error stopping player: $e');
     }
     state = const RhymeAudioState();
   }

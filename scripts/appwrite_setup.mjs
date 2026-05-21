@@ -50,11 +50,48 @@ const adminWritePermissions = [
   `delete("team:${ADMIN_TEAM_ID}")`,
 ];
 
-const functionOnlyCollections = new Set(['translation_cache', 'rate_limits']);
+const adminReadOnlyPermissions = [
+  `read("team:${ADMIN_TEAM_ID}")`,
+];
+
+const adminOnlyPermissions = [
+  `read("team:${ADMIN_TEAM_ID}")`,
+  `create("team:${ADMIN_TEAM_ID}")`,
+  `update("team:${ADMIN_TEAM_ID}")`,
+  `delete("team:${ADMIN_TEAM_ID}")`,
+];
+
+const functionOnlyCollections = new Set([
+  'translation_cache',
+  'rate_limits',
+  'circle_events',
+  'reward_events',
+  'weekly_circle_recaps',
+]);
+
+const adminReadBackendWriteCollections = new Set([
+  'circle_members',
+  'user_badges',
+  'user_mistakes',
+  'mistake_review_sessions',
+  'streak_shields',
+  'bakhed_listening_progress',
+]);
+
+const adminOnlyCollections = new Set([
+  'admin_audit_logs',
+  'gamification_config',
+]);
 
 function permissionsForCollection(collectionId) {
   if (functionOnlyCollections.has(collectionId)) {
     return [];
+  }
+  if (adminReadBackendWriteCollections.has(collectionId)) {
+    return adminReadOnlyPermissions;
+  }
+  if (adminOnlyCollections.has(collectionId)) {
+    return adminOnlyPermissions;
   }
   return adminWritePermissions;
 }
@@ -333,6 +370,208 @@ const collections = [
       { key: 'idx_key', type: 'unique', attributes: ['settingKey'] },
     ],
   },
+  // ── Admin-controlled gamification CMS ──
+  {
+    id: 'bravo_messages',
+    name: 'Bravo Messages',
+    attrs: [
+      { type: 'string', key: 'messageId', size: 100, required: true },
+      { type: 'string', key: 'trigger', size: 80, required: true },
+      { type: 'string', key: 'title', size: 255, required: true },
+      { type: 'string', key: 'body', size: 2048, required: true },
+      { type: 'string', key: 'language', size: 20, required: false, default: 'en' },
+      { type: 'string', key: 'scriptMode', size: 20, required: false, default: 'both' },
+      { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'all' },
+      { type: 'integer', key: 'weight', required: false, default: 1, min: 0, max: 100 },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'string', key: 'startsAt', size: 30, required: false },
+      { type: 'string', key: 'endsAt', size: 30, required: false },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_trigger_status', type: 'key', attributes: ['trigger', 'status'] },
+      { key: 'idx_active_status', type: 'key', attributes: ['isActive', 'status'] },
+    ],
+  },
+  {
+    id: 'badges',
+    name: 'Badges',
+    attrs: [
+      { type: 'string', key: 'badgeId', size: 100, required: true },
+      { type: 'string', key: 'name', size: 255, required: true },
+      { type: 'string', key: 'description', size: 2048, required: true },
+      { type: 'string', key: 'category', size: 40, required: false, default: 'learning' },
+      { type: 'string', key: 'icon', size: 20, required: false, default: '🏆' },
+      { type: 'integer', key: 'target', required: false, default: 1, min: 1, max: 10000 },
+      { type: 'integer', key: 'rewardStars', required: false, default: 0, min: 0, max: 100 },
+      { type: 'string', key: 'unlockRule', size: 4096, required: false },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'sortOrder', required: false, default: 0 },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_badge_id', type: 'unique', attributes: ['badgeId'] },
+      { key: 'idx_category_status', type: 'key', attributes: ['category', 'status'] },
+      { key: 'idx_sort', type: 'key', attributes: ['sortOrder'], orders: ['ASC'] },
+    ],
+  },
+  {
+    id: 'user_badges',
+    name: 'User Badges',
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'badgeId', size: 100, required: true },
+      { type: 'integer', key: 'progress', required: false, default: 0 },
+      { type: 'integer', key: 'target', required: false, default: 1 },
+      { type: 'boolean', key: 'isUnlocked', required: false, default: false },
+      { type: 'string', key: 'unlockedAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_user_badge', type: 'unique', attributes: ['userId', 'badgeId'] },
+      { key: 'idx_user_unlocked', type: 'key', attributes: ['userId', 'isUnlocked'] },
+    ],
+  },
+  {
+    id: 'learning_circle_templates',
+    name: 'Learning Circle Templates',
+    attrs: [
+      { type: 'string', key: 'templateId', size: 100, required: true },
+      { type: 'string', key: 'name', size: 255, required: true },
+      { type: 'string', key: 'subtitle', size: 255, required: false },
+      { type: 'string', key: 'description', size: 2048, required: false },
+      { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'beginner' },
+      { type: 'string', key: 'theme', size: 40, required: false, default: 'leaf' },
+      { type: 'string', key: 'icon', size: 20, required: false, default: '🌱' },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'sortOrder', required: false, default: 0 },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_template_id', type: 'unique', attributes: ['templateId'] },
+      { key: 'idx_template_publish', type: 'key', attributes: ['status', 'isActive', 'learnerLevel'] },
+      { key: 'idx_template_sort', type: 'key', attributes: ['sortOrder'], orders: ['ASC'] },
+    ],
+  },
+  {
+    id: 'mission_templates',
+    name: 'Mission Templates',
+    attrs: [
+      { type: 'string', key: 'missionId', size: 100, required: true },
+      { type: 'string', key: 'title', size: 255, required: true },
+      { type: 'string', key: 'description', size: 2048, required: true },
+      { type: 'string', key: 'type', size: 60, required: true },
+      { type: 'integer', key: 'targetCount', required: false, default: 1, min: 1, max: 10 },
+      { type: 'integer', key: 'rewardStars', required: false, default: 0, min: 0, max: 100 },
+      { type: 'integer', key: 'circlePoints', required: false, default: 0, min: 0, max: 100 },
+      { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'all' },
+      { type: 'boolean', key: 'isQuickWin', required: false, default: false },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'sortOrder', required: false, default: 0 },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_mission_id', type: 'unique', attributes: ['missionId'] },
+      { key: 'idx_mission_publish', type: 'key', attributes: ['status', 'isActive'] },
+      { key: 'idx_mission_type', type: 'key', attributes: ['type'] },
+    ],
+  },
+  {
+    id: 'reward_messages',
+    name: 'Reward Messages',
+    attrs: [
+      { type: 'string', key: 'messageId', size: 100, required: true },
+      { type: 'string', key: 'trigger', size: 80, required: true },
+      { type: 'string', key: 'title', size: 255, required: true },
+      { type: 'string', key: 'body', size: 2048, required: true },
+      { type: 'string', key: 'rewardLabel', size: 255, required: false },
+      { type: 'string', key: 'icon', size: 20, required: false, default: '⭐' },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_reward_trigger', type: 'key', attributes: ['trigger', 'status'] },
+      { key: 'idx_reward_active', type: 'key', attributes: ['isActive', 'status'] },
+    ],
+  },
+  {
+    id: 'quiz_feedback_messages',
+    name: 'Quiz Feedback Messages',
+    attrs: [
+      { type: 'string', key: 'messageId', size: 100, required: true },
+      { type: 'string', key: 'type', size: 50, required: true },
+      { type: 'string', key: 'title', size: 255, required: true },
+      { type: 'string', key: 'body', size: 2048, required: true },
+      { type: 'string', key: 'status', size: 20, required: false, default: 'draft' },
+      { type: 'boolean', key: 'isActive', required: false, default: true },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_feedback_type', type: 'key', attributes: ['type', 'status'] },
+      { key: 'idx_feedback_active', type: 'key', attributes: ['isActive', 'status'] },
+    ],
+  },
+  {
+    id: 'gamification_config',
+    name: 'Gamification Config',
+    attrs: [
+      { type: 'string', key: 'configId', size: 40, required: true },
+      { type: 'integer', key: 'weeklyCircleMaxMembers', required: false, default: 20, min: 1, max: 50 },
+      { type: 'integer', key: 'weeklyCircleMinActiveMembers', required: false, default: 8, min: 1, max: 50 },
+      { type: 'integer', key: 'bakhedCompletionThreshold', required: false, default: 80, min: 50, max: 95 },
+      { type: 'integer', key: 'streakShieldMax', required: false, default: 2, min: 0, max: 5 },
+      { type: 'boolean', key: 'quickWinEnabled', required: false, default: true },
+      { type: 'boolean', key: 'weeklyCircleEnabled', required: false, default: true },
+      { type: 'boolean', key: 'badgesEnabled', required: false, default: true },
+      { type: 'boolean', key: 'mistakeReviewEnabled', required: false, default: true },
+      { type: 'string', key: 'updatedBy', size: 100, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_config_id', type: 'unique', attributes: ['configId'] },
+    ],
+  },
+  {
+    id: 'admin_audit_logs',
+    name: 'Admin Audit Logs',
+    attrs: [
+      { type: 'string', key: 'actorUserId', size: 100, required: false },
+      { type: 'string', key: 'action', size: 100, required: true },
+      { type: 'string', key: 'targetType', size: 100, required: true },
+      { type: 'string', key: 'targetId', size: 120, required: false },
+      { type: 'string', key: 'metadata', size: 10000, required: false },
+      { type: 'boolean', key: 'success', required: false, default: true },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_audit_action', type: 'key', attributes: ['action'] },
+      { key: 'idx_audit_target', type: 'key', attributes: ['targetType', 'targetId'] },
+      { key: 'idx_audit_created', type: 'key', attributes: ['createdAt'], orders: ['DESC'] },
+    ],
+  },
   // ── Weekly Learning Circle collections ──
   // Used by cloud functions: assignUserToWeeklyCircle, recordCircleEvent,
   // getCircleLeaderboard, finalizeWeeklyCircles.
@@ -342,9 +581,13 @@ const collections = [
     attrs: [
       { type: 'string', key: 'circleId', size: 36, required: true },
       { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'string', key: 'circleName', size: 255, required: false, default: 'Starter Circle' },
+      { type: 'string', key: 'circleTemplateId', size: 100, required: false },
       { type: 'string', key: 'learnerLevel', size: 20, required: false, default: 'beginner' },
       { type: 'string', key: 'activityTier', size: 20, required: false, default: 'medium' },
       { type: 'string', key: 'scriptMode', size: 20, required: false, default: 'latin' },
+      { type: 'string', key: 'theme', size: 40, required: false, default: 'leaf' },
+      { type: 'string', key: 'icon', size: 20, required: false, default: '🌱' },
       { type: 'integer', key: 'memberCount', required: false, default: 0 },
       { type: 'integer', key: 'targetMembers', required: false, default: 20 },
       { type: 'integer', key: 'maxMembers', required: false, default: 20 },
@@ -355,6 +598,7 @@ const collections = [
     ],
     indexes: [
       { key: 'idx_week_status', type: 'key', attributes: ['weekId', 'status'] },
+      { key: 'idx_week_level', type: 'key', attributes: ['weekId', 'learnerLevel', 'activityTier', 'scriptMode', 'status'] },
       { key: 'idx_ends_status', type: 'key', attributes: ['endsAt', 'status'] },
     ],
   },
@@ -392,15 +636,178 @@ const collections = [
       { type: 'string', key: 'circleId', size: 36, required: true },
       { type: 'string', key: 'userId', size: 36, required: true },
       { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'string', key: 'dateKey', size: 10, required: false },
       { type: 'string', key: 'eventType', size: 50, required: true },
       { type: 'string', key: 'sourceId', size: 100, required: true },
+      { type: 'string', key: 'dedupeKey', size: 64, required: false },
       { type: 'integer', key: 'points', required: false, default: 0 },
       { type: 'string', key: 'metadata', size: 4096, required: false },
       { type: 'string', key: 'createdAt', size: 30, required: false },
     ],
     indexes: [
-      { key: 'idx_dup_check', type: 'key', attributes: ['userId', 'weekId', 'eventType', 'sourceId'] },
+      { key: 'idx_dup_check', type: 'unique', attributes: ['dedupeKey'] },
+      { key: 'idx_user_week_event', type: 'key', attributes: ['userId', 'weekId', 'eventType', 'sourceId'] },
+      { key: 'idx_user_date_event', type: 'key', attributes: ['userId', 'dateKey', 'eventType', 'sourceId'] },
       { key: 'idx_circle_week', type: 'key', attributes: ['circleId', 'weekId'] },
+      { key: 'idx_event_created', type: 'key', attributes: ['createdAt'], orders: ['DESC'] },
+    ],
+  },
+  {
+    id: 'weekly_circle_recaps',
+    name: 'Weekly Circle Recaps',
+    attrs: [
+      { type: 'string', key: 'recapId', size: 100, required: true },
+      { type: 'string', key: 'circleId', size: 36, required: true },
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'weekId', size: 20, required: true },
+      { type: 'integer', key: 'rank', required: false, default: 0 },
+      { type: 'integer', key: 'totalMembers', required: false, default: 0 },
+      { type: 'integer', key: 'circlePoints', required: false, default: 0 },
+      { type: 'integer', key: 'starsAwarded', required: false, default: 0 },
+      { type: 'string', key: 'badgesAwarded', size: 4096, required: false },
+      { type: 'string', key: 'summary', size: 2048, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_recap_user_week', type: 'unique', attributes: ['userId', 'weekId'] },
+      { key: 'idx_recap_circle', type: 'key', attributes: ['circleId'] },
+    ],
+  },
+  {
+    id: 'reward_events',
+    name: 'Reward Events',
+    attrs: [
+      { type: 'string', key: 'rewardEventId', size: 100, required: true },
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'sourceType', size: 80, required: true },
+      { type: 'string', key: 'sourceId', size: 120, required: true },
+      { type: 'integer', key: 'starsAwarded', required: false, default: 0, min: 0, max: 100 },
+      { type: 'string', key: 'badgeId', size: 100, required: false },
+      { type: 'string', key: 'reason', size: 2048, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_reward_event', type: 'unique', attributes: ['rewardEventId'] },
+      { key: 'idx_reward_user', type: 'key', attributes: ['userId'] },
+      { key: 'idx_reward_source', type: 'key', attributes: ['sourceType', 'sourceId'] },
+    ],
+  },
+  // ── Mistake review, streak shields, and Bakhed cultural learning ──
+  {
+    id: 'user_mistakes',
+    name: 'User Mistakes',
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'quizId', size: 100, required: true },
+      { type: 'string', key: 'questionId', size: 100, required: true },
+      { type: 'integer', key: 'questionIndex', required: false, default: 0 },
+      { type: 'string', key: 'wrongAnswer', size: 2048, required: false },
+      { type: 'string', key: 'correctAnswer', size: 2048, required: false },
+      { type: 'string', key: 'questionSnapshot', size: 10000, required: false },
+      { type: 'integer', key: 'timesMissed', required: false, default: 1 },
+      { type: 'integer', key: 'timesReviewed', required: false, default: 0 },
+      { type: 'boolean', key: 'isMastered', required: false, default: false },
+      { type: 'string', key: 'masteredAt', size: 30, required: false },
+      { type: 'string', key: 'lastMissedAt', size: 30, required: false },
+      { type: 'string', key: 'lastReviewedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_mistake_user_question', type: 'unique', attributes: ['userId', 'quizId', 'questionId'] },
+      { key: 'idx_mistake_user_mastered', type: 'key', attributes: ['userId', 'isMastered'] },
+    ],
+  },
+  {
+    id: 'mistake_review_sessions',
+    name: 'Mistake Review Sessions',
+    attrs: [
+      { type: 'string', key: 'sessionId', size: 100, required: true },
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'questionIds', size: 4096, required: true },
+      { type: 'integer', key: 'score', required: false, default: 0 },
+      { type: 'integer', key: 'total', required: false, default: 0 },
+      { type: 'string', key: 'completedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_session_id', type: 'unique', attributes: ['sessionId'] },
+      { key: 'idx_session_user', type: 'key', attributes: ['userId'] },
+    ],
+  },
+  {
+    id: 'streak_shields',
+    name: 'Streak Shields',
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'integer', key: 'availableShields', required: false, default: 0, min: 0, max: 5 },
+      { type: 'integer', key: 'maxShields', required: false, default: 2, min: 0, max: 5 },
+      { type: 'string', key: 'earnedAt', size: 30, required: false },
+      { type: 'string', key: 'usedAt', size: 30, required: false },
+      { type: 'string', key: 'source', size: 80, required: false },
+    ],
+    indexes: [
+      { key: 'idx_shield_user', type: 'unique', attributes: ['userId'] },
+    ],
+  },
+  {
+    id: 'bakhed_lyrics',
+    name: 'Bakhed Lyrics',
+    attrs: [
+      { type: 'string', key: 'bakhedId', size: 100, required: true },
+      { type: 'integer', key: 'lineIndex', required: true },
+      { type: 'integer', key: 'startMs', required: false, default: 0 },
+      { type: 'integer', key: 'endMs', required: false, default: 0 },
+      { type: 'string', key: 'olChiki', size: 2048, required: false },
+      { type: 'string', key: 'latin', size: 2048, required: false },
+      { type: 'string', key: 'meaning', size: 2048, required: false },
+    ],
+    indexes: [
+      { key: 'idx_bakhed_lyric', type: 'key', attributes: ['bakhedId', 'lineIndex'], orders: ['ASC', 'ASC'] },
+    ],
+  },
+  {
+    id: 'bakhed_vocabulary',
+    name: 'Bakhed Vocabulary',
+    attrs: [
+      { type: 'string', key: 'bakhedId', size: 100, required: true },
+      { type: 'string', key: 'olChiki', size: 255, required: false },
+      { type: 'string', key: 'latin', size: 255, required: false },
+      { type: 'string', key: 'meaning', size: 2048, required: false },
+      { type: 'string', key: 'audioFileId', size: 100, required: false },
+      { type: 'integer', key: 'sortOrder', required: false, default: 0 },
+    ],
+    indexes: [
+      { key: 'idx_bakhed_vocab', type: 'key', attributes: ['bakhedId', 'sortOrder'], orders: ['ASC', 'ASC'] },
+    ],
+  },
+  {
+    id: 'bakhed_cultural_notes',
+    name: 'Bakhed Cultural Notes',
+    attrs: [
+      { type: 'string', key: 'noteId', size: 100, required: true },
+      { type: 'string', key: 'bakhedId', size: 100, required: true },
+      { type: 'string', key: 'title', size: 255, required: true },
+      { type: 'string', key: 'body', size: 10000, required: true },
+      { type: 'string', key: 'source', size: 2048, required: false },
+      { type: 'boolean', key: 'isPublished', required: false, default: false },
+    ],
+    indexes: [
+      { key: 'idx_bakhed_note', type: 'key', attributes: ['bakhedId', 'isPublished'] },
+    ],
+  },
+  {
+    id: 'bakhed_listening_progress',
+    name: 'Bakhed Listening Progress',
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'bakhedId', size: 100, required: true },
+      { type: 'integer', key: 'listenedPercent', required: false, default: 0, min: 0, max: 100 },
+      { type: 'boolean', key: 'completed80Percent', required: false, default: false },
+      { type: 'string', key: 'completedAt', size: 30, required: false },
+      { type: 'integer', key: 'lastPositionMs', required: false, default: 0 },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_bakhed_progress', type: 'unique', attributes: ['userId', 'bakhedId'] },
+      { key: 'idx_bakhed_completed', type: 'key', attributes: ['userId', 'completed80Percent'] },
     ],
   },
 ];

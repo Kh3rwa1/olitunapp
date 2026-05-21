@@ -1,9 +1,12 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'dart:async';
+import 'dart:convert';
 
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
+import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
 import '../../../circle/presentation/providers/circle_providers.dart';
 
@@ -46,6 +49,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
   StreamSubscription<Duration?>? _durationSub;
   final Ref? _ref;
   bool _eventTriggeredForCurrent = false;
+  int _lastSyncedProgressPercent = -1;
 
   RhymeAudioNotifier({Ref? ref}) : _ref = ref, super(const RhymeAudioState()) {
     _playerStateSub = _player.playerStateStream.listen(
@@ -94,12 +98,32 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     final rhymeId = state.playingRhymeId;
     if (dur > Duration.zero && pos > Duration.zero && rhymeId != null) {
       final percentage = pos.inMilliseconds / dur.inMilliseconds;
+      final percent = (percentage * 100).round().clamp(0, 100);
+      final shouldSyncProgress =
+          percent >= _lastSyncedProgressPercent + 10 ||
+          (percent >= 80 && _lastSyncedProgressPercent < 80);
+      if (shouldSyncProgress) {
+        _lastSyncedProgressPercent = percent;
+        unawaited(
+          _recordBakhedProgress(
+            bakhedId: rhymeId,
+            listenedPercent: percent,
+            lastPositionMs: pos.inMilliseconds,
+          ),
+        );
+      }
       if (percentage >= 0.8 && !_eventTriggeredForCurrent) {
         _eventTriggeredForCurrent = true;
         _ref?.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
         _ref
             ?.read(circleLeaderboardProvider.notifier)
-            .recordEvent('bakhed_completed_80_percent', rhymeId);
+            .recordEvent(
+              'bakhed_completed_80_percent',
+              rhymeId,
+              metadata: {
+                'listenedPercent': (percentage * 100).round().clamp(80, 100),
+              },
+            );
       }
     }
   }
@@ -129,6 +153,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     try {
       await _player.stop();
       _eventTriggeredForCurrent = false;
+      _lastSyncedProgressPercent = -1;
       await _player
           .setAudioSource(
             AudioSource.uri(
@@ -183,6 +208,28 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     final trimmed = value?.trim();
     if (trimmed == null || trimmed.isEmpty) return null;
     return Uri.tryParse(trimmed);
+  }
+
+  Future<void> _recordBakhedProgress({
+    required String bakhedId,
+    required int listenedPercent,
+    required int lastPositionMs,
+  }) async {
+    try {
+      final ref = _ref;
+      if (ref == null) return;
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
+      await functions.createExecution(
+        functionId: 'recordBakhedProgress',
+        body: jsonEncode({
+          'bakhedId': bakhedId,
+          'listenedPercent': listenedPercent,
+          'lastPositionMs': lastPositionMs,
+        }),
+      );
+    } catch (e) {
+      AppLogger.debug('RhymeAudio: progress sync skipped: $e');
+    }
   }
 
   @override

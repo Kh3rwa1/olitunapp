@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/gamification_content_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
 
 class Badge {
@@ -12,6 +14,8 @@ class Badge {
   final int currentProgress;
   final int targetProgress;
   final bool isUnlocked;
+  final int rewardStars;
+  final String unlockedAt;
 
   const Badge({
     required this.name,
@@ -21,10 +25,12 @@ class Badge {
     required this.currentProgress,
     required this.targetProgress,
     required this.isUnlocked,
+    this.rewardStars = 0,
+    this.unlockedAt = '',
   });
 }
 
-class BadgesGridWidget extends StatefulWidget {
+class BadgesGridWidget extends ConsumerStatefulWidget {
   final UserStatsEntity stats;
   final bool isDark;
 
@@ -35,13 +41,34 @@ class BadgesGridWidget extends StatefulWidget {
   });
 
   @override
-  State<BadgesGridWidget> createState() => _BadgesGridWidgetState();
+  ConsumerState<BadgesGridWidget> createState() => _BadgesGridWidgetState();
 }
 
-class _BadgesGridWidgetState extends State<BadgesGridWidget> {
+class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
   String _selectedCategory = 'ALL';
 
   List<Badge> _getBadges() {
+    final remoteBadges =
+        ref.watch(userGamificationSummaryProvider).valueOrNull?.badges ??
+        const <UserGamificationBadge>[];
+    if (remoteBadges.isNotEmpty) {
+      return remoteBadges
+          .map(
+            (badge) => Badge(
+              name: badge.name,
+              description: badge.description,
+              icon: badge.icon,
+              category: badge.category.toUpperCase(),
+              currentProgress: badge.progress,
+              targetProgress: badge.target <= 0 ? 1 : badge.target,
+              isUnlocked: badge.isUnlocked,
+              rewardStars: badge.rewardStars,
+              unlockedAt: badge.unlockedAt,
+            ),
+          )
+          .toList(growable: false);
+    }
+
     final stats = widget.stats;
     return [
       // --- Learning Badges ---
@@ -354,7 +381,7 @@ class _BadgesGridWidgetState extends State<BadgesGridWidget> {
                       ),
                       const SizedBox(width: 6),
                       Text(
-                        'UNLOCKED',
+                        badge.rewardStars > 0 ? 'REWARDED' : 'UNLOCKED',
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
@@ -364,6 +391,17 @@ class _BadgesGridWidgetState extends State<BadgesGridWidget> {
                       ),
                     ],
                   ),
+                  if (badge.rewardStars > 0) ...[
+                    const SizedBox(height: 8),
+                    Text(
+                      '+${badge.rewardStars} stars',
+                      style: GoogleFonts.inter(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w800,
+                        color: widget.isDark ? Colors.white54 : Colors.black45,
+                      ),
+                    ),
+                  ],
                 ],
                 const SizedBox(height: 24),
                 // CTA
@@ -402,7 +440,14 @@ class _BadgesGridWidgetState extends State<BadgesGridWidget> {
   @override
   Widget build(BuildContext context) {
     final allBadges = _getBadges();
-    final categories = ['ALL', 'LEARNING', 'CULTURE', 'HABIT', 'CIRCLE'];
+    final categories = [
+      'ALL',
+      'LEARNING',
+      'CULTURE',
+      'HABIT',
+      'CIRCLE',
+      'QUIZ',
+    ];
 
     final filteredBadges = _selectedCategory == 'ALL'
         ? allBadges
@@ -560,7 +605,7 @@ class _BadgesGridWidgetState extends State<BadgesGridWidget> {
                               ),
                               const SizedBox(width: 2),
                               Text(
-                                'UNLOCKED',
+                                badge.rewardStars > 0 ? 'REWARDED' : 'UNLOCKED',
                                 style: GoogleFonts.inter(
                                   fontSize: 7,
                                   fontWeight: FontWeight.w900,

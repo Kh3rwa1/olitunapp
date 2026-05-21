@@ -20,6 +20,17 @@ class WeeklyCircleCard extends ConsumerWidget {
         final points = data['currentUserMember']?['circlePoints'] ?? 0;
         final pointsToNext = data['pointsToNextRank'] ?? 0;
         final endsAtStr = data['endsAt'] ?? '';
+        final isStarterCircle = data['isStarterCircle'] == true;
+        final starterMessage =
+            data['starterCircleMessage'] as String? ??
+            'You’re warming up while more learners join.';
+        final rankIcon = isStarterCircle
+            ? '🌱'
+            : rank <= 3
+            ? '🏆'
+            : rank <= (total / 2).ceil()
+            ? '🔥'
+            : '🌱';
 
         // Calculate remaining time
         String remainingTime = 'Ends soon';
@@ -72,7 +83,7 @@ class WeeklyCircleCard extends ConsumerWidget {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Weekly Circle',
+                        isStarterCircle ? 'Starter Circle' : 'Weekly Circle',
                         style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
@@ -111,7 +122,9 @@ class WeeklyCircleCard extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        '#$rank of $total learners',
+                        isStarterCircle
+                            ? 'Warming up'
+                            : '#$rank of $total learners',
                         style: TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.w900,
@@ -122,7 +135,9 @@ class WeeklyCircleCard extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '$points points this week',
+                        isStarterCircle
+                            ? starterMessage
+                            : '$points points this week',
                         style: TextStyle(
                           fontSize: 14,
                           color: isDark ? Colors.white70 : Colors.black54,
@@ -130,7 +145,7 @@ class WeeklyCircleCard extends ConsumerWidget {
                       ),
                     ],
                   ),
-                  const Text('🏆', style: TextStyle(fontSize: 32)),
+                  Text(rankIcon, style: const TextStyle(fontSize: 32)),
                 ],
               ),
               if (pointsToNext > 0) ...[

@@ -8,6 +8,7 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
 import '../../domain/rhyme_model.dart';
@@ -135,13 +136,16 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
   @override
   Widget build(BuildContext context) {
     final audioState = ref.watch(rhymeAudioProvider);
-    final isPlaying =
-        audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
+    final isCurrentBakhed = audioState.playingRhymeId == widget.rhyme.id;
+    final isPlaying = isCurrentBakhed && audioState.isPlaying;
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
 
     final scriptMode = ref.watch(effectiveScriptModeProvider);
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+    final bakhedContent =
+        ref.watch(bakhedLearningContentProvider(widget.rhyme.id)).valueOrNull ??
+        BakhedLearningContent.empty;
     final primaryTitle = primaryLocalizedText(
       olChiki: widget.rhyme.titleOlChiki,
       latin: widget.rhyme.titleLatin,
@@ -149,25 +153,66 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
     );
 
     // Split lyrics by line
-    final olChikiLines = widget.rhyme.contentOlChiki.split('\n');
-    final latinLines = widget.rhyme.contentLatin.split('\n');
-    final meanings = _rhymeMeanings[widget.rhyme.id] ?? const [];
-    final vocabList = _rhymeVocab[widget.rhyme.id] ?? const [];
-    final cultureText = _rhymeCulture[widget.rhyme.id];
+    final remoteLyrics = bakhedContent.lyrics;
+    final olChikiLines = remoteLyrics.isNotEmpty
+        ? remoteLyrics.map((line) => line.olChiki).toList()
+        : widget.rhyme.contentOlChiki.split('\n');
+    final latinLines = remoteLyrics.isNotEmpty
+        ? remoteLyrics.map((line) => line.latin).toList()
+        : widget.rhyme.contentLatin.split('\n');
+    final lyricLineCount = olChikiLines.length > latinLines.length
+        ? olChikiLines.length
+        : latinLines.length;
+    final meanings = remoteLyrics.isNotEmpty
+        ? remoteLyrics.map((line) => line.meaning).toList()
+        : _rhymeMeanings[widget.rhyme.id] ?? const <String>[];
+    final vocabList = bakhedContent.vocabulary.isNotEmpty
+        ? bakhedContent.vocabulary
+              .where((item) => item.olChiki.isNotEmpty || item.latin.isNotEmpty)
+              .map(
+                (item) => BakhedVocab(
+                  olChiki: item.olChiki,
+                  latin: item.latin,
+                  english: item.meaning,
+                  pronunciation: item.audioFileId.isNotEmpty
+                      ? 'Audio available'
+                      : '',
+                ),
+              )
+              .toList()
+        : _rhymeVocab[widget.rhyme.id] ?? const <BakhedVocab>[];
+    final remoteCultureNotes = bakhedContent.culturalNotes
+        .where((note) => note.body.isNotEmpty)
+        .toList(growable: false);
+    final remoteCulture = remoteCultureNotes.isNotEmpty
+        ? remoteCultureNotes.first
+        : null;
+    final cultureText = remoteCulture?.body ?? _rhymeCulture[widget.rhyme.id];
+    final cultureTitle = remoteCulture != null && remoteCulture.title.isNotEmpty
+        ? remoteCulture.title
+        : 'CULTURAL NOTE';
 
     // Calculate current position value
     final currentPosition = _isDragging && _dragPositionSeconds != null
         ? Duration(seconds: _dragPositionSeconds!.toInt())
-        : audioState.position;
+        : isCurrentBakhed
+        ? audioState.position
+        : Duration.zero;
 
     // Bound duration safely
-    final totalDuration = audioState.duration.inSeconds > 0
+    final totalDuration = isCurrentBakhed && audioState.duration.inSeconds > 0
         ? audioState.duration
         : const Duration(seconds: 1);
     final positionSeconds = currentPosition.inSeconds.toDouble().clamp(
       0.0,
       totalDuration.inSeconds.toDouble(),
     );
+    final listenedPercent = totalDuration.inMilliseconds > 1000
+        ? ((currentPosition.inMilliseconds / totalDuration.inMilliseconds) *
+                  100)
+              .round()
+              .clamp(0, 100)
+        : 0;
 
     return Container(
       height: MediaQuery.of(context).size.height * 0.9,
@@ -406,12 +451,14 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                         ListView.builder(
                           shrinkWrap: true,
                           physics: const NeverScrollableScrollPhysics(),
-                          itemCount: latinLines.length,
+                          itemCount: lyricLineCount,
                           itemBuilder: (context, index) {
                             final olChiki = index < olChikiLines.length
                                 ? olChikiLines[index]
                                 : '';
-                            final latin = latinLines[index];
+                            final latin = index < latinLines.length
+                                ? latinLines[index]
+                                : '';
                             final meaning = index < meanings.length
                                 ? meanings[index]
                                 : 'Culture translation';
@@ -448,7 +495,7 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                       displayLatin)
                                     const SizedBox(height: 6),
                                   // 2. Latin Transliteration
-                                  if (displayLatin)
+                                  if (latin.isNotEmpty && displayLatin)
                                     Text(
                                           latin,
                                           textAlign: TextAlign.center,
@@ -514,7 +561,7 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                'EXTRACTED VOCABULARY',
+                                'WORDS FROM THIS BAKHED',
                                 style: GoogleFonts.fredoka(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
@@ -595,7 +642,7 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                     ),
                                     const SizedBox(width: 12),
                                     Text(
-                                      'CULTURAL CONTEXT',
+                                      cultureTitle.toUpperCase(),
                                       style: GoogleFonts.fredoka(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -698,13 +745,50 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                             ),
                           ),
                           Text(
-                            _formatDuration(audioState.duration),
+                            _formatDuration(
+                              isCurrentBakhed
+                                  ? audioState.duration
+                                  : Duration.zero,
+                            ),
                             style: GoogleFonts.fredoka(
                               fontSize: 12,
                               color: isDark ? Colors.white54 : Colors.black54,
                             ),
                           ),
                         ],
+                      ),
+                      const SizedBox(height: 4),
+                      Semantics(
+                        label:
+                            'Listening progress $listenedPercent percent. Complete 80 percent to count for today mission.',
+                        child: Row(
+                          children: [
+                            Icon(
+                              listenedPercent >= 80
+                                  ? Icons.check_circle_rounded
+                                  : Icons.headphones_rounded,
+                              size: 16,
+                              color: listenedPercent >= 80
+                                  ? AppColors.success
+                                  : AppColors.primary,
+                            ),
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                listenedPercent >= 80
+                                    ? 'Listening: $listenedPercent% • counts for today'
+                                    : 'Listening: $listenedPercent% • complete 80% to count',
+                                style: GoogleFonts.fredoka(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: isDark
+                                      ? Colors.white60
+                                      : Colors.black54,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
 
                       // Premium Spotify/Apple Music playback controls
@@ -880,6 +964,10 @@ class _VocabCardState extends State<VocabCard> {
 
   @override
   Widget build(BuildContext context) {
+    final meaning = widget.vocab.english.trim().isEmpty
+        ? 'Meaning coming soon'
+        : widget.vocab.english.trim();
+    final pronunciation = widget.vocab.pronunciation.trim();
     return PressableScale(
       onTap: () {
         HapticFeedback.mediumImpact();
@@ -956,7 +1044,7 @@ class _VocabCardState extends State<VocabCard> {
               secondChild: Column(
                 children: [
                   Text(
-                    widget.vocab.english,
+                    meaning,
                     textAlign: TextAlign.center,
                     style: GoogleFonts.fredoka(
                       fontSize: 12,
@@ -966,14 +1054,16 @@ class _VocabCardState extends State<VocabCard> {
                           : Colors.black87,
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  Text(
-                    widget.vocab.pronunciation,
-                    style: GoogleFonts.fredoka(
-                      fontSize: 10,
-                      color: widget.isDark ? Colors.white30 : Colors.black38,
+                  if (pronunciation.isNotEmpty) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      pronunciation,
+                      style: GoogleFonts.fredoka(
+                        fontSize: 10,
+                        color: widget.isDark ? Colors.white30 : Colors.black38,
+                      ),
                     ),
-                  ),
+                  ],
                 ],
               ),
               crossFadeState: _revealed

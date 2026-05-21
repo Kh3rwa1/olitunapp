@@ -58,6 +58,13 @@ class WeeklyCircleScreen extends ConsumerWidget {
           final total = data['totalMembers'] ?? 20;
           final points = data['currentUserMember']?['circlePoints'] ?? 0;
           final pointsToNext = data['pointsToNextRank'] ?? 0;
+          final isStarterCircle = data['isStarterCircle'] == true;
+          final circleName =
+              circle['circleName'] ??
+              (isStarterCircle ? 'Starter Circle' : 'Santali Weekly Circle');
+          final starterMessage =
+              data['starterCircleMessage'] as String? ??
+              'You’re warming up while more learners join.';
 
           // Calculate remaining time
           String remainingTime = 'Ends soon';
@@ -99,12 +106,16 @@ class WeeklyCircleScreen extends ConsumerWidget {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              const Text(
-                                'Santali Weekly Circle',
-                                style: TextStyle(
-                                  fontSize: 22,
-                                  fontWeight: FontWeight.w900,
-                                  color: Colors.white,
+                              Expanded(
+                                child: Text(
+                                  circleName,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                               Container(
@@ -141,8 +152,10 @@ class WeeklyCircleScreen extends ConsumerWidget {
                             mainAxisAlignment: MainAxisAlignment.spaceAround,
                             children: [
                               _buildSummaryStat(
-                                'Your Rank',
-                                '#$rank of $total',
+                                isStarterCircle ? 'Circle' : 'Your Rank',
+                                isStarterCircle
+                                    ? 'Starter'
+                                    : '#$rank of $total',
                               ),
                               Container(
                                 width: 1,
@@ -178,6 +191,17 @@ class WeeklyCircleScreen extends ConsumerWidget {
                                     ),
                                   ),
                                 ],
+                              ),
+                            ),
+                          ],
+                          if (isStarterCircle) ...[
+                            const SizedBox(height: 16),
+                            Text(
+                              starterMessage,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w700,
+                                color: Colors.white70,
                               ),
                             ),
                           ],
@@ -221,10 +245,12 @@ class WeeklyCircleScreen extends ConsumerWidget {
                         ),
                         itemBuilder: (context, index) {
                           final member = leaderboard[index];
-                          final isUser =
-                              member['userId'] == 'current_user' ||
-                              member['userId'] == 'user_authenticated';
-                          final displayName = member['displayName'] ?? '';
+                          final isUser = member['isCurrentUser'] == true;
+                          final isBenchmark = member['isBenchmark'] == true;
+                          final displayName =
+                              member['displayName'] ??
+                              member['anonymousName'] ??
+                              'Learner';
                           final points = member['circlePoints'] ?? 0;
                           final avatar = member['avatarEmoji'] ?? '🌿';
                           final rankNum = member['rank'] ?? (index + 1);
@@ -274,17 +300,50 @@ class WeeklyCircleScreen extends ConsumerWidget {
                                 ),
                                 const SizedBox(width: 14),
                                 Expanded(
-                                  child: Text(
-                                    isUser ? 'You ⭐' : displayName,
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: isUser
-                                          ? FontWeight.w900
-                                          : FontWeight.bold,
-                                      color: isDark
-                                          ? Colors.white
-                                          : const Color(0xFF0F172A),
-                                    ),
+                                  child: Row(
+                                    children: [
+                                      Flexible(
+                                        child: Text(
+                                          isUser ? 'You ⭐' : displayName,
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: TextStyle(
+                                            fontSize: 15,
+                                            fontWeight: isUser
+                                                ? FontWeight.w900
+                                                : FontWeight.bold,
+                                            color: isDark
+                                                ? Colors.white
+                                                : const Color(0xFF0F172A),
+                                          ),
+                                        ),
+                                      ),
+                                      if (isBenchmark) ...[
+                                        const SizedBox(width: 8),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 8,
+                                            vertical: 3,
+                                          ),
+                                          decoration: BoxDecoration(
+                                            color: AppColors.primary.withValues(
+                                              alpha: 0.12,
+                                            ),
+                                            borderRadius: BorderRadius.circular(
+                                              999,
+                                            ),
+                                          ),
+                                          child: const Text(
+                                            'Benchmark',
+                                            style: TextStyle(
+                                              fontSize: 10,
+                                              fontWeight: FontWeight.w800,
+                                              color: AppColors.primary,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ],
                                   ),
                                 ),
                                 Text(

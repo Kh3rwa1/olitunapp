@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -23,13 +25,22 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
   bool _isAnswered = false;
   int _masteredThisSession = 0;
   bool _isComplete = false;
+  final List<MistakeItem> _sessionMistakes = [];
+  final List<MistakeItem> _masteredMistakes = [];
 
   @override
   Widget build(BuildContext context) {
     final mistakes = ref.watch(mistakeProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (mistakes.isEmpty && !_isComplete) {
+    if (_sessionMistakes.isEmpty && mistakes.isNotEmpty && !_isComplete) {
+      _sessionMistakes.addAll(mistakes);
+    }
+    final reviewMistakes = _sessionMistakes.isNotEmpty
+        ? _sessionMistakes
+        : mistakes;
+
+    if (reviewMistakes.isEmpty && !_isComplete) {
       return Scaffold(
         backgroundColor: isDark
             ? AppColors.darkBackground
@@ -211,7 +222,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
     }
 
     final currentMistake =
-        mistakes[_currentIndex.clamp(0, mistakes.length - 1)];
+        reviewMistakes[_currentIndex.clamp(0, reviewMistakes.length - 1)];
     final question = currentMistake.question;
 
     return Scaffold(
@@ -240,7 +251,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
             ),
             child: Center(
               child: Text(
-                '${_currentIndex + 1}/${mistakes.length}',
+                '${_currentIndex + 1}/${reviewMistakes.length}',
                 style: const TextStyle(
                   fontWeight: FontWeight.bold,
                   color: AppColors.primary,
@@ -258,7 +269,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
-                value: (_currentIndex + 1) / mistakes.length,
+                value: (_currentIndex + 1) / reviewMistakes.length,
                 minHeight: 6,
                 backgroundColor: isDark ? Colors.white10 : Colors.black12,
                 valueColor: const AlwaysStoppedAnimation<Color>(
@@ -343,6 +354,14 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                               final isCorrect = index == question.correctIndex;
                               if (isCorrect) {
                                 _masteredThisSession++;
+                                if (!_masteredMistakes.any(
+                                  (item) =>
+                                      item.quizId == currentMistake.quizId &&
+                                      item.questionId ==
+                                          currentMistake.questionId,
+                                )) {
+                                  _masteredMistakes.add(currentMistake);
+                                }
                                 HapticFeedback.lightImpact();
                                 ref
                                     .read(mistakeProvider.notifier)
@@ -374,7 +393,7 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
               correctOptionLatin: question.optionsLatin[question.correctIndex],
               explanation: question.explanation,
               onContinue: () {
-                if (_currentIndex < mistakes.length - 1) {
+                if (_currentIndex < reviewMistakes.length - 1) {
                   setState(() {
                     _currentIndex++;
                     _selectedAnswer = null;
@@ -382,6 +401,20 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                   });
                 } else {
                   HapticFeedback.mediumImpact();
+                  unawaited(
+                    ref
+                        .read(mistakeProvider.notifier)
+                        .completeReviewSession(
+                          score: _masteredThisSession,
+                          total: _sessionMistakes.length,
+                          reviewedMistakes: List<MistakeItem>.from(
+                            _sessionMistakes,
+                          ),
+                          masteredMistakes: List<MistakeItem>.from(
+                            _masteredMistakes,
+                          ),
+                        ),
+                  );
                   setState(() {
                     _isComplete = true;
                   });

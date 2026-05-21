@@ -77,7 +77,7 @@
       "name": "assignUserToWeeklyCircle",
       "runtime": "node-22.0",
       "execute": [
-        "any"
+        "users"
       ],
       "events": [],
       "schedule": "",
@@ -102,7 +102,7 @@
       "name": "recordCircleEvent",
       "runtime": "node-22.0",
       "execute": [
-        "any"
+        "users"
       ],
       "events": [],
       "schedule": "",
@@ -126,7 +126,7 @@
       "name": "getCircleLeaderboard",
       "runtime": "node-22.0",
       "execute": [
-        "any"
+        "users"
       ],
       "events": [],
       "schedule": "",
@@ -142,6 +142,172 @@
       "logging": true,
       "scopes": [
         "databases.read"
+      ]
+    },
+    {
+      "$id": "recordMistake",
+      "name": "recordMistake",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/recordMistake",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "$id": "getUserMistakes",
+      "name": "getUserMistakes",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/getUserMistakes",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read"
+      ]
+    },
+    {
+      "$id": "markMistakeMastered",
+      "name": "markMistakeMastered",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/markMistakeMastered",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "$id": "completeMistakeReview",
+      "name": "completeMistakeReview",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/completeMistakeReview",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "$id": "recordBakhedProgress",
+      "name": "recordBakhedProgress",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/recordBakhedProgress",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "$id": "getUserGamificationSummary",
+      "name": "getUserGamificationSummary",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/getUserGamificationSummary",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read"
+      ]
+    },
+    {
+      "$id": "updateStreakShield",
+      "name": "updateStreakShield",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/updateStreakShield",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
       ]
     },
     {

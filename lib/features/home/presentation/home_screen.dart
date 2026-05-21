@@ -128,6 +128,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final quizzesAsync = ref.watch(quizzesProvider);
     final bannersAsync = ref.watch(bannersProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+    ref.watch(gamificationContentProvider);
 
     // Seamless automatic background data sync when recovering connection
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
@@ -316,7 +318,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         child: Stack(
           children: [
             // High-Performance Background Mesh/Glow (GPU-rendered, 0% CPU overhead)
-            if (!isDesktop) ...[
+            if (!isDesktop && !reduceVisualEffects) ...[
               // Top-Right Primary Glow
               Positioned(
                 top: -150,
@@ -392,64 +394,74 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                           // Guest Call to Action (if not logged in)
                           if (isGuest) ...[
-                            PressableScale(
-                              onTap: () => context.push('/login'),
-                              child: Container(
-                                margin: const EdgeInsets.only(bottom: 24),
-                                padding: const EdgeInsets.all(20),
-                                decoration: BoxDecoration(
-                                  gradient: AppColors.heroGradientAlt,
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: AppColors.glowShadow(
-                                    AppColors.primary,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.all(12),
-                                      decoration: BoxDecoration(
-                                        color: Colors.white.withValues(
-                                          alpha: 0.2,
+                            Builder(
+                              builder: (context) {
+                                final card = PressableScale(
+                                  onTap: () => context.push('/login'),
+                                  child: Container(
+                                    margin: const EdgeInsets.only(bottom: 24),
+                                    padding: const EdgeInsets.all(20),
+                                    decoration: BoxDecoration(
+                                      gradient: AppColors.heroGradientAlt,
+                                      borderRadius: BorderRadius.circular(20),
+                                      boxShadow: reduceVisualEffects
+                                          ? const []
+                                          : AppColors.glowShadow(
+                                              AppColors.primary,
+                                            ),
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          padding: const EdgeInsets.all(12),
+                                          decoration: BoxDecoration(
+                                            color: Colors.white.withValues(
+                                              alpha: 0.2,
+                                            ),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(
+                                            Icons.person_add_alt_1_rounded,
+                                            color: Colors.white,
+                                          ),
                                         ),
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: const Icon(
-                                        Icons.person_add_alt_1_rounded,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            'Track Your Progress',
-                                            style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.w800,
-                                              fontSize: 16,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          Text(
-                                            'Create an account to save your learning journey.',
-                                            style: TextStyle(
-                                              color: Colors.white.withValues(
-                                                alpha: 0.9,
+                                        const SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                'Track Your Progress',
+                                                style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.w800,
+                                                  fontSize: 16,
+                                                ),
                                               ),
-                                              fontSize: 13,
-                                            ),
+                                              const SizedBox(height: 4),
+                                              Text(
+                                                'Create an account to save your learning journey.',
+                                                style: TextStyle(
+                                                  color: Colors.white
+                                                      .withValues(alpha: 0.9),
+                                                  fontSize: 13,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
-                              ),
-                            ).animate().fadeIn(duration: 800.ms).slideY(begin: 0.1),
+                                  ),
+                                );
+                                if (reduceVisualEffects) return card;
+                                return card
+                                    .animate()
+                                    .fadeIn(duration: 800.ms)
+                                    .slideY(begin: 0.1);
+                              },
+                            ),
                           ],
 
                           // Featured Banners Carousel
@@ -507,38 +519,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             ),
                           ] else ...[
                             // MOBILE VIEW: Premium, guided pedagogical hierarchy
-                            // 1. Primary Hero Card (Continue learning)
-                            HeroJourneyCard(
-                              heroTitle: heroTitle,
-                              lessonId: nextLesson?.id,
-                              index: 0,
-                            ),
-                            const SizedBox(height: 16),
-
-                            // 2. Today's Mission Bento Card
+                            // 1. Today's Mission / Quick Win
                             const TodayMissionCard(),
                             const SizedBox(height: 20),
 
-                            // Weekly Circle Card
+                            // 2. Weekly Circle
                             const WeeklyCircleCard(),
                             const SizedBox(height: 20),
 
-                            // Mistake Review Card
+                            // Mistake recovery appears only when useful.
                             const MistakeReviewCard(),
                             const SizedBox(height: 20),
 
-                            // 3. Stats Grid (Day Streak, Stars, etc.)
-                            _buildStatsBentoGrid(
-                              streak: streak,
-                              stars: stars,
-                              lessonsCompleted: lessonsCompleted,
-                              learningTime: learningTime,
-                              isDark: isDark,
-                              isTablet: isTablet,
-                            ),
-                            const SizedBox(height: 20),
-
-                            // 4. Learning Path Preview (Vertical timeline of lessons)
+                            // 3. Learning Path Preview
                             if (allLessons.isNotEmpty) ...[
                               LearningPathPreview(
                                 lessons: allLessons,
@@ -549,8 +542,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               const SizedBox(height: 20),
                             ],
 
-                            // 5. Quiz banner
+                            // 4. Quiz / Bakhed prompt
                             QuizBannerCard(quizCount: quizCount, index: 1),
+                            const SizedBox(height: 20),
+
+                            // 5. Stats Grid (Day Streak, Stars, etc.)
+                            _buildStatsBentoGrid(
+                              streak: streak,
+                              stars: stars,
+                              lessonsCompleted: lessonsCompleted,
+                              learningTime: learningTime,
+                              isDark: isDark,
+                              isTablet: isTablet,
+                            ),
                             const SizedBox(height: 20),
 
                             // 6. Discover / Categories

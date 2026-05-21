@@ -22,3 +22,5 @@ export 'quizzes_provider.dart';
 export 'rhymes_providers.dart';
 export 'seed_provider.dart';
 export 'dashboard_metrics_provider.dart';
+export 'gamification_content_provider.dart';
+export 'bakhed_content_provider.dart';

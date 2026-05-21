@@ -1,23 +1,17 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../data/circle_repository.dart';
 import '../../domain/circle_models.dart';
-import '../../../../shared/providers/providers.dart';
 
 final weeklyCircleProvider = FutureProvider<WeeklyCircle>((ref) async {
   final repository = ref.watch(circleRepositoryProvider);
-  final isAuthAsync = ref.watch(isAuthenticatedProvider);
-  final isGuest = isAuthAsync.value == false;
-
-  final userId = isGuest ? 'guest_explorer' : 'user_authenticated';
-  return repository.assignUserToWeeklyCircle(userId);
+  return repository.assignUserToWeeklyCircle();
 });
 
 class CircleLeaderboardNotifier
     extends StateNotifier<AsyncValue<Map<String, dynamic>>> {
   final CircleRepository _repository;
-  final Ref _ref;
 
-  CircleLeaderboardNotifier(this._repository, this._ref)
+  CircleLeaderboardNotifier(this._repository)
     : super(const AsyncValue.loading()) {
     refreshLeaderboard();
   }
@@ -25,11 +19,7 @@ class CircleLeaderboardNotifier
   Future<void> refreshLeaderboard() async {
     state = const AsyncValue.loading();
     try {
-      final isAuthAsync = _ref.read(isAuthenticatedProvider);
-      final isGuest = isAuthAsync.value == false;
-      final userId = isGuest ? 'guest_explorer' : 'user_authenticated';
-
-      final data = await _repository.getCircleLeaderboard(userId);
+      final data = await _repository.getCircleLeaderboard();
       state = AsyncValue.data(data);
     } catch (e, stack) {
       state = AsyncValue.error(e, stack);
@@ -42,12 +32,7 @@ class CircleLeaderboardNotifier
     Map<String, dynamic>? metadata,
   }) async {
     try {
-      final isAuthAsync = _ref.read(isAuthenticatedProvider);
-      final isGuest = isAuthAsync.value == false;
-      final userId = isGuest ? 'guest_explorer' : 'user_authenticated';
-
       await _repository.recordCircleEvent(
-        userId,
         eventType,
         sourceId,
         metadata: metadata,
@@ -66,7 +51,7 @@ final circleLeaderboardProvider =
       AsyncValue<Map<String, dynamic>>
     >((ref) {
       final repository = ref.watch(circleRepositoryProvider);
-      return CircleLeaderboardNotifier(repository, ref);
+      return CircleLeaderboardNotifier(repository);
     });
 
 final currentCircleRankProvider = Provider<int>((ref) {

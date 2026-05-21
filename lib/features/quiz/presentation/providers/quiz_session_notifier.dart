@@ -102,6 +102,11 @@ class QuizSessionNotifier
             quizId: quiz.id,
             questionIndex: state.currentQuestion,
             question: question,
+            wrongAnswer: index < question.optionsLatin.length
+                ? question.optionsLatin[index]
+                : index < question.optionsOlChiki.length
+                ? question.optionsOlChiki[index]
+                : '',
           );
       HapticFeedback.mediumImpact();
     }

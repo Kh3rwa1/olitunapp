@@ -41,6 +41,7 @@ import '../../features/admin/presentation/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
+import '../../features/admin/presentation/gamification/admin_gamification_screen.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
@@ -379,6 +380,86 @@ final routerProvider = Provider<GoRouter>((ref) {
           adminRoute(
             path: '/admin/settings',
             builder: (context, state) => const AdminSettingsScreen(),
+          ),
+          adminRoute(
+            path: '/admin/gamification',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'overview'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/copy',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'copy'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/badges',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'badges'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/circles',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'circles'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/circles/templates',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'circle_templates'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/events',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'circle_events'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/missions',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'missions'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/rewards',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'rewards'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/quiz-feedback',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'quiz_feedback'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/bakhed/lyrics',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'bakhed_lyrics'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/bakhed/vocabulary',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'bakhed_vocabulary'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/bakhed/cultural-notes',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'bakhed_notes'),
+          ),
+          adminRoute(
+            path: '/admin/gamification/config',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'config'),
+          ),
+          adminRoute(
+            path: '/admin/audit-logs',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'audit_logs'),
+          ),
+          adminRoute(
+            path: '/admin/analytics',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'analytics'),
+          ),
+          adminRoute(
+            path: '/admin/maintenance',
+            builder: (context, state) =>
+                const AdminGamificationScreen(section: 'maintenance'),
           ),
         ],
       ),

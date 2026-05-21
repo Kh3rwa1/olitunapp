@@ -1,4 +1,8 @@
 import 'package:itun/core/logging/app_logger.dart';
+import 'dart:async';
+import 'dart:convert';
+
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
@@ -8,6 +12,8 @@ import 'package:itun/features/profile/data/repositories/profile_repository_impl.
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../shared/providers/gamification_content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../shared/widgets/state_widgets.dart';
@@ -258,6 +264,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
             newStreak = stats.currentStreak; // Streak preserved!
             final prefs = _ref?.read(sharedPreferencesProvider);
             prefs?.setBool('streak_shield_used_banner_pending', true);
+            unawaited(_syncStreakShield('use_for_missed_day'));
           } else {
             newStreak = 1;
           }
@@ -334,14 +341,11 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     // Securely fire weekly circle event (client-side repository checks validation)
     if (_ref != null) {
       final circleRepo = _ref.read(circleRepositoryProvider);
-      final userId =
-          _ref.read(sharedPreferencesProvider).getString('user_id') ??
-          'current_user';
       await circleRepo.recordCircleEvent(
-        userId,
         'daily_mission_completed',
         'missions_$today',
       );
+      unawaited(_syncStreakShield('earn_from_missions'));
     }
 
     await updateStats(updated);
@@ -559,5 +563,20 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       ref.read(userAvatarEmojiProvider.notifier).state = emoji;
       ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     });
+  }
+
+  Future<void> _syncStreakShield(String action) async {
+    final ref = _ref;
+    if (ref == null) return;
+    try {
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
+      await functions.createExecution(
+        functionId: 'updateStreakShield',
+        body: jsonEncode({'action': action}),
+      );
+      ref.invalidate(userGamificationSummaryProvider);
+    } catch (e) {
+      AppLogger.debug('Profile: Streak Shield sync skipped: $e');
+    }
   }
 }

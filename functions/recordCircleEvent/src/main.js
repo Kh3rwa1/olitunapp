@@ -1,13 +1,123 @@
-import { Client, Databases, Query, ID } from 'node-appwrite';
+import { createHash } from 'crypto';
+import { Client, Databases, Query } from 'node-appwrite';
+
+const DEFAULT_SCORES = {
+  lesson_completed: 40,
+  quiz_completed: 25,
+  quiz_high_score_90: 10,
+  bakhed_completed_80_percent: 20,
+  daily_mission_completed: 30,
+  mistake_review_completed: 15,
+  streak_maintained: 10,
+  quick_win_completed: 10
+};
+
+const DAILY_EVENTS = new Set([
+  'quiz_completed',
+  'quiz_high_score_90',
+  'bakhed_completed_80_percent',
+  'daily_mission_completed',
+  'mistake_review_completed',
+  'streak_maintained',
+  'quick_win_completed'
+]);
+
+function jsonBody(req) {
+  try {
+    return JSON.parse(req.body || '{}');
+  } catch (_) {
+    return {};
+  }
+}
+
+function authenticatedUserId(req) {
+  return req.headers['x-appwrite-user-id'];
+}
+
+function stableId(value) {
+  return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
+
+function currentWeekId(now = new Date()) {
+  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+  const day = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - day);
+  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
+  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
+  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
+}
+
+function dateKey(now = new Date()) {
+  return now.toISOString().slice(0, 10);
+}
+
+function dedupeScope(eventType, weekId, dayKey) {
+  return eventType === 'lesson_completed' ? weekId : dayKey;
+}
+
+function integer(value) {
+  return Number.isFinite(Number(value)) ? Number(value) : 0;
+}
+
+async function getGamificationConfig(databases, databaseId) {
+  const fallback = {
+    bakhedCompletionThreshold: 80,
+    scores: DEFAULT_SCORES
+  };
+
+  try {
+    const config = await databases.getDocument(databaseId, 'gamification_config', 'default');
+    const threshold = integer(config.bakhedCompletionThreshold);
+    return {
+      bakhedCompletionThreshold: Math.min(95, Math.max(50, threshold || 80)),
+      scores: DEFAULT_SCORES
+    };
+  } catch (_) {
+    return fallback;
+  }
+}
+
+function validateEvent(body, config) {
+  const eventType = String(body.eventType || '').trim();
+  const sourceId = String(body.sourceId || '').trim();
+  const metadata = body.metadata && typeof body.metadata === 'object' && !Array.isArray(body.metadata)
+    ? body.metadata
+    : {};
+
+  if (!Object.prototype.hasOwnProperty.call(DEFAULT_SCORES, eventType)) {
+    return { ok: false, message: 'Unsupported circle event type' };
+  }
+
+  if (!sourceId || sourceId.length > 100) {
+    return { ok: false, message: 'Missing or invalid sourceId' };
+  }
+
+  if (eventType === 'bakhed_completed_80_percent') {
+    const listenedPercent = integer(metadata.listenedPercent);
+    if (listenedPercent < config.bakhedCompletionThreshold) {
+      return {
+        ok: false,
+        message: `Bakhed completion requires at least ${config.bakhedCompletionThreshold}% listened`
+      };
+    }
+  }
+
+  return { ok: true, eventType, sourceId, metadata };
+}
 
 export default async ({ req, res, log, error }) => {
   if (req.method !== 'POST') {
     return res.json({ ok: false, message: 'Method not allowed' }, 405);
   }
 
+  const userId = authenticatedUserId(req);
+  if (!userId) {
+    return res.json({ ok: false, message: 'Unauthenticated' }, 401);
+  }
+
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
   const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
-  const apiKey = process.env.APPWRITE_API_KEY;
+  const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
 
   if (!endpoint || !projectId || !apiKey) {
     error('Missing environment variables');
@@ -21,120 +131,78 @@ export default async ({ req, res, log, error }) => {
 
   const databases = new Databases(client);
   const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
-
-  let body = {};
-  try {
-    body = JSON.parse(req.body || '{}');
-  } catch (e) {
-    body = {};
-  }
-
-  const userId = body.userId || req.headers['x-appwrite-user-id'];
-  const weekId = body.weekId;
-  const eventType = body.eventType;
-  const sourceId = body.sourceId;
-  const metadata = body.metadata || {};
-
-  if (!userId || !weekId || !eventType || !sourceId) {
-    return res.json({ ok: false, message: 'Missing required parameters' }, 400);
-  }
-
-  // Scoring rules
-  const scores = {
-    lesson_completed: 40,
-    quiz_completed: 25,
-    quiz_high_score_90: 10,
-    bakhed_completed_80_percent: 20,
-    daily_mission_completed: 30,
-    mistake_review_completed: 15,
-    streak_maintained: 10,
-    quick_win_completed: 10
-  };
-
-  const points = scores[eventType] || 0;
+  const weekId = currentWeekId();
+  const dayKey = dateKey();
 
   try {
-    // 1. Get member document to verify user is in a circle and to get current points
-    const memberQueryResult = await databases.listDocuments(
-      databaseId,
-      'circle_members',
-      [
-        Query.equal('userId', userId),
-        Query.equal('weekId', weekId)
-      ]
-    );
+    const body = jsonBody(req);
+    const config = await getGamificationConfig(databases, databaseId);
+    const validated = validateEvent(body, config);
+    if (!validated.ok) {
+      return res.json({ ok: false, message: validated.message }, 400);
+    }
 
-    if (memberQueryResult.total === 0) {
+    const { eventType, sourceId, metadata } = validated;
+    const points = Math.min(100, Math.max(0, DEFAULT_SCORES[eventType]));
+
+    const memberId = stableId(`${userId}:${weekId}`);
+    let memberDoc;
+    try {
+      memberDoc = await databases.getDocument(databaseId, 'circle_members', memberId);
+    } catch (_) {
       return res.json({ ok: false, message: 'User is not in a circle for this week' }, 404);
     }
 
-    const memberDoc = memberQueryResult.documents[0];
-    const circleId = memberDoc.circleId;
-
-    // 2. Prevent duplicate scoring
-    // Lesson: once per week per lessonId
-    // Others: once per day
-    const todayStart = new Date();
-    todayStart.setHours(0, 0, 0, 0);
-    const todayEnd = new Date();
-    todayEnd.setHours(23, 59, 59, 999);
-
-    const duplicateQueries = [
-      Query.equal('userId', userId),
-      Query.equal('weekId', weekId),
-      Query.equal('eventType', eventType),
-      Query.equal('sourceId', sourceId)
-    ];
-
-    if (eventType !== 'lesson_completed') {
-      duplicateQueries.push(Query.greaterThanEqual('createdAt', todayStart.toISOString()));
-      duplicateQueries.push(Query.lessThanEqual('createdAt', todayEnd.toISOString()));
-    }
-
-    const duplicateCheck = await databases.listDocuments(
-      databaseId,
-      'circle_events',
-      duplicateQueries
-    );
-
-    if (duplicateCheck.total > 0) {
-      return res.json({ ok: true, message: 'Event already recorded, skipping points' });
-    }
-
-    // 3. Create Circle Event
+    const scope = dedupeScope(eventType, weekId, dayKey);
+    const dedupeKey = stableId(`${userId}:${scope}:${eventType}:${sourceId}`);
     const now = new Date();
-    await databases.createDocument(
-      databaseId,
-      'circle_events',
-      ID.unique(),
-      {
-        circleId: circleId,
-        userId: userId,
-        weekId: weekId,
-        eventType: eventType,
-        sourceId: sourceId,
-        points: points,
-        metadata: JSON.stringify(metadata),
-        createdAt: now.toISOString()
-      }
-    );
 
-    // 4. Update member points and stats
+    try {
+      await databases.createDocument(
+        databaseId,
+        'circle_events',
+        dedupeKey,
+        {
+          circleId: memberDoc.circleId,
+          userId,
+          weekId,
+          dateKey: dayKey,
+          eventType,
+          sourceId,
+          dedupeKey,
+          points,
+          metadata: JSON.stringify(metadata),
+          createdAt: now.toISOString()
+        }
+      );
+    } catch (err) {
+      if (err.code === 409) {
+        return res.json({
+          ok: true,
+          duplicate: true,
+          pointsAwarded: 0,
+          currentPoints: memberDoc.circlePoints || 0,
+          message: 'Event already recorded, skipping points'
+        });
+      }
+      throw err;
+    }
+
     const updatePayload = {
-      circlePoints: memberDoc.circlePoints + points,
+      circlePoints: integer(memberDoc.circlePoints) + points,
       lastActiveAt: now.toISOString()
     };
 
     if (eventType === 'lesson_completed') {
-      updatePayload.lessonsCompleted = memberDoc.lessonsCompleted + 1;
+      updatePayload.lessonsCompleted = integer(memberDoc.lessonsCompleted) + 1;
     } else if (eventType === 'quiz_completed') {
-      updatePayload.quizzesTaken = memberDoc.quizzesTaken + 1;
+      updatePayload.quizzesTaken = integer(memberDoc.quizzesTaken) + 1;
     } else if (eventType === 'bakhed_completed_80_percent') {
-      updatePayload.bakhedListened = memberDoc.bakhedListened + 1;
+      updatePayload.bakhedListened = integer(memberDoc.bakhedListened) + 1;
     } else if (eventType === 'daily_mission_completed') {
-      updatePayload.missionDaysCompleted = memberDoc.missionDaysCompleted + 1;
+      updatePayload.missionDaysCompleted = integer(memberDoc.missionDaysCompleted) + 1;
     } else if (eventType === 'mistake_review_completed') {
-      updatePayload.mistakeReviewsCompleted = memberDoc.mistakeReviewsCompleted + 1;
+      updatePayload.mistakeReviewsCompleted = integer(memberDoc.mistakeReviewsCompleted) + 1;
     }
 
     const updatedMember = await databases.updateDocument(
@@ -146,6 +214,7 @@ export default async ({ req, res, log, error }) => {
 
     return res.json({
       ok: true,
+      duplicate: false,
       pointsAwarded: points,
       currentPoints: updatedMember.circlePoints
     });

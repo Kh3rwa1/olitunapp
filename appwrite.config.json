@@ -8,7 +8,7 @@
             "path": "functions/translator",
             "entrypoint": "src/main.js",
             "execute": [
-                "any"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -68,7 +68,7 @@
             "path": "functions/assignUserToWeeklyCircle",
             "entrypoint": "src/main.js",
             "execute": [
-                "any"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -89,7 +89,7 @@
             "path": "functions/recordCircleEvent",
             "entrypoint": "src/main.js",
             "execute": [
-                "any"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -109,7 +109,7 @@
             "path": "functions/getCircleLeaderboard",
             "entrypoint": "src/main.js",
             "execute": [
-                "any"
+                "users"
             ],
             "enabled": true,
             "logging": true,
@@ -119,6 +119,144 @@
             "commands": "npm install",
             "scopes": [
                 "databases.read"
+            ]
+        },
+        {
+            "$id": "recordMistake",
+            "name": "recordMistake",
+            "runtime": "node-22",
+            "path": "functions/recordMistake",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "getUserMistakes",
+            "name": "getUserMistakes",
+            "runtime": "node-22",
+            "path": "functions/getUserMistakes",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read"
+            ]
+        },
+        {
+            "$id": "markMistakeMastered",
+            "name": "markMistakeMastered",
+            "runtime": "node-22",
+            "path": "functions/markMistakeMastered",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "completeMistakeReview",
+            "name": "completeMistakeReview",
+            "runtime": "node-22",
+            "path": "functions/completeMistakeReview",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "recordBakhedProgress",
+            "name": "recordBakhedProgress",
+            "runtime": "node-22",
+            "path": "functions/recordBakhedProgress",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "getUserGamificationSummary",
+            "name": "getUserGamificationSummary",
+            "runtime": "node-22",
+            "path": "functions/getUserGamificationSummary",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read"
+            ]
+        },
+        {
+            "$id": "updateStreakShield",
+            "name": "updateStreakShield",
+            "runtime": "node-22",
+            "path": "functions/updateStreakShield",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
             ]
         },
         {
@@ -142,6 +280,23 @@
             ]
         }
     ],
+    "sites": [
+        {
+            "$id": "69b2342a00065864275b",
+            "name": "olitunapp",
+            "path": ".",
+            "framework": "flutter",
+            "enabled": true,
+            "logging": true,
+            "timeout": 30,
+            "buildRuntime": "flutter-3.35",
+            "adapter": "static",
+            "installCommand": "flutter pub get",
+            "buildCommand": "flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions",
+            "outputDirectory": "./build/web",
+            "fallbackFile": "index.html"
+        }
+    ],
     "buckets": [
         {
             "$id": "admin_backups",
@@ -162,23 +317,6 @@
             "encryption": true,
             "antivirus": true,
             "transformations": false
-        }
-    ],
-    "sites": [
-        {
-            "$id": "69b2342a00065864275b",
-            "name": "olitunapp",
-            "path": ".",
-            "framework": "flutter",
-            "enabled": true,
-            "logging": true,
-            "timeout": 30,
-            "buildRuntime": "flutter-3.35",
-            "adapter": "static",
-            "installCommand": "flutter pub get",
-            "buildCommand": "flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 --dart-define=APPWRITE_PROJECT_ID=699495910038e39622c5 --dart-define=TRANSLATE_URL=https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions",
-            "outputDirectory": "./build/web",
-            "fallbackFile": "index.html"
         }
     ]
 }

@@ -27,7 +27,7 @@ class CircleRepository {
     return '$year-W$week';
   }
 
-  Future<WeeklyCircle> assignUserToWeeklyCircle(String userId) async {
+  Future<WeeklyCircle> assignUserToWeeklyCircle() async {
     try {
       final connectivityResults = await Connectivity().checkConnectivity();
       if (connectivityResults.contains(ConnectivityResult.none)) {
@@ -40,7 +40,7 @@ class CircleRepository {
 
       final response = await functions.createExecution(
         functionId: 'assignUserToWeeklyCircle',
-        body: jsonEncode({'userId': userId, 'weekId': _getWeekId()}),
+        body: jsonEncode({}),
       );
 
       if (response.status.name == 'completed') {
@@ -62,7 +62,6 @@ class CircleRepository {
   }
 
   Future<void> recordCircleEvent(
-    String userId,
     String eventType,
     String sourceId, {
     Map<String, dynamic>? metadata,
@@ -78,8 +77,6 @@ class CircleRepository {
       final functions = Functions(authService.client);
 
       final payload = {
-        'userId': userId,
-        'weekId': _getWeekId(),
         'eventType': eventType,
         'sourceId': sourceId,
         'metadata': metadata ?? {},
@@ -104,10 +101,7 @@ class CircleRepository {
     }
   }
 
-  Future<Map<String, dynamic>> getCircleLeaderboard(
-    String userId, {
-    String? weekId,
-  }) async {
+  Future<Map<String, dynamic>> getCircleLeaderboard({String? weekId}) async {
     final activeWeekId = weekId ?? _getWeekId();
     try {
       final connectivityResults = await Connectivity().checkConnectivity();
@@ -120,7 +114,7 @@ class CircleRepository {
 
       final response = await functions.createExecution(
         functionId: 'getCircleLeaderboard',
-        body: jsonEncode({'userId': userId, 'weekId': activeWeekId}),
+        body: jsonEncode({}),
       );
 
       if (response.status.name == 'completed') {

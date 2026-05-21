@@ -57,6 +57,8 @@ class CacheService {
   /// Lazily-opened, long-lived box handle.
   static Box? _box;
 
+  static bool get isOpen => _box != null && _box!.isOpen;
+
   @visibleForTesting
   static void resetForTesting() => _box = null;
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -23,11 +24,21 @@ class EditBlockSheet extends ConsumerStatefulWidget {
     required LessonBlockEntity block,
     required ValueChanged<LessonBlockEntity> onUpdate,
   }) {
-    showModalBottomSheet(
+    showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => EditBlockSheet(block: block, onUpdate: onUpdate),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 880),
+              child: EditBlockSheet(block: block, onUpdate: onUpdate),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -113,6 +124,11 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
         iconColor = AppColors.duoBlue;
         typeLabel = 'Image Block';
         break;
+      case 'svg':
+        icon = Icons.polyline_rounded;
+        iconColor = const Color(0xFF0EA5E9);
+        typeLabel = 'SVG Block';
+        break;
       case 'audio':
         icon = Icons.audiotrack_rounded;
         iconColor = Colors.orange;
@@ -143,9 +159,7 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
       height: MediaQuery.of(context).size.height * 0.85,
       decoration: BoxDecoration(
         color: AdminTokens.overlay(isDark),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AdminTokens.radius2xl),
-        ),
+        borderRadius: BorderRadius.circular(AdminTokens.radius2xl),
         boxShadow: AdminTokens.overlayShadow(isDark),
       ),
       child: Column(
@@ -280,27 +294,54 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       ],
                     ),
                   ],
-                  if (block.type == 'image') ...[
+                  if (block.type == 'image' || block.type == 'svg') ...[
                     AdminMediaField(
-                      label: 'Image',
-                      icon: Icons.image_rounded,
+                      label: block.type == 'svg'
+                          ? 'SVG / Animated SVG'
+                          : 'Image',
+                      subtitle: block.type == 'svg'
+                          ? 'Upload an SVG file or paste an SVG URL'
+                          : null,
+                      icon: block.type == 'svg'
+                          ? Icons.polyline_rounded
+                          : Icons.image_rounded,
                       accent: AppColors.primary,
                       currentUrl: _imageUrl,
-                      uploadFolder: 'lesson-images',
-                      fileType: FileType.image,
+                      uploadFolder: block.type == 'svg'
+                          ? 'lesson-svgs'
+                          : 'lesson-images',
+                      fileType: block.type == 'svg'
+                          ? FileType.custom
+                          : FileType.image,
+                      allowedExtensions: block.type == 'svg'
+                          ? const ['svg']
+                          : null,
                       onUploaded: (url) => setState(() => _imageUrl = url),
                       previewBuilder: (url) => ClipRRect(
                         borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          url,
-                          height: 120,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => const Icon(
-                            Icons.broken_image_rounded,
-                            size: 60,
-                            color: Colors.grey,
-                          ),
-                        ),
+                        child: block.type == 'svg'
+                            ? Container(
+                                height: 120,
+                                color: Colors.white,
+                                child: SvgPicture.network(
+                                  url,
+                                  placeholderBuilder: (_) => const Center(
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  ),
+                                ),
+                              )
+                            : Image.network(
+                                url,
+                                height: 120,
+                                fit: BoxFit.contain,
+                                errorBuilder: (_, _, _) => const Icon(
+                                  Icons.broken_image_rounded,
+                                  size: 60,
+                                  color: Colors.grey,
+                                ),
+                              ),
                       ),
                     ),
                   ],
@@ -383,6 +424,7 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                   ],
 
                   if (block.type == 'image' ||
+                      block.type == 'svg' ||
                       block.type == 'audio' ||
                       block.type == 'video' ||
                       block.type == 'lottie') ...[

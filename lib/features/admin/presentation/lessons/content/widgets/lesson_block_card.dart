@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
@@ -36,6 +37,11 @@ class LessonBlockCard extends StatelessWidget {
         icon = Icons.image_rounded;
         color = AppColors.duoBlue;
         title = 'Image Block';
+        break;
+      case 'svg':
+        icon = Icons.polyline_rounded;
+        color = const Color(0xFF0EA5E9);
+        title = 'SVG Block';
         break;
       case 'audio':
         icon = Icons.audiotrack_rounded;
@@ -132,10 +138,16 @@ class LessonBlockCard extends StatelessWidget {
                   tooltip: 'Delete block',
                 ),
                 const SizedBox(width: 4),
-                Icon(
-                  Icons.drag_handle_rounded,
-                  color: isDark ? Colors.white24 : Colors.black12,
-                  size: 20,
+                ReorderableDragStartListener(
+                  index: index,
+                  child: Tooltip(
+                    message: 'Drag to reorder',
+                    child: Icon(
+                      Icons.drag_handle_rounded,
+                      color: isDark ? Colors.white24 : Colors.black26,
+                      size: 20,
+                    ),
+                  ),
                 ),
               ],
             ),
@@ -183,7 +195,11 @@ class LessonBlockCard extends StatelessWidget {
         );
 
       case 'image':
+      case 'svg':
         final url = block.imageUrl;
+        final isSvg =
+            block.type == 'svg' ||
+            (url?.toLowerCase().endsWith('.svg') ?? false);
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -196,31 +212,48 @@ class LessonBlockCard extends StatelessWidget {
                       : Colors.black.withValues(alpha: 0.05),
                   width: double.infinity,
                   height: 140,
-                  child: Image.network(
-                    url,
-                    fit: BoxFit.contain,
-                    errorBuilder: (ctx, err, trace) => const Center(
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.broken_image_rounded,
-                            color: Colors.grey,
-                            size: 36,
+                  child: isSvg
+                      ? SvgPicture.network(
+                          url,
+                          placeholderBuilder: (_) => const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
                           ),
-                          SizedBox(height: 4),
-                          Text(
-                            'Failed to load image',
-                            style: TextStyle(color: Colors.grey, fontSize: 12),
+                        )
+                      : Image.network(
+                          url,
+                          fit: BoxFit.contain,
+                          errorBuilder: (ctx, err, trace) => const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.grey,
+                                  size: 36,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Failed to load image',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ],
-                      ),
-                    ),
-                  ),
+                        ),
                 ),
               )
             else
-              _buildEmptyPreview(Icons.image_outlined, 'No image uploaded yet'),
+              _buildEmptyPreview(
+                block.type == 'svg'
+                    ? Icons.polyline_rounded
+                    : Icons.image_outlined,
+                block.type == 'svg'
+                    ? 'No SVG uploaded yet'
+                    : 'No image uploaded yet',
+              ),
             _buildCaption(),
           ],
         );

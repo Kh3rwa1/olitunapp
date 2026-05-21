@@ -7,11 +7,25 @@ class AddBlockSheet extends StatelessWidget {
 
   const AddBlockSheet({super.key, required this.onSelectType});
 
-  static void show(BuildContext context, ValueChanged<String> onSelectType) {
-    showModalBottomSheet(
+  static Future<void> show(
+    BuildContext context,
+    ValueChanged<String> onSelectType,
+  ) {
+    return showModalBottomSheet<void>(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (_) => AddBlockSheet(onSelectType: onSelectType),
+      builder: (_) => SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: AddBlockSheet(onSelectType: onSelectType),
+            ),
+          ),
+        ),
+      ),
     );
   }
 
@@ -23,25 +37,51 @@ class AddBlockSheet extends StatelessWidget {
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: AdminTokens.overlay(isDark),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AdminTokens.radius2xl),
-        ),
+        borderRadius: BorderRadius.circular(AdminTokens.radius2xl),
         boxShadow: AdminTokens.overlayShadow(isDark),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(
-            'Select Block Type',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : Colors.black,
-            ),
+          Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                child: const Icon(
+                  Icons.add_box_rounded,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  'Add Lesson Block',
+                  style: TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w800,
+                    color: isDark ? Colors.white : Colors.black,
+                  ),
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(
+                  Icons.close_rounded,
+                  color: isDark ? Colors.white54 : Colors.black45,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 24),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Wrap(
+            spacing: 14,
+            runSpacing: 14,
+            alignment: WrapAlignment.center,
             children: [
               _buildTypeOption(
                 context: context,
@@ -56,6 +96,13 @@ class AddBlockSheet extends StatelessWidget {
                 label: 'Image',
                 color: AppColors.duoBlue,
                 type: 'image',
+              ),
+              _buildTypeOption(
+                context: context,
+                icon: Icons.polyline_rounded,
+                label: 'SVG',
+                color: const Color(0xFF0EA5E9),
+                type: 'svg',
               ),
               _buildTypeOption(
                 context: context,
@@ -106,6 +153,7 @@ class AddBlockSheet extends StatelessWidget {
         onSelectType(type);
       },
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
             padding: const EdgeInsets.all(16),

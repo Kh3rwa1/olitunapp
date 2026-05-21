@@ -141,15 +141,26 @@ class _AdminLessonContentScreenState
   }
 
   void _addBlock(String type) {
-    setState(() {
-      _blocks.add(LessonBlockEntity(type: type));
-      _hasChanges = true;
-    });
+    final draftBlock = LessonBlockEntity(type: type);
     EditBlockSheet.show(
       context: context,
-      block: _blocks.last,
-      onUpdate: (updatedBlock) =>
-          _updateBlock(_blocks.length - 1, updatedBlock),
+      block: draftBlock,
+      onUpdate: (updatedBlock) {
+        setState(() {
+          _blocks.add(updatedBlock);
+          _hasChanges = true;
+          _hoveredOrFocusedIndex = _blocks.length - 1;
+        });
+      },
+    );
+  }
+
+  void _editBlock(int index, LessonBlockEntity block) {
+    setState(() => _hoveredOrFocusedIndex = index);
+    EditBlockSheet.show(
+      context: context,
+      block: block,
+      onUpdate: (updatedBlock) => _updateBlock(index, updatedBlock),
     );
   }
 
@@ -241,6 +252,7 @@ class _AdminLessonContentScreenState
                                         100,
                                       ),
                                       itemCount: _blocks.length,
+                                      buildDefaultDragHandles: false,
                                       // ignore: deprecated_member_use
                                       onReorder: _moveBlock,
                                       proxyDecorator:
@@ -282,24 +294,15 @@ class _AdminLessonContentScreenState
                                           ),
                                           child: GestureDetector(
                                             onTap: () {
-                                              setState(() {
-                                                _hoveredOrFocusedIndex = index;
-                                              });
                                               _syncScroll(index, true);
+                                              _editBlock(index, block);
                                             },
                                             child: LessonBlockCard(
                                               index: index,
                                               block: block,
                                               isDark: isDark,
-                                              onEdit: () => EditBlockSheet.show(
-                                                context: context,
-                                                block: block,
-                                                onUpdate: (updatedBlock) =>
-                                                    _updateBlock(
-                                                      index,
-                                                      updatedBlock,
-                                                    ),
-                                              ),
+                                              onEdit: () =>
+                                                  _editBlock(index, block),
                                               onDelete: () =>
                                                   _removeBlock(index),
                                             ),
@@ -337,6 +340,7 @@ class _AdminLessonContentScreenState
                                   100,
                                 ),
                                 itemCount: _blocks.length,
+                                buildDefaultDragHandles: false,
                                 // ignore: deprecated_member_use
                                 onReorder: _moveBlock,
                                 proxyDecorator: (child, index, animation) {
@@ -354,17 +358,15 @@ class _AdminLessonContentScreenState
                                       'block_${block.hashCode}_$index',
                                     ),
                                     margin: const EdgeInsets.only(bottom: 12),
-                                    child: LessonBlockCard(
-                                      index: index,
-                                      block: block,
-                                      isDark: isDark,
-                                      onEdit: () => EditBlockSheet.show(
-                                        context: context,
+                                    child: GestureDetector(
+                                      onTap: () => _editBlock(index, block),
+                                      child: LessonBlockCard(
+                                        index: index,
                                         block: block,
-                                        onUpdate: (updatedBlock) =>
-                                            _updateBlock(index, updatedBlock),
+                                        isDark: isDark,
+                                        onEdit: () => _editBlock(index, block),
+                                        onDelete: () => _removeBlock(index),
                                       ),
-                                      onDelete: () => _removeBlock(index),
                                     ),
                                   );
                                 },
@@ -818,6 +820,42 @@ class _AdminLessonContentScreenState
                             ),
                     ),
                   ),
+                const SizedBox(width: 10),
+                ScaleButton(
+                  onPressed: () => AddBlockSheet.show(context, _addBlock),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 14,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          blurRadius: 10,
+                          offset: const Offset(0, 3),
+                        ),
+                      ],
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.add_rounded, size: 18, color: Colors.white),
+                        SizedBox(width: 6),
+                        Text(
+                          'Add Block',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
                 if (!_hasChanges)
                   Container(
                     padding: const EdgeInsets.symmetric(

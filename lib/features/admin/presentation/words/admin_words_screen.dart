@@ -126,7 +126,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                   child: wordsAsync.when(
                     data: (words) {
                       final filtered = _selectedCategory == null
-                          ? words
+                          ? _filterWordsForLessons(words, subcategoryLessons)
                           : _filterWords(words, subcategoryLessons);
                       return filtered.isEmpty
                           ? _emptyState(context, isDark)
@@ -319,17 +319,38 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
       add(lesson.titleLatin);
     }
 
-    final categories =
-        rowCategories
-            .where((value) => value != null && value.trim().isNotEmpty)
-            .map((value) => value!.trim())
-            .toList()
-          ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-    for (final category in categories) {
-      add(category);
+    if (labels.isEmpty) {
+      final categories =
+          rowCategories
+              .where((value) => value != null && value.trim().isNotEmpty)
+              .map((value) => value!.trim())
+              .toList()
+            ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
+      for (final category in categories) {
+        add(category);
+      }
     }
 
     return labels;
+  }
+
+  List<WordModel> _filterWordsForLessons(
+    List<WordModel> words,
+    List<LessonEntity> subcategoryLessons,
+  ) {
+    if (subcategoryLessons.isEmpty) return words;
+    final allowed = subcategoryLessons
+        .expand(_normalizedTextBlockValues)
+        .toSet();
+    if (allowed.isEmpty) return const [];
+    return words
+        .where(
+          (word) =>
+              word.isActive &&
+              allowed.contains(_normalizeKey(word.wordOlChiki)),
+        )
+        .toList()
+      ..sort((a, b) => a.order.compareTo(b.order));
   }
 
   List<WordModel> _filterWords(
@@ -338,33 +359,39 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
   ) {
     final selected = _selectedCategory;
     if (selected == null) return words;
+    final selectedKey = _normalizeKey(selected);
 
     final lesson = subcategoryLessons
-        .where((lesson) => lesson.titleLatin == selected)
+        .where((lesson) => _normalizeKey(lesson.titleLatin) == selectedKey)
         .firstOrNull;
     if (lesson == null) {
-      return words.where((word) => word.category == selected).toList();
+      return words
+          .where((word) => _normalizeKey(word.category ?? '') == selectedKey)
+          .toList();
     }
 
-    final blockTexts = lesson.blocks
-        .where((block) => block.type == 'text' && block.textOlChiki != null)
-        .map((block) => block.textOlChiki!.trim())
-        .toSet();
+    final blockTexts = _normalizedTextBlockValues(lesson).toSet();
     if (blockTexts.isEmpty) return const [];
 
     return words
         .where(
           (word) =>
               word.isActive &&
-              blockTexts.any(
-                (text) =>
-                    text == word.wordOlChiki ||
-                    text.contains(word.wordOlChiki) ||
-                    word.wordOlChiki.contains(text),
-              ),
+              blockTexts.contains(_normalizeKey(word.wordOlChiki)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
+  }
+
+  Iterable<String> _normalizedTextBlockValues(LessonEntity lesson) {
+    return lesson.blocks
+        .where((block) => block.type == 'text' && block.textOlChiki != null)
+        .map((block) => _normalizeKey(block.textOlChiki!))
+        .where((text) => text.isNotEmpty);
+  }
+
+  String _normalizeKey(String value) {
+    return value.trim().toLowerCase().replaceAll(RegExp(r'\s+'), ' ');
   }
 
   Future<void> _addSubcategory(

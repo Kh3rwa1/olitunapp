@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+import 'package:lottie/lottie.dart';
 import '../../../../core/storage/upload_service.dart';
+import '../../../../shared/widgets/video_player_widget.dart';
 
 /// Reusable media upload row used for audio, image, and animation fields
 /// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
@@ -156,6 +160,9 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
                 if (hasUrl && widget.previewBuilder != null) ...[
                   widget.previewBuilder!(widget.currentUrl!),
                   const SizedBox(height: 12),
+                ] else if (hasUrl) ...[
+                  _buildDefaultPreview(widget.currentUrl!, isDark),
+                  const SizedBox(height: 12),
                 ],
                 Row(
                   children: [
@@ -236,6 +243,99 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
           },
         ),
       ],
+    );
+  }
+
+  Widget _buildDefaultPreview(String url, bool isDark) {
+    final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
+    final isSvg = path.endsWith('.svg');
+    final isLottie = path.endsWith('.json') || path.endsWith('.lottie');
+    final isVideo =
+        path.endsWith('.mp4') ||
+        path.endsWith('.webm') ||
+        path.endsWith('.mov') ||
+        path.endsWith('.m4v');
+    final isAudio =
+        path.endsWith('.mp3') ||
+        path.endsWith('.wav') ||
+        path.endsWith('.ogg') ||
+        path.endsWith('.aac') ||
+        path.endsWith('.m4a');
+
+    Widget child;
+    if (isVideo) {
+      child = VideoPlayerWidget(
+        assetPath: url,
+        width: double.infinity,
+        height: 140,
+      );
+    } else if (isLottie) {
+      child = Lottie.network(
+        url,
+        height: 140,
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) => const Icon(
+          Icons.broken_image_rounded,
+          size: 48,
+          color: Colors.grey,
+        ),
+      );
+    } else if (isSvg) {
+      child = kIsWeb
+          ? Image.network(
+              url,
+              height: 140,
+              fit: BoxFit.contain,
+              errorBuilder: (_, _, _) => const Icon(
+                Icons.broken_image_rounded,
+                size: 48,
+                color: Colors.grey,
+              ),
+            )
+          : SvgPicture.network(
+              url,
+              height: 140,
+              placeholderBuilder: (_) => const Center(
+                child: CircularProgressIndicator(strokeWidth: 2),
+              ),
+              errorBuilder: (_, _, _) => const Icon(
+                Icons.broken_image_rounded,
+                size: 48,
+                color: Colors.grey,
+              ),
+            );
+    } else if (isAudio) {
+      child = const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.audiotrack_rounded, size: 42, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('Audio file selected'),
+        ],
+      );
+    } else {
+      child = Image.network(
+        url,
+        height: 140,
+        fit: BoxFit.contain,
+        errorBuilder: (_, _, _) => const Icon(
+          Icons.broken_image_rounded,
+          size: 48,
+          color: Colors.grey,
+        ),
+      );
+    }
+
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        height: 140,
+        width: double.infinity,
+        color: isDark
+            ? Colors.white.withValues(alpha: 0.05)
+            : Colors.black.withValues(alpha: 0.04),
+        child: Center(child: child),
+      ),
     );
   }
 }

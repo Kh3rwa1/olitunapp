@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -255,17 +256,41 @@ class _ImageBlock extends StatelessWidget {
       child: Column(
         children: [
           isSvg
-              ? SvgPicture.network(
-                  url,
-                  width: double.infinity,
-                  placeholderBuilder: (BuildContext context) => Container(
-                    height: 200,
-                    color: Colors.grey.withValues(alpha: 0.05),
-                    child: const Center(
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    ),
-                  ),
-                )
+              ? (kIsWeb
+                    ? Image.network(
+                        url,
+                        width: double.infinity,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 200,
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            child: const Center(
+                              child: Icon(Icons.broken_image_rounded),
+                            ),
+                          );
+                        },
+                      )
+                    : SvgPicture.network(
+                        url,
+                        width: double.infinity,
+                        placeholderBuilder: (BuildContext context) => Container(
+                          height: 200,
+                          color: Colors.grey.withValues(alpha: 0.05),
+                          child: const Center(
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                        ),
+                        errorBuilder: (context, error, stackTrace) {
+                          return Container(
+                            height: 200,
+                            color: Colors.grey.withValues(alpha: 0.1),
+                            child: const Center(
+                              child: Icon(Icons.broken_image_rounded),
+                            ),
+                          );
+                        },
+                      ))
               : Image.network(
                   url,
                   width: double.infinity,

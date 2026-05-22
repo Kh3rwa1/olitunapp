@@ -8,7 +8,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
-import '../../../circle/presentation/providers/circle_providers.dart';
 
 class RhymeAudioState {
   final String? playingRhymeId;
@@ -115,15 +114,6 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
       if (percentage >= 0.8 && !_eventTriggeredForCurrent) {
         _eventTriggeredForCurrent = true;
         _ref?.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
-        _ref
-            ?.read(circleLeaderboardProvider.notifier)
-            .recordEvent(
-              'bakhed_completed_80_percent',
-              rhymeId,
-              metadata: {
-                'listenedPercent': (percentage * 100).round().clamp(80, 100),
-              },
-            );
       }
     }
   }

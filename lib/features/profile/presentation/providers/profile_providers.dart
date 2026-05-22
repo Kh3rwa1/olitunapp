@@ -18,7 +18,6 @@ import '../../../../shared/providers/gamification_content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../shared/widgets/state_widgets.dart';
-import '../../../circle/data/circle_repository.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
@@ -427,13 +426,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       streakShields: newShields,
     );
 
-    // Securely fire weekly circle event (client-side repository checks validation)
     if (_ref != null) {
-      final circleRepo = _ref.read(circleRepositoryProvider);
-      await circleRepo.recordCircleEvent(
-        'daily_mission_completed',
-        'missions_$today',
-      );
       unawaited(
         _ref
             .read(learningAnalyticsServiceProvider)

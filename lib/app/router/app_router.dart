@@ -20,7 +20,6 @@ import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/presentation/mistake_review_screen.dart';
-import '../../features/circle/presentation/weekly_circle_screen.dart';
 import '../../features/home/presentation/screens/ai_translator_screen.dart';
 import '../../features/profile/presentation/settings_screen.dart';
 
@@ -225,8 +224,6 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/mistakes',
         child: (_, _) => const MistakeReviewScreen(),
       ),
-      _drillRoute(path: '/circle', child: (_, _) => const WeeklyCircleScreen()),
-
       _shellRoute(
         path: '/profile',
         name: RouteNames.profile,
@@ -401,21 +398,6 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/admin/gamification/badges',
             builder: (context, state) =>
                 const AdminGamificationScreen(section: 'badges'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/circles',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'circles'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/circles/templates',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'circle_templates'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/events',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'circle_events'),
           ),
           adminRoute(
             path: '/admin/gamification/missions',

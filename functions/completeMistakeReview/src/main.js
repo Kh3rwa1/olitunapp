@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Client, Databases, ID } from 'node-appwrite';
+import { Client, Databases } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -11,53 +11,6 @@ function parseBody(req) {
   } catch (_) {
     return {};
   }
-}
-
-function currentWeekId(now = new Date()) {
-  const date = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const day = date.getUTCDay() || 7;
-  date.setUTCDate(date.getUTCDate() + 4 - day);
-  const yearStart = new Date(Date.UTC(date.getUTCFullYear(), 0, 1));
-  const week = Math.ceil((((date - yearStart) / 86400000) + 1) / 7);
-  return `${date.getUTCFullYear()}-W${String(week).padStart(2, '0')}`;
-}
-
-async function awardMistakeReviewPoints(databases, databaseId, userId, weekId, now) {
-  const dateKey = now.toISOString().slice(0, 10);
-  const memberId = stableId(`${userId}:${weekId}`);
-  let member;
-  try {
-    member = await databases.getDocument(databaseId, 'circle_members', memberId);
-  } catch (_) {
-    return { awarded: false, points: 0 };
-  }
-
-  const eventId = stableId(`${userId}:${dateKey}:mistake_review_completed:daily`);
-  try {
-    await databases.createDocument(databaseId, 'circle_events', eventId, {
-      circleId: member.circleId,
-      userId,
-      weekId,
-      dateKey,
-      eventType: 'mistake_review_completed',
-      sourceId: 'daily',
-      dedupeKey: eventId,
-      points: 15,
-      metadata: '{}',
-      createdAt: now.toISOString()
-    });
-  } catch (err) {
-    if (err.code === 409) return { awarded: false, points: 0 };
-    throw err;
-  }
-
-  await databases.updateDocument(databaseId, 'circle_members', member.$id, {
-    circlePoints: (member.circlePoints || 0) + 15,
-    mistakeReviewsCompleted: (member.mistakeReviewsCompleted || 0) + 1,
-    lastActiveAt: now.toISOString()
-  });
-
-  return { awarded: true, points: 15 };
 }
 
 export default async ({ req, res, error }) => {
@@ -126,19 +79,9 @@ export default async ({ req, res, error }) => {
       }
     }
 
-    const circleAward = await awardMistakeReviewPoints(
-      databases,
-      databaseId,
-      userId,
-      currentWeekId(now),
-      now
-    );
-
     return res.json({
       ok: true,
-      sessionId,
-      circlePointsAwarded: circleAward.points,
-      circleEventRecorded: circleAward.awarded
+      sessionId
     });
   } catch (err) {
     error('completeMistakeReview error: ' + err.message);

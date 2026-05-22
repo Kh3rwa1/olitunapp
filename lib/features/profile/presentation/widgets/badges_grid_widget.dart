@@ -212,44 +212,6 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
         targetProgress: 10,
         isUnlocked: stats.completedMissionsDates.length >= 10,
       ),
-
-      // --- Circle Badges ---
-      Badge(
-        name: 'Circle Champion',
-        description: 'Reach 500 total stars to prove weekly circle mastery.',
-        icon: '🥇',
-        category: 'CIRCLE',
-        currentProgress: stats.totalStars >= 500 ? 1 : 0,
-        targetProgress: 1,
-        isUnlocked: stats.totalStars >= 500,
-      ),
-      Badge(
-        name: 'Top 3 Climber',
-        description: 'Reach 300 total stars to rank top in circle events.',
-        icon: '🥈',
-        category: 'CIRCLE',
-        currentProgress: stats.totalStars >= 300 ? 1 : 0,
-        targetProgress: 1,
-        isUnlocked: stats.totalStars >= 300,
-      ),
-      Badge(
-        name: 'Weekly Climber',
-        description: 'Earn 200 total stars to claim standard circles ranks.',
-        icon: '📈',
-        category: 'CIRCLE',
-        currentProgress: stats.totalStars >= 200 ? 1 : 0,
-        targetProgress: 1,
-        isUnlocked: stats.totalStars >= 200,
-      ),
-      Badge(
-        name: 'Community Learner',
-        description: 'Complete 2 lessons to qualify for Weekly Circles.',
-        icon: '🤝',
-        category: 'CIRCLE',
-        currentProgress: stats.lessonsCompletedCount >= 2 ? 1 : 0,
-        targetProgress: 1,
-        isUnlocked: stats.lessonsCompletedCount >= 2,
-      ),
     ];
   }
 

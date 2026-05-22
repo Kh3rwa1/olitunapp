@@ -100,80 +100,6 @@
       ]
     },
     {
-      "$id": "assignUserToWeeklyCircle",
-      "name": "assignUserToWeeklyCircle",
-      "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
-      "events": [],
-      "schedule": "",
-      "timeout": 30,
-      "path": "functions/assignUserToWeeklyCircle",
-      "entrypoint": "src/main.js",
-      "commands": "npm install",
-      "ignore": [
-        "node_modules",
-        ".npm"
-      ],
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "users.read",
-        "databases.read",
-        "databases.write"
-      ]
-    },
-    {
-      "$id": "recordCircleEvent",
-      "name": "recordCircleEvent",
-      "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
-      "events": [],
-      "schedule": "",
-      "timeout": 30,
-      "path": "functions/recordCircleEvent",
-      "entrypoint": "src/main.js",
-      "commands": "npm install",
-      "ignore": [
-        "node_modules",
-        ".npm"
-      ],
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "documents.read",
-        "documents.write",
-        "databases.read",
-        "databases.write"
-      ]
-    },
-    {
-      "$id": "getCircleLeaderboard",
-      "name": "getCircleLeaderboard",
-      "runtime": "node-22.0",
-      "execute": [
-        "users"
-      ],
-      "events": [],
-      "schedule": "",
-      "timeout": 30,
-      "path": "functions/getCircleLeaderboard",
-      "entrypoint": "src/main.js",
-      "commands": "npm install",
-      "ignore": [
-        "node_modules",
-        ".npm"
-      ],
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "databases.read"
-      ]
-    },
-    {
       "$id": "recordMistake",
       "name": "recordMistake",
       "runtime": "node-22.0",
@@ -361,30 +287,6 @@
       "scopes": [
         "documents.read",
         "documents.write",
-        "databases.read",
-        "databases.write"
-      ]
-    },
-    {
-      "$id": "finalizeWeeklyCircles",
-      "name": "finalizeWeeklyCircles",
-      "runtime": "node-22.0",
-      "execute": [],
-      "events": [],
-      "schedule": "0 0 * * 1",
-      "timeout": 60,
-      "path": "functions/finalizeWeeklyCircles",
-      "entrypoint": "src/main.js",
-      "commands": "npm install",
-      "ignore": [
-        "node_modules",
-        ".npm"
-      ],
-      "enabled": true,
-      "logging": true,
-      "scopes": [
-        "users.read",
-        "users.write",
         "databases.read",
         "databases.write"
       ]

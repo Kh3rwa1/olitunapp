@@ -156,13 +156,6 @@ const FIELD_MAP = {
     order_index: 'order',
     is_active: 'isActive',
   },
-  rhyme_categories: {
-    id: 'id',
-    name_ol_chiki: 'nameOlChiki',
-    name_latin: 'nameLatin',
-    icon_name: 'iconName',
-    order_index: 'order',
-  },
   app_settings: {
     setting_key: 'settingKey',
     setting_value: 'settingValue',
@@ -226,7 +219,6 @@ async function main() {
   // Import order matters (foreign keys)
   const importOrder = [
     'categories',
-    'rhyme_categories',
     'lessons',
     'lesson_blocks',
     'letters',

@@ -67,7 +67,6 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
           data: Theme.of(context).copyWith(
             colorScheme: const ColorScheme.light(
               primary: AppColors.primary,
-              onPrimary: Colors.white,
               onSurface: Colors.black87,
             ),
           ),
@@ -257,7 +256,7 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
                       children: [
                         _buildLabel('CEREMONY TYPE'),
                         DropdownButtonFormField<String>(
-                          value: _selectedCeremony,
+                          initialValue: _selectedCeremony,
                           items: _ceremonyTypes
                               .map(
                                 (c) => DropdownMenuItem(
@@ -345,7 +344,7 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
                       children: [
                         _buildLabel('STATE'),
                         DropdownButtonFormField<String>(
-                          value: _selectedState,
+                          initialValue: _selectedState,
                           items: _states
                               .map(
                                 (s) => DropdownMenuItem(
@@ -439,8 +438,8 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
       hintStyle: const TextStyle(color: Colors.grey, fontSize: 13),
       filled: true,
       fillColor: isDark
-          ? Colors.white.withOpacity(0.03)
-          : Colors.black.withOpacity(0.02),
+          ? Colors.white.withValues(alpha: 0.03)
+          : Colors.black.withValues(alpha: 0.02),
       isDense: true,
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       border: OutlineInputBorder(
@@ -451,8 +450,8 @@ class _BintiGuruFormSheetState extends ConsumerState<BintiGuruFormSheet> {
         borderRadius: BorderRadius.circular(12),
         borderSide: BorderSide(
           color: isDark
-              ? Colors.white.withOpacity(0.05)
-              : Colors.black.withOpacity(0.04),
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.04),
         ),
       ),
       focusedBorder: OutlineInputBorder(

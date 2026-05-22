@@ -183,7 +183,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                   ? const Color(0xFF141A24)
                   : Colors.white,
               borderRadius: BorderRadius.circular(24),
-              border: Border.all(color: AppColors.primary.withOpacity(0.2)),
+              border: Border.all(color: AppColors.primary.withValues(alpha: 0.2)),
               boxShadow: const [
                 BoxShadow(
                   color: Colors.black26,
@@ -199,7 +199,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: Colors.green.withOpacity(0.12),
+                    color: Colors.green.withValues(alpha: 0.12),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(
@@ -362,7 +362,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                         border: Border.all(
                           color: isDark
                               ? Colors.white10
-                              : Colors.black.withOpacity(0.04),
+                              : Colors.black.withValues(alpha: 0.04),
                         ),
                       ),
                       child: Stack(
@@ -387,8 +387,8 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                             decoration: BoxDecoration(
                               gradient: LinearGradient(
                                 colors: [
-                                  Colors.black.withOpacity(0.7),
-                                  Colors.black.withOpacity(0.2),
+                                  Colors.black.withValues(alpha: 0.7),
+                                  Colors.black.withValues(alpha: 0.2),
                                 ],
                                 begin: Alignment.bottomCenter,
                                 end: Alignment.topCenter,
@@ -508,13 +508,13 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                           padding: const EdgeInsets.all(16),
                           decoration: BoxDecoration(
                             color: isDark
-                                ? Colors.white.withOpacity(0.03)
-                                : AppColors.primary.withOpacity(0.04),
+                                ? Colors.white.withValues(alpha: 0.03)
+                                : AppColors.primary.withValues(alpha: 0.04),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
                               color: isDark
                                   ? Colors.white10
-                                  : AppColors.primary.withOpacity(0.08),
+                                  : AppColors.primary.withValues(alpha: 0.08),
                             ),
                           ),
                           child: Column(
@@ -580,10 +580,10 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                           padding: const EdgeInsets.all(16),
                           width: double.infinity,
                           decoration: BoxDecoration(
-                            color: Colors.amber.withOpacity(0.12),
+                            color: Colors.amber.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(16),
                             border: Border.all(
-                              color: Colors.amber.withOpacity(0.3),
+                              color: Colors.amber.withValues(alpha: 0.3),
                             ),
                           ),
                           child: const Column(
@@ -667,7 +667,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                               style: OutlinedButton.styleFrom(
                                 side: BorderSide(
                                   color: hasAlreadyReviewed
-                                      ? Colors.grey.withOpacity(0.3)
+                                      ? Colors.grey.withValues(alpha: 0.3)
                                       : AppColors.primary,
                                   width: 2,
                                 ),
@@ -736,7 +736,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
           if (_isLoading)
             Positioned.fill(
               child: Container(
-                color: (isDark ? Colors.black : Colors.white).withOpacity(0.85),
+                color: (isDark ? Colors.black : Colors.white).withValues(alpha: 0.85),
                 child: Center(
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -778,7 +778,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: AppColors.primary.withOpacity(0.08),
+            color: AppColors.primary.withValues(alpha: 0.08),
             shape: BoxShape.circle,
           ),
           child: Icon(icon, color: AppColors.primary, size: 20),

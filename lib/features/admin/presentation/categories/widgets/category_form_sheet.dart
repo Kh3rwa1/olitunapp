@@ -265,7 +265,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                   const SizedBox(height: 14),
 
                   DropdownButtonFormField<String>(
-                    value: _selectedUnlockMode,
+                    initialValue: _selectedUnlockMode,
                     decoration: InputDecoration(
                       labelText: 'Unlock Mode',
                       filled: true,

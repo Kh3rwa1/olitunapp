@@ -35,7 +35,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
       final boundary =
           _repaintKey.currentContext?.findRenderObject()
               as RenderRepaintBoundary?;
-      if (boundary == null) throw Exception("Boundary not found");
+      if (boundary == null) throw Exception('Boundary not found');
 
       // Capture screen image
       final image = await boundary.toImage(pixelRatio: 3.0);
@@ -91,6 +91,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
       await file.writeAsBytes(watermarkedBytes);
 
       // Share
+      if (!mounted) return;
       final renderBox = context.findRenderObject() as RenderBox?;
       final origin = renderBox != null
           ? renderBox.localToGlobal(Offset.zero) & renderBox.size
@@ -179,7 +180,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
                 color: isDark ? Colors.white10 : Colors.black12,
-                width: 1,
               ),
               boxShadow: [
                 BoxShadow(
@@ -211,14 +211,13 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         // Eyebrow
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
+                            const Icon(
                               Icons.auto_awesome_rounded,
                               size: 14,
                               color: AppColors.primary,
@@ -338,7 +337,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
         );
       },
       loading: () => const SizedBox.shrink(),
-      error: (_, __) => const SizedBox.shrink(),
+      error: (err, stack) => const SizedBox.shrink(),
     );
   }
 }

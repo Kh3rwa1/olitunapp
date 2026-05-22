@@ -242,7 +242,7 @@ class _AdminAffirmationFormState extends ConsumerState<AdminAffirmationForm> {
                   ),
                   const SizedBox(height: 8),
                   DropdownButtonFormField<String>(
-                    value: _selectedCategory,
+                    initialValue: _selectedCategory,
                     dropdownColor: AdminTokens.overlay(isDark),
                     decoration: InputDecoration(
                       filled: true,
@@ -321,7 +321,7 @@ class _AdminAffirmationFormState extends ConsumerState<AdminAffirmationForm> {
                           const SizedBox(height: 8),
                           Switch(
                             value: _isPremium,
-                            activeColor: AppColors.primary,
+                            activeThumbColor: AppColors.primary,
                             onChanged: (val) =>
                                 setState(() => _isPremium = val),
                           ),

@@ -15,7 +15,7 @@ final userWaitlistProvider = FutureProvider<List<WaitlistModel>>((ref) async {
       'binti_guru_waitlist',
       queries: [Query.equal('userId', user.id), Query.orderDesc('submittedAt')],
     );
-    return result.map((doc) => WaitlistModel.fromJson(doc)).toList();
+    return result.map(WaitlistModel.fromJson).toList();
   } catch (e) {
     AppLogger.debug('❌ fetch userWaitlist failed: $e');
     return [];
@@ -45,7 +45,7 @@ class AdminWaitlistNotifier
         'binti_guru_waitlist',
         queries: [Query.orderDesc('submittedAt'), Query.limit(1000)],
       );
-      final list = result.map((doc) => WaitlistModel.fromJson(doc)).toList();
+      final list = result.map(WaitlistModel.fromJson).toList();
       state = AsyncValue.data(list);
     } catch (e, stack) {
       AppLogger.debug('❌ loadWaitlist failed: $e');

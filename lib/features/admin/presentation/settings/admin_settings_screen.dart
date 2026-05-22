@@ -365,7 +365,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                             shrinkWrap: true,
                             physics: const NeverScrollableScrollPhysics(),
                             itemCount: _goalsList.length,
-                            separatorBuilder: (_, __) => const Divider(
+                            separatorBuilder: (_, _) => const Divider(
                               height: 24,
                               color: Colors.white10,
                             ),
@@ -413,7 +413,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                   Expanded(
                                     flex: 2,
                                     child: DropdownButtonFormField<String>(
-                                      value: goal['icon'],
+                                      initialValue: goal['icon'],
                                       dropdownColor: const Color(0xFF1E293B),
                                       decoration: InputDecoration(
                                         labelText: 'Icon',
@@ -625,11 +625,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       child: SwitchListTile(
                         title: const Text('Global Play Store Review Unlock'),
                         subtitle: const Text(
-                          'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
+                           'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
                           style: TextStyle(fontSize: 12),
                         ),
                         value: _globalReviewUnlockEnabled,
-                        activeColor: AppColors.primary,
+                        activeThumbColor: AppColors.primary,
                         onChanged: (val) async {
                           setState(() => _globalReviewUnlockEnabled = val);
                           try {

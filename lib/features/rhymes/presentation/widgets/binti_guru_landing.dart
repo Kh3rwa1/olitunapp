@@ -31,13 +31,13 @@ class BintiGuruLanding extends StatelessWidget {
                   ),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
             ),
             boxShadow: isDark
                 ? null
                 : [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.04),
+                      color: Colors.black.withValues(alpha: 0.04),
                       blurRadius: 20,
                       offset: const Offset(0, 8),
                     ),
@@ -49,7 +49,7 @@ class BintiGuruLanding extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: AppColors.primary.withOpacity(0.12),
+                  color: AppColors.primary.withValues(alpha: 0.12),
                   shape: BoxShape.circle,
                 ),
                 child: const Icon(
@@ -105,7 +105,7 @@ class BintiGuruLanding extends StatelessWidget {
               ).animate().shimmer(
                 delay: 2.seconds,
                 duration: 1800.ms,
-                color: Colors.white.withOpacity(0.2),
+                color: Colors.white.withValues(alpha: 0.2),
               ),
             ],
           ),
@@ -164,16 +164,16 @@ class BintiGuruLanding extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.02) : Colors.white,
+        color: isDark ? Colors.white.withValues(alpha: 0.02) : Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+          color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
         ),
         boxShadow: isDark
             ? null
             : [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.02),
+                  color: Colors.black.withValues(alpha: 0.02),
                   blurRadius: 10,
                   offset: const Offset(0, 4),
                 ),
@@ -186,7 +186,7 @@ class BintiGuruLanding extends StatelessWidget {
             width: 36,
             height: 36,
             decoration: BoxDecoration(
-              color: AppColors.primary.withOpacity(0.08),
+              color: AppColors.primary.withValues(alpha: 0.08),
               shape: BoxShape.circle,
             ),
             child: Center(

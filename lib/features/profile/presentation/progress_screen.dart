@@ -240,11 +240,11 @@ class ProgressScreen extends ConsumerWidget {
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: isDark
-                  ? Colors.white.withOpacity(0.02)
-                  : Colors.black.withOpacity(0.01),
+                  ? Colors.white.withValues(alpha: 0.02)
+                  : Colors.black.withValues(alpha: 0.01),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
               ),
             ),
             child: Column(
@@ -295,38 +295,38 @@ class ProgressScreen extends ConsumerWidget {
             switch (booking.status) {
               case 'new':
                 statusColor = Colors.orangeAccent;
-                statusBgColor = Colors.orangeAccent.withOpacity(0.12);
+                statusBgColor = Colors.orangeAccent.withValues(alpha: 0.12);
                 break;
               case 'contacted':
                 statusColor = Colors.blueAccent;
-                statusBgColor = Colors.blueAccent.withOpacity(0.12);
+                statusBgColor = Colors.blueAccent.withValues(alpha: 0.12);
                 break;
               case 'converted':
                 statusColor = Colors.greenAccent;
-                statusBgColor = Colors.greenAccent.withOpacity(0.12);
+                statusBgColor = Colors.greenAccent.withValues(alpha: 0.12);
                 break;
               case 'closed':
               default:
                 statusColor = Colors.grey;
-                statusBgColor = Colors.grey.withOpacity(0.12);
+                statusBgColor = Colors.grey.withValues(alpha: 0.12);
                 break;
             }
 
             return Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+                color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isDark
                       ? Colors.white10
-                      : Colors.black.withOpacity(0.04),
+                      : Colors.black.withValues(alpha: 0.04),
                 ),
                 boxShadow: isDark
                     ? null
                     : [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -344,7 +344,7 @@ class ProgressScreen extends ConsumerWidget {
                           vertical: 4,
                         ),
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withOpacity(0.1),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
@@ -423,7 +423,7 @@ class ProgressScreen extends ConsumerWidget {
                     Divider(
                       color: isDark
                           ? Colors.white10
-                          : Colors.black.withOpacity(0.04),
+                          : Colors.black.withValues(alpha: 0.04),
                     ),
                     const SizedBox(height: 4),
                     Text(
@@ -450,7 +450,7 @@ class ProgressScreen extends ConsumerWidget {
       error: (e, _) => Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.redAccent.withOpacity(0.1),
+          color: Colors.redAccent.withValues(alpha: 0.1),
           borderRadius: BorderRadius.circular(16),
         ),
         child: const Text(

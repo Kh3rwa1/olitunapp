@@ -59,6 +59,13 @@ class QuizScreen extends ConsumerWidget {
           }
 
           final state = ref.watch(quizSessionNotifierProvider(quizId));
+          if (!state.hasStarted) {
+            WidgetsBinding.instance.addPostFrameCallback((_) {
+              ref
+                  .read(quizSessionNotifierProvider(quizId).notifier)
+                  .startQuiz(quiz);
+            });
+          }
           if (state.isQuizComplete) {
             return QuizCompleteScreen(
               score: state.score,

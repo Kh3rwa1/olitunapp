@@ -20,6 +20,7 @@ class QuizSessionState {
   final int comboMultiplier;
   final int bonusStars;
   final List<int> incorrectQuestionIndices;
+  final bool hasStarted;
 
   const QuizSessionState({
     this.currentQuestion = 0,
@@ -33,6 +34,7 @@ class QuizSessionState {
     this.comboMultiplier = 1,
     this.bonusStars = 0,
     this.incorrectQuestionIndices = const [],
+    this.hasStarted = false,
   });
 
   QuizSessionState copyWith({
@@ -47,6 +49,7 @@ class QuizSessionState {
     int? comboMultiplier,
     int? bonusStars,
     List<int>? incorrectQuestionIndices,
+    bool? hasStarted,
     bool clearSelectedAnswer = false,
   }) {
     return QuizSessionState(
@@ -64,6 +67,7 @@ class QuizSessionState {
       bonusStars: bonusStars ?? this.bonusStars,
       incorrectQuestionIndices:
           incorrectQuestionIndices ?? this.incorrectQuestionIndices,
+      hasStarted: hasStarted ?? this.hasStarted,
     );
   }
 }
@@ -109,6 +113,27 @@ class QuizSessionNotifier
   @override
   QuizSessionState build(String quizId) {
     return const QuizSessionState();
+  }
+
+  void startQuiz(QuizModel quiz) {
+    if (state.hasStarted) return;
+    state = state.copyWith(hasStarted: true);
+
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.quizAttempted,
+            source: 'quiz_session',
+            sourceId: quiz.id,
+            metadata: {
+              'categoryId': quiz.categoryId,
+              'title': quiz.title,
+              'questionCount': quiz.questions.length,
+              'passingScore': quiz.passingScore,
+            },
+          ),
+    );
   }
 
   void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
@@ -172,12 +197,13 @@ class QuizSessionNotifier
       state = state.copyWith(isQuizComplete: true);
 
       final statsNotifier = ref.read(userStatsProvider.notifier);
+      final completedAt = DateTime.now().toIso8601String();
       statsNotifier.saveQuizResult(
         QuizResultEntity(
           quizId: quiz.id,
           score: state.score,
           totalQuestions: quiz.questions.length,
-          completedAt: DateTime.now().toIso8601String(),
+          completedAt: completedAt,
         ),
       );
       statsNotifier.addStars((state.score * 5) + state.bonusStars);

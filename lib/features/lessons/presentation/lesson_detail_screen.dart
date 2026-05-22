@@ -6,7 +6,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
-import '../../../core/analytics/analytics_service.dart';
 import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart' hide CategoryModel;
@@ -147,16 +146,11 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           _trackedStartedLessonId = lesson.id;
           unawaited(
             ref
-                .read(learningAnalyticsServiceProvider)
-                .track(
-                  LearningAnalyticsEvents.lessonStarted,
-                  source: 'lesson_detail',
-                  sourceId: lesson.id,
-                  metadata: {
-                    'categoryId': lesson.categoryId,
-                    'estimatedMinutes': lesson.estimatedMinutes,
-                    'alreadyCompleted': completedLessons.contains(lesson.id),
-                  },
+                .read(lessonNotifierProvider.notifier)
+                .trackLessonStarted(
+                  lesson,
+                  alreadyCompleted: completedLessons.contains(lesson.id),
+                  scriptMode: scriptMode,
                 ),
           );
         }

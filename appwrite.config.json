@@ -283,6 +283,26 @@
             ]
         },
         {
+            "$id": "aggregateLearningAnalytics",
+            "name": "aggregateLearningAnalytics",
+            "runtime": "node-22",
+            "path": "functions/aggregateLearningAnalytics",
+            "entrypoint": "src/main.js",
+            "execute": [],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "30 0 * * *",
+            "timeout": 60,
+            "commands": "npm install",
+            "scopes": [
+                "documents.read",
+                "documents.write",
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
             "$id": "finalizeWeeklyCircles",
             "name": "finalizeWeeklyCircles",
             "runtime": "node-22",

@@ -144,6 +144,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
+        "documents.read",
+        "documents.write",
         "databases.read",
         "databases.write"
       ]
@@ -191,6 +193,8 @@
       "enabled": true,
       "logging": true,
       "scopes": [
+        "documents.read",
+        "documents.write",
         "databases.read",
         "databases.write"
       ]
@@ -333,6 +337,30 @@
       "enabled": true,
       "logging": true,
       "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
+      "$id": "aggregateLearningAnalytics",
+      "name": "aggregateLearningAnalytics",
+      "runtime": "node-22.0",
+      "execute": [],
+      "events": [],
+      "schedule": "30 0 * * *",
+      "timeout": 60,
+      "path": "functions/aggregateLearningAnalytics",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "documents.read",
+        "documents.write",
         "databases.read",
         "databases.write"
       ]

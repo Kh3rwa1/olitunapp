@@ -81,6 +81,7 @@ const adminReadBackendWriteCollections = new Set([
   'mistake_review_sessions',
   'streak_shields',
   'bakhed_listening_progress',
+  'learning_analytics_daily_rollups',
 ]);
 
 const adminOnlyCollections = new Set([
@@ -608,6 +609,25 @@ const collections = [
       { key: 'idx_event_name_date', type: 'key', attributes: ['eventName', 'dateKey'] },
       { key: 'idx_occurred', type: 'key', attributes: ['occurredAt'], orders: ['DESC'] },
       { key: 'idx_user_date', type: 'key', attributes: ['userId', 'dateKey'] },
+    ],
+  },
+  {
+    id: 'learning_analytics_daily_rollups',
+    name: 'Learning Analytics Daily Rollups',
+    attrs: [
+      { type: 'string', key: 'rollupId', size: 36, required: true },
+      { type: 'string', key: 'dateKey', size: 10, required: true },
+      { type: 'string', key: 'eventName', size: 80, required: true },
+      { type: 'integer', key: 'totalEvents', required: false, default: 0 },
+      { type: 'integer', key: 'uniqueUsers', required: false, default: 0 },
+      { type: 'string', key: 'platformBreakdown', size: 2048, required: false },
+      { type: 'string', key: 'sourceBreakdown', size: 2048, required: false },
+      { type: 'string', key: 'updatedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_rollup_id', type: 'unique', attributes: ['rollupId'] },
+      { key: 'idx_rollup_date', type: 'key', attributes: ['dateKey'], orders: ['DESC'] },
+      { key: 'idx_rollup_event_date', type: 'key', attributes: ['eventName', 'dateKey'] },
     ],
   },
   // ── Weekly Learning Circle collections ──

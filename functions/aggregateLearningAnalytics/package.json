@@ -1,7 +1,7 @@
 {
-  "name": "admin-maintenance",
+  "name": "aggregate-learning-analytics",
   "version": "1.0.0",
-  "description": "Privileged maintenance actions for Olitun admins.",
+  "description": "Nightly learning analytics rollups for Olitun admin dashboards.",
   "main": "src/main.js",
   "type": "module",
   "scripts": {

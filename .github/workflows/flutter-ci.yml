@@ -44,13 +44,7 @@ jobs:
         run: flutter test --coverage
 
       - name: Enforce coverage threshold
-        run: |
-          TOTAL=$(lcov --summary coverage/lcov.info 2>&1 | grep 'lines' | sed 's/.*: //' | sed 's/%.*//')
-          echo "Coverage: ${TOTAL}%"
-          if [ "$(echo "$TOTAL < 50" | bc -l)" -eq 1 ]; then
-            echo "::error::Test coverage ${TOTAL}% is below 50% threshold"
-            exit 1
-          fi
+        run: dart run tool/enforce_coverage.dart --min=65
 
       - name: Smoke tests
         run: flutter test test/smoke

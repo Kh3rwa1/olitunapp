@@ -232,6 +232,8 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     result.fold((failure) => null, (mergedStats) {
       state = AsyncValue.data(mergedStats);
       _updateSyncStateFromPrefs();
+      _trackStreakMaintained(previous, mergedStats);
+      _trackStreakShieldUsed(previous, mergedStats);
       _trackStreakMilestone(previous, mergedStats);
     });
   }
@@ -263,6 +265,61 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         );
       }
     }
+  }
+
+  void _trackStreakMaintained(
+    UserStatsEntity? previous,
+    UserStatsEntity current,
+  ) {
+    final ref = _ref;
+    if (ref == null || previous == null) return;
+    if (current.currentStreak <= 0) return;
+    if (current.lastActiveDate.isEmpty ||
+        current.lastActiveDate == previous.lastActiveDate) {
+      return;
+    }
+
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.streakMaintained,
+            source: 'profile_stats',
+            sourceId: current.lastActiveDate,
+            learnerLevel: current.learnerLevel,
+            metadata: {
+              'currentStreak': current.currentStreak,
+              'previousStreak': previous.currentStreak,
+            },
+          ),
+    );
+  }
+
+  void _trackStreakShieldUsed(
+    UserStatsEntity? previous,
+    UserStatsEntity current,
+  ) {
+    final ref = _ref;
+    if (ref == null || previous == null) return;
+    if (current.streakShields >= previous.streakShields) return;
+
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.streakShieldUsed,
+            source: 'profile_stats',
+            sourceId: current.lastActiveDate.isEmpty
+                ? 'unknown_date'
+                : current.lastActiveDate,
+            learnerLevel: current.learnerLevel,
+            metadata: {
+              'currentStreak': current.currentStreak,
+              'previousShields': previous.streakShields,
+              'remainingShields': current.streakShields,
+            },
+          ),
+    );
   }
 
   /// Updates lastActiveDate and currentStreak based on today's date.
@@ -604,7 +661,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       _ref
               ?.read(learningAnalyticsServiceProvider)
               .track(
-                LearningAnalyticsEvents.quizAttempted,
+                LearningAnalyticsEvents.quizCompleted,
                 source: 'quiz',
                 sourceId: sanitized.quizId,
                 learnerLevel: updated.learnerLevel,

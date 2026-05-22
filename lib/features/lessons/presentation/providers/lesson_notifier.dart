@@ -1,11 +1,12 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../domain/entities/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
 import 'lesson_providers.dart';
 
 final lessonNotifierProvider =
     StateNotifierProvider<LessonNotifier, AsyncValue<List<LessonEntity>>>(
-      (ref) => LessonNotifier(ref.watch(lessonRepositoryProvider)),
+      (ref) => LessonNotifier(ref.watch(lessonRepositoryProvider), ref: ref),
     );
 
 final lessonsByCategoryProvider =
@@ -22,8 +23,11 @@ final lessonsByCategoryProvider =
 
 class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
   final LessonRepository _repository;
+  final Ref? _ref;
 
-  LessonNotifier(this._repository) : super(const AsyncValue.loading()) {
+  LessonNotifier(this._repository, {Ref? ref})
+    : _ref = ref,
+      super(const AsyncValue.loading()) {
     loadLessons();
   }
 
@@ -59,6 +63,29 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
   }
 
   Future<void> refresh() => loadLessons();
+
+  Future<void> trackLessonStarted(
+    LessonEntity lesson, {
+    bool alreadyCompleted = false,
+    String? scriptMode,
+  }) async {
+    final ref = _ref;
+    if (ref == null) return;
+
+    await ref
+        .read(learningAnalyticsServiceProvider)
+        .track(
+          LearningAnalyticsEvents.lessonStarted,
+          source: 'lesson_detail',
+          sourceId: lesson.id,
+          scriptMode: scriptMode,
+          metadata: {
+            'categoryId': lesson.categoryId,
+            'estimatedMinutes': lesson.estimatedMinutes,
+            'alreadyCompleted': alreadyCompleted,
+          },
+        );
+  }
 
   Future<void> addLesson(LessonEntity lesson) async {
     final result = await _repository.createLesson(lesson);

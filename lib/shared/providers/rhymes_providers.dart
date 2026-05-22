@@ -104,8 +104,9 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
 // The rhyme_categories collection was removed in Phase 5.
 // Categories are now derived dynamically from the loaded rhymes.
 
-final rhymeCategoriesProvider =
-    Provider<AsyncValue<List<RhymeCategoryModel>>>((ref) {
+final rhymeCategoriesProvider = Provider<AsyncValue<List<RhymeCategoryModel>>>((
+  ref,
+) {
   final rhymesAsync = ref.watch(rhymesProvider);
   return rhymesAsync.whenData((rhymes) {
     final seen = <String>{};
@@ -114,13 +115,15 @@ final rhymeCategoriesProvider =
     for (final rhyme in rhymes) {
       final name = rhyme.category;
       if (name == null || name.isEmpty || !seen.add(name)) continue;
-      categories.add(RhymeCategoryModel(
-        id: name,
-        nameOlChiki: name,
-        nameLatin: name,
-        iconName: 'auto_awesome',
-        order: order++,
-      ));
+      categories.add(
+        RhymeCategoryModel(
+          id: name,
+          nameOlChiki: name,
+          nameLatin: name,
+          iconName: 'auto_awesome',
+          order: order++,
+        ),
+      );
     }
     categories.sort((a, b) => a.order.compareTo(b.order));
     return categories;

@@ -1,0 +1,14 @@
+{
+  "name": "backup-collections",
+  "version": "1.0.0",
+  "description": "Weekly automated schema and seed content backup for core collections.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "24.1.0"
+  }
+}

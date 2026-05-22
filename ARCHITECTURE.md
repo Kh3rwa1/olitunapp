@@ -122,3 +122,15 @@ Optional:
 ```
 
 The app **fails fast** at boot if mandatory flags are missing (`AppwriteConfig.validate()`).
+
+## Appwrite Functions
+
+Serverless Node-22 functions live under `functions/`. Key scheduled jobs:
+
+| Function | Schedule | Purpose |
+| --- | --- | --- |
+| `aggregateLearningAnalytics` | `30 0 * * *` | Rolls up raw analytics events into daily summaries |
+| `cleanupAnalyticsEvents` | `0 3 * * *` | Prunes detailed analytics events older than 90 days |
+| `backupCollections` | `0 4 * * 0` | Weekly JSON backup of core content to `admin_backups` bucket (12-file rolling retention) |
+
+Event-driven functions handle gamification (`getUserGamificationSummary`, `recordMistake`, `markMistakeMastered`, `completeMistakeReview`), account lifecycle (`delete-account`), admin operations (`admin-maintenance`, `manageAdminAccess`), translation (`translate`, `translator`), and Bakhed progress (`recordBakhedProgress`).

@@ -7,21 +7,32 @@ import '../../../../core/motion/motion.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
 
 class MistakeReviewCard extends ConsumerWidget {
-  const MistakeReviewCard({super.key});
+  final int? mistakeCount;
+  final VoidCallback? onTap;
+  final String ctaLabel;
+  final int animationIndex;
+
+  const MistakeReviewCard({
+    super.key,
+    this.mistakeCount,
+    this.onTap,
+    this.ctaLabel = 'Practice Now',
+    this.animationIndex = 2,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final mistakes = ref.watch(mistakeProvider);
+    final mistakes = mistakeCount == null ? ref.watch(mistakeProvider) : null;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    if (mistakes.isEmpty) return const SizedBox.shrink();
+    final count = mistakeCount ?? mistakes!.length;
 
-    final count = mistakes.length;
+    if (count <= 0) return const SizedBox.shrink();
 
     return AnimatedBentoChild(
-      index: 2,
+      index: animationIndex,
       child: PressableScale(
-        onTap: () => context.push('/mistakes'),
+        onTap: onTap ?? () => context.push('/mistakes'),
         child: Container(
           width: double.infinity,
           padding: const EdgeInsets.all(20),
@@ -135,7 +146,7 @@ class MistakeReviewCard extends ConsumerWidget {
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   Text(
-                    'Practice Now',
+                    ctaLabel,
                     style: GoogleFonts.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w900,

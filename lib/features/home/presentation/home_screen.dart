@@ -20,7 +20,6 @@ import 'widgets/home_bento_widgets.dart';
 import 'widgets/today_mission_card.dart';
 import 'widgets/learning_path_preview.dart';
 import 'widgets/next_best_action_card.dart';
-import 'widgets/mistake_review_card.dart';
 
 enum HomeLearnerState {
   guestNew,
@@ -436,10 +435,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             // MOBILE VIEW: Premium, guided pedagogical hierarchy
                             // 1. Today's Mission / Quick Win
                             const TodayMissionCard(),
-                            const SizedBox(height: 20),
-
-                            // Mistake recovery appears only when useful.
-                            const MistakeReviewCard(),
                             const SizedBox(height: 20),
 
                             // 3. Learning Path Preview

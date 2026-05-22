@@ -9,6 +9,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../home/presentation/widgets/mistake_review_card.dart';
 
 bool get _isTesting {
   if (kIsWeb) return false;
@@ -540,90 +541,11 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                         // Mistakes Review Trigger
                         if (incorrectQuestionIndices.isNotEmpty)
-                          Container(
-                            width: double.infinity,
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? const Color(
-                                      0xFF1E293B,
-                                    ).withValues(alpha: 0.3)
-                                  : const Color(0xFFF8FAFC),
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: isDark
-                                    ? Colors.white.withValues(alpha: 0.05)
-                                    : Colors.black.withValues(alpha: 0.05),
-                              ),
-                            ),
-                            child: Material(
-                              color: Colors.transparent,
-                              child: InkWell(
-                                borderRadius: BorderRadius.circular(24),
-                                onTap: showMistakesSheet,
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 20,
-                                    vertical: 18,
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Container(
-                                        padding: const EdgeInsets.all(10),
-                                        decoration: BoxDecoration(
-                                          color: AppColors.error.withValues(
-                                            alpha: 0.15,
-                                          ),
-                                          shape: BoxShape.circle,
-                                        ),
-                                        child: const Icon(
-                                          Icons.warning_amber_rounded,
-                                          color: AppColors.error,
-                                          size: 22,
-                                        ),
-                                      ),
-                                      const SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment:
-                                              CrossAxisAlignment.start,
-                                          children: [
-                                            Text(
-                                              'Review ${incorrectQuestionIndices.length} Mistakes',
-                                              style: TextStyle(
-                                                fontSize: 15,
-                                                fontWeight: FontWeight.w800,
-                                                color: isDark
-                                                    ? Colors.white
-                                                    : AppColors.pureBlack,
-                                              ),
-                                            ),
-                                            const SizedBox(height: 3),
-                                            Text(
-                                              'Learn from your answers now',
-                                              style: TextStyle(
-                                                fontSize: 12,
-                                                color: isDark
-                                                    ? Colors.white54
-                                                    : Colors.black54,
-                                              ),
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      Icon(
-                                        Icons.arrow_forward_ios_rounded,
-                                        size: 14,
-                                        color: isDark
-                                            ? Colors.white30
-                                            : Colors.black.withValues(
-                                                alpha: 0.3,
-                                              ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ),
+                          MistakeReviewCard(
+                            mistakeCount: incorrectQuestionIndices.length,
+                            onTap: showMistakesSheet,
+                            ctaLabel: 'Review Mistakes',
+                            animationIndex: 5,
                           ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.1),
 
                         const SizedBox(height: 16),

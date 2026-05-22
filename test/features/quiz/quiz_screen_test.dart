@@ -143,6 +143,42 @@ void main() {
     expect(find.text('100%'), findsOneWidget);
     expect(find.byIcon(Icons.star_rounded), findsOneWidget);
   });
+
+  testWidgets('shows mistake review after failed quiz', (tester) async {
+    tester.view.physicalSize = const Size(450, 900);
+    tester.view.devicePixelRatio = 1.0;
+    addTearDown(() {
+      tester.view.resetPhysicalSize();
+      tester.view.resetDevicePixelRatio();
+    });
+
+    await tester.pumpWidget(
+      createTestableWidget(
+        child: const QuizScreen(quizId: 'test_quiz'),
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
+          quizzesProvider.overrideWith(
+            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+          ),
+          userStatsProvider.overrideWith(
+            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+          ),
+        ],
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('e'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Continue'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('0%'), findsOneWidget);
+    expect(find.text('MISTAKE REVIEW'), findsOneWidget);
+    expect(find.text('1 word needs practice'), findsOneWidget);
+    expect(find.text('Review Mistakes'), findsOneWidget);
+  });
 }
 
 class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>

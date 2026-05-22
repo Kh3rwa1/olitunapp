@@ -18,7 +18,6 @@ class UserStatsEntity extends Equatable {
   final String lastActiveDate;
   final int currentStreak;
   final int totalStars;
-  final int streakShields;
   final Set<String> completedMissionsDates;
 
   const UserStatsEntity({
@@ -30,7 +29,6 @@ class UserStatsEntity extends Equatable {
     required this.lastActiveDate,
     required this.currentStreak,
     required this.totalStars,
-    this.streakShields = 0,
     this.completedMissionsDates = const {},
   });
 
@@ -44,7 +42,6 @@ class UserStatsEntity extends Equatable {
     lastActiveDate,
     currentStreak,
     totalStars,
-    streakShields,
     completedMissionsDates,
   ];
 
@@ -57,7 +54,6 @@ class UserStatsEntity extends Equatable {
     String? lastActiveDate,
     int? currentStreak,
     int? totalStars,
-    int? streakShields,
     Set<String>? completedMissionsDates,
   }) {
     return UserStatsEntity(
@@ -69,7 +65,6 @@ class UserStatsEntity extends Equatable {
       lastActiveDate: lastActiveDate ?? this.lastActiveDate,
       currentStreak: currentStreak ?? this.currentStreak,
       totalStars: totalStars ?? this.totalStars,
-      streakShields: streakShields ?? this.streakShields,
       completedMissionsDates:
           completedMissionsDates ?? this.completedMissionsDates,
     );

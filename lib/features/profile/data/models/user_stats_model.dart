@@ -11,7 +11,6 @@ class UserStatsModel extends UserStatsEntity {
     required super.lastActiveDate,
     required super.currentStreak,
     required super.totalStars,
-    required super.streakShields,
     required super.completedMissionsDates,
   });
 
@@ -60,9 +59,6 @@ class UserStatsModel extends UserStatsEntity {
       lastActiveDate: json['lastActiveDate'] ?? '',
       currentStreak: readInt('currentStreak'),
       totalStars: readInt('totalStars'),
-      streakShields: json['streakShields'] != null
-          ? json['streakShields'] as int
-          : 0,
       completedMissionsDates: Set<String>.from(
         json['completedMissionsDates'] ?? [],
       ),
@@ -81,7 +77,6 @@ class UserStatsModel extends UserStatsEntity {
       'lastActiveDate': lastActiveDate,
       'currentStreak': currentStreak,
       'totalStars': totalStars,
-      'streakShields': streakShields,
       'completedMissionsDates': completedMissionsDates.toList(),
     };
   }
@@ -96,7 +91,6 @@ class UserStatsModel extends UserStatsEntity {
       lastActiveDate: entity.lastActiveDate,
       currentStreak: entity.currentStreak,
       totalStars: entity.totalStars,
-      streakShields: entity.streakShields,
       completedMissionsDates: entity.completedMissionsDates,
     );
   }

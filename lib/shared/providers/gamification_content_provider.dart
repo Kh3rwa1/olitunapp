@@ -165,7 +165,6 @@ class GamificationContent {
     config: {
       'configId': 'default',
       'bakhedCompletionThreshold': 80,
-      'streakShieldMax': 2,
       'quickWinEnabled': true,
       'badgesEnabled': true,
       'mistakeReviewEnabled': true,
@@ -288,43 +287,17 @@ class UserGamificationBadge {
   }
 }
 
-class UserStreakShieldSummary {
-  final int availableShields;
-  final int maxShields;
-  final String earnedAt;
-  final String usedAt;
-
-  const UserStreakShieldSummary({
-    this.availableShields = 0,
-    this.maxShields = 2,
-    this.earnedAt = '',
-    this.usedAt = '',
-  });
-
-  factory UserStreakShieldSummary.fromJson(Map<String, dynamic> json) {
-    return UserStreakShieldSummary(
-      availableShields: _readInt(json['availableShields']),
-      maxShields: _readInt(json['maxShields'], fallback: 2),
-      earnedAt: _readString(json['earnedAt']),
-      usedAt: _readString(json['usedAt']),
-    );
-  }
-}
-
 class UserGamificationSummary {
   final List<UserGamificationBadge> badges;
-  final UserStreakShieldSummary streakShields;
   final List<Map<String, dynamic>> recentRewards;
 
   const UserGamificationSummary({
     this.badges = const [],
-    this.streakShields = const UserStreakShieldSummary(),
     this.recentRewards = const [],
   });
 
   factory UserGamificationSummary.fromJson(Map<String, dynamic> json) {
     final rawBadges = json['badges'];
-    final rawShields = json['streakShields'];
     final rawRewards = json['recentRewards'];
     return UserGamificationSummary(
       badges: rawBadges is List
@@ -337,11 +310,6 @@ class UserGamificationSummary {
                 )
                 .toList(growable: false)
           : const [],
-      streakShields: rawShields is Map
-          ? UserStreakShieldSummary.fromJson(
-              Map<String, dynamic>.from(rawShields),
-            )
-          : const UserStreakShieldSummary(),
       recentRewards: rawRewards is List
           ? rawRewards
                 .whereType<Map>()

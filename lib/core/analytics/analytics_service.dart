@@ -26,7 +26,6 @@ class LearningAnalyticsEvents {
   static const quizQuestionAnswered = 'quiz_question_answered';
   static const streakMaintained = 'streak_maintained';
   static const streakMilestone = 'streak_milestone';
-  static const streakShieldUsed = 'streak_shield_used';
   static const dailyMissionCompleted = 'daily_mission_completed';
   static const letterPracticed = 'letter_practiced';
 }

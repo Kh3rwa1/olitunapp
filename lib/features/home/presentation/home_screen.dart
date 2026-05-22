@@ -14,7 +14,6 @@ import '../../lessons/domain/entities/lesson_entity.dart';
 
 import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/state_widgets.dart';
-import '../../../core/storage/hive_service.dart';
 import 'providers/mission_providers.dart';
 // Extracted widgets
 import 'widgets/home_bento_widgets.dart';
@@ -162,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final learningTime = stats?.totalLearningMinutes ?? 0;
     final learnerLevel = ref.watch(learnerLevelProvider);
 
-    // Listen to daily mission completions to automatically record and award Streak Shield if all 4 are completed
+    // Listen to daily mission completions to record habit consistency.
     ref.listen<int>(
       Provider((ref) {
         final lesson = ref.watch(lessonCompletedTodayProvider);
@@ -182,89 +181,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         }
       },
     );
-
-    // Check for premium banner notifications
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (!context.mounted) return;
-      final prefs = ref.read(sharedPreferencesProvider);
-      if (prefs.getBool('streak_shield_used_banner_pending') == true) {
-        prefs.setBool('streak_shield_used_banner_pending', false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: AppColors.primaryDark,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            content: const Row(
-              children: [
-                Text('🛡️', style: TextStyle(fontSize: 24)),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Streak Shield Used',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Your streak is safe. Keep going today!',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-
-      if (prefs.getBool('streak_shield_earned_banner_pending') == true) {
-        prefs.setBool('streak_shield_earned_banner_pending', false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            backgroundColor: Colors.amber[800],
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(16),
-            ),
-            content: const Row(
-              children: [
-                Text('🛡️✨', style: TextStyle(fontSize: 24)),
-                SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Streak Shield Earned!',
-                        style: TextStyle(
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      SizedBox(height: 2),
-                      Text(
-                        'Completed daily missions 3 times this week. Shield added!',
-                        style: TextStyle(fontSize: 12, color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      }
-    });
 
     final learnerState = _deriveLearnerState(
       isGuest: isGuest,

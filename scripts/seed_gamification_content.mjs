@@ -19,7 +19,6 @@ const rows = [
   ['gamification_config', 'default', {
     configId: 'default',
     bakhedCompletionThreshold: 80,
-    streakShieldMax: 2,
     quickWinEnabled: true,
     badgesEnabled: true,
     mistakeReviewEnabled: true,
@@ -158,7 +157,6 @@ const rows = [
   ...[
     ['reward_stars_25', 'stars_awarded', 'You earned 25 stars', 'Your practice was counted. Keep learning gently.', '25 stars', '⭐'],
     ['reward_badge_unlocked', 'badge_unlocked', 'Badge unlocked', 'You reached a meaningful learning milestone.', 'New badge', '🏆'],
-    ['reward_streak_shield_used', 'streak_shield_used', 'Streak Shield used', 'Your streak is safe. Keep going today.', 'Shield used', '🛡️'],
   ].map(([messageId, trigger, title, body, rewardLabel, icon]) => [
     'reward_messages',
     messageId,

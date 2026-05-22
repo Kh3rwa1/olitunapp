@@ -1,8 +1,6 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'dart:async';
-import 'dart:convert';
 
-import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
@@ -12,9 +10,7 @@ import 'package:itun/features/profile/data/repositories/profile_repository_impl.
 import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../../core/analytics/analytics_service.dart';
-import '../../../../shared/providers/gamification_content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../shared/widgets/state_widgets.dart';
@@ -232,7 +228,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       state = AsyncValue.data(mergedStats);
       _updateSyncStateFromPrefs();
       _trackStreakMaintained(previous, mergedStats);
-      _trackStreakShieldUsed(previous, mergedStats);
       _trackStreakMilestone(previous, mergedStats);
     });
   }
@@ -294,33 +289,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     );
   }
 
-  void _trackStreakShieldUsed(
-    UserStatsEntity? previous,
-    UserStatsEntity current,
-  ) {
-    final ref = _ref;
-    if (ref == null || previous == null) return;
-    if (current.streakShields >= previous.streakShields) return;
-
-    unawaited(
-      ref
-          .read(learningAnalyticsServiceProvider)
-          .track(
-            LearningAnalyticsEvents.streakShieldUsed,
-            source: 'profile_stats',
-            sourceId: current.lastActiveDate.isEmpty
-                ? 'unknown_date'
-                : current.lastActiveDate,
-            learnerLevel: current.learnerLevel,
-            metadata: {
-              'currentStreak': current.currentStreak,
-              'previousShields': previous.streakShields,
-              'remainingShields': current.streakShields,
-            },
-          ),
-    );
-  }
-
   /// Updates lastActiveDate and currentStreak based on today's date.
   UserStatsEntity _withStreakUpdate(UserStatsEntity stats) {
     final now = _now();
@@ -331,7 +299,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     if (lastDate == today) return stats.copyWith(lastActiveDate: today);
 
     int newStreak = 1;
-    int remainingShields = stats.streakShields;
     if (lastDate.isNotEmpty) {
       final parsedLastDay = DateTime.tryParse(lastDate);
       if (parsedLastDay != null) {
@@ -346,25 +313,12 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         } else if (diff == 0) {
           newStreak = stats.currentStreak;
         } else {
-          // Missed days! Use a streak shield if available
-          if (remainingShields > 0) {
-            remainingShields--;
-            newStreak = stats.currentStreak; // Streak preserved!
-            final prefs = _ref?.read(sharedPreferencesProvider);
-            prefs?.setBool('streak_shield_used_banner_pending', true);
-            unawaited(_syncStreakShield('use_for_missed_day'));
-          } else {
-            newStreak = 1;
-          }
+          newStreak = 1;
         }
       }
     }
 
-    return stats.copyWith(
-      lastActiveDate: today,
-      currentStreak: newStreak,
-      streakShields: remainingShields,
-    );
+    return stats.copyWith(lastActiveDate: today, currentStreak: newStreak);
   }
 
   Future<void> recordDailyMissionsCompletedToday() async {
@@ -407,24 +361,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       }
     }
 
-    int newShields = current.streakShields;
-    final prefs = _ref?.read(sharedPreferencesProvider);
-    final shieldEarnedThisWeekKey = 'shield_earned_week_$weekId';
-    final alreadyEarnedThisWeek =
-        prefs?.getBool(shieldEarnedThisWeekKey) ?? false;
-
-    if (completedDaysThisWeek >= 3 && !alreadyEarnedThisWeek) {
-      if (newShields < 2) {
-        newShields++;
-        await prefs?.setBool(shieldEarnedThisWeekKey, true);
-        await prefs?.setBool('streak_shield_earned_banner_pending', true);
-      }
-    }
-
-    final updated = current.copyWith(
-      completedMissionsDates: updatedDates,
-      streakShields: newShields,
-    );
+    final updated = current.copyWith(completedMissionsDates: updatedDates);
 
     if (_ref != null) {
       unawaited(
@@ -437,11 +374,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
               metadata: {
                 'weekId': weekId,
                 'completedDaysThisWeek': completedDaysThisWeek,
-                'streakShieldEarned': newShields > current.streakShields,
               },
             ),
       );
-      unawaited(_syncStreakShield('earn_from_missions'));
     }
 
     await updateStats(updated);
@@ -706,20 +641,5 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       ref.read(userAvatarEmojiProvider.notifier).state = emoji;
       ref.read(userAvatarColorIndexProvider.notifier).state = colorIndex;
     });
-  }
-
-  Future<void> _syncStreakShield(String action) async {
-    final ref = _ref;
-    if (ref == null) return;
-    try {
-      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
-      await functions.createExecution(
-        functionId: 'updateStreakShield',
-        body: jsonEncode({'action': action}),
-      );
-      ref.invalidate(userGamificationSummaryProvider);
-    } catch (e) {
-      AppLogger.debug('Profile: Streak Shield sync skipped: $e');
-    }
   }
 }

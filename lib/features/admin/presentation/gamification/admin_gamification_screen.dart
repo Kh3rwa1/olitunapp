@@ -198,15 +198,13 @@ const _sections = <String, _GamificationSection>{
   'config': _GamificationSection(
     key: 'config',
     title: 'Gamification Config',
-    subtitle:
-        'Guardrailed global limits for shields, badges, missions, and Bakhed.',
+    subtitle: 'Guardrailed global limits for badges, missions, and Bakhed.',
     collectionId: 'gamification_config',
     idField: 'configId',
     icon: Icons.tune_rounded,
     editableFields: [
       'configId',
       'bakhedCompletionThreshold',
-      'streakShieldMax',
       'quickWinEnabled',
       'badgesEnabled',
       'mistakeReviewEnabled',
@@ -214,7 +212,6 @@ const _sections = <String, _GamificationSection>{
     defaultDraft: {
       'configId': 'default',
       'bakhedCompletionThreshold': 80,
-      'streakShieldMax': 2,
       'quickWinEnabled': true,
       'badgesEnabled': true,
       'mistakeReviewEnabled': true,
@@ -560,7 +557,6 @@ class _AdminGamificationScreenState
       ),
       count('learning_analytics_daily_rollups'),
       count('user_badges', queries: [Query.equal('isUnlocked', true)]),
-      count('streak_shields'),
       count('mistake_review_sessions'),
       count('user_mistakes', queries: [Query.equal('isMastered', false)]),
       count(
@@ -581,13 +577,12 @@ class _AdminGamificationScreenState
       'Streak milestones': values[3],
       'Daily analytics rollups': values[4],
       'Unlocked badges': values[5],
-      'Streak shield records': values[6],
-      'Mistake reviews completed': values[7],
-      'Mistakes needing practice': values[8],
-      'Bakhed 80% completions': values[9],
-      'Bakhed lyric lines': values[10],
-      'Bakhed vocabulary words': values[11],
-      'Published cultural notes': values[12],
+      'Mistake reviews completed': values[6],
+      'Mistakes needing practice': values[7],
+      'Bakhed 80% completions': values[8],
+      'Bakhed lyric lines': values[9],
+      'Bakhed vocabulary words': values[10],
+      'Published cultural notes': values[11],
     };
   }
 
@@ -675,7 +670,6 @@ class _AdminGamificationScreenState
       'reward_events',
       'user_mistakes',
       'mistake_review_sessions',
-      'streak_shields',
       'bakhed_lyrics',
       'bakhed_vocabulary',
       'bakhed_cultural_notes',

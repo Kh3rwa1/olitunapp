@@ -39,7 +39,6 @@ class SkillData {
 
 class StatsGrid extends StatelessWidget {
   final int streak;
-  final int streakShields;
   final int stars;
   final int quizzesCompleted;
   final int learningTime;
@@ -49,7 +48,6 @@ class StatsGrid extends StatelessWidget {
   const StatsGrid({
     super.key,
     required this.streak,
-    required this.streakShields,
     required this.stars,
     required this.quizzesCompleted,
     required this.learningTime,
@@ -112,38 +110,6 @@ class StatsGrid extends StatelessWidget {
                       ),
                     ),
                   ],
-                ),
-                const Spacer(),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.withValues(alpha: isDark ? 0.15 : 0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: Colors.blue.withValues(
-                        alpha: isDark ? 0.25 : 0.15,
-                      ),
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      const Text('🛡️', style: TextStyle(fontSize: 14)),
-                      const SizedBox(width: 6),
-                      Text(
-                        '$streakShields/2 SHIELDS',
-                        style: GoogleFonts.inter(
-                          fontSize: 10,
-                          fontWeight: FontWeight.w900,
-                          color: Colors.blue,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ],
-                  ),
                 ),
               ],
             ),

@@ -203,26 +203,6 @@
             ]
         },
         {
-            "$id": "updateStreakShield",
-            "name": "updateStreakShield",
-            "runtime": "node-22",
-            "path": "functions/updateStreakShield",
-            "entrypoint": "src/main.js",
-            "execute": [
-                "users"
-            ],
-            "enabled": true,
-            "logging": true,
-            "events": [],
-            "schedule": "",
-            "timeout": 30,
-            "commands": "npm install",
-            "scopes": [
-                "databases.read",
-                "databases.write"
-            ]
-        },
-        {
             "$id": "aggregateLearningAnalytics",
             "name": "aggregateLearningAnalytics",
             "runtime": "node-22",

@@ -76,7 +76,6 @@ const adminReadBackendWriteCollections = new Set([
   'user_badges',
   'user_mistakes',
   'mistake_review_sessions',
-  'streak_shields',
   'bakhed_listening_progress',
   'learning_analytics_daily_rollups',
 ]);
@@ -524,7 +523,6 @@ const collections = [
     attrs: [
       { type: 'string', key: 'configId', size: 40, required: true },
       { type: 'integer', key: 'bakhedCompletionThreshold', required: false, default: 80, min: 50, max: 95 },
-      { type: 'integer', key: 'streakShieldMax', required: false, default: 2, min: 0, max: 5 },
       { type: 'boolean', key: 'quickWinEnabled', required: false, default: true },
       { type: 'boolean', key: 'badgesEnabled', required: false, default: true },
       { type: 'boolean', key: 'mistakeReviewEnabled', required: false, default: true },
@@ -655,21 +653,6 @@ const collections = [
     indexes: [
       { key: 'idx_session_id', type: 'unique', attributes: ['sessionId'] },
       { key: 'idx_session_user', type: 'key', attributes: ['userId'] },
-    ],
-  },
-  {
-    id: 'streak_shields',
-    name: 'Streak Shields',
-    attrs: [
-      { type: 'string', key: 'userId', size: 36, required: true },
-      { type: 'integer', key: 'availableShields', required: false, default: 0, min: 0, max: 5 },
-      { type: 'integer', key: 'maxShields', required: false, default: 2, min: 0, max: 5 },
-      { type: 'string', key: 'earnedAt', size: 30, required: false },
-      { type: 'string', key: 'usedAt', size: 30, required: false },
-      { type: 'string', key: 'source', size: 80, required: false },
-    ],
-    indexes: [
-      { key: 'idx_shield_user', type: 'unique', attributes: ['userId'] },
     ],
   },
   {

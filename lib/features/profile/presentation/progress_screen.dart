@@ -143,7 +143,6 @@ class ProgressScreen extends ConsumerWidget {
                         const SizedBox(height: 14),
                         StatsGrid(
                           streak: streak,
-                          streakShields: stats.streakShields,
                           stars: stars,
                           quizzesCompleted: quizzesCompleted,
                           learningTime: learningTime,

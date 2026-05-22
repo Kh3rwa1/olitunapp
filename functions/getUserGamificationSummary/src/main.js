@@ -27,7 +27,7 @@ export default async ({ req, res, error }) => {
   const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
 
   try {
-    const [badgesResult, userBadgesResult, shieldsResult, rewardsResult] =
+    const [badgesResult, userBadgesResult, rewardsResult] =
       await Promise.all([
         databases.listDocuments(databaseId, 'badges', [
           Query.equal('status', 'published'),
@@ -38,10 +38,6 @@ export default async ({ req, res, error }) => {
         databases.listDocuments(databaseId, 'user_badges', [
           Query.equal('userId', userId),
           Query.limit(500)
-        ]),
-        databases.listDocuments(databaseId, 'streak_shields', [
-          Query.equal('userId', userId),
-          Query.limit(1)
         ]),
         databases.listDocuments(databaseId, 'reward_events', [
           Query.equal('userId', userId),
@@ -71,14 +67,6 @@ export default async ({ req, res, error }) => {
       };
     });
 
-    const shieldDoc = shieldsResult.documents[0] || {};
-    const streakShields = {
-      availableShields: shieldDoc.availableShields || 0,
-      maxShields: shieldDoc.maxShields || 2,
-      earnedAt: shieldDoc.earnedAt || '',
-      usedAt: shieldDoc.usedAt || ''
-    };
-
     const recentRewards = rewardsResult.documents
       .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
       .slice(0, 20)
@@ -92,7 +80,7 @@ export default async ({ req, res, error }) => {
         createdAt: reward.createdAt || ''
       }));
 
-    return res.json({ ok: true, badges, streakShields, recentRewards });
+    return res.json({ ok: true, badges, recentRewards });
   } catch (err) {
     error('getUserGamificationSummary error: ' + err.message);
     return res.json({ ok: false, message: err.message }, 500);

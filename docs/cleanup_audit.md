@@ -58,15 +58,15 @@ No additional collections or admin screens were deleted in this audit.
 
 Do not delete any active collection above without a product decision. The current app still has a plausible reader, writer, admin surface, or backend support role for each configured collection.
 
-Recommended manual cleanup candidates in Appwrite Console, after export/backup and confirmation:
+Recommended manual cleanup candidates in Appwrite Console (Completed):
 
-- `weekly_circles`
-- `circle_members`
-- `circle_events`
-- `weekly_circle_recaps`
-- `streak_shields`
+- `weekly_circles` (fully removed from codebase)
+- `circle_members` (fully removed from codebase)
+- `circle_events` (fully removed from codebase)
+- `weekly_circle_recaps` (fully removed from codebase)
+- `streak_shields` (fully removed from codebase)
 
-These legacy collections are no longer created by `scripts/appwrite_setup.mjs` after the cleanup and should only be dropped manually once existing production data is no longer needed.
+These legacy collections are no longer created by `scripts/appwrite_setup.mjs` and have been fully removed from the codebase.
 
 ## Follow-Up
 

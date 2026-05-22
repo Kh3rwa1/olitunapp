@@ -222,46 +222,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         onRefresh: _onRefresh,
         child: Stack(
           children: [
-            // High-Performance Background Mesh/Glow (GPU-rendered, 0% CPU overhead)
-            if (!isDesktop && !reduceVisualEffects) ...[
-              // Top-Right Primary Glow
-              Positioned(
-                top: -150,
-                right: -150,
-                child: Container(
-                  width: 400,
-                  height: 400,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        AppColors.primary.withValues(alpha: 0.2),
-                        AppColors.primary.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-              // Bottom-Left Purple Glow
-              Positioned(
-                bottom: 100,
-                left: -150,
-                child: Container(
-                  width: 450,
-                  height: 450,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        AppColors.duoYellow.withValues(alpha: 0.15),
-                        AppColors.duoYellow.withValues(alpha: 0),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-
             const Positioned(
               top: 16,
               left: 16,

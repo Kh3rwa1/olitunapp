@@ -403,6 +403,44 @@ class AppwriteAuthService {
       body: execution.responseBody,
     );
   }
+
+  Future<Map<String, dynamic>> executeAdminAccess(
+    Map<String, dynamic> payload,
+  ) async {
+    await _restoreWebSession();
+    final execution = await _functions.createExecution(
+      functionId: 'manageAdminAccess',
+      body: jsonEncode(payload),
+      xasync: false,
+      method: ExecutionMethod.pOST,
+    );
+
+    final decoded = execution.responseBody.trim().isEmpty
+        ? <String, dynamic>{}
+        : jsonDecode(execution.responseBody);
+    if (decoded is! Map<String, dynamic>) {
+      throw AppwriteException(
+        'Unexpected admin access response.',
+        execution.responseStatusCode,
+        'invalid_response',
+      );
+    }
+
+    if (execution.responseStatusCode < 200 ||
+        execution.responseStatusCode >= 300 ||
+        decoded['ok'] != true) {
+      final message = decoded['message']?.toString();
+      throw AppwriteException(
+        message == null || message.isEmpty
+            ? 'Admin access request failed.'
+            : message,
+        execution.responseStatusCode,
+        'admin_access_failed',
+      );
+    }
+
+    return decoded;
+  }
 }
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {

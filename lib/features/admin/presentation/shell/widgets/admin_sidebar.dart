@@ -176,6 +176,13 @@ class AdminSidebar extends StatelessWidget {
                   onTap: () => context.go('/admin/settings'),
                   isCompact: isCompact,
                 ),
+                AdminNavItem(
+                  icon: Icons.admin_panel_settings_rounded,
+                  label: 'Admin Access',
+                  isSelected: location == '/admin/access',
+                  onTap: () => context.go('/admin/access'),
+                  isCompact: isCompact,
+                ),
               ],
             ),
           ),

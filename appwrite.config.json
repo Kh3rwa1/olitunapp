@@ -62,6 +62,29 @@
             ]
         },
         {
+            "$id": "manageAdminAccess",
+            "name": "manageAdminAccess",
+            "runtime": "node-22",
+            "path": "functions/manageAdminAccess",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "users.read",
+                "users.write",
+                "teams.read",
+                "teams.write",
+                "databases.write"
+            ]
+        },
+        {
             "$id": "assignUserToWeeklyCircle",
             "name": "assignUserToWeeklyCircle",
             "runtime": "node-22",

@@ -1,9 +1,61 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/shared/models/content_models.dart';
 
 void main() {
+  group('Quiz scoring rules', () {
+    test('correct answers increment score, combo, multiplier, and stars', () {
+      const state = QuizSessionState(comboStreak: 2, bestCombo: 2);
+
+      final next = applyQuizAnswerResult(state, isCorrect: true);
+
+      expect(next.score, 1);
+      expect(next.comboStreak, 3);
+      expect(next.bestCombo, 3);
+      expect(next.comboMultiplier, 2);
+      expect(next.bonusStars, 2);
+      expect(next.hearts, 3);
+    });
+
+    test('combo multiplier is capped at four times', () {
+      const state = QuizSessionState(
+        score: 11,
+        comboStreak: 11,
+        bestCombo: 11,
+        comboMultiplier: 4,
+        bonusStars: 20,
+      );
+
+      final next = applyQuizAnswerResult(state, isCorrect: true);
+
+      expect(next.score, 12);
+      expect(next.comboStreak, 12);
+      expect(next.bestCombo, 12);
+      expect(next.comboMultiplier, 4);
+      expect(next.bonusStars, 26);
+    });
+
+    test('wrong answers consume one heart and record the question once', () {
+      const state = QuizSessionState(
+        currentQuestion: 4,
+        hearts: 1,
+        comboStreak: 3,
+        comboMultiplier: 2,
+        incorrectQuestionIndices: [1],
+      );
+
+      final next = applyQuizAnswerResult(state, isCorrect: false);
+
+      expect(next.score, 0);
+      expect(next.hearts, 0);
+      expect(next.comboStreak, 0);
+      expect(next.comboMultiplier, 1);
+      expect(next.incorrectQuestionIndices, [1, 4]);
+    });
+  });
+
   group('QuizResultEntity', () {
     test('isPassing returns true when score >= 70%', () {
       const result = QuizResultEntity(

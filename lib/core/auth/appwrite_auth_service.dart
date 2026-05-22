@@ -23,6 +23,63 @@ String googleOAuthUserMessage(String message) {
   return message;
 }
 
+enum WebOAuthCompletionKind { persistSession, createSession }
+
+@visibleForTesting
+class WebOAuthCompletion {
+  final WebOAuthCompletionKind kind;
+  final String secret;
+  final String? userId;
+
+  const WebOAuthCompletion._({
+    required this.kind,
+    required this.secret,
+    this.userId,
+  });
+
+  const WebOAuthCompletion.persistSession(String secret)
+    : this._(kind: WebOAuthCompletionKind.persistSession, secret: secret);
+
+  const WebOAuthCompletion.createSession({
+    required String userId,
+    required String secret,
+  }) : this._(
+         kind: WebOAuthCompletionKind.createSession,
+         userId: userId,
+         secret: secret,
+       );
+}
+
+@visibleForTesting
+WebOAuthCompletion parseWebOAuthCompletion(String result) {
+  final uri = Uri.parse(result);
+  if (uri.queryParameters.containsKey('failure')) {
+    final error = uri.queryParameters['error'] ?? '';
+    final message = uri.queryParameters['message'] ?? '';
+    throw AppwriteException(
+      'Google sign in failed${error.isNotEmpty ? ' ($error)' : ''}: ${message.isNotEmpty ? message : 'Session was cancelled or failed.'}',
+    );
+  }
+
+  final key = uri.queryParameters['key'];
+  final secret = uri.queryParameters['secret'];
+  final userId = uri.queryParameters['userId'];
+
+  if (secret == null || secret.isEmpty) {
+    throw AppwriteException('Invalid OAuth2 response. Missing session secret.');
+  }
+
+  if (key != null && key.startsWith('a_session_')) {
+    return WebOAuthCompletion.persistSession(secret);
+  }
+
+  if (userId != null && userId.isNotEmpty) {
+    return WebOAuthCompletion.createSession(userId: userId, secret: secret);
+  }
+
+  throw AppwriteException('Invalid OAuth2 response. Missing session key.');
+}
+
 @visibleForTesting
 Map<String, dynamic> parseAdminMaintenanceResponse({
   required int statusCode,
@@ -194,36 +251,18 @@ class AppwriteAuthService {
   Future<void> _completeWebOAuth(Object? result) async {
     if (!kIsWeb || result is! String || result.isEmpty) return;
 
-    final uri = Uri.parse(result);
-    if (uri.queryParameters.containsKey('failure')) {
-      final error = uri.queryParameters['error'] ?? '';
-      final message = uri.queryParameters['message'] ?? '';
-      throw AppwriteException(
-        'Google sign in failed${error.isNotEmpty ? ' ($error)' : ''}: ${message.isNotEmpty ? message : 'Session was cancelled or failed.'}',
-      );
+    final completion = parseWebOAuthCompletion(result);
+    switch (completion.kind) {
+      case WebOAuthCompletionKind.persistSession:
+        await _persistWebSession(completion.secret);
+        break;
+      case WebOAuthCompletionKind.createSession:
+        await _account.createSession(
+          userId: completion.userId!,
+          secret: completion.secret,
+        );
+        break;
     }
-
-    final key = uri.queryParameters['key'];
-    final secret = uri.queryParameters['secret'];
-    final userId = uri.queryParameters['userId'];
-
-    if (secret == null || secret.isEmpty) {
-      throw AppwriteException(
-        'Invalid OAuth2 response. Missing session secret.',
-      );
-    }
-
-    if (key != null && key.startsWith('a_session_')) {
-      await _persistWebSession(secret);
-      return;
-    }
-
-    if (userId != null && userId.isNotEmpty) {
-      await _account.createSession(userId: userId, secret: secret);
-      return;
-    }
-
-    throw AppwriteException('Invalid OAuth2 response. Missing session key.');
   }
 
   Future<void> _persistWebSession(String secret) async {

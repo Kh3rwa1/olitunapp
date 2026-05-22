@@ -91,6 +91,13 @@ graph TB
     Appwrite -.-> Hive
 ```
 
+### Data and error contract
+
+Repositories return `Either<Failure, T>` from `fpdart` at feature boundaries.
+Appwrite SDK errors are translated into the sealed `Failure` hierarchy
+(`NetworkFailure`, `ServerFailure`, `CacheFailure`, `AuthFailure`, and
+`ValidationFailure`) before reaching UI code.
+
 ---
 
 ## 🚀 Quick Start
@@ -110,6 +117,25 @@ flutter pub get
 
 # Generate code (Riverpod)
 dart run build_runner build
+```
+
+### Quality checks
+
+The test surface is intentionally part of the public repo:
+
+- `test/core/` covers config, storage, auth helpers, Appwrite query behavior,
+  motion tokens, logging, and error/failure types.
+- `test/features/` covers auth, lessons, quiz logic, quiz screens, profile,
+  home, onboarding, admin auth, categories, rhymes, and accessibility widgets.
+- `test/goldens/` protects high-value learning UI surfaces.
+- `integration_test/` keeps end-to-end auth, legal, and quiz flows visible.
+
+Run the same checks locally before release:
+
+```bash
+flutter analyze
+flutter test
+dart format .
 ```
 
 ### Run

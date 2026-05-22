@@ -1,4 +1,7 @@
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../core/error/failures.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/providers/quizzes_provider.dart';
 
@@ -7,23 +10,59 @@ class QuizRepository {
 
   QuizRepository(this._ref);
 
-  Future<QuizModel?> getQuiz(String quizId) async {
-    final quizzesAsync = _ref.read(quizzesProvider);
-    final quizzes = quizzesAsync.value ?? [];
-    try {
-      return quizzes.firstWhere((q) => q.id == quizId);
-    } catch (_) {
-      return null;
+  Future<Either<Failure, QuizModel>> getQuiz(String quizId) async {
+    return quizFromState(quizId, _ref.read(quizzesProvider));
+  }
+
+  Either<Failure, QuizModel> quizFromState(
+    String quizId,
+    AsyncValue<List<QuizModel>> quizzesAsync,
+  ) {
+    return quizzesAsync.when(
+      loading: () =>
+          const Left(CacheFailure(message: 'Quizzes are still loading.')),
+      error: (error, _) => Left(_failureFromQuizLoad(error)),
+      data: (quizzes) {
+        for (final quiz in quizzes) {
+          if (quiz.id == quizId) return Right(quiz);
+        }
+
+        return Left(
+          ServerFailure(message: 'Quiz "$quizId" was not found.', code: 404),
+        );
+      },
+    );
+  }
+
+  Failure _failureFromQuizLoad(Object error) {
+    if (error is AppwriteException) {
+      if (error.code == 0 || error.type == 'network_failure') {
+        return const NetworkFailure();
+      }
+
+      return ServerFailure(
+        message: error.message ?? 'Failed to load quiz.',
+        code: error.code,
+      );
     }
+
+    return ServerFailure(message: error.toString());
   }
 }
 
 final quizRepositoryProvider = Provider(QuizRepository.new);
 
-final quizFutureProvider = FutureProvider.family<QuizModel?, String>((
-  ref,
-  quizId,
-) async {
-  final repo = ref.watch(quizRepositoryProvider);
-  return repo.getQuiz(quizId);
-});
+final quizResultProvider =
+    Provider.family<AsyncValue<Either<Failure, QuizModel>>, String>((
+      ref,
+      quizId,
+    ) {
+      final repo = ref.watch(quizRepositoryProvider);
+      final quizzesAsync = ref.watch(quizzesProvider);
+
+      if (quizzesAsync.isLoading) {
+        return const AsyncValue.loading();
+      }
+
+      return AsyncValue.data(repo.quizFromState(quizId, quizzesAsync));
+    });

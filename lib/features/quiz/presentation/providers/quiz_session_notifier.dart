@@ -65,6 +65,42 @@ class QuizSessionState {
   }
 }
 
+QuizSessionState applyQuizAnswerResult(
+  QuizSessionState current, {
+  required bool isCorrect,
+}) {
+  var newScore = current.score;
+  var hearts = current.hearts;
+  var comboStreak = current.comboStreak;
+  var bestCombo = current.bestCombo;
+  var comboMultiplier = current.comboMultiplier;
+  var bonusStars = current.bonusStars;
+  final incorrectIndices = List<int>.from(current.incorrectQuestionIndices);
+
+  if (isCorrect) {
+    newScore++;
+    comboStreak++;
+    bestCombo = bestCombo > comboStreak ? bestCombo : comboStreak;
+    comboMultiplier = (1 + (comboStreak ~/ 3)).clamp(1, 4);
+    bonusStars += (comboMultiplier - 1) * 2;
+  } else {
+    hearts = (hearts - 1).clamp(0, 3);
+    comboStreak = 0;
+    comboMultiplier = 1;
+    incorrectIndices.add(current.currentQuestion);
+  }
+
+  return current.copyWith(
+    score: newScore,
+    hearts: hearts,
+    comboStreak: comboStreak,
+    bestCombo: bestCombo,
+    comboMultiplier: comboMultiplier,
+    bonusStars: bonusStars,
+    incorrectQuestionIndices: incorrectIndices,
+  );
+}
+
 class QuizSessionNotifier
     extends AutoDisposeFamilyNotifier<QuizSessionState, String> {
   @override
@@ -76,26 +112,11 @@ class QuizSessionNotifier
     if (state.isAnswered) return;
 
     final isCorrect = index == question.correctIndex;
-    int newScore = state.score;
-    var hearts = state.hearts;
-    var comboStreak = state.comboStreak;
-    var bestCombo = state.bestCombo;
-    var comboMultiplier = state.comboMultiplier;
-    var bonusStars = state.bonusStars;
-    final incorrectIndices = List<int>.from(state.incorrectQuestionIndices);
+    final scoredState = applyQuizAnswerResult(state, isCorrect: isCorrect);
 
     if (isCorrect) {
-      newScore++;
-      comboStreak++;
-      bestCombo = bestCombo > comboStreak ? bestCombo : comboStreak;
-      comboMultiplier = (1 + (comboStreak ~/ 3)).clamp(1, 4);
-      bonusStars += (comboMultiplier - 1) * 2;
-      HapticFeedback.lightImpact();
+      if (_shouldUseHaptics) HapticFeedback.lightImpact();
     } else {
-      hearts = (hearts - 1).clamp(0, 3);
-      comboStreak = 0;
-      comboMultiplier = 1;
-      incorrectIndices.add(state.currentQuestion);
       ref
           .read(mistakeProvider.notifier)
           .recordMistake(
@@ -108,20 +129,15 @@ class QuizSessionNotifier
                 ? question.optionsOlChiki[index]
                 : '',
           );
-      HapticFeedback.mediumImpact();
+      if (_shouldUseHaptics) HapticFeedback.mediumImpact();
     }
 
-    state = state.copyWith(
-      selectedAnswer: index,
-      isAnswered: true,
-      score: newScore,
-      hearts: hearts,
-      comboStreak: comboStreak,
-      bestCombo: bestCombo,
-      comboMultiplier: comboMultiplier,
-      bonusStars: bonusStars,
-      incorrectQuestionIndices: incorrectIndices,
-    );
+    state = scoredState.copyWith(selectedAnswer: index, isAnswered: true);
+  }
+
+  bool get _shouldUseHaptics {
+    return ref.read(soundEnabledProvider) &&
+        !ref.read(reduceVisualEffectsProvider);
   }
 
   void nextQuestion(QuizModel quiz) {

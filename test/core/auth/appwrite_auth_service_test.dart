@@ -23,6 +23,72 @@ void main() {
     });
   });
 
+  group('parseWebOAuthCompletion', () {
+    test('parses Appwrite web session key redirects', () {
+      final completion = parseWebOAuthCompletion(
+        'https://olitun.app/splash?key=a_session_123&secret=session-secret',
+      );
+
+      expect(completion.kind, WebOAuthCompletionKind.persistSession);
+      expect(completion.secret, 'session-secret');
+      expect(completion.userId, isNull);
+    });
+
+    test('parses userId and secret redirects', () {
+      final completion = parseWebOAuthCompletion(
+        'https://olitun.app/splash?userId=user_1&secret=session-secret',
+      );
+
+      expect(completion.kind, WebOAuthCompletionKind.createSession);
+      expect(completion.userId, 'user_1');
+      expect(completion.secret, 'session-secret');
+    });
+
+    test('throws readable failure query messages', () {
+      expect(
+        () => parseWebOAuthCompletion(
+          'https://olitun.app/welcome?failure=true&error=access_denied&message=Cancelled',
+        ),
+        throwsA(
+          isA<AppwriteException>().having(
+            (error) => error.message,
+            'message',
+            contains('access_denied'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects redirects without a secret', () {
+      expect(
+        () =>
+            parseWebOAuthCompletion('https://olitun.app/splash?userId=user_1'),
+        throwsA(
+          isA<AppwriteException>().having(
+            (error) => error.message,
+            'message',
+            contains('Missing session secret'),
+          ),
+        ),
+      );
+    });
+
+    test('rejects redirects without a usable session key or userId', () {
+      expect(
+        () => parseWebOAuthCompletion(
+          'https://olitun.app/splash?key=unexpected&secret=session-secret',
+        ),
+        throwsA(
+          isA<AppwriteException>().having(
+            (error) => error.message,
+            'message',
+            contains('Missing session key'),
+          ),
+        ),
+      );
+    });
+  });
+
   group('parseAdminMaintenanceResponse', () {
     test('returns decoded success payload', () {
       final response = parseAdminMaintenanceResponse(

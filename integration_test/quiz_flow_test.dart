@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
@@ -54,9 +55,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          quizFutureProvider(
+          quizResultProvider(
             'test_quiz_1',
-          ).overrideWith((ref) => Future.value(dummyQuiz)),
+          ).overrideWith((ref) => AsyncValue.data(Right(dummyQuiz))),
         ],
         child: MaterialApp.router(
           routerConfig: router,

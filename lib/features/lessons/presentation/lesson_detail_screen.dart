@@ -41,7 +41,7 @@ class LessonDetailScreen extends ConsumerStatefulWidget {
 
 class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   final ScrollController _scrollController = ScrollController();
-  double _scrollProgress = 0.0;
+  final ValueNotifier<double> _scrollProgress = ValueNotifier(0.0);
   bool _isScrollCompleted = false;
   String? _trackedStartedLessonId;
 
@@ -73,12 +73,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
       progress = 1.0;
     }
 
-    setState(() {
-      _scrollProgress = progress;
-      if (_scrollProgress >= 0.90) {
+    _scrollProgress.value = progress;
+
+    if (progress >= 0.90 && !_isScrollCompleted) {
+      setState(() {
         _isScrollCompleted = true;
-      }
-    });
+      });
+    }
   }
 
   @override
@@ -157,10 +158,6 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
         // Calculate dynamic steps
         final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
-        final activeStep = (_scrollProgress * totalSteps).ceil().clamp(
-          1,
-          totalSteps,
-        );
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -174,7 +171,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                       if (mounted) {
                         setState(() {
                           _isScrollCompleted = true;
-                          _scrollProgress = 1.0;
+                          _scrollProgress.value = 1.0;
                         });
                       }
                     });
@@ -214,9 +211,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     // Progress bar and steps indicator
                     SliverToBoxAdapter(
                       child: _ProgressHeader(
-                        progress: _scrollProgress,
+                        progressNotifier: _scrollProgress,
                         isDark: isDark,
-                        activeStep: activeStep,
                         totalSteps: totalSteps,
                       ),
                     ),
@@ -497,64 +493,69 @@ class _LessonHeroSummary extends StatelessWidget {
 }
 
 class _ProgressHeader extends StatelessWidget {
-  final double progress;
+  final ValueNotifier<double> progressNotifier;
   final bool isDark;
-  final int activeStep;
   final int totalSteps;
 
   const _ProgressHeader({
-    required this.progress,
+    required this.progressNotifier,
     required this.isDark,
-    required this.activeStep,
     required this.totalSteps,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ValueListenableBuilder<double>(
+      valueListenable: progressNotifier,
+      builder: (context, progress, _) {
+        final activeStep = (progress * totalSteps).ceil().clamp(1, totalSteps);
+
+        return Container(
+          color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Step $activeStep of $totalSteps',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isDark ? Colors.white70 : Colors.black87,
-                ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Step $activeStep of $totalSteps',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  Text(
+                    '${(progress * 100).toInt()}% completed',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: isDark
+                          ? AppColors.brandTextDark
+                          : AppColors.brandTextLight,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                '${(progress * 100).toInt()}% completed',
-                style: TextStyle(
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? AppColors.brandTextDark
-                      : AppColors.brandTextLight,
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(4),
+                child: LinearProgressIndicator(
+                  value: progress,
+                  minHeight: 6,
+                  backgroundColor: isDark ? Colors.white10 : Colors.black12,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 8),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(4),
-            child: LinearProgressIndicator(
-              value: progress,
-              minHeight: 6,
-              backgroundColor: isDark ? Colors.white10 : Colors.black12,
-              valueColor: AlwaysStoppedAnimation<Color>(
-                isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-              ),
-            ),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

@@ -73,6 +73,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
 
+    final completedIds =
+        ref.watch(userStatsProvider).value?.completedLessons ?? {};
+    final allLessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final nextLesson = continueLessonFor(
+      lessons: allLessons,
+      completedLessonIds: completedIds,
+      lastOpenedLessonId: ref.watch(lastOpenedLessonIdProvider),
+    );
+
     // Seamless automatic background data sync when recovering connection
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
       previous,
@@ -106,7 +115,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 24),
 
         // (4) NextBestActionCard - single "continue learning" CTA
-        const RepaintBoundary(child: NextBestActionCard()),
+        RepaintBoundary(
+          child: NextBestActionCard(nextLessonId: nextLesson?.id),
+        ),
         const SizedBox(height: 24),
 
         // (5) TodayMissionCard - daily missions strip

@@ -8,7 +8,8 @@ import '../../../quiz/presentation/providers/mistake_provider.dart';
 import '../providers/mission_providers.dart';
 
 class NextBestActionCard extends ConsumerWidget {
-  const NextBestActionCard({super.key});
+  final String? nextLessonId;
+  const NextBestActionCard({super.key, this.nextLessonId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -106,7 +107,11 @@ class NextBestActionCard extends ConsumerWidget {
       icon = Icons.play_arrow_rounded;
       color = AppColors.primary;
       onTap = () {
-        context.push('/categories');
+        if (nextLessonId != null && nextLessonId!.isNotEmpty) {
+          context.push('/lesson/$nextLessonId');
+        } else {
+          context.push('/letter/standalone/all');
+        }
       };
     }
 

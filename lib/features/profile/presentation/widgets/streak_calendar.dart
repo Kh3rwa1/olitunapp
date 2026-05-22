@@ -76,71 +76,55 @@ class StreakCalendar extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row
               Row(
                 children: [
-                  Flexible(
-                    child: Row(
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: AppColors.duoOrange.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                    ),
+                    child:
+                        const Icon(
+                              Icons.local_fire_department_rounded,
+                              color: AppColors.duoOrange,
+                              size: 20,
+                            )
+                            .animate(
+                              onPlay: reduceEffects ? null : (c) => c.repeat(),
+                            )
+                            .shimmer(duration: 2000.ms, color: Colors.white),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: AppColors.duoOrange.withValues(alpha: 0.15),
-                            shape: BoxShape.circle,
+                        const Text(
+                          'Weekly Streak Active',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 16,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.2,
                           ),
-                          child:
-                              const Icon(
-                                    Icons.local_fire_department_rounded,
-                                    color: AppColors.duoOrange,
-                                    size: 20,
-                                  )
-                                  .animate(
-                                    onPlay: reduceEffects
-                                        ? null
-                                        : (c) => c.repeat(),
-                                  )
-                                  .shimmer(
-                                    duration: 2000.ms,
-                                    color: Colors.white,
-                                  ),
+                          maxLines: 2,
                         ),
-                        const SizedBox(width: 12),
-                        Flexible(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                'Weekly Streak Active',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: -0.2,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                'Keep learning to grow your flame!',
-                                style: TextStyle(
-                                  fontFamily: 'Poppins',
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
-                                  color: isDark
-                                      ? Colors.white38
-                                      : Colors.black38,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ],
+                        const SizedBox(height: 2),
+                        Text(
+                          'Keep learning to grow your flame!',
+                          style: TextStyle(
+                            fontFamily: 'Poppins',
+                            fontSize: 11,
+                            fontWeight: FontWeight.w500,
+                            color: isDark ? Colors.white38 : Colors.black38,
                           ),
+                          maxLines: 2,
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   // Streak badge pill
                   Container(
                     padding: const EdgeInsets.symmetric(
@@ -379,8 +363,7 @@ class StreakCalendar extends ConsumerWidget {
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white60 : Colors.black54,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
                     ),
                   ],

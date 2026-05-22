@@ -9,7 +9,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
-import '../../../home/presentation/widgets/mistake_review_card.dart';
+import 'mistake_review_card.dart';
 
 bool get _isTesting {
   if (kIsWeb) return false;

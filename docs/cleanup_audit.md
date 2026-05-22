@@ -98,3 +98,26 @@ Video infrastructure has been completely pruned (video player widgets deleted, d
   - Extracted cross-cutting gamification/streak state listener logic from `home_screen.dart` into `DailyMissionsObserver` registered in `main.dart`.
 - **Preserved:**
   - Protected the Translate feature (`magic_translate_dialog.dart` explicitly preserved).
+
+## Phase 5 Cleanup — Backend & Admin Cleanup
+
+- **Goal:** Pruned orphaned backend collections, removed admin editing of seed-only database tables, and consolidated the admin user interface.
+- **Deleted Collections & Providers:**
+  - Deleted `rhyme_categories` from Appwrite schema setup (`appwrite_setup.mjs`).
+  - Removed `rhyme_categories` seeding, data importing, and permission fixing entries from all utility scripts (`appwrite_seed.mjs`, `appwrite_import.mjs`, `fix_permissions.mjs`).
+  - Replaced the network-fetched `rhymeCategoriesProvider` with a dynamic local derived provider extracting distinct categories directly from the client-side `rhymesProvider`.
+  - Deleted the admin rhymes categories screen, barrel files, and sidebar entries completely.
+- **Pruned Seed-Only Admin CRUDs:**
+  - Removed dedicated CRUD sub-screens from `admin_gamification_screen.dart` and router paths (`/admin/gamification/copy`, `/admin/gamification/missions`, `/admin/gamification/rewards`, `/admin/gamification/quiz-feedback`) for collections meant to be managed strictly via seed script (`bravo_messages`, `reward_messages`, `quiz_feedback_messages`, `mission_templates`).
+- **Sidebar Consolidation:**
+  - Reorganized the Admin sidebar from 6 verbose groups down to exactly 4 semantic groups (plus a top-level Overview):
+    1. **Overview**: Dashboard
+    2. **Content**: Categories, Daily Affirmations, Banners, Letters & Alphabet, Numbers, Words & Vocabulary, Sentences, Lessons, Bakhed & Stories, Bakhed Learning CMS, Quizzes
+    3. **Monetization**: Purchases & Revenue, Binti Waitlist
+    4. **Operations**: Gamification, Analytics, Audit Logs, Maintenance, Settings, Admin Access
+    5. **Media**: Media Library, Audio Files
+- **Preserved Features:**
+  - Strictly protected the Translate/Translation features (`AiTranslatorScreen`, `/admin/translate` pathways, and background backend caching/rate-limit definitions).
+- **Manual Action Required (Production Console):**
+  - Delete the `rhyme_categories` collection manually from the Appwrite project console as it has been fully deprecated and all client-side code migrated to dynamic derived tags.
+

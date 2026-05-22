@@ -22,6 +22,7 @@ and tags consistent.
 - Standard categories upgraded to structured unlockable courses.
 - Verification & OTP screen redirects optimized to transition to `/onboarding`.
 - Flattened rhyme subcategories into tag arrays/chips on the rhymes collection and UI.
+- Reorganized Admin sidebar into exactly 4 semantic groups (Overview, Content, Monetization, Operations, Media) to consolidate administration operations.
 
 ### Removed
 - Legacy collections creation logic: `weekly_circles`, `circle_members`, `circle_events`, `weekly_circle_recaps`, and `streak_shields` are no longer created.
@@ -35,9 +36,11 @@ and tags consistent.
 - Unused Premium translation hub (`ai_magic_hub.dart`).
 - Bento stats layout (`home_bento_widgets.dart` shim and directory).
 - Legacy mobile learning preview card slider (`learning_path_preview.dart`).
+- Deprecated `rhyme_categories` collection, repositories, providers, CRUD screens, seeding scripts, and sidebar entries.
+- Dedicated CRUD sub-screens from Gamification panel for seed-only collections (`bravo_messages`, `reward_messages`, `quiz_feedback_messages`, `mission_templates`).
 
 ### Kept
-- Protected the Translate feature (`magic_translate_dialog.dart` explicitly preserved across mobile, backend, and admin).
+- Protected the Translate feature (`magic_translate_dialog.dart` explicitly preserved across mobile, backend, and admin, including Admin translation tool and backend caches/rate-limits).
 
 ## 1.1.1
 

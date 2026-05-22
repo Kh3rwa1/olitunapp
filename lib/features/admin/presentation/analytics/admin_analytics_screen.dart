@@ -352,10 +352,16 @@ class _AnalyticsToolbar extends StatelessWidget {
   Future<void> _exportCsv(BuildContext context) async {
     final csv = snapshot.toRollupsCsv();
     final now = DateTime.now().toUtc();
+    final renderObject = context.findRenderObject();
+    final sharePositionOrigin = renderObject is RenderBox
+        ? renderObject.localToGlobal(Offset.zero) & renderObject.size
+        : null;
+
     await exportAnalyticsCsv(
       filename:
           'olitun-learning-analytics-${formatDateKey(range.startFor(now))}-to-${formatDateKey(range.endFor(now))}.csv',
       csv: csv,
+      sharePositionOrigin: sharePositionOrigin,
     );
     if (!context.mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(

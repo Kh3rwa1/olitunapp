@@ -1,10 +1,12 @@
 import 'dart:js_interop';
+import 'dart:ui' show Rect;
 
 import 'package:web/web.dart' as web;
 
 Future<void> exportAnalyticsCsv({
   required String filename,
   required String csv,
+  Rect? sharePositionOrigin,
 }) async {
   final blob = web.Blob(
     [csv.toJS].toJS,

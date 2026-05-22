@@ -137,6 +137,14 @@ void main() {
   });
 
   group('CSV export', () {
+    test('csvEscape handles commas, quotes, newlines, and empty values', () {
+      expect(csvEscape('simple lesson'), 'simple lesson');
+      expect(csvEscape('lesson, with comma'), '"lesson, with comma"');
+      expect(csvEscape('lesson "quoted"'), '"lesson ""quoted"""');
+      expect(csvEscape('line one\nline two'), '"line one\nline two"');
+      expect(csvEscape(null), '');
+    });
+
     test('escapes rollup rows for spreadsheet export', () {
       final snapshot = AdminAnalyticsSnapshot.fromRows(
         now: DateTime.utc(2026, 5, 22),

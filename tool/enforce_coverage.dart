@@ -13,11 +13,9 @@ const criticalLearningPaths = [
 ];
 
 void main(List<String> args) {
-  final minArg = args.firstWhere(
-    (arg) => arg.startsWith('--min='),
-    orElse: () => '--min=65',
-  );
-  final minimum = double.parse(minArg.substring('--min='.length));
+  final minimum = _doubleArg(args, '--min=', fallback: 65);
+  final enforceAfter = _dateArg(args, '--enforce-after=');
+  final pathMinimums = _pathMinimums(args);
   final file = File('coverage/lcov.info');
 
   if (!file.existsSync()) {
@@ -27,44 +25,179 @@ void main(List<String> args) {
     exit(1);
   }
 
+  final files = _parseLcov(file);
+  var failed = false;
+
+  failed |= !_checkGroup(
+    name: 'Critical learning',
+    coverage: _coverageFor(
+      files,
+      (path) => criticalLearningPaths.any(path.contains),
+    ),
+    minimum: minimum,
+    enforce: true,
+  );
+
+  final enforcePathMinimums =
+      enforceAfter == null || !DateTime.now().toUtc().isBefore(enforceAfter);
+
+  for (final minimum in pathMinimums) {
+    failed |= !_checkGroup(
+      name: minimum.label,
+      coverage: _coverageFor(files, (path) => path.contains(minimum.pathMatch)),
+      minimum: minimum.minimum,
+      enforce: enforcePathMinimums,
+      enforceAfter: enforceAfter,
+    );
+  }
+
+  if (failed) exit(1);
+}
+
+Map<String, _LineCoverage> _parseLcov(File file) {
+  final files = <String, _LineCoverage>{};
   var currentFile = '';
-  var include = false;
-  var found = 0;
-  var hit = 0;
 
   for (final line in file.readAsLinesSync()) {
     if (line.startsWith('SF:')) {
       currentFile = line.substring(3);
-      include = criticalLearningPaths.any(currentFile.contains);
+      files.putIfAbsent(
+        currentFile,
+        () => const _LineCoverage(found: 0, hit: 0),
+      );
       continue;
     }
 
-    if (!include || !line.startsWith('DA:')) continue;
+    if (currentFile.isEmpty || !line.startsWith('DA:')) continue;
 
     final data = line.substring(3).split(',');
     if (data.length < 2) continue;
-    found += 1;
-    if ((int.tryParse(data[1]) ?? 0) > 0) {
-      hit += 1;
-    }
+    final current = files[currentFile]!;
+    final covered = (int.tryParse(data[1]) ?? 0) > 0 ? 1 : 0;
+    files[currentFile] = _LineCoverage(
+      found: current.found + 1,
+      hit: current.hit + covered,
+    );
   }
 
-  if (found == 0) {
-    stderr.writeln('No critical learning coverage lines found.');
-    exit(1);
+  return files;
+}
+
+_LineCoverage _coverageFor(
+  Map<String, _LineCoverage> files,
+  bool Function(String path) include,
+) {
+  var found = 0;
+  var hit = 0;
+  for (final entry in files.entries) {
+    if (!include(entry.key)) continue;
+    found += entry.value.found;
+    hit += entry.value.hit;
+  }
+  return _LineCoverage(found: found, hit: hit);
+}
+
+bool _checkGroup({
+  required String name,
+  required _LineCoverage coverage,
+  required double minimum,
+  required bool enforce,
+  DateTime? enforceAfter,
+}) {
+  if (coverage.found == 0) {
+    stderr.writeln('No coverage lines found for $name.');
+    return !enforce;
   }
 
-  final percent = hit / found * 100;
+  final percent = coverage.percent;
+  final status = percent >= minimum ? 'PASS' : (enforce ? 'FAIL' : 'WARN');
   stdout.writeln(
-    'Critical learning coverage: ${percent.toStringAsFixed(1)}% '
-    '($hit/$found lines), minimum ${minimum.toStringAsFixed(1)}%',
+    '$name coverage: ${percent.toStringAsFixed(1)}% '
+    '(${coverage.hit}/${coverage.found} lines), minimum '
+    '${minimum.toStringAsFixed(1)}% [$status]',
   );
 
-  if (percent < minimum) {
-    stderr.writeln(
-      'Coverage ${percent.toStringAsFixed(1)}% is below '
-      '${minimum.toStringAsFixed(1)}%.',
-    );
+  if (percent >= minimum) return true;
+  if (!enforce) {
+    final date = enforceAfter == null ? 'later' : _dateKey(enforceAfter);
+    stdout.writeln('$name threshold becomes blocking on $date.');
+    return true;
+  }
+
+  stderr.writeln(
+    '$name coverage ${percent.toStringAsFixed(1)}% is below '
+    '${minimum.toStringAsFixed(1)}%.',
+  );
+  return false;
+}
+
+double _doubleArg(
+  List<String> args,
+  String prefix, {
+  required double fallback,
+}) {
+  final arg = args.firstWhere(
+    (arg) => arg.startsWith(prefix),
+    orElse: () => '',
+  );
+  if (arg.isEmpty) return fallback;
+  return double.parse(arg.substring(prefix.length));
+}
+
+DateTime? _dateArg(List<String> args, String prefix) {
+  final arg = args.firstWhere(
+    (arg) => arg.startsWith(prefix),
+    orElse: () => '',
+  );
+  if (arg.isEmpty) return null;
+  final date = DateTime.tryParse(arg.substring(prefix.length));
+  if (date == null) {
+    stderr.writeln('Invalid date for $prefix. Use YYYY-MM-DD.');
     exit(1);
   }
+  return DateTime.utc(date.year, date.month, date.day);
+}
+
+List<_PathMinimum> _pathMinimums(List<String> args) {
+  final result = <_PathMinimum>[];
+  for (final arg in args.where((arg) => arg.startsWith('--path-min='))) {
+    final value = arg.substring('--path-min='.length);
+    final splitAt = value.lastIndexOf(':');
+    if (splitAt <= 0 || splitAt == value.length - 1) {
+      stderr.writeln('Invalid --path-min value "$value". Use path:minimum.');
+      exit(1);
+    }
+    final path = value.substring(0, splitAt);
+    final minimum = double.tryParse(value.substring(splitAt + 1));
+    if (minimum == null) {
+      stderr.writeln('Invalid --path-min minimum in "$value".');
+      exit(1);
+    }
+    result.add(_PathMinimum(pathMatch: path, minimum: minimum));
+  }
+  return result;
+}
+
+String _dateKey(DateTime date) {
+  return '${date.year.toString().padLeft(4, '0')}-'
+      '${date.month.toString().padLeft(2, '0')}-'
+      '${date.day.toString().padLeft(2, '0')}';
+}
+
+class _PathMinimum {
+  const _PathMinimum({required this.pathMatch, required this.minimum});
+
+  final String pathMatch;
+  final double minimum;
+
+  String get label => 'Path "$pathMatch"';
+}
+
+class _LineCoverage {
+  const _LineCoverage({required this.found, required this.hit});
+
+  final int found;
+  final int hit;
+
+  double get percent => found == 0 ? 0 : hit / found * 100;
 }

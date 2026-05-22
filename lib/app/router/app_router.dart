@@ -42,6 +42,7 @@ import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
 import '../../features/admin/presentation/access/admin_access_screen.dart';
+import '../../features/admin/presentation/analytics/admin_analytics_screen.dart';
 import '../../features/admin/presentation/gamification/admin_gamification_screen.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
@@ -458,8 +459,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           adminRoute(
             path: '/admin/analytics',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'analytics'),
+            builder: (context, state) => const AdminAnalyticsScreen(),
           ),
           adminRoute(
             path: '/admin/maintenance',

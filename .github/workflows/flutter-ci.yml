@@ -44,7 +44,12 @@ jobs:
         run: flutter test --coverage
 
       - name: Enforce coverage threshold
-        run: dart run tool/enforce_coverage.dart --min=65
+        run: |
+          dart run tool/enforce_coverage.dart \
+            --min=65 \
+            --path-min=/data/:75 \
+            --path-min=/domain/:75 \
+            --enforce-after=2026-06-21
 
       - name: Smoke tests
         run: flutter test test/smoke
@@ -65,13 +70,31 @@ jobs:
       - name: Check outdated dependencies
         run: flutter pub outdated --no-dev-dependencies || true
 
+      - name: Load base performance budgets
+        env:
+          BASE_REF: ${{ github.base_ref || 'main' }}
+        run: |
+          git fetch origin "$BASE_REF" --depth=1 || true
+          git show "origin/$BASE_REF:tool/performance_budgets.json" > /tmp/base_performance_budgets.json || cp tool/performance_budgets.json /tmp/base_performance_budgets.json
+
       - name: Build web release
         run: flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
+
+      - name: Check web performance budget
+        run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
+
+      - name: Analyze Android release size
+        env:
+          ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
+        run: flutter build apk --release --analyze-size --target-platform android-arm64 --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
 
       - name: Build Android release
         env:
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: flutter build apk --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
+
+      - name: Check APK performance budget
+        run: dart run tool/check_size_budget.dart --path=build/app/outputs/flutter-apk/app-release.apk --budget-key=apkReleaseBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
 
       - name: Upload build artifacts
         if: github.ref == 'refs/heads/main'

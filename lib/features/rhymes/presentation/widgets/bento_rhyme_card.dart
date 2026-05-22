@@ -220,9 +220,9 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                     ],
                   ),
                   const Spacer(),
-                  if (widget.rhyme.subcategory != null)
+                  if (widget.rhyme.tags.isNotEmpty)
                     Text(
-                          widget.rhyme.subcategory?.toUpperCase() ?? '',
+                          widget.rhyme.tags.first.toUpperCase(),
                           style: GoogleFonts.fredoka(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,

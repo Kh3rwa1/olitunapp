@@ -32,8 +32,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     with TickerProviderStateMixin {
   String? _selectedCategoryId;
   String? _selectedCategoryName;
-  String? _selectedSubcategoryId;
-  String? _selectedSubcategoryName;
+  String? _selectedTag;
   late final AnimationController _headerPulseController;
   late final AnimationController _dividerGlowController;
 
@@ -86,13 +85,21 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       if (prevOffline && nextOnline) {
         ref.invalidate(rhymesProvider);
         ref.invalidate(rhymeCategoriesProvider);
-        ref.invalidate(rhymeSubcategoriesProvider);
       }
     });
 
     final rhymesAsync = ref.watch(rhymesProvider);
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
-    final subcategoriesAsync = ref.watch(rhymeSubcategoriesProvider);
+    final catRhymes = rhymesAsync.maybeWhen(
+      data: (list) => list.where((r) =>
+        _selectedCategoryId == null ||
+        r.categoryId == _selectedCategoryId ||
+        r.category == _selectedCategoryId ||
+        r.category == _selectedCategoryName
+      ).toList(),
+      orElse: () => <RhymeModel>[],
+    );
+    final allTags = catRhymes.expand((r) => r.tags).toSet().toList();
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
@@ -107,7 +114,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                 onRefresh: () async {
                   ref.invalidate(rhymesProvider);
                   ref.invalidate(rhymeCategoriesProvider);
-                  ref.invalidate(rhymeSubcategoriesProvider);
                 },
                 child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -128,10 +134,10 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     // --- Category Filter chips ---
                     _buildCategoryChips(categoriesAsync, isDark, isTablet),
 
-                    // --- Subcategory chips ---
+                    // --- Tag chips ---
                     if (_selectedCategoryId != null)
-                      _buildSubcategoryChips(
-                        subcategoriesAsync,
+                      _buildTagChips(
+                        allTags,
                         isDark,
                         isTablet,
                       ),
@@ -282,8 +288,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                   onTap: () => setState(() {
                     _selectedCategoryId = null;
                     _selectedCategoryName = null;
-                    _selectedSubcategoryId = null;
-                    _selectedSubcategoryName = null;
+                    _selectedTag = null;
                   }),
                   isDark: isDark,
                 ),
@@ -297,8 +302,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     onTap: () => setState(() {
                       _selectedCategoryId = cat.id;
                       _selectedCategoryName = cat.nameLatin;
-                      _selectedSubcategoryId = null;
-                      _selectedSubcategoryName = null;
+                      _selectedTag = null;
                     }),
                     isDark: isDark,
                   ),
@@ -326,84 +330,55 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     );
   }
 
-  // ─── Subcategory Chips ──────────────────────────────────
-  Widget _buildSubcategoryChips(
-    AsyncValue<dynamic> subcategoriesAsync,
+  // ─── Tag Chips ──────────────────────────────────
+  Widget _buildTagChips(
+    List<String> tags,
     bool isDark,
     bool isTablet,
   ) {
-    return subcategoriesAsync.when(
-      data: (allSubcats) {
-        final catId = _selectedCategoryId ?? '';
-        final filtered = allSubcats
-            .where((s) => s.categoryId == catId)
-            .toList();
+    if (tags.isEmpty) {
+      return const SliverToBoxAdapter(child: SizedBox.shrink());
+    }
 
-        if (filtered.isEmpty) {
-          return const SliverToBoxAdapter(child: SizedBox.shrink());
-        }
-
-        return SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.only(top: 12),
-            child: SizedBox(
-              height: 40,
-              child: ListView(
-                scrollDirection: Axis.horizontal,
-                padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: AnimatedFilterChip(
-                      label: 'All ${_selectedCategoryName ?? ""}',
-                      isSelected: _selectedSubcategoryId == null,
-                      onTap: () => setState(() {
-                        _selectedSubcategoryId = null;
-                        _selectedSubcategoryName = null;
-                      }),
-                      isDark: isDark,
-                      small: true,
-                    ),
-                  ),
-                  ...filtered.map(
-                    (sub) => Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: AnimatedFilterChip(
-                        label: sub.nameLatin,
-                        isSelected: _selectedSubcategoryId == sub.id,
-                        onTap: () => setState(() {
-                          _selectedSubcategoryId = sub.id;
-                          _selectedSubcategoryName = sub.nameLatin;
-                        }),
-                        isDark: isDark,
-                        small: true,
-                      ),
-                    ),
-                  ),
-                ],
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 12),
+        child: SizedBox(
+          height: 40,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
+            children: [
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: AnimatedFilterChip(
+                  label: 'All ${_selectedCategoryName ?? ""}',
+                  isSelected: _selectedTag == null,
+                  onTap: () => setState(() {
+                    _selectedTag = null;
+                  }),
+                  isDark: isDark,
+                  small: true,
+                ),
               ),
-            ),
-          ).animate().fadeIn().slideX(begin: 0.1),
-        );
-      },
-      loading: () => SliverToBoxAdapter(
-        child: Padding(
-          padding: const EdgeInsets.only(top: 12),
-          child: SizedBox(
-            height: 40,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-              itemCount: 3,
-              itemBuilder: (context, index) => const Padding(
-                padding: EdgeInsets.only(right: 12),
-                child: Skeleton(width: 100, height: 32, borderRadius: 20),
+              ...tags.map(
+                (tag) => Padding(
+                  padding: const EdgeInsets.only(right: 12),
+                  child: AnimatedFilterChip(
+                    label: '#$tag',
+                    isSelected: _selectedTag == tag,
+                    onTap: () => setState(() {
+                      _selectedTag = tag;
+                    }),
+                    isDark: isDark,
+                    small: true,
+                  ),
+                ),
               ),
-            ),
+            ],
           ),
         ),
-      ),
-      error: (_, _) => const SliverToBoxAdapter(child: SizedBox.shrink()),
+      ).animate().fadeIn().slideX(begin: 0.1),
     );
   }
 
@@ -584,15 +559,8 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           )
           .toList();
     }
-    if (_selectedSubcategoryId != null || _selectedSubcategoryName != null) {
-      filtered = filtered
-          .where(
-            (r) =>
-                r.subcategoryId == _selectedSubcategoryId ||
-                r.subcategory == _selectedSubcategoryId ||
-                r.subcategory == _selectedSubcategoryName,
-          )
-          .toList();
+    if (_selectedTag != null) {
+      filtered = filtered.where((r) => r.tags.contains(_selectedTag)).toList();
     }
     return filtered;
   }

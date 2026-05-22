@@ -141,11 +141,11 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                 const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
+                  runSpacing: 4,
                   children: [
                     if (rhyme.category != null)
                       _buildChip(rhyme.category!, isDark),
-                    if (rhyme.subcategory != null)
-                      _buildChip(rhyme.subcategory!, isDark),
+                    ...rhyme.tags.map((tag) => _buildChip('#$tag', isDark)),
                   ],
                 ),
               ],
@@ -223,12 +223,14 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     final contentOlChikiController = TextEditingController(
       text: rhyme?.contentOlChiki,
     );
+    final tagsController = TextEditingController(
+      text: rhyme?.tags.join(', ') ?? '',
+    );
     String? audioUrl = rhyme?.audioUrl;
     String? thumbnailUrl = rhyme?.thumbnailUrl;
 
-    // Load categories and subcategories dynamically
+    // Load categories dynamically
     final categories = ref.read(rhymeCategoriesProvider).value ?? [];
-    final allSubcategories = ref.read(rhymeSubcategoriesProvider).value ?? [];
 
     String? selectedCategoryId =
         rhyme?.categoryId ??
@@ -237,34 +239,14 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
             .map((c) => c.id)
             .firstOrNull ??
         (categories.isNotEmpty ? categories.first.id : null);
-    String? selectedSubcategoryId =
-        rhyme?.subcategoryId ??
-        allSubcategories
-            .where((s) => s.nameLatin == rhyme?.subcategory)
-            .map((s) => s.id)
-            .firstOrNull;
 
     showDialog(
       context: context,
       builder: (context) => StatefulBuilder(
         builder: (context, setDialogState) {
-          // Filter subcategories by selected category
           final selectedCategory = categories
               .where((c) => c.id == selectedCategoryId)
               .firstOrNull;
-          final catId = selectedCategoryId ?? '';
-          final filteredSubcats = allSubcategories
-              .where((s) => s.categoryId == catId)
-              .toList();
-
-          // Validate selectedSubcategory
-          final validSubcatIds = filteredSubcats.map((s) => s.id).toSet();
-          if (selectedSubcategoryId != null &&
-              !validSubcatIds.contains(selectedSubcategoryId)) {
-            selectedSubcategoryId = filteredSubcats.isNotEmpty
-                ? filteredSubcats.first.id
-                : null;
-          }
 
           return AlertDialog(
             title: Text(rhyme == null ? 'Add Rhyme' : 'Edit Rhyme'),
@@ -299,6 +281,13 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                         labelText: 'Content (Ol Chiki)',
                       ),
                       maxLines: 3,
+                    ),
+                    TextField(
+                      controller: tagsController,
+                      decoration: const InputDecoration(
+                        labelText: 'Tags (comma-separated)',
+                        hintText: 'e.g., traditional, harvest, dance',
+                      ),
                     ),
                     const SizedBox(height: 16),
                     AdminMediaField(
@@ -354,31 +343,9 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                       onChanged: (val) {
                         setDialogState(() {
                           selectedCategoryId = val;
-                          selectedSubcategoryId = null; // reset subcategory
                         });
                       },
                       decoration: const InputDecoration(labelText: 'Category'),
-                    ),
-                    const SizedBox(height: 8),
-                    // Subcategory dropdown (cascading)
-                    DropdownButtonFormField<String>(
-                      initialValue: selectedSubcategoryId,
-                      items: filteredSubcats
-                          .map(
-                            (s) => DropdownMenuItem(
-                              value: s.id,
-                              child: Text(s.nameLatin),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        setDialogState(() {
-                          selectedSubcategoryId = val;
-                        });
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Subcategory',
-                      ),
                     ),
                   ],
                 ),
@@ -391,9 +358,6 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  final selectedSubcategory = allSubcategories
-                      .where((s) => s.id == selectedSubcategoryId)
-                      .firstOrNull;
                   final newItem = RhymeModel(
                     id: rhyme?.id ?? const Uuid().v4(),
                     titleLatin: titleLatinController.text,
@@ -403,9 +367,12 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
                     audioUrl: audioUrl ?? '',
                     thumbnailUrl: thumbnailUrl ?? '',
                     categoryId: selectedCategoryId,
-                    subcategoryId: selectedSubcategoryId,
                     category: selectedCategory?.nameLatin,
-                    subcategory: selectedSubcategory?.nameLatin,
+                    tags: tagsController.text
+                        .split(',')
+                        .map((s) => s.trim())
+                        .where((s) => s.isNotEmpty)
+                        .toList(),
                   );
 
                   if (rhyme == null) {

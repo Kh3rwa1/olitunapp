@@ -135,25 +135,6 @@ const rhyme_categories = [
   { id: 'rcat_general', nameOlChiki: 'ᱥᱟᱫᱷᱟᱨᱚᱬ', nameLatin: 'General', iconName: 'child_care', order: 3 },
 ];
 
-const rhyme_subcategories = [
-  { id: 'rsub_wild', categoryId: 'rcat_animal', nameOlChiki: 'ᱵᱤᱨ ᱡᱟᱱᱣᱟᱨ', nameLatin: 'Wild Animals', order: 0 },
-  { id: 'rsub_domestic', categoryId: 'rcat_animal', nameOlChiki: 'ᱜᱷᱚᱨ ᱡᱟᱱᱣᱟᱨ', nameLatin: 'Domestic Animals', order: 1 },
-  { id: 'rsub_birds', categoryId: 'rcat_animal', nameOlChiki: 'ᱪᱮᱬᱮ', nameLatin: 'Birds', order: 2 },
-  { id: 'rsub_insects', categoryId: 'rcat_animal', nameOlChiki: 'ᱠᱤᱲᱟ', nameLatin: 'Insects', order: 3 },
-  { id: 'rsub_rivers', categoryId: 'rcat_nature', nameOlChiki: 'ᱜᱟᱰᱟ', nameLatin: 'Rivers & Water', order: 0 },
-  { id: 'rsub_mountains', categoryId: 'rcat_nature', nameOlChiki: 'ᱵᱩᱨᱩ', nameLatin: 'Mountains & Forest', order: 1 },
-  { id: 'rsub_weather', categoryId: 'rcat_nature', nameOlChiki: 'ᱦᱚᱭ ᱦᱤᱥᱤᱫ', nameLatin: 'Weather', order: 2 },
-  { id: 'rsub_flowers', categoryId: 'rcat_nature', nameOlChiki: 'ᱵᱟᱦᱟ', nameLatin: 'Flowers & Plants', order: 3 },
-  { id: 'rsub_honesty', categoryId: 'rcat_moral', nameOlChiki: 'ᱥᱟᱹᱨᱤ', nameLatin: 'Honesty', order: 0 },
-  { id: 'rsub_kindness', categoryId: 'rcat_moral', nameOlChiki: 'ᱫᱟᱭᱟ', nameLatin: 'Kindness', order: 1 },
-  { id: 'rsub_courage', categoryId: 'rcat_moral', nameOlChiki: 'ᱵᱤᱨ', nameLatin: 'Courage', order: 2 },
-  { id: 'rsub_wisdom', categoryId: 'rcat_moral', nameOlChiki: 'ᱜᱤᱭᱟᱱ', nameLatin: 'Wisdom', order: 3 },
-  { id: 'rsub_lullaby', categoryId: 'rcat_general', nameOlChiki: 'ᱡᱩᱢᱤᱫ ᱥᱮᱨᱮᱧ', nameLatin: 'Lullaby', order: 0 },
-  { id: 'rsub_festive', categoryId: 'rcat_general', nameOlChiki: 'ᱯᱚᱨᱚᱵ', nameLatin: 'Festive', order: 1 },
-  { id: 'rsub_counting', categoryId: 'rcat_general', nameOlChiki: 'ᱞᱮᱠᱷᱟ', nameLatin: 'Counting', order: 2 },
-  { id: 'rsub_play', categoryId: 'rcat_general', nameOlChiki: 'ᱟᱹᱭᱩᱨ', nameLatin: 'Play Songs', order: 3 },
-];
-
 const quizzes = [
   {
     id: 'quiz_alphabets_basics',
@@ -279,7 +260,6 @@ async function main() {
   await importCollection('letters', letters);
   await importCollection('numbers', numbers);
   await importCollection('rhyme_categories', rhyme_categories);
-  await importCollection('rhyme_subcategories', rhyme_subcategories);
   await importCollection('quizzes', quizzes);
 
   console.log('\n🎉 Seed import complete!');

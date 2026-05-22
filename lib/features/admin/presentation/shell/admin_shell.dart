@@ -152,8 +152,7 @@ class AdminShell extends ConsumerWidget {
       ..read(sentencesProvider)
       ..read(quizzesProvider)
       ..read(rhymesProvider)
-      ..read(rhymeCategoriesProvider)
-      ..read(rhymeSubcategoriesProvider);
+      ..read(rhymeCategoriesProvider);
   }
 
   Widget _buildAmbientBackdrop(bool isDark) {

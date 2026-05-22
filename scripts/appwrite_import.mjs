@@ -141,7 +141,6 @@ const FIELD_MAP = {
     audio_url: 'audioUrl',
     thumbnail_url: 'thumbnailUrl',
     category: 'categoryId',        // Map to new field name
-    subcategory: 'subcategoryId',   // Map to new field name
     difficulty: 'difficulty',
     duration_seconds: 'durationSeconds',
     is_premium: 'isPremium',
@@ -162,13 +161,6 @@ const FIELD_MAP = {
     name_ol_chiki: 'nameOlChiki',
     name_latin: 'nameLatin',
     icon_name: 'iconName',
-    order_index: 'order',
-  },
-  rhyme_subcategories: {
-    id: 'id',
-    category_id: 'categoryId',
-    name_ol_chiki: 'nameOlChiki',
-    name_latin: 'nameLatin',
     order_index: 'order',
   },
   app_settings: {
@@ -235,7 +227,6 @@ async function main() {
   const importOrder = [
     'categories',
     'rhyme_categories',
-    'rhyme_subcategories',
     'lessons',
     'lesson_blocks',
     'letters',

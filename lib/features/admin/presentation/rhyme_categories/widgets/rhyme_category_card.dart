@@ -6,22 +6,14 @@ import '../../widgets/admin_glass_card.dart';
 
 class RhymeCategoryCard extends StatelessWidget {
   final RhymeCategoryModel category;
-  final List<RhymeSubcategoryModel> subcategories;
-  final VoidCallback onAddSubcategory;
   final VoidCallback onEditCategory;
   final VoidCallback onDeleteCategory;
-  final ValueChanged<RhymeSubcategoryModel> onEditSubcategory;
-  final ValueChanged<RhymeSubcategoryModel> onDeleteSubcategory;
 
   const RhymeCategoryCard({
     super.key,
     required this.category,
-    required this.subcategories,
-    required this.onAddSubcategory,
     required this.onEditCategory,
     required this.onDeleteCategory,
-    required this.onEditSubcategory,
-    required this.onDeleteSubcategory,
   });
 
   IconData _getIconFromName(String name) {
@@ -50,121 +42,45 @@ class RhymeCategoryCard extends StatelessWidget {
     return AdminGlassCard(
       margin: const EdgeInsets.only(bottom: 14),
       borderRadius: AdminTokens.radiusLg,
-      child: Theme(
-        data: Theme.of(context).copyWith(dividerColor: Colors.transparent),
-        child: ExpansionTile(
-          tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          leading: Container(
-            width: 46,
-            height: 46,
-            decoration: BoxDecoration(
-              color: AdminTokens.accentSoft(isDark),
-              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              border: Border.all(color: AdminTokens.accentBorder(isDark)),
-            ),
-            child: Icon(
-              _getIconFromName(category.iconName),
-              color: AdminTokens.accent,
-            ),
+      child: ListTile(
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: AdminTokens.accentSoft(isDark),
+            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+            border: Border.all(color: AdminTokens.accentBorder(isDark)),
           ),
-          title: Text(category.nameLatin, style: AdminTokens.cardTitle(isDark)),
-          subtitle: Padding(
-            padding: const EdgeInsets.only(top: 2),
-            child: Text(
-              '${category.nameOlChiki} · ${subcategories.length} subcategories',
-              style: AdminTokens.label(isDark),
+          child: Icon(
+            _getIconFromName(category.iconName),
+            color: AdminTokens.accent,
+          ),
+        ),
+        title: Text(category.nameLatin, style: AdminTokens.cardTitle(isDark)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 2),
+          child: Text(
+            category.nameOlChiki,
+            style: AdminTokens.label(isDark),
+          ),
+        ),
+        trailing: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            AdminIconAction(
+              icon: Icons.edit_rounded,
+              tooltip: 'Edit',
+              onTap: onEditCategory,
             ),
-          ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AdminIconAction(
-                icon: Icons.add_circle_outline_rounded,
-                tooltip: 'Add subcategory',
-                onTap: onAddSubcategory,
-              ),
-              const SizedBox(width: 6),
-              AdminIconAction(
-                icon: Icons.edit_rounded,
-                tooltip: 'Edit',
-                onTap: onEditCategory,
-              ),
-              const SizedBox(width: 6),
-              AdminIconAction(
-                icon: Icons.delete_outline_rounded,
-                tooltip: 'Delete',
-                destructive: true,
-                onTap: onDeleteCategory,
-              ),
-            ],
-          ),
-          children: subcategories.isEmpty
-              ? [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(72, 0, 16, 16),
-                    child: Text(
-                      'No subcategories yet. Tap + to add.',
-                      style: AdminTokens.label(
-                        isDark,
-                      ).copyWith(color: AdminTokens.textTertiary(isDark)),
-                    ),
-                  ),
-                ]
-              : subcategories
-                    .map(
-                      (sub) => Container(
-                        margin: const EdgeInsets.fromLTRB(64, 0, 16, 8),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 8,
-                        ),
-                        decoration: BoxDecoration(
-                          color: AdminTokens.sunken(isDark),
-                          borderRadius: BorderRadius.circular(
-                            AdminTokens.radiusSm,
-                          ),
-                          border: Border.all(color: AdminTokens.border(isDark)),
-                        ),
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.subdirectory_arrow_right_rounded,
-                              size: 16,
-                              color: AdminTokens.textTertiary(isDark),
-                            ),
-                            const SizedBox(width: 10),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    sub.nameLatin,
-                                    style: AdminTokens.bodyStrong(isDark),
-                                  ),
-                                  Text(
-                                    sub.nameOlChiki,
-                                    style: AdminTokens.label(isDark),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            AdminIconAction(
-                              icon: Icons.edit_rounded,
-                              tooltip: 'Edit',
-                              onTap: () => onEditSubcategory(sub),
-                            ),
-                            const SizedBox(width: 6),
-                            AdminIconAction(
-                              icon: Icons.delete_outline_rounded,
-                              tooltip: 'Delete',
-                              destructive: true,
-                              onTap: () => onDeleteSubcategory(sub),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                    .toList(),
+            const SizedBox(width: 6),
+            AdminIconAction(
+              icon: Icons.delete_outline_rounded,
+              tooltip: 'Delete',
+              destructive: true,
+              onTap: onDeleteCategory,
+            ),
+          ],
         ),
       ),
     );

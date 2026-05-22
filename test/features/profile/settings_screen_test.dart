@@ -74,16 +74,16 @@ void main() {
     await tester.pumpAndSettle();
 
     // App should now be in Santali locale!
-    // In sat, 'Dark Mode' is 'Andhar Mode' (from app_sat.arb).
-    expect(find.text('Andhar Mode'), findsOneWidget);
-    expect(find.text('App Bhasa'), findsOneWidget);
+    // In sat, 'Dark Mode' is 'ᱟᱸᱫᱷᱟᱨ ᱢᱳᱰ' (from app_sat.arb).
+    expect(find.text('ᱟᱸᱫᱷᱟᱨ ᱢᱳᱰ'), findsOneWidget);
+    expect(find.text('ᱟᱯ ᱵᱷᱟᱥᱟ'), findsOneWidget);
 
-    // Now try to tap 'App Bhasa' to change it back
-    await tester.tap(find.text('App Bhasa'));
+    // Now try to tap 'ᱟᱯ ᱵᱷᱟᱥᱟ' to change it back
+    await tester.tap(find.text('ᱟᱯ ᱵᱷᱟᱥᱟ'));
     await tester.pumpAndSettle();
 
     // Tap English to change it back
-    await tester.tap(find.text('English'));
+    await tester.tap(find.text('ᱤᱝᱞᱤᱥ'));
     await tester.pumpAndSettle();
 
     // Verify it is back to English

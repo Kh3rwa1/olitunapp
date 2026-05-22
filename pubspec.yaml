@@ -45,15 +45,12 @@ dependencies:
   intl: ^0.20.2
   image_picker: ^1.2.2
   file_picker: ^10.3.10
-  path: ^1.9.1
   http: ^1.2.0
 
   # Icons
   cupertino_icons: ^1.0.8
 
   path_provider: ^2.1.5
-  record: ^6.2.0
-  permission_handler: ^12.0.1
   web: ^1.1.1
   fpdart: ^1.1.0
   connectivity_plus: ^7.1.1

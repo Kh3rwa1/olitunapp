@@ -1,0 +1,14 @@
+{
+  "name": "cleanup-analytics-events",
+  "version": "1.0.0",
+  "description": "Daily retention cleanup for learning analytics events (keep last 90 days).",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "24.1.0"
+  }
+}

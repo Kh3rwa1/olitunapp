@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
+
 import 'package:uuid/uuid.dart';
 import 'package:file_picker/file_picker.dart';
 
@@ -65,27 +65,6 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
         title: 'Rhymes & Stories',
         subtitle: 'Manage kid-friendly content ($count items)',
         eyebrow: 'CONTENT · RHYMES',
-        actions: [
-          OutlinedButton.icon(
-            onPressed: () => context.go('/admin/rhymes/categories'),
-            icon: const Icon(Icons.grid_view_rounded, size: 16),
-            label: const Text('Manage Categories'),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: AdminTokens.accent,
-              side: BorderSide(color: AdminTokens.accentBorder(isDark)),
-              backgroundColor: AdminTokens.accentSoft(isDark),
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-              ),
-              textStyle: const TextStyle(
-                fontWeight: FontWeight.w700,
-                fontSize: 13,
-                letterSpacing: 0.2,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }

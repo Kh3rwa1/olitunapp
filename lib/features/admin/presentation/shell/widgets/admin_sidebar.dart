@@ -99,14 +99,6 @@ class AdminSidebar extends StatelessWidget {
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
-                  icon: Icons.grid_view_rounded,
-                  label: 'Bakhed Categories',
-                  isSelected: location == '/admin/rhymes/categories',
-                  onTap: () => context.go('/admin/rhymes/categories'),
-                  isCompact: isCompact,
-                  indent: !isCompact,
-                ),
-                AdminNavItem(
                   icon: Icons.library_books_rounded,
                   label: 'Bakhed Learning CMS',
                   isSelected: location.startsWith('/admin/gamification/bakhed'),

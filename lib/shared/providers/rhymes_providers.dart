@@ -100,66 +100,29 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
   Future<void> seed() async => _loadRhymes();
 }
 
-// ============== RHYME CATEGORIES ==============
+// ============== RHYME CATEGORIES (derived from rhymes) ==============
+// The rhyme_categories collection was removed in Phase 5.
+// Categories are now derived dynamically from the loaded rhymes.
 
 final rhymeCategoriesProvider =
-    StateNotifierProvider<
-      RhymeCategoriesNotifier,
-      AsyncValue<List<RhymeCategoryModel>>
-    >(RhymeCategoriesNotifier.new);
-
-class RhymeCategoriesNotifier
-    extends StateNotifier<AsyncValue<List<RhymeCategoryModel>>> {
-  RhymeCategoriesNotifier(this.ref) : super(const AsyncValue.loading()) {
-    _load();
-  }
-
-  final Ref ref;
-
-  Future<void> _load() async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      final data = await db.listDocuments(
-        'rhyme_categories',
-        queries: [Query.orderAsc('order'), Query.limit(500)],
-      );
-      state = AsyncValue.data(data.map(RhymeCategoryModel.fromJson).toList());
-    } catch (e, st) {
-      AppLogger.debug('Error loading rhyme categories: $e');
-      state = AsyncValue.error(e, st);
+    Provider<AsyncValue<List<RhymeCategoryModel>>>((ref) {
+  final rhymesAsync = ref.watch(rhymesProvider);
+  return rhymesAsync.whenData((rhymes) {
+    final seen = <String>{};
+    final categories = <RhymeCategoryModel>[];
+    var order = 0;
+    for (final rhyme in rhymes) {
+      final name = rhyme.category;
+      if (name == null || name.isEmpty || !seen.add(name)) continue;
+      categories.add(RhymeCategoryModel(
+        id: name,
+        nameOlChiki: name,
+        nameLatin: name,
+        iconName: 'auto_awesome',
+        order: order++,
+      ));
     }
-  }
-
-  Future<void> add(RhymeCategoryModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.createDocument('rhyme_categories', item.id, item.toJson());
-      await _load();
-    } catch (e) {
-      AppLogger.debug('Error adding rhyme category: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> update(RhymeCategoryModel item) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.updateDocument('rhyme_categories', item.id, item.toJson());
-      await _load();
-    } catch (e) {
-      AppLogger.debug('Error updating rhyme category: $e');
-      rethrow;
-    }
-  }
-
-  Future<void> delete(String id) async {
-    try {
-      final db = ref.read(appwriteDbServiceProvider);
-      await db.deleteDocument('rhyme_categories', id);
-      await _load();
-    } catch (e) {
-      AppLogger.debug('Error deleting rhyme category: $e');
-      rethrow;
-    }
-  }
-}
+    categories.sort((a, b) => a.order.compareTo(b.order));
+    return categories;
+  });
+});

@@ -86,7 +86,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           next.value != null && !next.value!.contains(ConnectivityResult.none);
       if (prevOffline && nextOnline) {
         ref.invalidate(rhymesProvider);
-        ref.invalidate(rhymeCategoriesProvider);
       }
     });
 
@@ -118,7 +117,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               child: BrandedRefreshIndicator(
                 onRefresh: () async {
                   ref.invalidate(rhymesProvider);
-                  ref.invalidate(rhymeCategoriesProvider);
                 },
                 child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),

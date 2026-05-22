@@ -38,7 +38,6 @@ import '../../features/admin/presentation/numbers/admin_numbers_screen.dart';
 import '../../features/admin/presentation/words/admin_words_screen.dart';
 import '../../features/admin/presentation/sentences/admin_sentences_screen.dart';
 import '../../features/admin/presentation/admin_rhymes_screen.dart';
-import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
 import '../../features/admin/presentation/affirmations/admin_affirmations_screen.dart';
@@ -367,10 +366,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           adminRoute(
             path: '/admin/rhymes',
             builder: (context, state) => const AdminRhymesScreen(),
-          ),
-          adminRoute(
-            path: '/admin/rhymes/categories',
-            builder: (context, state) => const AdminRhymeCategoriesScreen(),
           ),
           adminRoute(
             path: '/admin/media',

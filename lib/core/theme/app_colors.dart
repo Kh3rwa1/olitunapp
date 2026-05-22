@@ -105,9 +105,7 @@ class AppColors {
   static const fluidShadow = [
         S(color: C(0x261EE088), blurRadius: 40, offset: o12, spreadRadius: -8),
       ],
-      softShadow = [
-        S(color: C(0x14000000), blurRadius: 20, offset: o4),
-      ],
+      softShadow = [S(color: C(0x14000000), blurRadius: 20, offset: o4)],
       largeShadow = [
         S(color: C(0x33000000), blurRadius: 50, offset: o20, spreadRadius: -8),
       ],

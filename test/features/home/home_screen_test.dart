@@ -10,8 +10,14 @@ import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/core/storage/cache_service.dart';
+import 'package:hive/hive.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:itun/shared/widgets/state_widgets.dart';
+import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import '../../test_utils.dart';
+
 
 class MockCategoryNotifier
     extends StateNotifier<AsyncValue<List<CategoryEntity>>>
@@ -84,16 +90,55 @@ class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
       );
 }
 
+class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
+    with Mock
+    implements MistakeNotifier {
+  MockMistakeNotifier() : super([]);
+}
+
+class MockAffirmationsNotifier
+    extends StateNotifier<AsyncValue<List<AffirmationModel>>>
+    with Mock
+    implements AffirmationsNotifier {
+  MockAffirmationsNotifier()
+      : super(AsyncValue.data([
+          AffirmationModel(
+            id: 'aff_1',
+            olChikiText: 'ᱚᱞ ᱪᱤᱠᱤ',
+            santaliPhonetic: 'ol chiki',
+            englishMeaning: 'Ol Chiki is beautiful',
+            category: 'identity',
+            order: 1,
+            publishedAt: '',
+          ),
+        ]));
+}
+
 void main() {
-  setUpAll(() {
+  setUpAll(() async {
     TestWidgetsFlutterBinding.ensureInitialized();
     // Disable flutter_animate effects in tests to prevent pending timers
     Animate.restartOnHotReload = false;
+    Hive.init('test_hive_home_v2');
+    CacheService.resetForTesting();
   });
+
+  tearDownAll(() async {
+    // No-op to see if closing Hive/Cache was causing the event loop hang.
+  });
+
 
   testWidgets('HomeScreen renders greeting and daily progress', (tester) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
+
+    final categoryNotifier = MockCategoryNotifier();
+    final lessonNotifier = MockLessonNotifier();
+    final userStatsNotifier = MockUserStatsNotifier();
+
+    when(categoryNotifier.refresh).thenAnswer((_) async {});
+    when(lessonNotifier.refresh).thenAnswer((_) async {});
+    when(userStatsNotifier.syncPendingStats).thenAnswer((_) async {});
 
     // Use desktop-sized viewport to skip EnchantedVisualizer (infinite anim)
     tester.view.physicalSize = const Size(2000, 1000);
@@ -111,11 +156,11 @@ void main() {
           userStarsProvider.overrideWith((ref) => 100),
           lessonsCompletedProvider.overrideWith((ref) => 2),
           categoryNotifierProvider.overrideWith(
-            (ref) => MockCategoryNotifier(),
+            (ref) => categoryNotifier,
           ),
-          lessonNotifierProvider.overrideWith((ref) => MockLessonNotifier()),
+          lessonNotifierProvider.overrideWith((ref) => lessonNotifier),
           quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
-          userStatsProvider.overrideWith((ref) => MockUserStatsNotifier()),
+          userStatsProvider.overrideWith((ref) => userStatsNotifier),
           lastOpenedLessonIdProvider.overrideWith((ref) => null),
           bannersProvider.overrideWith((ref) => MockBannersNotifier()),
 
@@ -123,6 +168,9 @@ void main() {
           numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
           sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
           lettersProvider.overrideWith((ref) => MockLettersNotifier()),
+          appConnectivityProvider.overrideWith((ref) => Stream.value([ConnectivityResult.wifi])),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier()),
+          affirmationsProvider.overrideWith((ref) => MockAffirmationsNotifier()),
         ],
       ),
     );

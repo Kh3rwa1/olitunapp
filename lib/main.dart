@@ -15,6 +15,7 @@ import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'l10n/generated/app_localizations.dart';
+import 'features/home/presentation/providers/daily_missions_observer.dart';
 
 @visibleForTesting
 Locale appLocaleForLanguage(String languageCode) {
@@ -74,6 +75,7 @@ Future<void> main() async {
         runApp(
           ProviderScope(
             overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            observers: const [DailyMissionsObserver()],
             child: const OlitunApp(),
           ),
         );

@@ -21,7 +21,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.lightBackground,
       fontFamily: 'Poppins',
-      fontFamilyFallback: const ['OlChiki'],
+      fontFamilyFallback: ['OlChiki'],
 
       // AppBar Theme
       appBarTheme: const AppBarTheme(
@@ -32,7 +32,7 @@ class AppTheme {
         iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
         titleTextStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryLight,
@@ -64,7 +64,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -82,7 +82,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -95,7 +95,7 @@ class AppTheme {
           foregroundColor: AppColors.primary,
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
@@ -128,7 +128,7 @@ class AppTheme {
         ),
         hintStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           color: AppColors.textTertiaryLight,
         ),
       ),
@@ -142,13 +142,13 @@ class AppTheme {
         elevation: 0,
         selectedLabelStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -175,7 +175,7 @@ class AppTheme {
         backgroundColor: AppColors.charcoal,
         contentTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: Colors.white,
         ),
@@ -196,14 +196,14 @@ class AppTheme {
         elevation: 0,
         titleTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimaryLight,
         ),
         contentTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: AppColors.textSecondaryLight,
         ),
@@ -218,7 +218,7 @@ class AppTheme {
         side: BorderSide.none,
         labelStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryLight,
@@ -235,7 +235,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -268,7 +268,7 @@ class AppTheme {
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
       fontFamily: 'Poppins',
-      fontFamilyFallback: const ['OlChiki'],
+      fontFamilyFallback: ['OlChiki'],
 
       // AppBar Theme
       appBarTheme: const AppBarTheme(
@@ -279,7 +279,7 @@ class AppTheme {
         iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
         titleTextStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryDark,
@@ -311,7 +311,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -329,7 +329,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -362,7 +362,7 @@ class AppTheme {
         ),
         hintStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           color: AppColors.textTertiaryDark,
         ),
       ),
@@ -376,13 +376,13 @@ class AppTheme {
         elevation: 0,
         selectedLabelStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w500,
         ),
@@ -401,7 +401,7 @@ class AppTheme {
         backgroundColor: AppColors.softBlack,
         contentTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: Colors.white,
         ),
@@ -422,14 +422,14 @@ class AppTheme {
         elevation: 0,
         titleTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimaryDark,
         ),
         contentTextStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: AppColors.textSecondaryDark,
         ),
@@ -444,7 +444,7 @@ class AppTheme {
         side: BorderSide.none,
         labelStyle: const TextStyle(
           fontFamily: 'Poppins',
-          fontFamilyFallback: const ['OlChiki'],
+          fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
           color: AppColors.textPrimaryDark,
@@ -461,7 +461,7 @@ class AppTheme {
           ),
           textStyle: const TextStyle(
             fontFamily: 'Poppins',
-            fontFamilyFallback: const ['OlChiki'],
+            fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
           ),
@@ -482,7 +482,7 @@ class AppTheme {
       // Display styles
       displayLarge: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 57,
         fontWeight: FontWeight.w700,
         color: primary,
@@ -490,7 +490,7 @@ class AppTheme {
       ),
       displayMedium: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 45,
         fontWeight: FontWeight.w600,
         color: primary,
@@ -498,7 +498,7 @@ class AppTheme {
       ),
       displaySmall: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 36,
         fontWeight: FontWeight.w600,
         color: primary,
@@ -507,21 +507,21 @@ class AppTheme {
       // Headline styles
       headlineLarge: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 32,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       headlineMedium: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 28,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       headlineSmall: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 24,
         fontWeight: FontWeight.w600,
         color: primary,
@@ -530,21 +530,21 @@ class AppTheme {
       // Title styles
       titleLarge: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       titleMedium: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       titleSmall: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 16,
         fontWeight: FontWeight.w600,
         color: primary,
@@ -553,21 +553,21 @@ class AppTheme {
       // Body styles
       bodyLarge: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: primary,
       ),
       bodyMedium: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: secondary,
       ),
       bodySmall: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 12,
         fontWeight: FontWeight.w400,
         color: secondary,
@@ -576,21 +576,21 @@ class AppTheme {
       // Label styles
       labelLarge: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       labelMedium: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: secondary,
       ),
       labelSmall: TextStyle(
         fontFamily: 'Poppins',
-        fontFamilyFallback: const ['OlChiki'],
+        fontFamilyFallback: ['OlChiki'],
         fontSize: 11,
         fontWeight: FontWeight.w500,
         color: secondary,

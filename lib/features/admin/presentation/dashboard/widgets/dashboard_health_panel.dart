@@ -43,7 +43,6 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
   Widget build(BuildContext context) {
     return AdminGlassCard(
       padding: const EdgeInsets.all(24),
-      glass: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,

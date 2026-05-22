@@ -46,7 +46,6 @@ class _AdminTopBarState extends State<AdminTopBar> {
       barrierDismissible: true,
       barrierLabel: 'Command Palette',
       barrierColor: Colors.black.withValues(alpha: 0.5),
-      transitionDuration: const Duration(milliseconds: 200),
       pageBuilder: (context, anim1, anim2) {
         return const AdminCommandPalette();
       },

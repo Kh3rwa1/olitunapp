@@ -446,10 +446,26 @@ class _AdminGamificationScreenState
                 }
                 final rows = _filterRows(snapshot.data ?? const []);
                 if (rows.isEmpty) {
+                  final hasFilters =
+                      _search.trim().isNotEmpty || _status != 'all';
                   return AdminEmptyState(
                     icon: section.icon,
-                    title: 'Nothing to show',
-                    message: 'Create or adjust filters to view content.',
+                    title: hasFilters
+                        ? 'No matching content'
+                        : section.readOnly
+                        ? 'No activity yet'
+                        : 'No ${section.title.toLowerCase()} yet',
+                    message: hasFilters
+                        ? 'Clear search or filters to view all records.'
+                        : section.readOnly
+                        ? 'Records will appear here after real learner or backend activity.'
+                        : 'Create the first admin-managed record for this section.',
+                    actionLabel: !section.readOnly && !hasFilters
+                        ? 'Create'
+                        : null,
+                    onAction: !section.readOnly && !hasFilters
+                        ? () => _createDraft(section)
+                        : null,
                   );
                 }
                 return ListView.separated(

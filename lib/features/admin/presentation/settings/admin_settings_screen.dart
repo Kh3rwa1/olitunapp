@@ -126,7 +126,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         _kherwalNameController.text = ref.read(
           badgeTraditionalKherwalNameProvider,
         );
-        _razorpayKeyController.text = settings['razorpay_key_id'] as String? ?? '';
+        _razorpayKeyController.text =
+            settings['razorpay_key_id'] as String? ?? '';
         _isLoading = false;
       });
     } catch (_) {
@@ -631,7 +632,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                         children: [
                           SwitchListTile(
                             contentPadding: EdgeInsets.zero,
-                            title: const Text('Global Play Store Review Unlock'),
+                            title: const Text(
+                              'Global Play Store Review Unlock',
+                            ),
                             subtitle: const Text(
                               'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
                               style: TextStyle(fontSize: 12),
@@ -668,7 +671,10 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                 _razorpayKeyController.text.trim().isNotEmpty
                                     ? Icons.vpn_key_rounded
                                     : Icons.lock_outline_rounded,
-                                color: _razorpayKeyController.text.trim().isNotEmpty
+                                color:
+                                    _razorpayKeyController.text
+                                        .trim()
+                                        .isNotEmpty
                                     ? AppColors.success
                                     : Colors.orangeAccent,
                                 size: 18,
@@ -681,7 +687,10 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: _razorpayKeyController.text.trim().isNotEmpty
+                                  color:
+                                      _razorpayKeyController.text
+                                          .trim()
+                                          .isNotEmpty
                                       ? AppColors.success
                                       : Colors.orangeAccent,
                                 ),
@@ -692,9 +701,11 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                           AdminTextField(
                             controller: _razorpayKeyController,
                             label: 'Razorpay Key ID',
-                            hint: 'rzp_live_xxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxx',
+                            hint:
+                                'rzp_live_xxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxx',
                             prefixIcon: Icons.vpn_key_rounded,
-                            helperText: 'Override the default build-time Razorpay key with a dynamic database key. If left blank, the app reverts securely to the default bundled credentials.',
+                            helperText:
+                                'Override the default build-time Razorpay key with a dynamic database key. If left blank, the app reverts securely to the default bundled credentials.',
                           ),
                           const SizedBox(height: 20),
                           Align(
@@ -711,7 +722,9 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                                     'Razorpay gateway key updated successfully! 💳',
                                     AppColors.success,
                                   );
-                                  setState(() {}); // refresh gateway key active status
+                                  setState(
+                                    () {},
+                                  ); // refresh gateway key active status
                                 } catch (e) {
                                   _showSnackBar(
                                     'Failed to save gateway key: $e',

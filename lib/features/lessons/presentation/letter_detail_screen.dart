@@ -156,7 +156,9 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
         .where(
           (l) =>
               l.isActive &&
-              blockTexts.any((t) => isTextMatch(t, l.charOlChiki, isLetter: true)),
+              blockTexts.any(
+                (t) => isTextMatch(t, l.charOlChiki, isLetter: true),
+              ),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));

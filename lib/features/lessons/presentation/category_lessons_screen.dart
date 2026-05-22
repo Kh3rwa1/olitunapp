@@ -108,7 +108,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           isPremium &&
                           !isUnlocked &&
                           index >= category.previewLessonCount;
-                          
+
                       final primaryTitle = primaryLocalizedText(
                         olChiki: lesson.titleOlChiki,
                         latin: lesson.titleLatin,
@@ -355,7 +355,9 @@ class _LessonCard extends StatelessWidget {
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
-                              fontFamily: primaryLocalizedFontFamily(scriptMode),
+                              fontFamily: primaryLocalizedFontFamily(
+                                scriptMode,
+                              ),
                               color: isDark ? Colors.white : Colors.black,
                             ),
                           ),

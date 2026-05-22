@@ -12,10 +12,12 @@ class DashboardAnalyticsPanel extends ConsumerStatefulWidget {
   const DashboardAnalyticsPanel({super.key, required this.isDark});
 
   @override
-  ConsumerState<DashboardAnalyticsPanel> createState() => _DashboardAnalyticsPanelState();
+  ConsumerState<DashboardAnalyticsPanel> createState() =>
+      _DashboardAnalyticsPanelState();
 }
 
-class _DashboardAnalyticsPanelState extends ConsumerState<DashboardAnalyticsPanel> {
+class _DashboardAnalyticsPanelState
+    extends ConsumerState<DashboardAnalyticsPanel> {
   int _selectedSegment = 0;
 
   @override
@@ -46,7 +48,10 @@ class _DashboardAnalyticsPanelState extends ConsumerState<DashboardAnalyticsPane
                     ).copyWith(color: AppColors.primary),
                   ),
                   const SizedBox(height: 6),
-                  Text('Last 7 days', style: AdminTokens.sectionTitle(widget.isDark)),
+                  Text(
+                    'Last 7 days',
+                    style: AdminTokens.sectionTitle(widget.isDark),
+                  ),
                 ],
               ),
               const SizedBox(width: 16),
@@ -158,13 +163,13 @@ class SlidingSegmentController extends StatelessWidget {
                 width: width,
                 child: Container(
                   decoration: BoxDecoration(
-                    color: isDark
-                        ? const Color(0xFF1E2638)
-                        : Colors.white,
+                    color: isDark ? const Color(0xFF1E2638) : Colors.white,
                     borderRadius: BorderRadius.circular(7),
                     boxShadow: [
                       BoxShadow(
-                        color: Colors.black.withValues(alpha: isDark ? 0.3 : 0.06),
+                        color: Colors.black.withValues(
+                          alpha: isDark ? 0.3 : 0.06,
+                        ),
                         blurRadius: 4,
                         offset: const Offset(0, 2),
                       ),
@@ -186,7 +191,9 @@ class SlidingSegmentController extends StatelessWidget {
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 12,
-                            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                            fontWeight: isSelected
+                                ? FontWeight.w700
+                                : FontWeight.w500,
                             color: isSelected
                                 ? AdminTokens.textPrimary(isDark)
                                 : AdminTokens.textSecondary(isDark),

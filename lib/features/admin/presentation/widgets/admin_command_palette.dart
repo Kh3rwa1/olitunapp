@@ -28,7 +28,8 @@ class AdminCommandPalette extends ConsumerStatefulWidget {
   const AdminCommandPalette({super.key});
 
   @override
-  ConsumerState<AdminCommandPalette> createState() => _AdminCommandPaletteState();
+  ConsumerState<AdminCommandPalette> createState() =>
+      _AdminCommandPaletteState();
 }
 
 class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
@@ -54,7 +55,6 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
   }
 
   void _buildIndex() {
-
     // 1. Static Navigation Routes
     final staticRoutes = [
       CommandItem(
@@ -151,7 +151,8 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
       dynamicItems.add(
         CommandItem(
           title: quiz.title ?? 'Quiz Level: ${quiz.level.toUpperCase()}',
-          subtitle: '${quiz.questions.length} Questions - Pass score ${quiz.passingScore}%',
+          subtitle:
+              '${quiz.questions.length} Questions - Pass score ${quiz.passingScore}%',
           category: 'Quiz',
           icon: Icons.quiz_rounded,
           path: '/admin/quizzes',
@@ -216,12 +217,15 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           } else if (event.logicalKey == LogicalKeyboardKey.arrowUp) {
             setState(() {
               if (_filteredItems.isNotEmpty) {
-                _selectedIndex = (_selectedIndex - 1 + _filteredItems.length) % _filteredItems.length;
+                _selectedIndex =
+                    (_selectedIndex - 1 + _filteredItems.length) %
+                    _filteredItems.length;
               }
             });
             return KeyEventResult.handled;
           } else if (event.logicalKey == LogicalKeyboardKey.enter) {
-            if (_filteredItems.isNotEmpty && _selectedIndex < _filteredItems.length) {
+            if (_filteredItems.isNotEmpty &&
+                _selectedIndex < _filteredItems.length) {
               _navigate(_filteredItems[_selectedIndex]);
             }
             return KeyEventResult.handled;
@@ -262,7 +266,10 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
             children: [
               // Search Input Row
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 14,
+                ),
                 decoration: BoxDecoration(
                   border: Border(
                     bottom: BorderSide(
@@ -292,7 +299,8 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                           color: AdminTokens.textPrimary(isDark),
                         ),
                         decoration: InputDecoration(
-                          hintText: 'Search course content or type a command...',
+                          hintText:
+                              'Search course content or type a command...',
                           hintStyle: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 14,
@@ -309,7 +317,10 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                     GestureDetector(
                       onTap: () => Navigator.pop(context),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: isDark
                               ? Colors.white.withValues(alpha: 0.04)
@@ -370,15 +381,22 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                             borderRadius: BorderRadius.circular(10),
                             child: AnimatedContainer(
                               duration: const Duration(milliseconds: 100),
-                              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 12,
+                                vertical: 10,
+                              ),
                               decoration: BoxDecoration(
                                 color: isSelected
-                                    ? AdminTokens.accent.withValues(alpha: isDark ? 0.12 : 0.08)
+                                    ? AdminTokens.accent.withValues(
+                                        alpha: isDark ? 0.12 : 0.08,
+                                      )
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
                                   color: isSelected
-                                      ? AdminTokens.accent.withValues(alpha: 0.28)
+                                      ? AdminTokens.accent.withValues(
+                                          alpha: 0.28,
+                                        )
                                       : Colors.transparent,
                                 ),
                               ),
@@ -390,19 +408,24 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                     decoration: BoxDecoration(
                                       color: isSelected
                                           ? item.color
-                                          : item.color.withValues(alpha: isDark ? 0.15 : 0.10),
+                                          : item.color.withValues(
+                                              alpha: isDark ? 0.15 : 0.10,
+                                            ),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
                                     child: Icon(
                                       item.icon,
                                       size: 16,
-                                      color: isSelected ? Colors.white : item.color,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : item.color,
                                     ),
                                   ),
                                   const SizedBox(width: 14),
                                   Expanded(
                                     child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
                                         Text(
@@ -411,7 +434,9 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                             fontFamily: 'Poppins',
                                             fontSize: 13,
                                             fontWeight: FontWeight.w700,
-                                            color: AdminTokens.textPrimary(isDark),
+                                            color: AdminTokens.textPrimary(
+                                              isDark,
+                                            ),
                                           ),
                                           maxLines: 1,
                                           overflow: TextOverflow.ellipsis,
@@ -424,7 +449,9 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                             fontSize: 11,
                                             fontWeight: FontWeight.w500,
                                             color: isSelected
-                                                ? AdminTokens.textSecondary(isDark)
+                                                ? AdminTokens.textSecondary(
+                                                    isDark,
+                                                  )
                                                 : AdminTokens.textMuted(isDark),
                                           ),
                                           maxLines: 1,
@@ -435,11 +462,16 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                   ),
                                   const SizedBox(width: 8),
                                   Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 4,
+                                    ),
                                     decoration: BoxDecoration(
                                       color: isDark
                                           ? Colors.white.withValues(alpha: 0.05)
-                                          : Colors.black.withValues(alpha: 0.04),
+                                          : Colors.black.withValues(
+                                              alpha: 0.04,
+                                            ),
                                       borderRadius: BorderRadius.circular(6),
                                     ),
                                     child: Text(
@@ -449,7 +481,9 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                         fontSize: 9.5,
                                         fontWeight: FontWeight.w700,
                                         letterSpacing: 0.2,
-                                        color: AdminTokens.textSecondary(isDark),
+                                        color: AdminTokens.textSecondary(
+                                          isDark,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -462,7 +496,10 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
               ),
               // Footer shortcut row
               Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 10,
+                ),
                 decoration: BoxDecoration(
                   color: isDark
                       ? Colors.white.withValues(alpha: 0.01)
@@ -477,19 +514,41 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.keyboard_arrow_up_rounded, size: 14, color: Colors.grey),
-                    const Icon(Icons.keyboard_arrow_down_rounded, size: 14, color: Colors.grey),
+                    const Icon(
+                      Icons.keyboard_arrow_up_rounded,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
+                    const Icon(
+                      Icons.keyboard_arrow_down_rounded,
+                      size: 14,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Navigate',
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 10, color: AdminTokens.textMuted(isDark), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10,
+                        color: AdminTokens.textMuted(isDark),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                     const SizedBox(width: 14),
-                    const Icon(Icons.keyboard_return_rounded, size: 12, color: Colors.grey),
+                    const Icon(
+                      Icons.keyboard_return_rounded,
+                      size: 12,
+                      color: Colors.grey,
+                    ),
                     const SizedBox(width: 6),
                     Text(
                       'Select',
-                      style: TextStyle(fontFamily: 'Poppins', fontSize: 10, color: AdminTokens.textMuted(isDark), fontWeight: FontWeight.w500),
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10,
+                        color: AdminTokens.textMuted(isDark),
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ],
                 ),

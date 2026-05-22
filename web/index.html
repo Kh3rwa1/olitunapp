@@ -73,9 +73,9 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: flex-start;
-      gap: 22px;
-      padding: clamp(56px, 9vh, 96px) 24px 32px;
+      justify-content: center;
+      gap: clamp(16px, 3vh, 24px);
+      padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
       box-sizing: border-box;
       background:
         radial-gradient(circle at 50% 18%, rgba(16, 185, 129, 0.24), transparent 34%),
@@ -86,69 +86,91 @@
       transition: opacity 0.4s ease;
     }
 
+    .loading-brand {
+      display: grid;
+      justify-items: center;
+      gap: 14px;
+    }
+
     #loading-indicator .brand-mark {
-      width: 112px;
-      height: 112px;
-      border-radius: 28px;
-      background: #3edb80;
-      box-shadow: 0 26px 70px rgba(16, 185, 129, 0.28);
+      width: clamp(92px, 14vw, 118px);
+      height: clamp(92px, 14vw, 118px);
+      border-radius: 30px;
+      background: #39e58a;
+      box-shadow:
+        0 26px 70px rgba(16, 185, 129, 0.24),
+        0 0 0 8px rgba(255, 255, 255, 0.78),
+        inset 0 1px 0 rgba(255, 255, 255, 0.24);
       display: grid;
       place-items: center;
+      overflow: hidden;
     }
 
     #loading-indicator .brand-mark img {
-      width: 74px;
-      height: 74px;
-      object-fit: contain;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
     }
 
     #loading-indicator h1 {
-      margin: 4px 0 0;
+      margin: 0;
       color: #35dd80;
-      font-size: clamp(46px, 8vw, 66px);
+      font-size: clamp(46px, 9vw, 76px);
       font-weight: 900;
       line-height: 0.95;
+      letter-spacing: 0;
     }
 
     #loading-indicator p {
-      margin: -6px 0 28px;
-      font-size: 18px;
+      margin: -4px 0 10px;
+      font-size: clamp(17px, 3.8vw, 24px);
       font-weight: 700;
       color: #374151;
     }
 
     .loading-features {
-      width: min(100%, 1120px);
+      width: min(100%, 720px);
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: 16px;
+      gap: clamp(10px, 2vw, 16px);
     }
 
     .loading-card {
-      min-height: 96px;
-      border-radius: 16px;
-      background: rgba(255, 255, 255, 0.92);
-      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.08);
+      min-height: clamp(94px, 14vw, 112px);
+      border-radius: 22px;
+      background: rgba(255, 255, 255, 0.9);
+      border: 1px solid rgba(226, 232, 240, 0.82);
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
       display: grid;
       place-items: center;
       text-align: center;
       font-weight: 800;
+      padding: 14px 10px;
+      box-sizing: border-box;
+      color: #111827;
+    }
+
+    .loading-card strong {
+      display: block;
+      font-size: clamp(14px, 2.8vw, 18px);
+      line-height: 1.1;
     }
 
     .loading-card span {
       display: block;
-      margin-top: 6px;
+      margin-top: 8px;
       color: #9ca3af;
-      font-size: 13px;
+      font-size: clamp(11px, 2.2vw, 13px);
       font-weight: 700;
+      line-height: 1.25;
     }
 
     .loading-bar {
-      width: min(100%, 1120px);
-      height: 58px;
-      border-radius: 16px;
+      width: min(100%, 720px);
+      height: 12px;
+      border-radius: 999px;
       background: #35d675;
-      box-shadow: 0 22px 52px rgba(16, 185, 129, 0.26);
+      box-shadow: 0 18px 46px rgba(16, 185, 129, 0.24);
       position: relative;
       overflow: hidden;
     }
@@ -179,24 +201,36 @@
       }
     }
 
+    .loading-note {
+      margin: -8px 0 0;
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 700;
+      text-align: center;
+    }
+
     @media (max-width: 760px) {
       #loading-indicator {
-        padding-top: 56px;
-      }
-
-      #loading-indicator .brand-mark {
-        width: 96px;
-        height: 96px;
-        border-radius: 24px;
-      }
-
-      .loading-features {
-        grid-template-columns: 1fr;
-        gap: 12px;
+        justify-content: center;
       }
 
       .loading-card {
-        min-height: 78px;
+        border-radius: 18px;
+      }
+    }
+
+    @media (max-width: 390px) {
+      #loading-indicator {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .loading-features {
+        gap: 8px;
+      }
+
+      .loading-card {
+        padding: 12px 8px;
       }
     }
 
@@ -221,17 +255,20 @@
 <body>
   <!-- Loading indicator shown while Flutter initializes -->
   <div id="loading-indicator" role="status" aria-live="polite" aria-label="Loading Olitun">
-    <div class="brand-mark">
-      <img src="icons/Icon-192.png" alt="" fetchpriority="high">
+    <div class="loading-brand">
+      <div class="brand-mark">
+        <img src="icons/Icon-192.png" alt="" fetchpriority="high">
+      </div>
+      <h1>Olitun</h1>
+      <p>Learn Ol Chiki Script</p>
     </div>
-    <h1>Olitun</h1>
-    <p>Learn Ol Chiki Script</p>
     <div class="loading-features" aria-hidden="true">
-      <div class="loading-card">Interactive<span>Learn by doing</span></div>
-      <div class="loading-card">Structured<span>Step-by-step lessons</span></div>
-      <div class="loading-card">Gamified<span>Earn rewards</span></div>
+      <div class="loading-card"><strong>Interactive</strong><span>Learn by doing</span></div>
+      <div class="loading-card"><strong>Structured</strong><span>Step-by-step</span></div>
+      <div class="loading-card"><strong>Gentle</strong><span>Daily progress</span></div>
     </div>
     <div class="loading-bar" aria-hidden="true"></div>
+    <div class="loading-note" aria-hidden="true">Preparing your learning path</div>
   </div>
 
   <!-- Offline indicator -->

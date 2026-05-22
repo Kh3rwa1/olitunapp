@@ -130,9 +130,11 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
         },
         (_) async {
           if (mounted) {
-            await ref.read(onboardingProvider.notifier).completeOnboarding();
             ref.invalidate(isAuthenticatedProvider);
-            if (mounted) {
+            final showOnboarding = ref.read(onboardingProvider);
+            if (showOnboarding) {
+              context.go('/onboarding');
+            } else {
               context.go('/');
             }
           }
@@ -148,8 +150,10 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
   Future<void> _handleSkip() async {
     HapticFeedback.lightImpact();
-    await ref.read(onboardingProvider.notifier).completeOnboarding();
-    if (mounted) {
+    final showOnboarding = ref.read(onboardingProvider);
+    if (showOnboarding) {
+      context.go('/onboarding');
+    } else {
       context.go('/');
     }
   }

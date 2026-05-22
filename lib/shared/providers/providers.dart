@@ -24,3 +24,6 @@ export 'seed_provider.dart';
 export 'dashboard_metrics_provider.dart';
 export 'gamification_content_provider.dart';
 export 'bakhed_content_provider.dart';
+export 'affirmations_provider.dart';
+export 'purchases_provider.dart';
+export 'waitlist_provider.dart';

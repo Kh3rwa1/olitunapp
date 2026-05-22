@@ -7,10 +7,13 @@ Olitun is an educational app for learning Ol Chiki and related Santali learning 
 ## Data We Collect
 
 - Account details needed for sign-in and session management.
-- Learning progress, stars, streaks, preferences, and settings.
-- Admin-created content such as lessons, quizzes, rhymes, banners, and media.
+- Learning progress, stars, streaks, preferences (including selected learning goals), and settings.
+- Admin-created content such as lessons, quizzes, rhymes, daily affirmations, banners, and media.
 - Translation request text when the translator feature is used.
 - Technical diagnostics when crash reporting is enabled for production builds.
+- Payment identifiers (Razorpay transaction and order IDs) to verify course/category purchases. No credit card or sensitive financial information is ever processed or stored on Olitun servers.
+- Binti Guru booking/waitlist details (name, phone number, ceremony type, event date, city, and state) for matching users with local recitation experts.
+- App store feedback and review status to authorize course review-unlock benefits. Olitun does not collect or inspect the specific stars or review content (governed by the system-level in-app review API).
 
 ## How We Use Data
 

@@ -290,6 +290,7 @@
       ]
     },
     {
+      "id": "backupCollections",
       "$id": "backupCollections",
       "name": "backupCollections",
       "runtime": "node-22.0",
@@ -310,6 +311,31 @@
         "databases.read",
         "files.read",
         "files.write"
+      ]
+    },
+    {
+      "id": "verifyCoursePurchase",
+      "$id": "verifyCoursePurchase",
+      "name": "verifyCoursePurchase",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 30,
+      "path": "functions/verifyCoursePurchase",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
       ]
     }
   ],

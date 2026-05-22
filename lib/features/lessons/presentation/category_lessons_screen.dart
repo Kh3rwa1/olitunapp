@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
+import '../../../shared/providers/purchases_provider.dart';
+import '../../../shared/widgets/paywall_bottom_sheet.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -33,6 +35,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     final categories = ref.watch(categoryNotifierProvider);
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final purchasedCategories =
+        ref.watch(purchasedCategoriesProvider).value ?? {};
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -83,6 +87,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             widget.categoryId,
           );
 
+          final isPremium = category != null && category.unlockMode != 'free';
+          final isUnlocked =
+              category != null && purchasedCategories.contains(category.id);
+
           return data.isEmpty
               ? _buildEmptyState(isDark, category)
               : BrandedRefreshIndicator(
@@ -93,11 +101,31 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                     itemCount: data.length,
                     itemBuilder: (context, index) {
                       final lesson = data[index];
+                      final isLocked =
+                          isPremium &&
+                          !isUnlocked &&
+                          index >= category.previewLessonCount;
+
                       return _LessonCard(
                         lesson: lesson,
                         isDark: isDark,
                         index: index,
-                        onTap: () => context.push('/lesson/${lesson.id}'),
+                        isLocked: isLocked,
+                        showPreviewBadge:
+                            isPremium &&
+                            !isUnlocked &&
+                            index < category.previewLessonCount,
+                        onTap: isLocked
+                            ? () {
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled: true,
+                                  backgroundColor: Colors.transparent,
+                                  builder: (context) =>
+                                      PaywallBottomSheet(category: category),
+                                );
+                              }
+                            : () => context.push('/lesson/${lesson.id}'),
                       );
                     },
                   ),
@@ -230,12 +258,16 @@ class _LessonCard extends StatelessWidget {
   final bool isDark;
   final int index;
   final VoidCallback onTap;
+  final bool isLocked;
+  final bool showPreviewBadge;
 
   const _LessonCard({
     required this.lesson,
     required this.isDark,
     required this.index,
     required this.onTap,
+    this.isLocked = false,
+    this.showPreviewBadge = false,
   });
 
   @override
@@ -250,13 +282,15 @@ class _LessonCard extends StatelessWidget {
                 padding: const EdgeInsets.all(18),
                 decoration: BoxDecoration(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.06)
-                      : Colors.white,
+                      ? Colors.white.withValues(alpha: isLocked ? 0.03 : 0.06)
+                      : (isLocked ? Colors.grey.shade100 : Colors.white),
                   borderRadius: BorderRadius.circular(18),
                   border: Border.all(
                     color: isDark
                         ? Colors.white10
-                        : Colors.black.withValues(alpha: 0.05),
+                        : Colors.black.withValues(
+                            alpha: isLocked ? 0.02 : 0.05,
+                          ),
                   ),
                   boxShadow: isDark
                       ? null
@@ -337,21 +371,48 @@ class _LessonCard extends StatelessWidget {
                             crossAxisAlignment: WrapCrossAlignment.center,
                             children: [
                               _buildLevelBadge(lesson.level),
-                              const Row(
+                              if (showPreviewBadge)
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary.withOpacity(0.12),
+                                    borderRadius: BorderRadius.circular(20),
+                                    border: Border.all(
+                                      color: AppColors.primary.withOpacity(0.3),
+                                    ),
+                                  ),
+                                  child: const Text(
+                                    'FREE PREVIEW',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: AppColors.primary,
+                                      letterSpacing: 0.2,
+                                    ),
+                                  ),
+                                ),
+                              Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(
                                     Icons.cloud_done_rounded,
                                     size: 14,
-                                    color: AppColors.primary,
+                                    color: isLocked
+                                        ? Colors.grey
+                                        : AppColors.primary,
                                   ),
-                                  SizedBox(width: 4),
+                                  const SizedBox(width: 4),
                                   Text(
                                     'Available Offline',
                                     style: TextStyle(
                                       fontSize: 11,
                                       fontWeight: FontWeight.w600,
-                                      color: AppColors.primary,
+                                      color: isLocked
+                                          ? Colors.grey
+                                          : AppColors.primary,
                                     ),
                                   ),
                                 ],
@@ -361,9 +422,9 @@ class _LessonCard extends StatelessWidget {
                         ],
                       ),
                     ),
-                    const Icon(
-                      Icons.play_circle_rounded,
-                      color: AppColors.primary,
+                    Icon(
+                      isLocked ? Icons.lock_rounded : Icons.play_circle_rounded,
+                      color: isLocked ? Colors.grey : AppColors.primary,
                       size: 32,
                     ),
                   ],

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -30,6 +31,8 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   bool _isUploading = false;
   String? _currentVideoUrl;
   bool _isLoading = true;
+  bool _globalReviewUnlockEnabled = true;
+  List<Map<String, String>> _goalsList = [];
 
   late final TextEditingController _archerNameController;
   late final TextEditingController _kudumNameController;
@@ -62,8 +65,57 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
       for (final doc in docs) {
         settings[doc['settingKey'] as String] = doc['settingValue'];
       }
+
+      final goalsJsonStr = settings['onboarding_goals'] as String?;
+      List<Map<String, String>> loadedGoals = [];
+      if (goalsJsonStr != null && goalsJsonStr.isNotEmpty) {
+        try {
+          final List<dynamic> decoded = jsonDecode(goalsJsonStr);
+          loadedGoals = decoded.map((e) {
+            final map = e as Map<String, dynamic>;
+            return {
+              'id': (map['id'] as String? ?? ''),
+              'title': (map['title'] as String? ?? ''),
+              'icon': (map['icon'] as String? ?? 'translate_rounded'),
+            };
+          }).toList();
+        } catch (_) {}
+      }
+      if (loadedGoals.isEmpty) {
+        loadedGoals = [
+          {
+            'id': 'read_ol_chiki',
+            'title': 'Read Ol Chiki script',
+            'icon': 'translate_rounded',
+          },
+          {
+            'id': 'daily_habits',
+            'title': 'Build daily habits',
+            'icon': 'calendar_today_rounded',
+          },
+          {
+            'id': 'wealth_mindset',
+            'title': 'Grow wealth mindset',
+            'icon': 'trending_up_rounded',
+          },
+          {
+            'id': 'binti_guru',
+            'title': 'Book Binti Guru services',
+            'icon': 'event_note_rounded',
+          },
+          {
+            'id': 'business_santali',
+            'title': 'Learn business Santali',
+            'icon': 'business_center_rounded',
+          },
+        ];
+      }
+
       setState(() {
         _currentVideoUrl = settings['onboarding_video_url'] as String?;
+        _globalReviewUnlockEnabled =
+            settings['global_review_unlock_enabled'] != 'false';
+        _goalsList = loadedGoals;
         _archerNameController.text = ref.read(
           badgeTraditionalArcherNameProvider,
         );
@@ -297,6 +349,306 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                         kherwalNameController: _kherwalNameController,
                         onSave: _saveBadgeNames,
                         onReset: _resetBadgeNamesToDefault,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    AdminSettingsSectionCard(
+                      icon: Icons.checklist_rounded,
+                      title: 'Onboarding Goals Management',
+                      subtitle:
+                          'Manage the multi-select learning goals displayed during the onboarding wizard flow.',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 8),
+                          ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: _goalsList.length,
+                            separatorBuilder: (_, __) => const Divider(
+                              height: 24,
+                              color: Colors.white10,
+                            ),
+                            itemBuilder: (context, index) {
+                              final goal = _goalsList[index];
+                              return Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    flex: 3,
+                                    child: TextFormField(
+                                      key: ValueKey('${goal['id']}_title'),
+                                      initialValue: goal['title'],
+                                      decoration: InputDecoration(
+                                        labelText: 'Goal Title',
+                                        labelStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Colors.white24,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: AppColors.primary,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      onChanged: (val) {
+                                        _goalsList[index]['title'] = val;
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  Expanded(
+                                    flex: 2,
+                                    child: DropdownButtonFormField<String>(
+                                      value: goal['icon'],
+                                      dropdownColor: const Color(0xFF1E293B),
+                                      decoration: InputDecoration(
+                                        labelText: 'Icon',
+                                        labelStyle: const TextStyle(
+                                          color: Colors.white70,
+                                        ),
+                                        enabledBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: Colors.white24,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                        focusedBorder: OutlineInputBorder(
+                                          borderSide: const BorderSide(
+                                            color: AppColors.primary,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            8,
+                                          ),
+                                        ),
+                                      ),
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                      ),
+                                      items: const [
+                                        DropdownMenuItem(
+                                          value: 'translate_rounded',
+                                          child: Text('Translate'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'calendar_today_rounded',
+                                          child: Text('Calendar'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'trending_up_rounded',
+                                          child: Text('Trending Up'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'event_note_rounded',
+                                          child: Text('Event Note'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'business_center_rounded',
+                                          child: Text('Business'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'school_rounded',
+                                          child: Text('School'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'star_rounded',
+                                          child: Text('Star'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'favorite_rounded',
+                                          child: Text('Heart'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'lightbulb_rounded',
+                                          child: Text('Lightbulb'),
+                                        ),
+                                        DropdownMenuItem(
+                                          value: 'language_rounded',
+                                          child: Text('Language'),
+                                        ),
+                                      ],
+                                      onChanged: (val) {
+                                        if (val != null) {
+                                          setState(() {
+                                            _goalsList[index]['icon'] = val;
+                                          });
+                                        }
+                                      },
+                                    ),
+                                  ),
+                                  const SizedBox(width: 12),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.delete_outline_rounded,
+                                      color: AppColors.error,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _goalsList.removeAt(index);
+                                      });
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                          const SizedBox(height: 20),
+                          Row(
+                            children: [
+                              ElevatedButton.icon(
+                                icon: const Icon(Icons.add_rounded, size: 18),
+                                label: const Text('Add Goal'),
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: const Color(0xFF1E293B),
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    final uniqueId =
+                                        'goal_${DateTime.now().millisecondsSinceEpoch}';
+                                    _goalsList.add({
+                                      'id': uniqueId,
+                                      'title': 'New Learning Goal',
+                                      'icon': 'translate_rounded',
+                                    });
+                                  });
+                                },
+                              ),
+                              const Spacer(),
+                              TextButton(
+                                onPressed: () {
+                                  setState(() {
+                                    _goalsList = [
+                                      {
+                                        'id': 'read_ol_chiki',
+                                        'title': 'Read Ol Chiki script',
+                                        'icon': 'translate_rounded',
+                                      },
+                                      {
+                                        'id': 'daily_habits',
+                                        'title': 'Build daily habits',
+                                        'icon': 'calendar_today_rounded',
+                                      },
+                                      {
+                                        'id': 'wealth_mindset',
+                                        'title': 'Grow wealth mindset',
+                                        'icon': 'trending_up_rounded',
+                                      },
+                                      {
+                                        'id': 'binti_guru',
+                                        'title': 'Book Binti Guru services',
+                                        'icon': 'event_note_rounded',
+                                      },
+                                      {
+                                        'id': 'business_santali',
+                                        'title': 'Learn business Santali',
+                                        'icon': 'business_center_rounded',
+                                      },
+                                    ];
+                                  });
+                                },
+                                child: const Text(
+                                  'Reset to Default',
+                                  style: TextStyle(color: Colors.white70),
+                                ),
+                              ),
+                              const SizedBox(width: 12),
+                              ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: AppColors.primary,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                ),
+                                onPressed: () async {
+                                  // Validate title
+                                  for (final g in _goalsList) {
+                                    if (g['title'] == null ||
+                                        g['title']!.trim().isEmpty) {
+                                      _showSnackBar(
+                                        'Goal titles cannot be empty!',
+                                        AppColors.error,
+                                      );
+                                      return;
+                                    }
+                                  }
+                                  try {
+                                    final jsonStr = jsonEncode(_goalsList);
+                                    await _saveSetting(
+                                      'onboarding_goals',
+                                      jsonStr,
+                                    );
+                                    ref.invalidate(appSettingsProvider);
+                                    _showSnackBar(
+                                      'Onboarding goals updated successfully! 🎯',
+                                      AppColors.success,
+                                    );
+                                  } catch (e) {
+                                    _showSnackBar(
+                                      'Failed to save onboarding goals: $e',
+                                      AppColors.error,
+                                    );
+                                  }
+                                },
+                                child: const Text('Save Goals'),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    AdminSettingsSectionCard(
+                      icon: Icons.monetization_on_rounded,
+                      title: 'Monetization Controls',
+                      subtitle:
+                          'Configure pricing options and global unlock methods for courses.',
+                      child: SwitchListTile(
+                        title: const Text('Global Play Store Review Unlock'),
+                        subtitle: const Text(
+                          'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
+                          style: TextStyle(fontSize: 12),
+                        ),
+                        value: _globalReviewUnlockEnabled,
+                        activeColor: AppColors.primary,
+                        onChanged: (val) async {
+                          setState(() => _globalReviewUnlockEnabled = val);
+                          try {
+                            await _saveSetting(
+                              'global_review_unlock_enabled',
+                              val.toString(),
+                            );
+                            ref.invalidate(appSettingsProvider);
+                            _showSnackBar(
+                              'Monetization settings updated! 🪙',
+                              AppColors.success,
+                            );
+                          } catch (e) {
+                            _showSnackBar(
+                              'Failed to update monetization settings: $e',
+                              AppColors.error,
+                            );
+                          }
+                        },
                       ),
                     ),
                     const SizedBox(height: 24),

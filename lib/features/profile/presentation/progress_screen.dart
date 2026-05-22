@@ -11,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import '../../../shared/providers/waitlist_provider.dart';
 
 // Extracted widgets
 import 'widgets/profile_hero_card.dart';
@@ -182,6 +183,11 @@ class ProgressScreen extends ConsumerWidget {
                         BadgesGridWidget(stats: stats, isDark: isDark),
                         const SizedBox(height: 32),
 
+                        _buildSectionHeader('MY BINTI GURU BOOKINGS', isDark),
+                        const SizedBox(height: 16),
+                        _buildBintiGuruBookings(context, ref, isDark, isTablet),
+                        const SizedBox(height: 32),
+
                         _buildSectionHeader('ACCOUNT', isDark),
                         const SizedBox(height: 12),
                         _buildActionTiles(
@@ -216,6 +222,243 @@ class ProgressScreen extends ConsumerWidget {
             : AppColors.primaryDark,
       ),
     ).animate().fadeIn(duration: 400.ms).slideX(begin: -0.05, end: 0);
+  }
+
+  Widget _buildBintiGuruBookings(
+    BuildContext context,
+    WidgetRef ref,
+    bool isDark,
+    bool isTablet,
+  ) {
+    final waitlistAsync = ref.watch(userWaitlistProvider);
+
+    return waitlistAsync.when(
+      data: (bookings) {
+        if (bookings.isEmpty) {
+          return Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: isDark
+                  ? Colors.white.withOpacity(0.02)
+                  : Colors.black.withOpacity(0.01),
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+              ),
+            ),
+            child: Column(
+              children: [
+                Icon(
+                  Icons.event_busy_rounded,
+                  size: 40,
+                  color: isDark ? Colors.white30 : Colors.black38,
+                ),
+                const SizedBox(height: 12),
+                Text(
+                  'No bookings found',
+                  style: GoogleFonts.fredoka(
+                    fontSize: 15,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.white70 : Colors.black87,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Book verified reciters for your ceremonies under the Bakhed tab.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white38 : Colors.black45,
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: bookings.length,
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
+          itemBuilder: (context, index) {
+            final booking = bookings[index];
+
+            final ceremonyName = booking.ceremonyType.isNotEmpty
+                ? booking.ceremonyType[0].toUpperCase() +
+                      booking.ceremonyType.substring(1)
+                : 'Other';
+
+            Color statusColor;
+            Color statusBgColor;
+            switch (booking.status) {
+              case 'new':
+                statusColor = Colors.orangeAccent;
+                statusBgColor = Colors.orangeAccent.withOpacity(0.12);
+                break;
+              case 'contacted':
+                statusColor = Colors.blueAccent;
+                statusBgColor = Colors.blueAccent.withOpacity(0.12);
+                break;
+              case 'converted':
+                statusColor = Colors.greenAccent;
+                statusBgColor = Colors.greenAccent.withOpacity(0.12);
+                break;
+              case 'closed':
+              default:
+                statusColor = Colors.grey;
+                statusBgColor = Colors.grey.withOpacity(0.12);
+                break;
+            }
+
+            return Container(
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withOpacity(0.03) : Colors.white,
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: isDark
+                      ? Colors.white10
+                      : Colors.black.withOpacity(0.04),
+                ),
+                boxShadow: isDark
+                    ? null
+                    : [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.02),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          ceremonyName,
+                          style: const TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                            color: AppColors.primary,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: statusBgColor,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          booking.status.toUpperCase(),
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: statusColor,
+                            letterSpacing: 0.5,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.calendar_today_rounded,
+                        size: 14,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        booking.eventDate != null
+                            ? booking.eventDate!.split('T')[0]
+                            : 'No date specified',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 6),
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.location_on_outlined,
+                        size: 14,
+                        color: isDark ? Colors.white38 : Colors.black38,
+                      ),
+                      const SizedBox(width: 8),
+                      Text(
+                        '${booking.city}, ${booking.state}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ],
+                  ),
+                  if (booking.notes != null &&
+                      booking.notes!.trim().isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Divider(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withOpacity(0.04),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      booking.notes!,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontStyle: FontStyle.italic,
+                        color: isDark ? Colors.white38 : Colors.black45,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            );
+          },
+        );
+      },
+      loading: () => const Center(
+        child: Padding(
+          padding: EdgeInsets.all(24.0),
+          child: CircularProgressIndicator(),
+        ),
+      ),
+      error: (e, _) => Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: Colors.redAccent.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Text(
+          'Failed to load waitlist bookings.',
+          style: TextStyle(color: Colors.redAccent),
+        ),
+      ),
+    );
   }
 
   Widget _buildActionTiles(

@@ -15,7 +15,7 @@ import 'package:go_router/go_router.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import 'providers/mission_providers.dart';
 // Extracted widgets
-import 'widgets/home_bento_widgets.dart';
+import 'widgets/home_bento/home_bento_widgets.dart';
 import 'widgets/today_mission_card.dart';
 import 'widgets/learning_path_preview.dart';
 import 'widgets/next_best_action_card.dart';

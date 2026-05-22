@@ -66,6 +66,7 @@ coverage/
 test_hive_cache/
 test_hive_*/
 project_sdk_dump.json
+output/
 
 # Release artifacts (build locally, don't commit)
 *.apk

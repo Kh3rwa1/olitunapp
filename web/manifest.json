@@ -1,11 +1,15 @@
 {
-    "name": "Olitun - Learn Ol Chiki",
+    "name": "Olitun - Learn Santali and Ol Chiki",
     "short_name": "Olitun",
-    "description": "Learn the Ol Chiki script and Santali language with interactive lessons, quizzes, and practice exercises.",
-    "start_url": ".",
-    "scope": ".",
+    "description": "A warm Santali learning coach for Ol Chiki lessons, Bakhed listening, quizzes, mistake review, and gentle daily progress.",
+    "start_url": "/?source=pwa",
+    "scope": "/",
     "id": "/",
     "display": "standalone",
+    "display_override": [
+        "standalone",
+        "minimal-ui"
+    ],
     "background_color": "#0A0E14",
     "theme_color": "#10B981",
     "orientation": "portrait-primary",
@@ -40,13 +44,61 @@
             "purpose": "maskable"
         }
     ],
+    "shortcuts": [
+        {
+            "name": "Learn",
+            "short_name": "Learn",
+            "description": "Continue your next Santali learning step.",
+            "url": "/?shortcut=learn",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Bakhed",
+            "short_name": "Bakhed",
+            "description": "Open Santali Bakhed listening practice.",
+            "url": "/#/bakhed",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
+            "name": "Profile",
+            "short_name": "Profile",
+            "description": "Review progress, badges, and settings.",
+            "url": "/#/profile",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        }
+    ],
     "screenshots": [
         {
-            "src": "icons/Icon-512.png",
-            "sizes": "512x512",
+            "src": "screenshots/welcome-narrow.png",
+            "sizes": "390x844",
             "type": "image/png",
             "form_factor": "narrow",
-            "label": "Olitun Home Screen"
+            "label": "Olitun welcome screen on a phone"
+        },
+        {
+            "src": "screenshots/welcome-wide.png",
+            "sizes": "1440x900",
+            "type": "image/png",
+            "form_factor": "wide",
+            "label": "Olitun welcome screen on desktop"
         }
     ]
 }

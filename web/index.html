@@ -19,27 +19,31 @@
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
   <!-- SEO & PWA Meta -->
+  <meta name="application-name" content="Olitun">
   <meta name="description"
-    content="Olitun - Learn the Ol Chiki script and Santali language with interactive lessons, quizzes, and practice exercises.">
+    content="Olitun is a Santali and Ol Chiki learning coach with lessons, Bakhed listening, quizzes, mistake review, and gentle daily progress.">
   <meta name="theme-color" content="#10B981">
   <meta name="color-scheme" content="dark light">
+  <meta name="format-detection" content="telephone=no">
 
   <!-- Open Graph -->
   <meta property="og:title" content="Olitun - Learn Ol Chiki">
   <meta property="og:description"
-    content="Interactive Santali language learning app with lessons, quizzes, and practice.">
+    content="A warm Santali learning coach for Ol Chiki lessons, Bakhed listening, quizzes, and daily practice.">
   <meta property="og:type" content="website">
-  <meta property="og:url" content="https://olitun.in">
+  <meta property="og:url" content="https://olitunapp.appwrite.network/">
+  <meta property="og:image" content="https://olitunapp.appwrite.network/screenshots/welcome-wide.png">
+  <meta name="twitter:card" content="summary_large_image">
 
   <!-- iOS PWA Meta -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Olitun">
-  <link rel="apple-touch-icon" href="icons/Icon-192.png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 
   <!-- Favicon -->
   <link rel="icon" type="image/png" href="favicon.png" />
@@ -167,6 +171,14 @@
       }
     }
 
+    @media (prefers-reduced-motion: reduce) {
+      #loading-indicator,
+      .loading-bar::after {
+        transition: none;
+        animation: none;
+      }
+    }
+
     @media (max-width: 760px) {
       #loading-indicator {
         padding-top: 56px;
@@ -208,7 +220,7 @@
 
 <body>
   <!-- Loading indicator shown while Flutter initializes -->
-  <div id="loading-indicator">
+  <div id="loading-indicator" role="status" aria-live="polite" aria-label="Loading Olitun">
     <div class="brand-mark">
       <img src="icons/Icon-192.png" alt="" fetchpriority="high">
     </div>

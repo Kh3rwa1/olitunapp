@@ -8,17 +8,20 @@ window.addEventListener('beforeinstallprompt', (e) => {
 });
 
 function baseBannerStyle() {
-    return 'position:fixed;bottom:0;left:0;right:0;z-index:99999;padding:16px 20px;font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,0.3);';
+    return 'position:fixed;bottom:0;left:0;right:0;z-index:99999;padding:16px 20px calc(16px + env(safe-area-inset-bottom));font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',sans-serif;box-shadow:0 -4px 20px rgba(0,0,0,0.22);';
 }
 
 function showInstallBanner() {
     if (localStorage.getItem('pwa_install_dismissed')) return;
+    if (isStandalonePwa()) return;
 
     const banner = document.createElement('div');
     banner.id = 'pwa-install-banner';
+    banner.setAttribute('role', 'dialog');
+    banner.setAttribute('aria-label', 'Install Olitun');
 
     const wrapper = document.createElement('div');
-    wrapper.style.cssText = `${baseBannerStyle()}background:linear-gradient(135deg,#059669,#10B981);color:#fff;display:flex;align-items:center;justify-content:space-between;`;
+    wrapper.style.cssText = `${baseBannerStyle()}background:linear-gradient(135deg,#047857,#10B981);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:14px;`;
 
     const left = document.createElement('div');
     left.style.cssText = 'display:flex;align-items:center;gap:12px;';
@@ -44,13 +47,15 @@ function showInstallBanner() {
 
     const laterBtn = document.createElement('button');
     laterBtn.type = 'button';
-    laterBtn.style.cssText = 'background:rgba(255,255,255,0.2);border:none;color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;';
+    laterBtn.style.cssText = 'min-height:44px;background:rgba(255,255,255,0.2);border:1px solid rgba(255,255,255,0.22);color:#fff;padding:8px 14px;border-radius:8px;cursor:pointer;font-size:13px;';
+    laterBtn.setAttribute('aria-label', 'Dismiss install prompt');
     laterBtn.textContent = 'Later';
     laterBtn.addEventListener('click', dismissInstall);
 
     const installBtn = document.createElement('button');
     installBtn.type = 'button';
-    installBtn.style.cssText = 'background:#fff;border:none;color:#059669;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;';
+    installBtn.style.cssText = 'min-height:44px;background:#fff;border:none;color:#047857;padding:8px 16px;border-radius:8px;cursor:pointer;font-weight:700;font-size:13px;';
+    installBtn.setAttribute('aria-label', 'Install Olitun as an app');
     installBtn.textContent = 'Install';
     installBtn.addEventListener('click', triggerInstall);
 
@@ -82,11 +87,13 @@ function removeBanner() {
 
 window.addEventListener('load', () => {
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
-    const isStandalone = window.navigator.standalone;
+    const isStandalone = isStandalonePwa();
     if (isIOS && !isStandalone && !localStorage.getItem('pwa_install_dismissed')) {
         setTimeout(() => {
             const tip = document.createElement('div');
             tip.id = 'pwa-install-banner';
+            tip.setAttribute('role', 'dialog');
+            tip.setAttribute('aria-label', 'Install Olitun on iOS');
 
             const wrapper = document.createElement('div');
             wrapper.style.cssText = `${baseBannerStyle()}background:#1F2937;color:#fff;text-align:center;font-size:14px;`;
@@ -96,8 +103,9 @@ window.addEventListener('load', () => {
 
             const close = document.createElement('button');
             close.type = 'button';
-            close.style.cssText = 'margin-left:12px;background:rgba(255,255,255,0.15);border:none;color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;';
-            close.textContent = '✕';
+            close.style.cssText = 'min-height:44px;margin-left:12px;background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.18);color:#fff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:12px;';
+            close.setAttribute('aria-label', 'Dismiss iOS install tip');
+            close.textContent = 'Close';
             close.addEventListener('click', dismissInstall);
 
             wrapper.append(msg, close);
@@ -111,3 +119,7 @@ window.addEventListener('appinstalled', () => {
     localStorage.setItem('pwa_installed', '1');
     removeBanner();
 });
+
+function isStandalonePwa() {
+    return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}

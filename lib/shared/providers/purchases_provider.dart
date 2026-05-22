@@ -37,7 +37,7 @@ class AdminPurchasesNotifier
         'course_purchases',
         queries: [Query.orderDesc('purchasedAt'), Query.limit(1000)],
       );
-      final list = result.map((doc) => PurchaseModel.fromJson(doc)).toList();
+      final list = result.map(PurchaseModel.fromJson).toList();
       state = AsyncValue.data(list);
     } catch (e, stack) {
       AppLogger.debug('❌ loadPurchases failed: $e');

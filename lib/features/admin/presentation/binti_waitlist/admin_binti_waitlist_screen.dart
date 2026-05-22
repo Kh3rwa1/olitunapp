@@ -102,12 +102,18 @@ class _AdminBintiWaitlistScreenState
 
                 // Filter list
                 final filtered = items.where((p) {
-                  if (_selectedFilter == 'new') return p.status == 'new';
-                  if (_selectedFilter == 'contacted')
+                  if (_selectedFilter == 'new') {
+                    return p.status == 'new';
+                  }
+                  if (_selectedFilter == 'contacted') {
                     return p.status == 'contacted';
-                  if (_selectedFilter == 'converted')
+                  }
+                  if (_selectedFilter == 'converted') {
                     return p.status == 'converted';
-                  if (_selectedFilter == 'closed') return p.status == 'closed';
+                  }
+                  if (_selectedFilter == 'closed') {
+                    return p.status == 'closed';
+                  }
                   return true;
                 }).toList();
 
@@ -369,11 +375,12 @@ class _AdminBintiWaitlistScreenState
               );
             }
             final dt = DateTime.tryParse(item.eventDate!);
-            if (dt == null)
+            if (dt == null) {
               return Text(
                 item.eventDate!,
                 style: const TextStyle(fontSize: 12),
               );
+            }
             return Text(
               '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}',
               style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
@@ -433,7 +440,7 @@ class _AdminBintiWaitlistScreenState
     BuildContext context,
     List<WaitlistModel> items,
   ) async {
-    final header =
+    const header =
         'Waitlist ID,User ID,Client Name,Phone Number,Ceremony Type,Event Date,City,State,Notes,Submitted At,Contacted At,Status\n';
 
     String escape(String? val) {
@@ -471,7 +478,7 @@ class _AdminBintiWaitlistScreenState
       await exportAnalyticsCsv(filename: filename, csv: csv);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Waitlist data exported as $analyticsCsvExportLabel'),
             backgroundColor: AppColors.primary,
           ),
@@ -871,7 +878,7 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white.withOpacity(0.87) : Colors.black87,
+                color: isDark ? Colors.white.withValues(alpha: 0.87) : Colors.black87,
               ),
             ),
           ],

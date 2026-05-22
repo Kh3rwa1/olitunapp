@@ -93,12 +93,12 @@ final todayAffirmationProvider = Provider<AsyncValue<AffirmationModel?>>((ref) {
       if (list.isEmpty) return const AsyncValue.data(null);
       // Deterministic selection per day of year
       final now = DateTime.now();
-      final dayOfYear = now.difference(DateTime(now.year, 1, 1)).inDays;
+      final dayOfYear = now.difference(DateTime(now.year)).inDays;
       final selected = list[dayOfYear % list.length];
       return AsyncValue.data(selected);
     },
     loading: () => const AsyncValue.loading(),
-    error: (err, stack) => AsyncValue.error(err, stack),
+    error: AsyncValue.error,
   );
 });
 

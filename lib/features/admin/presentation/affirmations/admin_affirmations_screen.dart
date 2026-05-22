@@ -143,7 +143,6 @@ class _AdminAffirmationsScreenState
         ),
         AdminColumn<AffirmationModel>(
           label: 'Premium',
-          flex: 1,
           cellBuilder: (item) => item.isPremium
               ? const Icon(
                   Icons.check_circle_rounded,
@@ -158,7 +157,6 @@ class _AdminAffirmationsScreenState
         ),
         AdminColumn<AffirmationModel>(
           label: 'Order',
-          flex: 1,
           cellBuilder: (item) => Text(
             item.order.toString(),
             style: const TextStyle(

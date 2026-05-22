@@ -210,11 +210,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           padding: const EdgeInsets.all(4),
           decoration: BoxDecoration(
             color: isDark
-                ? Colors.white.withOpacity(0.04)
-                : Colors.black.withOpacity(0.03),
+                ? Colors.white.withValues(alpha: 0.04)
+                : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
             ),
           ),
           child: Stack(
@@ -233,7 +233,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       borderRadius: BorderRadius.circular(12),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.primary.withOpacity(0.3),
+                          color: AppColors.primary.withValues(alpha: 0.3),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),

@@ -116,13 +116,16 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
 
                 // Filter list
                 final filtered = items.where((p) {
-                  if (_selectedFilter == 'razorpay')
+                  if (_selectedFilter == 'razorpay') {
                     return p.unlockMethod == 'razorpay' &&
                         p.status == 'verified';
-                  if (_selectedFilter == 'review')
+                  }
+                  if (_selectedFilter == 'review') {
                     return p.unlockMethod == 'play_store_review';
-                  if (_selectedFilter == 'refunded')
+                  }
+                  if (_selectedFilter == 'refunded') {
                     return p.status == 'refunded';
+                  }
                   return true;
                 }).toList();
 
@@ -361,7 +364,6 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
         ),
         AdminColumn<PurchaseModel>(
           label: 'Amount',
-          flex: 1,
           cellBuilder: (item) => Text(
             '₹${item.amountPaidInr}',
             style: const TextStyle(
@@ -468,7 +470,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
     BuildContext context,
     List<PurchaseModel> items,
   ) async {
-    final header =
+    const header =
         'Purchase ID,User ID,Category ID,Unlock Method,Amount (INR),Razorpay Payment ID,Razorpay Order ID,Status,Purchased At,Verified At\n';
 
     String escape(String? val) {
@@ -504,7 +506,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
       await exportAnalyticsCsv(filename: filename, csv: csv);
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
+          const SnackBar(
             content: Text('Purchases exported as $analyticsCsvExportLabel'),
             backgroundColor: AppColors.primary,
           ),

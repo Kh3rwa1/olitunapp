@@ -16,6 +16,9 @@ and tags consistent.
 - Scheduled weekly backup function `backupCollections` to export core curriculum and config collections to `admin_backups` bucket with 12-file rolling retention.
 
 ### Changed
+- Home screen simplified to three core blocks: `TodayAffirmationCard`, `NextBestActionCard`, and `TodayMissionCard` to reduce visual noise.
+- Mistake review card relocated from Home to post-quiz Quiz Result screen.
+- Global `app_colors.dart` slimmed from ~14KB to under 5KB, retaining semantic tokens.
 - Standard categories upgraded to structured unlockable courses.
 - Verification & OTP screen redirects optimized to transition to `/onboarding`.
 - Flattened rhyme subcategories into tag arrays/chips on the rhymes collection and UI.
@@ -29,6 +32,12 @@ and tags consistent.
 - Rhymes subcategory CRUD/UI forms and providers.
 - Video players, dependencies (`video_player`, `cached_video_player_plus`), and video media field uploads.
 - Unused dependencies `path`, `record`, and `permission_handler`.
+- Unused Premium translation hub (`ai_magic_hub.dart`).
+- Bento stats layout (`home_bento_widgets.dart` shim and directory).
+- Legacy mobile learning preview card slider (`learning_path_preview.dart`).
+
+### Kept
+- Protected the Translate feature (`magic_translate_dialog.dart` explicitly preserved across mobile, backend, and admin).
 
 ## 1.1.1
 

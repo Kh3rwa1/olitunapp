@@ -158,33 +158,35 @@ class AnalyticsChart extends StatelessWidget {
         borderData: FlBorderData(show: false),
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
-            getTooltipColor: (_) =>
-                isDark ? const Color(0xE60F1622) : Colors.white.withValues(alpha: 0.92),
+            getTooltipColor: (_) => isDark
+                ? const Color(0xE60F1622)
+                : Colors.white.withValues(alpha: 0.92),
             tooltipBorder: BorderSide(
               color: AdminTokens.accent.withValues(alpha: 0.4),
               width: 1.5,
             ),
             tooltipRoundedRadius: 12,
             maxContentWidth: 160,
-            tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-            getTooltipItems: (spots) => spots
-                .map(
-                  (s) {
-                    final isLessonsLine = s.bar.color == AppColors.primary;
-                    final label = isLessonsLine ? 'Lessons' : 'Vocabulary';
-                    final color = isLessonsLine ? AppColors.primary : AppColors.duoBlue;
-                    return LineTooltipItem(
-                      '$label: ${s.y.toInt()}',
-                      TextStyle(
-                        fontFamily: 'Poppins',
-                        fontWeight: FontWeight.w700,
-                        fontSize: 12,
-                        color: color,
-                      ),
-                    );
-                  },
-                )
-                .toList(),
+            tooltipPadding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 8,
+            ),
+            getTooltipItems: (spots) => spots.map((s) {
+              final isLessonsLine = s.bar.color == AppColors.primary;
+              final label = isLessonsLine ? 'Lessons' : 'Vocabulary';
+              final color = isLessonsLine
+                  ? AppColors.primary
+                  : AppColors.duoBlue;
+              return LineTooltipItem(
+                '$label: ${s.y.toInt()}',
+                TextStyle(
+                  fontFamily: 'Poppins',
+                  fontWeight: FontWeight.w700,
+                  fontSize: 12,
+                  color: color,
+                ),
+              );
+            }).toList(),
           ),
         ),
         lineBarsData: activeBars,

@@ -82,12 +82,14 @@ class _AdminGlassCardState extends State<AdminGlassCard> {
                 Container(
                   padding: widget.padding,
                   decoration: BoxDecoration(
-                    color: widget.color ??
+                    color:
+                        widget.color ??
                         (isDark
                             ? const Color(0xFF0F1622).withValues(alpha: 0.60)
                             : Colors.white.withValues(alpha: 0.75)),
                     borderRadius: radius,
-                    border: widget.border ??
+                    border:
+                        widget.border ??
                         Border.all(
                           color: isDark
                               ? Colors.white.withValues(alpha: 0.09)
@@ -133,7 +135,8 @@ class _AdminGlassCardState extends State<AdminGlassCard> {
                       : [Colors.white, AdminTokens.neutral25],
                 )
               : null,
-          border: widget.border ?? Border.all(color: AdminTokens.border(isDark)),
+          border:
+              widget.border ?? Border.all(color: AdminTokens.border(isDark)),
           boxShadow: widget.boxShadow ?? AdminTokens.raisedShadow(isDark),
         ),
         child: Stack(

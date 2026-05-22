@@ -91,15 +91,13 @@ class DashboardBentoGrid extends ConsumerWidget {
                   child: DashboardHeroMetric(
                     isDark: isDark,
                     total: totalContent,
-                    isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
+                    isLoading:
+                        categoriesAsync.isLoading || lessonsAsync.isLoading,
                     weekDelta: delta,
                   ),
                 ),
                 const SizedBox(width: 16),
-                Expanded(
-                  flex: 3,
-                  child: DashboardHealthPanel(isDark: isDark),
-                ),
+                Expanded(flex: 3, child: DashboardHealthPanel(isDark: isDark)),
               ],
             ),
           ),

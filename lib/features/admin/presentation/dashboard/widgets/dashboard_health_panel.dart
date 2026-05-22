@@ -62,13 +62,13 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
                     ),
                   ),
                   Container(
-                    width: 20,
-                    height: 20,
-                    decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.25),
-                      shape: BoxShape.circle,
-                    ),
-                  )
+                        width: 20,
+                        height: 20,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary.withValues(alpha: 0.25),
+                          shape: BoxShape.circle,
+                        ),
+                      )
                       .animate(onPlay: (c) => c.repeat(reverse: true))
                       .scaleXY(
                         begin: 0.7,
@@ -166,10 +166,7 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
             ],
           ),
           const SizedBox(height: 6),
-          Text(
-            value,
-            style: AdminTokens.metricSmall(widget.isDark),
-          ),
+          Text(value, style: AdminTokens.metricSmall(widget.isDark)),
         ],
       ),
     );

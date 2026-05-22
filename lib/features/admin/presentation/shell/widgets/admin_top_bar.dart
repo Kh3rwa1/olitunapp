@@ -29,7 +29,8 @@ class _AdminTopBarState extends State<AdminTopBar> {
 
   bool _handleGlobalKey(KeyEvent event) {
     if (event is KeyDownEvent) {
-      final isMeta = HardwareKeyboard.instance.isMetaPressed ||
+      final isMeta =
+          HardwareKeyboard.instance.isMetaPressed ||
           HardwareKeyboard.instance.isControlPressed;
       if (isMeta && event.logicalKey == LogicalKeyboardKey.keyK) {
         _showCommandPalette(context);
@@ -78,7 +79,9 @@ class _AdminTopBarState extends State<AdminTopBar> {
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AdminTokens.divider(widget.isDark))),
+        border: Border(
+          bottom: BorderSide(color: AdminTokens.divider(widget.isDark)),
+        ),
       ),
       child: Row(
         children: [
@@ -110,7 +113,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
               ),
             ),
           ],
-          
+
           // Center Command Launcher trigger
           const Spacer(),
           ConstrainedBox(
@@ -144,7 +147,10 @@ class _AdminTopBarState extends State<AdminTopBar> {
                     ),
                     const Spacer(),
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 5,
+                        vertical: 2,
+                      ),
                       decoration: BoxDecoration(
                         color: widget.isDark
                             ? Colors.white.withValues(alpha: 0.06)

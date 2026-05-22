@@ -26,6 +26,7 @@ const rows = [
     updatedAt: now,
   }],
 
+  // managed via seed script, no admin UI
   ['bravo_messages', 'bravo_lesson_completed', {
     messageId: 'bravo_lesson_completed',
     trigger: 'lesson_completed',
@@ -126,6 +127,7 @@ const rows = [
     },
   ]),
 
+  // managed via seed script, no admin UI
   ...[
     ['complete_1_lesson', 'Complete 1 lesson', 'Take one focused step in your learning path.', 'lesson_completed', 1, 25, 'all', false, 1],
     ['take_1_quiz', 'Take 1 quick quiz', 'Check what you remember without pressure.', 'quiz_completed', 1, 15, 'all', false, 2],
@@ -154,6 +156,7 @@ const rows = [
     },
   ]),
 
+  // managed via seed script, no admin UI
   ...[
     ['reward_stars_25', 'stars_awarded', 'You earned 25 stars', 'Your practice was counted. Keep learning gently.', '25 stars', '⭐'],
     ['reward_badge_unlocked', 'badge_unlocked', 'Badge unlocked', 'You reached a meaningful learning milestone.', 'New badge', '🏆'],
@@ -176,6 +179,7 @@ const rows = [
     },
   ]),
 
+  // managed via seed script, no admin UI
   ...[
     ['feedback_correct', 'correct', 'Correct', 'Good recognition. Keep the sound and meaning together.'],
     ['feedback_incorrect', 'incorrect', 'Not yet', 'Pause, review the correct answer, and try again with care.'],

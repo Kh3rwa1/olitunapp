@@ -400,29 +400,9 @@ final routerProvider = Provider<GoRouter>((ref) {
                 const AdminGamificationScreen(section: 'overview'),
           ),
           adminRoute(
-            path: '/admin/gamification/copy',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'copy'),
-          ),
-          adminRoute(
             path: '/admin/gamification/badges',
             builder: (context, state) =>
                 const AdminGamificationScreen(section: 'badges'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/missions',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'missions'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/rewards',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'rewards'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/quiz-feedback',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'quiz_feedback'),
           ),
           adminRoute(
             path: '/admin/gamification/bakhed/lyrics',

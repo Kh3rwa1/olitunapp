@@ -18,7 +18,6 @@ import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import '../../test_utils.dart';
 
-
 class MockCategoryNotifier
     extends StateNotifier<AsyncValue<List<CategoryEntity>>>
     with Mock
@@ -101,7 +100,8 @@ class MockAffirmationsNotifier
     with Mock
     implements AffirmationsNotifier {
   MockAffirmationsNotifier()
-      : super(AsyncValue.data([
+    : super(
+        AsyncValue.data([
           AffirmationModel(
             id: 'aff_1',
             olChikiText: 'ᱚᱞ ᱪᱤᱠᱤ',
@@ -111,7 +111,8 @@ class MockAffirmationsNotifier
             order: 1,
             publishedAt: '',
           ),
-        ]));
+        ]),
+      );
 }
 
 void main() {
@@ -126,7 +127,6 @@ void main() {
   tearDownAll(() async {
     // No-op to see if closing Hive/Cache was causing the event loop hang.
   });
-
 
   testWidgets('HomeScreen renders greeting and daily progress', (tester) async {
     SharedPreferences.setMockInitialValues({});
@@ -155,9 +155,7 @@ void main() {
           isAuthenticatedProvider.overrideWith((ref) async => true),
           userStarsProvider.overrideWith((ref) => 100),
           lessonsCompletedProvider.overrideWith((ref) => 2),
-          categoryNotifierProvider.overrideWith(
-            (ref) => categoryNotifier,
-          ),
+          categoryNotifierProvider.overrideWith((ref) => categoryNotifier),
           lessonNotifierProvider.overrideWith((ref) => lessonNotifier),
           quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
           userStatsProvider.overrideWith((ref) => userStatsNotifier),
@@ -168,9 +166,13 @@ void main() {
           numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
           sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
           lettersProvider.overrideWith((ref) => MockLettersNotifier()),
-          appConnectivityProvider.overrideWith((ref) => Stream.value([ConnectivityResult.wifi])),
+          appConnectivityProvider.overrideWith(
+            (ref) => Stream.value([ConnectivityResult.wifi]),
+          ),
           mistakeProvider.overrideWith((ref) => MockMistakeNotifier()),
-          affirmationsProvider.overrideWith((ref) => MockAffirmationsNotifier()),
+          affirmationsProvider.overrideWith(
+            (ref) => MockAffirmationsNotifier(),
+          ),
         ],
       ),
     );

@@ -16,13 +16,13 @@ class DailyMissionsObserver extends ProviderObserver {
         provider == quizTakenTodayProvider ||
         provider == bakhedListenedTodayProvider ||
         provider == quickWinCompletedTodayProvider) {
-      
       final lesson = container.read(lessonCompletedTodayProvider);
       final quiz = container.read(quizTakenTodayProvider);
       final bakhed = container.read(bakhedListenedTodayProvider);
       final quick = container.read(quickWinCompletedTodayProvider);
 
-      final completedCount = (lesson ? 1 : 0) +
+      final completedCount =
+          (lesson ? 1 : 0) +
           (quiz ? 1 : 0) +
           (bakhed ? 1 : 0) +
           (quick ? 1 : 0);

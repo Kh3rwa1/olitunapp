@@ -93,31 +93,22 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         // (2) Header: Johar + user name only
-        _buildHeader(
-          userName: displayUserName,
-          isDark: isDark,
-        ),
+        _buildHeader(userName: displayUserName, isDark: isDark),
         const SizedBox(height: 24),
 
         // (3) TodayAffirmationCard - the hero with more vertical breathing room
         const Padding(
           padding: EdgeInsets.symmetric(vertical: 8.0),
-          child: RepaintBoundary(
-            child: TodayAffirmationCard(),
-          ),
+          child: RepaintBoundary(child: TodayAffirmationCard()),
         ),
         const SizedBox(height: 24),
 
         // (4) NextBestActionCard - single "continue learning" CTA
-        const RepaintBoundary(
-          child: NextBestActionCard(),
-        ),
+        const RepaintBoundary(child: NextBestActionCard()),
         const SizedBox(height: 24),
 
         // (5) TodayMissionCard - daily missions strip
-        const RepaintBoundary(
-          child: TodayMissionCard(),
-        ),
+        const RepaintBoundary(child: TodayMissionCard()),
         const SizedBox(height: 24),
 
         // (6) Guest CTA banner (thin, only if isGuest) - 48dp banner
@@ -148,7 +139,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isDark ? Colors.white : AppColors.primaryDark,
+                            color: isDark
+                                ? Colors.white
+                                : AppColors.primaryDark,
                             fontWeight: FontWeight.w800,
                             fontSize: 14,
                           ),
@@ -165,10 +158,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               );
               if (reduceVisualEffects) return card;
-              return card
-                  .animate()
-                  .fadeIn(duration: 800.ms)
-                  .slideY(begin: 0.1);
+              return card.animate().fadeIn(duration: 800.ms).slideY(begin: 0.1);
             },
           ),
         ],
@@ -181,8 +171,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       backgroundColor: isDesktop
           ? Colors.transparent
           : isDark
-              ? AppColors.darkBackground
-              : AppColors.lightBackground,
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
         child: Stack(

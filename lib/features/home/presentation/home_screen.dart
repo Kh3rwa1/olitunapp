@@ -5,7 +5,6 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/localized_content.dart';
-import '../../../shared/widgets/animated_buttons.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../categories/domain/entities/category_entity.dart';
@@ -245,10 +244,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         children: [
                           // Header
                           _buildHeader(
-                            context,
                             userName: displayUserName,
                             isDark: isDark,
-                            isDesktop: isDesktop,
                           ),
                           const SizedBox(height: 28),
 
@@ -438,12 +435,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   // ─── Header ─────────────────────────────────────────────
-  Widget _buildHeader(
-    BuildContext context, {
-    required String userName,
-    required bool isDark,
-    required bool isDesktop,
-  }) {
+  Widget _buildHeader({required String userName, required bool isDark}) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -464,23 +456,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ],
           ),
         ),
-        if (!isDesktop)
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: CircleIconButton(
-              icon: Icons.notifications_none_rounded,
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Notifications are coming soon.'),
-                    behavior: SnackBarBehavior.floating,
-                  ),
-                );
-              },
-              size: 52,
-              backgroundColor: AppColors.glass(context, opacity: 0.05),
-            ),
-          ),
       ],
     );
   }

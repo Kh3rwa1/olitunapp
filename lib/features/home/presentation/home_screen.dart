@@ -12,6 +12,7 @@ import '../../lessons/domain/entities/lesson_entity.dart';
 import 'widgets/today_affirmation_card.dart';
 import 'widgets/next_best_action_card.dart';
 import 'widgets/today_mission_card.dart';
+import 'widgets/home_content_grid.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -70,6 +71,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final isGuest = isAuthAsync.value == false;
     final displayUserName = isGuest ? 'Explorer' : userName;
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
     // Seamless automatic background data sync when recovering connection
     ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
@@ -162,6 +164,65 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             },
           ),
         ],
+
+        const SizedBox(height: 24),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'DISCOVER',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: 1.2,
+                    color: isDark ? AppColors.primary : AppColors.primaryDark,
+                  ),
+                ),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Text(
+                    isDesktop ? 'EXPLORE' : 'SWIPE',
+                    style: const TextStyle(
+                      fontSize: 9,
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            categoriesAsync.when(
+              data: (categories) {
+                return HomeContentGrid(
+                  isDark: isDark,
+                  cols: isDesktop
+                      ? 4
+                      : (ResponsiveLayout.isTablet(context) ? 3 : 2),
+                  categories: categories,
+                );
+              },
+              loading: () => const SizedBox(
+                height: 140,
+                child: Center(child: CircularProgressIndicator()),
+              ),
+              error: (e, st) => AppErrorState(
+                message: 'Could not load learning paths',
+                onRetry: _onRefresh,
+              ),
+            ),
+          ],
+        ),
 
         SizedBox(height: isDesktop ? 32 : 120),
       ],

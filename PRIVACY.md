@@ -16,6 +16,10 @@ Olitun is an educational app for learning Ol Chiki and related Santali learning 
 
 We use data to keep the learning experience working across sessions, sync approved educational content, protect admin areas, improve reliability, and respond to account or support requests.
 
+## Data Retention
+
+Detailed learning analytics events are automatically pruned and deleted after 90 days. Aggregated anonymous daily rollups are retained for admin dashboard reporting.
+
 ## Local And Offline Data
 
 Olitun keeps some progress and settings on the device for offline use. Clearing app storage, resetting progress, or deleting an account can remove local learning data.

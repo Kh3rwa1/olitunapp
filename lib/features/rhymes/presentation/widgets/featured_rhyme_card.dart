@@ -153,11 +153,10 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                   .fadeIn(delay: 200.ms, duration: 400.ms)
                                   .slideX(begin: -0.3)
                                   .scale(begin: const Offset(0.8, 0.8)),
-                              if (widget.rhyme.subcategory != null) ...[
+                              if (widget.rhyme.tags.isNotEmpty) ...[
                                 const SizedBox(width: 8),
                                 _buildBadge(
-                                      widget.rhyme.subcategory?.toUpperCase() ??
-                                          '',
+                                      widget.rhyme.tags.first.toUpperCase(),
                                       Colors.white.withValues(alpha: 0.1),
                                     )
                                     .animate()

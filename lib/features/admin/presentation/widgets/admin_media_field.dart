@@ -6,7 +6,6 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/storage/upload_service.dart';
-import '../../../../shared/widgets/video_player_widget.dart';
 
 /// Reusable media upload row used for audio, image, and animation fields
 /// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
@@ -265,10 +264,13 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
 
     Widget child;
     if (isVideo) {
-      child = VideoPlayerWidget(
-        assetPath: url,
-        width: double.infinity,
-        height: 140,
+      child = const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.video_library_rounded, size: 42, color: Colors.grey),
+          SizedBox(height: 8),
+          Text('Video file (Unsupported)'),
+        ],
       );
     } else if (isLottie) {
       child = Lottie.network(

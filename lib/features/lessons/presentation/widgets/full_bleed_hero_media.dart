@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 
-import '../../../../shared/widgets/video_player_widget.dart';
-
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
     super.key,
@@ -62,14 +60,6 @@ class _HeroMediaSource extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_isVideoUrl(url)) {
-      return VideoPlayerWidget(
-        assetPath: url,
-        width: double.infinity,
-        height: double.infinity,
-      );
-    }
-
     if (_isSvgUrl(url)) {
       return _SvgHeroMedia(url: url, fallback: _buildFallback());
     }
@@ -83,7 +73,7 @@ class _HeroMediaSource extends StatelessWidget {
 
   Widget _buildFallback() {
     final image = fallbackUrl?.trim();
-    if (image != null && image.isNotEmpty && !_isVideoUrl(image)) {
+    if (image != null && image.isNotEmpty) {
       if (_isSvgUrl(image)) {
         return _SvgHeroMedia(
           url: image,
@@ -267,14 +257,6 @@ class _HeroMediaScrim extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isVideoUrl(String url) {
-  final lower = _urlPath(url);
-  return lower.endsWith('.mp4') ||
-      lower.endsWith('.mov') ||
-      lower.endsWith('.m4v') ||
-      lower.endsWith('.webm');
 }
 
 bool _isSvgUrl(String url) => _urlPath(url).endsWith('.svg');

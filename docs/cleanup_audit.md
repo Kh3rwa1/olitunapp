@@ -58,17 +58,25 @@ No additional collections or admin screens were deleted in this audit.
 
 Do not delete any active collection above without a product decision. The current app still has a plausible reader, writer, admin surface, or backend support role for each configured collection.
 
-Recommended manual cleanup candidates in Appwrite Console, after export/backup and confirmation:
+Recommended deletions completed in Phase 3 pre-launch cleanup:
 
-- `weekly_circles`
-- `circle_members`
-- `circle_events`
-- `weekly_circle_recaps`
-- `streak_shields`
+- `weekly_circles` (fully removed from codebase)
+- `circle_members` (fully removed from codebase)
+- `circle_events` (fully removed from codebase)
+- `weekly_circle_recaps` (fully removed from codebase)
+- `streak_shields` (fully removed from codebase)
+- `rhyme_subcategories` (fully flattened into tag chips in `rhymes` collection and removed from codebase)
 
-These legacy collections are no longer created by `scripts/appwrite_setup.mjs` after the cleanup and should only be dropped manually once existing production data is no longer needed.
+Video infrastructure has been completely pruned (video player widgets deleted, dependencies `video_player` and `cached_video_player_plus` removed, and video upload logic removed).
 
-## Follow-Up
+## Data Retention & Backups
 
-- Add dedicated admin CRUD for `rhyme_subcategories` if editors need to manage Bakhed taxonomy deeply.
-- Decide whether video uploads are a near-term feature; if not, hide video upload UI before removing the `videos` bucket.
+### Analytics Data Retention
+- The `cleanupAnalyticsEvents` Appwrite function runs daily at `0 3 * * *` (3 AM UTC).
+- It automatically prunes detailed learning analytics events (`learning_analytics_events`) older than 90 days.
+- Aggregated daily rollups are kept for admin dashboard metrics.
+
+### Content Backups
+- The `backupCollections` Appwrite function runs weekly on Sundays at `0 4 * * 0` (4 AM UTC).
+- It exports all core curriculum and configuration collections to the `admin_backups` storage bucket in JSON format.
+- The function automatically maintains a rolling retention window, keeping only the last 12 backups.

@@ -221,6 +221,43 @@
                 "databases.read",
                 "databases.write"
             ]
+        },
+        {
+            "$id": "cleanupAnalyticsEvents",
+            "name": "cleanupAnalyticsEvents",
+            "runtime": "node-22",
+            "path": "functions/cleanupAnalyticsEvents",
+            "entrypoint": "src/main.js",
+            "execute": [],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "0 3 * * *",
+            "timeout": 60,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "backupCollections",
+            "name": "backupCollections",
+            "runtime": "node-22",
+            "path": "functions/backupCollections",
+            "entrypoint": "src/main.js",
+            "execute": [],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "0 4 * * 0",
+            "timeout": 60,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "files.read",
+                "files.write"
+            ]
         }
     ],
     "sites": [

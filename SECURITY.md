@@ -55,6 +55,13 @@ only (`!kDebugMode`). No reports are sent in development. PII scrubbing
 follows Sentry SDK defaults; review your project's data scrubbing settings
 before enabling in production.
 
+### Backups & Data Integrity
+
+- Core curriculum and configuration content (categories, lessons, quizzes, etc.) are automatically backed up weekly via a scheduled Appwrite Function (`functions/backupCollections`).
+- Backups are stored as versioned JSON schemas in the `admin_backups` storage bucket.
+- Retention is capped at the last 12 backups to conserve storage.
+- Storage bucket access is restricted exclusively to members of the `admins` team.
+
 ## Supported versions
 
 Only the `main` branch receives security fixes.

@@ -11,7 +11,7 @@ void main() {
         'audioUrl': 'https://example.com/audio.mp3',
         'thumbnailUrl': 'https://example.com/thumb.png',
         'category': 'Sohrai',
-        'subcategory': 'Got Puja',
+        'tags': ['Got Puja', 'kids'],
       });
 
       expect(model.id, 'rhyme_1');
@@ -19,10 +19,10 @@ void main() {
       expect(model.contentOlChiki, '');
       expect(model.contentLatin, '');
       expect(model.category, 'Sohrai');
-      expect(model.subcategory, 'Got Puja');
+      expect(model.tags, ['Got Puja', 'kids']);
     });
 
-    test('parses canonical category and subcategory ids', () {
+    test('parses canonical category ids', () {
       final model = RhymeModel.fromJson({
         r'$id': 'rhyme_2',
         'titleOlChiki': 'ᱵᱟᱠᱷᱮᱫ',
@@ -30,12 +30,10 @@ void main() {
         'contentOlChiki': '',
         'contentLatin': 'Story text',
         'categoryId': 'cat_sohrai',
-        'subcategoryId': 'sub_sohrai_1',
       });
 
       expect(model.id, 'rhyme_2');
       expect(model.categoryId, 'cat_sohrai');
-      expect(model.subcategoryId, 'sub_sohrai_1');
     });
 
     test('serializes legacy labels and canonical ids for compatibility', () {
@@ -46,15 +44,13 @@ void main() {
         contentOlChiki: '',
         contentLatin: 'Story text',
         categoryId: 'cat_sohrai',
-        subcategoryId: 'sub_sohrai_1',
         category: 'Sohrai',
-        subcategory: 'Got Puja',
+        tags: ['Got Puja'],
       ).toJson();
 
       expect(json['categoryId'], 'cat_sohrai');
-      expect(json['subcategoryId'], 'sub_sohrai_1');
       expect(json['category'], 'Sohrai');
-      expect(json['subcategory'], 'Got Puja');
+      expect(json['tags'], ['Got Puja']);
     });
   });
 }

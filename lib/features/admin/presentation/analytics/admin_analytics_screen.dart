@@ -7,21 +7,97 @@ import '../../../../core/api/appwrite_db_service.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/admin_page_header.dart';
-import '../widgets/common/admin_buttons.dart';
 import '../widgets/common/admin_states.dart';
+import 'admin_analytics_csv_exporter.dart';
 import 'admin_analytics_models.dart';
+
+enum AdminAnalyticsRangePreset { seven, thirty, ninety, custom }
+
+enum AdminAnalyticsDensity { comfortable, compact }
+
+class AdminAnalyticsDateRange {
+  const AdminAnalyticsDateRange({
+    required this.preset,
+    this.customStart,
+    this.customEnd,
+  });
+
+  const AdminAnalyticsDateRange.last30()
+    : preset = AdminAnalyticsRangePreset.thirty,
+      customStart = null,
+      customEnd = null;
+
+  const AdminAnalyticsDateRange.custom({
+    required DateTime start,
+    required DateTime end,
+  }) : preset = AdminAnalyticsRangePreset.custom,
+       customStart = start,
+       customEnd = end;
+
+  final AdminAnalyticsRangePreset preset;
+  final DateTime? customStart;
+  final DateTime? customEnd;
+
+  int get days => switch (preset) {
+    AdminAnalyticsRangePreset.seven => 7,
+    AdminAnalyticsRangePreset.thirty => 30,
+    AdminAnalyticsRangePreset.ninety => 90,
+    AdminAnalyticsRangePreset.custom => 30,
+  };
+
+  DateTime startFor(DateTime now) {
+    if (preset == AdminAnalyticsRangePreset.custom && customStart != null) {
+      return _dateOnly(customStart!);
+    }
+    final end = endFor(now);
+    return end.subtract(Duration(days: days - 1));
+  }
+
+  DateTime endFor(DateTime now) {
+    if (preset == AdminAnalyticsRangePreset.custom && customEnd != null) {
+      return _dateOnly(customEnd!);
+    }
+    return _dateOnly(now);
+  }
+
+  String label(DateTime now) {
+    if (preset == AdminAnalyticsRangePreset.custom &&
+        customStart != null &&
+        customEnd != null) {
+      return '${formatShortDate(startFor(now))} - ${formatShortDate(endFor(now))}';
+    }
+    return switch (preset) {
+      AdminAnalyticsRangePreset.seven => 'Last 7 days',
+      AdminAnalyticsRangePreset.thirty => 'Last 30 days',
+      AdminAnalyticsRangePreset.ninety => 'Last 90 days',
+      AdminAnalyticsRangePreset.custom => 'Custom range',
+    };
+  }
+}
+
+final adminAnalyticsRangeProvider = StateProvider<AdminAnalyticsDateRange>(
+  (_) => const AdminAnalyticsDateRange.last30(),
+);
+
+final adminAnalyticsDensityProvider = StateProvider<AdminAnalyticsDensity>(
+  (_) => AdminAnalyticsDensity.comfortable,
+);
 
 final adminAnalyticsSnapshotProvider =
     FutureProvider.autoDispose<AdminAnalyticsSnapshot>((ref) async {
       final db = ref.read(appwriteDbServiceProvider);
+      final range = ref.watch(adminAnalyticsRangeProvider);
       final now = DateTime.now().toUtc();
-      final start = now.subtract(const Duration(days: 90));
+      final start = range.startFor(now);
+      final end = range.endFor(now);
       final startKey = formatDateKey(start);
+      final endKey = formatDateKey(end);
 
       final rollups = await db.listDocuments(
         'learning_analytics_daily_rollups',
         queries: [
           Query.greaterThanEqual('dateKey', startKey),
+          Query.lessThanEqual('dateKey', endKey),
           Query.orderDesc('dateKey'),
           Query.limit(500),
         ],
@@ -34,6 +110,7 @@ final adminAnalyticsSnapshotProvider =
           'learning_analytics_events',
           queries: [
             Query.greaterThanEqual('dateKey', startKey),
+            Query.lessThanEqual('dateKey', endKey),
             Query.orderDesc('dateKey'),
             Query.limit(1000),
           ],
@@ -49,8 +126,13 @@ final adminAnalyticsSnapshotProvider =
         rollups: rollups,
         events: events,
         now: now,
+        startDate: start,
+        endDate: end,
       );
     });
+
+DateTime _dateOnly(DateTime value) =>
+    DateTime.utc(value.year, value.month, value.day);
 
 class AdminAnalyticsScreen extends ConsumerWidget {
   const AdminAnalyticsScreen({super.key});
@@ -59,62 +141,107 @@ class AdminAnalyticsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final snapshot = ref.watch(adminAnalyticsSnapshotProvider);
+    final range = ref.watch(adminAnalyticsRangeProvider);
+    final density = ref.watch(adminAnalyticsDensityProvider);
+    final compact = density == AdminAnalyticsDensity.compact;
 
-    return Scaffold(
-      backgroundColor: AdminTokens.base(isDark),
-      body: SafeArea(
-        child: snapshot.when(
-          loading: () =>
-              const AdminLoadingState(label: 'Loading learning analytics'),
-          error: (error, _) => AdminErrorState(
-            title: 'Analytics unavailable',
-            message: error.toString(),
-            onRetry: () => ref.invalidate(adminAnalyticsSnapshotProvider),
-          ),
-          data: (data) => RefreshIndicator(
-            onRefresh: () async {
-              ref.invalidate(adminAnalyticsSnapshotProvider);
-              await ref.read(adminAnalyticsSnapshotProvider.future);
-            },
-            child: Semantics(
-              label: data.semanticsSummary,
-              child: ListView(
-                padding: const EdgeInsets.all(AdminTokens.space7),
-                children: [
-                  AdminPageHeader(
-                    eyebrow: 'Learning Health',
-                    title: 'Analytics',
-                    subtitle:
-                        'Nightly rollups, learner activity, retention, sources, and platform mix.',
-                    actions: [
-                      AdminSecondaryButton(
-                        label: 'Refresh',
-                        icon: Icons.refresh_rounded,
-                        onTap: () =>
-                            ref.invalidate(adminAnalyticsSnapshotProvider),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AdminTokens.space7),
-                  if (!data.hasAnyData) ...[
-                    _EmptyAnalyticsCard(isDark: isDark),
-                    const SizedBox(height: AdminTokens.space6),
-                  ],
-                  _KpiGrid(snapshot: data, isDark: isDark),
-                  const SizedBox(height: AdminTokens.space6),
-                  _ResponsiveGrid(
-                    left: _DauTrendCard(snapshot: data, isDark: isDark),
-                    right: _PlatformSplitCard(snapshot: data, isDark: isDark),
-                  ),
-                  const SizedBox(height: AdminTokens.space6),
-                  _ResponsiveGrid(
-                    left: _TopEventSourcesCard(snapshot: data, isDark: isDark),
-                    right: _TopEventsCard(snapshot: data, isDark: isDark),
-                  ),
-                  const SizedBox(height: AdminTokens.space6),
-                  _RetentionHeatmapCard(snapshot: data, isDark: isDark),
-                ],
+    return Material(
+      color: Colors.transparent,
+      child: snapshot.when(
+        loading: () =>
+            const AdminLoadingState(label: 'Loading learning analytics'),
+        error: (error, _) => AdminErrorState(
+          title: 'Analytics unavailable',
+          message: error.toString(),
+          onRetry: () => ref.invalidate(adminAnalyticsSnapshotProvider),
+        ),
+        data: (data) => RefreshIndicator(
+          onRefresh: () async {
+            ref.invalidate(adminAnalyticsSnapshotProvider);
+            await ref.read(adminAnalyticsSnapshotProvider.future);
+          },
+          child: Semantics(
+            label: data.semanticsSummary,
+            child: ListView(
+              padding: EdgeInsets.all(
+                compact ? AdminTokens.space5 : AdminTokens.space7,
               ),
+              children: [
+                AdminPageHeader(
+                  eyebrow: 'Learning Health',
+                  title: 'Analytics',
+                  subtitle:
+                      'Nightly rollups, learner activity, retention, sources, and platform mix.',
+                  actions: [
+                    _AnalyticsToolbar(
+                      range: range,
+                      density: density,
+                      snapshot: data,
+                      isDark: isDark,
+                      onRefresh: () =>
+                          ref.invalidate(adminAnalyticsSnapshotProvider),
+                      onRangeChanged: (nextRange) {
+                        ref.read(adminAnalyticsRangeProvider.notifier).state =
+                            nextRange;
+                      },
+                      onDensityChanged: (nextDensity) {
+                        ref.read(adminAnalyticsDensityProvider.notifier).state =
+                            nextDensity;
+                      },
+                    ),
+                  ],
+                ),
+                const SizedBox(height: AdminTokens.space4),
+                _RangeStatus(range: range, snapshot: data, isDark: isDark),
+                SizedBox(
+                  height: compact ? AdminTokens.space5 : AdminTokens.space7,
+                ),
+                if (!data.hasAnyData) ...[
+                  _EmptyAnalyticsCard(isDark: isDark, compact: compact),
+                  const SizedBox(height: AdminTokens.space6),
+                ],
+                _KpiGrid(snapshot: data, isDark: isDark, compact: compact),
+                SizedBox(
+                  height: compact ? AdminTokens.space4 : AdminTokens.space6,
+                ),
+                _ResponsiveGrid(
+                  spacing: compact ? AdminTokens.space4 : AdminTokens.space6,
+                  left: _DauTrendCard(
+                    snapshot: data,
+                    isDark: isDark,
+                    compact: compact,
+                  ),
+                  right: _PlatformSplitCard(
+                    snapshot: data,
+                    isDark: isDark,
+                    compact: compact,
+                  ),
+                ),
+                SizedBox(
+                  height: compact ? AdminTokens.space4 : AdminTokens.space6,
+                ),
+                _ResponsiveGrid(
+                  spacing: compact ? AdminTokens.space4 : AdminTokens.space6,
+                  left: _TopEventSourcesCard(
+                    snapshot: data,
+                    isDark: isDark,
+                    compact: compact,
+                  ),
+                  right: _TopEventsCard(
+                    snapshot: data,
+                    isDark: isDark,
+                    compact: compact,
+                  ),
+                ),
+                SizedBox(
+                  height: compact ? AdminTokens.space4 : AdminTokens.space6,
+                ),
+                _RetentionHeatmapCard(
+                  snapshot: data,
+                  isDark: isDark,
+                  compact: compact,
+                ),
+              ],
             ),
           ),
         ),
@@ -123,11 +250,316 @@ class AdminAnalyticsScreen extends ConsumerWidget {
   }
 }
 
+class _AnalyticsToolbar extends StatelessWidget {
+  const _AnalyticsToolbar({
+    required this.range,
+    required this.density,
+    required this.snapshot,
+    required this.isDark,
+    required this.onRefresh,
+    required this.onRangeChanged,
+    required this.onDensityChanged,
+  });
+
+  final AdminAnalyticsDateRange range;
+  final AdminAnalyticsDensity density;
+  final AdminAnalyticsSnapshot snapshot;
+  final bool isDark;
+  final VoidCallback onRefresh;
+  final ValueChanged<AdminAnalyticsDateRange> onRangeChanged;
+  final ValueChanged<AdminAnalyticsDensity> onDensityChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: AdminTokens.space3,
+      runSpacing: AdminTokens.space3,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        _RangeSegmentedControl(
+          range: range,
+          isDark: isDark,
+          onChanged: (preset) => _changeRange(context, preset),
+        ),
+        _ToolbarAction(
+          label: density == AdminAnalyticsDensity.compact
+              ? 'Compact'
+              : 'Comfortable',
+          icon: density == AdminAnalyticsDensity.compact
+              ? Icons.density_small_rounded
+              : Icons.density_medium_rounded,
+          isDark: isDark,
+          onTap: () {
+            onDensityChanged(
+              density == AdminAnalyticsDensity.compact
+                  ? AdminAnalyticsDensity.comfortable
+                  : AdminAnalyticsDensity.compact,
+            );
+          },
+        ),
+        _ToolbarAction(
+          label: 'Export CSV',
+          icon: Icons.download_rounded,
+          isDark: isDark,
+          onTap: () => _exportCsv(context),
+        ),
+        _ToolbarAction(
+          label: 'Refresh',
+          icon: Icons.refresh_rounded,
+          isDark: isDark,
+          onTap: onRefresh,
+        ),
+      ],
+    );
+  }
+
+  Future<void> _changeRange(
+    BuildContext context,
+    AdminAnalyticsRangePreset preset,
+  ) async {
+    if (preset != AdminAnalyticsRangePreset.custom) {
+      onRangeChanged(AdminAnalyticsDateRange(preset: preset));
+      return;
+    }
+
+    final now = DateTime.now().toUtc();
+    final picked = await showDateRangePicker(
+      context: context,
+      firstDate: DateTime.utc(2025),
+      lastDate: _dateOnly(now).add(const Duration(days: 1)),
+      initialDateRange: DateTimeRange(
+        start: range.startFor(now),
+        end: range.endFor(now),
+      ),
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: Theme.of(context).colorScheme.copyWith(
+              primary: AdminTokens.accent,
+              onPrimary: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+    if (picked == null) return;
+    onRangeChanged(
+      AdminAnalyticsDateRange.custom(start: picked.start, end: picked.end),
+    );
+  }
+
+  Future<void> _exportCsv(BuildContext context) async {
+    final csv = snapshot.toRollupsCsv();
+    final now = DateTime.now().toUtc();
+    await exportAnalyticsCsv(
+      filename:
+          'olitun-learning-analytics-${formatDateKey(range.startFor(now))}-to-${formatDateKey(range.endFor(now))}.csv',
+      csv: csv,
+    );
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          snapshot.rollupsForExport.isEmpty
+              ? 'CSV header $analyticsCsvExportLabel. No rollups loaded for this range yet.'
+              : 'CSV $analyticsCsvExportLabel with ${snapshot.rollupsForExport.length} rollup rows.',
+        ),
+        behavior: SnackBarBehavior.floating,
+      ),
+    );
+  }
+}
+
+class _RangeSegmentedControl extends StatelessWidget {
+  const _RangeSegmentedControl({
+    required this.range,
+    required this.isDark,
+    required this.onChanged,
+  });
+
+  final AdminAnalyticsDateRange range;
+  final bool isDark;
+  final ValueChanged<AdminAnalyticsRangePreset> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Semantics(
+      label: 'Analytics date range selector',
+      child: SegmentedButton<AdminAnalyticsRangePreset>(
+        selected: {range.preset},
+        showSelectedIcon: false,
+        style: ButtonStyle(
+          visualDensity: VisualDensity.compact,
+          backgroundColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.selected)
+                ? AdminTokens.accentSoft(isDark)
+                : AdminTokens.sunken(isDark);
+          }),
+          foregroundColor: WidgetStateProperty.resolveWith((states) {
+            return states.contains(WidgetState.selected)
+                ? AdminTokens.accent
+                : AdminTokens.textSecondary(isDark);
+          }),
+          side: WidgetStatePropertyAll(
+            BorderSide(color: AdminTokens.border(isDark)),
+          ),
+        ),
+        segments: const [
+          ButtonSegment(
+            value: AdminAnalyticsRangePreset.seven,
+            label: Text('7d'),
+          ),
+          ButtonSegment(
+            value: AdminAnalyticsRangePreset.thirty,
+            label: Text('30d'),
+          ),
+          ButtonSegment(
+            value: AdminAnalyticsRangePreset.ninety,
+            label: Text('90d'),
+          ),
+          ButtonSegment(
+            value: AdminAnalyticsRangePreset.custom,
+            label: Text('Custom'),
+          ),
+        ],
+        onSelectionChanged: (selection) => onChanged(selection.first),
+      ),
+    );
+  }
+}
+
+class _ToolbarAction extends StatelessWidget {
+  const _ToolbarAction({
+    required this.label,
+    required this.icon,
+    required this.isDark,
+    required this.onTap,
+  });
+
+  final String label;
+  final IconData icon;
+  final bool isDark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+          child: Container(
+            constraints: const BoxConstraints(minHeight: 48),
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+            decoration: BoxDecoration(
+              color: AdminTokens.sunken(isDark),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(color: AdminTokens.border(isDark)),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(icon, size: 18, color: AdminTokens.textSecondary(isDark)),
+                const SizedBox(width: AdminTokens.space2),
+                Text(label, style: AdminTokens.label(isDark)),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _RangeStatus extends StatelessWidget {
+  const _RangeStatus({
+    required this.range,
+    required this.snapshot,
+    required this.isDark,
+  });
+
+  final AdminAnalyticsDateRange range;
+  final AdminAnalyticsSnapshot snapshot;
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final now = DateTime.now().toUtc();
+    return Wrap(
+      spacing: AdminTokens.space3,
+      runSpacing: AdminTokens.space2,
+      children: [
+        _StatusChip(
+          isDark: isDark,
+          icon: Icons.date_range_rounded,
+          label: range.label(now),
+        ),
+        _StatusChip(
+          isDark: isDark,
+          icon: Icons.storage_rounded,
+          label: '${snapshot.rollupRows} rollups',
+        ),
+        _StatusChip(
+          isDark: isDark,
+          icon: Icons.bolt_rounded,
+          label: '${snapshot.eventRows} raw events sampled',
+        ),
+      ],
+    );
+  }
+}
+
+class _StatusChip extends StatelessWidget {
+  const _StatusChip({
+    required this.isDark,
+    required this.icon,
+    required this.label,
+  });
+
+  final bool isDark;
+  final IconData icon;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      constraints: const BoxConstraints(minHeight: 36),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: AdminTokens.accentSoft(isDark),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: AdminTokens.accentBorder(isDark)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 15, color: AdminTokens.accent),
+          const SizedBox(width: AdminTokens.space2),
+          Text(
+            label,
+            style: AdminTokens.label(
+              isDark,
+            ).copyWith(color: AdminTokens.textPrimary(isDark)),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _KpiGrid extends StatelessWidget {
-  const _KpiGrid({required this.snapshot, required this.isDark});
+  const _KpiGrid({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -141,6 +573,7 @@ class _KpiGrid extends StatelessWidget {
             caption: 'Active learners today',
             icon: Icons.today_rounded,
             isDark: isDark,
+            compact: compact,
           ),
           _KpiCard(
             label: 'WAU',
@@ -148,6 +581,7 @@ class _KpiGrid extends StatelessWidget {
             caption: 'Active learners this week',
             icon: Icons.calendar_view_week_rounded,
             isDark: isDark,
+            compact: compact,
           ),
           _KpiCard(
             label: 'MAU',
@@ -155,6 +589,7 @@ class _KpiGrid extends StatelessWidget {
             caption: 'Active learners this month',
             icon: Icons.calendar_month_rounded,
             isDark: isDark,
+            compact: compact,
           ),
           _KpiCard(
             label: 'Rollups',
@@ -162,15 +597,16 @@ class _KpiGrid extends StatelessWidget {
             caption: '${snapshot.eventRows} raw events sampled',
             icon: Icons.stacked_bar_chart_rounded,
             isDark: isDark,
+            compact: compact,
           ),
         ];
         return GridView.count(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           crossAxisCount: compact ? 2 : 4,
-          childAspectRatio: compact ? 1.55 : 2.25,
-          crossAxisSpacing: AdminTokens.space4,
-          mainAxisSpacing: AdminTokens.space4,
+          childAspectRatio: compact ? 1.95 : 2.25,
+          crossAxisSpacing: compact ? AdminTokens.space3 : AdminTokens.space4,
+          mainAxisSpacing: compact ? AdminTokens.space3 : AdminTokens.space4,
           children: cards,
         );
       },
@@ -185,6 +621,7 @@ class _KpiCard extends StatelessWidget {
     required this.caption,
     required this.icon,
     required this.isDark,
+    required this.compact,
   });
 
   final String label;
@@ -192,17 +629,19 @@ class _KpiCard extends StatelessWidget {
   final String caption;
   final IconData icon;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return _Panel(
       isDark: isDark,
+      compact: compact,
       child: Semantics(
         label: '$label $value. $caption',
         child: Row(
           children: [
-            _IconBadge(icon: icon, isDark: isDark),
-            const SizedBox(width: AdminTokens.space4),
+            _IconBadge(icon: icon, isDark: isDark, compact: compact),
+            SizedBox(width: compact ? AdminTokens.space3 : AdminTokens.space4),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -217,7 +656,7 @@ class _KpiCard extends StatelessWidget {
                       value,
                       style: AdminTokens.display(
                         isDark,
-                      ).copyWith(fontSize: 34, letterSpacing: 0),
+                      ).copyWith(fontSize: compact ? 28 : 34, letterSpacing: 0),
                     ),
                   ),
                   Text(
@@ -237,21 +676,22 @@ class _KpiCard extends StatelessWidget {
 }
 
 class _DauTrendCard extends StatelessWidget {
-  const _DauTrendCard({required this.snapshot, required this.isDark});
+  const _DauTrendCard({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final today = DateTime.now().toUtc();
+    final trendDays = snapshot.rangeDays.clamp(1, 90).toInt();
     final days = List.generate(
-      14,
-      (index) => DateTime.utc(
-        today.year,
-        today.month,
-        today.day,
-      ).subtract(Duration(days: 13 - index)),
+      trendDays,
+      (index) => snapshot.startDate.add(Duration(days: index)),
     );
     final values = days
         .map((day) => snapshot.dailyActiveUsers[day] ?? 0)
@@ -261,12 +701,14 @@ class _DauTrendCard extends StatelessWidget {
       (current, value) => value > current ? value : current,
     );
     final yMax = (max < 4 ? 4 : max + 1).toDouble();
+    final bottomInterval = (days.length / 6).ceilToDouble().clamp(1.0, 30.0);
 
     return _ChartCard(
       title: 'DAU Trend',
       subtitle: 'Unique learners active per day',
-      semanticsLabel: 'DAU trend chart for the last 14 days.',
+      semanticsLabel: 'DAU trend chart for ${snapshot.rangeDays} days.',
       isDark: isDark,
+      compact: compact,
       child: values.any((value) => value > 0)
           ? LineChart(
               LineChartData(
@@ -294,7 +736,7 @@ class _DauTrendCard extends StatelessWidget {
                   bottomTitles: AxisTitles(
                     sideTitles: SideTitles(
                       showTitles: true,
-                      interval: 3,
+                      interval: bottomInterval,
                       reservedSize: 30,
                       getTitlesWidget: (value, _) {
                         final index = value.toInt();
@@ -330,6 +772,33 @@ class _DauTrendCard extends StatelessWidget {
                     ),
                   ),
                 ],
+                lineTouchData: LineTouchData(
+                  touchTooltipData: LineTouchTooltipData(
+                    fitInsideHorizontally: true,
+                    fitInsideVertically: true,
+                    tooltipRoundedRadius: 10,
+                    tooltipBorder: BorderSide(
+                      color: AdminTokens.border(isDark),
+                    ),
+                    getTooltipColor: (_) =>
+                        isDark ? const Color(0xFF1A2030) : Colors.white,
+                    getTooltipItems: (spots) => spots.map((spot) {
+                      final index = spot.x.round();
+                      final date = index >= 0 && index < days.length
+                          ? formatShortDate(days[index])
+                          : 'Day ${index + 1}';
+                      return LineTooltipItem(
+                        '$date\n${spot.y.toInt()} active',
+                        TextStyle(
+                          fontFamily: 'Poppins',
+                          color: AdminTokens.textPrimary(isDark),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
               ),
             )
           : _NoChartData(isDark: isDark, label: 'No daily active data yet'),
@@ -338,10 +807,15 @@ class _DauTrendCard extends StatelessWidget {
 }
 
 class _PlatformSplitCard extends StatelessWidget {
-  const _PlatformSplitCard({required this.snapshot, required this.isDark});
+  const _PlatformSplitCard({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
@@ -361,41 +835,46 @@ class _PlatformSplitCard extends StatelessWidget {
       semanticsLabel:
           'Platform split chart across ${entries.length} platforms.',
       isDark: isDark,
+      compact: compact,
       child: entries.isEmpty
           ? _NoChartData(isDark: isDark, label: 'No platform data yet')
-          : Row(
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: PieChart(
-                    PieChartData(
-                      centerSpaceRadius: 34,
-                      sectionsSpace: 3,
-                      sections: [
-                        for (var i = 0; i < entries.length; i += 1)
-                          PieChartSectionData(
-                            value: entries[i].value.toDouble(),
-                            color: colors[i % colors.length],
-                            title:
-                                '${(entries[i].value / total * 100).round()}%',
-                            titleStyle: const TextStyle(
-                              fontFamily: 'Poppins',
-                              color: Colors.white,
-                              fontSize: 12,
-                              fontWeight: FontWeight.w700,
+                Tooltip(
+                  message: entries
+                      .map(
+                        (entry) =>
+                            '${entry.key}: ${(entry.value / total * 100).round()}%',
+                      )
+                      .join('  '),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(999),
+                    child: SizedBox(
+                      height: compact ? 28 : 36,
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < entries.length; i += 1)
+                            Expanded(
+                              flex: entries[i].value,
+                              child: ColoredBox(
+                                color: colors[i % colors.length],
+                              ),
                             ),
-                            radius: 54,
-                          ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: AdminTokens.space4),
-                Expanded(
-                  child: _LegendList(
-                    entries: entries,
-                    colors: colors,
-                    isDark: isDark,
-                  ),
+                SizedBox(
+                  height: compact ? AdminTokens.space4 : AdminTokens.space5,
+                ),
+                _LegendList(
+                  entries: entries,
+                  colors: colors,
+                  isDark: isDark,
+                  total: total,
+                  compact: compact,
                 ),
               ],
             ),
@@ -404,14 +883,21 @@ class _PlatformSplitCard extends StatelessWidget {
 }
 
 class _TopEventSourcesCard extends StatelessWidget {
-  const _TopEventSourcesCard({required this.snapshot, required this.isDark});
+  const _TopEventSourcesCard({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final entries = snapshot.eventSourceTotals.entries.take(8).toList();
+    final entries = snapshot.eventSourceTotals.entries
+        .take(compact ? 10 : 8)
+        .toList();
     final max = entries.fold<int>(0, (current, entry) {
       return entry.value > current ? entry.value : current;
     });
@@ -421,13 +907,15 @@ class _TopEventSourcesCard extends StatelessWidget {
       subtitle: 'Which surfaces produce learning activity',
       semanticsLabel: 'Top events by source chart with ${entries.length} rows.',
       isDark: isDark,
+      compact: compact,
       child: entries.isEmpty
           ? _NoChartData(isDark: isDark, label: 'No source data yet')
           : ListView.separated(
               physics: const NeverScrollableScrollPhysics(),
               itemCount: entries.length,
-              separatorBuilder: (_, _) =>
-                  const SizedBox(height: AdminTokens.space3),
+              separatorBuilder: (_, _) => SizedBox(
+                height: compact ? AdminTokens.space2 : AdminTokens.space3,
+              ),
               itemBuilder: (context, index) {
                 final entry = entries[index];
                 final fraction = max == 0 ? 0.0 : entry.value / max;
@@ -477,14 +965,21 @@ class _TopEventSourcesCard extends StatelessWidget {
 }
 
 class _TopEventsCard extends StatelessWidget {
-  const _TopEventsCard({required this.snapshot, required this.isDark});
+  const _TopEventsCard({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    final entries = snapshot.eventTotals.entries.take(8).toList();
+    final entries = snapshot.eventTotals.entries
+        .take(compact ? 10 : 8)
+        .toList();
     final max = entries.fold<int>(0, (current, entry) {
       return entry.value > current ? entry.value : current;
     });
@@ -494,6 +989,7 @@ class _TopEventsCard extends StatelessWidget {
       subtitle: 'Lessons, quizzes, streaks, and habit signals',
       semanticsLabel: 'Top event mix chart with ${entries.length} event types.',
       isDark: isDark,
+      compact: compact,
       child: entries.isEmpty
           ? _NoChartData(isDark: isDark, label: 'No event rollups yet')
           : BarChart(
@@ -557,6 +1053,32 @@ class _TopEventsCard extends StatelessWidget {
                       ],
                     ),
                 ],
+                barTouchData: BarTouchData(
+                  touchTooltipData: BarTouchTooltipData(
+                    fitInsideHorizontally: true,
+                    fitInsideVertically: true,
+                    tooltipRoundedRadius: 10,
+                    tooltipBorder: BorderSide(
+                      color: AdminTokens.border(isDark),
+                    ),
+                    getTooltipColor: (_) =>
+                        isDark ? const Color(0xFF1A2030) : Colors.white,
+                    getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                      final index = group.x;
+                      if (index < 0 || index >= entries.length) return null;
+                      final entry = entries[index];
+                      return BarTooltipItem(
+                        '${entry.key.replaceAll('_', ' ')}\n${entry.value} events',
+                        TextStyle(
+                          fontFamily: 'Poppins',
+                          color: AdminTokens.textPrimary(isDark),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      );
+                    },
+                  ),
+                ),
               ),
             ),
     );
@@ -564,16 +1086,22 @@ class _TopEventsCard extends StatelessWidget {
 }
 
 class _RetentionHeatmapCard extends StatelessWidget {
-  const _RetentionHeatmapCard({required this.snapshot, required this.isDark});
+  const _RetentionHeatmapCard({
+    required this.snapshot,
+    required this.isDark,
+    required this.compact,
+  });
 
   final AdminAnalyticsSnapshot snapshot;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final cohorts = snapshot.retentionCohorts;
     return _Panel(
       isDark: isDark,
+      compact: compact,
       child: Semantics(
         label: 'Retention cohort heatmap with ${cohorts.length} cohorts.',
         image: true,
@@ -643,10 +1171,15 @@ class _RetentionHeatmapCard extends StatelessWidget {
 }
 
 class _ResponsiveGrid extends StatelessWidget {
-  const _ResponsiveGrid({required this.left, required this.right});
+  const _ResponsiveGrid({
+    required this.left,
+    required this.right,
+    required this.spacing,
+  });
 
   final Widget left;
   final Widget right;
+  final double spacing;
 
   @override
   Widget build(BuildContext context) {
@@ -656,7 +1189,7 @@ class _ResponsiveGrid extends StatelessWidget {
           return Column(
             children: [
               left,
-              const SizedBox(height: AdminTokens.space6),
+              SizedBox(height: spacing),
               right,
             ],
           );
@@ -665,7 +1198,7 @@ class _ResponsiveGrid extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(child: left),
-            const SizedBox(width: AdminTokens.space6),
+            SizedBox(width: spacing),
             Expanded(child: right),
           ],
         );
@@ -681,6 +1214,7 @@ class _ChartCard extends StatelessWidget {
     required this.semanticsLabel,
     required this.child,
     required this.isDark,
+    required this.compact,
   });
 
   final String title;
@@ -688,18 +1222,20 @@ class _ChartCard extends StatelessWidget {
   final String semanticsLabel;
   final Widget child;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return _Panel(
       isDark: isDark,
+      compact: compact,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           _CardHeader(title: title, subtitle: subtitle, isDark: isDark),
-          const SizedBox(height: AdminTokens.space5),
+          SizedBox(height: compact ? AdminTokens.space4 : AdminTokens.space5),
           SizedBox(
-            height: 300,
+            height: compact ? 246 : 300,
             child: Semantics(label: semanticsLabel, image: true, child: child),
           ),
         ],
@@ -709,15 +1245,22 @@ class _ChartCard extends StatelessWidget {
 }
 
 class _Panel extends StatelessWidget {
-  const _Panel({required this.child, required this.isDark});
+  const _Panel({
+    required this.child,
+    required this.isDark,
+    this.compact = false,
+  });
 
   final Widget child;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(AdminTokens.space5),
+      padding: EdgeInsets.all(
+        compact ? AdminTokens.space4 : AdminTokens.space5,
+      ),
       decoration: BoxDecoration(
         color: AdminTokens.raised(isDark),
         borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
@@ -754,16 +1297,21 @@ class _CardHeader extends StatelessWidget {
 }
 
 class _IconBadge extends StatelessWidget {
-  const _IconBadge({required this.icon, required this.isDark});
+  const _IconBadge({
+    required this.icon,
+    required this.isDark,
+    this.compact = false,
+  });
 
   final IconData icon;
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 52,
-      height: 52,
+      width: compact ? 44 : 52,
+      height: compact ? 44 : 52,
       decoration: BoxDecoration(
         color: AdminTokens.accentSoft(isDark),
         borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
@@ -779,20 +1327,25 @@ class _LegendList extends StatelessWidget {
     required this.entries,
     required this.colors,
     required this.isDark,
+    required this.total,
+    required this.compact,
   });
 
   final List<MapEntry<String, int>> entries;
   final List<Color> colors;
   final bool isDark;
+  final int total;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Column(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         for (var i = 0; i < entries.length; i += 1)
           Padding(
-            padding: const EdgeInsets.only(bottom: AdminTokens.space3),
+            padding: EdgeInsets.only(
+              bottom: compact ? AdminTokens.space2 : AdminTokens.space3,
+            ),
             child: Row(
               children: [
                 Container(
@@ -815,7 +1368,7 @@ class _LegendList extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  entries[i].value.toString(),
+                  '${(entries[i].value / total * 100).round()}% · ${entries[i].value}',
                   style: AdminTokens.label(isDark),
                 ),
               ],
@@ -922,17 +1475,23 @@ class _NoChartData extends StatelessWidget {
 }
 
 class _EmptyAnalyticsCard extends StatelessWidget {
-  const _EmptyAnalyticsCard({required this.isDark});
+  const _EmptyAnalyticsCard({required this.isDark, required this.compact});
 
   final bool isDark;
+  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return _Panel(
       isDark: isDark,
+      compact: compact,
       child: Row(
         children: [
-          _IconBadge(icon: Icons.schedule_rounded, isDark: isDark),
+          _IconBadge(
+            icon: Icons.schedule_rounded,
+            isDark: isDark,
+            compact: compact,
+          ),
           const SizedBox(width: AdminTokens.space4),
           Expanded(
             child: Column(

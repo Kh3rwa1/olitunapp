@@ -11,42 +11,65 @@ class AdminAnalyticsSnapshot {
     required this.platformTotals,
     required this.eventSourceTotals,
     required this.retentionCohorts,
+    required this.rollupsForExport,
     required this.rollupRows,
     required this.eventRows,
+    required this.startDate,
+    required this.endDate,
   });
 
   factory AdminAnalyticsSnapshot.fromRows({
     required List<Map<String, dynamic>> rollups,
     required List<Map<String, dynamic>> events,
     DateTime? now,
+    DateTime? startDate,
+    DateTime? endDate,
   }) {
     final today = _dateOnly(now ?? DateTime.now().toUtc());
+    final resolvedEnd = _dateOnly(endDate ?? today);
+    final resolvedStart = _dateOnly(
+      startDate ?? resolvedEnd.subtract(const Duration(days: 29)),
+    );
     final eventTotals = <String, int>{};
     final sourceTotals = <String, int>{};
     final platformTotals = <String, int>{};
     final eventSourceTotals = <String, int>{};
     final dailyUsers = <DateTime, Set<String>>{};
     final rollupDailyUsers = <DateTime, int>{};
+    final exportRows = <AnalyticsRollupRow>[];
 
     for (final rollup in rollups) {
       final date = _parseDate(rollup['dateKey']);
       final eventName = _text(rollup['eventName'], fallback: 'unknown_event');
       final totalEvents = _integer(rollup['totalEvents']);
+      final uniqueUsers = _integer(rollup['uniqueUsers']);
       eventTotals[eventName] = (eventTotals[eventName] ?? 0) + totalEvents;
       if (date != null) {
-        final uniqueUsers = _integer(rollup['uniqueUsers']);
         final existing = rollupDailyUsers[date] ?? 0;
         if (uniqueUsers > existing) rollupDailyUsers[date] = uniqueUsers;
       }
 
       final sourceBreakdown = parseBreakdown(rollup['sourceBreakdown']);
+      final platformBreakdown = parseBreakdown(rollup['platformBreakdown']);
+      exportRows.add(
+        AnalyticsRollupRow(
+          dateKey: date == null
+              ? _text(rollup['dateKey'], fallback: '')
+              : formatDateKey(date),
+          eventName: eventName,
+          totalEvents: totalEvents,
+          uniqueUsers: uniqueUsers,
+          sourceBreakdown: sourceBreakdown,
+          platformBreakdown: platformBreakdown,
+        ),
+      );
+
       for (final entry in sourceBreakdown.entries) {
         sourceTotals[entry.key] = (sourceTotals[entry.key] ?? 0) + entry.value;
         final key = '$eventName / ${entry.key}';
         eventSourceTotals[key] = (eventSourceTotals[key] ?? 0) + entry.value;
       }
 
-      final platformBreakdown = parseBreakdown(rollup['platformBreakdown']);
       for (final entry in platformBreakdown.entries) {
         platformTotals[entry.key] =
             (platformTotals[entry.key] ?? 0) + entry.value;
@@ -100,8 +123,11 @@ class AdminAnalyticsSnapshot {
       platformTotals: sortCounts(platformTotals),
       eventSourceTotals: sortCounts(eventSourceTotals),
       retentionCohorts: buildRetentionCohorts(events, now: today),
+      rollupsForExport: exportRows,
       rollupRows: rollups.length,
       eventRows: events.length,
+      startDate: resolvedStart,
+      endDate: resolvedEnd,
     );
   }
 
@@ -114,14 +140,60 @@ class AdminAnalyticsSnapshot {
   final Map<String, int> platformTotals;
   final Map<String, int> eventSourceTotals;
   final List<RetentionCohort> retentionCohorts;
+  final List<AnalyticsRollupRow> rollupsForExport;
   final int rollupRows;
   final int eventRows;
+  final DateTime startDate;
+  final DateTime endDate;
 
   bool get hasAnyData => rollupRows > 0 || eventRows > 0;
+
+  int get rangeDays => endDate.difference(startDate).inDays + 1;
 
   String get semanticsSummary =>
       'Learning analytics dashboard. DAU $dau, WAU $wau, MAU $mau. '
       '${eventTotals.length} event types and ${platformTotals.length} platforms.';
+
+  String toRollupsCsv() {
+    final lines = <List<Object?>>[
+      [
+        'dateKey',
+        'eventName',
+        'totalEvents',
+        'uniqueUsers',
+        'platformBreakdown',
+        'sourceBreakdown',
+      ],
+      for (final row in rollupsForExport)
+        [
+          row.dateKey,
+          row.eventName,
+          row.totalEvents,
+          row.uniqueUsers,
+          jsonEncode(row.platformBreakdown),
+          jsonEncode(row.sourceBreakdown),
+        ],
+    ];
+    return lines.map((line) => line.map(csvEscape).join(',')).join('\n');
+  }
+}
+
+class AnalyticsRollupRow {
+  const AnalyticsRollupRow({
+    required this.dateKey,
+    required this.eventName,
+    required this.totalEvents,
+    required this.uniqueUsers,
+    required this.platformBreakdown,
+    required this.sourceBreakdown,
+  });
+
+  final String dateKey;
+  final String eventName;
+  final int totalEvents;
+  final int uniqueUsers;
+  final Map<String, int> platformBreakdown;
+  final Map<String, int> sourceBreakdown;
 }
 
 class RetentionCohort {
@@ -241,6 +313,14 @@ String formatShortDate(DateTime date) {
     'Dec',
   ];
   return '${months[date.month - 1]} ${date.day}';
+}
+
+String csvEscape(Object? value) {
+  final text = value?.toString() ?? '';
+  final needsQuotes =
+      text.contains(',') || text.contains('"') || text.contains('\n');
+  final escaped = text.replaceAll('"', '""');
+  return needsQuotes ? '"$escaped"' : escaped;
 }
 
 DateTime _latestDate(List<DateTime> dates) {

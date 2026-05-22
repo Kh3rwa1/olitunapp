@@ -51,6 +51,8 @@ void main() {
       expect(snapshot.eventTotals['lesson_completed'], 5);
       expect(snapshot.platformTotals['android'], 5);
       expect(snapshot.eventSourceTotals['quiz_completed / quiz_screen'], 2);
+      expect(snapshot.rangeDays, 30);
+      expect(snapshot.rollupsForExport, hasLength(2));
     });
 
     test('falls back to raw events when rollups are not available yet', () {
@@ -131,6 +133,30 @@ void main() {
         'web': 3,
         'android': 2,
       });
+    });
+  });
+
+  group('CSV export', () {
+    test('escapes rollup rows for spreadsheet export', () {
+      final snapshot = AdminAnalyticsSnapshot.fromRows(
+        now: DateTime.utc(2026, 5, 22),
+        rollups: const [
+          {
+            'dateKey': '2026-05-22',
+            'eventName': 'lesson,completed',
+            'totalEvents': 5,
+            'uniqueUsers': 2,
+            'platformBreakdown': '{"android":5}',
+            'sourceBreakdown': '{"lesson_detail":5}',
+          },
+        ],
+        events: const [],
+      );
+
+      final csv = snapshot.toRollupsCsv();
+      expect(csv, contains('dateKey,eventName,totalEvents'));
+      expect(csv, contains('"lesson,completed"'));
+      expect(csv, contains('"{""android"":5}"'));
     });
   });
 }

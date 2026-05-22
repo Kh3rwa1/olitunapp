@@ -1,5 +1,8 @@
+import 'dart:async';
+
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
@@ -131,6 +134,24 @@ class QuizSessionNotifier
           );
       if (_shouldUseHaptics) HapticFeedback.mediumImpact();
     }
+
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.quizQuestionAnswered,
+            source: 'quiz_session',
+            sourceId: quiz.id,
+            metadata: {
+              'questionIndex': state.currentQuestion,
+              'isCorrect': isCorrect,
+              'selectedIndex': index,
+              'correctIndex': question.correctIndex,
+              'comboBefore': state.comboStreak,
+              'heartsAfter': scoredState.hearts,
+            },
+          ),
+    );
 
     state = scoredState.copyWith(selectedAnswer: index, isAnswered: true);
   }

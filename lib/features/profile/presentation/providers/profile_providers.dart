@@ -13,6 +13,7 @@ import '../../../auth/presentation/providers/auth_providers.dart';
 import '../../../../core/storage/hive_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
+import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/providers/gamification_content_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -226,11 +227,42 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateStats(UserStatsEntity stats) async {
+    final previous = state.valueOrNull;
     final result = await _repository.updateUserStats(stats);
     result.fold((failure) => null, (mergedStats) {
       state = AsyncValue.data(mergedStats);
       _updateSyncStateFromPrefs();
+      _trackStreakMilestone(previous, mergedStats);
     });
+  }
+
+  void _trackStreakMilestone(
+    UserStatsEntity? previous,
+    UserStatsEntity current,
+  ) {
+    final ref = _ref;
+    if (ref == null || previous == null) return;
+    if (current.currentStreak <= previous.currentStreak) return;
+
+    const milestones = [3, 7, 14, 30, 60, 100, 365];
+    for (final milestone in milestones) {
+      if (previous.currentStreak < milestone &&
+          current.currentStreak >= milestone) {
+        unawaited(
+          ref
+              .read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.streakMilestone,
+                source: 'profile_stats',
+                sourceId: 'streak_$milestone',
+                metadata: {
+                  'milestone': milestone,
+                  'currentStreak': current.currentStreak,
+                },
+              ),
+        );
+      }
+    }
   }
 
   /// Updates lastActiveDate and currentStreak based on today's date.
@@ -345,6 +377,20 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
         'daily_mission_completed',
         'missions_$today',
       );
+      unawaited(
+        _ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              LearningAnalyticsEvents.dailyMissionCompleted,
+              source: 'daily_missions',
+              sourceId: today,
+              metadata: {
+                'weekId': weekId,
+                'completedDaysThisWeek': completedDaysThisWeek,
+                'streakShieldEarned': newShields > current.streakShields,
+              },
+            ),
+      );
       unawaited(_syncStreakShield('earn_from_missions'));
     }
 
@@ -442,8 +488,19 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     }
 
     if (score != null) {
-      AppLogger.debug(
-        '[Analytics] Trace Completed: $normalizedLetter with score: ${score.toStringAsFixed(2)}',
+      unawaited(
+        _ref
+                ?.read(learningAnalyticsServiceProvider)
+                .track(
+                  LearningAnalyticsEvents.letterPracticed,
+                  source: 'practice_trace',
+                  sourceId: normalizedLetter,
+                  metadata: {
+                    'score': double.parse(score.toStringAsFixed(2)),
+                    'isDigit': isDigit,
+                  },
+                ) ??
+            Future.value(),
       );
     }
 
@@ -497,6 +554,24 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     updated = _withStreakUpdate(updated);
     await updateStats(updated);
+    if (!alreadyCompleted) {
+      unawaited(
+        _ref
+                ?.read(learningAnalyticsServiceProvider)
+                .track(
+                  LearningAnalyticsEvents.lessonCompleted,
+                  source: 'lesson_detail',
+                  sourceId: lessonId,
+                  learnerLevel: updated.learnerLevel,
+                  metadata: {
+                    'categoryId': categoryId,
+                    'estimatedMinutes': estimatedMinutes.clamp(0, 240),
+                    'totalCompletedLessons': updated.completedLessons.length,
+                  },
+                ) ??
+            Future.value(),
+      );
+    }
   }
 
   Future<void> saveQuizResult(QuizResultEntity result) async {
@@ -525,6 +600,24 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       current.copyWith(quizHistory: updatedHistory),
     );
     await updateStats(updated);
+    unawaited(
+      _ref
+              ?.read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.quizAttempted,
+                source: 'quiz',
+                sourceId: sanitized.quizId,
+                learnerLevel: updated.learnerLevel,
+                metadata: {
+                  'score': sanitized.score,
+                  'totalQuestions': sanitized.totalQuestions,
+                  'percent': (sanitized.score / sanitized.totalQuestions * 100)
+                      .round(),
+                  'passed': sanitized.isPassing,
+                },
+              ) ??
+          Future.value(),
+    );
   }
 
   Future<void> resetProgress() async {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -5,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/analytics/analytics_service.dart';
 import '../domain/entities/lesson_entity.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart' hide CategoryModel;
@@ -42,6 +44,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   final ScrollController _scrollController = ScrollController();
   double _scrollProgress = 0.0;
   bool _isScrollCompleted = false;
+  String? _trackedStartedLessonId;
 
   @override
   void initState() {
@@ -139,6 +142,23 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           WidgetsBinding.instance.addPostFrameCallback((_) {
             updateLastOpenedLesson(ref, lesson.id);
           });
+        }
+        if (_trackedStartedLessonId != lesson.id) {
+          _trackedStartedLessonId = lesson.id;
+          unawaited(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .track(
+                  LearningAnalyticsEvents.lessonStarted,
+                  source: 'lesson_detail',
+                  sourceId: lesson.id,
+                  metadata: {
+                    'categoryId': lesson.categoryId,
+                    'estimatedMinutes': lesson.estimatedMinutes,
+                    'alreadyCompleted': completedLessons.contains(lesson.id),
+                  },
+                ),
+          );
         }
 
         // Calculate dynamic steps

@@ -98,6 +98,13 @@ Appwrite SDK errors are translated into the sealed `Failure` hierarchy
 (`NetworkFailure`, `ServerFailure`, `CacheFailure`, `AuthFailure`, and
 `ValidationFailure`) before reaching UI code.
 
+Learning product analytics live in
+`lib/core/analytics/analytics_service.dart`. Events such as
+`lesson_started`, `lesson_completed`, `quiz_attempted`,
+`quiz_question_answered`, `daily_mission_completed`, and `streak_milestone`
+are written to Appwrite's `learning_analytics_events` collection when online
+and queued locally when offline.
+
 ---
 
 ## 🚀 Quick Start

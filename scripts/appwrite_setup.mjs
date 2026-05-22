@@ -61,6 +61,11 @@ const adminOnlyPermissions = [
   `delete("team:${ADMIN_TEAM_ID}")`,
 ];
 
+const userCreateAdminReadPermissions = [
+  `read("team:${ADMIN_TEAM_ID}")`,
+  'create("users")',
+];
+
 const functionOnlyCollections = new Set([
   'translation_cache',
   'rate_limits',
@@ -83,9 +88,16 @@ const adminOnlyCollections = new Set([
   'gamification_config',
 ]);
 
+const userCreateAdminReadCollections = new Set([
+  'learning_analytics_events',
+]);
+
 function permissionsForCollection(collectionId) {
   if (functionOnlyCollections.has(collectionId)) {
     return [];
+  }
+  if (userCreateAdminReadCollections.has(collectionId)) {
+    return userCreateAdminReadPermissions;
   }
   if (adminReadBackendWriteCollections.has(collectionId)) {
     return adminReadOnlyPermissions;
@@ -570,6 +582,32 @@ const collections = [
       { key: 'idx_audit_action', type: 'key', attributes: ['action'] },
       { key: 'idx_audit_target', type: 'key', attributes: ['targetType', 'targetId'] },
       { key: 'idx_audit_created', type: 'key', attributes: ['createdAt'], orders: ['DESC'] },
+    ],
+  },
+  {
+    id: 'learning_analytics_events',
+    name: 'Learning Analytics Events',
+    attrs: [
+      { type: 'string', key: 'eventId', size: 36, required: true },
+      { type: 'string', key: 'eventName', size: 80, required: true },
+      { type: 'integer', key: 'eventVersion', required: false, default: 1 },
+      { type: 'string', key: 'userId', size: 80, required: false },
+      { type: 'string', key: 'sessionId', size: 36, required: true },
+      { type: 'string', key: 'source', size: 80, required: false },
+      { type: 'string', key: 'sourceId', size: 120, required: false },
+      { type: 'string', key: 'learnerLevel', size: 40, required: false },
+      { type: 'string', key: 'scriptMode', size: 40, required: false },
+      { type: 'string', key: 'platform', size: 20, required: false },
+      { type: 'string', key: 'dateKey', size: 10, required: true },
+      { type: 'string', key: 'occurredAt', size: 30, required: true },
+      { type: 'string', key: 'metadata', size: 4096, required: false },
+    ],
+    indexes: [
+      { key: 'idx_event_id', type: 'unique', attributes: ['eventId'] },
+      { key: 'idx_event_name', type: 'key', attributes: ['eventName'] },
+      { key: 'idx_event_name_date', type: 'key', attributes: ['eventName', 'dateKey'] },
+      { key: 'idx_occurred', type: 'key', attributes: ['occurredAt'], orders: ['DESC'] },
+      { key: 'idx_user_date', type: 'key', attributes: ['userId', 'dateKey'] },
     ],
   },
   // ── Weekly Learning Circle collections ──

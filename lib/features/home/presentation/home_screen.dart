@@ -208,15 +208,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final displayUserName = isGuest ? 'Explorer' : userName;
 
-    final dailyProgress = stats != null
-        ? ((stats.alphabetProgress +
-                      stats.numbersProgress +
-                      stats.vocabularyProgress) /
-                  3 *
-                  100)
-              .round()
-        : 0;
-
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isTablet = ResponsiveLayout.isTablet(context);
     final isDesktop = ResponsiveLayout.isDesktop(context);
@@ -296,7 +287,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           _buildHeader(
                             context,
                             userName: displayUserName,
-                            dailyProgress: dailyProgress,
                             isDark: isDark,
                             isDesktop: isDesktop,
                           ),
@@ -491,7 +481,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Widget _buildHeader(
     BuildContext context, {
     required String userName,
-    required int dailyProgress,
     required bool isDark,
     required bool isDesktop,
   }) {
@@ -510,41 +499,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   fontSize: 30,
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.white : Colors.black,
-                ),
-              ),
-              const SizedBox(height: 6),
-              Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-                decoration: BoxDecoration(
-                  color: AppColors.glass(context, opacity: 0.05),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppColors.glass(context)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.auto_awesome_rounded,
-                      size: 14,
-                      color: AppColors.primary,
-                    ),
-                    const SizedBox(width: 8),
-                    Flexible(
-                      child: Text(
-                        'Daily Progress: $dailyProgress%',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white70 : Colors.black54,
-                        ),
-                      ),
-                    ),
-                  ],
                 ),
               ),
             ],

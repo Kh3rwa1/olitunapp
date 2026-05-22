@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../core/motion/page_transitions.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
+import '../../features/onboarding/presentation/onboarding_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/email_auth_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
@@ -40,6 +41,9 @@ import '../../features/admin/presentation/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_rhyme_categories_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
+import '../../features/admin/presentation/affirmations/admin_affirmations_screen.dart';
+import '../../features/admin/presentation/purchases/admin_purchases_screen.dart';
+import '../../features/admin/presentation/binti_waitlist/admin_binti_waitlist_screen.dart';
 import '../../features/admin/presentation/access/admin_access_screen.dart';
 import '../../features/admin/presentation/analytics/admin_analytics_screen.dart';
 import '../../features/admin/presentation/gamification/admin_gamification_screen.dart';
@@ -185,6 +189,7 @@ final routerProvider = Provider<GoRouter>((ref) {
           path == '/login' ||
           path == '/privacy' ||
           path == '/terms' ||
+          path == '/onboarding' ||
           path.startsWith('/admin');
 
       if (showOnboarding && !isAllowedDuringOnboarding) {
@@ -202,6 +207,11 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/welcome',
         name: RouteNames.welcome,
         child: (_, _) => const WelcomeScreen(),
+      ),
+      _peerRoute(
+        path: '/onboarding',
+        name: RouteNames.onboarding,
+        child: (_, _) => const OnboardingScreen(),
       ),
       _modalRoute(
         path: '/login',
@@ -447,6 +457,18 @@ final routerProvider = Provider<GoRouter>((ref) {
             path: '/admin/maintenance',
             builder: (context, state) =>
                 const AdminGamificationScreen(section: 'maintenance'),
+          ),
+          adminRoute(
+            path: '/admin/affirmations',
+            builder: (context, state) => const AdminAffirmationsScreen(),
+          ),
+          adminRoute(
+            path: '/admin/purchases',
+            builder: (context, state) => const AdminPurchasesScreen(),
+          ),
+          adminRoute(
+            path: '/admin/binti-waitlist',
+            builder: (context, state) => const AdminBintiWaitlistScreen(),
           ),
         ],
       ),

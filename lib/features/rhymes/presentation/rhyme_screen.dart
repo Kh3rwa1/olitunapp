@@ -20,6 +20,7 @@ import 'widgets/rhyme_filter_chips.dart';
 import 'widgets/featured_rhyme_card.dart';
 import 'widgets/bento_rhyme_card.dart';
 import 'widgets/enchanted_visualizer.dart';
+import 'widgets/binti_guru_landing.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -33,6 +34,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   String? _selectedCategoryId;
   String? _selectedCategoryName;
   String? _selectedTag;
+  int _currentTab = 0; // 0 = Bakhed Audio, 1 = Binti Guru
   late final AnimationController _headerPulseController;
   late final AnimationController _dividerGlowController;
 
@@ -134,35 +136,52 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       ),
                     ),
 
-                    // --- Category Filter chips ---
-                    _buildCategoryChips(categoriesAsync, isDark, isTablet),
+                    // --- Segmented Control ---
+                    _buildSegmentedControl(isDark, isTablet),
 
-                    // --- Tag chips ---
-                    if (_selectedCategoryId != null)
-                      _buildTagChips(allTags, isDark, isTablet),
+                    if (_currentTab == 0) ...[
+                      // --- Category Filter chips ---
+                      _buildCategoryChips(categoriesAsync, isDark, isTablet),
 
-                    const SliverToBoxAdapter(child: SizedBox(height: 24)),
+                      // --- Tag chips ---
+                      if (_selectedCategoryId != null)
+                        _buildTagChips(allTags, isDark, isTablet),
 
-                    // --- Featured Card ---
-                    _buildFeaturedSection(rhymesAsync, isTablet),
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
-                    const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                      // --- Featured Card ---
+                      _buildFeaturedSection(rhymesAsync, isTablet),
 
-                    // --- Section Title ---
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: EdgeInsets.symmetric(
-                          horizontal: isTablet ? 32 : 24,
+                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
+
+                      // --- Section Title ---
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 32 : 24,
+                          ),
+                          child: _buildDiscoverHeader(isDark),
+                        ).animate().fadeIn(delay: 600.ms),
+                      ),
+                      const SliverToBoxAdapter(child: SizedBox(height: 20)),
+
+                      // --- Bento Grid ---
+                      _buildBentoGrid(rhymesAsync, isDark, isTablet, isDesktop),
+
+                      const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                    ] else ...[
+                      SliverToBoxAdapter(
+                        child: ResponsivePageContainer(
+                          padding: EdgeInsets.fromLTRB(
+                            isTablet ? 32 : 24,
+                            8,
+                            isTablet ? 32 : 24,
+                            120,
+                          ),
+                          child: const BintiGuruLanding(),
                         ),
-                        child: _buildDiscoverHeader(isDark),
-                      ).animate().fadeIn(delay: 600.ms),
-                    ),
-                    const SliverToBoxAdapter(child: SizedBox(height: 20)),
-
-                    // --- Bento Grid ---
-                    _buildBentoGrid(rhymesAsync, isDark, isTablet, isDesktop),
-
-                    const SliverToBoxAdapter(child: SizedBox(height: 120)),
+                      ),
+                    ],
                   ],
                 ),
               ),
@@ -176,6 +195,97 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildSegmentedControl(bool isDark, bool isTablet) {
+    return SliverToBoxAdapter(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: isTablet ? 32 : 24,
+          vertical: 12,
+        ),
+        child: Container(
+          height: 50,
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withOpacity(0.04)
+                : Colors.black.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: isDark ? Colors.white10 : Colors.black.withOpacity(0.04),
+            ),
+          ),
+          child: Stack(
+            children: [
+              AnimatedAlign(
+                alignment: _currentTab == 0
+                    ? Alignment.centerLeft
+                    : Alignment.centerRight,
+                duration: const Duration(milliseconds: 250),
+                curve: Curves.easeInOutCubic,
+                child: FractionallySizedBox(
+                  widthFactor: 0.5,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: AppColors.primary,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.primary.withOpacity(0.3),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _currentTab = 0),
+                      child: Center(
+                        child: Text(
+                          '🎵 Bakhed Audio',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _currentTab == 0
+                                ? Colors.white
+                                : (isDark ? Colors.white70 : Colors.black54),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.opaque,
+                      onTap: () => setState(() => _currentTab = 1),
+                      child: Center(
+                        child: Text(
+                          '🧑‍🏫 Binti Guru',
+                          style: GoogleFonts.fredoka(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w600,
+                            color: _currentTab == 1
+                                ? Colors.white
+                                : (isDark ? Colors.white70 : Colors.black54),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
     );
   }
 

@@ -13,6 +13,12 @@ class CategoryModel extends CategoryEntity {
     super.isActive = true,
     super.totalLessons = 0,
     super.description,
+    super.unlockMode = 'free',
+    super.priceInr = 0,
+    super.previewLessonCount = 3,
+    super.courseDescription,
+    super.courseOutcome,
+    super.courseHeroImageUrl,
   });
 
   factory CategoryModel.fromJson(Map<String, dynamic> json, [String? docId]) {
@@ -30,6 +36,12 @@ class CategoryModel extends CategoryEntity {
       isActive: json['isActive'] as bool? ?? true,
       totalLessons: json['totalLessons'] as int? ?? 0,
       description: json['description'] as String?,
+      unlockMode: json['unlockMode'] as String? ?? 'free',
+      priceInr: json['priceInr'] as int? ?? 0,
+      previewLessonCount: json['previewLessonCount'] as int? ?? 3,
+      courseDescription: json['courseDescription'] as String?,
+      courseOutcome: json['courseOutcome'] as String?,
+      courseHeroImageUrl: json['courseHeroImageUrl'] as String?,
     );
   }
 
@@ -46,6 +58,12 @@ class CategoryModel extends CategoryEntity {
       'isActive': isActive,
       'totalLessons': totalLessons,
       'description': description,
+      'unlockMode': unlockMode,
+      'priceInr': priceInr,
+      'previewLessonCount': previewLessonCount,
+      'courseDescription': courseDescription,
+      'courseOutcome': courseOutcome,
+      'courseHeroImageUrl': courseHeroImageUrl,
     };
   }
 
@@ -62,6 +80,12 @@ class CategoryModel extends CategoryEntity {
       isActive: isActive,
       totalLessons: totalLessons,
       description: description,
+      unlockMode: unlockMode,
+      priceInr: priceInr,
+      previewLessonCount: previewLessonCount,
+      courseDescription: courseDescription,
+      courseOutcome: courseOutcome,
+      courseHeroImageUrl: courseHeroImageUrl,
     );
   }
 
@@ -78,6 +102,12 @@ class CategoryModel extends CategoryEntity {
       isActive: entity.isActive,
       totalLessons: entity.totalLessons,
       description: entity.description,
+      unlockMode: entity.unlockMode,
+      priceInr: entity.priceInr,
+      previewLessonCount: entity.previewLessonCount,
+      courseDescription: entity.courseDescription,
+      courseOutcome: entity.courseOutcome,
+      courseHeroImageUrl: entity.courseHeroImageUrl,
     );
   }
 }

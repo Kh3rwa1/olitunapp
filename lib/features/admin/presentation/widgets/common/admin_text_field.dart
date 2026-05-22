@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 
 /// Tokenised text field used across all admin forms.
@@ -13,6 +14,7 @@ class AdminTextField extends StatelessWidget {
     this.helperText,
     this.prefixIcon,
     this.onChanged,
+    this.inputFormatters,
   });
 
   final TextEditingController controller;
@@ -23,6 +25,7 @@ class AdminTextField extends StatelessWidget {
   final String? helperText;
   final IconData? prefixIcon;
   final ValueChanged<String>? onChanged;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   Widget build(BuildContext context) {
@@ -37,6 +40,7 @@ class AdminTextField extends StatelessWidget {
           maxLines: maxLines,
           keyboardType: keyboardType,
           onChanged: onChanged,
+          inputFormatters: inputFormatters,
           style: AdminTokens.bodyStrong(isDark),
           decoration: InputDecoration(
             hintText: hint,

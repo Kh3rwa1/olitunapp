@@ -258,6 +258,26 @@
                 "files.read",
                 "files.write"
             ]
+        },
+        {
+            "$id": "verifyCoursePurchase",
+            "name": "verifyCoursePurchase",
+            "runtime": "node-22",
+            "path": "functions/verifyCoursePurchase",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
         }
     ],
     "sites": [

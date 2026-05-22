@@ -62,6 +62,13 @@ before enabling in production.
 - Retention is capped at the last 12 backups to conserve storage.
 - Storage bucket access is restricted exclusively to members of the `admins` team.
 
+### Payments & Review Unlocks
+
+- **Server-Side Verification:** Course purchases are verified strictly server-side using the `verifyCoursePurchase` Appwrite Function. The Razorpay HMAC-SHA256 signature (`razorpay_signature`) is calculated and matched against the secret key in the function environment. No client-side payment confirmation is trusted.
+- **Race Condition Prevention:** The `course_purchases` collection enforces a unique dual-attribute index on `user_id` + `category_id`. This prevents race conditions and double-unlock exploits from duplicate payment payloads.
+- **One-Review-Per-User Enforcement:** Play Store review unlocks are capped at a maximum of one course per user. The verification function queries the database to confirm that the user has not previously redeemed a review-unlock transaction.
+- **Secure Purchases Collection:** The `course_purchases` collection has zero public client permissions. Direct document creation is forbidden. Document read access is explicitly restricted on a per-document basis: the verification function creates documents with read permissions granted only to the owning user (`Permission.read(Role.user(userId))`), preventing cross-user data leakage.
+
 ## Supported versions
 
 Only the `main` branch receives security fixes.

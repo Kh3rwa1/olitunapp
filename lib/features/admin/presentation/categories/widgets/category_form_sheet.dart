@@ -40,6 +40,14 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
   late String _selectedGradient;
   late String _selectedIcon;
 
+  // Course Monetization fields
+  late String _selectedUnlockMode;
+  late final TextEditingController _priceInrCtrl;
+  late final TextEditingController _previewLessonCountCtrl;
+  late final TextEditingController _courseDescriptionCtrl;
+  late final TextEditingController _courseOutcomeCtrl;
+  String? _courseHeroImageUrl;
+
   bool get _isEditing => widget.category != null;
 
   @override
@@ -58,6 +66,22 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     _animationUrl = widget.category?.animationUrl;
     _selectedGradient = widget.category?.gradientPreset ?? 'skyBlue';
     _selectedIcon = widget.category?.iconName ?? 'alphabet';
+
+    // Monetization fields
+    _selectedUnlockMode = widget.category?.unlockMode ?? 'free';
+    _priceInrCtrl = TextEditingController(
+      text: (widget.category?.priceInr ?? 0).toString(),
+    );
+    _previewLessonCountCtrl = TextEditingController(
+      text: (widget.category?.previewLessonCount ?? 3).toString(),
+    );
+    _courseDescriptionCtrl = TextEditingController(
+      text: widget.category?.courseDescription ?? '',
+    );
+    _courseOutcomeCtrl = TextEditingController(
+      text: widget.category?.courseOutcome ?? '',
+    );
+    _courseHeroImageUrl = widget.category?.courseHeroImageUrl;
   }
 
   @override
@@ -65,6 +89,10 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     _titleLatinCtrl.dispose();
     _titleOlChikiCtrl.dispose();
     _descriptionCtrl.dispose();
+    _priceInrCtrl.dispose();
+    _previewLessonCountCtrl.dispose();
+    _courseDescriptionCtrl.dispose();
+    _courseOutcomeCtrl.dispose();
     super.dispose();
   }
 
@@ -82,6 +110,21 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
       gradientPreset: _selectedGradient,
       iconName: _selectedIcon,
       order: widget.category?.order ?? 0,
+
+      // Monetization construction
+      unlockMode: _selectedUnlockMode,
+      priceInr: int.tryParse(_priceInrCtrl.text) ?? 0,
+      previewLessonCount: int.tryParse(_previewLessonCountCtrl.text) ?? 3,
+      courseDescription: _courseDescriptionCtrl.text.isNotEmpty
+          ? _courseDescriptionCtrl.text
+          : null,
+      courseOutcome: _courseOutcomeCtrl.text.isNotEmpty
+          ? _courseOutcomeCtrl.text
+          : null,
+      courseHeroImageUrl:
+          _courseHeroImageUrl != null && _courseHeroImageUrl!.isNotEmpty
+          ? _courseHeroImageUrl
+          : null,
     );
 
     if (_isEditing) {
@@ -97,7 +140,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      height: MediaQuery.of(context).size.height * 0.85,
+      height: MediaQuery.of(context).size.height * 0.90,
       decoration: BoxDecoration(
         color: AdminTokens.overlay(isDark),
         borderRadius: const BorderRadius.vertical(
@@ -137,7 +180,9 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                 ),
                 const SizedBox(width: 16),
                 Text(
-                  _isEditing ? 'Edit Category' : 'New Category',
+                  _isEditing
+                      ? 'Edit Category / Course'
+                      : 'New Category / Course',
                   style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.w800,
@@ -179,8 +224,9 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                   const SizedBox(height: 20),
                   AdminTextField(
                     controller: _descriptionCtrl,
-                    label: 'Description',
-                    hint: 'Brief description of this category',
+                    label: 'Short Description',
+                    hint:
+                        'Brief description of this category (appears in main list)',
                     maxLines: 2,
                   ),
                   const SizedBox(height: 20),
@@ -204,7 +250,115 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                     allowedExtensions: const ['json'],
                     onUploaded: (url) => setState(() => _animationUrl = url),
                   ),
+
+                  // Monetization section
                   const SizedBox(height: 28),
+                  Text(
+                    'Monetization & Course Access',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : Colors.black,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+
+                  DropdownButtonFormField<String>(
+                    value: _selectedUnlockMode,
+                    decoration: InputDecoration(
+                      labelText: 'Unlock Mode',
+                      filled: true,
+                      fillColor: AdminTokens.sunken(isDark),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusMd,
+                        ),
+                        borderSide: BorderSide(
+                          color: AdminTokens.border(isDark),
+                        ),
+                      ),
+                    ),
+                    dropdownColor: isDark
+                        ? const Color(0xFF151922)
+                        : Colors.white,
+                    items: const [
+                      DropdownMenuItem(
+                        value: 'free',
+                        child: Text(
+                          'Free Course (Everyone unlocks immediately)',
+                        ),
+                      ),
+                      DropdownMenuItem(
+                        value: 'paid_only',
+                        child: Text('Paid Only (Direct Razorpay purchase)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'review_or_paid',
+                        child: Text('Dual Mode (Leave a Review OR Pay)'),
+                      ),
+                      DropdownMenuItem(
+                        value: 'review_only',
+                        child: Text('Review Only (Leave a Play Store Review)'),
+                      ),
+                    ],
+                    onChanged: (val) {
+                      if (val != null) {
+                        setState(() => _selectedUnlockMode = val);
+                      }
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (_selectedUnlockMode != 'free') ...[
+                    if (_selectedUnlockMode != 'review_only') ...[
+                      AdminTextField(
+                        controller: _priceInrCtrl,
+                        label: 'Price (INR)',
+                        hint: 'e.g., 299',
+                        keyboardType: TextInputType.number,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.digitsOnly,
+                        ],
+                      ),
+                      const SizedBox(height: 20),
+                    ],
+                    AdminTextField(
+                      controller: _previewLessonCountCtrl,
+                      label: 'Free Preview Lesson Count',
+                      hint: 'e.g., 3',
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                    const SizedBox(height: 20),
+                    AdminTextField(
+                      controller: _courseDescriptionCtrl,
+                      label: 'Premium Course Description (Markdown support)',
+                      hint:
+                          'Describe what learning outcome and benefits users get...',
+                      maxLines: 4,
+                    ),
+                    const SizedBox(height: 20),
+                    AdminTextField(
+                      controller: _courseOutcomeCtrl,
+                      label: 'Premium Learning Outcomes',
+                      hint:
+                          'e.g., Master advanced Santali writing & read fluently',
+                      maxLines: 2,
+                    ),
+                    const SizedBox(height: 20),
+                    AdminMediaField(
+                      label: 'Premium Course Hero Image',
+                      icon: Icons.image_rounded,
+                      accent: Colors.deepPurple,
+                      currentUrl: _courseHeroImageUrl,
+                      uploadFolder: 'course-heroes',
+                      fileType: FileType.image,
+                      onUploaded: (url) =>
+                          setState(() => _courseHeroImageUrl = url),
+                    ),
+                    const SizedBox(height: 28),
+                  ],
 
                   // Gradient Selection
                   Text(

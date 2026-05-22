@@ -70,6 +70,7 @@ const functionOnlyCollections = new Set([
   'translation_cache',
   'rate_limits',
   'reward_events',
+  'course_purchases',
 ]);
 
 const adminReadBackendWriteCollections = new Set([
@@ -92,6 +93,14 @@ const userCreateAdminReadCollections = new Set([
 function permissionsForCollection(collectionId) {
   if (functionOnlyCollections.has(collectionId)) {
     return [];
+  }
+  if (collectionId === 'binti_guru_waitlist') {
+    return [
+      'create("any")',
+      `read("team:${ADMIN_TEAM_ID}")`,
+      `update("team:${ADMIN_TEAM_ID}")`,
+      `delete("team:${ADMIN_TEAM_ID}")`,
+    ];
   }
   if (userCreateAdminReadCollections.has(collectionId)) {
     return userCreateAdminReadPermissions;
@@ -149,6 +158,12 @@ const collections = [
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'integer', key: 'totalLessons', required: false, default: 0 },
       { type: 'string', key: 'description', size: 2048, required: false },
+      { type: 'string', key: 'unlockMode', size: 30, required: false, default: 'free' },
+      { type: 'integer', key: 'priceInr', required: false, default: 0 },
+      { type: 'integer', key: 'previewLessonCount', required: false, default: 3 },
+      { type: 'string', key: 'courseDescription', size: 2048, required: false },
+      { type: 'string', key: 'courseOutcome', size: 500, required: false },
+      { type: 'string', key: 'courseHeroImageUrl', size: 1024, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -704,6 +719,69 @@ const collections = [
       { key: 'idx_bakhed_completed', type: 'key', attributes: ['userId', 'completed80Percent'] },
     ],
   },
+  {
+    id: 'daily_affirmations',
+    name: 'Daily Affirmations',
+    attrs: [
+      { type: 'string', key: 'olChikiText', size: 500, required: true },
+      { type: 'string', key: 'santaliPhonetic', size: 500, required: true },
+      { type: 'string', key: 'englishMeaning', size: 500, required: true },
+      { type: 'string', key: 'audioUrl', size: 1024, required: false },
+      { type: 'string', key: 'category', size: 50, required: true },
+      { type: 'boolean', key: 'isPremium', required: false, default: false },
+      { type: 'integer', key: 'order', required: true, default: 0 },
+      { type: 'string', key: 'publishedAt', size: 30, required: true },
+    ],
+    indexes: [
+      { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
+      { key: 'idx_category_published', type: 'key', attributes: ['category', 'publishedAt'] },
+    ],
+  },
+  {
+    id: 'course_purchases',
+    name: 'Course Purchases',
+    documentSecurity: true,
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'categoryId', size: 36, required: true },
+      { type: 'string', key: 'unlockMethod', size: 30, required: true },
+      { type: 'integer', key: 'amountPaidInr', required: true, default: 0 },
+      { type: 'string', key: 'razorpayPaymentId', size: 255, required: false },
+      { type: 'string', key: 'razorpayOrderId', size: 255, required: false },
+      { type: 'string', key: 'razorpaySignature', size: 512, required: false },
+      { type: 'string', key: 'reviewCompletedAt', size: 30, required: false },
+      { type: 'string', key: 'reviewPlatform', size: 20, required: false },
+      { type: 'string', key: 'status', size: 20, required: true, default: 'pending' },
+      { type: 'string', key: 'purchasedAt', size: 30, required: true },
+      { type: 'string', key: 'verifiedAt', size: 30, required: false },
+    ],
+    indexes: [
+      { key: 'idx_user_category', type: 'unique', attributes: ['userId', 'categoryId'] },
+      { key: 'idx_user_id', type: 'key', attributes: ['userId'] },
+    ],
+  },
+  {
+    id: 'binti_guru_waitlist',
+    name: 'Binti Guru Waitlist',
+    documentSecurity: true,
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: false },
+      { type: 'string', key: 'fullName', size: 100, required: true },
+      { type: 'string', key: 'phoneNumber', size: 20, required: true },
+      { type: 'string', key: 'ceremonyType', size: 50, required: true },
+      { type: 'string', key: 'eventDate', size: 30, required: false },
+      { type: 'string', key: 'city', size: 100, required: true },
+      { type: 'string', key: 'state', size: 100, required: true },
+      { type: 'string', key: 'notes', size: 1000, required: false },
+      { type: 'string', key: 'submittedAt', size: 30, required: true },
+      { type: 'string', key: 'contactedAt', size: 30, required: false },
+      { type: 'string', key: 'status', size: 20, required: true, default: 'new' },
+    ],
+    indexes: [
+      { key: 'idx_submitted', type: 'key', attributes: ['submittedAt'], orders: ['DESC'] },
+      { key: 'idx_status', type: 'key', attributes: ['status'] },
+    ],
+  },
 ];
 
 // ─── STORAGE BUCKETS ───
@@ -762,15 +840,16 @@ async function main() {
   for (const col of collections) {
     console.log(`📋 Creating collection: ${col.name} (${col.id})`);
     const permissions = permissionsForCollection(col.id);
+    const docSecurity = col.documentSecurity || false;
     await api('POST', `/databases/${DATABASE_ID}/collections`, {
       collectionId: col.id,
       name: col.name,
-      documentSecurity: false,
+      documentSecurity: docSecurity,
       permissions,
     });
     await api('PUT', `/databases/${DATABASE_ID}/collections/${col.id}`, {
       name: col.name,
-      documentSecurity: false,
+      documentSecurity: docSecurity,
       permissions,
     });
 

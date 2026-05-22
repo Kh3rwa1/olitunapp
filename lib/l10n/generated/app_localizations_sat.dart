@@ -10,422 +10,422 @@ class AppLocalizationsSat extends AppLocalizations {
 
   @override
   String helloUser(String userName) {
-    return 'Johar, $userName! 👋';
+    return 'ᱡᱚᱦᱟᱨ, $userName! 👋';
   }
 
   @override
-  String get readyToLearn => 'Tehin chet lagid em saprao-a?';
+  String get readyToLearn => 'ᱛᱮᱦᱮᱧ ᱪᱮᱫ ᱞᱟᱹᱜᱤᱫ ᱮᱢ ᱥᱟᱯᱲᱟᱣᱟ?';
 
   @override
-  String get dayStreak => 'Din Streak';
+  String get dayStreak => 'ᱫᱤᱱ ᱥᱴᱨᱤᱠ';
 
   @override
-  String get stars => 'Stars';
+  String get stars => 'ᱤᱯᱤᱞ';
 
   @override
-  String get lessons => 'Path';
+  String get lessons => 'ᱯᱟᱴ';
 
   @override
-  String get continueLearning => 'Chet\' idime';
+  String get continueLearning => 'ᱪᱮᱫ ᱤᱫᱤ ᱢᱮ';
 
   @override
-  String get pickUpWhereLeftOff => 'Jahan khon em bagiat-a';
+  String get pickUpWhereLeftOff => 'ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱮᱢ ᱵᱟᱹᱜᱤᱭᱟᱫᱟ';
 
   @override
   String percentComplete(int percent) {
-    return '$percent% Chao';
+    return '$percent% ᱪᱟᱵᱟ';
   }
 
   @override
-  String get dailyQuiz => 'Din-am Quiz';
+  String get dailyQuiz => 'ᱫᱤᱱᱟᱹᱢ ᱠᱩᱭᱤᱡᱽ';
 
   @override
-  String get practice => 'Abhyas';
+  String get practice => 'ᱟᱵᱷᱭᱟᱥ';
 
   @override
-  String get explore => 'Sandhay me';
+  String get explore => 'ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ';
 
   @override
-  String get chooseCategory => 'Thok bachao me';
+  String get chooseCategory => 'ᱛᱷᱚᱠ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
 
   @override
   String lessonsCount(int count) {
-    return '$count path';
+    return '$count ᱯᱟᱴ';
   }
 
   @override
-  String get settings => 'Settings';
+  String get settings => 'ᱥᱮᱴᱤᱝᱥ';
 
   @override
-  String get customizeExperience => 'Em chet\' anubhav badal me';
+  String get customizeExperience => 'ᱮᱢ ᱪᱮᱫ ᱟᱱᱩᱵᱷᱟᱵ ᱵᱟᱫᱟᱞ ᱢᱮ';
 
   @override
-  String get appearance => 'Dekhaw';
+  String get appearance => 'ᱫᱮᱠᱷᱟᱣ';
 
   @override
-  String get darkMode => 'Andhar Mode';
+  String get darkMode => 'ᱟᱸᱫᱷᱟᱨ ᱢᱳᱰ';
 
   @override
-  String get scriptDisplay => 'Ol Dekhaw';
+  String get scriptDisplay => 'ᱚᱞ ᱫᱮᱠᱷᱟᱣ';
 
   @override
-  String get scriptMode => 'Ol Mode';
+  String get scriptMode => 'ᱚᱞ ᱢᱳᱰ';
 
   @override
-  String get appLanguage => 'App Bhasa';
+  String get appLanguage => 'ᱟᱯ ᱵᱷᱟᱥᱟ';
 
   @override
-  String get chooseLanguage => 'Bhasa bachao me';
+  String get chooseLanguage => 'ᱵᱷᱟᱥᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get english => 'English';
+  String get english => 'ᱤᱝᱞᱤᱥ';
 
   @override
-  String get languageChanged => 'Bhasa badal ena';
+  String get languageChanged => 'ᱵᱷᱟᱥᱟ ᱵᱟᱫᱟᱞ ᱮᱱᱟ';
 
   @override
-  String get sound => 'Sadam';
+  String get sound => 'ᱥᱟᱫᱟᱢ';
 
   @override
-  String get soundEffects => 'Sadam Effects';
+  String get soundEffects => 'ᱥᱟᱫᱟᱢ ᱤᱯᱷᱮᱠᱴᱥ';
 
   @override
-  String get playSoundsForActions => 'Kam lagid sadam bajao me';
+  String get playSoundsForActions => 'ᱠᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱫᱟᱢ ᱵᱟᱡᱟᱣ ᱢᱮ';
 
   @override
-  String get dangerZone => 'Khatra Jaega';
+  String get dangerZone => 'ᱠᱷᱟᱛᱨᱟ ᱡᱟᱮᱜᱟ';
 
   @override
-  String get resetProgress => 'Pragati Reset';
+  String get resetProgress => 'ᱯᱨᱟᱜᱟᱛᱤ ᱨᱤᱥᱮᱴ';
 
   @override
-  String get clearAllLearningData => 'Joto chet data sapha me';
+  String get clearAllLearningData => 'ᱡᱚᱛᱚ ᱪᱮᱫ ᱰᱟᱴᱟ ᱥᱟᱯᱷᱟ ᱢᱮ';
 
   @override
-  String get deleteAccount => 'Account Mitao';
+  String get deleteAccount => 'ᱟᱠᱟᱣᱩᱱᱴ ᱢᱤᱴᱟᱣ';
 
   @override
-  String get deleteAccountSubtitle => 'Account hamesa lagid mitao me';
+  String get deleteAccountSubtitle => 'ᱟᱠᱟᱣᱩᱱᱴ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ ᱢᱮ';
 
   @override
-  String get legal => 'Ain';
+  String get legal => 'ᱟᱭᱤᱱ';
 
   @override
-  String get privacyPolicy => 'Gopaniyata Niti';
+  String get privacyPolicy => 'ᱜᱚᱯᱟᱱᱤᱭᱟᱛᱟ ᱱᱤᱛᱤ';
 
   @override
-  String get privacyPolicySubtitle => 'Account ar chet data ok\'to horok kanam';
+  String get privacyPolicySubtitle => 'ᱟᱠᱟᱣᱩᱱᱴ ᱟᱨ ᱪᱮᱫ ᱰᱟᱴᱟ ᱚᱠᱛᱚ ᱦᱚᱨᱚᱠ ᱠᱟᱱᱟᱢ';
 
   @override
-  String get termsOfUse => 'Niyam';
+  String get termsOfUse => 'ᱱᱤᱭᱟᱢ';
 
   @override
-  String get termsOfUseSubtitle => 'Chetgir, account, ar bichaar lagid niyam';
+  String get termsOfUseSubtitle => 'ᱪᱮᱫᱜᱤᱨ, ᱟᱠᱟᱣᱩᱱᱴ, ᱟᱨ ᱵᱤᱪᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱱᱤᱭᱟᱢ';
 
   @override
-  String get chooseTheme => 'Theme bachao me';
+  String get chooseTheme => 'ᱛᱷᱤᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get systemDefault => 'System default';
+  String get systemDefault => 'ᱥᱤᱥᱴᱮᱢ ᱰᱤᱯᱷᱚᱞᱴ';
 
   @override
-  String get light => 'Chanana';
+  String get light => 'ᱪᱟᱱᱟᱱᱟ';
 
   @override
-  String get dark => 'Andhar';
+  String get dark => 'ᱟᱸᱫᱷᱟᱨ';
 
   @override
-  String get olChikiOnly => 'Khaali Ol Chiki';
+  String get olChikiOnly => 'ᱠᱷᱟᱞᱤ ᱚᱞ ᱪᱤᱠᱤ';
 
   @override
-  String get latinOnly => 'Khaali Latin';
+  String get latinOnly => 'ᱠᱷᱟᱞᱤ ᱞᱟᱴᱤᱱ';
 
   @override
-  String get bothScripts => 'Bariya ol';
+  String get bothScripts => 'ᱵᱟᱨᱤᱭᱟ ᱚᱞ';
 
   @override
-  String get cancel => 'Band';
+  String get cancel => 'ᱵᱟᱸᱫᱽ';
 
   @override
-  String get reset => 'Reset';
+  String get reset => 'ᱨᱤᱥᱮᱴ';
 
   @override
   String get resetProgressWarning =>
-      'Noa em joto pragati, stars, ar streaks sapha kate. Noa kam aar undo ba hoyok\'a.';
+      'ᱱᱚᱣᱟ ᱮᱢ ᱡᱚᱛᱚ ᱯᱨᱟᱜᱟᱛᱤ, ᱤᱯᱤᱞ, ᱟᱨ ᱥᱴᱨᱤᱠ ᱥᱟᱯᱷᱟ ᱠᱟᱛᱮ᱾ ᱱᱚᱣᱟ ᱠᱟᱢ ᱟᱨ ᱩᱱᱰᱚ ᱵᱟ ᱦᱚᱭᱚᱜᱼᱟ᱾';
 
   @override
   String get deleteAccountWarning =>
-      'Noa em account ar joto data hamesa lagid mitao kate. Noa kam aar undo ba hoyok\'a.\n\nEm pragati, settings, ar nijir tethay hamesa lagid udao kata.';
+      'ᱱᱚᱣᱟ ᱮᱢ ᱟᱠᱟᱣᱩᱱᱴ ᱟᱨ ᱡᱚᱛᱚ ᱰᱟᱴᱟ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ ᱠᱟᱛᱮ᱾ ᱱᱚᱣᱟ ᱠᱟᱢ ᱟᱨ ᱩᱱᱰᱚ ᱵᱟ ᱦᱚᱭᱚᱜᱼᱟ᱾\n\nᱮᱢ ᱯᱨᱟᱜᱟᱛᱤ, ᱥᱮᱴᱤᱝᱥ, ᱟᱨ ᱱᱤᱡᱤᱨ ᱴᱮᱴᱷᱟᱭ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱩᱰᱟᱣ ᱠᱟᱛᱟ᱾';
 
   @override
-  String get deletePermanently => 'Hamesa lagid mitao';
+  String get deletePermanently => 'ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ';
 
   @override
   String failedToDeleteAccount(String message) {
-    return 'Account mitao kat\' bango: $message';
+    return 'ᱟᱠᱟᱣᱩᱱᱴ ᱢᱤᱴᱟᱣ ᱠᱟᱛ ᱵᱟᱸᱜᱚ: $message';
   }
 
   @override
-  String get signInWithEmail => 'Email ren sign in me';
+  String get signInWithEmail => 'ᱤᱢᱮᱞ ᱨᱮᱱ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ';
 
   @override
   String get magicCodeDescription =>
-      'Am inag mit jaadu code pathao-a em chinah lagid. Password lakat ba.';
+      'ᱟᱢ ᱤᱧᱟᱜ ᱢᱤᱫ ᱡᱟᱫᱩ ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣᱼᱟ ᱮᱢ ᱪᱤᱱᱦᱟᱹ ᱞᱟᱹᱜᱤᱫ᱾ ᱯᱟᱥᱣᱟᱨᱰ ᱞᱟᱠᱟᱛ ᱵᱟ᱾';
 
   @override
-  String get emailAddress => 'Email Address';
+  String get emailAddress => 'ᱤᱢᱮᱞ ᱮᱰᱨᱮᱥ';
 
   @override
   String get emailHint => 'chetgir@example.com';
 
   @override
-  String get sendCode => 'Code pathao me';
+  String get sendCode => 'ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get continueWithoutAccount => 'Account bagich idi me';
+  String get continueWithoutAccount => 'ᱟᱠᱟᱣᱩᱱᱴ ᱵᱟᱜᱤᱪ ᱤᱫᱤ ᱢᱮ';
 
   @override
-  String get enterVerificationCode => 'Chinah Code dohoy me';
+  String get enterVerificationCode => 'ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ';
 
   @override
   String codeSentTo(String email) {
-    return 'Am $email re code pathao len-a';
+    return 'ᱟᱢ $email ᱨᱮ ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣ ᱞᱮᱱᱼᱟ';
   }
 
   @override
-  String get verificationCode => 'Chinah Code';
+  String get verificationCode => 'ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ';
 
   @override
-  String get enterCodeFromEmail => 'Email khon code dohoy me';
+  String get enterCodeFromEmail => 'ᱤᱢᱮᱞ ᱠᱷᱚᱱ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ';
 
   @override
-  String get verifyAndContinue => 'Chinah ar idi me';
+  String get verifyAndContinue => 'ᱪᱤᱱᱦᱟᱹ ᱟᱨ ᱤᱫᱤ ᱢᱮ';
 
   @override
   String resendCodeIn(int seconds) {
-    return '${seconds}s re code aar pathao me';
+    return '${seconds}s ᱨᱮ ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ';
   }
 
   @override
-  String get resendCode => 'Code aar pathao me';
+  String get resendCode => 'ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get validEmailError => 'Mit bhalo email address dohoy me';
+  String get validEmailError => 'ᱢᱤᱫ ᱵᱷᱟᱞᱚ ᱤᱢᱮᱞ ᱮᱰᱨᱮᱥ ᱫᱚᱦᱚᱭ ᱢᱮ';
 
   @override
-  String get enterCodeError => 'Chinah code dohoy me';
+  String get enterCodeError => 'ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ';
 
   @override
-  String get sessionExpired => 'Session khatam. Code aar pathao me.';
+  String get sessionExpired => 'ᱥᱮᱥᱚᱱ ᱠᱷᱟᱛᱟᱢ᱾ ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ᱾';
 
   @override
-  String get errorCopiedToClipboard => 'Bhul clipboard re copy hoena';
+  String get errorCopiedToClipboard => 'ᱵᱷᱩᱞ ᱠᱞᱤᱯᱵᱳᱨᱰ ᱨᱮ ᱠᱚᱯᱤ ᱦᱚᱭᱮᱱᱟ';
 
   @override
-  String get skip => 'Bagich';
+  String get skip => 'ᱵᱟᱜᱤᱪ';
 
   @override
-  String get quiz => 'Quiz';
+  String get quiz => 'ᱠᱩᱭᱤᱡᱽ';
 
   @override
-  String get noQuestionsYet => 'Abo tak kudchhi ba';
+  String get noQuestionsYet => 'ᱟᱵᱚ ᱛᱟᱠ ᱠᱩᱫᱪᱷᱤ ᱵᱟ';
 
   @override
-  String get goBack => 'Pichhe me';
+  String get goBack => 'ᱯᱤᱪᱷᱮ ᱢᱮ';
 
   @override
-  String get continueButton => 'Idi me';
+  String get continueButton => 'ᱤᱫᱤ ᱢᱮ';
 
   @override
-  String get wellDone => 'Bhalo hoena!';
+  String get wellDone => 'ᱵᱷᱟᱞᱚ ᱦᱚᱭᱮᱱᱟ!';
 
   @override
-  String get keepPracticing => 'Abhyas idi me';
+  String get keepPracticing => 'ᱟᱵᱷᱭᱟᱥ ᱤᱫᱤ ᱢᱮ';
 
   @override
   String youScored(int score, int total) {
-    return 'Em $total khon $score paolen-a';
+    return 'ᱮᱢ $total ᱠᱷᱚᱱ $score ᱯᱟᱣᱞᱮᱱᱼᱟ';
   }
 
   @override
   String plusStars(int count) {
-    return '+$count Stars';
+    return '+$count ᱤᱯᱤᱞ';
   }
 
   @override
-  String get aboutThisLesson => 'Noa path babot';
+  String get aboutThisLesson => 'ᱱᱚᱣᱟ ᱯᱟᱴ ᱵᱟᱵᱚᱛ';
 
   @override
-  String get completeLesson => 'Path chao me';
+  String get completeLesson => 'ᱯᱟᱴ ᱪᱟᱵᱟ ᱢᱮ';
 
   @override
-  String get lettersToLearn => 'Ol chetlagid';
+  String get lettersToLearn => 'ᱚᱞ ᱪᱮᱫᱞᱟᱹᱜᱤᱫ';
 
   @override
-  String get numbersToLearn => 'Ginti chetlagid';
+  String get numbersToLearn => 'ᱜᱤᱱᱛᱤ ᱪᱮᱫᱞᱟᱹᱜᱤᱫ';
 
   @override
-  String get vocabulary => 'Ror';
+  String get vocabulary => 'ᱨᱚᱲ';
 
   @override
-  String get commonPhrases => 'Chalit Baat';
+  String get commonPhrases => 'ᱪᱟᱞᱤᱛ ᱵᱟᱛ';
 
   @override
-  String get content => 'Bichaar';
+  String get content => 'ᱵᱤᱪᱟᱨ';
 
   @override
-  String get takeAQuiz => 'Quiz me';
+  String get takeAQuiz => 'ᱠᱩᱭᱤᱡᱽ ᱢᱮ';
 
   @override
-  String get testYourKnowledge => 'Em gyaan jaanch me!';
+  String get testYourKnowledge => 'ᱮᱢ ᱜᱭᱟᱱ ᱡᱟᱸᱪ ᱢᱮ!';
 
   @override
-  String get noLettersAvailable => 'Abo tak ol ba';
+  String get noLettersAvailable => 'ᱟᱵᱚ ᱛᱟᱠ ᱚᱞ ᱵᱟ';
 
   @override
-  String get noNumbersAvailable => 'Abo tak ginti ba';
+  String get noNumbersAvailable => 'ᱟᱵᱚ ᱛᱟᱠ ᱜᱤᱱᱛᱤ ᱵᱟ';
 
   @override
-  String get noWordsAvailable => 'Abo tak ror ba';
+  String get noWordsAvailable => 'ᱟᱵᱚ ᱛᱟᱠ ᱨᱚᱲ ᱵᱟ';
 
   @override
-  String get noSentencesAvailable => 'Abo tak baat ba';
+  String get noSentencesAvailable => 'ᱟᱵᱚ ᱛᱟᱠ ᱵᱟᱛ ᱵᱟ';
 
   @override
-  String get noLessonsAvailable => 'Abo tak path ba';
+  String get noLessonsAvailable => 'ᱟᱵᱚ ᱛᱟᱠ ᱯᱟᱴ ᱵᱟ';
 
   @override
   String joharUser(String userName) {
-    return 'Johar, $userName!';
+    return 'ᱡᱚᱦᱟᱨ, $userName!';
   }
 
   @override
   String dailyProgressPercent(int percent) {
-    return 'Din Pragati: $percent%';
+    return 'ᱫᱤᱱ ᱯᱨᱟᱜᱟᱛᱤ: $percent%';
   }
 
   @override
-  String get milestones => 'Miitpatthar';
+  String get milestones => 'ᱢᱤᱫᱯᱟᱛᱷᱟᱨ';
 
   @override
-  String get learningTime => 'Chet Samay';
+  String get learningTime => 'ᱪᱮᱫ ᱥᱟᱢᱟᱭ';
 
   @override
-  String get time => 'Samay';
+  String get time => 'ᱥᱟᱢᱟᱭ';
 
   @override
-  String get resumeJourney => 'YATRA IDI ME';
+  String get resumeJourney => 'ᱭᱟᱛᱨᱟ ᱤᱫᱤ ᱢᱮ';
 
   @override
-  String get testYourKnowledgeTitle => 'Em Gyaan\nJaanch me!';
+  String get testYourKnowledgeTitle => 'ᱮᱢ ᱜᱭᱟᱱ\nᱡᱟᱸᱪ ᱢᱮ!';
 
   @override
   String quizzesAvailable(int count) {
-    return '$count Quiz menag-a';
+    return '$count ᱠᱩᱭᱤᱡᱽ ᱢᱮᱱᱟᱜᱼᱟ';
   }
 
   @override
-  String get start => 'SURU';
+  String get start => 'ᱥᱩᱨᱩ';
 
   @override
-  String get discover => 'SANDHAY';
+  String get discover => 'ᱥᱮᱸᱫᱽᱨᱟᱭ';
 
   @override
-  String get couldNotLoadPaths => 'Chet path load bango';
+  String get couldNotLoadPaths => 'ᱪᱮᱫ ᱯᱟᱴ ᱞᱳᱰ ᱵᱟᱸᱜᱚ';
 
   @override
-  String get yourStats => 'EM STATS';
+  String get yourStats => 'ᱮᱢ ᱥᱴᱟᱴᱥ';
 
   @override
-  String get skillsMastery => 'KAUSAL MASTER';
+  String get skillsMastery => 'ᱠᱟᱣᱥᱟᱞ ᱢᱟᱥᱴᱟᱨ';
 
   @override
-  String get quizAnalysis => 'QUIZ BISHLESHAN';
+  String get quizAnalysis => 'ᱠᱩᱭᱤᱡᱽ ᱵᱤᱥᱞᱮᱥᱟᱱ';
 
   @override
-  String get account => 'ACCOUNT';
+  String get account => 'ᱟᱠᱟᱣᱩᱱᱴ';
 
   @override
-  String get editName => 'Nut\' badal';
+  String get editName => 'ᱧᱩᱛᱩᱢ ᱵᱟᱫᱟᱞ';
 
   @override
-  String get share => 'Adik';
+  String get share => 'ᱟᱫᱤᱠ';
 
   @override
-  String get comingSoon => 'Nawa ased!';
+  String get comingSoon => 'ᱱᱟᱣᱟ ᱟᱥᱮᱫ!';
 
   @override
-  String get chooseYourAvatar => 'Em Avatar bachao me';
+  String get chooseYourAvatar => 'ᱮᱢ ᱟᱵᱟᱛᱟᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get backgroundColor => 'Rang';
+  String get backgroundColor => 'ᱨᱟᱝ';
 
   @override
-  String get avatarEmoji => 'Avatar Emoji';
+  String get avatarEmoji => 'ᱟᱵᱟᱛᱟᱨ ᱤᱢᱳᱡᱤ';
 
   @override
   String get rhymes => 'ᱵᱟᱠᱷᱮᱬ';
 
   @override
-  String get santali => 'Santali';
+  String get santali => 'ᱥᱟᱱᱛᱟᱲᱤ';
 
   @override
-  String get unlockMagic => 'Katha ar enger jaadu khul me';
+  String get unlockMagic => 'ᱠᱟᱛᱷᱟ ᱟᱨ ᱮᱱᱜᱮᱨ ᱡᱟᱫᱩ ᱠᱷᱩᱞ ᱢᱮ';
 
   @override
-  String get all => 'Joto';
+  String get all => 'ᱡᱚᱛᱚ';
 
   @override
-  String get discoverMore => 'AAR SANDHAY';
+  String get discoverMore => 'ᱟᱨ ᱥᱮᱸᱫᱽᱨᱟᱭ';
 
   @override
-  String get moreComing => 'Aar ased! ✨';
+  String get moreComing => 'ᱟᱨ ᱟᱥᱮᱫ! ✨';
 
   @override
-  String get couldNotLoadRhymes => 'ᱵᱟᱠᱷᱮᱬ load ᱵᱟᱝᱜᱚ';
+  String get couldNotLoadRhymes => 'ᱵᱟᱠᱷᱮᱬ ᱞᱳᱰ ᱵᱟᱝᱜᱚ';
 
   @override
-  String get checkConnection => 'Em connection dekhao ar aar try me';
+  String get checkConnection => 'ᱮᱢ ᱠᱚᱱᱮᱠᱥᱚᱱ ᱫᱮᱠᱷᱟᱣ ᱟᱨ ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
 
   @override
-  String get featured => 'BISESH';
+  String get featured => 'ᱵᱤᱥᱮᱥ';
 
   @override
-  String get listenNow => 'ABO AYUM';
+  String get listenNow => 'ᱟᱵᱚ ᱟᱭᱩᱢ';
 
   @override
-  String get pause => 'THAM';
+  String get pause => 'ᱛᱷᱟᱢ';
 
   @override
-  String get getStarted => 'Suru me';
+  String get getStarted => 'ᱥᱩᱨᱩ ᱢᱮ';
 
   @override
-  String get loading => 'Load hoyog...';
+  String get loading => 'ᱞᱳᱰ ᱦᱚᱭᱚᱜ...';
 
   @override
-  String get error => 'Bhul';
+  String get error => 'ᱵᱷᱩᱞ';
 
   @override
-  String get retry => 'Aar try me';
+  String get retry => 'ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
 
   @override
-  String get undo => 'Undo';
+  String get undo => 'ᱩᱱᱰᱳ';
 
   @override
-  String get clear => 'Sapha';
+  String get clear => 'ᱥᱟᱯᱷᱟ';
 
   @override
-  String get tryAgain => 'Aar try me';
+  String get tryAgain => 'ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ';
 
   @override
-  String get replayAnimation => 'Animation aar dekhao';
+  String get replayAnimation => 'ᱮᱱᱤᱢᱮᱥᱚᱱ ᱟᱨ ᱫᱮᱠᱷᱟᱣ';
 
   @override
-  String get sentences => 'Baat';
+  String get sentences => 'ᱵᱟᱛ';
 
   @override
-  String get noSentencesFound => 'Baat ba sedaena';
+  String get noSentencesFound => 'ᱵᱟᱛ ᱵᱟ ᱥᱮᱫᱟᱮᱱᱟ';
 
   @override
-  String get noQuestionsFound => 'Kudchhi ba sedaena.';
+  String get noQuestionsFound => 'ᱠᱩᱫᱪᱷᱤ ᱵᱟ ᱥᱮᱫᱟᱮᱱᱟ';
 }

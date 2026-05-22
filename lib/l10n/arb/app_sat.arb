@@ -1,6 +1,6 @@
 {
     "@@locale": "sat",
-    "helloUser": "Johar, {userName}! 👋",
+    "helloUser": "ᱡᱚᱦᱟᱨ, {userName}! 👋",
     "@helloUser": {
         "placeholders": {
             "userName": {
@@ -8,13 +8,13 @@
             }
         }
     },
-    "readyToLearn": "Tehin chet lagid em saprao-a?",
-    "dayStreak": "Din Streak",
-    "stars": "Stars",
-    "lessons": "Path",
-    "continueLearning": "Chet' idime",
-    "pickUpWhereLeftOff": "Jahan khon em bagiat-a",
-    "percentComplete": "{percent}% Chao",
+    "readyToLearn": "ᱛᱮᱦᱮᱧ ᱪᱮᱫ ᱞᱟᱹᱜᱤᱫ ᱮᱢ ᱥᱟᱯᱲᱟᱣᱟ?",
+    "dayStreak": "ᱫᱤᱱ ᱥᱴᱨᱤᱠ",
+    "stars": "ᱤᱯᱤᱞ",
+    "lessons": "ᱯᱟᱴ",
+    "continueLearning": "ᱪᱮᱫ ᱤᱫᱤ ᱢᱮ",
+    "pickUpWhereLeftOff": "ᱡᱟᱦᱟᱸ ᱠᱷᱚᱱ ᱮᱢ ᱵᱟᱹᱜᱤᱭᱟᱫᱟ",
+    "percentComplete": "{percent}% ᱪᱟᱵᱟ",
     "@percentComplete": {
         "placeholders": {
             "percent": {
@@ -22,11 +22,11 @@
             }
         }
     },
-    "dailyQuiz": "Din-am Quiz",
-    "practice": "Abhyas",
-    "explore": "Sandhay me",
-    "chooseCategory": "Thok bachao me",
-    "lessonsCount": "{count} path",
+    "dailyQuiz": "ᱫᱤᱱᱟᱹᱢ ᱠᱩᱭᱤᱡᱽ",
+    "practice": "ᱟᱵᱷᱭᱟᱥ",
+    "explore": "ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ",
+    "chooseCategory": "ᱛᱷᱚᱠ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "lessonsCount": "{count} ᱯᱟᱴ",
     "@lessonsCount": {
         "placeholders": {
             "count": {
@@ -35,42 +35,42 @@
         }
     },
 
-    "settings": "Settings",
-    "customizeExperience": "Em chet' anubhav badal me",
-    "appearance": "Dekhaw",
-    "darkMode": "Andhar Mode",
-    "scriptDisplay": "Ol Dekhaw",
-    "scriptMode": "Ol Mode",
-    "appLanguage": "App Bhasa",
-    "chooseLanguage": "Bhasa bachao me",
-    "english": "English",
-    "languageChanged": "Bhasa badal ena",
-    "sound": "Sadam",
-    "soundEffects": "Sadam Effects",
-    "playSoundsForActions": "Kam lagid sadam bajao me",
-    "dangerZone": "Khatra Jaega",
-    "resetProgress": "Pragati Reset",
-    "clearAllLearningData": "Joto chet data sapha me",
-    "deleteAccount": "Account Mitao",
-    "deleteAccountSubtitle": "Account hamesa lagid mitao me",
-    "legal": "Ain",
-    "privacyPolicy": "Gopaniyata Niti",
-    "privacyPolicySubtitle": "Account ar chet data ok'to horok kanam",
-    "termsOfUse": "Niyam",
-    "termsOfUseSubtitle": "Chetgir, account, ar bichaar lagid niyam",
-    "chooseTheme": "Theme bachao me",
-    "systemDefault": "System default",
-    "light": "Chanana",
-    "dark": "Andhar",
-    "olChikiOnly": "Khaali Ol Chiki",
-    "latinOnly": "Khaali Latin",
-    "bothScripts": "Bariya ol",
-    "cancel": "Band",
-    "reset": "Reset",
-    "resetProgressWarning": "Noa em joto pragati, stars, ar streaks sapha kate. Noa kam aar undo ba hoyok'a.",
-    "deleteAccountWarning": "Noa em account ar joto data hamesa lagid mitao kate. Noa kam aar undo ba hoyok'a.\n\nEm pragati, settings, ar nijir tethay hamesa lagid udao kata.",
-    "deletePermanently": "Hamesa lagid mitao",
-    "failedToDeleteAccount": "Account mitao kat' bango: {message}",
+    "settings": "ᱥᱮᱴᱤᱝᱥ",
+    "customizeExperience": "ᱮᱢ ᱪᱮᱫ ᱟᱱᱩᱵᱷᱟᱵ ᱵᱟᱫᱟᱞ ᱢᱮ",
+    "appearance": "ᱫᱮᱠᱷᱟᱣ",
+    "darkMode": "ᱟᱸᱫᱷᱟᱨ ᱢᱳᱰ",
+    "scriptDisplay": "ᱚᱞ ᱫᱮᱠᱷᱟᱣ",
+    "scriptMode": "ᱚᱞ ᱢᱳᱰ",
+    "appLanguage": "ᱟᱯ ᱵᱷᱟᱥᱟ",
+    "chooseLanguage": "ᱵᱷᱟᱥᱟ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "english": "ᱤᱝᱞᱤᱥ",
+    "languageChanged": "ᱵᱷᱟᱥᱟ ᱵᱟᱫᱟᱞ ᱮᱱᱟ",
+    "sound": "ᱥᱟᱫᱟᱢ",
+    "soundEffects": "ᱥᱟᱫᱟᱢ ᱤᱯᱷᱮᱠᱴᱥ",
+    "playSoundsForActions": "ᱠᱟᱢ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱫᱟᱢ ᱵᱟᱡᱟᱣ ᱢᱮ",
+    "dangerZone": "ᱠᱷᱟᱛᱨᱟ ᱡᱟᱮᱜᱟ",
+    "resetProgress": "ᱯᱨᱟᱜᱟᱛᱤ ᱨᱤᱥᱮᱴ",
+    "clearAllLearningData": "ᱡᱚᱛᱚ ᱪᱮᱫ ᱰᱟᱴᱟ ᱥᱟᱯᱷᱟ ᱢᱮ",
+    "deleteAccount": "ᱟᱠᱟᱣᱩᱱᱴ ᱢᱤᱴᱟᱣ",
+    "deleteAccountSubtitle": "ᱟᱠᱟᱣᱩᱱᱴ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ ᱢᱮ",
+    "legal": "ᱟᱭᱤᱱ",
+    "privacyPolicy": "ᱜᱚᱯᱟᱱᱤᱭᱟᱛᱟ ᱱᱤᱛᱤ",
+    "privacyPolicySubtitle": "ᱟᱠᱟᱣᱩᱱᱴ ᱟᱨ ᱪᱮᱫ ᱰᱟᱴᱟ ᱚᱠᱛᱚ ᱦᱚᱨᱚᱠ ᱠᱟᱱᱟᱢ",
+    "termsOfUse": "ᱱᱤᱭᱟᱢ",
+    "termsOfUseSubtitle": "ᱪᱮᱫᱜᱤᱨ, ᱟᱠᱟᱣᱩᱱᱴ, ᱟᱨ ᱵᱤᱪᱟᱨ ᱞᱟᱹᱜᱤᱫ ᱱᱤᱭᱟᱢ",
+    "chooseTheme": "ᱛᱷᱤᱢ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "systemDefault": "ᱥᱤᱥᱴᱮᱢ ᱰᱤᱯᱷᱚᱞᱴ",
+    "light": "ᱪᱟᱱᱟᱱᱟ",
+    "dark": "ᱟᱸᱫᱷᱟᱨ",
+    "olChikiOnly": "ᱠᱷᱟᱞᱤ ᱚᱞ ᱪᱤᱠᱤ",
+    "latinOnly": "ᱠᱷᱟᱞᱤ ᱞᱟᱴᱤᱱ",
+    "bothScripts": "ᱵᱟᱨᱤᱭᱟ ᱚᱞ",
+    "cancel": "ᱵᱟᱸᱫᱽ",
+    "reset": "ᱨᱤᱥᱮᱴ",
+    "resetProgressWarning": "ᱱᱚᱣᱟ ᱮᱢ ᱡᱚᱛᱚ ᱯᱨᱟᱜᱟᱛᱤ, ᱤᱯᱤᱞ, ᱟᱨ ᱥᱴᱨᱤᱠ ᱥᱟᱯᱷᱟ ᱠᱟᱛᱮ᱾ ᱱᱚᱣᱟ ᱠᱟᱢ ᱟᱨ ᱩᱱᱰᱚ ᱵᱟ ᱦᱚᱭᱚᱜᱼᱟ᱾",
+    "deleteAccountWarning": "ᱱᱚᱣᱟ ᱮᱢ ᱟᱠᱟᱣᱩᱱᱴ ᱟᱨ ᱡᱚᱛᱚ ᱰᱟᱴᱟ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ ᱠᱟᱛᱮ᱾ ᱱᱚᱣᱟ ᱠᱟᱢ ᱟᱨ ᱩᱱᱰᱚ ᱵᱟ ᱦᱚᱭᱚᱜᱼᱟ᱾\n\nᱮᱢ ᱯᱨᱟᱜᱟᱛᱤ, ᱥᱮᱴᱤᱝᱥ, ᱟᱨ ᱱᱤᱡᱤᱨ ᱴᱮᱴᱷᱟᱭ ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱩᱰᱟᱣ ᱠᱟᱛᱟ᱾",
+    "deletePermanently": "ᱦᱟᱢᱮᱥᱟ ᱞᱟᱹᱜᱤᱫ ᱢᱤᱴᱟᱣ",
+    "failedToDeleteAccount": "ᱟᱠᱟᱣᱩᱱᱴ ᱢᱤᱴᱟᱣ ᱠᱟᱛ ᱵᱟᱸᱜᱚ: {message}",
     "@failedToDeleteAccount": {
         "placeholders": {
             "message": {
@@ -79,14 +79,14 @@
         }
     },
 
-    "signInWithEmail": "Email ren sign in me",
-    "magicCodeDescription": "Am inag mit jaadu code pathao-a em chinah lagid. Password lakat ba.",
-    "emailAddress": "Email Address",
+    "signInWithEmail": "ᱤᱢᱮᱞ ᱨᱮᱱ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ",
+    "magicCodeDescription": "ᱟᱢ ᱤᱧᱟᱜ ᱢᱤᱫ ᱡᱟᱫᱩ ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣᱼᱟ ᱮᱢ ᱪᱤᱱᱦᱟᱹ ᱞᱟᱹᱜᱤᱫ᱾ ᱯᱟᱥᱣᱟᱨᱰ ᱞᱟᱠᱟᱛ ᱵᱟ᱾",
+    "emailAddress": "ᱤᱢᱮᱞ ᱮᱰᱨᱮᱥ",
     "emailHint": "chetgir@example.com",
-    "sendCode": "Code pathao me",
-    "continueWithoutAccount": "Account bagich idi me",
-    "enterVerificationCode": "Chinah Code dohoy me",
-    "codeSentTo": "Am {email} re code pathao len-a",
+    "sendCode": "ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣ ᱢᱮ",
+    "continueWithoutAccount": "ᱟᱠᱟᱣᱩᱱᱴ ᱵᱟᱜᱤᱪ ᱤᱫᱤ ᱢᱮ",
+    "enterVerificationCode": "ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ",
+    "codeSentTo": "ᱟᱢ {email} ᱨᱮ ᱠᱳᱰ ᱯᱟᱴᱷᱟᱣ ᱞᱮᱱᱼᱟ",
     "@codeSentTo": {
         "placeholders": {
             "email": {
@@ -94,10 +94,10 @@
             }
         }
     },
-    "verificationCode": "Chinah Code",
-    "enterCodeFromEmail": "Email khon code dohoy me",
-    "verifyAndContinue": "Chinah ar idi me",
-    "resendCodeIn": "{seconds}s re code aar pathao me",
+    "verificationCode": "ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ",
+    "enterCodeFromEmail": "ᱤᱢᱮᱞ ᱠᱷᱚᱱ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ",
+    "verifyAndContinue": "ᱪᱤᱱᱦᱟᱹ ᱟᱨ ᱤᱫᱤ ᱢᱮ",
+    "resendCodeIn": "{seconds}s ᱨᱮ ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ",
     "@resendCodeIn": {
         "placeholders": {
             "seconds": {
@@ -105,20 +105,20 @@
             }
         }
     },
-    "resendCode": "Code aar pathao me",
-    "validEmailError": "Mit bhalo email address dohoy me",
-    "enterCodeError": "Chinah code dohoy me",
-    "sessionExpired": "Session khatam. Code aar pathao me.",
-    "errorCopiedToClipboard": "Bhul clipboard re copy hoena",
-    "skip": "Bagich",
+    "resendCode": "ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ",
+    "validEmailError": "ᱢᱤᱫ ᱵᱷᱟᱞᱚ ᱤᱢᱮᱞ ᱮᱰᱨᱮᱥ ᱫᱚᱦᱚᱭ ᱢᱮ",
+    "enterCodeError": "ᱪᱤᱱᱦᱟᱹ ᱠᱳᱰ ᱫᱚᱦᱚᱭ ᱢᱮ",
+    "sessionExpired": "ᱥᱮᱥᱚᱱ ᱠᱷᱟᱛᱟᱢ᱾ ᱠᱳᱰ ᱟᱨ ᱯᱟᱴᱷᱟᱣ ᱢᱮ᱾",
+    "errorCopiedToClipboard": "ᱵᱷᱩᱞ ᱠᱞᱤᱯᱵᱳᱨᱰ ᱨᱮ ᱠᱚᱯᱤ ᱦᱚᱭᱮᱱᱟ",
+    "skip": "ᱵᱟᱜᱤᱪ",
 
-    "quiz": "Quiz",
-    "noQuestionsYet": "Abo tak kudchhi ba",
-    "goBack": "Pichhe me",
-    "continueButton": "Idi me",
-    "wellDone": "Bhalo hoena!",
-    "keepPracticing": "Abhyas idi me",
-    "youScored": "Em {total} khon {score} paolen-a",
+    "quiz": "ᱠᱩᱭᱤᱡᱽ",
+    "noQuestionsYet": "ᱟᱵᱚ ᱛᱟᱠ ᱠᱩᱫᱪᱷᱤ ᱵᱟ",
+    "goBack": "ᱯᱤᱪᱷᱮ ᱢᱮ",
+    "continueButton": "ᱤᱫᱤ ᱢᱮ",
+    "wellDone": "ᱵᱷᱟᱞᱚ ᱦᱚᱭᱮᱱᱟ!",
+    "keepPracticing": "ᱟᱵᱷᱭᱟᱥ ᱤᱫᱤ ᱢᱮ",
+    "youScored": "ᱮᱢ {total} ᱠᱷᱚᱱ {score} ᱯᱟᱣᱞᱮᱱᱼᱟ",
     "@youScored": {
         "placeholders": {
             "score": {
@@ -129,7 +129,7 @@
             }
         }
     },
-    "plusStars": "+{count} Stars",
+    "plusStars": "+{count} ᱤᱯᱤᱞ",
     "@plusStars": {
         "placeholders": {
             "count": {
@@ -138,22 +138,22 @@
         }
     },
 
-    "aboutThisLesson": "Noa path babot",
-    "completeLesson": "Path chao me",
-    "lettersToLearn": "Ol chetlagid",
-    "numbersToLearn": "Ginti chetlagid",
-    "vocabulary": "Ror",
-    "commonPhrases": "Chalit Baat",
-    "content": "Bichaar",
-    "takeAQuiz": "Quiz me",
-    "testYourKnowledge": "Em gyaan jaanch me!",
-    "noLettersAvailable": "Abo tak ol ba",
-    "noNumbersAvailable": "Abo tak ginti ba",
-    "noWordsAvailable": "Abo tak ror ba",
-    "noSentencesAvailable": "Abo tak baat ba",
-    "noLessonsAvailable": "Abo tak path ba",
+    "aboutThisLesson": "ᱱᱚᱣᱟ ᱯᱟᱴ ᱵᱟᱵᱚᱛ",
+    "completeLesson": "ᱯᱟᱴ ᱪᱟᱵᱟ ᱢᱮ",
+    "lettersToLearn": "ᱚᱞ ᱪᱮᱫᱞᱟᱹᱜᱤᱫ",
+    "numbersToLearn": "ᱜᱤᱱᱛᱤ ᱪᱮᱫᱞᱟᱹᱜᱤᱫ",
+    "vocabulary": "ᱨᱚᱲ",
+    "commonPhrases": "ᱪᱟᱞᱤᱛ ᱵᱟᱛ",
+    "content": "ᱵᱤᱪᱟᱨ",
+    "takeAQuiz": "ᱠᱩᱭᱤᱡᱽ ᱢᱮ",
+    "testYourKnowledge": "ᱮᱢ ᱜᱭᱟᱱ ᱡᱟᱸᱪ ᱢᱮ!",
+    "noLettersAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱚᱞ ᱵᱟ",
+    "noNumbersAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱜᱤᱱᱛᱤ ᱵᱟ",
+    "noWordsAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱨᱚᱲ ᱵᱟ",
+    "noSentencesAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱵᱟᱛ ᱵᱟ",
+    "noLessonsAvailable": "ᱟᱵᱚ ᱛᱟᱠ ᱯᱟᱴ ᱵᱟ",
 
-    "joharUser": "Johar, {userName}!",
+    "joharUser": "ᱡᱚᱦᱟᱨ, {userName}!",
     "@joharUser": {
         "placeholders": {
             "userName": {
@@ -161,7 +161,7 @@
             }
         }
     },
-    "dailyProgressPercent": "Din Pragati: {percent}%",
+    "dailyProgressPercent": "ᱫᱤᱱ ᱯᱨᱟᱜᱟᱛᱤ: {percent}%",
     "@dailyProgressPercent": {
         "placeholders": {
             "percent": {
@@ -169,12 +169,12 @@
             }
         }
     },
-    "milestones": "Miitpatthar",
-    "learningTime": "Chet Samay",
-    "time": "Samay",
-    "resumeJourney": "YATRA IDI ME",
-    "testYourKnowledgeTitle": "Em Gyaan\nJaanch me!",
-    "quizzesAvailable": "{count} Quiz menag-a",
+    "milestones": "ᱢᱤᱫᱯᱟᱛᱷᱟᱨ",
+    "learningTime": "ᱪᱮᱫ ᱥᱟᱢᱟᱭ",
+    "time": "ᱥᱟᱢᱟᱭ",
+    "resumeJourney": "ᱭᱟᱛᱨᱟ ᱤᱫᱤ ᱢᱮ",
+    "testYourKnowledgeTitle": "ᱮᱢ ᱜᱭᱟᱱ\nᱡᱟᱸᱪ ᱢᱮ!",
+    "quizzesAvailable": "{count} ᱠᱩᱭᱤᱡᱽ ᱢᱮᱱᱟᱜᱼᱟ",
     "@quizzesAvailable": {
         "placeholders": {
             "count": {
@@ -182,42 +182,42 @@
             }
         }
     },
-    "start": "SURU",
-    "discover": "SANDHAY",
-    "couldNotLoadPaths": "Chet path load bango",
+    "start": "ᱥᱩᱨᱩ",
+    "discover": "ᱥᱮᱸᱫᱽᱨᱟᱭ",
+    "couldNotLoadPaths": "ᱪᱮᱫ ᱯᱟᱴ ᱞᱳᱰ ᱵᱟᱸᱜᱚ",
 
-    "yourStats": "EM STATS",
-    "skillsMastery": "KAUSAL MASTER",
-    "quizAnalysis": "QUIZ BISHLESHAN",
-    "account": "ACCOUNT",
-    "editName": "Nut' badal",
-    "share": "Adik",
-    "comingSoon": "Nawa ased!",
-    "chooseYourAvatar": "Em Avatar bachao me",
-    "backgroundColor": "Rang",
-    "avatarEmoji": "Avatar Emoji",
+    "yourStats": "ᱮᱢ ᱥᱴᱟᱴᱥ",
+    "skillsMastery": "ᱠᱟᱣᱥᱟᱞ ᱢᱟᱥᱴᱟᱨ",
+    "quizAnalysis": "ᱠᱩᱭᱤᱡᱽ ᱵᱤᱥᱞᱮᱥᱟᱱ",
+    "account": "ᱟᱠᱟᱣᱩᱱᱴ",
+    "editName": "ᱧᱩᱛᱩᱢ ᱵᱟᱫᱟᱞ",
+    "share": "ᱟᱫᱤᱠ",
+    "comingSoon": "ᱱᱟᱣᱟ ᱟᱥᱮᱫ!",
+    "chooseYourAvatar": "ᱮᱢ ᱟᱵᱟᱛᱟᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ",
+    "backgroundColor": "ᱨᱟᱝ",
+    "avatarEmoji": "ᱟᱵᱟᱛᱟᱨ ᱤᱢᱳᱡᱤ",
 
     "rhymes": "ᱵᱟᱠᱷᱮᱬ",
-    "santali": "Santali",
-    "unlockMagic": "Katha ar enger jaadu khul me",
-    "all": "Joto",
-    "discoverMore": "AAR SANDHAY",
-    "moreComing": "Aar ased! ✨",
-    "couldNotLoadRhymes": "ᱵᱟᱠᱷᱮᱬ load ᱵᱟᱝᱜᱚ",
-    "checkConnection": "Em connection dekhao ar aar try me",
-    "featured": "BISESH",
-    "listenNow": "ABO AYUM",
-    "pause": "THAM",
+    "santali": "ᱥᱟᱱᱛᱟᱲᱤ",
+    "unlockMagic": "ᱠᱟᱛᱷᱟ ᱟᱨ ᱮᱱᱜᱮᱨ ᱡᱟᱫᱩ ᱠᱷᱩᱞ ᱢᱮ",
+    "all": "ᱡᱚᱛᱚ",
+    "discoverMore": "ᱟᱨ ᱥᱮᱸᱫᱽᱨᱟᱭ",
+    "moreComing": "ᱟᱨ ᱟᱥᱮᱫ! ✨",
+    "couldNotLoadRhymes": "ᱵᱟᱠᱷᱮᱬ ᱞᱳᱰ ᱵᱟᱝᱜᱚ",
+    "checkConnection": "ᱮᱢ ᱠᱚᱱᱮᱠᱥᱚᱱ ᱫᱮᱠᱷᱟᱣ ᱟᱨ ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ",
+    "featured": "ᱵᱤᱥᱮᱥ",
+    "listenNow": "ᱟᱵᱚ ᱟᱭᱩᱢ",
+    "pause": "ᱛᱷᱟᱢ",
 
-    "getStarted": "Suru me",
-    "loading": "Load hoyog...",
-    "error": "Bhul",
-    "retry": "Aar try me",
-    "undo": "Undo",
-    "clear": "Sapha",
-    "tryAgain": "Aar try me",
-    "replayAnimation": "Animation aar dekhao",
-    "sentences": "Baat",
-    "noSentencesFound": "Baat ba sedaena",
-    "noQuestionsFound": "Kudchhi ba sedaena."
+    "getStarted": "ᱥᱩᱨᱩ ᱢᱮ",
+    "loading": "ᱞᱳᱰ ᱦᱚᱭᱚᱜ...",
+    "error": "ᱵᱷᱩᱞ",
+    "retry": "ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ",
+    "undo": "ᱩᱱᱰᱳ",
+    "clear": "ᱥᱟᱯᱷᱟ",
+    "tryAgain": "ᱟᱨ ᱴᱨᱟᱭ ᱢᱮ",
+    "replayAnimation": "ᱮᱱᱤᱢᱮᱥᱚᱱ ᱟᱨ ᱫᱮᱠᱷᱟᱣ",
+    "sentences": "ᱵᱟᱛ",
+    "noSentencesFound": "ᱵᱟᱛ ᱵᱟ ᱥᱮᱫᱟᱮᱱᱟ",
+    "noQuestionsFound": "ᱠᱩᱫᱪᱷᱤ ᱵᱟ ᱥᱮᱫᱟᱮᱱᱟ"
 }

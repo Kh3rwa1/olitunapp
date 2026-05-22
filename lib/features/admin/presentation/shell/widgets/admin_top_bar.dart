@@ -1,11 +1,73 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../widgets/admin_command_palette.dart';
 
-class AdminTopBar extends StatelessWidget {
+class AdminTopBar extends StatefulWidget {
   final bool isDark;
   const AdminTopBar({super.key, required this.isDark});
+
+  @override
+  State<AdminTopBar> createState() => _AdminTopBarState();
+}
+
+class _AdminTopBarState extends State<AdminTopBar> {
+  @override
+  void initState() {
+    super.initState();
+    HardwareKeyboard.instance.addHandler(_handleGlobalKey);
+  }
+
+  @override
+  void dispose() {
+    HardwareKeyboard.instance.removeHandler(_handleGlobalKey);
+    super.dispose();
+  }
+
+  bool _handleGlobalKey(KeyEvent event) {
+    if (event is KeyDownEvent) {
+      final isMeta = HardwareKeyboard.instance.isMetaPressed ||
+          HardwareKeyboard.instance.isControlPressed;
+      if (isMeta && event.logicalKey == LogicalKeyboardKey.keyK) {
+        _showCommandPalette(context);
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void _showCommandPalette(BuildContext context) {
+    showGeneralDialog(
+      context: context,
+      barrierDismissible: true,
+      barrierLabel: 'Command Palette',
+      barrierColor: Colors.black.withValues(alpha: 0.5),
+      transitionDuration: const Duration(milliseconds: 200),
+      pageBuilder: (context, anim1, anim2) {
+        return const AdminCommandPalette();
+      },
+      transitionBuilder: (context, anim1, anim2, child) {
+        return BackdropFilter(
+          filter: ImageFilter.blur(
+            sigmaX: 12 * anim1.value,
+            sigmaY: 12 * anim1.value,
+          ),
+          child: FadeTransition(
+            opacity: anim1,
+            child: ScaleTransition(
+              scale: Tween<double>(begin: 0.95, end: 1.0).animate(
+                CurvedAnimation(parent: anim1, curve: Curves.easeOutCubic),
+              ),
+              child: child,
+            ),
+          ),
+        );
+      },
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,14 +78,14 @@ class AdminTopBar extends StatelessWidget {
       height: 60,
       padding: const EdgeInsets.symmetric(horizontal: 28),
       decoration: BoxDecoration(
-        border: Border(bottom: BorderSide(color: AdminTokens.divider(isDark))),
+        border: Border(bottom: BorderSide(color: AdminTokens.divider(widget.isDark))),
       ),
       child: Row(
         children: [
           Icon(
             Icons.dashboard_customize_rounded,
             size: 16,
-            color: AdminTokens.textTertiary(isDark),
+            color: AdminTokens.textTertiary(widget.isDark),
           ),
           const SizedBox(width: 8),
           for (var i = 0; i < crumbs.length; i++) ...[
@@ -32,32 +94,94 @@ class AdminTopBar extends StatelessWidget {
               Icon(
                 Icons.chevron_right_rounded,
                 size: 16,
-                color: AdminTokens.textMuted(isDark),
+                color: AdminTokens.textMuted(widget.isDark),
               ),
               const SizedBox(width: 8),
             ],
             Text(
               crumbs[i],
-              style: AdminTokens.label(isDark).copyWith(
+              style: AdminTokens.label(widget.isDark).copyWith(
                 color: i == crumbs.length - 1
-                    ? AdminTokens.textPrimary(isDark)
-                    : AdminTokens.textTertiary(isDark),
+                    ? AdminTokens.textPrimary(widget.isDark)
+                    : AdminTokens.textTertiary(widget.isDark),
                 fontWeight: i == crumbs.length - 1
                     ? FontWeight.w700
                     : FontWeight.w500,
               ),
             ),
           ],
+          
+          // Center Command Launcher trigger
           const Spacer(),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 320),
+            child: GestureDetector(
+              onTap: () => _showCommandPalette(context),
+              child: Container(
+                height: 34,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                decoration: BoxDecoration(
+                  color: widget.isDark ? const Color(0xFF0F1622) : Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: AdminTokens.border(widget.isDark)),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.search_rounded,
+                      size: 15,
+                      color: AdminTokens.textMuted(widget.isDark),
+                    ),
+                    const SizedBox(width: 8),
+                    Text(
+                      'Search or type a command...',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 11.5,
+                        color: AdminTokens.textMuted(widget.isDark),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const Spacer(),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: widget.isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(4),
+                        border: Border.all(
+                          color: widget.isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : Colors.black.withValues(alpha: 0.05),
+                        ),
+                      ),
+                      child: Text(
+                        '⌘K',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 9.5,
+                          fontWeight: FontWeight.w700,
+                          color: AdminTokens.textSecondary(widget.isDark),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const Spacer(),
+
           AdminTopBarChip(
-            isDark: isDark,
+            isDark: widget.isDark,
             icon: Icons.bolt_rounded,
             label: 'Live',
             color: AppColors.primary,
           ),
           const SizedBox(width: 10),
           AdminTopBarChip(
-            isDark: isDark,
+            isDark: widget.isDark,
             icon: Icons.person_outline_rounded,
             label: 'Admin',
           ),

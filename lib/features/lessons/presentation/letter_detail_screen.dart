@@ -10,6 +10,7 @@ import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../shared/widgets/lottie_display.dart';
+import '../../../core/utils/text_match.dart';
 import '../domain/entities/lesson_entity.dart';
 
 class LetterDetailScreen extends ConsumerStatefulWidget {
@@ -155,12 +156,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
         .where(
           (l) =>
               l.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == l.charOlChiki ||
-                    t.contains(l.charOlChiki) ||
-                    l.charOlChiki.contains(t),
-              ),
+              blockTexts.any((t) => isTextMatch(t, l.charOlChiki, isLetter: true)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));

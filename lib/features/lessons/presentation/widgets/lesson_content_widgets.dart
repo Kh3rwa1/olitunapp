@@ -8,6 +8,7 @@ import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../core/audio/audio_service.dart';
+import '../../../../core/utils/text_match.dart';
 
 /// Grid of Ol Chiki letter cards for the lesson detail screen.
 /// Scoped: only shows letters that appear in the lesson's blocks.
@@ -200,12 +201,7 @@ class LetterGridContent extends ConsumerWidget {
         .where(
           (l) =>
               l.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == l.charOlChiki ||
-                    t.contains(l.charOlChiki) ||
-                    l.charOlChiki.contains(t),
-              ),
+              blockTexts.any((t) => isTextMatch(t, l.charOlChiki, isLetter: true)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
@@ -403,10 +399,10 @@ class NumberGridContent extends ConsumerWidget {
                 n.isActive &&
                 blockTexts.any(
                   (t) =>
-                      t == n.numeral ||
-                      t == n.value.toString() ||
-                      t == n.nameOlChiki ||
-                      t.contains(n.numeral),
+                      isTextMatch(t, n.numeral) ||
+                      isTextMatch(t, n.value.toString()) ||
+                      isTextMatch(t, n.nameOlChiki) ||
+                      isTextMatch(t, n.nameLatin),
                 ),
           )
           .toList();
@@ -548,12 +544,7 @@ class VocabularyListContent extends ConsumerWidget {
         .where(
           (w) =>
               w.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == w.wordOlChiki ||
-                    t.contains(w.wordOlChiki) ||
-                    w.wordOlChiki.contains(t),
-              ),
+              blockTexts.any((t) => isTextMatch(t, w.wordOlChiki)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));
@@ -664,12 +655,7 @@ class SentenceListContent extends ConsumerWidget {
         .where(
           (s) =>
               s.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == s.sentenceOlChiki ||
-                    t.contains(s.sentenceOlChiki) ||
-                    s.sentenceOlChiki.contains(t),
-              ),
+              blockTexts.any((t) => isTextMatch(t, s.sentenceOlChiki)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));

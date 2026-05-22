@@ -8,7 +8,7 @@ import '../../../../core/theme/admin_tokens.dart';
 ///
 /// Public API is intentionally kept stable — every screen that already calls
 /// `AdminGlassCard(child: ...)` automatically inherits the new look.
-class AdminGlassCard extends StatelessWidget {
+class AdminGlassCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry? padding;
   final double? width;
@@ -48,71 +48,173 @@ class AdminGlassCard extends StatelessWidget {
   });
 
   @override
+  State<AdminGlassCard> createState() => _AdminGlassCardState();
+}
+
+class _AdminGlassCardState extends State<AdminGlassCard> {
+  bool _isHovered = false;
+  Offset? _hoverPosition;
+
+  @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final radius = BorderRadius.circular(borderRadius);
+    final radius = BorderRadius.circular(widget.borderRadius);
 
-    if (glass) {
-      return Container(
-        width: width,
-        height: height,
-        margin: margin,
-        alignment: alignment,
+    Widget cardContent;
+
+    if (widget.glass) {
+      cardContent = Container(
+        width: widget.width,
+        height: widget.height,
+        margin: widget.margin,
+        alignment: widget.alignment,
         decoration: BoxDecoration(
           borderRadius: radius,
-          boxShadow: boxShadow ?? AdminTokens.raisedShadow(isDark),
+          boxShadow: widget.boxShadow ?? AdminTokens.raisedShadow(isDark),
         ),
         child: ClipRRect(
           borderRadius: radius,
           child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: blur, sigmaY: blur),
-            child: Container(
-              padding: padding,
-              decoration: BoxDecoration(
-                color:
-                    color ??
-                    (isDark
-                        ? const Color(0xFF0F1622).withValues(alpha: 0.60)
-                        : Colors.white.withValues(alpha: 0.75)),
-                borderRadius: radius,
-                border:
-                    border ??
-                    Border.all(
-                      color: isDark
-                          ? Colors.white.withValues(alpha: 0.09)
-                          : Colors.black.withValues(alpha: 0.05),
+            filter: ImageFilter.blur(sigmaX: widget.blur, sigmaY: widget.blur),
+            child: Stack(
+              fit: StackFit.passthrough,
+              children: [
+                Container(
+                  padding: widget.padding,
+                  decoration: BoxDecoration(
+                    color: widget.color ??
+                        (isDark
+                            ? const Color(0xFF0F1622).withValues(alpha: 0.60)
+                            : Colors.white.withValues(alpha: 0.75)),
+                    borderRadius: radius,
+                    border: widget.border ??
+                        Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.09)
+                              : Colors.black.withValues(alpha: 0.05),
+                        ),
+                  ),
+                  child: widget.child,
+                ),
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: GlowBorderPainter(
+                        hoverPosition: _hoverPosition,
+                        isHovered: _isHovered,
+                        borderRadius: widget.borderRadius,
+                        isDark: isDark,
+                      ),
                     ),
-              ),
-              child: child,
+                  ),
+                ),
+              ],
             ),
           ),
         ),
       );
+    } else {
+      final fill = widget.color ?? AdminTokens.raised(isDark);
+      cardContent = Container(
+        width: widget.width,
+        height: widget.height,
+        margin: widget.margin,
+        alignment: widget.alignment,
+        padding: widget.padding,
+        decoration: BoxDecoration(
+          borderRadius: radius,
+          color: fill,
+          gradient: widget.elevated
+              ? LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: isDark
+                      ? [AdminTokens.raisedAlt(true), AdminTokens.raised(true)]
+                      : [Colors.white, AdminTokens.neutral25],
+                )
+              : null,
+          border: widget.border ?? Border.all(color: AdminTokens.border(isDark)),
+          boxShadow: widget.boxShadow ?? AdminTokens.raisedShadow(isDark),
+        ),
+        child: Stack(
+          fit: StackFit.passthrough,
+          children: [
+            widget.child,
+            Positioned.fill(
+              child: IgnorePointer(
+                child: CustomPaint(
+                  painter: GlowBorderPainter(
+                    hoverPosition: _hoverPosition,
+                    isHovered: _isHovered,
+                    borderRadius: widget.borderRadius,
+                    isDark: isDark,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
     }
 
-    final fill = color ?? AdminTokens.raised(isDark);
-    return Container(
-      width: width,
-      height: height,
-      margin: margin,
-      alignment: alignment,
-      padding: padding,
-      decoration: BoxDecoration(
-        borderRadius: radius,
-        color: fill,
-        gradient: elevated
-            ? LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: isDark
-                    ? [AdminTokens.raisedAlt(true), AdminTokens.raised(true)]
-                    : [Colors.white, AdminTokens.neutral25],
-              )
-            : null,
-        border: border ?? Border.all(color: AdminTokens.border(isDark)),
-        boxShadow: boxShadow ?? AdminTokens.raisedShadow(isDark),
+    return MouseRegion(
+      onEnter: (_) => setState(() => _isHovered = true),
+      onExit: (_) => setState(() => _isHovered = false),
+      onHover: (event) => setState(() => _hoverPosition = event.localPosition),
+      child: AnimatedScale(
+        scale: _isHovered ? 1.015 : 1.0,
+        duration: const Duration(milliseconds: 250),
+        curve: Curves.easeOutBack,
+        child: cardContent,
       ),
-      child: child,
     );
+  }
+}
+
+class GlowBorderPainter extends CustomPainter {
+  final Offset? hoverPosition;
+  final bool isHovered;
+  final double borderRadius;
+  final bool isDark;
+
+  GlowBorderPainter({
+    required this.hoverPosition,
+    required this.isHovered,
+    required this.borderRadius,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (!isHovered || hoverPosition == null) return;
+
+    final rect = Offset.zero & size;
+    final rrect = RRect.fromRectAndRadius(rect, Radius.circular(borderRadius));
+
+    final paint = Paint()
+      ..shader = RadialGradient(
+        colors: [
+          AdminTokens.accent.withValues(alpha: isDark ? 0.35 : 0.25),
+          AdminTokens.accent.withValues(alpha: 0.0),
+        ],
+        stops: const [0.0, 1.0],
+        center: Alignment(
+          (hoverPosition!.dx / size.width) * 2 - 1,
+          (hoverPosition!.dy / size.height) * 2 - 1,
+        ),
+        radius: 0.6,
+      ).createShader(rect)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.0;
+
+    canvas.drawRRect(rrect, paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant GlowBorderPainter oldDelegate) {
+    return oldDelegate.hoverPosition != hoverPosition ||
+        oldDelegate.isHovered != isHovered ||
+        oldDelegate.borderRadius != borderRadius ||
+        oldDelegate.isDark != isDark;
   }
 }

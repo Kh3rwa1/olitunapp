@@ -17,6 +17,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
   bool _showConfetti = false;
   bool _wasCompletedOnInit = false;
   bool _isAnimating = false;
+  int _prevCount = 0;
 
   @override
   void initState() {
@@ -25,16 +26,32 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
     final quizTaken = ref.read(quizTakenTodayProvider);
     final bakhedListened = ref.read(bakhedListenedTodayProvider);
     final quickWinCompleted = ref.read(quickWinCompletedTodayProvider);
-    final completedCount =
+    _prevCount =
         (lessonCompleted ? 1 : 0) +
         (quizTaken ? 1 : 0) +
         (bakhedListened ? 1 : 0) +
         (quickWinCompleted ? 1 : 0);
 
-    if (completedCount == 4) {
+    if (_prevCount == 4) {
       _wasCompletedOnInit = true;
       _isHidden = true;
     }
+  }
+
+  void _triggerCompletion() async {
+    if (!mounted) return;
+    setState(() {
+      _showConfetti = true;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 1500));
+
+    if (!mounted) return;
+    setState(() {
+      _showConfetti = false;
+      _isAnimating = true;
+      _isHidden = true;
+    });
   }
 
   @override
@@ -57,26 +74,10 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
 
     final progress = completedCount / 4;
 
-    if (progress == 1.0 &&
-        !_isHidden &&
-        !_wasCompletedOnInit &&
-        !_showConfetti) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (!mounted) return;
-        setState(() {
-          _showConfetti = true;
-        });
-
-        Future.delayed(const Duration(milliseconds: 1500), () {
-          if (!mounted) return;
-          setState(() {
-            _showConfetti = false;
-            _isAnimating = true;
-            _isHidden = true;
-          });
-        });
-      });
+    if (completedCount == 4 && _prevCount < 4 && !_wasCompletedOnInit) {
+      Future.microtask(_triggerCompletion);
     }
+    _prevCount = completedCount;
 
     return AnimatedSize(
       duration: const Duration(milliseconds: 600),

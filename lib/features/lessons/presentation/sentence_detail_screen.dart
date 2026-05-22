@@ -9,6 +9,7 @@ import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
+import '../../../core/utils/text_match.dart';
 import '../domain/entities/lesson_entity.dart';
 import 'widgets/full_bleed_hero_media.dart';
 
@@ -141,12 +142,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         .where(
           (s) =>
               s.isActive &&
-              blockTexts.any(
-                (t) =>
-                    t == s.sentenceOlChiki ||
-                    t.contains(s.sentenceOlChiki) ||
-                    s.sentenceOlChiki.contains(t),
-              ),
+              blockTexts.any((t) => isTextMatch(t, s.sentenceOlChiki)),
         )
         .toList()
       ..sort((a, b) => a.order.compareTo(b.order));

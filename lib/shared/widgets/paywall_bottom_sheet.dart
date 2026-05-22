@@ -51,6 +51,8 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
       _statusMessage = 'Launching secure checkout...';
     });
 
+    final razorpayKey = ref.read(razorpayKeyProvider);
+
     try {
       final result = await _razorpayService.startCheckout(
         amountInr: widget.category.priceInr,
@@ -60,6 +62,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
         userEmail: user.email,
         userPhone:
             '9999999999', // Prefill phone placeholder, Appwrite has no raw phone on UserEntity
+        razorpayKey: razorpayKey,
       );
 
       if (result is PurchaseSuccess) {

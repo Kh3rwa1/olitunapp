@@ -44,6 +44,7 @@ class AnalyticsChart extends StatelessWidget {
   final List<int> lessons;
   final List<int> vocabulary;
   final List<String> dayLabels;
+  final int selectedSegment;
 
   const AnalyticsChart({
     super.key,
@@ -51,6 +52,7 @@ class AnalyticsChart extends StatelessWidget {
     required this.lessons,
     required this.vocabulary,
     required this.dayLabels,
+    required this.selectedSegment,
   });
 
   @override
@@ -60,13 +62,40 @@ class AnalyticsChart extends StatelessWidget {
         : Colors.black12;
     final axisColor = AdminTokens.textMuted(isDark);
 
-    final maxValue = [
-      ...lessons,
-      ...vocabulary,
-    ].fold<int>(0, (m, v) => v > m ? v : m);
+    final List<int> activeValues;
+    if (selectedSegment == 1) {
+      activeValues = lessons;
+    } else if (selectedSegment == 2) {
+      activeValues = vocabulary;
+    } else {
+      activeValues = [...lessons, ...vocabulary];
+    }
+
+    final maxValue = activeValues.fold<int>(0, (m, v) => v > m ? v : m);
     final yMax = (maxValue < 4 ? 4 : maxValue + 1).toDouble();
     final rawInterval = (yMax / 4).ceilToDouble();
     final yInterval = rawInterval < 1.0 ? 1.0 : rawInterval;
+
+    final List<LineChartBarData> activeBars = [];
+    if (selectedSegment == 0 || selectedSegment == 1) {
+      activeBars.add(
+        _series(
+          lessons.map((e) => e.toDouble()).toList(),
+          color: AppColors.primary,
+          fillTop: 0.18,
+        ),
+      );
+    }
+    if (selectedSegment == 0 || selectedSegment == 2) {
+      activeBars.add(
+        _series(
+          vocabulary.map((e) => e.toDouble()).toList(),
+          color: AppColors.duoBlue,
+          fillTop: 0.10,
+          barWidth: 3,
+        ),
+      );
+    }
 
     return LineChart(
       LineChartData(
@@ -130,36 +159,35 @@ class AnalyticsChart extends StatelessWidget {
         lineTouchData: LineTouchData(
           touchTooltipData: LineTouchTooltipData(
             getTooltipColor: (_) =>
-                isDark ? const Color(0xFF1A2030) : Colors.white,
-            tooltipBorder: BorderSide(color: AdminTokens.border(isDark)),
-            tooltipRoundedRadius: 10,
+                isDark ? const Color(0xE60F1622) : Colors.white.withValues(alpha: 0.92),
+            tooltipBorder: BorderSide(
+              color: AdminTokens.accent.withValues(alpha: 0.4),
+              width: 1.5,
+            ),
+            tooltipRoundedRadius: 12,
+            maxContentWidth: 160,
+            tooltipPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             getTooltipItems: (spots) => spots
                 .map(
-                  (s) => LineTooltipItem(
-                    s.y.toStringAsFixed(0),
-                    TextStyle(
-                      fontFamily: 'Poppins',
-                      fontWeight: FontWeight.w800,
-                      color: AdminTokens.textPrimary(isDark),
-                    ),
-                  ),
+                  (s) {
+                    final isLessonsLine = s.bar.color == AppColors.primary;
+                    final label = isLessonsLine ? 'Lessons' : 'Vocabulary';
+                    final color = isLessonsLine ? AppColors.primary : AppColors.duoBlue;
+                    return LineTooltipItem(
+                      '$label: ${s.y.toInt()}',
+                      TextStyle(
+                        fontFamily: 'Poppins',
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        color: color,
+                      ),
+                    );
+                  },
                 )
                 .toList(),
           ),
         ),
-        lineBarsData: [
-          _series(
-            lessons.map((e) => e.toDouble()).toList(),
-            color: AppColors.primary,
-            fillTop: 0.18,
-          ),
-          _series(
-            vocabulary.map((e) => e.toDouble()).toList(),
-            color: AppColors.duoBlue,
-            fillTop: 0.10,
-            barWidth: 3,
-          ),
-        ],
+        lineBarsData: activeBars,
       ),
     );
   }

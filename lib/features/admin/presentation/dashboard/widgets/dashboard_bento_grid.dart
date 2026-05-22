@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../widgets/dashboard_kpi_widgets.dart';
+import 'dashboard_health_panel.dart';
 
 class DashboardBentoGrid extends ConsumerWidget {
   final bool isDark;
@@ -81,11 +82,26 @@ class DashboardBentoGrid extends ConsumerWidget {
     if (isWide) {
       return Column(
         children: [
-          DashboardHeroMetric(
-            isDark: isDark,
-            total: totalContent,
-            isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
-            weekDelta: delta,
+          IntrinsicHeight(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: DashboardHeroMetric(
+                    isDark: isDark,
+                    total: totalContent,
+                    isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
+                    weekDelta: delta,
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  flex: 3,
+                  child: DashboardHealthPanel(isDark: isDark),
+                ),
+              ],
+            ),
           ),
           const SizedBox(height: 20),
           GridView.count(
@@ -118,6 +134,8 @@ class DashboardBentoGrid extends ConsumerWidget {
           isLoading: categoriesAsync.isLoading || lessonsAsync.isLoading,
           weekDelta: delta,
         ),
+        const SizedBox(height: 16),
+        DashboardHealthPanel(isDark: isDark),
         const SizedBox(height: 16),
         GridView.count(
           shrinkWrap: true,

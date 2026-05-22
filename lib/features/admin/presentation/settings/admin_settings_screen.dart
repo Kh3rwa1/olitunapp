@@ -37,6 +37,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
   late final TextEditingController _archerNameController;
   late final TextEditingController _kudumNameController;
   late final TextEditingController _kherwalNameController;
+  late final TextEditingController _razorpayKeyController;
 
   @override
   void initState() {
@@ -44,6 +45,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _archerNameController = TextEditingController();
     _kudumNameController = TextEditingController();
     _kherwalNameController = TextEditingController();
+    _razorpayKeyController = TextEditingController();
     _loadSettings();
   }
 
@@ -52,6 +54,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
     _archerNameController.dispose();
     _kudumNameController.dispose();
     _kherwalNameController.dispose();
+    _razorpayKeyController.dispose();
     super.dispose();
   }
 
@@ -123,6 +126,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
         _kherwalNameController.text = ref.read(
           badgeTraditionalKherwalNameProvider,
         );
+        _razorpayKeyController.text = settings['razorpay_key_id'] as String? ?? '';
         _isLoading = false;
       });
     } catch (_) {
@@ -621,34 +625,103 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       icon: Icons.monetization_on_rounded,
                       title: 'Monetization Controls',
                       subtitle:
-                          'Configure pricing options and global unlock methods for courses.',
-                      child: SwitchListTile(
-                        title: const Text('Global Play Store Review Unlock'),
-                        subtitle: const Text(
-                          'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                        value: _globalReviewUnlockEnabled,
-                        activeThumbColor: AppColors.primary,
-                        onChanged: (val) async {
-                          setState(() => _globalReviewUnlockEnabled = val);
-                          try {
-                            await _saveSetting(
-                              'global_review_unlock_enabled',
-                              val.toString(),
-                            );
-                            ref.invalidate(appSettingsProvider);
-                            _showSnackBar(
-                              'Monetization settings updated! 🪙',
-                              AppColors.success,
-                            );
-                          } catch (e) {
-                            _showSnackBar(
-                              'Failed to update monetization settings: $e',
-                              AppColors.error,
-                            );
-                          }
-                        },
+                          'Configure pricing options, payment gateway credentials, and global course unlock methods.',
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SwitchListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: const Text('Global Play Store Review Unlock'),
+                            subtitle: const Text(
+                              'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
+                              style: TextStyle(fontSize: 12),
+                            ),
+                            value: _globalReviewUnlockEnabled,
+                            activeThumbColor: AppColors.primary,
+                            onChanged: (val) async {
+                              setState(() => _globalReviewUnlockEnabled = val);
+                              try {
+                                await _saveSetting(
+                                  'global_review_unlock_enabled',
+                                  val.toString(),
+                                );
+                                ref.invalidate(appSettingsProvider);
+                                _showSnackBar(
+                                  'Monetization settings updated! 🪙',
+                                  AppColors.success,
+                                );
+                              } catch (e) {
+                                _showSnackBar(
+                                  'Failed to update monetization settings: $e',
+                                  AppColors.error,
+                                );
+                              }
+                            },
+                          ),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(vertical: 20),
+                            child: Divider(color: Colors.white10),
+                          ),
+                          Row(
+                            children: [
+                              Icon(
+                                _razorpayKeyController.text.trim().isNotEmpty
+                                    ? Icons.vpn_key_rounded
+                                    : Icons.lock_outline_rounded,
+                                color: _razorpayKeyController.text.trim().isNotEmpty
+                                    ? AppColors.success
+                                    : Colors.orangeAccent,
+                                size: 18,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                _razorpayKeyController.text.trim().isNotEmpty
+                                    ? 'Custom Gateway Key Override Active'
+                                    : 'Default Build Gateway Key Active (Fallback)',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w600,
+                                  color: _razorpayKeyController.text.trim().isNotEmpty
+                                      ? AppColors.success
+                                      : Colors.orangeAccent,
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 16),
+                          AdminTextField(
+                            controller: _razorpayKeyController,
+                            label: 'Razorpay Key ID',
+                            hint: 'rzp_live_xxxxxxxxxxxxxx or rzp_test_xxxxxxxxxxxxxx',
+                            prefixIcon: Icons.vpn_key_rounded,
+                            helperText: 'Override the default build-time Razorpay key with a dynamic database key. If left blank, the app reverts securely to the default bundled credentials.',
+                          ),
+                          const SizedBox(height: 20),
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: AdminPrimaryButton(
+                              label: 'Save Gateway Key',
+                              icon: Icons.save_rounded,
+                              onTap: () async {
+                                final key = _razorpayKeyController.text.trim();
+                                try {
+                                  await _saveSetting('razorpay_key_id', key);
+                                  ref.invalidate(appSettingsProvider);
+                                  _showSnackBar(
+                                    'Razorpay gateway key updated successfully! 💳',
+                                    AppColors.success,
+                                  );
+                                  setState(() {}); // refresh gateway key active status
+                                } catch (e) {
+                                  _showSnackBar(
+                                    'Failed to save gateway key: $e',
+                                    AppColors.error,
+                                  );
+                                }
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                     const SizedBox(height: 24),

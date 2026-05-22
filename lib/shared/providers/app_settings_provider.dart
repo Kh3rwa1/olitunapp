@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/config/appwrite_config.dart';
 
 class OnboardingGoal {
   final String id;
@@ -42,6 +43,20 @@ final onboardingVideoUrlProvider = Provider<String?>((ref) {
   final settings = ref.watch(appSettingsProvider);
   return settings.whenOrNull(
     data: (data) => data['onboarding_video_url'] as String?,
+  );
+});
+
+final razorpayKeyProvider = Provider<String>((ref) {
+  final settingsAsync = ref.watch(appSettingsProvider);
+  return settingsAsync.maybeWhen(
+    data: (settings) {
+      final key = settings['razorpay_key_id'] as String?;
+      if (key != null && key.trim().isNotEmpty) {
+        return key.trim();
+      }
+      return AppwriteConfig.razorpayKeyId;
+    },
+    orElse: () => AppwriteConfig.razorpayKeyId,
   );
 });
 

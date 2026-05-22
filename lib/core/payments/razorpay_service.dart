@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:razorpay_flutter/razorpay_flutter.dart';
-import '../config/appwrite_config.dart';
 import '../logging/app_logger.dart';
 
 sealed class PurchaseResult {
@@ -50,6 +49,7 @@ class RazorpayService {
     required String userId,
     required String userEmail,
     required String userPhone,
+    required String razorpayKey,
   }) async {
     if (kIsWeb) {
       return const PurchaseFailed(
@@ -60,7 +60,7 @@ class RazorpayService {
     _completer = Completer<PurchaseResult>();
 
     final options = {
-      'key': AppwriteConfig.razorpayKeyId,
+      'key': razorpayKey,
       'amount': amountInr * 100, // amount in paisa
       'name': 'Olitun App',
       'description': 'Unlock Course: $categoryTitle',

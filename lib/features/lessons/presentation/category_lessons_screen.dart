@@ -9,6 +9,8 @@ import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
 import '../../../shared/providers/purchases_provider.dart';
 import '../../../shared/widgets/paywall_bottom_sheet.dart';
+import '../../../shared/providers/local_settings_provider.dart';
+import '../../../shared/utils/localized_content.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -37,6 +39,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final purchasedCategories =
         ref.watch(purchasedCategoriesProvider).value ?? {};
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -105,9 +108,23 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           isPremium &&
                           !isUnlocked &&
                           index >= category.previewLessonCount;
+                          
+                      final primaryTitle = primaryLocalizedText(
+                        olChiki: lesson.titleOlChiki,
+                        latin: lesson.titleLatin,
+                        scriptMode: scriptMode,
+                      );
+                      final secondaryTitle = secondaryLocalizedText(
+                        olChiki: lesson.titleOlChiki,
+                        latin: lesson.titleLatin,
+                        scriptMode: scriptMode,
+                      );
 
                       return _LessonCard(
                         lesson: lesson,
+                        primaryTitle: primaryTitle,
+                        secondaryTitle: secondaryTitle ?? '',
+                        scriptMode: scriptMode,
                         isDark: isDark,
                         index: index,
                         isLocked: isLocked,
@@ -255,6 +272,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
 class _LessonCard extends StatelessWidget {
   final dynamic lesson;
+  final String primaryTitle;
+  final String secondaryTitle;
+  final String scriptMode;
   final bool isDark;
   final int index;
   final VoidCallback onTap;
@@ -263,6 +283,9 @@ class _LessonCard extends StatelessWidget {
 
   const _LessonCard({
     required this.lesson,
+    required this.primaryTitle,
+    required this.secondaryTitle,
+    required this.scriptMode,
     required this.isDark,
     required this.index,
     required this.onTap,
@@ -328,18 +351,19 @@ class _LessonCard extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            lesson.titleLatin,
+                            primaryTitle,
                             style: TextStyle(
                               fontSize: 17,
                               fontWeight: FontWeight.w700,
+                              fontFamily: primaryLocalizedFontFamily(scriptMode),
                               color: isDark ? Colors.white : Colors.black,
                             ),
                           ),
-                          if (lesson.titleOlChiki.isNotEmpty)
+                          if (secondaryTitle.isNotEmpty)
                             Padding(
                               padding: const EdgeInsets.only(top: 2),
                               child: Text(
-                                lesson.titleOlChiki,
+                                secondaryTitle,
                                 style: TextStyle(
                                   fontSize: 13,
                                   fontFamily: 'OlChiki',

@@ -11,6 +11,7 @@ import '../../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/widgets/lottie_display.dart';
+import '../../../../core/utils/text_match.dart';
 import '../../domain/entities/lesson_entity.dart';
 
 class NumberDetailScreen extends ConsumerStatefulWidget {
@@ -159,10 +160,10 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                   n.isActive &&
                   blockTexts.any(
                     (t) =>
-                        t == n.numeral ||
-                        t == n.value.toString() ||
-                        t == n.nameOlChiki ||
-                        t.contains(n.numeral),
+                        isTextMatch(t, n.numeral) ||
+                        isTextMatch(t, n.value.toString()) ||
+                        isTextMatch(t, n.nameOlChiki) ||
+                        isTextMatch(t, n.nameLatin),
                   ),
             )
             .toList()

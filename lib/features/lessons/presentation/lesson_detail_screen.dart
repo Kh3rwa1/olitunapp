@@ -935,7 +935,7 @@ void _showCompletionSheet({
                           if (quizId != null) {
                             context.pushReplacement('/quiz/$quizId');
                           } else if (nextLessonId != null) {
-                            context.pushReplacement('/lessons/$nextLessonId');
+                            context.pushReplacement('/lesson/$nextLessonId');
                           } else {
                             if (context.canPop()) {
                               context.pop();
@@ -979,7 +979,7 @@ void _showCompletionSheet({
                                 onPressed: () {
                                   Navigator.pop(sheetContext);
                                   context.pushReplacement(
-                                    '/lessons/$nextLessonId',
+                                    '/lesson/$nextLessonId',
                                   );
                                 },
                                 style: OutlinedButton.styleFrom(

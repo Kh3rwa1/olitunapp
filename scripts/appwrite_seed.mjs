@@ -128,13 +128,6 @@ const numbers = [
   { id: 'n_9', numeral: '᱙', value: 9, nameOlChiki: 'ᱟᱨᱮ', nameLatin: 'Are', order: 9 },
 ];
 
-const rhyme_categories = [
-  { id: 'rcat_animal', nameOlChiki: 'ᱡᱟᱱᱣᱟᱨ', nameLatin: 'Animal', iconName: 'pets', order: 0 },
-  { id: 'rcat_nature', nameOlChiki: 'ᱯᱨᱚᱠᱨᱤᱛᱤ', nameLatin: 'Nature', iconName: 'nature', order: 1 },
-  { id: 'rcat_moral', nameOlChiki: 'ᱱᱤᱛᱤ', nameLatin: 'Moral', iconName: 'auto_awesome', order: 2 },
-  { id: 'rcat_general', nameOlChiki: 'ᱥᱟᱫᱷᱟᱨᱚᱬ', nameLatin: 'General', iconName: 'child_care', order: 3 },
-];
-
 const quizzes = [
   {
     id: 'quiz_alphabets_basics',
@@ -259,7 +252,6 @@ async function main() {
   await importCollection('categories', categories);
   await importCollection('letters', letters);
   await importCollection('numbers', numbers);
-  await importCollection('rhyme_categories', rhyme_categories);
   await importCollection('quizzes', quizzes);
 
   console.log('\n🎉 Seed import complete!');

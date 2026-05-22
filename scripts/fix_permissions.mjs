@@ -46,7 +46,6 @@ const collectionsToFix = [
   'words',
   'sentences',
   'rhymes',
-  'rhyme_categories',
   'banners'
 ];
 

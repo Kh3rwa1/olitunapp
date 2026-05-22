@@ -625,7 +625,7 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                       child: SwitchListTile(
                         title: const Text('Global Play Store Review Unlock'),
                         subtitle: const Text(
-                           'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
+                          'When enabled, users can unlock eligible premium categories by leaving a Play Store review instead of paying. Note: Each user can only use the review unlock method once across all courses.',
                           style: TextStyle(fontSize: 12),
                         ),
                         value: _globalReviewUnlockEnabled,

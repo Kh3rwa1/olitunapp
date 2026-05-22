@@ -878,7 +878,9 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white.withValues(alpha: 0.87) : Colors.black87,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.87)
+                    : Colors.black87,
               ),
             ),
           ],

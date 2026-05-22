@@ -36,9 +36,7 @@ class AppwriteConfig {
   );
 
   /// Razorpay public key ID used for checkout.
-  static const String razorpayKeyId = String.fromEnvironment(
-    'RAZORPAY_KEY_ID',
-  );
+  static const String razorpayKeyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
   /// Validates required config. Call once at app startup, before any
   /// Appwrite client is constructed. Throws [StateError] with an actionable

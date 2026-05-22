@@ -214,7 +214,9 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                 : Colors.black.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.04),
             ),
           ),
           child: Stack(

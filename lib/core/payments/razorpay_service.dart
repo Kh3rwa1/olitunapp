@@ -111,7 +111,9 @@ class RazorpayService {
     AppLogger.debug('Razorpay External Wallet: ${response.walletName}');
     if (_completer != null && !_completer!.isCompleted) {
       _completer!.complete(
-        const PurchaseFailed('External wallets are not supported in this version'),
+        const PurchaseFailed(
+          'External wallets are not supported in this version',
+        ),
       );
     }
   }

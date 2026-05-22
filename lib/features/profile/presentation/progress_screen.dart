@@ -244,7 +244,9 @@ class ProgressScreen extends ConsumerWidget {
                   : Colors.black.withValues(alpha: 0.01),
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+                color: isDark
+                    ? Colors.white10
+                    : Colors.black.withValues(alpha: 0.04),
               ),
             ),
             child: Column(
@@ -315,7 +317,9 @@ class ProgressScreen extends ConsumerWidget {
             return Container(
               padding: const EdgeInsets.all(18),
               decoration: BoxDecoration(
-                color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.white,
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.03)
+                    : Colors.white,
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(
                   color: isDark

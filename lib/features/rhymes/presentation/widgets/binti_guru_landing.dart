@@ -31,7 +31,9 @@ class BintiGuruLanding extends StatelessWidget {
                   ),
             borderRadius: BorderRadius.circular(28),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.04),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.04),
             ),
             boxShadow: isDark
                 ? null

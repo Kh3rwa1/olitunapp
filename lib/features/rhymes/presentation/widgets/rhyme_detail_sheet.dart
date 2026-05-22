@@ -99,7 +99,7 @@ const Map<String, String> _rhymeCulture = {
       'Agricultural tools like the Datrom (sickle) hold deep economic and religious value in Santal households. Chants asking for sickle or tools represent the invocation of harvest deities and the industriousness of the community, reminding youngsters of the value of collective farming work.',
 };
 
-enum LyricMode { olChiki, latin, both }
+enum LyricMode { olChiki, latin }
 
 class RhymeDetailSheet extends ConsumerStatefulWidget {
   final RhymeModel rhyme;
@@ -124,8 +124,8 @@ class RhymeDetailSheet extends ConsumerStatefulWidget {
 class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
   double? _dragPositionSeconds;
   bool _isDragging = false;
-  LyricMode _lyricMode = LyricMode.both;
-  bool _showEnglishMeaning = true;
+  LyricMode _lyricMode = LyricMode.latin;
+  bool _didApplyInitialLyricMode = false;
 
   String _formatDuration(Duration duration) {
     final minutes = duration.inMinutes.toString();
@@ -142,6 +142,12 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
     final isDark = theme.brightness == Brightness.dark;
 
     final scriptMode = ref.watch(effectiveScriptModeProvider);
+    if (!_didApplyInitialLyricMode) {
+      _didApplyInitialLyricMode = true;
+      _lyricMode = scriptMode == 'olchiki'
+          ? LyricMode.olChiki
+          : LyricMode.latin;
+    }
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final bakhedContent =
         ref.watch(bakhedLearningContentProvider(widget.rhyme.id)).valueOrNull ??
@@ -348,9 +354,6 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                             case LyricMode.latin:
                               label = 'Latin';
                               break;
-                            case LyricMode.both:
-                              label = 'Both';
-                              break;
                           }
                           return Expanded(
                             child: PressableScale(
@@ -400,35 +403,6 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                             ),
                           );
                         }),
-                        const SizedBox(width: 4),
-                        // English Translation Toggle
-                        PressableScale(
-                          onTap: () {
-                            HapticFeedback.selectionClick();
-                            setState(() {
-                              _showEnglishMeaning = !_showEnglishMeaning;
-                            });
-                          },
-                          child: Container(
-                            height: 38,
-                            width: 44,
-                            decoration: BoxDecoration(
-                              color: _showEnglishMeaning
-                                  ? AppColors.primary.withValues(alpha: 0.15)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Icon(
-                              Icons.g_translate_rounded,
-                              size: 18,
-                              color: _showEnglishMeaning
-                                  ? AppColors.primary
-                                  : (isDark
-                                        ? Colors.white30
-                                        : Colors.black.withValues(alpha: 0.3)),
-                            ),
-                          ),
-                        ),
                       ],
                     ),
                   ),
@@ -464,11 +438,8 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                 : 'Culture translation';
 
                             final displayOlChiki =
-                                _lyricMode == LyricMode.olChiki ||
-                                _lyricMode == LyricMode.both;
-                            final displayLatin =
-                                _lyricMode == LyricMode.latin ||
-                                _lyricMode == LyricMode.both;
+                                _lyricMode == LyricMode.olChiki;
+                            final displayLatin = _lyricMode == LyricMode.latin;
 
                             return Padding(
                               padding: const EdgeInsets.only(bottom: 28),
@@ -514,23 +485,21 @@ class _RhymeDetailSheetState extends ConsumerState<RhymeDetailSheet> {
                                         .fadeIn(delay: (index * 80 + 30).ms)
                                         .slideY(begin: 0.1),
                                   // 3. English Meaning
-                                  if (_showEnglishMeaning) ...[
-                                    const SizedBox(height: 6),
-                                    Text(
-                                      meaning,
-                                      textAlign: TextAlign.center,
-                                      style: GoogleFonts.fredoka(
-                                        fontSize: 14,
-                                        fontStyle: FontStyle.italic,
-                                        color: isDark
-                                            ? Colors.white38
-                                            : Colors.black38,
-                                        height: 1.2,
-                                      ),
-                                    ).animate().fadeIn(
-                                      delay: (index * 80 + 60).ms,
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    meaning,
+                                    textAlign: TextAlign.center,
+                                    style: GoogleFonts.fredoka(
+                                      fontSize: 14,
+                                      fontStyle: FontStyle.italic,
+                                      color: isDark
+                                          ? Colors.white38
+                                          : Colors.black38,
+                                      height: 1.2,
                                     ),
-                                  ],
+                                  ).animate().fadeIn(
+                                    delay: (index * 80 + 60).ms,
+                                  ),
                                 ],
                               ),
                             );

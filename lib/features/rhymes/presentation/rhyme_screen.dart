@@ -19,6 +19,7 @@ import 'widgets/tilt_card.dart';
 import 'widgets/rhyme_filter_chips.dart';
 import 'widgets/featured_rhyme_card.dart';
 import 'widgets/bento_rhyme_card.dart';
+import 'widgets/enchanted_visualizer.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -506,16 +507,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             : <RhymeModel>[];
 
         if (gridItems.isEmpty) {
-          return const SliverFillRemaining(
+          return SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
-              padding: EdgeInsets.all(24.0),
-              child: AppEmptyState(
-                title: 'No rhymes found',
-                description:
-                    'New traditional Bakhed and songs are coming soon!',
-                icon: Icons.music_note_rounded,
-              ),
+              padding: const EdgeInsets.all(24.0),
+              child: _BakhedPreparingAnimation(isDark: isDark),
             ),
           );
         }
@@ -599,5 +595,112 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           .toList();
     }
     return filtered;
+  }
+}
+
+class _BakhedPreparingAnimation extends ConsumerWidget {
+  const _BakhedPreparingAnimation({required this.isDark});
+
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
+    final cardColor = isDark
+        ? Colors.white.withValues(alpha: 0.05)
+        : Colors.white.withValues(alpha: 0.72);
+    final borderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.white.withValues(alpha: 0.8);
+
+    return Center(
+      child: RepaintBoundary(
+        child: Container(
+          width: double.infinity,
+          constraints: const BoxConstraints(maxWidth: 420, minHeight: 280),
+          padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 34),
+          decoration: BoxDecoration(
+            color: cardColor,
+            borderRadius: BorderRadius.circular(36),
+            border: Border.all(color: borderColor),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withValues(alpha: isDark ? 0.08 : 0.1),
+                blurRadius: 32,
+                offset: const Offset(0, 18),
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(
+                height: 132,
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    Positioned.fill(
+                      child: EnchantedVisualizer(
+                        isPlaying: !reduceEffects,
+                        color: AppColors.primary,
+                        showParticles: !reduceEffects,
+                        height: 132,
+                      ),
+                    ),
+                    Container(
+                          width: 86,
+                          height: 86,
+                          decoration: BoxDecoration(
+                            color: AppColors.primary.withValues(alpha: 0.12),
+                            shape: BoxShape.circle,
+                            border: Border.all(
+                              color: AppColors.primary.withValues(alpha: 0.2),
+                            ),
+                          ),
+                          child: const Icon(
+                            Icons.music_note_rounded,
+                            color: AppColors.primary,
+                            size: 42,
+                          ),
+                        )
+                        .animate(
+                          target: reduceEffects ? 0 : 1,
+                          onPlay: (controller) =>
+                              controller.repeat(reverse: true),
+                        )
+                        .scale(
+                          begin: const Offset(0.96, 0.96),
+                          end: const Offset(1.08, 1.08),
+                          duration: 1800.ms,
+                          curve: Curves.easeInOut,
+                        ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 18),
+              Text(
+                'Bakhed are being prepared',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fredoka(
+                  fontSize: 22,
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : AppColors.primaryDark,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                'New listening stories will appear here after publishing.',
+                textAlign: TextAlign.center,
+                style: GoogleFonts.fredoka(
+                  fontSize: 15,
+                  height: 1.35,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }

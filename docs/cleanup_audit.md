@@ -80,3 +80,21 @@ Video infrastructure has been completely pruned (video player widgets deleted, d
 - The `backupCollections` Appwrite function runs weekly on Sundays at `0 4 * * 0` (4 AM UTC).
 - It exports all core curriculum and configuration collections to the `admin_backups` storage bucket in JSON format.
 - The function automatically maintains a rolling retention window, keeping only the last 12 backups.
+
+## Phase 4 Cleanup — Home Simplification & Dead Code Removal
+
+- **Goal:** Simplified the Home Screen to 3 core blocks: `TodayAffirmationCard`, `NextBestActionCard`, and `TodayMissionCard` to reduce visual noise.
+- **Removed (Home Widgets):**
+  - Deleted unused Premium translation hub (`ai_magic_hub.dart`).
+  - Deleted Bento stats layout (`home_bento_widgets.dart` shim and directory layout).
+  - Deleted legacy mobile learning preview card slider (`learning_path_preview.dart`).
+- **Relocated:**
+  - Moved mistake review card (`mistake_review_card.dart`) from `lib/features/home/presentation/widgets/` to `lib/features/quiz/presentation/widgets/` to decouple it from home and wire it post-quiz in the quiz results screen.
+- **Slimmed Theme Tokens:**
+  - Slimmed `app_colors.dart` from ~14KB to under 5KB by completely deleting 40+ unused/redundant colors while maintaining full design tokens for `admin_tokens.dart` and `app_theme.dart`.
+- **Performance Sanity:**
+  - Added `RepaintBoundary` around all 3 core blocks (`TodayAffirmationCard`, `NextBestActionCard`, `TodayMissionCard`) to avoid unnecessary repaints, keeping their constructors `const` where possible.
+- **State Separation:**
+  - Extracted cross-cutting gamification/streak state listener logic from `home_screen.dart` into `DailyMissionsObserver` registered in `main.dart`.
+- **Preserved:**
+  - Protected the Translate feature (`magic_translate_dialog.dart` explicitly preserved).

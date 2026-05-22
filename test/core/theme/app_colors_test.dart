@@ -32,11 +32,6 @@ void main() {
       expect(AppColors.premiumGreen, isA<LinearGradient>());
     });
 
-    test('bentoShadow returns a non-empty list', () {
-      expect(AppColors.bentoShadow.length, greaterThan(0));
-      expect(AppColors.bentoShadow.first, isA<BoxShadow>());
-    });
-
     test('success and error colors are distinct', () {
       expect(AppColors.success, isNot(equals(AppColors.error)));
     });

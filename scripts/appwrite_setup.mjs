@@ -314,17 +314,6 @@ const collections = [
     ],
   },
   {
-    id: 'rhyme_categories',
-    name: 'Rhyme Categories',
-    attrs: [
-      { type: 'string', key: 'nameOlChiki', size: 255, required: true },
-      { type: 'string', key: 'nameLatin', size: 255, required: true },
-      { type: 'string', key: 'iconName', size: 50, required: false, default: 'child_care' },
-      { type: 'integer', key: 'order', required: false, default: 0 },
-    ],
-    indexes: [],
-  },
-  {
     id: 'banners',
     name: 'Banners',
     attrs: [

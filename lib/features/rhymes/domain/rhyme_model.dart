@@ -34,7 +34,9 @@ class RhymeModel {
       thumbnailUrl: _readString(json, 'thumbnailUrl'),
       categoryId: _readString(json, 'categoryId'),
       category: _readString(json, 'category'),
-      tags: (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ?? const [],
+      tags:
+          (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
+          const [],
     );
   }
 

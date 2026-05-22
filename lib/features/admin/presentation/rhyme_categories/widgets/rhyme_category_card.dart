@@ -60,10 +60,7 @@ class RhymeCategoryCard extends StatelessWidget {
         title: Text(category.nameLatin, style: AdminTokens.cardTitle(isDark)),
         subtitle: Padding(
           padding: const EdgeInsets.only(top: 2),
-          child: Text(
-            category.nameOlChiki,
-            style: AdminTokens.label(isDark),
-          ),
+          child: Text(category.nameOlChiki, style: AdminTokens.label(isDark)),
         ),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,

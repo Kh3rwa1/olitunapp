@@ -35,10 +35,7 @@ class _AdminRhymeCategoriesScreenState
             Expanded(
               child: categories.isEmpty
                   ? _buildEmptyState(isDark)
-                  : _buildCategoriesList(
-                      categories,
-                      isDark,
-                    ),
+                  : _buildCategoriesList(categories, isDark),
             ),
           ],
         ),
@@ -115,8 +112,7 @@ class _AdminRhymeCategoriesScreenState
     final ok = await showAdminConfirmDialog(
       context: context,
       title: 'Delete Category',
-      message:
-          'Delete "${cat.nameLatin}"? This action cannot be undone.',
+      message: 'Delete "${cat.nameLatin}"? This action cannot be undone.',
     );
     if (ok == true) {
       ref.read(rhymeCategoriesProvider.notifier).delete(cat.id);

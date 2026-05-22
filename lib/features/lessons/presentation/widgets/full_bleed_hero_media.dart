@@ -3,8 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 
-
-
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
     super.key,

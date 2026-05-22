@@ -91,12 +91,15 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
     final rhymesAsync = ref.watch(rhymesProvider);
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
     final catRhymes = rhymesAsync.maybeWhen(
-      data: (list) => list.where((r) =>
-        _selectedCategoryId == null ||
-        r.categoryId == _selectedCategoryId ||
-        r.category == _selectedCategoryId ||
-        r.category == _selectedCategoryName
-      ).toList(),
+      data: (list) => list
+          .where(
+            (r) =>
+                _selectedCategoryId == null ||
+                r.categoryId == _selectedCategoryId ||
+                r.category == _selectedCategoryId ||
+                r.category == _selectedCategoryName,
+          )
+          .toList(),
       orElse: () => <RhymeModel>[],
     );
     final allTags = catRhymes.expand((r) => r.tags).toSet().toList();
@@ -136,11 +139,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
                     // --- Tag chips ---
                     if (_selectedCategoryId != null)
-                      _buildTagChips(
-                        allTags,
-                        isDark,
-                        isTablet,
-                      ),
+                      _buildTagChips(allTags, isDark, isTablet),
 
                     const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
@@ -331,11 +330,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   }
 
   // ─── Tag Chips ──────────────────────────────────
-  Widget _buildTagChips(
-    List<String> tags,
-    bool isDark,
-    bool isTablet,
-  ) {
+  Widget _buildTagChips(List<String> tags, bool isDark, bool isTablet) {
     if (tags.isEmpty) {
       return const SliverToBoxAdapter(child: SizedBox.shrink());
     }

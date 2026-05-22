@@ -104,8 +104,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-
-
           // 2. Dark/Light Overlay Gradient
           Positioned.fill(
             child: DecoratedBox(

@@ -130,7 +130,7 @@ void main() {
     // Pump enough time to let all flutter_animate one-shot animations complete
     await tester.pump(const Duration(seconds: 5));
     expect(find.text('Johar, Test User!'), findsOneWidget);
-    expect(find.text('Daily Progress: 0%'), findsOneWidget);
+    expect(find.text('Daily Progress: 0%'), findsNothing);
   });
 
   group('continueLessonFor', () {

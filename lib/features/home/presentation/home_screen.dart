@@ -260,57 +260,45 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 final card = PressableScale(
                                   onTap: () => context.push('/login'),
                                   child: Container(
-                                    margin: const EdgeInsets.only(bottom: 24),
-                                    padding: const EdgeInsets.all(20),
+                                    height: 48,
+                                    margin: const EdgeInsets.only(bottom: 18),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 16,
+                                    ),
                                     decoration: BoxDecoration(
-                                      gradient: AppColors.heroGradientAlt,
-                                      borderRadius: BorderRadius.circular(20),
-                                      boxShadow: reduceVisualEffects
-                                          ? const []
-                                          : AppColors.glowShadow(
-                                              AppColors.primary,
-                                            ),
+                                      color: AppColors.primary.withValues(
+                                        alpha: isDark ? 0.16 : 0.10,
+                                      ),
+                                      borderRadius: BorderRadius.circular(14),
+                                      border: Border.all(
+                                        color: AppColors.primary.withValues(
+                                          alpha: isDark ? 0.24 : 0.16,
+                                        ),
+                                      ),
                                     ),
                                     child: Row(
                                       children: [
-                                        Container(
-                                          padding: const EdgeInsets.all(12),
-                                          decoration: BoxDecoration(
-                                            color: Colors.white.withValues(
-                                              alpha: 0.2,
+                                        Expanded(
+                                          child: Text(
+                                            'Sign in to save your progress →',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : AppColors.primaryDark,
+                                              fontWeight: FontWeight.w800,
+                                              fontSize: 14,
                                             ),
-                                            shape: BoxShape.circle,
-                                          ),
-                                          child: const Icon(
-                                            Icons.person_add_alt_1_rounded,
-                                            color: Colors.white,
                                           ),
                                         ),
-                                        const SizedBox(width: 16),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment:
-                                                CrossAxisAlignment.start,
-                                            children: [
-                                              const Text(
-                                                'Track Your Progress',
-                                                style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.w800,
-                                                  fontSize: 16,
-                                                ),
-                                              ),
-                                              const SizedBox(height: 4),
-                                              Text(
-                                                'Create an account to save your learning journey.',
-                                                style: TextStyle(
-                                                  color: Colors.white
-                                                      .withValues(alpha: 0.9),
-                                                  fontSize: 13,
-                                                ),
-                                              ),
-                                            ],
-                                          ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.chevron_right_rounded,
+                                          color: isDark
+                                              ? Colors.white70
+                                              : AppColors.primaryDark,
+                                          size: 20,
                                         ),
                                       ],
                                     ),

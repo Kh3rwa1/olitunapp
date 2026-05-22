@@ -7,7 +7,6 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/minimum_tap_target.dart';
-import '../../../shared/widgets/video_player_widget.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -97,12 +96,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     final reduceMotion = MediaQuery.maybeDisableAnimationsOf(context) ?? false;
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
 
-    // Get dynamic video URL or fall back
-    final remoteVideoUrl = ref.watch(onboardingVideoUrlProvider);
-    final videoPath = (remoteVideoUrl != null && remoteVideoUrl.isNotEmpty)
-        ? remoteVideoUrl
-        : 'assets/videos/onboarding.mp4';
-
     final showAnimations = !reduceMotion && !reduceVisualEffects;
 
     return Scaffold(
@@ -111,11 +104,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
           : const Color(0xFFF8FAFC),
       body: Stack(
         children: [
-          // 1. Background Video / Gradient
-          if (showAnimations &&
-              (videoPath.endsWith('.mp4') || videoPath.startsWith('http')) &&
-              _currentStep == 0)
-            Positioned.fill(child: VideoPlayerWidget(assetPath: videoPath)),
+
 
           // 2. Dark/Light Overlay Gradient
           Positioned.fill(

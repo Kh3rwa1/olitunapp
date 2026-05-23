@@ -34,21 +34,42 @@ class SettingsScreen extends ConsumerWidget {
       ),
       children: [
         if (isDesktop) ...[
-          Text(
-            l10n.settings,
-            style: GoogleFonts.inter(
-              fontSize: 28,
-              fontWeight: FontWeight.w900,
-              letterSpacing: -0.5,
-              color: isDark ? Colors.white : Colors.black,
-            ),
+          Row(
+            children: [
+              IconButton(
+                icon: Icon(
+                  Icons.arrow_back_rounded,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+                onPressed: () {
+                  if (context.canPop()) {
+                    context.pop();
+                  } else {
+                    context.go('/profile');
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              Text(
+                l10n.settings,
+                style: GoogleFonts.inter(
+                  fontSize: 28,
+                  fontWeight: FontWeight.w900,
+                  letterSpacing: -0.5,
+                  color: isDark ? Colors.white : Colors.black,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 4),
-          Text(
-            l10n.customizeExperience,
-            style: GoogleFonts.inter(
-              fontSize: 14,
-              color: isDark ? Colors.white38 : Colors.black38,
+          Padding(
+            padding: const EdgeInsets.only(left: 56),
+            child: Text(
+              l10n.customizeExperience,
+              style: GoogleFonts.inter(
+                fontSize: 14,
+                color: isDark ? Colors.white38 : Colors.black38,
+              ),
             ),
           ),
           const SizedBox(height: 32),
@@ -83,7 +104,12 @@ class SettingsScreen extends ConsumerWidget {
     );
 
     if (isDesktop) {
-      return settingsBody;
+      return Scaffold(
+        backgroundColor: isDark
+            ? AppColors.darkBackground
+            : AppColors.lightBackground,
+        body: settingsBody,
+      );
     }
 
     return Scaffold(
@@ -142,7 +168,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: SettingsCard(
                   title: AppLocalizations.of(context)!.appearance,
                   icon: Icons.palette_rounded,
-                  color: AppColors.duoPurple,
+                  color: AppColors.duoOrange,
                   index: 0,
                   children: [
                     SettingTile(
@@ -279,7 +305,7 @@ class SettingsScreen extends ConsumerWidget {
         SettingsCard(
           title: AppLocalizations.of(context)!.appearance,
           icon: Icons.palette_rounded,
-          color: AppColors.duoPurple,
+          color: AppColors.duoOrange,
           index: 0,
           children: [
             SettingTile(

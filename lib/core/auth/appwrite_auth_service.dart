@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import '../config/appwrite_config.dart';
+import '../storage/hive_service.dart';
+import 'web_redirect.dart';
 
 @visibleForTesting
 String googleOAuthUserMessage(String message) {
@@ -204,13 +206,13 @@ class AppwriteAuthService {
     try {
       if (kIsWeb) {
         final origin = Uri.base.origin;
-        final result = await _account.createOAuth2Session(
-          provider: OAuthProvider.google,
-          success: '$origin/splash',
-          failure: '$origin/welcome',
-          scopes: ['email', 'profile'],
-        );
-        await _completeWebOAuth(result);
+        final oauthUrl = '${AppwriteConfig.endpoint}/account/sessions/oauth2/google'
+            '?project=${AppwriteConfig.projectId}'
+            '&success=${Uri.encodeComponent("$origin/splash")}'
+            '&failure=${Uri.encodeComponent("$origin/welcome")}'
+            '&scopes[]=${Uri.encodeComponent("email")}'
+            '&scopes[]=${Uri.encodeComponent("profile")}';
+        redirectToUrl(oauthUrl);
       } else {
         final deepLink = 'appwrite-callback-${AppwriteConfig.projectId}://';
         await _account.createOAuth2Session(
@@ -239,6 +241,9 @@ class AppwriteAuthService {
         await _persistWebSession(secret);
       } else {
         await _account.createSession(userId: userId, secret: secret);
+        if (kIsWeb) {
+          await _persistWebSession(secret);
+        }
       }
       AppLogger.debug('Appwrite: OAuth session created ✅');
       return true;
@@ -248,22 +253,7 @@ class AppwriteAuthService {
     }
   }
 
-  Future<void> _completeWebOAuth(Object? result) async {
-    if (!kIsWeb || result is! String || result.isEmpty) return;
 
-    final completion = parseWebOAuthCompletion(result);
-    switch (completion.kind) {
-      case WebOAuthCompletionKind.persistSession:
-        await _persistWebSession(completion.secret);
-        break;
-      case WebOAuthCompletionKind.createSession:
-        await _account.createSession(
-          userId: completion.userId!,
-          secret: completion.secret,
-        );
-        break;
-    }
-  }
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
@@ -277,6 +267,15 @@ class AppwriteAuthService {
     final secret = prefs.getString(_webSessionSecretKey);
     if (secret != null && secret.isNotEmpty) {
       _client.setSession(secret);
+    }
+  }
+
+  void restoreWebSessionSync(SharedPreferences prefs) {
+    if (!kIsWeb) return;
+    final secret = prefs.getString(_webSessionSecretKey);
+    if (secret != null && secret.isNotEmpty) {
+      _client.setSession(secret);
+      AppLogger.debug('Appwrite: Web session restored synchronously ✅');
     }
   }
 
@@ -483,5 +482,10 @@ class AppwriteAuthService {
 }
 
 final appwriteAuthServiceProvider = Provider<AppwriteAuthService>((ref) {
-  return AppwriteAuthService();
+  final service = AppwriteAuthService();
+  if (kIsWeb) {
+    final prefs = ref.watch(sharedPreferencesProvider);
+    service.restoreWebSessionSync(prefs);
+  }
+  return service;
 });

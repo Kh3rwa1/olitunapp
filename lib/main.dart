@@ -30,6 +30,9 @@ Locale appLocaleForLanguage(String languageCode) {
 }
 
 Future<void> main() async {
+  if (kIsWeb) {
+    initialWebHash = Uri.base.fragment;
+  }
   configureUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
 

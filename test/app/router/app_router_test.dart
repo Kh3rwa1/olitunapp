@@ -114,5 +114,26 @@ void main() {
         );
       },
     );
+
+    test('returns initialHash path if provided on web root path', () {
+      expect(
+        fragmentRedirectFor(
+          isWeb: true,
+          path: '/',
+          fragment: '',
+          initialHash: '/admin/login',
+        ),
+        '/admin/login',
+      );
+      expect(
+        fragmentRedirectFor(
+          isWeb: true,
+          path: '/',
+          fragment: '/somewhere',
+          initialHash: '/admin/login',
+        ),
+        '/admin/login',
+      );
+    });
   });
 }

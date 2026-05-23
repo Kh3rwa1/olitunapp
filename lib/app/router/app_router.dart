@@ -59,15 +59,23 @@ String? adminHostRedirectFor(String host, String path) {
   return '/admin';
 }
 
+/// Web-only global variable that captures the hash fragment at the very start of main()
+/// before any URL strategy or routing initialization can modify or strip it.
+String? initialWebHash;
+
 @visibleForTesting
 String? fragmentRedirectFor({
   required bool isWeb,
   required String path,
   required String fragment,
+  String? initialHash,
 }) {
   if (!isWeb || path != '/') return null;
-  if (fragment.isNotEmpty && fragment.startsWith('/')) {
-    return fragment;
+  final hash = (initialHash != null && initialHash.isNotEmpty)
+      ? initialHash
+      : fragment;
+  if (hash.isNotEmpty && hash.startsWith('/')) {
+    return hash;
   }
   return null;
 }
@@ -187,8 +195,13 @@ final routerProvider = Provider<GoRouter>((ref) {
         isWeb: kIsWeb,
         path: state.uri.path,
         fragment: Uri.base.fragment,
+        initialHash: initialWebHash,
       );
-      if (fragRedirect != null) return fragRedirect;
+      if (fragRedirect != null) {
+        initialWebHash =
+            null; // Clear it so it acts as a one-time startup redirect
+        return fragRedirect;
+      }
 
       // On Web: if OAuth token is present, route to /splash to exchange it
       if (kIsWeb) {

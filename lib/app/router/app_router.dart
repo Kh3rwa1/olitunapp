@@ -60,6 +60,19 @@ String? adminHostRedirectFor(String host, String path) {
 }
 
 @visibleForTesting
+String? fragmentRedirectFor({
+  required bool isWeb,
+  required String path,
+  required String fragment,
+}) {
+  if (!isWeb || path != '/') return null;
+  if (fragment.isNotEmpty && fragment.startsWith('/')) {
+    return fragment;
+  }
+  return null;
+}
+
+@visibleForTesting
 String? adminAccessRedirectFor({required bool isAdmin, required String path}) {
   if (!path.startsWith('/admin') || path == '/admin/login') return null;
   return isAdmin ? null : '/admin/login';
@@ -170,9 +183,18 @@ final routerProvider = Provider<GoRouter>((ref) {
       final hostRedirect = adminHostRedirectFor(Uri.base.host, state.uri.path);
       if (hostRedirect != null) return hostRedirect;
 
+      final fragRedirect = fragmentRedirectFor(
+        isWeb: kIsWeb,
+        path: state.uri.path,
+        fragment: Uri.base.fragment,
+      );
+      if (fragRedirect != null) return fragRedirect;
+
       // On Web: if OAuth token is present, route to /splash to exchange it
       if (kIsWeb) {
-        final userId = state.uri.queryParameters['userId'];
+        final userId =
+            state.uri.queryParameters['userId'] ??
+            state.uri.queryParameters['key'];
         final secret = state.uri.queryParameters['secret'];
         if (userId != null && secret != null && state.uri.path != '/splash') {
           return '/splash';

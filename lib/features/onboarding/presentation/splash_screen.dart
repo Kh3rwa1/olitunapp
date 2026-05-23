@@ -33,14 +33,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // redirected back to /welcome while the session is still being exchanged.
       if (kIsWeb) {
         final uri = Uri.base;
-        var userId = uri.queryParameters['userId'];
+        var userId =
+            uri.queryParameters['userId'] ?? uri.queryParameters['key'];
         var secret = uri.queryParameters['secret'];
 
         if (userId == null || secret == null) {
           try {
             if (mounted) {
               final routerState = GoRouterState.of(context);
-              userId ??= routerState.uri.queryParameters['userId'];
+              userId ??=
+                  routerState.uri.queryParameters['userId'] ??
+                  routerState.uri.queryParameters['key'];
               secret ??= routerState.uri.queryParameters['secret'];
             }
           } catch (e) {

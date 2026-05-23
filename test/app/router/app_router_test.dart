@@ -66,4 +66,53 @@ void main() {
       expect(shellTabIndexForPath('/admin'), isNull);
     });
   });
+
+  group('fragmentRedirectFor', () {
+    test('returns null if not on web', () {
+      expect(
+        fragmentRedirectFor(isWeb: false, path: '/', fragment: '/admin/login'),
+        isNull,
+      );
+    });
+
+    test('returns null if path is not root /', () {
+      expect(
+        fragmentRedirectFor(
+          isWeb: true,
+          path: '/welcome',
+          fragment: '/admin/login',
+        ),
+        isNull,
+      );
+    });
+
+    test('returns null if fragment is empty', () {
+      expect(fragmentRedirectFor(isWeb: true, path: '/', fragment: ''), isNull);
+    });
+
+    test('returns null if fragment does not start with /', () {
+      expect(
+        fragmentRedirectFor(isWeb: true, path: '/', fragment: 'admin/login'),
+        isNull,
+      );
+    });
+
+    test(
+      'returns fragment path if web, path is / and fragment starts with /',
+      () {
+        expect(
+          fragmentRedirectFor(isWeb: true, path: '/', fragment: '/admin/login'),
+          '/admin/login',
+        );
+        expect(
+          fragmentRedirectFor(isWeb: true, path: '/', fragment: '/admin'),
+          '/admin',
+        );
+        expect(
+          fragmentRedirectFor(isWeb: true, path: '/', fragment: '/welcome'),
+          '/welcome',
+        );
+      },
+    );
+  });
 }

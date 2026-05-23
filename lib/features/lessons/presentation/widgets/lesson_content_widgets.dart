@@ -9,6 +9,20 @@ import '../../../../shared/models/content_models.dart';
 import '../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/utils/text_match.dart';
+import '../../../../shared/widgets/bento_grid.dart';
+
+int _getResponsiveCrossAxisCount(BuildContext context) {
+  final width = MediaQuery.of(context).size.width;
+  if (width > 1200) {
+    return 6;
+  } else if (width > 800) {
+    return 4;
+  } else if (width > 600) {
+    return 3;
+  } else {
+    return 2;
+  }
+}
 
 /// Grid of Ol Chiki letter cards for the lesson detail screen.
 /// Scoped: only shows letters that appear in the lesson's blocks.
@@ -34,147 +48,80 @@ class LetterGridContent extends ConsumerWidget {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        const maxExtent = 180.0;
-        const spacing = 16.0;
-        int columns = ((width + spacing) / (maxExtent + spacing)).floor();
-        if (columns < 1) columns = 1;
-
-        final cardWidth = (width - (spacing * (columns - 1))) / columns;
-        final cardHeight = cardWidth / 0.9;
-        final rowsCount = (letters.length / columns).ceil();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(rowsCount, (rowIndex) {
-            final start = rowIndex * columns;
-            final end = (start + columns < letters.length)
-                ? start + columns
-                : letters.length;
-            final rowLetters = letters.sublist(start, end);
-
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: rowIndex < rowsCount - 1 ? spacing : 0,
-              ),
-              child: Row(
-                children: List.generate(columns, (colIndex) {
-                  final hasItem = colIndex < rowLetters.length;
-                  final rightPadding = colIndex < columns - 1 ? spacing : 0.0;
-
-                  if (!hasItem) {
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: rightPadding),
-                        child: const SizedBox.shrink(),
-                      ),
-                    );
-                  }
-
-                  final letter = rowLetters[colIndex];
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: rightPadding),
-                      child: SizedBox(
-                        height: cardHeight,
-                        child: ScaleButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            if (letter.audioUrl != null &&
-                                letter.audioUrl!.isNotEmpty) {
-                              ref
-                                  .read(audioServiceProvider)
-                                  .playUrl(letter.audioUrl!);
-                            }
-                            context.push(
-                              '/letter/$lessonId/${letter.charOlChiki}',
-                            );
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.darkSurfaceElevated
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(24),
-                              border: Border.all(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.15,
-                                ),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: isDark ? 0.2 : 0.06,
-                                  ),
-                                  blurRadius: 15,
-                                  offset: const Offset(0, 6),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        letter.charOlChiki,
-                                        style: const TextStyle(
-                                          fontSize: 48,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.primary,
-                                          height: 1.1,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 8),
-                                      Text(
-                                        letter.transliterationLatin
-                                            .toUpperCase(),
-                                        style: TextStyle(
-                                          fontSize: 18,
-                                          fontWeight: FontWeight.bold,
-                                          color: isDark
-                                              ? Colors.white70
-                                              : Colors.black87,
-                                          letterSpacing: 1.5,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      size: 12,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _getResponsiveCrossAxisCount(context),
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: 0.9,
+      ),
+      itemCount: letters.length,
+      itemBuilder: (context, index) {
+        final letter = letters[index];
+        return ScaleButton(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
+              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+            }
+            context.push('/letter/$lessonId/${letter.charOlChiki}');
+          },
+          child: BentoCell(
+            padding: const EdgeInsets.all(16),
+            borderRadius: 24,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        letter.charOlChiki,
+                        style: const TextStyle(
+                          fontSize: 48,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
+                          height: 1.1,
                         ),
                       ),
+                      const SizedBox(height: 8),
+                      Text(
+                        letter.transliterationLatin.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: isDark ? Colors.white70 : Colors.black87,
+                          letterSpacing: 1.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                }),
-              ),
-            );
-          }),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 12,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -233,147 +180,84 @@ class NumberGridContent extends ConsumerWidget {
       );
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final width = constraints.maxWidth;
-        const maxExtent = 150.0;
-        const spacing = 14.0;
-        int columns = ((width + spacing) / (maxExtent + spacing)).floor();
-        if (columns < 1) columns = 1;
-
-        final cardWidth = (width - (spacing * (columns - 1))) / columns;
-        final cardHeight = cardWidth / 0.85;
-        final rowsCount = (numbers.length / columns).ceil();
-
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: List.generate(rowsCount, (rowIndex) {
-            final start = rowIndex * columns;
-            final end = (start + columns < numbers.length)
-                ? start + columns
-                : numbers.length;
-            final rowNumbers = numbers.sublist(start, end);
-
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: rowIndex < rowsCount - 1 ? spacing : 0,
-              ),
-              child: Row(
-                children: List.generate(columns, (colIndex) {
-                  final hasItem = colIndex < rowNumbers.length;
-                  final rightPadding = colIndex < columns - 1 ? spacing : 0.0;
-
-                  if (!hasItem) {
-                    return Expanded(
-                      child: Padding(
-                        padding: EdgeInsets.only(right: rightPadding),
-                        child: const SizedBox.shrink(),
-                      ),
-                    );
-                  }
-
-                  final number = rowNumbers[colIndex];
-                  return Expanded(
-                    child: Padding(
-                      padding: EdgeInsets.only(right: rightPadding),
-                      child: SizedBox(
-                        height: cardHeight,
-                        child: ScaleButton(
-                          onPressed: () {
-                            HapticFeedback.lightImpact();
-                            context.push('/number/$lessonId/${number.id}');
-                          },
-                          child: Container(
-                            padding: const EdgeInsets.all(14),
-                            decoration: BoxDecoration(
-                              color: isDark
-                                  ? AppColors.darkSurfaceElevated
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: AppColors.primary.withValues(
-                                  alpha: 0.15,
-                                ),
-                                width: 1.5,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withValues(
-                                    alpha: isDark ? 0.2 : 0.05,
-                                  ),
-                                  blurRadius: 12,
-                                  offset: const Offset(0, 4),
-                                ),
-                              ],
-                            ),
-                            child: Stack(
-                              children: [
-                                Center(
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      Text(
-                                        number.numeral,
-                                        style: const TextStyle(
-                                          fontSize: 36,
-                                          fontWeight: FontWeight.w900,
-                                          color: AppColors.primary,
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Text(
-                                        '${number.value}',
-                                        style: TextStyle(
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.w800,
-                                          color: isDark
-                                              ? Colors.white
-                                              : Colors.black87,
-                                        ),
-                                      ),
-                                      Text(
-                                        number.nameLatin,
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          fontWeight: FontWeight.w500,
-                                          color: isDark
-                                              ? Colors.white54
-                                              : Colors.black45,
-                                        ),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Positioned(
-                                  top: 0,
-                                  right: 0,
-                                  child: Container(
-                                    padding: const EdgeInsets.all(4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      size: 10,
-                                      color: AppColors.primary,
-                                    ),
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _getResponsiveCrossAxisCount(context),
+        mainAxisSpacing: 14,
+        crossAxisSpacing: 14,
+        childAspectRatio: 0.85,
+      ),
+      itemCount: numbers.length,
+      itemBuilder: (context, index) {
+        final number = numbers[index];
+        return ScaleButton(
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            context.push('/number/$lessonId/${number.id}');
+          },
+          child: BentoCell(
+            padding: const EdgeInsets.all(14),
+            borderRadius: 20,
+            border: Border.all(
+              color: AppColors.primary.withValues(alpha: 0.15),
+              width: 1.5,
+            ),
+            child: Stack(
+              children: [
+                Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        number.numeral,
+                        style: const TextStyle(
+                          fontSize: 36,
+                          fontWeight: FontWeight.w900,
+                          color: AppColors.primary,
                         ),
                       ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '${number.value}',
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          color: isDark ? Colors.white : Colors.black87,
+                        ),
+                      ),
+                      Text(
+                        number.nameLatin,
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                Positioned(
+                  top: 0,
+                  right: 0,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: AppColors.primary.withValues(alpha: 0.1),
+                      shape: BoxShape.circle,
                     ),
-                  );
-                }),
-              ),
-            );
-          }),
+                    child: const Icon(
+                      Icons.arrow_forward_ios_rounded,
+                      size: 10,
+                      color: AppColors.primary,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         );
       },
     );
@@ -465,6 +349,100 @@ class VocabularyListContent extends ConsumerWidget {
       return EmptyContentPlaceholder(
         message: 'No words in this lesson. Add content blocks in admin.',
         isDark: isDark,
+      );
+    }
+
+    final layoutMode = ref.watch(lessonLayoutModeProvider);
+
+    if (layoutMode == LessonLayoutMode.grid) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _getResponsiveCrossAxisCount(context),
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.85,
+        ),
+        itemCount: words.length,
+        itemBuilder: (context, index) {
+          final word = words[index];
+          return ScaleButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/word/$lessonId/${word.id}');
+            },
+            child: BentoCell(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 24,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          word.wordOlChiki,
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                            height: 1.2,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          word.wordLatin,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          word.meaning,
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                            fontStyle: FontStyle.italic,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -573,6 +551,102 @@ class SentenceListContent extends ConsumerWidget {
       return EmptyContentPlaceholder(
         message: 'No sentences in this lesson. Add content blocks in admin.',
         isDark: isDark,
+      );
+    }
+
+    final layoutMode = ref.watch(lessonLayoutModeProvider);
+
+    if (layoutMode == LessonLayoutMode.grid) {
+      return GridView.builder(
+        shrinkWrap: true,
+        physics: const NeverScrollableScrollPhysics(),
+        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: _getResponsiveCrossAxisCount(context),
+          mainAxisSpacing: 16,
+          crossAxisSpacing: 16,
+          childAspectRatio: 0.82,
+        ),
+        itemCount: sentences.length,
+        itemBuilder: (context, index) {
+          final sentence = sentences[index];
+          return ScaleButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/sentence/$lessonId/${sentence.id}');
+            },
+            child: BentoCell(
+              padding: const EdgeInsets.all(16),
+              borderRadius: 24,
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.15),
+                width: 1.5,
+              ),
+              child: Stack(
+                children: [
+                  Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          sentence.sentenceOlChiki,
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                            height: 1.2,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          sentence.sentenceLatin,
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: isDark ? Colors.white70 : Colors.black87,
+                            letterSpacing: 0.5,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          sentence.meaning,
+                          style: TextStyle(
+                            fontSize: 11,
+                            color: isDark ? Colors.white54 : Colors.black54,
+                          ),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 10,
+                        color: AppColors.primary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
       );
     }
 
@@ -741,5 +815,259 @@ class _NavArrow extends StatelessWidget {
         color: AppColors.primary,
       ),
     );
+  }
+}
+
+/// Dynamic grid builder that renders the lesson's blocks directly to ensure
+/// the grid view matches the list view item count perfectly (1:1 alignment).
+class BlockGridContent extends ConsumerWidget {
+  final String lessonId;
+  final List<LessonBlockEntity> blocks;
+  final String categoryId;
+
+  const BlockGridContent({
+    super.key,
+    required this.lessonId,
+    required this.blocks,
+    required this.categoryId,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    final cleanCategory = categoryId.toLowerCase();
+    final isAlphabet = cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
+    final isNumber = cleanCategory.contains('number');
+    final isSentence = cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
+
+    if (blocks.isEmpty) {
+      return EmptyContentPlaceholder(
+        message: 'No items in this lesson. Add content blocks in admin.',
+        isDark: isDark,
+      );
+    }
+
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: _getResponsiveCrossAxisCount(context),
+        mainAxisSpacing: 16,
+        crossAxisSpacing: 16,
+        childAspectRatio: isAlphabet ? 0.9 : (isNumber ? 0.85 : (isSentence ? 0.82 : 0.85)),
+      ),
+      itemCount: blocks.length,
+      itemBuilder: (context, index) {
+        final block = blocks[index];
+        return DynamicBlockGridCell(
+          lessonId: lessonId,
+          block: block,
+          isAlphabet: isAlphabet,
+          isNumber: isNumber,
+          isSentence: isSentence,
+        );
+      },
+    );
+  }
+}
+
+/// Bento styled grid cell representation of a single content block.
+class DynamicBlockGridCell extends ConsumerWidget {
+  final String lessonId;
+  final LessonBlockEntity block;
+  final bool isAlphabet;
+  final bool isNumber;
+  final bool isSentence;
+
+  const DynamicBlockGridCell({
+    super.key,
+    required this.lessonId,
+    required this.block,
+    required this.isAlphabet,
+    required this.isNumber,
+    required this.isSentence,
+  });
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final textOlChiki = block.textOlChiki?.trim() ?? '';
+    final textLatin = block.textLatin?.trim() ?? '';
+    
+    final navRoute = _resolveNavRoute(ref, lessonId, textOlChiki) ?? 
+                     (textLatin.isNotEmpty ? _resolveNavRoute(ref, lessonId, textLatin) : null);
+
+    return ScaleButton(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        if (navRoute != null) {
+          context.push(navRoute);
+        } else {
+          if (block.audioUrl != null && block.audioUrl!.isNotEmpty) {
+            ref.read(audioServiceProvider).playUrl(block.audioUrl!);
+          }
+        }
+      },
+      child: BentoCell(
+        padding: const EdgeInsets.all(14),
+        borderRadius: 20,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: 0.15),
+          width: 1.5,
+        ),
+        child: Stack(
+          children: [
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    textOlChiki,
+                    style: TextStyle(
+                      fontSize: isAlphabet ? 44 : (isNumber ? 36 : (isSentence ? 20 : 26)),
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.primary,
+                      height: 1.2,
+                    ),
+                    maxLines: isSentence ? 2 : 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 6),
+                  if (textLatin.isNotEmpty) ...[
+                    Text(
+                      isAlphabet ? textLatin.toUpperCase() : textLatin,
+                      style: TextStyle(
+                        fontSize: isAlphabet ? 16 : (isNumber ? 18 : (isSentence ? 13 : 14)),
+                        fontWeight: FontWeight.bold,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        letterSpacing: isAlphabet ? 1.5 : 0.5,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                    ),
+                  ],
+                  if (!isAlphabet && !isNumber) ...[
+                    Builder(
+                      builder: (context) {
+                        String meaning = '';
+                        if (block.data != null && block.data!['meaning'] != null) {
+                          meaning = block.data!['meaning'] as String;
+                        }
+                        
+                        if (meaning.isEmpty && navRoute != null) {
+                          if (navRoute.contains('/word/')) {
+                            final wordId = navRoute.split('/').last;
+                            final matchedWord = ref.read(wordsProvider).value?.where((w) => w.id == wordId).firstOrNull;
+                            if (matchedWord != null) {
+                              meaning = matchedWord.meaning;
+                            }
+                          } else if (navRoute.contains('/sentence/')) {
+                            final sentenceId = navRoute.split('/').last;
+                            final matchedSentence = ref.read(sentencesProvider).value?.where((s) => s.id == sentenceId).firstOrNull;
+                            if (matchedSentence != null) {
+                              meaning = matchedSentence.meaning;
+                            }
+                          }
+                        }
+
+                        if (meaning.isNotEmpty) {
+                          return Padding(
+                            padding: const EdgeInsets.only(top: 4),
+                            child: Text(
+                              meaning,
+                              style: TextStyle(
+                                fontSize: isSentence ? 11 : 12,
+                                color: isDark ? Colors.white54 : Colors.black54,
+                                fontStyle: FontStyle.italic,
+                              ),
+                              maxLines: isSentence ? 2 : 1,
+                              overflow: TextOverflow.ellipsis,
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        }
+                        return const SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            if (navRoute != null)
+              Positioned(
+                top: 0,
+                right: 0,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: BoxDecoration(
+                    color: AppColors.primary.withValues(alpha: 0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.arrow_forward_ios_rounded,
+                    size: isAlphabet ? 12 : 10,
+                    color: AppColors.primary,
+                  ),
+                ),
+              ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  String? _resolveNavRoute(WidgetRef ref, String lessonId, String text) {
+    final t = text.trim();
+    if (t.isEmpty) return null;
+
+    final dashRegex = RegExp(r'\s*[\-–—−]\s*');
+    final List<String> parts = t.contains(dashRegex)
+        ? t.split(dashRegex).map((p) => p.trim()).where((p) => p.isNotEmpty).toList()
+        : [t];
+
+    final letters = ref.read(lettersProvider).value ?? [];
+    for (final part in parts) {
+      final matched = letters
+          .where((l) => l.charOlChiki.toLowerCase() == part.toLowerCase() ||
+                        l.transliterationLatin.toLowerCase() == part.toLowerCase())
+          .firstOrNull;
+      if (matched != null) return '/letter/$lessonId/${matched.charOlChiki}';
+    }
+
+    final numbers = ref.read(numbersProvider).value ?? [];
+    for (final part in parts) {
+      final matched = numbers
+          .where((n) => n.numeral.toLowerCase() == part.toLowerCase() ||
+                        n.value.toString().toLowerCase() == part.toLowerCase() ||
+                        n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
+                        n.nameLatin.toLowerCase() == part.toLowerCase())
+          .firstOrNull;
+      if (matched != null) return '/number/$lessonId/${matched.id}';
+    }
+
+    final words = ref.read(wordsProvider).value ?? [];
+    for (final part in parts) {
+      final matched = words
+          .where((w) => w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
+                        w.wordLatin.toLowerCase() == part.toLowerCase() ||
+                        w.meaning.toLowerCase() == part.toLowerCase())
+          .firstOrNull;
+      if (matched != null) return '/word/$lessonId/${matched.id}';
+    }
+
+    final sentences = ref.read(sentencesProvider).value ?? [];
+    for (final part in parts) {
+      final matched = sentences
+          .where((s) => s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
+                        s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
+                        s.meaning.toLowerCase() == part.toLowerCase())
+          .firstOrNull;
+      if (matched != null) return '/sentence/$lessonId/${matched.id}';
+    }
+
+    return null;
   }
 }

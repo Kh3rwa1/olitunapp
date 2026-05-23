@@ -1,7 +1,10 @@
+import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/storage/cache_service.dart';
+import '../../core/observability/crash_reporting.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../../features/rhymes/domain/rhyme_category_model.dart';
 
@@ -18,6 +21,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
   }
 
   final Ref ref;
+  static const String _cacheKey = 'cached_rhymes';
 
   static final List<RhymeModel> _seedRhymes = [
     RhymeModel(
@@ -39,6 +43,17 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
   ];
 
   Future<void> _loadRhymes() async {
+    // 1. Try Cache
+    try {
+      final cached = await CacheService.getList(_cacheKey, RhymeModel.fromJson);
+      if (cached != null && cached.isNotEmpty && mounted) {
+        state = AsyncValue.data(cached);
+      }
+    } catch (e) {
+      debugPrint('❌ rhymes_providers: Failed to load cached rhymes: $e');
+    }
+
+    // 2. Fetch Network
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
@@ -53,13 +68,38 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
             rhymes.add(rhyme);
           }
         } catch (e) {
-          AppLogger.debug('Skipping malformed rhyme row: $e');
+          debugPrint('⚠️ rhymes_providers: Skipping malformed rhyme row: $e');
         }
       }
-      state = AsyncValue.data(rhymes.isEmpty ? _seedRhymes : rhymes);
-    } catch (e) {
-      AppLogger.debug('Error loading rhymes, using seed fallback: $e');
-      state = AsyncValue.data(_seedRhymes);
+
+      final resultList = rhymes.isEmpty ? _seedRhymes : rhymes;
+      if (mounted) {
+        state = AsyncValue.data(resultList);
+      }
+
+      // 3. Save Cache
+      if (rhymes.isNotEmpty) {
+        await CacheService.set(
+          _cacheKey,
+          rhymes.map((e) => e.toJson()).toList(),
+        );
+      }
+    } catch (e, stack) {
+      // Critical error logging in production
+      debugPrint('❌ rhymes_providers: Error loading rhymes from Appwrite: $e');
+      debugPrint(stack.toString());
+
+      CrashReporting.recordError(e, stack);
+      CrashReporting.addAppwriteBreadcrumb(
+        operation: 'list',
+        collection: 'rhymes',
+        success: false,
+        error: e.toString(),
+      );
+
+      if (mounted && (!state.hasValue || state.value!.isEmpty)) {
+        state = AsyncValue.data(_seedRhymes);
+      }
     }
   }
 

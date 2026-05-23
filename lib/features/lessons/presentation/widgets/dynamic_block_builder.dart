@@ -81,22 +81,21 @@ class _TextBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final textOlChiki = block.textOlChiki?.trim();
-    if (textOlChiki == null || textOlChiki.isEmpty) {
+    final textOlChiki = block.textOlChiki?.trim() ?? '';
+    final textLatin = block.textLatin?.trim() ?? '';
+
+    if (textOlChiki.isEmpty && textLatin.isEmpty) {
       return const SizedBox.shrink();
     }
 
-    var navRoute = _resolveNavRoute(ref, lessonId, textOlChiki);
-    if (navRoute == null &&
-        block.textLatin != null &&
-        block.textLatin!.trim().isNotEmpty) {
-      navRoute = _resolveNavRoute(ref, lessonId, block.textLatin!.trim());
-    }
+    final displayText = textOlChiki.isNotEmpty ? textOlChiki : textLatin;
+
+    final navRoute = _resolveNavRoute(ref, lessonId, displayText);
 
     final content = Semantics(
       label: LearningSemantics.olChikiText(
-        text: block.textOlChiki!,
-        latin: block.textLatin,
+        text: displayText,
+        latin: textOlChiki.isNotEmpty && textLatin.isNotEmpty ? textLatin : null,
       ),
       button: navRoute != null,
       child: ExcludeSemantics(
@@ -127,19 +126,18 @@ class _TextBlock extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      block.textOlChiki!,
+                      displayText,
                       style: TextStyle(
-                        fontSize: (block.textOlChiki!.length < 5) ? 36 : 22,
+                        fontSize: displayText.length < 5 ? 36 : 22,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primary,
                         height: 1.2,
                       ),
                     ),
-                    if (block.textLatin != null &&
-                        block.textLatin!.isNotEmpty) ...[
+                    if (textOlChiki.isNotEmpty && textLatin.isNotEmpty) ...[
                       const SizedBox(height: 8),
                       Text(
-                        block.textLatin!,
+                        textLatin,
                         style: TextStyle(
                           fontSize: 17,
                           fontWeight: FontWeight.w500,

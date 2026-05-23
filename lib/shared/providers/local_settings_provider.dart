@@ -158,3 +158,20 @@ void toggleReduceVisualEffects(WidgetRef ref) {
       .setBool('reduce_visual_effects', !current);
   ref.read(userReduceVisualEffectsProvider.notifier).state = !current;
 }
+
+// ============== LESSON LAYOUT MODE SETTINGS ==============
+
+enum LessonLayoutMode { grid, list }
+
+final lessonLayoutModeProvider = StateProvider<LessonLayoutMode>((ref) {
+  final val = ref.read(sharedPreferencesProvider).getString('lesson_layout_mode');
+  return LessonLayoutMode.values.firstWhere(
+    (e) => e.name == val,
+    orElse: () => LessonLayoutMode.grid,
+  );
+});
+
+void updateLessonLayoutMode(WidgetRef ref, LessonLayoutMode mode) {
+  ref.read(sharedPreferencesProvider).setString('lesson_layout_mode', mode.name);
+  ref.read(lessonLayoutModeProvider.notifier).state = mode;
+}

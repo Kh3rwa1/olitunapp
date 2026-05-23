@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -195,6 +197,35 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                         onPressed: () =>
                             context.canPop() ? context.pop() : context.go('/'),
                       ),
+                      actions: [
+                        Consumer(
+                          builder: (context, ref, _) {
+                            final layoutMode = ref.watch(lessonLayoutModeProvider);
+                            final isGrid = layoutMode == LessonLayoutMode.grid;
+
+                            return IconButton(
+                              icon: Icon(
+                                isGrid
+                                    ? Icons.view_list_rounded
+                                    : Icons.grid_view_rounded,
+                                color: Colors.white,
+                              ),
+                              onPressed: () {
+                                HapticFeedback.mediumImpact();
+                                updateLessonLayoutMode(
+                                  ref,
+                                  isGrid
+                                      ? LessonLayoutMode.list
+                                      : LessonLayoutMode.grid,
+                                );
+                              },
+                              tooltip: isGrid
+                                  ? 'Switch to List View'
+                                  : 'Switch to Bento Grid View',
+                            );
+                          },
+                        ),
+                      ],
                       title: Text(
                         lessonTitle,
                         style: TextStyle(
@@ -218,7 +249,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     ),
 
                     SliverPadding(
-                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 112),
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 32),
                       sliver: SliverList(
                         delegate: SliverChildListDelegate.fixed([
                           // Description section
@@ -277,71 +308,101 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
               ),
             ],
           ),
-          floatingActionButton: Container(
-            margin: const EdgeInsets.only(left: 20, right: 20, bottom: 16),
-            width: double.infinity,
-            child: FloatingActionButton.extended(
-              onPressed: _isScrollCompleted
-                  ? () {
-                      final notifier = ref.read(userStatsProvider.notifier);
-                      notifier.completeLesson(
-                        lesson.id,
-                        categoryId: lesson.categoryId,
-                        estimatedMinutes: lesson.estimatedMinutes,
-                      );
-                      notifier.addStars(25);
-                      ref
-                          .read(lessonCompletedTodayProvider.notifier)
-                          .setCompleted(true);
-
-                      final quizzes = ref.read(quizzesProvider).value ?? [];
-                      final quizId = _getQuizIdForCategory(
-                        lesson.categoryId,
-                        lesson.id,
-                        quizzes,
-                      );
-
-                      // Find next lesson to allow routing!
-                      final currentIdx = data.indexOf(lesson);
-                      final nextLessonId =
-                          (currentIdx != -1 && currentIdx + 1 < data.length)
-                          ? data[currentIdx + 1].id
-                          : null;
-
-                      _showCompletionSheet(
-                        context: context,
-                        lesson: lesson,
-                        quizId: quizId,
-                        quizzes: quizzes,
-                        nextLessonId: nextLessonId,
-                      );
-                    }
-                  : null,
-              backgroundColor: _isScrollCompleted
-                  ? AppColors.primary
-                  : (isDark ? Colors.white10 : Colors.black12),
-              label: Text(
-                _isScrollCompleted
-                    ? 'Complete Lesson'
-                    : 'Finish the lesson to complete',
-                style: TextStyle(
-                  fontWeight: FontWeight.w700,
-                  fontSize: 16,
-                  color: _isScrollCompleted
-                      ? Colors.white
-                      : (isDark ? Colors.white30 : Colors.black38),
+          bottomNavigationBar: ClipRect(
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+              child: Container(
+                padding: EdgeInsets.only(
+                  left: 20,
+                  right: 20,
+                  top: 16,
+                  bottom: MediaQuery.of(context).padding.bottom + 16,
                 ),
-              ),
-              icon: Icon(
-                Icons.check_circle_rounded,
-                color: _isScrollCompleted
-                    ? Colors.white
-                    : (isDark ? Colors.white30 : Colors.black38),
+                decoration: BoxDecoration(
+                  color: (isDark ? const Color(0xFF0F141C) : Colors.white).withValues(alpha: 0.85),
+                  border: Border(
+                    top: BorderSide(
+                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                      width: 1.5,
+                    ),
+                  ),
+                ),
+                child: SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: _isScrollCompleted
+                        ? () {
+                            final notifier = ref.read(userStatsProvider.notifier);
+                            notifier.completeLesson(
+                              lesson.id,
+                              categoryId: lesson.categoryId,
+                              estimatedMinutes: lesson.estimatedMinutes,
+                            );
+                            notifier.addStars(25);
+                            ref
+                                .read(lessonCompletedTodayProvider.notifier)
+                                .setCompleted(true);
+
+                            final quizzes = ref.read(quizzesProvider).value ?? [];
+                            final quizId = _getQuizIdForCategory(
+                              lesson.categoryId,
+                              lesson.id,
+                              quizzes,
+                            );
+
+                            // Find next lesson to allow routing!
+                            final currentIdx = data.indexOf(lesson);
+                            final nextLessonId =
+                                (currentIdx != -1 && currentIdx + 1 < data.length)
+                                ? data[currentIdx + 1].id
+                                : null;
+
+                            _showCompletionSheet(
+                              context: context,
+                              lesson: lesson,
+                              quizId: quizId,
+                              quizzes: quizzes,
+                              nextLessonId: nextLessonId,
+                            );
+                          }
+                        : null,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: _isScrollCompleted
+                          ? AppColors.primary
+                          : (isDark ? Colors.white10 : Colors.black12),
+                      foregroundColor: _isScrollCompleted
+                          ? Colors.white
+                          : (isDark ? Colors.white30 : Colors.black38),
+                      elevation: _isScrollCompleted ? 2 : 0,
+                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    icon: Icon(
+                      Icons.check_circle_rounded,
+                      color: _isScrollCompleted
+                          ? Colors.white
+                          : (isDark ? Colors.white30 : Colors.black38),
+                    ),
+                    label: Text(
+                      _isScrollCompleted
+                          ? 'Complete Lesson'
+                          : 'Finish the lesson to complete',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        color: _isScrollCompleted
+                            ? Colors.white
+                            : (isDark ? Colors.white30 : Colors.black38),
+                      ),
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
-          floatingActionButtonLocation:
-              FloatingActionButtonLocation.centerFloat,
         );
       },
     );
@@ -406,35 +467,82 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
   }
 
   Widget _buildContent(LessonEntity lesson, bool isDark) {
-    // If valid blocks exist, render them dynamically
-    if (lesson.blocks.isNotEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: lesson.blocks.map((block) {
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
-          );
-        }).toList(),
-      );
-    }
+    final cleanCategory = lesson.categoryId.toLowerCase();
+    final isAlphabet = cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
+    final isNumber = cleanCategory.contains('number');
+    final isSentence = cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
 
-    // Fallback to provider-based grids
-    switch (lesson.categoryId) {
-      case 'alphabets':
-      case 'cat_alphabet':
-      case 'seed_alphabet':
+    final layoutMode = ref.watch(lessonLayoutModeProvider);
+
+    if (layoutMode == LessonLayoutMode.grid) {
+      if (lesson.blocks.isNotEmpty) {
+        // Find intro/explanatory blocks (text longer than 3 characters is a general description, not a single letter/numeral)
+        final introBlocks = lesson.blocks.where((block) {
+          final text = block.textOlChiki?.trim() ?? '';
+          if (text.isEmpty) return true;
+          return (isAlphabet || isNumber) ? text.length > 3 : false;
+        }).toList();
+
+        final gridBlocks = lesson.blocks.where((block) {
+          final text = block.textOlChiki?.trim() ?? '';
+          if (text.isEmpty) return false;
+          return (isAlphabet || isNumber) ? text.length <= 3 : true;
+        }).toList();
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            if (introBlocks.isNotEmpty) ...[
+              ...introBlocks.map((block) => Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
+                  )),
+              const SizedBox(height: 8),
+            ],
+            if (gridBlocks.isNotEmpty)
+              BlockGridContent(
+                lessonId: lesson.id,
+                blocks: gridBlocks,
+                categoryId: lesson.categoryId,
+              ),
+          ],
+        );
+      }
+
+      // Fallback to provider-based lists if blocks are empty
+      if (isAlphabet) {
         return LetterGridContent(lessonId: lesson.id);
-      case 'numbers':
-      case 'cat_numbers':
-      case 'seed_numbers':
+      } else if (isNumber) {
         return NumberGridContent(lessonId: lesson.id);
-      case 'sentences':
-      case 'cat_sentences':
-      case 'seed_sentences':
+      } else if (isSentence) {
         return SentenceListContent(lessonId: lesson.id);
-      default:
+      } else {
         return VocabularyListContent(lessonId: lesson.id);
+      }
+    } else {
+      // Fall back to original list view of text blocks!
+      if (lesson.blocks.isNotEmpty) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: lesson.blocks.map((block) {
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
+            );
+          }).toList(),
+        );
+      }
+
+      // Fallback to provider-based lists
+      if (isAlphabet) {
+        return LetterGridContent(lessonId: lesson.id);
+      } else if (isNumber) {
+        return NumberGridContent(lessonId: lesson.id);
+      } else if (isSentence) {
+        return SentenceListContent(lessonId: lesson.id);
+      } else {
+        return VocabularyListContent(lessonId: lesson.id);
+      }
     }
   }
 }

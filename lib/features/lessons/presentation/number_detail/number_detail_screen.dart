@@ -10,9 +10,9 @@ import '../../../../core/motion/motion.dart';
 import '../../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../shared/models/content_models.dart';
-import '../../../../shared/widgets/lottie_display.dart';
 import '../../../../core/utils/text_match.dart';
 import '../../domain/entities/lesson_entity.dart';
+import '../widgets/full_bleed_hero_media.dart';
 
 class NumberDetailScreen extends ConsumerStatefulWidget {
   final String numberId;
@@ -453,49 +453,18 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
       tag: MotionTokens.heroTag('number', number.id),
       child: Material(
         type: MaterialType.transparency,
-        child: TweenAnimationBuilder<double>(
-          tween: Tween(begin: 0.90, end: 1.0),
-          duration: const Duration(milliseconds: 1200),
-          curve: Curves.elasticOut,
-          builder: (context, scale, child) {
-            return Transform.scale(scale: scale, child: child);
-          },
-          child: number.animationUrl != null && number.animationUrl!.isNotEmpty
-              ? SizedBox(
-                  width: 220,
-                  height: 220,
-                  child: LottieDisplay(
-                    url: number.animationUrl!,
-                    width: 220,
-                    height: 220,
-                  ),
-                )
-              : number.imageUrl != null && number.imageUrl!.isNotEmpty
-              ? ClipRRect(
-                  borderRadius: BorderRadius.circular(24),
-                  child: Image.network(
-                    number.imageUrl!,
-                    width: 220,
-                    height: 220,
-                    fit: BoxFit.cover,
-                    filterQuality: FilterQuality.high,
-                    errorBuilder: (context, _, _) => Image.network(
-                      _emojiToPngUrl(emoji),
-                      width: 220,
-                      height: 220,
-                      fit: BoxFit.contain,
-                    ),
-                  ),
-                )
-              : Image.network(
-                  _emojiToPngUrl(emoji),
-                  width: 220,
-                  height: 220,
-                  fit: BoxFit.contain,
-                  filterQuality: FilterQuality.high,
-                  errorBuilder: (context, _, _) =>
-                      Text(emoji, style: const TextStyle(fontSize: 120)),
-                ),
+        child: FullBleedHeroMedia(
+          animationUrl: number.animationUrl,
+          imageUrl: number.imageUrl,
+          fallback: Image.network(
+            _emojiToPngUrl(emoji),
+            width: 168,
+            height: 168,
+            fit: BoxFit.contain,
+            filterQuality: FilterQuality.high,
+            errorBuilder: (context, _, _) =>
+                Text(emoji, style: const TextStyle(fontSize: 120)),
+          ),
         ),
       ),
     );
@@ -535,6 +504,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               ],
               expandedHeight: 300,
               heroChild: heroIllustration,
+              heroChildFullBleed: true,
             ),
             SliverPadding(
               padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),

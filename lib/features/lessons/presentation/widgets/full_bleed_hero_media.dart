@@ -217,9 +217,7 @@ class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
 
     final controller = _controller;
     if (!_isLoaded || controller == null) {
-      return const Center(
-        child: CircularProgressIndicator(strokeWidth: 2),
-      );
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
     }
 
     return GestureDetector(
@@ -448,7 +446,9 @@ bool _isSvgUrl(String url) {
 
 bool _isLottieUrl(String url) {
   final lower = url.toLowerCase();
-  return lower.contains('.json') || lower.contains('.lottie') || lower.contains('/buckets/animations/');
+  return lower.contains('.json') ||
+      lower.contains('.lottie') ||
+      lower.contains('/buckets/animations/');
 }
 
 bool _isVideoUrl(String url) {

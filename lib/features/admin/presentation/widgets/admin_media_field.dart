@@ -250,15 +250,20 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
   Widget _buildDefaultPreview(String url, bool isDark) {
     final lower = url.toLowerCase();
     final isSvg = lower.contains('.svg') || lower.contains('image/svg');
-    final isLottie = lower.contains('.json') || lower.contains('.lottie') || lower.contains('/buckets/animations/');
-    final isVideo = lower.contains('.mp4') ||
+    final isLottie =
+        lower.contains('.json') ||
+        lower.contains('.lottie') ||
+        lower.contains('/buckets/animations/');
+    final isVideo =
+        lower.contains('.mp4') ||
         lower.contains('.webm') ||
         lower.contains('.mov') ||
         lower.contains('.m4v') ||
         lower.contains('.3gp') ||
         lower.contains('.avi') ||
         lower.contains('/buckets/videos/');
-    final isAudio = lower.contains('.mp3') ||
+    final isAudio =
+        lower.contains('.mp3') ||
         lower.contains('.wav') ||
         lower.contains('.ogg') ||
         lower.contains('.aac') ||

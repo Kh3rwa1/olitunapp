@@ -195,7 +195,11 @@ class _TextBlock extends ConsumerWidget {
     // Check if the text has a dash to split it for composite exact matches
     final dashRegex = RegExp(r'\s*[\-–—−]\s*');
     final List<String> parts = t.contains(dashRegex)
-        ? t.split(dashRegex).map((p) => p.trim()).where((p) => p.isNotEmpty).toList()
+        ? t
+              .split(dashRegex)
+              .map((p) => p.trim())
+              .where((p) => p.isNotEmpty)
+              .toList()
         : [t];
 
     // --- PHASE 1: EXACT MATCHES (to prevent fuzzy hijacking) ---
@@ -203,10 +207,13 @@ class _TextBlock extends ConsumerWidget {
     // 1. Letters exact match
     final letters = ref.read(lettersProvider).value ?? [];
     for (final part in parts) {
-      final matched = letters.where((l) =>
-        l.charOlChiki.toLowerCase() == part.toLowerCase() ||
-        l.transliterationLatin.toLowerCase() == part.toLowerCase()
-      ).firstOrNull;
+      final matched = letters
+          .where(
+            (l) =>
+                l.charOlChiki.toLowerCase() == part.toLowerCase() ||
+                l.transliterationLatin.toLowerCase() == part.toLowerCase(),
+          )
+          .firstOrNull;
       if (matched != null) {
         return '/letter/$lessonId/${matched.charOlChiki}';
       }
@@ -215,12 +222,15 @@ class _TextBlock extends ConsumerWidget {
     // 2. Numbers exact match
     final numbers = ref.read(numbersProvider).value ?? [];
     for (final part in parts) {
-      final matched = numbers.where((n) =>
-        n.numeral.toLowerCase() == part.toLowerCase() ||
-        n.value.toString().toLowerCase() == part.toLowerCase() ||
-        n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
-        n.nameLatin.toLowerCase() == part.toLowerCase()
-      ).firstOrNull;
+      final matched = numbers
+          .where(
+            (n) =>
+                n.numeral.toLowerCase() == part.toLowerCase() ||
+                n.value.toString().toLowerCase() == part.toLowerCase() ||
+                n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
+                n.nameLatin.toLowerCase() == part.toLowerCase(),
+          )
+          .firstOrNull;
       if (matched != null) {
         return '/number/$lessonId/${matched.id}';
       }
@@ -229,11 +239,14 @@ class _TextBlock extends ConsumerWidget {
     // 3. Words exact match
     final words = ref.read(wordsProvider).value ?? [];
     for (final part in parts) {
-      final matched = words.where((w) =>
-        w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
-        w.wordLatin.toLowerCase() == part.toLowerCase() ||
-        w.meaning.toLowerCase() == part.toLowerCase()
-      ).firstOrNull;
+      final matched = words
+          .where(
+            (w) =>
+                w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
+                w.wordLatin.toLowerCase() == part.toLowerCase() ||
+                w.meaning.toLowerCase() == part.toLowerCase(),
+          )
+          .firstOrNull;
       if (matched != null) {
         return '/word/$lessonId/${matched.id}';
       }
@@ -242,11 +255,14 @@ class _TextBlock extends ConsumerWidget {
     // 4. Sentences exact match
     final sentences = ref.read(sentencesProvider).value ?? [];
     for (final part in parts) {
-      final matched = sentences.where((s) =>
-        s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
-        s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
-        s.meaning.toLowerCase() == part.toLowerCase()
-      ).firstOrNull;
+      final matched = sentences
+          .where(
+            (s) =>
+                s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
+                s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
+                s.meaning.toLowerCase() == part.toLowerCase(),
+          )
+          .firstOrNull;
       if (matched != null) {
         return '/sentence/$lessonId/${matched.id}';
       }

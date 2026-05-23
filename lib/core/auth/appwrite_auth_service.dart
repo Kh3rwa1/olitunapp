@@ -206,7 +206,8 @@ class AppwriteAuthService {
     try {
       if (kIsWeb) {
         final origin = Uri.base.origin;
-        final oauthUrl = '${AppwriteConfig.endpoint}/account/sessions/oauth2/google'
+        final oauthUrl =
+            '${AppwriteConfig.endpoint}/account/sessions/oauth2/google'
             '?project=${AppwriteConfig.projectId}'
             '&success=${Uri.encodeComponent("$origin/splash")}'
             '&failure=${Uri.encodeComponent("$origin/welcome")}'
@@ -252,8 +253,6 @@ class AppwriteAuthService {
       return false;
     }
   }
-
-
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);

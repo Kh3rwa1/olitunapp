@@ -106,11 +106,7 @@ class AdminSectionHeader extends StatelessWidget {
           ),
           if (actions != null && actions!.isNotEmpty && width <= 720) ...[
             const SizedBox(height: 16),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: actions!,
-            ),
+            Wrap(spacing: 8, runSpacing: 8, children: actions!),
           ],
         ],
       ),

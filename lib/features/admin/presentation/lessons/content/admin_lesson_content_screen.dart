@@ -777,12 +777,17 @@ class _AdminLessonContentScreenState
                             ),
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [AppColors.primary, AppColors.primaryDark],
+                                colors: [
+                                  AppColors.primary,
+                                  AppColors.primaryDark,
+                                ],
                               ),
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppColors.primary.withValues(alpha: 0.3),
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.3,
+                                  ),
                                   blurRadius: 10,
                                   offset: const Offset(0, 3),
                                 ),
@@ -831,7 +836,9 @@ class _AdminLessonContentScreenState
                             borderRadius: BorderRadius.circular(12),
                             boxShadow: [
                               BoxShadow(
-                                color: AppColors.primary.withValues(alpha: 0.25),
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.25,
+                                ),
                                 blurRadius: 10,
                                 offset: const Offset(0, 3),
                               ),
@@ -840,7 +847,11 @@ class _AdminLessonContentScreenState
                           child: const Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.add_rounded, size: 18, color: Colors.white),
+                              Icon(
+                                Icons.add_rounded,
+                                size: 18,
+                                color: Colors.white,
+                              ),
                               SizedBox(width: 6),
                               Text(
                                 'Add Block',
@@ -861,7 +872,9 @@ class _AdminLessonContentScreenState
                             vertical: 8,
                           ),
                           decoration: BoxDecoration(
-                            color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                            color: const Color(
+                              0xFF10B981,
+                            ).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
                           child: const Row(
@@ -924,7 +937,9 @@ class _AdminLessonContentScreenState
                                     fontSize: 20,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: -0.5,
-                                    color: isDark ? Colors.white : Colors.black87,
+                                    color: isDark
+                                        ? Colors.white
+                                        : Colors.black87,
                                   ),
                                 ),
                                 Text(
@@ -955,7 +970,10 @@ class _AdminLessonContentScreenState
                                 ),
                                 decoration: BoxDecoration(
                                   gradient: const LinearGradient(
-                                    colors: [AppColors.primary, AppColors.primaryDark],
+                                    colors: [
+                                      AppColors.primary,
+                                      AppColors.primaryDark,
+                                    ],
                                   ),
                                   borderRadius: BorderRadius.circular(10),
                                 ),
@@ -992,12 +1010,13 @@ class _AdminLessonContentScreenState
                             const SizedBox(width: 10),
                           ],
                           ScaleButton(
-                            onPressed: () => AddBlockSheet.show(context, _addBlock),
+                            onPressed: () =>
+                                AddBlockSheet.show(context, _addBlock),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  horizontal: 16,
-                                  vertical: 8,
-                                ),
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
                               decoration: BoxDecoration(
                                 color: AppColors.primary,
                                 borderRadius: BorderRadius.circular(10),
@@ -1005,7 +1024,11 @@ class _AdminLessonContentScreenState
                               child: const Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Icon(Icons.add_rounded, size: 16, color: Colors.white),
+                                  Icon(
+                                    Icons.add_rounded,
+                                    size: 16,
+                                    color: Colors.white,
+                                  ),
                                   SizedBox(width: 6),
                                   Text(
                                     'Add Block',
@@ -1027,7 +1050,9 @@ class _AdminLessonContentScreenState
                                 vertical: 8,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                                color: const Color(
+                                  0xFF10B981,
+                                ).withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: const Row(

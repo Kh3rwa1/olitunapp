@@ -79,7 +79,9 @@ class AdminPageHeader extends StatelessWidget {
         if (isCompact && actions != null && actions!.isNotEmpty) ...[
           const SizedBox(height: 16),
           Padding(
-            padding: const EdgeInsets.only(left: 18), // Align with title text indentation (4 + 14)
+            padding: const EdgeInsets.only(
+              left: 18,
+            ), // Align with title text indentation (4 + 14)
             child: Wrap(spacing: 8, runSpacing: 8, children: actions!),
           ),
         ],

@@ -84,7 +84,12 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
     final width = MediaQuery.of(context).size.width;
     final isMobile = width < 600;
     return ListView.builder(
-      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 100),
+      padding: EdgeInsets.fromLTRB(
+        isMobile ? 16 : 32,
+        0,
+        isMobile ? 16 : 32,
+        100,
+      ),
       itemCount: rhymes.length,
       itemBuilder: (context, index) {
         final rhyme = rhymes[index];

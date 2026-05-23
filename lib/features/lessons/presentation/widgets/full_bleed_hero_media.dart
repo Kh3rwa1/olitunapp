@@ -118,7 +118,6 @@ class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
   VideoPlayerController? _controller;
   bool _isLoaded = false;
   bool _hasError = false;
-  bool _isPlaying = true;
   bool _showOverlayIcon = false;
   IconData _overlayIcon = Icons.play_arrow_rounded;
 
@@ -141,7 +140,6 @@ class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
     setState(() {
       _isLoaded = false;
       _hasError = false;
-      _isPlaying = true;
     });
 
     try {
@@ -190,11 +188,9 @@ class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
     setState(() {
       if (controller.value.isPlaying) {
         controller.pause();
-        _isPlaying = false;
         _overlayIcon = Icons.pause_rounded;
       } else {
         controller.play();
-        _isPlaying = true;
         _overlayIcon = Icons.play_arrow_rounded;
       }
       _showOverlayIcon = true;

@@ -272,13 +272,7 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
 
     Widget child;
     if (isVideo) {
-      child = VideoDisplay(
-        url: url,
-        fit: BoxFit.contain,
-        autoplay: true,
-        loop: true,
-        muted: true,
-      );
+      child = VideoDisplay(url: url);
     } else if (isLottie) {
       child = Lottie.network(
         url,

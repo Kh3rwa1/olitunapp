@@ -55,7 +55,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
           if (success) {
-            AppLogger.debug('Splash: OAuth token exchange succeeded, navigating to /');
+            AppLogger.debug(
+              'Splash: OAuth token exchange succeeded, navigating to /',
+            );
             // Logged in via OAuth -> Mark onboarding as done automatically
             ref.read(onboardingProvider.notifier).completeOnboarding();
             // Invalidate cached auth state so AuthGate widgets update

@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'app/router/app_router.dart';
+import 'app/router/url_strategy.dart';
 import 'core/config/appwrite_config.dart';
 import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
@@ -29,6 +30,7 @@ Locale appLocaleForLanguage(String languageCode) {
 }
 
 Future<void> main() async {
+  configureUrlStrategy();
   WidgetsFlutterBinding.ensureInitialized();
 
   runZonedGuarded(

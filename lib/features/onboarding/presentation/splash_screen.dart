@@ -33,15 +33,29 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // redirected back to /welcome while the session is still being exchanged.
       if (kIsWeb) {
         final uri = Uri.base;
-        final userId = uri.queryParameters['userId'];
-        final secret = uri.queryParameters['secret'];
+        var userId = uri.queryParameters['userId'];
+        var secret = uri.queryParameters['secret'];
+
+        if (userId == null || secret == null) {
+          try {
+            if (mounted) {
+              final routerState = GoRouterState.of(context);
+              userId ??= routerState.uri.queryParameters['userId'];
+              secret ??= routerState.uri.queryParameters['secret'];
+            }
+          } catch (e) {
+            AppLogger.debug('Splash: Could not read GoRouter state: $e');
+          }
+        }
+
         if (userId != null && secret != null) {
           AppLogger.debug(
-            'Splash: Found OAuth token, exchanging for session...',
+            'Splash: Found OAuth token (userId: $userId), exchanging for session...',
           );
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
           if (success) {
+            AppLogger.debug('Splash: OAuth token exchange succeeded, navigating to /');
             // Logged in via OAuth -> Mark onboarding as done automatically
             ref.read(onboardingProvider.notifier).completeOnboarding();
             // Invalidate cached auth state so AuthGate widgets update
@@ -49,7 +63,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             if (!mounted) return;
             context.go('/');
             return;
+          } else {
+            AppLogger.debug('Splash: OAuth token exchange failed');
           }
+        } else {
+          AppLogger.debug('Splash: No OAuth token parameters found in URL');
         }
       }
 

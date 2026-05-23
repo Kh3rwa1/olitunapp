@@ -34,6 +34,8 @@ class LessonCard extends ConsumerWidget {
     final hasBlocks = blockCount > 0;
     final thumbnailUrl = lesson.data?['thumbnailUrl'] as String?;
     final isWide = MediaQuery.of(context).size.width > 800;
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 600;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
@@ -179,6 +181,7 @@ class LessonCard extends ConsumerWidget {
                         icon: Icons.edit_note_rounded,
                         label: 'Edit Details',
                         onTap: onEdit,
+                        isMobile: isMobile,
                       ),
                       const SizedBox(width: 4),
                       _buildActionButton(
@@ -187,6 +190,7 @@ class LessonCard extends ConsumerWidget {
                         onTap: () =>
                             context.go('/admin/lessons/content/${lesson.id}'),
                         isPrimary: true,
+                        isMobile: isMobile,
                       ),
                       const Spacer(),
                       _buildActionButton(
@@ -194,6 +198,7 @@ class LessonCard extends ConsumerWidget {
                         label: 'Delete',
                         onTap: onDelete,
                         isDestructive: true,
+                        isMobile: isMobile,
                       ),
                     ],
                   ),
@@ -297,12 +302,28 @@ class LessonCard extends ConsumerWidget {
     required VoidCallback onTap,
     bool isPrimary = false,
     bool isDestructive = false,
+    bool isMobile = false,
   }) {
     final color = isDestructive
         ? AppColors.error
         : isPrimary
         ? AppColors.primary
         : (isDark ? Colors.white54 : Colors.black45);
+
+    if (isMobile) {
+      return IconButton(
+        icon: Icon(icon, size: 18),
+        color: color,
+        tooltip: label,
+        onPressed: onTap,
+        style: IconButton.styleFrom(
+          padding: const EdgeInsets.all(8),
+          minimumSize: Size.zero,
+          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+        ),
+      );
+    }
 
     return TextButton.icon(
       onPressed: onTap,

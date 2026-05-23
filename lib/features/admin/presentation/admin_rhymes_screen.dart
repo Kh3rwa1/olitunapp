@@ -81,8 +81,10 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
   }
 
   Widget _buildRhymesList(List<RhymeModel> rhymes, bool isDark) {
+    final width = MediaQuery.of(context).size.width;
+    final isMobile = width < 600;
     return ListView.builder(
-      padding: const EdgeInsets.fromLTRB(32, 0, 32, 100),
+      padding: EdgeInsets.fromLTRB(isMobile ? 16 : 32, 0, isMobile ? 16 : 32, 100),
       itemCount: rhymes.length,
       itemBuilder: (context, index) {
         final rhyme = rhymes[index];
@@ -230,7 +232,7 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
           return AlertDialog(
             title: Text(rhyme == null ? 'Add Rhyme' : 'Edit Rhyme'),
             content: SizedBox(
-              width: 500,
+              width: MediaQuery.of(context).size.width < 600 ? null : 500,
               child: SingleChildScrollView(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,

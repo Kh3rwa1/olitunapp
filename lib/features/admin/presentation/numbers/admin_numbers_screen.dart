@@ -79,7 +79,27 @@ class AdminNumbersScreen extends ConsumerWidget {
     bool isDark,
     bool isWideScreen,
   ) {
+    final actions = [
+      OutlinedButton.icon(
+        onPressed: () => _handleSeedData(context, ref),
+        style: OutlinedButton.styleFrom(
+          foregroundColor: AppColors.primary,
+          side: const BorderSide(color: AppColors.primary),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+          ),
+        ),
+        icon: const Icon(Icons.cloud_download_rounded, size: 18),
+        label: const Text(
+          'Seed Default Data',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
+      ),
+    ];
+
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (!isWideScreen) ...[
           GestureDetector(
@@ -100,28 +120,12 @@ class AdminNumbersScreen extends ConsumerWidget {
           ),
           const SizedBox(width: 12),
         ],
-        const Expanded(
+        Expanded(
           child: AdminPageHeader(
             title: 'Ol Chiki Numbers',
             subtitle: 'Manage numerals and counting',
             eyebrow: 'CONTENT · NUMBERS',
-          ),
-        ),
-        const SizedBox(width: 16),
-        OutlinedButton.icon(
-          onPressed: () => _handleSeedData(context, ref),
-          style: OutlinedButton.styleFrom(
-            foregroundColor: AppColors.primary,
-            side: const BorderSide(color: AppColors.primary),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-            ),
-          ),
-          icon: const Icon(Icons.cloud_download_rounded, size: 18),
-          label: const Text(
-            'Seed Default Data',
-            style: TextStyle(fontWeight: FontWeight.w700),
+            actions: actions,
           ),
         ),
       ],

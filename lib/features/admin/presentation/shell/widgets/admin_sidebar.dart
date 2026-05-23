@@ -8,6 +8,14 @@ class AdminSidebar extends StatelessWidget {
   final bool isCompact;
   const AdminSidebar({super.key, this.isCompact = false});
 
+  void _navigate(BuildContext context, String path) {
+    context.go(path);
+    final scaffold = Scaffold.maybeOf(context);
+    if (scaffold != null && scaffold.isDrawerOpen) {
+      scaffold.closeDrawer();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final location = GoRouterState.of(context).matchedLocation;
@@ -30,7 +38,7 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.dashboard_rounded,
                   label: 'Dashboard',
                   isSelected: location == '/admin',
-                  onTap: () => context.go('/admin'),
+                  onTap: () => _navigate(context, '/admin'),
                   isCompact: isCompact,
                 ),
                 const SizedBox(height: 18),
@@ -39,70 +47,70 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.category_rounded,
                   label: 'Categories',
                   isSelected: location == '/admin/categories',
-                  onTap: () => context.go('/admin/categories'),
+                  onTap: () => _navigate(context, '/admin/categories'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.auto_awesome_rounded,
                   label: 'Daily Affirmations',
                   isSelected: location == '/admin/affirmations',
-                  onTap: () => context.go('/admin/affirmations'),
+                  onTap: () => _navigate(context, '/admin/affirmations'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.featured_play_list_rounded,
                   label: 'Banners',
                   isSelected: location == '/admin/banners',
-                  onTap: () => context.go('/admin/banners'),
+                  onTap: () => _navigate(context, '/admin/banners'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.text_fields_rounded,
                   label: 'Letters & Alphabet',
                   isSelected: location == '/admin/letters',
-                  onTap: () => context.go('/admin/letters'),
+                  onTap: () => _navigate(context, '/admin/letters'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.pin_rounded,
                   label: 'Numbers',
                   isSelected: location == '/admin/numbers',
-                  onTap: () => context.go('/admin/numbers'),
+                  onTap: () => _navigate(context, '/admin/numbers'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.menu_book_rounded,
                   label: 'Words & Vocabulary',
                   isSelected: location == '/admin/words',
-                  onTap: () => context.go('/admin/words'),
+                  onTap: () => _navigate(context, '/admin/words'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.format_quote_rounded,
                   label: 'Sentences',
                   isSelected: location == '/admin/sentences',
-                  onTap: () => context.go('/admin/sentences'),
+                  onTap: () => _navigate(context, '/admin/sentences'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.school_rounded,
                   label: 'Lessons',
                   isSelected: location.startsWith('/admin/lessons'),
-                  onTap: () => context.go('/admin/lessons'),
+                  onTap: () => _navigate(context, '/admin/lessons'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.music_note_rounded,
                   label: 'Bakhed & Stories',
                   isSelected: location == '/admin/rhymes',
-                  onTap: () => context.go('/admin/rhymes'),
+                  onTap: () => _navigate(context, '/admin/rhymes'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.library_books_rounded,
                   label: 'Bakhed Learning CMS',
                   isSelected: location.startsWith('/admin/gamification/bakhed'),
-                  onTap: () => context.go('/admin/gamification/bakhed/lyrics'),
+                  onTap: () => _navigate(context, '/admin/gamification/bakhed/lyrics'),
                   isCompact: isCompact,
                   indent: !isCompact,
                 ),
@@ -110,7 +118,7 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.quiz_rounded,
                   label: 'Quizzes',
                   isSelected: location == '/admin/quizzes',
-                  onTap: () => context.go('/admin/quizzes'),
+                  onTap: () => _navigate(context, '/admin/quizzes'),
                   isCompact: isCompact,
                 ),
                 const SizedBox(height: 18),
@@ -119,14 +127,14 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.shopping_bag_rounded,
                   label: 'Purchases & Revenue',
                   isSelected: location == '/admin/purchases',
-                  onTap: () => context.go('/admin/purchases'),
+                  onTap: () => _navigate(context, '/admin/purchases'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.event_note_rounded,
                   label: 'Binti Waitlist',
                   isSelected: location == '/admin/binti-waitlist',
-                  onTap: () => context.go('/admin/binti-waitlist'),
+                  onTap: () => _navigate(context, '/admin/binti-waitlist'),
                   isCompact: isCompact,
                 ),
                 const SizedBox(height: 18),
@@ -135,42 +143,42 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.emoji_events_rounded,
                   label: 'Gamification',
                   isSelected: location.startsWith('/admin/gamification'),
-                  onTap: () => context.go('/admin/gamification'),
+                  onTap: () => _navigate(context, '/admin/gamification'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.analytics_rounded,
                   label: 'Analytics',
                   isSelected: location == '/admin/analytics',
-                  onTap: () => context.go('/admin/analytics'),
+                  onTap: () => _navigate(context, '/admin/analytics'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.history_rounded,
                   label: 'Audit Logs',
                   isSelected: location == '/admin/audit-logs',
-                  onTap: () => context.go('/admin/audit-logs'),
+                  onTap: () => _navigate(context, '/admin/audit-logs'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.health_and_safety_rounded,
                   label: 'Maintenance',
                   isSelected: location == '/admin/maintenance',
-                  onTap: () => context.go('/admin/maintenance'),
+                  onTap: () => _navigate(context, '/admin/maintenance'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.settings_rounded,
                   label: 'Settings',
                   isSelected: location == '/admin/settings',
-                  onTap: () => context.go('/admin/settings'),
+                  onTap: () => _navigate(context, '/admin/settings'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.admin_panel_settings_rounded,
                   label: 'Admin Access',
                   isSelected: location == '/admin/access',
-                  onTap: () => context.go('/admin/access'),
+                  onTap: () => _navigate(context, '/admin/access'),
                   isCompact: isCompact,
                 ),
                 const SizedBox(height: 18),
@@ -179,14 +187,14 @@ class AdminSidebar extends StatelessWidget {
                   icon: Icons.perm_media_rounded,
                   label: 'Media Library',
                   isSelected: location == '/admin/media',
-                  onTap: () => context.go('/admin/media'),
+                  onTap: () => _navigate(context, '/admin/media'),
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
                   icon: Icons.audiotrack_rounded,
                   label: 'Audio Files',
                   isSelected: location == '/admin/audio',
-                  onTap: () => context.go('/admin/audio'),
+                  onTap: () => _navigate(context, '/admin/audio'),
                   isCompact: isCompact,
                 ),
               ],
@@ -263,7 +271,7 @@ class AdminSidebar extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 14),
         child: IconButton(
           tooltip: 'Back to app',
-          onPressed: () => context.go('/'),
+          onPressed: () => _navigate(context, '/'),
           icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
           style: IconButton.styleFrom(
             backgroundColor: AppColors.primary,
@@ -334,7 +342,7 @@ class AdminSidebar extends StatelessWidget {
           Material(
             color: Colors.transparent,
             child: InkWell(
-              onTap: () => context.go('/'),
+              onTap: () => _navigate(context, '/'),
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
               child: Container(
                 padding: const EdgeInsets.symmetric(vertical: 12),

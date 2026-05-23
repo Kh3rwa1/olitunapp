@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
+import 'package:video_player/video_player.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -60,11 +61,19 @@ class _HeroMediaSource extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (_isVideoUrl(url)) {
+      return _InteractiveVideoHero(url: url, fallback: _buildFallback());
+    }
+
     if (_isSvgUrl(url)) {
       return _SvgHeroMedia(url: url, fallback: _buildFallback());
     }
 
-    if (preferAnimation || _isLottieUrl(url)) {
+    if (_isLottieUrl(url)) {
+      return _InteractiveLottieHero(url: url, fallback: _buildFallback());
+    }
+
+    if (preferAnimation) {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
 
@@ -74,6 +83,12 @@ class _HeroMediaSource extends StatelessWidget {
   Widget _buildFallback() {
     final image = fallbackUrl?.trim();
     if (image != null && image.isNotEmpty) {
+      if (_isVideoUrl(image)) {
+        return _InteractiveVideoHero(
+          url: image,
+          fallback: Center(child: fallback),
+        );
+      }
       if (_isSvgUrl(image)) {
         return _SvgHeroMedia(
           url: image,
@@ -86,6 +101,173 @@ class _HeroMediaSource extends StatelessWidget {
       );
     }
     return Center(child: fallback);
+  }
+}
+
+class _InteractiveVideoHero extends StatefulWidget {
+  const _InteractiveVideoHero({required this.url, required this.fallback});
+
+  final String url;
+  final Widget fallback;
+
+  @override
+  State<_InteractiveVideoHero> createState() => _InteractiveVideoHeroState();
+}
+
+class _InteractiveVideoHeroState extends State<_InteractiveVideoHero> {
+  VideoPlayerController? _controller;
+  bool _isLoaded = false;
+  bool _hasError = false;
+  bool _isPlaying = true;
+  bool _showOverlayIcon = false;
+  IconData _overlayIcon = Icons.play_arrow_rounded;
+
+  @override
+  void initState() {
+    super.initState();
+    _initializeVideo();
+  }
+
+  @override
+  void didUpdateWidget(covariant _InteractiveVideoHero oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.url != widget.url) {
+      _disposeVideo();
+      _initializeVideo();
+    }
+  }
+
+  Future<void> _initializeVideo() async {
+    setState(() {
+      _isLoaded = false;
+      _hasError = false;
+      _isPlaying = true;
+    });
+
+    try {
+      final uri = Uri.parse(widget.url);
+      final controller = VideoPlayerController.networkUrl(uri);
+      _controller = controller;
+
+      await controller.initialize();
+      if (!mounted) return;
+
+      await controller.setLooping(true);
+      await controller.setVolume(0.0);
+      await controller.play();
+
+      setState(() {
+        _isLoaded = true;
+      });
+    } catch (e) {
+      debugPrint('Error initializing hero video: $e');
+      if (mounted) {
+        setState(() {
+          _hasError = true;
+        });
+      }
+    }
+  }
+
+  void _disposeVideo() {
+    final c = _controller;
+    _controller = null;
+    if (c != null) {
+      c.dispose();
+    }
+  }
+
+  @override
+  void dispose() {
+    _disposeVideo();
+    super.dispose();
+  }
+
+  void _togglePlayback() {
+    final controller = _controller;
+    if (controller == null || !_isLoaded) return;
+
+    setState(() {
+      if (controller.value.isPlaying) {
+        controller.pause();
+        _isPlaying = false;
+        _overlayIcon = Icons.pause_rounded;
+      } else {
+        controller.play();
+        _isPlaying = true;
+        _overlayIcon = Icons.play_arrow_rounded;
+      }
+      _showOverlayIcon = true;
+    });
+
+    Future.delayed(const Duration(milliseconds: 600), () {
+      if (mounted) {
+        setState(() {
+          _showOverlayIcon = false;
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_hasError) {
+      return widget.fallback;
+    }
+
+    final controller = _controller;
+    if (!_isLoaded || controller == null) {
+      return const Center(
+        child: CircularProgressIndicator(strokeWidth: 2),
+      );
+    }
+
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTap: _togglePlayback,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          FittedBox(
+            fit: BoxFit.cover,
+            clipBehavior: Clip.hardEdge,
+            child: SizedBox(
+              width: controller.value.size.width,
+              height: controller.value.size.height,
+              child: VideoPlayer(controller),
+            ),
+          ),
+          if (_showOverlayIcon)
+            Center(
+              child: TweenAnimationBuilder<double>(
+                tween: Tween(begin: 0.0, end: 1.0),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutBack,
+                builder: (context, value, child) {
+                  return Transform.scale(
+                    scale: value,
+                    child: Opacity(
+                      opacity: (1.0 - value).clamp(0.0, 1.0),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: const BoxDecoration(
+                          color: Colors.black38,
+                          shape: BoxShape.circle,
+                        ),
+                        child: Icon(
+                          _overlayIcon,
+                          color: Colors.white,
+                          size: 40,
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+        ],
+      ),
+    );
   }
 }
 
@@ -259,13 +441,23 @@ class _HeroMediaScrim extends StatelessWidget {
   }
 }
 
-bool _isSvgUrl(String url) => _urlPath(url).endsWith('.svg');
-
-bool _isLottieUrl(String url) {
-  final lower = _urlPath(url);
-  return lower.endsWith('.json') || lower.endsWith('.lottie');
+bool _isSvgUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.contains('.svg') || lower.contains('image/svg');
 }
 
-String _urlPath(String url) {
-  return Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
+bool _isLottieUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.contains('.json') || lower.contains('.lottie') || lower.contains('/buckets/animations/');
+}
+
+bool _isVideoUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.contains('.mp4') ||
+      lower.contains('.webm') ||
+      lower.contains('.mov') ||
+      lower.contains('.m4v') ||
+      lower.contains('.3gp') ||
+      lower.contains('.avi') ||
+      lower.contains('/buckets/videos/');
 }

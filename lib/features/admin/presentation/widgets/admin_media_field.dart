@@ -6,6 +6,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import '../../../../core/storage/upload_service.dart';
+import '../../../../shared/widgets/video_display.dart';
 
 /// Reusable media upload row used for audio, image, and animation fields
 /// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
@@ -247,30 +248,31 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
   }
 
   Widget _buildDefaultPreview(String url, bool isDark) {
-    final path = Uri.tryParse(url)?.path.toLowerCase() ?? url.toLowerCase();
-    final isSvg = path.endsWith('.svg');
-    final isLottie = path.endsWith('.json') || path.endsWith('.lottie');
-    final isVideo =
-        path.endsWith('.mp4') ||
-        path.endsWith('.webm') ||
-        path.endsWith('.mov') ||
-        path.endsWith('.m4v');
-    final isAudio =
-        path.endsWith('.mp3') ||
-        path.endsWith('.wav') ||
-        path.endsWith('.ogg') ||
-        path.endsWith('.aac') ||
-        path.endsWith('.m4a');
+    final lower = url.toLowerCase();
+    final isSvg = lower.contains('.svg') || lower.contains('image/svg');
+    final isLottie = lower.contains('.json') || lower.contains('.lottie') || lower.contains('/buckets/animations/');
+    final isVideo = lower.contains('.mp4') ||
+        lower.contains('.webm') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.3gp') ||
+        lower.contains('.avi') ||
+        lower.contains('/buckets/videos/');
+    final isAudio = lower.contains('.mp3') ||
+        lower.contains('.wav') ||
+        lower.contains('.ogg') ||
+        lower.contains('.aac') ||
+        lower.contains('.m4a') ||
+        lower.contains('/buckets/audio/');
 
     Widget child;
     if (isVideo) {
-      child = const Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(Icons.video_library_rounded, size: 42, color: Colors.grey),
-          SizedBox(height: 8),
-          Text('Video file (Unsupported)'),
-        ],
+      child = VideoDisplay(
+        url: url,
+        fit: BoxFit.contain,
+        autoplay: true,
+        loop: true,
+        muted: true,
       );
     } else if (isLottie) {
       child = Lottie.network(

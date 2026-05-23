@@ -189,57 +189,118 @@ class _TextBlock extends ConsumerWidget {
   }
 
   String? _resolveNavRoute(WidgetRef ref, String lessonId, String text) {
-    // Check Letters
+    final t = text.trim();
+    if (t.isEmpty) return null;
+
+    // Check if the text has a dash to split it for composite exact matches
+    final dashRegex = RegExp(r'\s*[\-–—−]\s*');
+    final List<String> parts = t.contains(dashRegex)
+        ? t.split(dashRegex).map((p) => p.trim()).where((p) => p.isNotEmpty).toList()
+        : [t];
+
+    // --- PHASE 1: EXACT MATCHES (to prevent fuzzy hijacking) ---
+
+    // 1. Letters exact match
     final letters = ref.read(lettersProvider).value ?? [];
-    final matchedLetter = letters
+    for (final part in parts) {
+      final matched = letters.where((l) =>
+        l.charOlChiki.toLowerCase() == part.toLowerCase() ||
+        l.transliterationLatin.toLowerCase() == part.toLowerCase()
+      ).firstOrNull;
+      if (matched != null) {
+        return '/letter/$lessonId/${matched.charOlChiki}';
+      }
+    }
+
+    // 2. Numbers exact match
+    final numbers = ref.read(numbersProvider).value ?? [];
+    for (final part in parts) {
+      final matched = numbers.where((n) =>
+        n.numeral.toLowerCase() == part.toLowerCase() ||
+        n.value.toString().toLowerCase() == part.toLowerCase() ||
+        n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
+        n.nameLatin.toLowerCase() == part.toLowerCase()
+      ).firstOrNull;
+      if (matched != null) {
+        return '/number/$lessonId/${matched.id}';
+      }
+    }
+
+    // 3. Words exact match
+    final words = ref.read(wordsProvider).value ?? [];
+    for (final part in parts) {
+      final matched = words.where((w) =>
+        w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
+        w.wordLatin.toLowerCase() == part.toLowerCase() ||
+        w.meaning.toLowerCase() == part.toLowerCase()
+      ).firstOrNull;
+      if (matched != null) {
+        return '/word/$lessonId/${matched.id}';
+      }
+    }
+
+    // 4. Sentences exact match
+    final sentences = ref.read(sentencesProvider).value ?? [];
+    for (final part in parts) {
+      final matched = sentences.where((s) =>
+        s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
+        s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
+        s.meaning.toLowerCase() == part.toLowerCase()
+      ).firstOrNull;
+      if (matched != null) {
+        return '/sentence/$lessonId/${matched.id}';
+      }
+    }
+
+    // --- PHASE 2: FUZZY MATCHES (Fallback for backward compatibility) ---
+
+    // Check Letters
+    final matchedLetterFuzzy = letters
         .where(
           (l) =>
-              _isFuzzyMatch(text, l.charOlChiki) ||
-              _isFuzzyMatch(text, l.transliterationLatin),
+              _isFuzzyMatch(t, l.charOlChiki) ||
+              _isFuzzyMatch(t, l.transliterationLatin),
         )
         .firstOrNull;
-    if (matchedLetter != null) {
-      return '/letter/$lessonId/${matchedLetter.charOlChiki}';
+    if (matchedLetterFuzzy != null) {
+      return '/letter/$lessonId/${matchedLetterFuzzy.charOlChiki}';
     }
 
     // Check Numbers
-    final numbers = ref.read(numbersProvider).value ?? [];
-    final matchedNumber = numbers.where((n) {
-      return _isFuzzyMatch(text, n.numeral) ||
-          _isFuzzyMatch(text, n.value.toString()) ||
-          _isFuzzyMatch(text, n.nameOlChiki) ||
-          _isFuzzyMatch(text, n.nameLatin);
+    final matchedNumberFuzzy = numbers.where((n) {
+      return _isFuzzyMatch(t, n.numeral) ||
+          _isFuzzyMatch(t, n.value.toString()) ||
+          _isFuzzyMatch(t, n.nameOlChiki) ||
+          _isFuzzyMatch(t, n.nameLatin);
     }).firstOrNull;
-    if (matchedNumber != null) {
-      return '/number/$lessonId/${matchedNumber.id}';
+    if (matchedNumberFuzzy != null) {
+      return '/number/$lessonId/${matchedNumberFuzzy.id}';
     }
 
     // Check Words
-    final words = ref.read(wordsProvider).value ?? [];
-    final matchedWord = words
+    final matchedWordFuzzy = words
         .where(
           (w) =>
-              _isFuzzyMatch(text, w.wordOlChiki) ||
-              _isFuzzyMatch(text, w.wordLatin) ||
-              _isFuzzyMatch(text, w.meaning),
+              _isFuzzyMatch(t, w.wordOlChiki) ||
+              _isFuzzyMatch(t, w.wordLatin) ||
+              _isFuzzyMatch(t, w.meaning),
         )
         .firstOrNull;
-    if (matchedWord != null) {
-      return '/word/$lessonId/${matchedWord.id}';
+    if (matchedWordFuzzy != null) {
+      return '/word/$lessonId/${matchedWordFuzzy.id}';
     }
 
     // Check Sentences
-    final sentences = ref.read(sentencesProvider).value ?? [];
-    final matchedSentence = sentences
+    final matchedSentenceFuzzy = sentences
         .where(
           (s) =>
-              _isFuzzyMatch(text, s.sentenceOlChiki) ||
-              _isFuzzyMatch(text, s.sentenceLatin) ||
-              _isFuzzyMatch(text, s.meaning),
+              _isFuzzyMatch(t, s.sentenceOlChiki) ||
+              _isFuzzyMatch(t, s.sentenceLatin) ||
+              _isFuzzyMatch(t, s.meaning),
         )
         .firstOrNull;
-    if (matchedSentence != null) {
-      return '/sentence/$lessonId/${matchedSentence.id}';
+    if (matchedSentenceFuzzy != null) {
+      return '/sentence/$lessonId/${matchedSentenceFuzzy.id}';
     }
 
     return null;

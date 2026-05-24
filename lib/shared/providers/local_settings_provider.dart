@@ -164,7 +164,9 @@ void toggleReduceVisualEffects(WidgetRef ref) {
 enum LessonLayoutMode { grid, list }
 
 final lessonLayoutModeProvider = StateProvider<LessonLayoutMode>((ref) {
-  final val = ref.read(sharedPreferencesProvider).getString('lesson_layout_mode');
+  final val = ref
+      .read(sharedPreferencesProvider)
+      .getString('lesson_layout_mode');
   return LessonLayoutMode.values.firstWhere(
     (e) => e.name == val,
     orElse: () => LessonLayoutMode.grid,
@@ -172,6 +174,8 @@ final lessonLayoutModeProvider = StateProvider<LessonLayoutMode>((ref) {
 });
 
 void updateLessonLayoutMode(WidgetRef ref, LessonLayoutMode mode) {
-  ref.read(sharedPreferencesProvider).setString('lesson_layout_mode', mode.name);
+  ref
+      .read(sharedPreferencesProvider)
+      .setString('lesson_layout_mode', mode.name);
   ref.read(lessonLayoutModeProvider.notifier).state = mode;
 }

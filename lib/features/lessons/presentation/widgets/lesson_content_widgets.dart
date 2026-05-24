@@ -835,11 +835,13 @@ class BlockGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    
+
     final cleanCategory = categoryId.toLowerCase();
-    final isAlphabet = cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
+    final isAlphabet =
+        cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
     final isNumber = cleanCategory.contains('number');
-    final isSentence = cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
+    final isSentence =
+        cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
 
     if (blocks.isEmpty) {
       return EmptyContentPlaceholder(
@@ -855,7 +857,9 @@ class BlockGridContent extends ConsumerWidget {
         crossAxisCount: _getResponsiveCrossAxisCount(context),
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: isAlphabet ? 0.9 : (isNumber ? 0.85 : (isSentence ? 0.82 : 0.85)),
+        childAspectRatio: isAlphabet
+            ? 0.9
+            : (isNumber ? 0.85 : (isSentence ? 0.82 : 0.85)),
       ),
       itemCount: blocks.length,
       itemBuilder: (context, index) {
@@ -894,9 +898,12 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final textOlChiki = block.textOlChiki?.trim() ?? '';
     final textLatin = block.textLatin?.trim() ?? '';
-    
-    final navRoute = _resolveNavRoute(ref, lessonId, textOlChiki) ?? 
-                     (textLatin.isNotEmpty ? _resolveNavRoute(ref, lessonId, textLatin) : null);
+
+    final navRoute =
+        _resolveNavRoute(ref, lessonId, textOlChiki) ??
+        (textLatin.isNotEmpty
+            ? _resolveNavRoute(ref, lessonId, textLatin)
+            : null);
 
     return ScaleButton(
       onPressed: () {
@@ -925,7 +932,9 @@ class DynamicBlockGridCell extends ConsumerWidget {
                   Text(
                     textOlChiki,
                     style: TextStyle(
-                      fontSize: isAlphabet ? 44 : (isNumber ? 36 : (isSentence ? 20 : 26)),
+                      fontSize: isAlphabet
+                          ? 44
+                          : (isNumber ? 36 : (isSentence ? 20 : 26)),
                       fontWeight: FontWeight.w900,
                       color: AppColors.primary,
                       height: 1.2,
@@ -939,7 +948,9 @@ class DynamicBlockGridCell extends ConsumerWidget {
                     Text(
                       isAlphabet ? textLatin.toUpperCase() : textLatin,
                       style: TextStyle(
-                        fontSize: isAlphabet ? 16 : (isNumber ? 18 : (isSentence ? 13 : 14)),
+                        fontSize: isAlphabet
+                            ? 16
+                            : (isNumber ? 18 : (isSentence ? 13 : 14)),
                         fontWeight: FontWeight.bold,
                         color: isDark ? Colors.white70 : Colors.black87,
                         letterSpacing: isAlphabet ? 1.5 : 0.5,
@@ -953,20 +964,29 @@ class DynamicBlockGridCell extends ConsumerWidget {
                     Builder(
                       builder: (context) {
                         String meaning = '';
-                        if (block.data != null && block.data!['meaning'] != null) {
+                        if (block.data != null &&
+                            block.data!['meaning'] != null) {
                           meaning = block.data!['meaning'] as String;
                         }
-                        
+
                         if (meaning.isEmpty && navRoute != null) {
                           if (navRoute.contains('/word/')) {
                             final wordId = navRoute.split('/').last;
-                            final matchedWord = ref.read(wordsProvider).value?.where((w) => w.id == wordId).firstOrNull;
+                            final matchedWord = ref
+                                .read(wordsProvider)
+                                .value
+                                ?.where((w) => w.id == wordId)
+                                .firstOrNull;
                             if (matchedWord != null) {
                               meaning = matchedWord.meaning;
                             }
                           } else if (navRoute.contains('/sentence/')) {
                             final sentenceId = navRoute.split('/').last;
-                            final matchedSentence = ref.read(sentencesProvider).value?.where((s) => s.id == sentenceId).firstOrNull;
+                            final matchedSentence = ref
+                                .read(sentencesProvider)
+                                .value
+                                ?.where((s) => s.id == sentenceId)
+                                .firstOrNull;
                             if (matchedSentence != null) {
                               meaning = matchedSentence.meaning;
                             }
@@ -1025,14 +1045,21 @@ class DynamicBlockGridCell extends ConsumerWidget {
 
     final dashRegex = RegExp(r'\s*[\-–—−]\s*');
     final List<String> parts = t.contains(dashRegex)
-        ? t.split(dashRegex).map((p) => p.trim()).where((p) => p.isNotEmpty).toList()
+        ? t
+              .split(dashRegex)
+              .map((p) => p.trim())
+              .where((p) => p.isNotEmpty)
+              .toList()
         : [t];
 
     final letters = ref.read(lettersProvider).value ?? [];
     for (final part in parts) {
       final matched = letters
-          .where((l) => l.charOlChiki.toLowerCase() == part.toLowerCase() ||
-                        l.transliterationLatin.toLowerCase() == part.toLowerCase())
+          .where(
+            (l) =>
+                l.charOlChiki.toLowerCase() == part.toLowerCase() ||
+                l.transliterationLatin.toLowerCase() == part.toLowerCase(),
+          )
           .firstOrNull;
       if (matched != null) return '/letter/$lessonId/${matched.charOlChiki}';
     }
@@ -1040,10 +1067,13 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final numbers = ref.read(numbersProvider).value ?? [];
     for (final part in parts) {
       final matched = numbers
-          .where((n) => n.numeral.toLowerCase() == part.toLowerCase() ||
-                        n.value.toString().toLowerCase() == part.toLowerCase() ||
-                        n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
-                        n.nameLatin.toLowerCase() == part.toLowerCase())
+          .where(
+            (n) =>
+                n.numeral.toLowerCase() == part.toLowerCase() ||
+                n.value.toString().toLowerCase() == part.toLowerCase() ||
+                n.nameOlChiki.toLowerCase() == part.toLowerCase() ||
+                n.nameLatin.toLowerCase() == part.toLowerCase(),
+          )
           .firstOrNull;
       if (matched != null) return '/number/$lessonId/${matched.id}';
     }
@@ -1051,9 +1081,12 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final words = ref.read(wordsProvider).value ?? [];
     for (final part in parts) {
       final matched = words
-          .where((w) => w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
-                        w.wordLatin.toLowerCase() == part.toLowerCase() ||
-                        w.meaning.toLowerCase() == part.toLowerCase())
+          .where(
+            (w) =>
+                w.wordOlChiki.toLowerCase() == part.toLowerCase() ||
+                w.wordLatin.toLowerCase() == part.toLowerCase() ||
+                w.meaning.toLowerCase() == part.toLowerCase(),
+          )
           .firstOrNull;
       if (matched != null) return '/word/$lessonId/${matched.id}';
     }
@@ -1061,9 +1094,12 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final sentences = ref.read(sentencesProvider).value ?? [];
     for (final part in parts) {
       final matched = sentences
-          .where((s) => s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
-                        s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
-                        s.meaning.toLowerCase() == part.toLowerCase())
+          .where(
+            (s) =>
+                s.sentenceOlChiki.toLowerCase() == part.toLowerCase() ||
+                s.sentenceLatin.toLowerCase() == part.toLowerCase() ||
+                s.meaning.toLowerCase() == part.toLowerCase(),
+          )
           .firstOrNull;
       if (matched != null) return '/sentence/$lessonId/${matched.id}';
     }

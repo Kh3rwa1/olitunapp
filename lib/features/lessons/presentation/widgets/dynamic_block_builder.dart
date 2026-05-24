@@ -95,7 +95,9 @@ class _TextBlock extends ConsumerWidget {
     final content = Semantics(
       label: LearningSemantics.olChikiText(
         text: displayText,
-        latin: textOlChiki.isNotEmpty && textLatin.isNotEmpty ? textLatin : null,
+        latin: textOlChiki.isNotEmpty && textLatin.isNotEmpty
+            ? textLatin
+            : null,
       ),
       button: navRoute != null,
       child: ExcludeSemantics(

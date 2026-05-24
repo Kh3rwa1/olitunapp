@@ -200,7 +200,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                       actions: [
                         Consumer(
                           builder: (context, ref, _) {
-                            final layoutMode = ref.watch(lessonLayoutModeProvider);
+                            final layoutMode = ref.watch(
+                              lessonLayoutModeProvider,
+                            );
                             final isGrid = layoutMode == LessonLayoutMode.grid;
 
                             return IconButton(
@@ -319,10 +321,13 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                   bottom: MediaQuery.of(context).padding.bottom + 16,
                 ),
                 decoration: BoxDecoration(
-                  color: (isDark ? const Color(0xFF0F141C) : Colors.white).withValues(alpha: 0.85),
+                  color: (isDark ? const Color(0xFF0F141C) : Colors.white)
+                      .withValues(alpha: 0.85),
                   border: Border(
                     top: BorderSide(
-                      color: (isDark ? Colors.white : Colors.black).withValues(alpha: 0.08),
+                      color: (isDark ? Colors.white : Colors.black).withValues(
+                        alpha: 0.08,
+                      ),
                       width: 1.5,
                     ),
                   ),
@@ -333,7 +338,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                   child: ElevatedButton.icon(
                     onPressed: _isScrollCompleted
                         ? () {
-                            final notifier = ref.read(userStatsProvider.notifier);
+                            final notifier = ref.read(
+                              userStatsProvider.notifier,
+                            );
                             notifier.completeLesson(
                               lesson.id,
                               categoryId: lesson.categoryId,
@@ -344,7 +351,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                                 .read(lessonCompletedTodayProvider.notifier)
                                 .setCompleted(true);
 
-                            final quizzes = ref.read(quizzesProvider).value ?? [];
+                            final quizzes =
+                                ref.read(quizzesProvider).value ?? [];
                             final quizId = _getQuizIdForCategory(
                               lesson.categoryId,
                               lesson.id,
@@ -354,7 +362,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                             // Find next lesson to allow routing!
                             final currentIdx = data.indexOf(lesson);
                             final nextLessonId =
-                                (currentIdx != -1 && currentIdx + 1 < data.length)
+                                (currentIdx != -1 &&
+                                    currentIdx + 1 < data.length)
                                 ? data[currentIdx + 1].id
                                 : null;
 
@@ -468,9 +477,11 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
   Widget _buildContent(LessonEntity lesson, bool isDark) {
     final cleanCategory = lesson.categoryId.toLowerCase();
-    final isAlphabet = cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
+    final isAlphabet =
+        cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
     final isNumber = cleanCategory.contains('number');
-    final isSentence = cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
+    final isSentence =
+        cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
 
     final layoutMode = ref.watch(lessonLayoutModeProvider);
 
@@ -493,10 +504,12 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (introBlocks.isNotEmpty) ...[
-              ...introBlocks.map((block) => Padding(
-                    padding: const EdgeInsets.only(bottom: 20),
-                    child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
-                  )),
+              ...introBlocks.map(
+                (block) => Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: DynamicBlockBuilder(lessonId: lesson.id, block: block),
+                ),
+              ),
               const SizedBox(height: 8),
             ],
             if (gridBlocks.isNotEmpty)

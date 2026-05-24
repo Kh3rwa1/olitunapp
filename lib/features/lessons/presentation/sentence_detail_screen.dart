@@ -224,32 +224,101 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         return Scaffold(
           backgroundColor: bgColor,
           extendBody: true,
-          body: Stack(
-            children: [
-              PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemCount: sentences.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final sentence = sentences[index];
-                  return _buildSentencePage(sentence, index, isDark);
-                },
-              ),
+          body: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              final emoji = _getEmoji(_currentIndex);
 
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                left: 0,
-                right: 0,
-                child: IgnorePointer(
-                  child: _buildPageIndicator(
-                    sentences.length,
-                    accentColor,
-                    isDark,
+              final heroIllustration = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: KeyedSubtree(
+                  key: ValueKey<String>('illustration_${currentSentence.id}'),
+                  child: Hero(
+                    tag: MotionTokens.heroTag('sentence', currentSentence.id),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: FullBleedHeroMedia(
+                        animationUrl: currentSentence.animationUrl,
+                        imageUrl: currentSentence.imageUrl,
+                        fallback: Text(
+                          emoji,
+                          style: const TextStyle(fontSize: 100),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              );
+
+              final appBarTitle = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  currentSentence.meaning,
+                  key: ValueKey<String>('title_${currentSentence.id}'),
+                ),
+              );
+
+              return [
+                ParallaxHeroSliverAppBar(
+                  gradient: AppColors.sunsetGradient,
+                  glyph: emoji,
+                  title: appBarTitle,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    onPressed: () =>
+                        context.canPop() ? context.pop() : context.go('/'),
+                  ),
+                  actions: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: currentSentence.audioUrl != null
+                          ? Padding(
+                              key: ValueKey<String>(
+                                'audio_${currentSentence.id}',
+                              ),
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                icon: const Icon(Icons.volume_up_rounded),
+                                onPressed: () => _playAudio(
+                                  currentSentence.audioUrl!,
+                                  currentSentence.id,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                  expandedHeight: 340,
+                  heroChild: heroIllustration,
+                  heroChildFullBleed: true,
+                ),
+              ];
+            },
+            body: Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: sentences.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final sentence = sentences[index];
+                    return _buildSentenceContent(sentence, index, isDark);
+                  },
+                ),
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: _buildPageIndicator(
+                      sentences.length,
+                      accentColor,
+                      isDark,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -332,271 +401,231 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     );
   }
 
-  Widget _buildSentencePage(SentenceModel sentence, int index, bool isDark) {
+  Widget _buildSentenceContent(SentenceModel sentence, int index, bool isDark) {
     final accentColor = _parseThemeColor(
       sentence.themeColor,
       AppColors.duoOrange,
     );
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
-
-    final emoji = _getEmoji(index);
     final isThisPlaying = _isAudioPlaying && _playingId == sentence.id;
 
-    final heroIllustration = Hero(
-      tag: MotionTokens.heroTag('sentence', sentence.id),
-      child: Material(
-        type: MaterialType.transparency,
-        child: FullBleedHeroMedia(
-          animationUrl: sentence.animationUrl,
-          imageUrl: sentence.imageUrl,
-          fallback: Text(emoji, style: const TextStyle(fontSize: 100)),
-        ),
-      ),
-    );
-
-    return Stack(
-      children: [
-        CustomScrollView(
+    return Builder(
+      builder: (context) {
+        return SingleChildScrollView(
+          controller: PrimaryScrollController.of(context),
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
-          slivers: [
-            ParallaxHeroSliverAppBar(
-              gradient: AppColors.sunsetGradient,
-              glyph: emoji,
-              title: Text(sentence.meaning),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () =>
-                    context.canPop() ? context.pop() : context.go('/'),
-              ),
-              actions: [
-                if (sentence.audioUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: IconButton(
-                      icon: const Icon(Icons.volume_up_rounded),
-                      onPressed: () =>
-                          _playAudio(sentence.audioUrl!, sentence.id),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              if (sentence.category != null &&
+                  sentence.category!.isNotEmpty) ...[
+                Center(
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 16,
+                      vertical: 6,
+                    ),
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      sentence.category!.toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w800,
+                        color: isDark ? Colors.white : accentColor,
+                        letterSpacing: 1.5,
+                      ),
                     ),
                   ),
+                ),
+                const SizedBox(height: 20),
               ],
-              expandedHeight: 340,
-              heroChild: heroIllustration,
-              heroChildFullBleed: true,
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate.fixed([
-                  if (sentence.category != null &&
-                      sentence.category!.isNotEmpty) ...[
-                    Center(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 6,
-                        ),
-                        decoration: BoxDecoration(
-                          color: accentColor.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          sentence.category!.toUpperCase(),
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : accentColor,
-                            letterSpacing: 1.5,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 20),
-                  ],
 
-                  // Large Ol Chiki sentence card
-                  Center(
-                    child: Container(
-                      width: double.infinity,
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 36,
-                        horizontal: 24,
+              // Large Ol Chiki sentence card
+              Center(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 36,
+                    horizontal: 24,
+                  ),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        accentColor.withValues(alpha: 0.15),
+                        accentColor.withValues(alpha: 0.25),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(32),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.4),
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
                       ),
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            accentColor.withValues(alpha: 0.15),
-                            accentColor.withValues(alpha: 0.25),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: accentColor.withValues(alpha: 0.4),
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.2),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          sentence.sentenceOlChiki,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 32,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : accentColor,
-                            letterSpacing: 1,
-                            height: 1.4,
-                          ),
-                        ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      sentence.sentenceOlChiki,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: 32,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : accentColor,
+                        letterSpacing: 1,
+                        height: 1.4,
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
-
-                  // Romanization badge
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.4),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Flexible(
-                            child: Text(
-                              sentence.sentenceLatin.toUpperCase(),
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.w900,
-                                color: textContrastColor,
-                                letterSpacing: 1.2,
-                              ),
-                            ),
-                          ),
-                          if (sentence.audioUrl != null) ...[
-                            const SizedBox(width: 12),
-                            SoundWaveIndicator(
-                              color: textContrastColor,
-                              isPlaying: isThisPlaying,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Pronunciation hint
-                  if (sentence.pronunciation != null &&
-                      sentence.pronunciation!.isNotEmpty) ...[
-                    _buildGlassCard(
-                      themeColor: accentColor,
-                      isDark: isDark,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.record_voice_over_rounded,
-                                color: isDark ? Colors.white : accentColor,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Pronunciation',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : accentColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            sentence.pronunciation!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              height: 1.5,
-                              color: contentTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Usage hint card
-                  if (sentence.usage != null && sentence.usage!.isNotEmpty) ...[
-                    _buildGlassCard(
-                      themeColor: accentColor,
-                      isDark: isDark,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.lightbulb_outline_rounded,
-                                color: isDark ? Colors.white : accentColor,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'When to use',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : accentColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            sentence.usage!,
-                            style: TextStyle(
-                              fontSize: 16,
-                              height: 1.5,
-                              color: contentTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-                ]),
+                ),
               ),
-            ),
-          ],
-        ),
-      ],
+              const SizedBox(height: 20),
+
+              // Romanization badge
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.4),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Flexible(
+                        child: Text(
+                          sentence.sentenceLatin.toUpperCase(),
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w900,
+                            color: textContrastColor,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                      ),
+                      if (sentence.audioUrl != null) ...[
+                        const SizedBox(width: 12),
+                        SoundWaveIndicator(
+                          color: textContrastColor,
+                          isPlaying: isThisPlaying,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Pronunciation hint
+              if (sentence.pronunciation != null &&
+                  sentence.pronunciation!.isNotEmpty) ...[
+                _buildGlassCard(
+                  themeColor: accentColor,
+                  isDark: isDark,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.record_voice_over_rounded,
+                            color: isDark ? Colors.white : accentColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'Pronunciation',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : accentColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        sentence.pronunciation!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: contentTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Usage hint card
+              if (sentence.usage != null && sentence.usage!.isNotEmpty) ...[
+                _buildGlassCard(
+                  themeColor: accentColor,
+                  isDark: isDark,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.lightbulb_outline_rounded,
+                            color: isDark ? Colors.white : accentColor,
+                            size: 24,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            'When to use',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white : accentColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        sentence.usage!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: contentTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+            ],
+          ),
+        );
+      },
     );
   }
 }

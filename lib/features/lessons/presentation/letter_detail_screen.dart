@@ -243,32 +243,109 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
         return Scaffold(
           backgroundColor: bgColor,
           extendBody: true,
-          body: Stack(
-            children: [
-              PageView.builder(
-                controller: _pageController,
-                onPageChanged: _onPageChanged,
-                itemCount: letters.length,
-                physics: const BouncingScrollPhysics(),
-                itemBuilder: (context, index) {
-                  final letter = letters[index];
-                  return _buildLetterPage(letter, index, isDark);
-                },
-              ),
+          body: NestedScrollView(
+            headerSliverBuilder: (context, innerBoxIsScrolled) {
+              final emoji = _letterEmojis[currentLetter.charOlChiki] ?? '📖';
 
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                left: 0,
-                right: 0,
-                child: IgnorePointer(
-                  child: _buildPageIndicator(
-                    letters.length,
-                    accentColor,
-                    isDark,
+              final heroIllustration = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: KeyedSubtree(
+                  key: ValueKey<String>('illustration_${currentLetter.id}'),
+                  child: Hero(
+                    tag: MotionTokens.heroTag('letter', currentLetter.id),
+                    child: Material(
+                      type: MaterialType.transparency,
+                      child: FullBleedHeroMedia(
+                        animationUrl: currentLetter.animationUrl,
+                        imageUrl: currentLetter.imageUrl,
+                        fallback: Image.network(
+                          _emojiToPngUrl(emoji),
+                          width: 168,
+                          height: 168,
+                          fit: BoxFit.contain,
+                          filterQuality: FilterQuality.high,
+                          errorBuilder: (context, _, _) => Text(
+                            emoji,
+                            style: const TextStyle(fontSize: 120),
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              );
+
+              final appBarTitle = AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                child: Text(
+                  currentLetter.exampleWordLatin ??
+                      currentLetter.transliterationLatin,
+                  key: ValueKey<String>('title_${currentLetter.id}'),
+                ),
+              );
+
+              return [
+                ParallaxHeroSliverAppBar(
+                  gradient: AppColors.heroGradient,
+                  glyph: currentLetter.charOlChiki,
+                  title: appBarTitle,
+                  leading: IconButton(
+                    icon: const Icon(Icons.arrow_back_rounded),
+                    onPressed: () =>
+                        context.canPop() ? context.pop() : context.go('/'),
+                  ),
+                  actions: [
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 300),
+                      child: currentLetter.audioUrl != null
+                          ? Padding(
+                              key: ValueKey<String>(
+                                'audio_${currentLetter.id}',
+                              ),
+                              padding: const EdgeInsets.only(right: 8.0),
+                              child: IconButton(
+                                icon: const Icon(Icons.volume_up_rounded),
+                                onPressed: () => _playAudio(
+                                  currentLetter.audioUrl!,
+                                  currentLetter.id,
+                                ),
+                              ),
+                            )
+                          : const SizedBox.shrink(),
+                    ),
+                  ],
+                  expandedHeight: 300,
+                  heroChild: heroIllustration,
+                  heroChildFullBleed: true,
+                ),
+              ];
+            },
+            body: Stack(
+              children: [
+                PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: letters.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final letter = letters[index];
+                    return _buildLetterContent(letter, index, isDark);
+                  },
+                ),
+                Positioned(
+                  bottom: MediaQuery.of(context).padding.bottom + 24,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    child: _buildPageIndicator(
+                      letters.length,
+                      accentColor,
+                      isDark,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
           floatingActionButton: FloatingActionButton(
             onPressed: () {
@@ -370,241 +447,192 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
     );
   }
 
-  Widget _buildLetterPage(LetterModel letter, int index, bool isDark) {
+  Widget _buildLetterContent(LetterModel letter, int index, bool isDark) {
     final accentColor = _parseThemeColor(letter.themeColor, AppColors.primary);
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
-
-    final emoji = _letterEmojis[letter.charOlChiki] ?? '📖';
     final isThisPlaying = _isAudioPlaying && _playingId == letter.id;
 
-    final heroIllustration = Hero(
-      tag: MotionTokens.heroTag('letter', letter.id),
-      child: Material(
-        type: MaterialType.transparency,
-        child: FullBleedHeroMedia(
-          animationUrl: letter.animationUrl,
-          imageUrl: letter.imageUrl,
-          fallback: Image.network(
-            _emojiToPngUrl(emoji),
-            width: 168,
-            height: 168,
-            fit: BoxFit.contain,
-            filterQuality: FilterQuality.high,
-            errorBuilder: (context, _, _) =>
-                Text(emoji, style: const TextStyle(fontSize: 120)),
-          ),
-        ),
-      ),
-    );
-
-    return Stack(
-      children: [
-        CustomScrollView(
+    return Builder(
+      builder: (context) {
+        return SingleChildScrollView(
+          controller: PrimaryScrollController.of(context),
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
-          slivers: [
-            ParallaxHeroSliverAppBar(
-              gradient: AppColors.heroGradient,
-              glyph: letter.charOlChiki,
-              title: Text(
-                letter.exampleWordLatin ?? letter.transliterationLatin,
-              ),
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded),
-                onPressed: () =>
-                    context.canPop() ? context.pop() : context.go('/'),
-              ),
-              actions: [
-                if (letter.audioUrl != null)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 8.0),
-                    child: IconButton(
-                      icon: const Icon(Icons.volume_up_rounded),
-                      onPressed: () => _playAudio(letter.audioUrl!, letter.id),
+          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Large Ol Chiki character
+              Center(
+                child: Container(
+                  width: 180,
+                  height: 180,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        accentColor.withValues(alpha: 0.15),
+                        accentColor.withValues(alpha: 0.25),
+                      ],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                    ),
+                    borderRadius: BorderRadius.circular(36),
+                    border: Border.all(
+                      color: accentColor.withValues(alpha: 0.4),
+                      width: 4,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.2),
+                        blurRadius: 30,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Text(
+                      letter.charOlChiki,
+                      style: TextStyle(
+                        fontSize: 80,
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : accentColor,
+                      ),
                     ),
                   ),
-              ],
-              expandedHeight: 300,
-              heroChild: heroIllustration,
-              heroChildFullBleed: true,
-            ),
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate.fixed([
-                  // Large Ol Chiki character
-                  Center(
-                    child: Container(
-                      width: 180,
-                      height: 180,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            accentColor.withValues(alpha: 0.15),
-                            accentColor.withValues(alpha: 0.25),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(36),
-                        border: Border.all(
-                          color: accentColor.withValues(alpha: 0.4),
-                          width: 4,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.2),
-                            blurRadius: 30,
-                            offset: const Offset(0, 10),
-                          ),
-                        ],
+                ),
+              ),
+              const SizedBox(height: 20),
+
+              // Romanization badge
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 32,
+                    vertical: 12,
+                  ),
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(20),
+                    boxShadow: [
+                      BoxShadow(
+                        color: accentColor.withValues(alpha: 0.4),
+                        blurRadius: 15,
+                        offset: const Offset(0, 6),
                       ),
-                      child: Center(
-                        child: Text(
-                          letter.charOlChiki,
-                          style: TextStyle(
-                            fontSize: 80,
-                            fontWeight: FontWeight.w900,
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        letter.transliterationLatin.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.w900,
+                          color: textContrastColor,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      if (letter.audioUrl != null) ...[
+                        const SizedBox(width: 12),
+                        SoundWaveIndicator(
+                          color: textContrastColor,
+                          isPlaying: isThisPlaying,
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // Pronunciation hint
+              if (letter.pronunciation != null &&
+                  letter.pronunciation!.isNotEmpty) ...[
+                _buildGlassCard(
+                  themeColor: accentColor,
+                  isDark: isDark,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Icon(
+                            Icons.record_voice_over_rounded,
                             color: isDark ? Colors.white : accentColor,
+                            size: 24,
                           ),
-                        ),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 20),
-
-                  // Romanization badge
-                  Center(
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 32,
-                        vertical: 12,
-                      ),
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: accentColor.withValues(alpha: 0.4),
-                            blurRadius: 15,
-                            offset: const Offset(0, 6),
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
+                          const SizedBox(width: 8),
                           Text(
-                            letter.transliterationLatin.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 24,
-                              fontWeight: FontWeight.w900,
-                              color: textContrastColor,
-                              letterSpacing: 2,
-                            ),
-                          ),
-                          if (letter.audioUrl != null) ...[
-                            const SizedBox(width: 12),
-                            SoundWaveIndicator(
-                              color: textContrastColor,
-                              isPlaying: isThisPlaying,
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-
-                  // Pronunciation hint
-                  if (letter.pronunciation != null &&
-                      letter.pronunciation!.isNotEmpty) ...[
-                    _buildGlassCard(
-                      themeColor: accentColor,
-                      isDark: isDark,
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.record_voice_over_rounded,
-                                color: isDark ? Colors.white : accentColor,
-                                size: 24,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Pronunciation',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w700,
-                                  color: isDark ? Colors.white : accentColor,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 12),
-                          Text(
-                            letter.pronunciation!,
+                            'Pronunciation',
                             style: TextStyle(
                               fontSize: 16,
-                              height: 1.5,
-                              color: contentTextColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                  ],
-
-                  // Example word
-                  if (letter.exampleWordOlChiki != null)
-                    _buildGlassCard(
-                      themeColor: accentColor,
-                      isDark: isDark,
-                      child: Column(
-                        children: [
-                          Text(
-                            'Example Word',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w600,
-                              color: (isDark ? Colors.white : accentColor)
-                                  .withValues(alpha: 0.8),
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            letter.exampleWordOlChiki!,
-                            style: TextStyle(
-                              fontSize: 32,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               color: isDark ? Colors.white : accentColor,
                             ),
                           ),
-                          if (letter.exampleWordLatin != null) ...[
-                            const SizedBox(height: 4),
-                            Text(
-                              letter.exampleWordLatin!,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: contentTextColor,
-                              ),
-                            ),
-                          ],
                         ],
                       ),
-                    ),
-                ]),
-              ),
-            ),
-          ],
-        ),
-      ],
+                      const SizedBox(height: 12),
+                      Text(
+                        letter.pronunciation!,
+                        style: TextStyle(
+                          fontSize: 16,
+                          height: 1.5,
+                          color: contentTextColor,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 16),
+              ],
+
+              // Example word
+              if (letter.exampleWordOlChiki != null)
+                _buildGlassCard(
+                  themeColor: accentColor,
+                  isDark: isDark,
+                  child: Column(
+                    children: [
+                      Text(
+                        'Example Word',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: (isDark ? Colors.white : accentColor)
+                              .withValues(alpha: 0.8),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        letter.exampleWordOlChiki!,
+                        style: TextStyle(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w900,
+                          color: isDark ? Colors.white : accentColor,
+                        ),
+                      ),
+                      if (letter.exampleWordLatin != null) ...[
+                        const SizedBox(height: 4),
+                        Text(
+                          letter.exampleWordLatin!,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                            color: contentTextColor,
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

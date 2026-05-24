@@ -183,8 +183,8 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
           accentColor = AppColors.duoOrange;
           brandGradient = AppColors.sunsetGradient;
         } else {
-          accentColor = AppColors.primaryPurple;
-          brandGradient = AppColors.purpleGradient;
+          accentColor = AppColors.primary;
+          brandGradient = AppColors.heroGradient;
         }
 
         return Scaffold(

@@ -217,7 +217,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         }
 
         final currentWord = words[_currentIndex];
-        const accentColor = AppColors.primaryPurple;
+        const accentColor = AppColors.primary;
         const textContrastColor = Colors.white;
 
         final bgColor = isDark
@@ -269,7 +269,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
 
               return [
                 ParallaxHeroSliverAppBar(
-                  gradient: AppColors.purpleGradient,
+                  gradient: AppColors.heroGradient,
                   glyph: currentWord.wordOlChiki.characters.isNotEmpty
                       ? currentWord.wordOlChiki.characters.first
                       : null,
@@ -428,7 +428,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
   }
 
   Widget _buildWordContent(WordModel word, int index, bool isDark) {
-    const accentColor = AppColors.primaryPurple;
+    const accentColor = AppColors.primary;
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
     final isThisPlaying = _isAudioPlaying && _playingId == word.id;

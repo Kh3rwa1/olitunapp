@@ -376,7 +376,7 @@ class VocabularyListContent extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               borderRadius: 24,
               border: Border.all(
-                color: AppColors.primaryPurple.withValues(alpha: 0.15),
+                color: AppColors.primary.withValues(alpha: 0.15),
                 width: 1.5,
               ),
               child: Stack(
@@ -390,7 +390,7 @@ class VocabularyListContent extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.primaryPurple,
+                            color: AppColors.primary,
                             height: 1.2,
                           ),
                           maxLines: 1,
@@ -428,13 +428,13 @@ class VocabularyListContent extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppColors.primaryPurple.withValues(alpha: 0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 10,
-                        color: AppColors.primaryPurple,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -470,7 +470,7 @@ class VocabularyListContent extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.primaryPurple,
+                                color: AppColors.primary,
                                 height: 1.2,
                               ),
                             ),
@@ -907,7 +907,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
     } else if (isSentence) {
       cellAccentColor = AppColors.duoOrange;
     } else {
-      cellAccentColor = AppColors.primaryPurple;
+      cellAccentColor = AppColors.primary;
     }
 
     final navRoute =

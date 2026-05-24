@@ -68,7 +68,7 @@ class DynamicBlockBuilder extends ConsumerWidget {
     } else if (isSentence) {
       accentColor = AppColors.duoOrange;
     } else {
-      accentColor = AppColors.primaryPurple;
+      accentColor = AppColors.primary;
     }
 
     switch (block.type) {

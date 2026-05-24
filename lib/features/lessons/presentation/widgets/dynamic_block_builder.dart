@@ -49,18 +49,53 @@ class DynamicBlockBuilder extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+    final categoryId = lesson?.categoryId ?? '';
+    final cleanCategory = categoryId.toLowerCase();
+
+    final isAlphabet =
+        cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
+    final isNumber = cleanCategory.contains('number');
+    final isSentence =
+        cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
+
+    final Color accentColor;
+    if (isAlphabet) {
+      accentColor = AppColors.primary;
+    } else if (isNumber) {
+      accentColor = AppColors.duoBlue;
+    } else if (isSentence) {
+      accentColor = AppColors.duoOrange;
+    } else {
+      accentColor = AppColors.primaryPurple;
+    }
+
     switch (block.type) {
       case 'text':
-        return _TextBlock(lessonId: lessonId, block: block, isDark: isDark);
+        return _TextBlock(
+          lessonId: lessonId,
+          block: block,
+          isDark: isDark,
+          accentColor: accentColor,
+        );
       case 'image':
       case 'svg':
         return _ImageBlock(block: block, isDark: isDark);
       case 'quiz':
         return _QuizBlock(block: block);
       case 'lottie':
-        return _LottieBlock(block: block, isDark: isDark);
+        return _LottieBlock(
+          block: block,
+          isDark: isDark,
+          accentColor: accentColor,
+        );
       case 'html':
-        return _HtmlBlock(block: block, isDark: isDark);
+        return _HtmlBlock(
+          block: block,
+          isDark: isDark,
+          accentColor: accentColor,
+        );
       default:
         return const SizedBox.shrink();
     }
@@ -72,11 +107,13 @@ class _TextBlock extends ConsumerWidget {
   final String lessonId;
   final LessonBlockEntity block;
   final bool isDark;
+  final Color accentColor;
 
   const _TextBlock({
     required this.lessonId,
     required this.block,
     required this.isDark,
+    required this.accentColor,
   });
 
   @override
@@ -109,7 +146,7 @@ class _TextBlock extends ConsumerWidget {
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
               color: navRoute != null
-                  ? AppColors.primary.withValues(alpha: 0.4)
+                  ? accentColor.withValues(alpha: 0.4)
                   : Colors.grey.withValues(alpha: 0.1),
               width: navRoute != null ? 1.5 : 1,
             ),
@@ -132,7 +169,7 @@ class _TextBlock extends ConsumerWidget {
                       style: TextStyle(
                         fontSize: displayText.length < 5 ? 36 : 22,
                         fontWeight: FontWeight.w800,
-                        color: AppColors.primary,
+                        color: accentColor,
                         height: 1.2,
                       ),
                     ),
@@ -156,13 +193,13 @@ class _TextBlock extends ConsumerWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(
+                  child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: 16,
-                    color: AppColors.primary,
+                    color: accentColor,
                   ),
                 ),
               ],
@@ -482,8 +519,13 @@ class _QuizBlock extends StatelessWidget {
 class _LottieBlock extends StatefulWidget {
   final LessonBlockEntity block;
   final bool isDark;
+  final Color accentColor;
 
-  const _LottieBlock({required this.block, required this.isDark});
+  const _LottieBlock({
+    required this.block,
+    required this.isDark,
+    required this.accentColor,
+  });
 
   @override
   State<_LottieBlock> createState() => _LottieBlockState();
@@ -649,7 +691,7 @@ class _LottieBlockState extends State<_LottieBlock>
                       ),
                       decoration: BoxDecoration(
                         color: isSelected
-                            ? AppColors.primary
+                            ? widget.accentColor
                             : Colors.grey.withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(8),
                       ),
@@ -684,7 +726,7 @@ class _LottieBlockState extends State<_LottieBlock>
                           ? Icons.loop_rounded
                           : Icons.play_disabled_rounded,
                       size: 20,
-                      color: _isLooping ? AppColors.primary : Colors.grey,
+                      color: _isLooping ? widget.accentColor : Colors.grey,
                     ),
                     onPressed: () {
                       HapticFeedback.lightImpact();
@@ -721,8 +763,13 @@ class _LottieBlockState extends State<_LottieBlock>
 class _HtmlBlock extends StatelessWidget {
   final LessonBlockEntity block;
   final bool isDark;
+  final Color accentColor;
 
-  const _HtmlBlock({required this.block, required this.isDark});
+  const _HtmlBlock({
+    required this.block,
+    required this.isDark,
+    required this.accentColor,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -745,12 +792,16 @@ class _HtmlBlock extends StatelessWidget {
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
-        children: _parseHtmlToWidgets(htmlContent, isDark),
+        children: _parseHtmlToWidgets(htmlContent, isDark, accentColor),
       ),
     );
   }
 
-  List<Widget> _parseHtmlToWidgets(String htmlText, bool isDark) {
+  List<Widget> _parseHtmlToWidgets(
+    String htmlText,
+    bool isDark,
+    Color accentColor,
+  ) {
     final List<Widget> widgets = [];
     final String cleanText = htmlText
         .replaceAll('\r\n', '\n')
@@ -786,6 +837,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 plainText,
                 isDark,
+                accentColor,
                 15,
                 FontWeight.normal,
                 null,
@@ -814,9 +866,10 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 24,
                 FontWeight.w800,
-                AppColors.primary,
+                accentColor,
               ),
             ),
           );
@@ -827,6 +880,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 20,
                 FontWeight.w700,
                 isDark ? Colors.white : Colors.black,
@@ -840,6 +894,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 18,
                 FontWeight.w600,
                 isDark ? Colors.white : Colors.black,
@@ -853,6 +908,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 15,
                 FontWeight.normal,
                 isDark ? Colors.white70 : Colors.black87,
@@ -866,11 +922,11 @@ class _HtmlBlock extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                  Text(
                     '• ',
                     style: TextStyle(
                       fontSize: 16,
-                      color: AppColors.primary,
+                      color: accentColor,
                       fontWeight: FontWeight.bold,
                     ),
                   ),
@@ -878,6 +934,7 @@ class _HtmlBlock extends StatelessWidget {
                     child: _renderInlineHtml(
                       content,
                       isDark,
+                      accentColor,
                       15,
                       FontWeight.normal,
                       isDark ? Colors.white70 : Colors.black87,
@@ -901,6 +958,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 14,
                 FontWeight.normal,
                 isDark ? Colors.white70 : Colors.black87,
@@ -915,6 +973,7 @@ class _HtmlBlock extends StatelessWidget {
               child: _renderInlineHtml(
                 content,
                 isDark,
+                accentColor,
                 15,
                 FontWeight.normal,
                 isDark ? Colors.white70 : Colors.black87,
@@ -931,7 +990,14 @@ class _HtmlBlock extends StatelessWidget {
       final remainingText = cleanText.substring(lastIndex).trim();
       if (remainingText.isNotEmpty) {
         widgets.add(
-          _renderInlineHtml(remainingText, isDark, 15, FontWeight.normal, null),
+          _renderInlineHtml(
+            remainingText,
+            isDark,
+            accentColor,
+            15,
+            FontWeight.normal,
+            null,
+          ),
         );
       }
     }
@@ -942,6 +1008,7 @@ class _HtmlBlock extends StatelessWidget {
   Widget _renderInlineHtml(
     String text,
     bool isDark,
+    Color accentColor,
     double baseFontSize,
     FontWeight baseFontWeight,
     Color? baseColor, {
@@ -998,7 +1065,7 @@ class _HtmlBlock extends StatelessWidget {
                 col = Color(int.parse('FF$hex', radix: 16));
               } catch (_) {}
             } else if (colorStr == 'primary') {
-              col = AppColors.primary;
+              col = accentColor;
             } else if (colorStr == 'red') {
               col = Colors.red;
             } else if (colorStr == 'green') {

@@ -15,7 +15,7 @@ import '../../features/lessons/presentation/category_lessons_screen.dart';
 import '../../features/lessons/presentation/lesson_detail_screen.dart';
 import '../../features/lessons/presentation/letter_detail_screen.dart';
 import '../../features/lessons/presentation/word_detail_screen.dart';
-import '../../features/lessons/presentation/number_detail_screen.dart';
+import '../../features/lessons/presentation/number_detail/number_detail_screen.dart';
 import '../../features/lessons/presentation/sentence_detail_screen.dart';
 import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/quiz/presentation/quiz_list_screen.dart';

@@ -201,7 +201,7 @@ class NumberGridContent extends ConsumerWidget {
             padding: const EdgeInsets.all(14),
             borderRadius: 20,
             border: Border.all(
-              color: AppColors.primary.withValues(alpha: 0.15),
+              color: AppColors.duoBlue.withValues(alpha: 0.15),
               width: 1.5,
             ),
             child: Stack(
@@ -215,7 +215,7 @@ class NumberGridContent extends ConsumerWidget {
                         style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.primary,
+                          color: AppColors.duoBlue,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -245,13 +245,13 @@ class NumberGridContent extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.primary.withValues(alpha: 0.1),
+                      color: AppColors.duoBlue.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 10,
-                      color: AppColors.primary,
+                      color: AppColors.duoBlue,
                     ),
                   ),
                 ),
@@ -376,7 +376,7 @@ class VocabularyListContent extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               borderRadius: 24,
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: AppColors.primaryPurple.withValues(alpha: 0.15),
                 width: 1.5,
               ),
               child: Stack(
@@ -390,7 +390,7 @@ class VocabularyListContent extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 26,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.primary,
+                            color: AppColors.primaryPurple,
                             height: 1.2,
                           ),
                           maxLines: 1,
@@ -428,13 +428,13 @@ class VocabularyListContent extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.primaryPurple.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 10,
-                        color: AppColors.primary,
+                        color: AppColors.primaryPurple,
                       ),
                     ),
                   ),
@@ -470,7 +470,7 @@ class VocabularyListContent extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
+                                color: AppColors.primaryPurple,
                                 height: 1.2,
                               ),
                             ),
@@ -578,7 +578,7 @@ class SentenceListContent extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               borderRadius: 24,
               border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.15),
+                color: AppColors.duoOrange.withValues(alpha: 0.15),
                 width: 1.5,
               ),
               child: Stack(
@@ -592,7 +592,7 @@ class SentenceListContent extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.primary,
+                            color: AppColors.duoOrange,
                             height: 1.2,
                           ),
                           maxLines: 2,
@@ -632,13 +632,13 @@ class SentenceListContent extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.1),
+                        color: AppColors.duoOrange.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 10,
-                        color: AppColors.primary,
+                        color: AppColors.duoOrange,
                       ),
                     ),
                   ),
@@ -674,7 +674,7 @@ class SentenceListContent extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
+                                color: AppColors.duoOrange,
                                 height: 1.3,
                               ),
                             ),
@@ -899,6 +899,17 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final textOlChiki = block.textOlChiki?.trim() ?? '';
     final textLatin = block.textLatin?.trim() ?? '';
 
+    final Color cellAccentColor;
+    if (isAlphabet) {
+      cellAccentColor = AppColors.primary;
+    } else if (isNumber) {
+      cellAccentColor = AppColors.duoBlue;
+    } else if (isSentence) {
+      cellAccentColor = AppColors.duoOrange;
+    } else {
+      cellAccentColor = AppColors.primaryPurple;
+    }
+
     final navRoute =
         _resolveNavRoute(ref, lessonId, textOlChiki) ??
         (textLatin.isNotEmpty
@@ -920,7 +931,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
         padding: const EdgeInsets.all(14),
         borderRadius: 20,
         border: Border.all(
-          color: AppColors.primary.withValues(alpha: 0.15),
+          color: cellAccentColor.withValues(alpha: 0.15),
           width: 1.5,
         ),
         child: Stack(
@@ -936,7 +947,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           ? 44
                           : (isNumber ? 36 : (isSentence ? 20 : 26)),
                       fontWeight: FontWeight.w900,
-                      color: AppColors.primary,
+                      color: cellAccentColor,
                       height: 1.2,
                     ),
                     maxLines: isSentence ? 2 : 1,
@@ -1023,13 +1034,13 @@ class DynamicBlockGridCell extends ConsumerWidget {
                 child: Container(
                   padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: AppColors.primary.withValues(alpha: 0.1),
+                    color: cellAccentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
                   ),
                   child: Icon(
                     Icons.arrow_forward_ios_rounded,
                     size: isAlphabet ? 12 : 10,
-                    color: AppColors.primary,
+                    color: cellAccentColor,
                   ),
                 ),
               ),

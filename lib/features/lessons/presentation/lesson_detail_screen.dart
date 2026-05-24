@@ -161,6 +161,32 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         // Calculate dynamic steps
         final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
 
+        final cleanCategory = lesson.categoryId.toLowerCase();
+        final isAlphabet =
+            cleanCategory.contains('alphabet') ||
+            cleanCategory.contains('letter');
+        final isNumber = cleanCategory.contains('number');
+        final isSentence =
+            cleanCategory.contains('sentence') ||
+            cleanCategory.contains('phrase');
+
+        final Color accentColor;
+        final Gradient brandGradient;
+
+        if (isAlphabet) {
+          accentColor = AppColors.primary;
+          brandGradient = AppColors.heroGradient;
+        } else if (isNumber) {
+          accentColor = AppColors.duoBlue;
+          brandGradient = AppColors.skyBlueGradient;
+        } else if (isSentence) {
+          accentColor = AppColors.duoOrange;
+          brandGradient = AppColors.sunsetGradient;
+        } else {
+          accentColor = AppColors.primaryPurple;
+          brandGradient = AppColors.purpleGradient;
+        }
+
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
           body: Stack(
@@ -187,7 +213,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                   ),
                   slivers: [
                     ParallaxHeroSliverAppBar(
-                      gradient: AppColors.heroGradient,
+                      gradient: brandGradient,
                       heroTag: MotionTokens.heroTag('lesson', lesson.id),
                       glyph: lesson.titleOlChiki.isNotEmpty
                           ? lesson.titleOlChiki.characters.first
@@ -247,6 +273,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                         progressNotifier: _scrollProgress,
                         isDark: isDark,
                         totalSteps: totalSteps,
+                        accentColor: accentColor,
                       ),
                     ),
 
@@ -373,18 +400,19 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                               quizId: quizId,
                               quizzes: quizzes,
                               nextLessonId: nextLessonId,
+                              accentColor: accentColor,
                             );
                           }
                         : null,
                     style: ElevatedButton.styleFrom(
                       backgroundColor: _isScrollCompleted
-                          ? AppColors.primary
+                          ? accentColor
                           : (isDark ? Colors.white10 : Colors.black12),
                       foregroundColor: _isScrollCompleted
                           ? Colors.white
                           : (isDark ? Colors.white30 : Colors.black38),
                       elevation: _isScrollCompleted ? 2 : 0,
-                      shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                      shadowColor: accentColor.withValues(alpha: 0.4),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -617,11 +645,13 @@ class _ProgressHeader extends StatelessWidget {
   final ValueNotifier<double> progressNotifier;
   final bool isDark;
   final int totalSteps;
+  final Color accentColor;
 
   const _ProgressHeader({
     required this.progressNotifier,
     required this.isDark,
     required this.totalSteps,
+    required this.accentColor,
   });
 
   @override
@@ -654,9 +684,7 @@ class _ProgressHeader extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? AppColors.brandTextDark
-                          : AppColors.brandTextLight,
+                      color: accentColor,
                     ),
                   ),
                 ],
@@ -668,9 +696,7 @@ class _ProgressHeader extends StatelessWidget {
                   value: progress,
                   minHeight: 6,
                   backgroundColor: isDark ? Colors.white10 : Colors.black12,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-                  ),
+                  valueColor: AlwaysStoppedAnimation<Color>(accentColor),
                 ),
               ),
             ],
@@ -773,6 +799,7 @@ void _showCompletionSheet({
   required String? quizId,
   required List<QuizModel> quizzes,
   required String? nextLessonId,
+  required Color accentColor,
 }) {
   final isDark = Theme.of(context).brightness == Brightness.dark;
   QuizModel? quiz;
@@ -849,16 +876,16 @@ void _showCompletionSheet({
                           width: 80,
                           height: 80,
                           decoration: BoxDecoration(
-                            color: AppColors.primary.withValues(alpha: 0.15),
+                            color: accentColor.withValues(alpha: 0.15),
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: AppColors.primary.withValues(alpha: 0.3),
+                              color: accentColor.withValues(alpha: 0.3),
                               width: 2,
                             ),
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.emoji_events_rounded,
-                            color: AppColors.primary,
+                            color: accentColor,
                             size: 44,
                           ),
                         );
@@ -948,18 +975,16 @@ void _showCompletionSheet({
                         // Progress Bento
                         Expanded(
                           child: buildBentoCard(
-                            backgroundColor: AppColors.primary.withValues(
+                            backgroundColor: accentColor.withValues(
                               alpha: 0.12,
                             ),
-                            borderColor: AppColors.primary.withValues(
-                              alpha: 0.25,
-                            ),
+                            borderColor: accentColor.withValues(alpha: 0.25),
                             child: Column(
                               mainAxisSize: MainAxisSize.min,
                               children: [
-                                const Icon(
+                                Icon(
                                   Icons.check_circle_rounded,
-                                  color: AppColors.primary,
+                                  color: accentColor,
                                   size: 28,
                                 ),
                                 const SizedBox(height: 6),
@@ -977,9 +1002,7 @@ void _showCompletionSheet({
                                 Text(
                                   '100% Done',
                                   style: TextStyle(
-                                    color: isDark
-                                        ? AppColors.brandTextDark
-                                        : AppColors.brandTextLight,
+                                    color: accentColor,
                                     fontWeight: FontWeight.w900,
                                     fontSize: 16,
                                   ),
@@ -1013,9 +1036,7 @@ void _showCompletionSheet({
                             children: [
                               Icon(
                                 Icons.auto_awesome_rounded,
-                                color: isDark
-                                    ? AppColors.brandTextDark
-                                    : AppColors.brandTextLight,
+                                color: accentColor,
                                 size: 16,
                               ),
                               const SizedBox(width: 6),
@@ -1024,9 +1045,7 @@ void _showCompletionSheet({
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold,
-                                  color: isDark
-                                      ? AppColors.brandTextDark
-                                      : AppColors.brandTextLight,
+                                  color: accentColor,
                                 ),
                               ),
                             ],
@@ -1066,10 +1085,10 @@ void _showCompletionSheet({
                           }
                         },
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.primary,
+                          backgroundColor: accentColor,
                           foregroundColor: Colors.white,
                           elevation: 2,
-                          shadowColor: AppColors.primary.withValues(alpha: 0.4),
+                          shadowColor: accentColor.withValues(alpha: 0.4),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(16),
                           ),

@@ -12,8 +12,6 @@ import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
-import 'widgets/full_bleed_hero_media.dart';
-import '../../../shared/utils/media_type_resolver.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -74,15 +72,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       );
     }
 
-    final hasHeroMedia =
-        category.courseHeroImageUrl != null &&
-        category.courseHeroImageUrl!.trim().isNotEmpty;
-    final heroMediaUrl = hasHeroMedia
-        ? category.courseHeroImageUrl!.trim()
-        : null;
-    final isLottie =
-        heroMediaUrl != null &&
-        MediaTypeResolver.resolve(heroMediaUrl) == MediaKind.lottie;
     final brandGradient = _getGradient(category.gradientPreset);
 
     return Scaffold(
@@ -97,7 +86,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             ParallaxHeroSliverAppBar(
               gradient: brandGradient,
               heroTag: MotionTokens.heroTag('category', category.id),
-              glyph: !hasHeroMedia && category.titleOlChiki.isNotEmpty
+              glyph: category.titleOlChiki.isNotEmpty
                   ? category.titleOlChiki.characters.first
                   : null,
               leading: IconButton(
@@ -113,24 +102,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                   fontWeight: FontWeight.w800,
                 ),
               ),
-              heroChildFullBleed: hasHeroMedia,
-              heroChild: hasHeroMedia
-                  ? FullBleedHeroMedia(
-                      animationUrl: isLottie ? heroMediaUrl : null,
-                      imageUrl: heroMediaUrl,
-                      fallback: Text(
-                        category.titleOlChiki.isNotEmpty
-                            ? category.titleOlChiki.characters.first
-                            : 'ᱚ',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.22),
-                          fontSize: 160,
-                          fontWeight: FontWeight.w900,
-                          height: 1,
-                        ),
-                      ),
-                    )
-                  : null,
             ),
             lessons.when(
               data: (data) {

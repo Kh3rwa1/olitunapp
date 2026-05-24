@@ -22,10 +22,8 @@ class LetterFormSheet extends ConsumerStatefulWidget {
 
   /// Convenience launcher.
   static void show(BuildContext context, WidgetRef ref, LetterModel? letter) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => LetterFormSheet(letter: letter),
     );
   }
@@ -41,10 +39,25 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
   late final TextEditingController _themeColorCtrl;
 
   String? _audioUrl;
-  String? _imageUrl;
-  String? _animationUrl;
+  String? _mediaUrl;
 
   bool get _isEditing => widget.letter != null;
+
+  bool _isAnimationOrVideoOrHtml(String url) {
+    final lower = url.toLowerCase();
+    return lower.contains('.json') ||
+        lower.contains('.lottie') ||
+        lower.contains('.mp4') ||
+        lower.contains('.webm') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.3gp') ||
+        lower.contains('.avi') ||
+        lower.contains('.html') ||
+        lower.contains('/buckets/animations/') ||
+        lower.contains('/buckets/videos/') ||
+        lower.contains('/buckets/html/');
+  }
 
   @override
   void initState() {
@@ -58,8 +71,7 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       text: widget.letter?.themeColor ?? '',
     );
     _audioUrl = widget.letter?.audioUrl;
-    _imageUrl = widget.letter?.imageUrl;
-    _animationUrl = widget.letter?.animationUrl;
+    _mediaUrl = widget.letter?.animationUrl ?? widget.letter?.imageUrl;
   }
 
   @override
@@ -90,6 +102,9 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
 
   void _save() {
     HapticFeedback.lightImpact();
+    final media = _mediaUrl?.trim();
+    final isAnim = media != null && _isAnimationOrVideoOrHtml(media);
+
     final letter = LetterModel(
       id: widget.letter?.id ?? const Uuid().v4(),
       charOlChiki: _charCtrl.text,
@@ -97,8 +112,8 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
       pronunciation: _pronCtrl.text.isNotEmpty ? _pronCtrl.text : null,
       order: widget.letter?.order ?? 0,
       audioUrl: _audioUrl,
-      imageUrl: _imageUrl,
-      animationUrl: _animationUrl,
+      imageUrl: isAnim ? null : media,
+      animationUrl: isAnim ? media : null,
       themeColor: _themeColorCtrl.text.trim().isNotEmpty
           ? _themeColorCtrl.text.trim()
           : null,
@@ -236,39 +251,14 @@ class _LetterFormSheetState extends ConsumerState<LetterFormSheet> {
           ),
           const SizedBox(height: 24),
           AdminMediaField(
-            label: 'Hero Image/GIF (Optional)',
-            subtitle: 'Upload high-quality image or animated GIF',
-            icon: Icons.image_rounded,
+            label: 'Hero Media (Optional)',
+            subtitle: 'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
+            icon: Icons.play_circle_outline_rounded,
             accent: const Color(0xFF6366F1),
-            currentUrl: _imageUrl,
-            uploadFolder: 'letters-images',
-            fileType: FileType.image,
-            onUploaded: (url) => setState(() => _imageUrl = url),
-            previewBuilder: (url) => ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                url,
-                height: 120,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(
-                  Icons.broken_image_rounded,
-                  size: 60,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          AdminMediaField(
-            label: 'Lottie Animation (Optional)',
-            subtitle: 'Upload a .json Lottie animation file',
-            icon: Icons.animation_rounded,
-            accent: const Color(0xFF10B981),
-            currentUrl: _animationUrl,
-            uploadFolder: 'animations',
-            fileType: FileType.custom,
-            allowedExtensions: const ['json'],
-            onUploaded: (url) => setState(() => _animationUrl = url),
+            currentUrl: _mediaUrl,
+            uploadFolder: 'letters-media',
+            fileType: FileType.any,
+            onUploaded: (url) => setState(() => _mediaUrl = url),
           ),
         ],
       ),

@@ -254,6 +254,10 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
         lower.contains('.json') ||
         lower.contains('.lottie') ||
         lower.contains('/buckets/animations/');
+    final isHtml =
+        lower.contains('.html') ||
+        lower.contains('text/html') ||
+        lower.contains('/buckets/html/');
     final isVideo =
         lower.contains('.mp4') ||
         lower.contains('.webm') ||
@@ -308,6 +312,18 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
                 color: Colors.grey,
               ),
             );
+    } else if (isHtml) {
+      child = const Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.code_rounded, size: 42, color: Colors.blue),
+          SizedBox(height: 8),
+          Text(
+            'HTML Interactive File',
+            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13),
+          ),
+        ],
+      );
     } else if (isAudio) {
       child = const Column(
         mainAxisAlignment: MainAxisAlignment.center,

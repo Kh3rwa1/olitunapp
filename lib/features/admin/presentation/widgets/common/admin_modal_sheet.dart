@@ -138,3 +138,27 @@ class AdminModalSheet extends StatelessWidget {
     );
   }
 }
+
+/// A premium, unified launcher for all admin modal bottom sheets.
+///
+/// Automatically handles:
+///  * Horizontal centering and standard width containment (max 720px) on tablet/desktop.
+///  * Transparent background so overlay styling renders beautifully.
+///  * Keyboard scroll resizing.
+Future<T?> showAdminBottomSheet<T>({
+  required BuildContext context,
+  required WidgetBuilder builder,
+  bool isDismissible = true,
+  bool enableDrag = true,
+}) {
+  return showModalBottomSheet<T>(
+    context: context,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
+    isDismissible: isDismissible,
+    enableDrag: enableDrag,
+    constraints: const BoxConstraints(maxWidth: 720),
+    builder: builder,
+  );
+}
+

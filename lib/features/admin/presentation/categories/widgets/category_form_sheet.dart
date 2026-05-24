@@ -19,10 +19,8 @@ class CategoryFormSheet extends ConsumerStatefulWidget {
     WidgetRef ref,
     CategoryEntity? category,
   ) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => CategoryFormSheet(category: category),
     );
   }

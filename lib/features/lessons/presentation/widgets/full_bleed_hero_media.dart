@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
+import 'dart:ui_web' as ui_web;
+import 'package:web/web.dart' as web;
+import 'package:url_launcher/url_launcher.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -73,6 +76,14 @@ class _HeroMediaSource extends StatelessWidget {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
 
+    if (_isHtmlUrl(url)) {
+      return _HtmlHeroMedia(url: url, fallback: _buildFallback());
+    }
+
+    if (_isImageUrl(url)) {
+      return _HeroImage(url: url, fallback: _buildFallback());
+    }
+
     if (preferAnimation) {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
@@ -91,6 +102,12 @@ class _HeroMediaSource extends StatelessWidget {
       }
       if (_isSvgUrl(image)) {
         return _SvgHeroMedia(
+          url: image,
+          fallback: Center(child: fallback),
+        );
+      }
+      if (_isHtmlUrl(image)) {
+        return _HtmlHeroMedia(
           url: image,
           fallback: Center(child: fallback),
         );
@@ -456,4 +473,117 @@ bool _isVideoUrl(String url) {
       lower.contains('.3gp') ||
       lower.contains('.avi') ||
       lower.contains('/buckets/videos/');
+}
+
+bool _isHtmlUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.contains('.html') ||
+      lower.contains('text/html') ||
+      lower.contains('/buckets/html/');
+}
+
+bool _isImageUrl(String url) {
+  final lower = url.toLowerCase();
+  return lower.contains('.png') ||
+      lower.contains('.jpg') ||
+      lower.contains('.jpeg') ||
+      lower.contains('.webp') ||
+      lower.contains('.gif');
+}
+
+class _HtmlHeroMedia extends StatefulWidget {
+  const _HtmlHeroMedia({required this.url, required this.fallback});
+
+  final String url;
+  final Widget fallback;
+
+  @override
+  State<_HtmlHeroMedia> createState() => _HtmlHeroMediaState();
+}
+
+class _HtmlHeroMediaState extends State<_HtmlHeroMedia> {
+  late final String _viewId;
+
+  @override
+  void initState() {
+    super.initState();
+    _viewId = 'html-hero-${widget.url.hashCode}';
+    if (kIsWeb) {
+      ui_web.platformViewRegistry.registerViewFactory(
+        _viewId,
+        (int viewId) => web.HTMLIFrameElement()
+          ..src = widget.url
+          ..style.border = 'none'
+          ..style.width = '100%'
+          ..style.height = '100%',
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (kIsWeb) {
+      return HtmlElementView(viewType: _viewId);
+    }
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: Colors.blue.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.code_rounded,
+                size: 48,
+                color: Colors.blue,
+              ),
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Interactive HTML Content',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'This lesson contains an interactive HTML experience. Tap below to launch it.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: Colors.white70,
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton.icon(
+              onPressed: () async {
+                final uri = Uri.parse(widget.url);
+                if (await canLaunchUrl(uri)) {
+                  await launchUrl(uri, mode: LaunchMode.externalApplication);
+                }
+              },
+              icon: const Icon(Icons.open_in_browser_rounded),
+              label: const Text('Open Interactive Content'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.blue,
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }

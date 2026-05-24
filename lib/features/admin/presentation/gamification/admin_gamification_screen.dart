@@ -11,6 +11,7 @@ import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
+import '../widgets/common/admin_modal_sheet.dart';
 import '../settings/controllers/admin_maintenance_controller.dart';
 
 class AdminGamificationScreen extends ConsumerStatefulWidget {
@@ -826,9 +827,8 @@ class _AdminGamificationScreenState
         field: TextEditingController(text: row[field]?.toString() ?? ''),
     };
 
-    await showModalBottomSheet<void>(
+    await showAdminBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
       builder: (context) {
         return SafeArea(
           child: Padding(

@@ -13,10 +13,8 @@ class LessonFormSheet extends ConsumerStatefulWidget {
   const LessonFormSheet({super.key, this.lesson});
 
   static void show(BuildContext context, WidgetRef ref, LessonEntity? lesson) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => LessonFormSheet(lesson: lesson),
     );
   }

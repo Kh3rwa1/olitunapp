@@ -14,10 +14,8 @@ class WordFormSheet extends ConsumerStatefulWidget {
   const WordFormSheet({super.key, this.word});
 
   static void show(BuildContext context, WidgetRef ref, WordModel? word) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => WordFormSheet(word: word),
     );
   }
@@ -37,11 +35,26 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
   late final TextEditingController _themeColorCtrl;
 
   String? _audioUrl;
-  String? _imageUrl;
-  String? _animationUrl;
+  String? _mediaUrl;
 
   bool get _isEditing =>
       widget.word != null && !widget.word!.id.startsWith('lesson_block_');
+
+  bool _isAnimationOrVideoOrHtml(String url) {
+    final lower = url.toLowerCase();
+    return lower.contains('.json') ||
+        lower.contains('.lottie') ||
+        lower.contains('.mp4') ||
+        lower.contains('.webm') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.3gp') ||
+        lower.contains('.avi') ||
+        lower.contains('.html') ||
+        lower.contains('/buckets/animations/') ||
+        lower.contains('/buckets/videos/') ||
+        lower.contains('/buckets/html/');
+  }
 
   @override
   void initState() {
@@ -56,8 +69,7 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
     _orderCtrl = TextEditingController(text: (w?.order ?? 0).toString());
     _themeColorCtrl = TextEditingController(text: w?.themeColor ?? '');
     _audioUrl = w?.audioUrl;
-    _imageUrl = w?.imageUrl;
-    _animationUrl = w?.animationUrl;
+    _mediaUrl = w?.animationUrl ?? w?.imageUrl;
   }
 
   @override
@@ -75,6 +87,9 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
 
   Future<void> _save() async {
     HapticFeedback.lightImpact();
+    final media = _mediaUrl?.trim();
+    final isAnim = media != null && _isAnimationOrVideoOrHtml(media);
+
     final word = WordModel(
       id: _isEditing ? widget.word!.id : const Uuid().v4(),
       wordOlChiki: _wordOlChikiCtrl.text.trim(),
@@ -89,8 +104,8 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       audioUrl: _audioUrl,
-      imageUrl: _imageUrl,
-      animationUrl: _animationUrl,
+      imageUrl: isAnim ? null : media,
+      animationUrl: isAnim ? media : null,
       themeColor: _themeColorCtrl.text.trim().isNotEmpty
           ? _themeColorCtrl.text.trim()
           : null,
@@ -278,52 +293,14 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           ),
           const SizedBox(height: 24),
           AdminMediaField(
-            label: 'Hero Image/SVG/GIF (Optional)',
-            subtitle: 'Upload high-quality image, SVG, or animated GIF',
-            icon: Icons.image_rounded,
-            accent: const Color(0xFF6366F1),
-            currentUrl: _imageUrl,
-            uploadFolder: 'words-images',
-            fileType: FileType.custom,
-            allowedExtensions: const [
-              'png',
-              'jpg',
-              'jpeg',
-              'webp',
-              'gif',
-              'svg',
-            ],
-            onUploaded: (url) => setState(() => _imageUrl = url),
-          ),
-          const SizedBox(height: 24),
-          AdminMediaField(
             label: 'Hero Media (Optional)',
-            subtitle: 'Upload image, GIF, SVG, Lottie, audio, or video media',
-            icon: Icons.animation_rounded,
-            accent: const Color(0xFF10B981),
-            currentUrl: _animationUrl,
-            uploadFolder: 'hero-media',
-            fileType: FileType.custom,
-            allowedExtensions: const [
-              'png',
-              'jpg',
-              'jpeg',
-              'webp',
-              'gif',
-              'json',
-              'lottie',
-              'svg',
-              'mp3',
-              'wav',
-              'ogg',
-              'aac',
-              'm4a',
-              'mp4',
-              'webm',
-              'mov',
-              'm4v',
-            ],
-            onUploaded: (url) => setState(() => _animationUrl = url),
+            subtitle: 'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
+            icon: Icons.play_circle_outline_rounded,
+            accent: const Color(0xFF6366F1),
+            currentUrl: _mediaUrl,
+            uploadFolder: 'words-media',
+            fileType: FileType.any,
+            onUploaded: (url) => setState(() => _mediaUrl = url),
           ),
         ],
       ),

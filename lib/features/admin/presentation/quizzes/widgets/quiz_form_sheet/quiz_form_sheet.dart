@@ -10,16 +10,15 @@ import 'quiz_basic_info_section.dart';
 import 'quiz_questions_section.dart';
 import 'quiz_form_actions.dart';
 import 'question_editor.dart';
+import '../../../widgets/common/admin_modal_sheet.dart';
 
 class QuizFormSheet extends ConsumerStatefulWidget {
   final QuizModel? quiz;
   const QuizFormSheet({super.key, this.quiz});
 
   static void show(BuildContext context, WidgetRef ref, QuizModel? quiz) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => QuizFormSheet(quiz: quiz),
     );
   }
@@ -79,10 +78,8 @@ class _QuizFormSheetState extends ConsumerState<QuizFormSheet> {
   }
 
   void _showQuestionEditor(QuizQuestion? existing, int? index) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => QuestionEditorSheet(
         question: existing,
         onSave: (q) {

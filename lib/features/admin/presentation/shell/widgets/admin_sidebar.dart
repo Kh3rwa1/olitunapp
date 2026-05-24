@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../shared/providers/providers.dart';
+import '../../../../categories/domain/entities/category_entity.dart';
 import 'admin_brand_mark.dart';
 
-class AdminSidebar extends StatelessWidget {
+class AdminSidebar extends ConsumerWidget {
   final bool isCompact;
   const AdminSidebar({super.key, this.isCompact = false});
 
@@ -17,9 +20,10 @@ class AdminSidebar extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final location = GoRouterState.of(context).matchedLocation;
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
     return SafeArea(
       child: Column(
@@ -64,34 +68,97 @@ class AdminSidebar extends StatelessWidget {
                   onTap: () => _navigate(context, '/admin/banners'),
                   isCompact: isCompact,
                 ),
-                AdminNavItem(
-                  icon: Icons.text_fields_rounded,
-                  label: 'Letters & Alphabet',
-                  isSelected: location == '/admin/letters',
-                  onTap: () => _navigate(context, '/admin/letters'),
-                  isCompact: isCompact,
+                
+                // Dynamic Categories List
+                categoriesAsync.when(
+                  data: (categories) {
+                    final sortedCategories = List<CategoryEntity>.from(categories)
+                      ..sort((a, b) => a.order.compareTo(b.order));
+                    return Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: sortedCategories.map((category) {
+                        final lowerTitle = category.titleLatin.toLowerCase();
+                        final id = category.id;
+                        
+                        String route = '/admin/lessons';
+                        IconData icon = Icons.category_rounded;
+                        
+                        if (id == 'cat_vocab' ||
+                            id == 'cat_words' ||
+                            id == 'seed_words' ||
+                            lowerTitle.contains('vocab') ||
+                            lowerTitle.contains('word')) {
+                          route = '/admin/words';
+                          icon = Icons.menu_book_rounded;
+                        } else if (id == 'cat_sentences' ||
+                            id == 'seed_sentences' ||
+                            lowerTitle.contains('sentence')) {
+                          route = '/admin/sentences';
+                          icon = Icons.format_quote_rounded;
+                        } else if (id == 'cat_alphabets' ||
+                            id == 'cat_letters' ||
+                            id == 'letters' ||
+                            lowerTitle.contains('alphabet') ||
+                            lowerTitle.contains('letter')) {
+                          route = '/admin/letters';
+                          icon = Icons.text_fields_rounded;
+                        } else if (id == 'cat_numbers' ||
+                            lowerTitle.contains('number')) {
+                          route = '/admin/numbers';
+                          icon = Icons.pin_rounded;
+                        } else {
+                          route = '/admin/lessons';
+                          switch (category.iconName?.toLowerCase()) {
+                            case 'alphabet':
+                              icon = Icons.text_fields_rounded;
+                              break;
+                            case 'numbers':
+                              icon = Icons.pin_rounded;
+                              break;
+                            case 'words':
+                              icon = Icons.menu_book_rounded;
+                              break;
+                            case 'sentences':
+                              icon = Icons.format_quote_rounded;
+                              break;
+                            case 'arithmetic':
+                              icon = Icons.calculate_rounded;
+                              break;
+                            case 'stories':
+                              icon = Icons.auto_stories_rounded;
+                              break;
+                            default:
+                              icon = Icons.category_rounded;
+                          }
+                        }
+                        
+                        final isSelected = (route == '/admin/lessons' && location == '/admin/lessons')
+                            ? false
+                            : location == route;
+
+                        return AdminNavItem(
+                          icon: icon,
+                          label: category.titleLatin,
+                          isSelected: isSelected,
+                          onTap: () => _navigate(context, route),
+                          isCompact: isCompact,
+                        );
+                      }).toList(),
+                    );
+                  },
+                  loading: () => const Center(
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  ),
+                  error: (error, stackTrace) => const SizedBox(),
                 ),
-                AdminNavItem(
-                  icon: Icons.pin_rounded,
-                  label: 'Numbers',
-                  isSelected: location == '/admin/numbers',
-                  onTap: () => _navigate(context, '/admin/numbers'),
-                  isCompact: isCompact,
-                ),
-                AdminNavItem(
-                  icon: Icons.menu_book_rounded,
-                  label: 'Words & Vocabulary',
-                  isSelected: location == '/admin/words',
-                  onTap: () => _navigate(context, '/admin/words'),
-                  isCompact: isCompact,
-                ),
-                AdminNavItem(
-                  icon: Icons.format_quote_rounded,
-                  label: 'Sentences',
-                  isSelected: location == '/admin/sentences',
-                  onTap: () => _navigate(context, '/admin/sentences'),
-                  isCompact: isCompact,
-                ),
+
                 AdminNavItem(
                   icon: Icons.school_rounded,
                   label: 'Lessons',

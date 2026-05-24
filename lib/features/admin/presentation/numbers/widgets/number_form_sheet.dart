@@ -13,10 +13,8 @@ class NumberFormSheet extends ConsumerStatefulWidget {
   const NumberFormSheet({super.key, this.number});
 
   static void show(BuildContext context, WidgetRef ref, NumberModel? number) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => NumberFormSheet(number: number),
     );
   }
@@ -35,10 +33,25 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
   late final TextEditingController _themeColorCtrl;
 
   String? _audioUrl;
-  String? _imageUrl;
-  String? _animationUrl;
+  String? _mediaUrl;
 
   bool get _isEditing => widget.number != null;
+
+  bool _isAnimationOrVideoOrHtml(String url) {
+    final lower = url.toLowerCase();
+    return lower.contains('.json') ||
+        lower.contains('.lottie') ||
+        lower.contains('.mp4') ||
+        lower.contains('.webm') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.3gp') ||
+        lower.contains('.avi') ||
+        lower.contains('.html') ||
+        lower.contains('/buckets/animations/') ||
+        lower.contains('/buckets/videos/') ||
+        lower.contains('/buckets/html/');
+  }
 
   @override
   void initState() {
@@ -52,8 +65,7 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
     _orderCtrl = TextEditingController(text: (n?.order ?? 0).toString());
     _themeColorCtrl = TextEditingController(text: n?.themeColor ?? '');
     _audioUrl = n?.audioUrl;
-    _imageUrl = n?.imageUrl;
-    _animationUrl = n?.animationUrl;
+    _mediaUrl = n?.animationUrl ?? n?.imageUrl;
   }
 
   @override
@@ -70,6 +82,9 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
 
   void _save() {
     HapticFeedback.lightImpact();
+    final media = _mediaUrl?.trim();
+    final isAnim = media != null && _isAnimationOrVideoOrHtml(media);
+
     final number = NumberModel(
       id: widget.number?.id ?? const Uuid().v4(),
       numeral: _numeralCtrl.text.trim(),
@@ -81,8 +96,8 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
           : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       audioUrl: _audioUrl,
-      imageUrl: _imageUrl,
-      animationUrl: _animationUrl,
+      imageUrl: isAnim ? null : media,
+      animationUrl: isAnim ? media : null,
       themeColor: _themeColorCtrl.text.trim().isNotEmpty
           ? _themeColorCtrl.text.trim()
           : null,
@@ -237,39 +252,14 @@ class _NumberFormSheetState extends ConsumerState<NumberFormSheet> {
           ),
           const SizedBox(height: 24),
           AdminMediaField(
-            label: 'Hero Image/GIF (Optional)',
-            subtitle: 'Upload high-quality image or animated GIF',
-            icon: Icons.image_rounded,
+            label: 'Hero Media (Optional)',
+            subtitle: 'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
+            icon: Icons.play_circle_outline_rounded,
             accent: const Color(0xFF6366F1),
-            currentUrl: _imageUrl,
-            uploadFolder: 'numbers-images',
-            fileType: FileType.image,
-            onUploaded: (url) => setState(() => _imageUrl = url),
-            previewBuilder: (url) => ClipRRect(
-              borderRadius: BorderRadius.circular(10),
-              child: Image.network(
-                url,
-                height: 120,
-                fit: BoxFit.contain,
-                errorBuilder: (_, _, _) => const Icon(
-                  Icons.broken_image_rounded,
-                  size: 60,
-                  color: Colors.grey,
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(height: 24),
-          AdminMediaField(
-            label: 'Lottie Animation (Optional)',
-            subtitle: 'Upload a .json Lottie animation file',
-            icon: Icons.animation_rounded,
-            accent: const Color(0xFF10B981),
-            currentUrl: _animationUrl,
-            uploadFolder: 'animations',
-            fileType: FileType.custom,
-            allowedExtensions: const ['json'],
-            onUploaded: (url) => setState(() => _animationUrl = url),
+            currentUrl: _mediaUrl,
+            uploadFolder: 'numbers-media',
+            fileType: FileType.any,
+            onUploaded: (url) => setState(() => _mediaUrl = url),
           ),
         ],
       ),

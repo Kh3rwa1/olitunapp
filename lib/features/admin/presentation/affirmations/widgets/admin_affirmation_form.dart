@@ -19,10 +19,8 @@ class AdminAffirmationForm extends ConsumerStatefulWidget {
     WidgetRef ref,
     AffirmationModel? affirmation,
   ) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => AdminAffirmationForm(affirmation: affirmation),
     );
   }

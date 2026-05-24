@@ -18,10 +18,8 @@ class SentenceFormSheet extends ConsumerStatefulWidget {
     WidgetRef ref,
     SentenceModel? sentence,
   ) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => SentenceFormSheet(sentence: sentence),
     );
   }
@@ -41,12 +39,27 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
   late final TextEditingController _themeColorCtrl;
 
   String? _audioUrl;
-  String? _imageUrl;
-  String? _animationUrl;
+  String? _mediaUrl;
 
   bool get _isEditing =>
       widget.sentence != null &&
       !widget.sentence!.id.startsWith('lesson_block_');
+
+  bool _isAnimationOrVideoOrHtml(String url) {
+    final lower = url.toLowerCase();
+    return lower.contains('.json') ||
+        lower.contains('.lottie') ||
+        lower.contains('.mp4') ||
+        lower.contains('.webm') ||
+        lower.contains('.mov') ||
+        lower.contains('.m4v') ||
+        lower.contains('.3gp') ||
+        lower.contains('.avi') ||
+        lower.contains('.html') ||
+        lower.contains('/buckets/animations/') ||
+        lower.contains('/buckets/videos/') ||
+        lower.contains('/buckets/html/');
+  }
 
   @override
   void initState() {
@@ -61,8 +74,7 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
     _orderCtrl = TextEditingController(text: (s?.order ?? 0).toString());
     _themeColorCtrl = TextEditingController(text: s?.themeColor ?? '');
     _audioUrl = s?.audioUrl;
-    _imageUrl = s?.imageUrl;
-    _animationUrl = s?.animationUrl;
+    _mediaUrl = s?.animationUrl ?? s?.imageUrl;
   }
 
   @override
@@ -80,6 +92,9 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
 
   Future<void> _save() async {
     HapticFeedback.lightImpact();
+    final media = _mediaUrl?.trim();
+    final isAnim = media != null && _isAnimationOrVideoOrHtml(media);
+
     final sentence = SentenceModel(
       id: _isEditing ? widget.sentence!.id : const Uuid().v4(),
       sentenceOlChiki: _olChikiCtrl.text.trim(),
@@ -94,8 +109,8 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           : null,
       order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
       audioUrl: _audioUrl,
-      imageUrl: _imageUrl,
-      animationUrl: _animationUrl,
+      imageUrl: isAnim ? null : media,
+      animationUrl: isAnim ? media : null,
       themeColor: _themeColorCtrl.text.trim().isNotEmpty
           ? _themeColorCtrl.text.trim()
           : null,
@@ -287,52 +302,14 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           ),
           const SizedBox(height: 24),
           AdminMediaField(
-            label: 'Hero Image/SVG/GIF (Optional)',
-            subtitle: 'Upload high-quality image, SVG, or animated GIF',
-            icon: Icons.image_rounded,
-            accent: const Color(0xFF6366F1),
-            currentUrl: _imageUrl,
-            uploadFolder: 'sentences-images',
-            fileType: FileType.custom,
-            allowedExtensions: const [
-              'png',
-              'jpg',
-              'jpeg',
-              'webp',
-              'gif',
-              'svg',
-            ],
-            onUploaded: (url) => setState(() => _imageUrl = url),
-          ),
-          const SizedBox(height: 24),
-          AdminMediaField(
             label: 'Hero Media (Optional)',
-            subtitle: 'Upload image, GIF, SVG, Lottie, audio, or video media',
-            icon: Icons.animation_rounded,
-            accent: const Color(0xFF10B981),
-            currentUrl: _animationUrl,
-            uploadFolder: 'hero-media',
-            fileType: FileType.custom,
-            allowedExtensions: const [
-              'png',
-              'jpg',
-              'jpeg',
-              'webp',
-              'gif',
-              'json',
-              'lottie',
-              'svg',
-              'mp3',
-              'wav',
-              'ogg',
-              'aac',
-              'm4a',
-              'mp4',
-              'webm',
-              'mov',
-              'm4v',
-            ],
-            onUploaded: (url) => setState(() => _animationUrl = url),
+            subtitle: 'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
+            icon: Icons.play_circle_outline_rounded,
+            accent: const Color(0xFF6366F1),
+            currentUrl: _mediaUrl,
+            uploadFolder: 'sentences-media',
+            fileType: FileType.any,
+            onUploaded: (url) => setState(() => _mediaUrl = url),
           ),
         ],
       ),

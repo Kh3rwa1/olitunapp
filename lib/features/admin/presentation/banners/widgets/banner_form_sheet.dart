@@ -20,10 +20,8 @@ class BannerFormSheet extends ConsumerStatefulWidget {
     WidgetRef ref,
     FeaturedBannerModel? banner,
   ) {
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
       builder: (_) => BannerFormSheet(banner: banner),
     );
   }

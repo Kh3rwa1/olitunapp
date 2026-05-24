@@ -10,6 +10,7 @@ import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_data_table.dart';
 import '../widgets/admin_glass_card.dart';
 import '../analytics/admin_analytics_csv_exporter.dart';
+import '../widgets/common/admin_modal_sheet.dart';
 
 class AdminBintiWaitlistScreen extends ConsumerStatefulWidget {
   const AdminBintiWaitlistScreen({super.key});
@@ -422,14 +423,8 @@ class _AdminBintiWaitlistScreenState
   }
 
   void _showDetailsSheet(BuildContext context, WaitlistModel entry) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    showModalBottomSheet(
+    showAdminBottomSheet(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: isDark ? const Color(0xFF151922) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
       builder: (ctx) {
         return _WaitlistDetailsSheet(entry: entry, parentRef: ref);
       },
@@ -594,6 +589,12 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
         : null;
 
     return Container(
+      decoration: BoxDecoration(
+        color: AdminTokens.overlay(isDark),
+        borderRadius: const BorderRadius.vertical(
+          top: Radius.circular(20),
+        ),
+      ),
       padding: const EdgeInsets.all(24),
       child: Column(
         mainAxisSize: MainAxisSize.min,

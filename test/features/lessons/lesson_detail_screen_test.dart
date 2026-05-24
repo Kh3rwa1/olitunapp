@@ -11,7 +11,6 @@ import 'package:mocktail/mocktail.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
-import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import '../../test_utils.dart';
 
 class MockLessonRepository extends Mock implements LessonRepository {}

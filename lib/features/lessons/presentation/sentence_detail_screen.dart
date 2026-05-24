@@ -80,16 +80,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   String _getEmoji(int index) =>
       _sentenceEmojis[index % _sentenceEmojis.length];
 
-  Color _parseThemeColor(String? colorStr, Color fallback) {
-    if (colorStr == null || colorStr.isEmpty) return fallback;
-    try {
-      var hex = colorStr.replaceAll('#', '').trim();
-      if (hex.length == 6) hex = 'FF$hex';
-      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
-    } catch (_) {}
-    return fallback;
-  }
-
   void _playAudio(String url, String id) async {
     HapticFeedback.mediumImpact();
     setState(() {
@@ -213,10 +203,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         }
 
         final currentSentence = sentences[_currentIndex];
-        final accentColor = _parseThemeColor(
-          currentSentence.themeColor,
-          AppColors.duoOrange,
-        );
+        const accentColor = AppColors.duoOrange;
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
             : const Color(0xFFF8FAFC);
@@ -402,10 +389,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   }
 
   Widget _buildSentenceContent(SentenceModel sentence, int index, bool isDark) {
-    final accentColor = _parseThemeColor(
-      sentence.themeColor,
-      AppColors.duoOrange,
-    );
+    const accentColor = AppColors.duoOrange;
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
     final isThisPlaying = _isAudioPlaying && _playingId == sentence.id;

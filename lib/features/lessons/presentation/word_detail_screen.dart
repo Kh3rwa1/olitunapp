@@ -92,16 +92,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
     return '$_emojiBaseUrl/$runes.png';
   }
 
-  Color _parseThemeColor(String? colorStr, Color fallback) {
-    if (colorStr == null || colorStr.isEmpty) return fallback;
-    try {
-      var hex = colorStr.replaceAll('#', '').trim();
-      if (hex.length == 6) hex = 'FF$hex';
-      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
-    } catch (_) {}
-    return fallback;
-  }
-
   void _playAudio(String url, String id) async {
     HapticFeedback.mediumImpact();
     setState(() {
@@ -227,10 +217,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         }
 
         final currentWord = words[_currentIndex];
-        final accentColor = _parseThemeColor(
-          currentWord.themeColor,
-          AppColors.primaryPurple,
-        );
+        const accentColor = AppColors.primaryPurple;
         const textContrastColor = Colors.white;
 
         final bgColor = isDark
@@ -441,10 +428,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
   }
 
   Widget _buildWordContent(WordModel word, int index, bool isDark) {
-    final accentColor = _parseThemeColor(
-      word.themeColor,
-      AppColors.primaryPurple,
-    );
+    const accentColor = AppColors.primaryPurple;
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
     final isThisPlaying = _isAudioPlaying && _playingId == word.id;

@@ -91,16 +91,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     return '$_emojiBaseUrl/$runes.png';
   }
 
-  Color _parseThemeColor(String? colorStr, Color fallback) {
-    if (colorStr == null || colorStr.isEmpty) return fallback;
-    try {
-      var hex = colorStr.replaceAll('#', '').trim();
-      if (hex.length == 6) hex = 'FF$hex';
-      if (hex.length == 8) return Color(int.parse(hex, radix: 16));
-    } catch (_) {}
-    return fallback;
-  }
-
   void _playAudio(String url, String id) async {
     HapticFeedback.mediumImpact();
     setState(() {
@@ -237,10 +227,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         }
 
         final currentNumber = numbers[_currentIndex];
-        final accentColor = _parseThemeColor(
-          currentNumber.themeColor,
-          AppColors.duoBlue,
-        );
+        const accentColor = AppColors.duoBlue;
         const textContrastColor = Colors.white;
 
         final bgColor = isDark
@@ -451,7 +438,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   }
 
   Widget _buildNumberContent(NumberModel number, int index, bool isDark) {
-    final accentColor = _parseThemeColor(number.themeColor, AppColors.duoBlue);
+    const accentColor = AppColors.duoBlue;
     const textContrastColor = Colors.white;
     final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
     final isThisPlaying = _isAudioPlaying && _playingId == number.id;

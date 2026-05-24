@@ -166,7 +166,18 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         // All categories use primary brand neon green per user request
         const accentColor = AppColors.primary;
         const brandGradient = AppColors.heroGradient;
-        final heroMediaUrl = _lessonHeroMediaUrl(lesson);
+
+        final categories = ref.watch(categoryNotifierProvider).value ?? [];
+        final category = categories
+            .where((c) => c.id == lesson.categoryId)
+            .firstOrNull;
+
+        String? heroMediaUrl = _lessonHeroMediaUrl(lesson);
+        if ((heroMediaUrl == null || heroMediaUrl.isEmpty) &&
+            category != null) {
+          heroMediaUrl = category.courseHeroImageUrl?.trim();
+        }
+
         final heroPosterUrl = _lessonHeroPosterUrl(lesson, heroMediaUrl);
         final hasHeroMedia = MediaTypeResolver.isRenderableHero(heroMediaUrl);
 

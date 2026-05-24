@@ -447,6 +447,14 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                         isDark: isDark,
                       ),
                       _IconOption(
+                        icon: Icons.format_quote_rounded,
+                        label: 'Sentences',
+                        isSelected: _selectedIcon == 'sentences',
+                        onTap: () =>
+                            setState(() => _selectedIcon = 'sentences'),
+                        isDark: isDark,
+                      ),
+                      _IconOption(
                         icon: Icons.calculate_rounded,
                         label: 'Math',
                         isSelected: _selectedIcon == 'arithmetic',

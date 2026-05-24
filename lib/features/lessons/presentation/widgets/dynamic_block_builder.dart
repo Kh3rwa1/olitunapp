@@ -114,6 +114,17 @@ class _TextBlock extends ConsumerWidget {
 
     final navRoute = _resolveNavRoute(ref, lessonId, displayText);
 
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+    final textBlocks =
+        lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];
+    final textBlockIndex = textBlocks.indexOf(block);
+    final fallbackRoute = textBlockIndex != -1
+        ? '/lesson/$lessonId/block/$textBlockIndex'
+        : null;
+
+    final activeRoute = navRoute ?? fallbackRoute;
+
     final content = Semantics(
       label: LearningSemantics.olChikiText(
         text: displayText,
@@ -121,7 +132,7 @@ class _TextBlock extends ConsumerWidget {
             ? textLatin
             : null,
       ),
-      button: navRoute != null,
+      button: activeRoute != null,
       child: ExcludeSemantics(
         child: Container(
           width: double.infinity,
@@ -130,10 +141,10 @@ class _TextBlock extends ConsumerWidget {
             color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: navRoute != null
+              color: activeRoute != null
                   ? accentColor.withValues(alpha: 0.4)
                   : Colors.grey.withValues(alpha: 0.1),
-              width: navRoute != null ? 1.5 : 1,
+              width: activeRoute != null ? 1.5 : 1,
             ),
             boxShadow: [
               BoxShadow(
@@ -173,7 +184,7 @@ class _TextBlock extends ConsumerWidget {
                   ],
                 ),
               ),
-              if (navRoute != null) ...[
+              if (activeRoute != null) ...[
                 const SizedBox(width: 12),
                 Container(
                   padding: const EdgeInsets.all(8),
@@ -194,8 +205,8 @@ class _TextBlock extends ConsumerWidget {
       ),
     );
 
-    if (navRoute != null) {
-      final route = navRoute;
+    if (activeRoute != null) {
+      final route = activeRoute;
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 4),
         child: ScaleButton(

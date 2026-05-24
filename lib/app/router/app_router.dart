@@ -13,6 +13,7 @@ import '../../features/auth/presentation/email_auth_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
 import '../../features/lessons/presentation/category_lessons_screen.dart';
 import '../../features/lessons/presentation/lesson_detail_screen.dart';
+import '../../features/lessons/presentation/lesson_block_detail_screen.dart';
 import '../../features/lessons/presentation/letter_detail_screen.dart';
 import '../../features/lessons/presentation/word_detail_screen.dart';
 import '../../features/lessons/presentation/number_detail/number_detail_screen.dart';
@@ -287,6 +288,18 @@ final routerProvider = Provider<GoRouter>((ref) {
         child: (_, state) => LessonDetailScreen(
           lessonId: state.pathParameters['lessonId'] ?? '',
         ),
+      ),
+      _drillRoute(
+        path: '/lesson/:lessonId/block/:blockIndex',
+        child: (_, state) {
+          final lessonId = state.pathParameters['lessonId'] ?? '';
+          final blockIndexStr = state.pathParameters['blockIndex'] ?? '0';
+          final blockIndex = int.tryParse(blockIndexStr) ?? 0;
+          return LessonBlockDetailScreen(
+            lessonId: lessonId,
+            initialBlockIndex: blockIndex,
+          );
+        },
       ),
       _drillRoute(
         path: '/letter/:lessonId/:letterId',

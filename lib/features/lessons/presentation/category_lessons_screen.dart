@@ -11,6 +11,9 @@ import '../../../shared/providers/purchases_provider.dart';
 import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
+import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
+import 'widgets/full_bleed_hero_media.dart';
+import '../../../shared/utils/media_type_resolver.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -32,6 +35,23 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     await ref.read(lessonNotifierProvider.notifier).refresh();
   }
 
+  LinearGradient _getGradient(String preset) {
+    switch (preset) {
+      case 'skyBlue':
+        return AppColors.skyBlueGradient;
+      case 'peach':
+        return AppColors.peachGradient;
+      case 'mint':
+        return AppColors.mintGradient;
+      case 'sunset':
+        return AppColors.sunsetGradient;
+      case 'purple':
+        return AppColors.purpleGradient;
+      default:
+        return AppColors.heroGradient;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoryNotifierProvider);
@@ -41,68 +61,93 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ref.watch(purchasedCategoriesProvider).value ?? {};
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
+    final category = categories.when(
+      data: (data) => _findCategory(data, widget.categoryId),
+      loading: () => null,
+      error: (err, stack) => null,
+    );
+
+    if (category == null) {
+      return Scaffold(
+        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        body: const Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    final hasHeroMedia =
+        category.courseHeroImageUrl != null &&
+        category.courseHeroImageUrl!.trim().isNotEmpty;
+    final heroMediaUrl = hasHeroMedia
+        ? category.courseHeroImageUrl!.trim()
+        : null;
+    final isLottie =
+        heroMediaUrl != null &&
+        MediaTypeResolver.resolve(heroMediaUrl) == MediaKind.lottie;
+    final brandGradient = _getGradient(category.gradientPreset);
+
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: Icon(
-            Icons.arrow_back_rounded,
-            color: isDark ? Colors.white : Colors.black,
+      body: BrandedRefreshIndicator(
+        onRefresh: _onRefresh,
+        child: CustomScrollView(
+          physics: const BouncingScrollPhysics(
+            parent: AlwaysScrollableScrollPhysics(),
           ),
-          onPressed: () => context.canPop() ? context.pop() : context.go('/'),
-        ),
-        title: categories.when(
-          data: (data) {
-            final category = _findCategory(data, widget.categoryId);
-            if (category == null) {
-              return Text(
-                'Lessons',
+          slivers: [
+            ParallaxHeroSliverAppBar(
+              gradient: brandGradient,
+              heroTag: MotionTokens.heroTag('category', category.id),
+              glyph: !hasHeroMedia && category.titleOlChiki.isNotEmpty
+                  ? category.titleOlChiki.characters.first
+                  : null,
+              leading: IconButton(
+                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
+                onPressed: () =>
+                    context.canPop() ? context.pop() : context.go('/'),
+              ),
+              title: Text(
+                category.titleLatin,
                 style: TextStyle(
+                  fontFamily: primaryLocalizedFontFamily(scriptMode),
+                  color: Colors.white,
                   fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : Colors.black,
-                ),
-              );
-            }
-            return Hero(
-              tag: MotionTokens.heroTag('category', category.id),
-              child: Material(
-                color: Colors.transparent,
-                child: Text(
-                  category.titleLatin,
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
                 ),
               ),
-            );
-          },
-          loading: () => const Text('Loading...'),
-          error: (_, _) => const Text('Error'),
-        ),
-      ),
-      body: lessons.when(
-        data: (data) {
-          final category = _findCategory(
-            categories.value ?? const <CategoryEntity>[],
-            widget.categoryId,
-          );
+              heroChildFullBleed: hasHeroMedia,
+              heroChild: hasHeroMedia
+                  ? FullBleedHeroMedia(
+                      animationUrl: isLottie ? heroMediaUrl : null,
+                      imageUrl: heroMediaUrl,
+                      fallback: Text(
+                        category.titleOlChiki.isNotEmpty
+                            ? category.titleOlChiki.characters.first
+                            : 'ᱚ',
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.22),
+                          fontSize: 160,
+                          fontWeight: FontWeight.w900,
+                          height: 1,
+                        ),
+                      ),
+                    )
+                  : null,
+            ),
+            lessons.when(
+              data: (data) {
+                if (data.isEmpty) {
+                  return SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: _buildEmptyState(isDark, category),
+                  );
+                }
 
-          final isPremium = category != null && category.unlockMode != 'free';
-          final isUnlocked =
-              category != null && purchasedCategories.contains(category.id);
+                final isPremium = category.unlockMode != 'free';
+                final isUnlocked = purchasedCategories.contains(category.id);
 
-          return data.isEmpty
-              ? _buildEmptyState(isDark, category)
-              : BrandedRefreshIndicator(
-                  onRefresh: _onRefresh,
-                  child: ListView.builder(
-                    physics: const AlwaysScrollableScrollPhysics(),
-                    padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
-                    itemCount: data.length,
-                    itemBuilder: (context, index) {
+                return SliverPadding(
+                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+                  sliver: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
                       final lesson = data[index];
                       final isLocked =
                           isPremium &&
@@ -144,47 +189,56 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                               }
                             : () => context.push('/lesson/${lesson.id}'),
                       );
-                    },
+                    }, childCount: data.length),
                   ),
                 );
-        },
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (e, s) => Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(
-                Icons.cloud_off_rounded,
-                size: 48,
-                color: isDark ? Colors.white38 : Colors.black26,
+              },
+              loading: () => const SliverFillRemaining(
+                child: Center(child: CircularProgressIndicator()),
               ),
-              const SizedBox(height: 16),
-              Text(
-                'Could not load lessons',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white70 : Colors.black54,
+              error: (e, s) => SliverFillRemaining(
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.cloud_off_rounded,
+                        size: 48,
+                        color: isDark ? Colors.white38 : Colors.black26,
+                      ),
+                      const SizedBox(height: 16),
+                      Text(
+                        'Could not load lessons',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white70 : Colors.black54,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Check your connection and try again',
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: isDark ? Colors.white38 : Colors.black38,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      TextButton.icon(
+                        onPressed: () =>
+                            ref.read(lessonNotifierProvider.notifier).refresh(),
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Retry'),
+                        style: TextButton.styleFrom(
+                          foregroundColor: AppColors.primary,
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
-              const SizedBox(height: 8),
-              Text(
-                'Check your connection and try again',
-                style: TextStyle(
-                  fontSize: 14,
-                  color: isDark ? Colors.white38 : Colors.black38,
-                ),
-              ),
-              const SizedBox(height: 20),
-              TextButton.icon(
-                onPressed: () =>
-                    ref.read(lessonNotifierProvider.notifier).refresh(),
-                icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Retry'),
-                style: TextButton.styleFrom(foregroundColor: AppColors.primary),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

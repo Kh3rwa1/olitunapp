@@ -908,11 +908,22 @@ class DynamicBlockGridCell extends ConsumerWidget {
             ? _resolveNavRoute(ref, lessonId, textLatin)
             : null);
 
+    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+    final textBlocks =
+        lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];
+    final textBlockIndex = textBlocks.indexOf(block);
+    final fallbackRoute = textBlockIndex != -1
+        ? '/lesson/$lessonId/block/$textBlockIndex'
+        : null;
+
+    final activeRoute = navRoute ?? fallbackRoute;
+
     return ScaleButton(
       onPressed: () {
         HapticFeedback.lightImpact();
-        if (navRoute != null) {
-          context.push(navRoute);
+        if (activeRoute != null) {
+          context.push(activeRoute);
         } else {
           if (block.audioUrl != null && block.audioUrl!.isNotEmpty) {
             ref.read(audioServiceProvider).playUrl(block.audioUrl!);
@@ -972,26 +983,26 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           meaning = block.data!['meaning'] as String;
                         }
 
-                        if (meaning.isEmpty && navRoute != null) {
-                          if (navRoute.contains('/word/')) {
-                            final wordId = navRoute.split('/').last;
-                            final matchedWord = ref
-                                .read(wordsProvider)
-                                .value
-                                ?.where((w) => w.id == wordId)
+                        if (meaning.isEmpty && activeRoute != null) {
+                          if (activeRoute.contains('/word/')) {
+                            final wordId = activeRoute.split('/').last;
+                            final matchedWord =
+                                ref.read(wordsProvider).value ?? [];
+                            final matchedWordEntity = matchedWord
+                                .where((w) => w.id == wordId)
                                 .firstOrNull;
-                            if (matchedWord != null) {
-                              meaning = matchedWord.meaning;
+                            if (matchedWordEntity != null) {
+                              meaning = matchedWordEntity.meaning;
                             }
-                          } else if (navRoute.contains('/sentence/')) {
-                            final sentenceId = navRoute.split('/').last;
-                            final matchedSentence = ref
-                                .read(sentencesProvider)
-                                .value
-                                ?.where((s) => s.id == sentenceId)
+                          } else if (activeRoute.contains('/sentence/')) {
+                            final sentenceId = activeRoute.split('/').last;
+                            final matchedSentence =
+                                ref.read(sentencesProvider).value ?? [];
+                            final matchedSentenceEntity = matchedSentence
+                                .where((s) => s.id == sentenceId)
                                 .firstOrNull;
-                            if (matchedSentence != null) {
-                              meaning = matchedSentence.meaning;
+                            if (matchedSentenceEntity != null) {
+                              meaning = matchedSentenceEntity.meaning;
                             }
                           }
                         }
@@ -1019,7 +1030,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
                 ],
               ),
             ),
-            if (navRoute != null)
+            if (activeRoute != null)
               Positioned(
                 top: 0,
                 right: 0,

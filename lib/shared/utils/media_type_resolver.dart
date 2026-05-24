@@ -34,7 +34,8 @@ class MediaTypeResolver {
         lower.contains('/buckets/audio/')) {
       return MediaKind.audio;
     }
-    if (_hasAny(lower, const ['.png', '.jpg', '.jpeg', '.webp', '.gif'])) {
+    if (_hasAny(lower, const ['.png', '.jpg', '.jpeg', '.webp', '.gif']) ||
+        lower.contains('/buckets/images/')) {
       return MediaKind.image;
     }
 

@@ -161,31 +161,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         // Calculate dynamic steps
         final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
 
-        final cleanCategory = lesson.categoryId.toLowerCase();
-        final isAlphabet =
-            cleanCategory.contains('alphabet') ||
-            cleanCategory.contains('letter');
-        final isNumber = cleanCategory.contains('number');
-        final isSentence =
-            cleanCategory.contains('sentence') ||
-            cleanCategory.contains('phrase');
-
-        final Color accentColor;
-        final Gradient brandGradient;
-
-        if (isAlphabet) {
-          accentColor = AppColors.primary;
-          brandGradient = AppColors.heroGradient;
-        } else if (isNumber) {
-          accentColor = AppColors.duoBlue;
-          brandGradient = AppColors.skyBlueGradient;
-        } else if (isSentence) {
-          accentColor = AppColors.duoOrange;
-          brandGradient = AppColors.sunsetGradient;
-        } else {
-          accentColor = AppColors.primary;
-          brandGradient = AppColors.heroGradient;
-        }
+        // All categories use primary brand neon green per user request
+        const accentColor = AppColors.primary;
+        const brandGradient = AppColors.heroGradient;
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,

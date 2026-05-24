@@ -31,10 +31,22 @@ class LetterDetailScreen extends ConsumerStatefulWidget {
 class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
   late PageController _pageController;
   int _currentIndex = 0;
+  double _dragStartY = 0.0;
 
   // Sound play state
   bool _isAudioPlaying = false;
   String? _playingId;
+
+  void _openTracingScreen(List<LetterModel> letters) {
+    if (letters.isEmpty || _currentIndex >= letters.length) return;
+    final currentLetter = letters[_currentIndex];
+    final practiceChar = Uri.encodeComponent(currentLetter.charOlChiki);
+    final practiceName = Uri.encodeComponent(
+      currentLetter.transliterationLatin,
+    );
+    HapticFeedback.mediumImpact();
+    context.push('/practice/$practiceChar/$practiceName?mode=trace');
+  }
 
   // Fallback emoji mapping for letters that don't have imageUrl
   static const Map<String, String> _letterEmojis = {
@@ -221,7 +233,6 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
 
         final currentLetter = letters[_currentIndex];
         const accentColor = AppColors.primary;
-        const textContrastColor = Colors.white;
 
         final bgGradient = isDark
             ? const LinearGradient(
@@ -329,15 +340,32 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               },
               body: Stack(
                 children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: letters.length,
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final letter = letters[index];
-                      return _buildLetterContent(letter, index, isDark);
+                  Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: (event) {
+                      _dragStartY = event.position.dy;
                     },
+                    onPointerMove: (event) {
+                      if (_dragStartY == 0.0) return;
+                      final dragDistance = _dragStartY - event.position.dy;
+                      if (dragDistance > 120) {
+                        _dragStartY = 0.0;
+                        _openTracingScreen(letters);
+                      }
+                    },
+                    onPointerUp: (event) {
+                      _dragStartY = 0.0;
+                    },
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      itemCount: letters.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final letter = letters[index];
+                        return _buildLetterContent(letter, index, isDark);
+                      },
+                    ),
                   ),
                   Positioned(
                     bottom: MediaQuery.of(context).padding.bottom + 24,
@@ -355,25 +383,6 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              final practiceChar = Uri.encodeComponent(
-                currentLetter.charOlChiki,
-              );
-              final practiceName = Uri.encodeComponent(
-                currentLetter.transliterationLatin,
-              );
-              context.push('/practice/$practiceChar/$practiceName');
-            },
-            backgroundColor: accentColor,
-            elevation: 4,
-            child: const Icon(
-              Icons.edit_note_rounded,
-              color: textContrastColor,
-            ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
       },
     );

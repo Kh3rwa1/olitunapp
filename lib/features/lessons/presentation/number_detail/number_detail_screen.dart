@@ -32,10 +32,20 @@ class NumberDetailScreen extends ConsumerStatefulWidget {
 class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   late PageController _pageController;
   int _currentIndex = 0;
+  double _dragStartY = 0.0;
 
   // Sound play state
   bool _isAudioPlaying = false;
   String? _playingId;
+
+  void _openTracingScreen(List<NumberModel> numbers) {
+    if (numbers.isEmpty || _currentIndex >= numbers.length) return;
+    final number = numbers[_currentIndex];
+    final practiceChar = Uri.encodeComponent(number.numeral);
+    final practiceName = Uri.encodeComponent(number.nameLatin);
+    HapticFeedback.mediumImpact();
+    context.push('/practice/$practiceChar/$practiceName?mode=trace');
+  }
 
   static const _emojiBaseUrl =
       'https://cdn.jsdelivr.net/gh/twitter/twemoji@14.0.2/assets/72x72';
@@ -228,7 +238,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
 
         final currentNumber = numbers[_currentIndex];
         const accentColor = AppColors.primary;
-        const textContrastColor = Colors.white;
 
         final bgGradient = isDark
             ? const LinearGradient(
@@ -335,15 +344,32 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               },
               body: Stack(
                 children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: numbers.length,
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final number = numbers[index];
-                      return _buildNumberContent(number, index, isDark);
+                  Listener(
+                    behavior: HitTestBehavior.translucent,
+                    onPointerDown: (event) {
+                      _dragStartY = event.position.dy;
                     },
+                    onPointerMove: (event) {
+                      if (_dragStartY == 0.0) return;
+                      final dragDistance = _dragStartY - event.position.dy;
+                      if (dragDistance > 120) {
+                        _dragStartY = 0.0;
+                        _openTracingScreen(numbers);
+                      }
+                    },
+                    onPointerUp: (event) {
+                      _dragStartY = 0.0;
+                    },
+                    child: PageView.builder(
+                      controller: _pageController,
+                      onPageChanged: _onPageChanged,
+                      itemCount: numbers.length,
+                      physics: const BouncingScrollPhysics(),
+                      itemBuilder: (context, index) {
+                        final number = numbers[index];
+                        return _buildNumberContent(number, index, isDark);
+                      },
+                    ),
                   ),
                   Positioned(
                     bottom: MediaQuery.of(context).padding.bottom + 24,
@@ -361,22 +387,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
               ),
             ),
           ),
-          floatingActionButton: FloatingActionButton(
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              final number = numbers[_currentIndex];
-              final practiceChar = Uri.encodeComponent(number.numeral);
-              final practiceName = Uri.encodeComponent(number.nameLatin);
-              context.push('/practice/$practiceChar/$practiceName');
-            },
-            backgroundColor: accentColor,
-            elevation: 4,
-            child: const Icon(
-              Icons.edit_note_rounded,
-              color: textContrastColor,
-            ),
-          ),
-          floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
       },
     );

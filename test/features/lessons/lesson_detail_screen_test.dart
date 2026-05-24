@@ -118,7 +118,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Lesson 1'), findsOneWidget);
-    expect(find.text('This is the first letter of Ol Chiki.'), findsOneWidget);
+    expect(
+      find.text('This is the first letter of Ol Chiki.'.toUpperCase()),
+      findsOneWidget,
+    );
   });
 
   testWidgets(

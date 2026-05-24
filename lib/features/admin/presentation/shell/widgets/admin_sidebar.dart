@@ -78,43 +78,59 @@ class AdminSidebar extends ConsumerWidget {
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: sortedCategories.map((category) {
-                        final lowerTitle = category.titleLatin.toLowerCase();
                         final id = category.id;
                         final iconName = category.iconName?.toLowerCase();
+
+                        final isStandard = const {
+                          'cat_vocab',
+                          'cat_words',
+                          'seed_words',
+                          'cat_sentences',
+                          'seed_sentences',
+                          'cat_alphabets',
+                          'cat_letters',
+                          'letters',
+                          'cat_numbers',
+                        }.contains(id);
 
                         String route;
                         IconData icon;
 
-                        if (id == 'cat_vocab' ||
-                            id == 'cat_words' ||
-                            id == 'seed_words' ||
-                            lowerTitle.contains('vocab') ||
-                            lowerTitle.contains('word') ||
-                            iconName == 'words') {
-                          route = '/admin/words?categoryId=$id';
-                          icon = Icons.menu_book_rounded;
-                        } else if (id == 'cat_sentences' ||
-                            id == 'seed_sentences' ||
-                            lowerTitle.contains('sentence') ||
-                            iconName == 'sentences') {
-                          route = '/admin/sentences?categoryId=$id';
-                          icon = Icons.format_quote_rounded;
-                        } else if (id == 'cat_alphabets' ||
-                            id == 'cat_letters' ||
-                            id == 'letters' ||
-                            lowerTitle.contains('alphabet') ||
-                            lowerTitle.contains('letter') ||
-                            iconName == 'alphabet') {
-                          route = '/admin/letters?categoryId=$id';
-                          icon = Icons.text_fields_rounded;
-                        } else if (id == 'cat_numbers' ||
-                            lowerTitle.contains('number') ||
-                            iconName == 'numbers') {
-                          route = '/admin/numbers?categoryId=$id';
-                          icon = Icons.pin_rounded;
+                        if (isStandard) {
+                          if (id == 'cat_vocab' ||
+                              id == 'cat_words' ||
+                              id == 'seed_words') {
+                            route = '/admin/words?categoryId=$id';
+                            icon = Icons.menu_book_rounded;
+                          } else if (id == 'cat_sentences' ||
+                              id == 'seed_sentences') {
+                            route = '/admin/sentences?categoryId=$id';
+                            icon = Icons.format_quote_rounded;
+                          } else if (id == 'cat_alphabets' ||
+                              id == 'cat_letters' ||
+                              id == 'letters') {
+                            route = '/admin/letters?categoryId=$id';
+                            icon = Icons.text_fields_rounded;
+                          } else {
+                            route = '/admin/numbers?categoryId=$id';
+                            icon = Icons.pin_rounded;
+                          }
                         } else {
+                          // Custom categories ALWAYS route to their dedicated subcategories screen
                           route = '/admin/lessons?categoryId=$id';
                           switch (iconName) {
+                            case 'alphabet':
+                              icon = Icons.abc_rounded;
+                              break;
+                            case 'numbers':
+                              icon = Icons.pin_rounded;
+                              break;
+                            case 'words':
+                              icon = Icons.text_fields_rounded;
+                              break;
+                            case 'sentences':
+                              icon = Icons.format_quote_rounded;
+                              break;
                             case 'arithmetic':
                               icon = Icons.calculate_rounded;
                               break;

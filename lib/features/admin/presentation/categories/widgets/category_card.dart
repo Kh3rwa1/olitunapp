@@ -59,34 +59,32 @@ class CategoryCard extends StatelessWidget {
   }
 
   void _navigateToCategory(BuildContext context, CategoryEntity category) {
-    final lowerTitle = category.titleLatin.toLowerCase();
     final id = category.id;
-    final iconName = category.iconName?.toLowerCase();
+    final isStandard = const {
+      'cat_vocab',
+      'cat_words',
+      'seed_words',
+      'cat_sentences',
+      'seed_sentences',
+      'cat_alphabets',
+      'cat_letters',
+      'letters',
+      'cat_numbers',
+    }.contains(id);
 
     String route;
-    if (id == 'cat_vocab' ||
-        id == 'cat_words' ||
-        id == 'seed_words' ||
-        lowerTitle.contains('vocab') ||
-        lowerTitle.contains('word') ||
-        iconName == 'words') {
-      route = '/admin/words?categoryId=$id';
-    } else if (id == 'cat_sentences' ||
-        id == 'seed_sentences' ||
-        lowerTitle.contains('sentence') ||
-        iconName == 'sentences') {
-      route = '/admin/sentences?categoryId=$id';
-    } else if (id == 'cat_alphabets' ||
-        id == 'cat_letters' ||
-        id == 'letters' ||
-        lowerTitle.contains('alphabet') ||
-        lowerTitle.contains('letter') ||
-        iconName == 'alphabet') {
-      route = '/admin/letters?categoryId=$id';
-    } else if (id == 'cat_numbers' ||
-        lowerTitle.contains('number') ||
-        iconName == 'numbers') {
-      route = '/admin/numbers?categoryId=$id';
+    if (isStandard) {
+      if (id == 'cat_vocab' || id == 'cat_words' || id == 'seed_words') {
+        route = '/admin/words?categoryId=$id';
+      } else if (id == 'cat_sentences' || id == 'seed_sentences') {
+        route = '/admin/sentences?categoryId=$id';
+      } else if (id == 'cat_alphabets' ||
+          id == 'cat_letters' ||
+          id == 'letters') {
+        route = '/admin/letters?categoryId=$id';
+      } else {
+        route = '/admin/numbers?categoryId=$id';
+      }
     } else {
       route = '/admin/lessons?categoryId=$id';
     }

@@ -287,7 +287,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: Icon(Icons.edit_note_rounded, color: textContrastColor),
+            child: const Icon(Icons.edit_note_rounded, color: textContrastColor),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
@@ -408,8 +408,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
           slivers: [
             ParallaxHeroSliverAppBar(
               gradient: AppColors.skyBlueGradient,
-              foregroundColor: textContrastColor,
-              glyphColor: textContrastColor,
               glyph: number.numeral,
               title: Text(number.nameLatin),
               leading: IconButton(
@@ -518,7 +516,7 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
                         children: [
                           Text(
                             number.nameOlChiki,
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
                               color: textContrastColor,

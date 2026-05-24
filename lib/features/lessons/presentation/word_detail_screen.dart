@@ -273,7 +273,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: Icon(Icons.edit_note_rounded, color: textContrastColor),
+            child: const Icon(Icons.edit_note_rounded, color: textContrastColor),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
@@ -397,8 +397,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
           slivers: [
             ParallaxHeroSliverAppBar(
               gradient: AppColors.purpleGradient,
-              foregroundColor: textContrastColor,
-              glyphColor: textContrastColor,
               glyph: word.wordOlChiki.characters.isNotEmpty
                   ? word.wordOlChiki.characters.first
                   : null,
@@ -520,7 +518,7 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
                         children: [
                           Text(
                             word.wordLatin.toUpperCase(),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w900,
                               color: textContrastColor,

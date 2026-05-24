@@ -364,8 +364,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
           slivers: [
             ParallaxHeroSliverAppBar(
               gradient: AppColors.sunsetGradient,
-              foregroundColor: textContrastColor,
-              glyphColor: textContrastColor,
               glyph: emoji,
               title: Text(sentence.meaning),
               leading: IconButton(
@@ -490,7 +488,7 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
                             child: Text(
                               sentence.sentenceLatin.toUpperCase(),
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 color: textContrastColor,

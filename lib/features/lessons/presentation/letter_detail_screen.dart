@@ -283,7 +283,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: Icon(Icons.edit_note_rounded, color: textContrastColor),
+            child: const Icon(Icons.edit_note_rounded, color: textContrastColor),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );
@@ -404,8 +404,6 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
           slivers: [
             ParallaxHeroSliverAppBar(
               gradient: AppColors.heroGradient,
-              foregroundColor: textContrastColor,
-              glyphColor: textContrastColor,
               glyph: letter.charOlChiki,
               title: Text(
                 letter.exampleWordLatin ?? letter.transliterationLatin,
@@ -497,7 +495,7 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
                         children: [
                           Text(
                             letter.transliterationLatin.toUpperCase(),
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 24,
                               fontWeight: FontWeight.w900,
                               color: textContrastColor,

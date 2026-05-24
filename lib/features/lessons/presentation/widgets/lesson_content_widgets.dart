@@ -34,8 +34,8 @@ class LetterGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allLetters = ref.read(lettersProvider).value ?? [];
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final allLetters = ref.watch(lettersProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     // Scope letters to this lesson's blocks
@@ -167,8 +167,8 @@ class NumberGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allNumbers = ref.read(numbersProvider).value ?? [];
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final allNumbers = ref.watch(numbersProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final numbers = _scopeNumbers(allNumbers, lesson);
@@ -339,8 +339,8 @@ class VocabularyListContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allWords = ref.read(wordsProvider).value ?? [];
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final allWords = ref.watch(wordsProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final words = _scopeWords(allWords, lesson);
@@ -541,8 +541,8 @@ class SentenceListContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allSentences = ref.read(sentencesProvider).value ?? [];
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final allSentences = ref.watch(sentencesProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final sentences = _scopeSentences(allSentences, lesson);
@@ -908,7 +908,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
             ? _resolveNavRoute(ref, lessonId, textLatin)
             : null);
 
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final textBlocks =
         lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];

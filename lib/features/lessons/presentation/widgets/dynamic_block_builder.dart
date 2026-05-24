@@ -114,7 +114,7 @@ class _TextBlock extends ConsumerWidget {
 
     final navRoute = _resolveNavRoute(ref, lessonId, displayText);
 
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final textBlocks =
         lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];

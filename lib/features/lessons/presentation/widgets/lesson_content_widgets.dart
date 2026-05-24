@@ -201,7 +201,7 @@ class NumberGridContent extends ConsumerWidget {
             padding: const EdgeInsets.all(14),
             borderRadius: 20,
             border: Border.all(
-              color: AppColors.duoBlue.withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               width: 1.5,
             ),
             child: Stack(
@@ -215,7 +215,7 @@ class NumberGridContent extends ConsumerWidget {
                         style: const TextStyle(
                           fontSize: 36,
                           fontWeight: FontWeight.w900,
-                          color: AppColors.duoBlue,
+                          color: AppColors.primary,
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -245,13 +245,13 @@ class NumberGridContent extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: AppColors.duoBlue.withValues(alpha: 0.1),
+                      color: AppColors.primary.withValues(alpha: 0.1),
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
                       Icons.arrow_forward_ios_rounded,
                       size: 10,
-                      color: AppColors.duoBlue,
+                      color: AppColors.primary,
                     ),
                   ),
                 ),
@@ -578,7 +578,7 @@ class SentenceListContent extends ConsumerWidget {
               padding: const EdgeInsets.all(16),
               borderRadius: 24,
               border: Border.all(
-                color: AppColors.duoOrange.withValues(alpha: 0.15),
+                color: AppColors.primary.withValues(alpha: 0.15),
                 width: 1.5,
               ),
               child: Stack(
@@ -592,7 +592,7 @@ class SentenceListContent extends ConsumerWidget {
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
-                            color: AppColors.duoOrange,
+                            color: AppColors.primary,
                             height: 1.2,
                           ),
                           maxLines: 2,
@@ -632,13 +632,13 @@ class SentenceListContent extends ConsumerWidget {
                     child: Container(
                       padding: const EdgeInsets.all(4),
                       decoration: BoxDecoration(
-                        color: AppColors.duoOrange.withValues(alpha: 0.1),
+                        color: AppColors.primary.withValues(alpha: 0.1),
                         shape: BoxShape.circle,
                       ),
                       child: const Icon(
                         Icons.arrow_forward_ios_rounded,
                         size: 10,
-                        color: AppColors.duoOrange,
+                        color: AppColors.primary,
                       ),
                     ),
                   ),
@@ -674,7 +674,7 @@ class SentenceListContent extends ConsumerWidget {
                               style: const TextStyle(
                                 fontSize: 22,
                                 fontWeight: FontWeight.w900,
-                                color: AppColors.duoOrange,
+                                color: AppColors.primary,
                                 height: 1.3,
                               ),
                             ),
@@ -899,16 +899,8 @@ class DynamicBlockGridCell extends ConsumerWidget {
     final textOlChiki = block.textOlChiki?.trim() ?? '';
     final textLatin = block.textLatin?.trim() ?? '';
 
-    final Color cellAccentColor;
-    if (isAlphabet) {
-      cellAccentColor = AppColors.primary;
-    } else if (isNumber) {
-      cellAccentColor = AppColors.duoBlue;
-    } else if (isSentence) {
-      cellAccentColor = AppColors.duoOrange;
-    } else {
-      cellAccentColor = AppColors.primary;
-    }
+    // All grid cells use primary brand neon green per user request
+    const cellAccentColor = AppColors.primary;
 
     final navRoute =
         _resolveNavRoute(ref, lessonId, textOlChiki) ??

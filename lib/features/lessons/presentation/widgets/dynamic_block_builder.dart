@@ -48,33 +48,9 @@ class DynamicBlockBuilder extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
-    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
-    final categoryId = lesson?.categoryId ?? '';
-    final cleanCategory = categoryId.toLowerCase();
-
-    final isAlphabet =
-        cleanCategory.contains('alphabet') || cleanCategory.contains('letter');
-    final isNumber = cleanCategory.contains('number');
-    final isSentence =
-        cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
-
-    final Color accentColor;
-    final LinearGradient brandGradient;
-    if (isAlphabet) {
-      accentColor = AppColors.primary;
-      brandGradient = AppColors.heroGradient;
-    } else if (isNumber) {
-      accentColor = AppColors.duoBlue;
-      brandGradient = AppColors.skyBlueGradient;
-    } else if (isSentence) {
-      accentColor = AppColors.duoOrange;
-      brandGradient = AppColors.sunsetGradient;
-    } else {
-      accentColor = AppColors.primary;
-      brandGradient = AppColors.heroGradient;
-    }
+    // All categories use primary brand neon green per user request
+    const accentColor = AppColors.primary;
+    const brandGradient = AppColors.heroGradient;
 
     switch (block.type) {
       case 'text':

@@ -220,114 +220,137 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         const accentColor = AppColors.primary;
         const textContrastColor = Colors.white;
 
-        final bgColor = isDark
-            ? const Color(0xFF0A0E14)
-            : const Color(0xFFF8FAFC);
+        final bgGradient = isDark
+            ? const LinearGradient(
+                colors: [
+                  Color(0xFF052317), // Rich shimmering dark forest mint
+                  Color(0xFF081912), // Transition green-black
+                  Color(0xFF0A0E14), // Pristine dark canvas
+                ],
+                stops: [0.0, 0.4, 1.0],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : const LinearGradient(
+                colors: [
+                  Color(0xFFE5FAF0), // Rich shimmering soft mint green
+                  Color(0xFFF0FDF7), // Soft transition tint
+                  Colors.white, // Clean white canvas
+                ],
+                stops: [0.0, 0.35, 1.0],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              );
 
         return Scaffold(
-          backgroundColor: bgColor,
+          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
           extendBody: true,
-          body: NestedScrollView(
-            headerSliverBuilder: (context, innerBoxIsScrolled) {
-              final emoji = _wordEmojis[currentWord.wordOlChiki] ?? '📖';
+          body: Container(
+            decoration: BoxDecoration(gradient: bgGradient),
+            child: NestedScrollView(
+              headerSliverBuilder: (context, innerBoxIsScrolled) {
+                final emoji = _wordEmojis[currentWord.wordOlChiki] ?? '📖';
 
-              final heroIllustration = AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: KeyedSubtree(
-                  key: ValueKey<String>('illustration_${currentWord.id}'),
-                  child: Hero(
-                    tag: MotionTokens.heroTag('word', currentWord.id),
-                    child: Material(
-                      type: MaterialType.transparency,
-                      child: FullBleedHeroMedia(
-                        animationUrl: currentWord.animationUrl,
-                        imageUrl: currentWord.imageUrl,
-                        fallback: Image.network(
-                          _emojiToPngUrl(emoji),
-                          width: 168,
-                          height: 168,
-                          fit: BoxFit.contain,
-                          filterQuality: FilterQuality.high,
-                          errorBuilder: (context, _, _) => Text(
-                            emoji,
-                            style: const TextStyle(fontSize: 120),
+                final heroIllustration = AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: KeyedSubtree(
+                    key: ValueKey<String>('illustration_${currentWord.id}'),
+                    child: Hero(
+                      tag: MotionTokens.heroTag('word', currentWord.id),
+                      child: Material(
+                        type: MaterialType.transparency,
+                        child: FullBleedHeroMedia(
+                          animationUrl: currentWord.animationUrl,
+                          imageUrl: currentWord.imageUrl,
+                          fallback: Image.network(
+                            _emojiToPngUrl(emoji),
+                            width: 168,
+                            height: 168,
+                            fit: BoxFit.contain,
+                            filterQuality: FilterQuality.high,
+                            errorBuilder: (context, _, _) => Text(
+                              emoji,
+                              style: const TextStyle(fontSize: 120),
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              );
+                );
 
-              final appBarTitle = AnimatedSwitcher(
-                duration: const Duration(milliseconds: 300),
-                child: Text(
-                  currentWord.meaning,
-                  key: ValueKey<String>('title_${currentWord.id}'),
-                ),
-              );
-
-              return [
-                ParallaxHeroSliverAppBar(
-                  gradient: AppColors.heroGradient,
-                  glyph: currentWord.wordOlChiki.characters.isNotEmpty
-                      ? currentWord.wordOlChiki.characters.first
-                      : null,
-                  title: appBarTitle,
-                  leading: IconButton(
-                    icon: const Icon(Icons.arrow_back_rounded),
-                    onPressed: () =>
-                        context.canPop() ? context.pop() : context.go('/'),
+                final appBarTitle = AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Text(
+                    currentWord.meaning,
+                    key: ValueKey<String>('title_${currentWord.id}'),
                   ),
-                  actions: [
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 300),
-                      child: currentWord.audioUrl != null
-                          ? Padding(
-                              key: ValueKey<String>('audio_${currentWord.id}'),
-                              padding: const EdgeInsets.only(right: 8.0),
-                              child: IconButton(
-                                icon: const Icon(Icons.volume_up_rounded),
-                                onPressed: () => _playAudio(
-                                  currentWord.audioUrl!,
-                                  currentWord.id,
+                );
+
+                return [
+                  ParallaxHeroSliverAppBar(
+                    gradient: AppColors.heroGradient,
+                    glyph: currentWord.wordOlChiki.characters.isNotEmpty
+                        ? currentWord.wordOlChiki.characters.first
+                        : null,
+                    title: appBarTitle,
+                    leading: IconButton(
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      onPressed: () =>
+                          context.canPop() ? context.pop() : context.go('/'),
+                    ),
+                    actions: [
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        child: currentWord.audioUrl != null
+                            ? Padding(
+                                key: ValueKey<String>(
+                                  'audio_${currentWord.id}',
                                 ),
-                              ),
-                            )
-                          : const SizedBox.shrink(),
-                    ),
-                  ],
-                  expandedHeight: 340,
-                  heroChild: heroIllustration,
-                  heroChildFullBleed: true,
-                ),
-              ];
-            },
-            body: Stack(
-              children: [
-                PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  itemCount: words.length,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final word = words[index];
-                    return _buildWordContent(word, index, isDark);
-                  },
-                ),
-                Positioned(
-                  bottom: MediaQuery.of(context).padding.bottom + 24,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    child: _buildPageIndicator(
-                      words.length,
-                      accentColor,
-                      isDark,
+                                padding: const EdgeInsets.only(right: 8.0),
+                                child: IconButton(
+                                  icon: const Icon(Icons.volume_up_rounded),
+                                  onPressed: () => _playAudio(
+                                    currentWord.audioUrl!,
+                                    currentWord.id,
+                                  ),
+                                ),
+                              )
+                            : const SizedBox.shrink(),
+                      ),
+                    ],
+                    expandedHeight: 340,
+                    heroChild: heroIllustration,
+                    heroChildFullBleed: true,
+                  ),
+                ];
+              },
+              body: Stack(
+                children: [
+                  PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    itemCount: words.length,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final word = words[index];
+                      return _buildWordContent(word, index, isDark);
+                    },
+                  ),
+                  Positioned(
+                    bottom: MediaQuery.of(context).padding.bottom + 24,
+                    left: 0,
+                    right: 0,
+                    child: IgnorePointer(
+                      child: _buildPageIndicator(
+                        words.length,
+                        accentColor,
+                        isDark,
+                      ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
           floatingActionButton: FloatingActionButton(
@@ -435,213 +458,236 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
 
     return Builder(
       builder: (context) {
-        return SingleChildScrollView(
-          controller: PrimaryScrollController.of(context),
-          physics: const BouncingScrollPhysics(
-            parent: AlwaysScrollableScrollPhysics(),
-          ),
-          padding: const EdgeInsets.fromLTRB(24, 24, 24, 120),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              if (word.category != null && word.category!.isNotEmpty) ...[
-                Center(
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return SingleChildScrollView(
+              controller: PrimaryScrollController.of(context),
+              physics: const BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
                   child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: accentColor.withValues(alpha: 0.12),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Text(
-                      word.category!.toUpperCase(),
-                      style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.w800,
-                        color: isDark ? Colors.white : accentColor,
-                        letterSpacing: 1.5,
-                      ),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
+                    constraints: const BoxConstraints(maxWidth: 480),
+                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 140),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        if (word.category != null &&
+                            word.category!.isNotEmpty) ...[
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: accentColor.withValues(alpha: 0.12),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                word.category!.toUpperCase(),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: isDark ? Colors.white : accentColor,
+                                  letterSpacing: 1.5,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 20),
+                        ],
 
-              // Large Ol Chiki character card
-              Center(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 36,
-                    horizontal: 24,
-                  ),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        accentColor.withValues(alpha: 0.15),
-                        accentColor.withValues(alpha: 0.25),
+                        // Large Ol Chiki character card
+                        Center(
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 36,
+                              horizontal: 24,
+                            ),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  accentColor.withValues(alpha: 0.15),
+                                  accentColor.withValues(alpha: 0.25),
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                              borderRadius: BorderRadius.circular(32),
+                              border: Border.all(
+                                color: accentColor.withValues(alpha: 0.4),
+                                width: 4,
+                              ),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withValues(alpha: 0.2),
+                                  blurRadius: 30,
+                                  offset: const Offset(0, 10),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                word.wordOlChiki,
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w900,
+                                  color: isDark ? Colors.white : accentColor,
+                                  letterSpacing: 1,
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+
+                        // Romanization badge
+                        Center(
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 32,
+                              vertical: 12,
+                            ),
+                            decoration: BoxDecoration(
+                              color: accentColor,
+                              borderRadius: BorderRadius.circular(20),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: accentColor.withValues(alpha: 0.4),
+                                  blurRadius: 15,
+                                  offset: const Offset(0, 6),
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  word.wordLatin.toUpperCase(),
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.w900,
+                                    color: textContrastColor,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                                if (word.audioUrl != null) ...[
+                                  const SizedBox(width: 12),
+                                  SoundWaveIndicator(
+                                    color: textContrastColor,
+                                    isPlaying: isThisPlaying,
+                                  ),
+                                ],
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 24),
+
+                        // Pronunciation hint
+                        if (word.pronunciation != null &&
+                            word.pronunciation!.isNotEmpty) ...[
+                          _buildGlassCard(
+                            themeColor: accentColor,
+                            isDark: isDark,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.record_voice_over_rounded,
+                                      color: isDark
+                                          ? Colors.white
+                                          : accentColor,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Pronunciation',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? Colors.white
+                                            : accentColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  word.pronunciation!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.5,
+                                    color: contentTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
+
+                        // Usage hint card
+                        if (word.usage != null && word.usage!.isNotEmpty) ...[
+                          _buildGlassCard(
+                            themeColor: accentColor,
+                            isDark: isDark,
+                            child: Column(
+                              children: [
+                                Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.lightbulb_outline_rounded,
+                                      color: isDark
+                                          ? Colors.white
+                                          : accentColor,
+                                      size: 24,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'When to use',
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w700,
+                                        color: isDark
+                                            ? Colors.white
+                                            : accentColor,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 12),
+                                Text(
+                                  word.usage!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    height: 1.5,
+                                    color: contentTextColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                        ],
                       ],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ),
-                    borderRadius: BorderRadius.circular(32),
-                    border: Border.all(
-                      color: accentColor.withValues(alpha: 0.4),
-                      width: 4,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: accentColor.withValues(alpha: 0.2),
-                        blurRadius: 30,
-                        offset: const Offset(0, 10),
-                      ),
-                    ],
-                  ),
-                  child: Center(
-                    child: Text(
-                      word.wordOlChiki,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 40,
-                        fontWeight: FontWeight.w900,
-                        color: isDark ? Colors.white : accentColor,
-                        letterSpacing: 1,
-                      ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-
-              // Romanization badge
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    borderRadius: BorderRadius.circular(20),
-                    boxShadow: [
-                      BoxShadow(
-                        color: accentColor.withValues(alpha: 0.4),
-                        blurRadius: 15,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        word.wordLatin.toUpperCase(),
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: textContrastColor,
-                          letterSpacing: 1.5,
-                        ),
-                      ),
-                      if (word.audioUrl != null) ...[
-                        const SizedBox(width: 12),
-                        SoundWaveIndicator(
-                          color: textContrastColor,
-                          isPlaying: isThisPlaying,
-                        ),
-                      ],
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Pronunciation hint
-              if (word.pronunciation != null &&
-                  word.pronunciation!.isNotEmpty) ...[
-                _buildGlassCard(
-                  themeColor: accentColor,
-                  isDark: isDark,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.record_voice_over_rounded,
-                            color: isDark ? Colors.white : accentColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Pronunciation',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : accentColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        word.pronunciation!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: contentTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-
-              // Usage hint card
-              if (word.usage != null && word.usage!.isNotEmpty) ...[
-                _buildGlassCard(
-                  themeColor: accentColor,
-                  isDark: isDark,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.lightbulb_outline_rounded,
-                            color: isDark ? Colors.white : accentColor,
-                            size: 24,
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'When to use',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w700,
-                              color: isDark ? Colors.white : accentColor,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 12),
-                      Text(
-                        word.usage!,
-                        style: TextStyle(
-                          fontSize: 16,
-                          height: 1.5,
-                          color: contentTextColor,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-              ],
-            ],
-          ),
+            );
+          },
         );
       },
     );

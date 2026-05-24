@@ -276,15 +276,24 @@ class _SubcategoryCard extends StatelessWidget {
       width: 268,
       decoration: BoxDecoration(
         color: isSelected
-            ? AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
+            ? AppColors.primary.withValues(alpha: isDark ? 0.18 : 0.08)
             : AdminTokens.sunken(isDark),
         borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
         border: Border.all(
-          color: isSelected
-              ? AppColors.primary.withValues(alpha: 0.5)
-              : AdminTokens.border(isDark),
-          width: isSelected ? 2 : 1,
+          color: isSelected ? AppColors.primary : AdminTokens.border(isDark),
+          width: isSelected ? 2.5 : 1,
         ),
+        boxShadow: isSelected
+            ? [
+                BoxShadow(
+                  color: AppColors.primary.withValues(
+                    alpha: isDark ? 0.3 : 0.15,
+                  ),
+                  blurRadius: 10,
+                  spreadRadius: 1,
+                ),
+              ]
+            : null,
       ),
       child: Material(
         color: Colors.transparent,
@@ -302,7 +311,9 @@ class _SubcategoryCard extends StatelessWidget {
                       width: 38,
                       height: 38,
                       decoration: BoxDecoration(
-                        color: AppColors.primary.withValues(alpha: 0.12),
+                        color: isSelected
+                            ? AppColors.primary
+                            : AppColors.primary.withValues(alpha: 0.12),
                         borderRadius: BorderRadius.circular(
                           AdminTokens.radiusSm,
                         ),
@@ -310,9 +321,11 @@ class _SubcategoryCard extends StatelessWidget {
                           color: AppColors.primary.withValues(alpha: 0.22),
                         ),
                       ),
-                      child: const Icon(
-                        Icons.folder_copy_rounded,
-                        color: AppColors.primary,
+                      child: Icon(
+                        isSelected
+                            ? Icons.folder_special_rounded
+                            : Icons.folder_copy_rounded,
+                        color: isSelected ? Colors.white : AppColors.primary,
                         size: 20,
                       ),
                     ),
@@ -321,13 +334,41 @@ class _SubcategoryCard extends StatelessWidget {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            lesson.titleLatin.isEmpty
-                                ? 'Untitled Subcategory'
-                                : lesson.titleLatin,
-                            style: AdminTokens.bodyStrong(isDark),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  lesson.titleLatin.isEmpty
+                                      ? 'Untitled Subcategory'
+                                      : lesson.titleLatin,
+                                  style: AdminTokens.bodyStrong(isDark),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                              if (isSelected) ...[
+                                const SizedBox(width: 6),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 2,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.primary,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  child: const Text(
+                                    'ACTIVE FILTER',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.w900,
+                                      letterSpacing: 0.5,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ],
                           ),
                           if (lesson.titleOlChiki.isNotEmpty)
                             Text(

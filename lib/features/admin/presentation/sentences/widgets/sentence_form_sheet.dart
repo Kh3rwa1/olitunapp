@@ -217,10 +217,14 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
     );
   }
 
+  bool get _isCategoryLocked =>
+      widget.sentence == null &&
+      widget.initialCategory != null &&
+      widget.initialCategory!.isNotEmpty;
+
   Widget _buildFields(bool isDark) {
     final categories = ref.watch(categoryNotifierProvider).value ?? [];
     final lessons = ref.watch(lessonNotifierProvider).value ?? [];
-    final sentences = ref.watch(sentencesProvider).value ?? [];
     final contentCategory = findAdminContentCategory(
       categories,
       AdminContentKind.sentences,
@@ -230,10 +234,42 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
       contentCategory,
       AdminContentKind.sentences,
     );
-    final categorySuggestions = adminContentCategorySuggestions(
-      existingCategories: sentences.map((s) => s.category),
-      lessons: sentenceLessons,
-    );
+
+    final dropdownOptions = sentenceLessons
+        .map((l) => l.titleLatin.trim())
+        .where((title) => title.isNotEmpty)
+        .toSet()
+        .toList();
+
+    // Ensure initialCategory and current sentence category are in the options list to prevent Flutter assertion crashes
+    final initialCat = widget.initialCategory?.trim();
+    if (initialCat != null &&
+        initialCat.isNotEmpty &&
+        !dropdownOptions.contains(initialCat)) {
+      dropdownOptions.add(initialCat);
+    }
+    final currentSentenceCat = widget.sentence?.category?.trim();
+    if (currentSentenceCat != null &&
+        currentSentenceCat.isNotEmpty &&
+        !dropdownOptions.contains(currentSentenceCat)) {
+      dropdownOptions.add(currentSentenceCat);
+    }
+    final currentText = _categoryCtrl.text.trim();
+    if (currentText.isNotEmpty && !dropdownOptions.contains(currentText)) {
+      dropdownOptions.add(currentText);
+    }
+
+    if (dropdownOptions.isEmpty) {
+      dropdownOptions.add('General Sentences');
+    }
+
+    // Guarantee _categoryCtrl.text is never empty if we have options
+    final defaultVal = dropdownOptions.contains(_categoryCtrl.text.trim())
+        ? _categoryCtrl.text.trim()
+        : dropdownOptions.first;
+    if (_categoryCtrl.text != defaultVal) {
+      _categoryCtrl.text = defaultVal;
+    }
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(24),
@@ -271,9 +307,10 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
           Row(
             children: [
               Expanded(
-                child: _buildCategoryComboField(
+                child: _buildCategoryDropdown(
                   isDark: isDark,
-                  suggestions: categorySuggestions,
+                  options: dropdownOptions,
+                  isLocked: _isCategoryLocked,
                 ),
               ),
               const SizedBox(width: 16),
@@ -356,49 +393,66 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
     );
   }
 
-  Widget _buildCategoryComboField({
+  Widget _buildCategoryDropdown({
     required bool isDark,
-    required List<String> suggestions,
+    required List<String> options,
+    required bool isLocked,
   }) {
+    final currentValue =
+        _categoryCtrl.text.trim().isNotEmpty &&
+            options.contains(_categoryCtrl.text.trim())
+        ? _categoryCtrl.text.trim()
+        : (options.isNotEmpty ? options.first : null);
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Category / Subcategory', style: AdminTokens.label(isDark)),
+        Text(
+          isLocked
+              ? 'Category / Subcategory (Locked)'
+              : 'Category / Subcategory',
+          style: AdminTokens.label(isDark).copyWith(
+            color: isLocked ? AdminTokens.textSecondary(isDark) : null,
+          ),
+        ),
         const SizedBox(height: AdminTokens.space2),
-        TextField(
-          controller: _categoryCtrl,
+        DropdownButtonFormField<String>(
+          initialValue: currentValue,
+          items: options
+              .map(
+                (opt) => DropdownMenuItem<String>(
+                  value: opt,
+                  child: Text(
+                    opt,
+                    style: AdminTokens.bodyStrong(isDark).copyWith(
+                      color: isLocked
+                          ? AdminTokens.textSecondary(isDark)
+                          : null,
+                    ),
+                  ),
+                ),
+              )
+              .toList(),
+          onChanged: isLocked
+              ? null
+              : (val) {
+                  if (val != null) {
+                    setState(() {
+                      _categoryCtrl.text = val;
+                    });
+                  }
+                },
           style: AdminTokens.bodyStrong(isDark),
           decoration: InputDecoration(
-            hintText: 'Choose or type a category',
-            hintStyle: AdminTokens.body(
-              isDark,
-            ).copyWith(color: AdminTokens.textTertiary(isDark)),
             filled: true,
-            fillColor: AdminTokens.sunken(isDark),
+            fillColor: isLocked
+                ? AdminTokens.baseTint(isDark)
+                : AdminTokens.sunken(isDark),
             prefixIcon: Icon(
-              Icons.label_rounded,
+              isLocked ? Icons.lock_outline_rounded : Icons.label_rounded,
               size: 20,
               color: AdminTokens.textTertiary(isDark),
             ),
-            suffixIcon: suggestions.isEmpty
-                ? null
-                : PopupMenuButton<String>(
-                    tooltip: 'Choose category',
-                    icon: Icon(
-                      Icons.arrow_drop_down_rounded,
-                      color: AdminTokens.textSecondary(isDark),
-                    ),
-                    onSelected: (value) =>
-                        setState(() => _categoryCtrl.text = value),
-                    itemBuilder: (context) => suggestions
-                        .map(
-                          (value) => PopupMenuItem<String>(
-                            value: value,
-                            child: Text(value),
-                          ),
-                        )
-                        .toList(),
-                  ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
               borderSide: BorderSide(color: AdminTokens.border(isDark)),

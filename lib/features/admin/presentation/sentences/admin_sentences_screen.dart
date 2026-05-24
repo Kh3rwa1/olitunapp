@@ -123,49 +123,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                 ),
               ),
             ),
-            // Category filter
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWideScreen ? 32 : 20,
-                ),
-                child: sentencesAsync.when(
-                  data: (sentences) {
-                    final filterLabels = _buildFilterLabels(
-                      sentences.map((s) => s.category),
-                      subcategoryLessons,
-                    );
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          AdminFilterChip(
-                            label: 'All Sentences',
-                            selected: _selectedCategory == null,
-                            onTap: () =>
-                                setState(() => _selectedCategory = null),
-                          ),
-                          ...filterLabels.map(
-                            (label) => Padding(
-                              padding: const EdgeInsets.only(left: 12),
-                              child: AdminFilterChip(
-                                label: label,
-                                selected: _selectedCategory == label,
-                                onTap: () =>
-                                    setState(() => _selectedCategory = label),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox(height: 40),
-                  error: (_, _) => const SizedBox(),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             // Sentences List or States
             sentencesAsync.when(
               data: (sentences) {
@@ -375,7 +333,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         title: 'No sentences yet',
         message: _selectedCategory == null
             ? 'Add sentences for conversational practice.'
-            : 'This subcategory has no saved Sentence records or editable lesson blocks yet.',
+            : 'This subcategory has no sentences yet. Tap "Add Sentence" below to create one, or tap the selected card above to clear the filter and show all sentences.',
         actionLabel: 'Add Sentence',
         onAction: () => SentenceFormSheet.show(
           context,
@@ -452,38 +410,6 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         );
       }
     }
-  }
-
-  List<String> _buildFilterLabels(
-    Iterable<String?> rowCategories,
-    List<LessonEntity> subcategoryLessons,
-  ) {
-    final labels = <String>[];
-    final seen = <String>{};
-
-    void add(String? value) {
-      final label = value?.trim();
-      if (label == null || label.isEmpty) return;
-      if (seen.add(label.toLowerCase())) labels.add(label);
-    }
-
-    for (final lesson in subcategoryLessons) {
-      add(lesson.titleLatin);
-    }
-
-    if (labels.isEmpty) {
-      final categories =
-          rowCategories
-              .where((value) => value != null && value.trim().isNotEmpty)
-              .map((value) => value!.trim())
-              .toList()
-            ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      for (final category in categories) {
-        add(category);
-      }
-    }
-
-    return labels;
   }
 
   List<SentenceModel> _filterSentences(

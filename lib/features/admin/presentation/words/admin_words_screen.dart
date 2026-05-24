@@ -122,49 +122,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                 ),
               ),
             ),
-            // Category filter chips
-            SliverToBoxAdapter(
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: isWideScreen ? 32 : 20,
-                ),
-                child: wordsAsync.when(
-                  data: (words) {
-                    final filterLabels = _buildFilterLabels(
-                      words.map((w) => w.category),
-                      subcategoryLessons,
-                    );
-                    return SingleChildScrollView(
-                      scrollDirection: Axis.horizontal,
-                      child: Row(
-                        children: [
-                          AdminFilterChip(
-                            label: 'All Words',
-                            selected: _selectedCategory == null,
-                            onTap: () =>
-                                setState(() => _selectedCategory = null),
-                          ),
-                          ...filterLabels.map(
-                            (label) => Padding(
-                              padding: const EdgeInsets.only(left: 12),
-                              child: AdminFilterChip(
-                                label: label,
-                                selected: _selectedCategory == label,
-                                onTap: () =>
-                                    setState(() => _selectedCategory = label),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                  loading: () => const SizedBox(height: 40),
-                  error: (_, _) => const SizedBox(),
-                ),
-              ),
-            ),
-            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+            const SliverToBoxAdapter(child: SizedBox(height: 8)),
             // Words List or States
             wordsAsync.when(
               data: (words) {
@@ -371,7 +329,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         title: 'No words yet',
         message: _selectedCategory == null
             ? 'Add vocabulary words to build the learning dictionary.'
-            : 'This subcategory has no saved Word records or editable lesson blocks yet.',
+            : 'This subcategory has no words yet. Tap "Add Word" below to create one, or tap the selected card above to clear the filter and show all words.',
         actionLabel: 'Add Word',
         onAction: () => WordFormSheet.show(
           context,
@@ -445,38 +403,6 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         );
       }
     }
-  }
-
-  List<String> _buildFilterLabels(
-    Iterable<String?> rowCategories,
-    List<LessonEntity> subcategoryLessons,
-  ) {
-    final labels = <String>[];
-    final seen = <String>{};
-
-    void add(String? value) {
-      final label = value?.trim();
-      if (label == null || label.isEmpty) return;
-      if (seen.add(label.toLowerCase())) labels.add(label);
-    }
-
-    for (final lesson in subcategoryLessons) {
-      add(lesson.titleLatin);
-    }
-
-    if (labels.isEmpty) {
-      final categories =
-          rowCategories
-              .where((value) => value != null && value.trim().isNotEmpty)
-              .map((value) => value!.trim())
-              .toList()
-            ..sort((a, b) => a.toLowerCase().compareTo(b.toLowerCase()));
-      for (final category in categories) {
-        add(category);
-      }
-    }
-
-    return labels;
   }
 
   List<WordModel> _filterWords(

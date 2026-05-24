@@ -157,10 +157,6 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                 ),
           );
         }
-
-        // Calculate dynamic steps
-        final totalSteps = lesson.blocks.isNotEmpty ? lesson.blocks.length : 3;
-
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
           body: Stack(
@@ -238,15 +234,6 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                         lesson: lesson,
                         scriptMode: scriptMode,
                         buildChip: _buildChip,
-                      ),
-                    ),
-
-                    // Progress bar and steps indicator
-                    SliverToBoxAdapter(
-                      child: _ProgressHeader(
-                        progressNotifier: _scrollProgress,
-                        isDark: isDark,
-                        totalSteps: totalSteps,
                       ),
                     ),
 
@@ -609,74 +596,6 @@ class _LessonHeroSummary extends StatelessWidget {
           ],
         ),
       ],
-    );
-  }
-}
-
-class _ProgressHeader extends StatelessWidget {
-  final ValueNotifier<double> progressNotifier;
-  final bool isDark;
-  final int totalSteps;
-
-  const _ProgressHeader({
-    required this.progressNotifier,
-    required this.isDark,
-    required this.totalSteps,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder<double>(
-      valueListenable: progressNotifier,
-      builder: (context, progress, _) {
-        final activeStep = (progress * totalSteps).ceil().clamp(1, totalSteps);
-
-        return Container(
-          color: isDark ? const Color(0xFF0A0E14) : Colors.white,
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Step $activeStep of $totalSteps',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark ? Colors.white70 : Colors.black87,
-                    ),
-                  ),
-                  Text(
-                    '${(progress * 100).toInt()}% completed',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: isDark
-                          ? AppColors.brandTextDark
-                          : AppColors.brandTextLight,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(4),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  minHeight: 6,
-                  backgroundColor: isDark ? Colors.white10 : Colors.black12,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    isDark ? AppColors.brandTextDark : AppColors.brandTextLight,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }

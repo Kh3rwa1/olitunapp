@@ -68,21 +68,22 @@ class AdminSidebar extends ConsumerWidget {
                   onTap: () => _navigate(context, '/admin/banners'),
                   isCompact: isCompact,
                 ),
-                
+
                 // Dynamic Categories List
                 categoriesAsync.when(
                   data: (categories) {
-                    final sortedCategories = List<CategoryEntity>.from(categories)
-                      ..sort((a, b) => a.order.compareTo(b.order));
+                    final sortedCategories = List<CategoryEntity>.from(
+                      categories,
+                    )..sort((a, b) => a.order.compareTo(b.order));
                     return Column(
                       mainAxisSize: MainAxisSize.min,
                       children: sortedCategories.map((category) {
                         final lowerTitle = category.titleLatin.toLowerCase();
                         final id = category.id;
-                        
+
                         String route = '/admin/lessons';
                         IconData icon = Icons.category_rounded;
-                        
+
                         if (id == 'cat_vocab' ||
                             id == 'cat_words' ||
                             id == 'seed_words' ||
@@ -131,8 +132,10 @@ class AdminSidebar extends ConsumerWidget {
                               icon = Icons.category_rounded;
                           }
                         }
-                        
-                        final isSelected = (route == '/admin/lessons' && location == '/admin/lessons')
+
+                        final isSelected =
+                            (route == '/admin/lessons' &&
+                                location == '/admin/lessons')
                             ? false
                             : location == route;
 

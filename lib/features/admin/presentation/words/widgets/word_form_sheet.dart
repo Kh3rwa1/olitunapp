@@ -294,7 +294,8 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
           const SizedBox(height: 24),
           AdminMediaField(
             label: 'Hero Media (Optional)',
-            subtitle: 'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
+            subtitle:
+                'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
             icon: Icons.play_circle_outline_rounded,
             accent: const Color(0xFF6366F1),
             currentUrl: _mediaUrl,

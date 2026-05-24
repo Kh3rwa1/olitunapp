@@ -591,9 +591,7 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
     return Container(
       decoration: BoxDecoration(
         color: AdminTokens.overlay(isDark),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(20),
-        ),
+        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
       ),
       padding: const EdgeInsets.all(24),
       child: Column(

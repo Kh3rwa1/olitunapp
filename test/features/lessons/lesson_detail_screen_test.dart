@@ -86,7 +86,9 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
-          categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+          categoryNotifierProvider.overrideWith(
+            (ref) => MockCategoryNotifier(),
+          ),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(const AsyncValue.loading(), mockRepo),
           ),
@@ -111,7 +113,9 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
-          categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+          categoryNotifierProvider.overrideWith(
+            (ref) => MockCategoryNotifier(),
+          ),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(
               const AsyncValue.data([mockLesson]),
@@ -147,7 +151,9 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier(),
+            ),
             lessonNotifierProvider.overrideWith(
               (ref) => _MockLessonNotifier(
                 const AsyncValue.data([mockLesson]),

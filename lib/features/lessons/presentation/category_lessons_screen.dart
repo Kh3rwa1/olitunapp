@@ -83,12 +83,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
-            ParallaxHeroSliverAppBar(
-              gradient: brandGradient,
-              heroTag: MotionTokens.heroTag('category', category.id),
-              glyph: category.titleOlChiki.isNotEmpty
-                  ? category.titleOlChiki.characters.first
-                  : null,
+            SliverAppBar(
+              pinned: true,
+              elevation: 0,
+              backgroundColor: Colors.transparent,
               leading: IconButton(
                 icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
                 onPressed: () =>
@@ -101,6 +99,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                   color: Colors.white,
                   fontWeight: FontWeight.w800,
                 ),
+              ),
+              flexibleSpace: Container(
+                decoration: BoxDecoration(gradient: brandGradient),
               ),
             ),
             lessons.when(

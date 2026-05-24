@@ -17,9 +17,11 @@ import '../../../core/presentation/animations/fade_in_slide.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
+import '../../../shared/utils/media_type_resolver.dart';
 import '../../home/presentation/providers/mission_providers.dart';
 
 import 'widgets/dynamic_block_builder.dart';
+import 'widgets/full_bleed_hero_media.dart';
 import 'widgets/lesson_content_widgets.dart';
 import '../../../core/motion/confetti_overlay.dart';
 
@@ -164,6 +166,9 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         // All categories use primary brand neon green per user request
         const accentColor = AppColors.primary;
         const brandGradient = AppColors.heroGradient;
+        final heroMediaUrl = _lessonHeroMediaUrl(lesson);
+        final heroPosterUrl = _lessonHeroPosterUrl(lesson, heroMediaUrl);
+        final hasHeroMedia = MediaTypeResolver.isRenderableHero(heroMediaUrl);
 
         return Scaffold(
           backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -193,7 +198,7 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                     ParallaxHeroSliverAppBar(
                       gradient: brandGradient,
                       heroTag: MotionTokens.heroTag('lesson', lesson.id),
-                      glyph: lesson.titleOlChiki.isNotEmpty
+                      glyph: !hasHeroMedia && lesson.titleOlChiki.isNotEmpty
                           ? lesson.titleOlChiki.characters.first
                           : null,
                       leading: IconButton(
@@ -238,11 +243,27 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
                           fontFamily: primaryLocalizedFontFamily(scriptMode),
                         ),
                       ),
-                      heroChild: _LessonHeroSummary(
-                        lesson: lesson,
-                        scriptMode: scriptMode,
-                        buildChip: _buildChip,
-                      ),
+                      heroChildFullBleed: hasHeroMedia,
+                      heroChild: hasHeroMedia
+                          ? _LessonHeroMediaHeader(
+                              mediaUrl: heroMediaUrl!,
+                              posterUrl: heroPosterUrl,
+                              fallback: _LessonHeroFallbackGlyph(
+                                glyph: lesson.titleOlChiki.isNotEmpty
+                                    ? lesson.titleOlChiki.characters.first
+                                    : 'ᱚ',
+                              ),
+                              summary: _LessonHeroSummary(
+                                lesson: lesson,
+                                scriptMode: scriptMode,
+                                buildChip: _buildChip,
+                              ),
+                            )
+                          : _LessonHeroSummary(
+                              lesson: lesson,
+                              scriptMode: scriptMode,
+                              buildChip: _buildChip,
+                            ),
                     ),
 
                     // Progress bar and steps indicator
@@ -432,6 +453,41 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
     return null;
   }
 
+  String? _lessonHeroMediaUrl(LessonEntity lesson) {
+    final data = lesson.data;
+    if (data == null) return null;
+    final candidates = [
+      data['heroMediaUrl'],
+      data['videoUrl'],
+      data['animationUrl'],
+      data['imageUrl'],
+      data['thumbnailUrl'],
+    ];
+    for (final candidate in candidates) {
+      if (candidate is String && candidate.trim().isNotEmpty) {
+        return candidate.trim();
+      }
+    }
+    return null;
+  }
+
+  String? _lessonHeroPosterUrl(LessonEntity lesson, String? mediaUrl) {
+    final data = lesson.data;
+    if (data == null) return null;
+    final poster = data['heroPosterUrl'];
+    if (poster is String && poster.trim().isNotEmpty) {
+      return poster.trim();
+    }
+    final thumbnail = data['thumbnailUrl'];
+    if (thumbnail is String &&
+        thumbnail.trim().isNotEmpty &&
+        thumbnail.trim() != mediaUrl &&
+        MediaTypeResolver.resolve(thumbnail) != MediaKind.video) {
+      return thumbnail.trim();
+    }
+    return null;
+  }
+
   Widget _buildChip(IconData icon, String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -563,6 +619,60 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         return VocabularyListContent(lessonId: lesson.id);
       }
     }
+  }
+}
+
+class _LessonHeroMediaHeader extends StatelessWidget {
+  const _LessonHeroMediaHeader({
+    required this.mediaUrl,
+    required this.posterUrl,
+    required this.fallback,
+    required this.summary,
+  });
+
+  final String mediaUrl;
+  final String? posterUrl;
+  final Widget fallback;
+  final Widget summary;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        FullBleedHeroMedia(
+          animationUrl: MediaTypeResolver.resolve(mediaUrl) == MediaKind.lottie
+              ? mediaUrl
+              : null,
+          imageUrl: mediaUrl,
+          fallbackUrl: posterUrl,
+          fallback: fallback,
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(24, 72, 24, 72),
+          child: Align(alignment: Alignment.centerLeft, child: summary),
+        ),
+      ],
+    );
+  }
+}
+
+class _LessonHeroFallbackGlyph extends StatelessWidget {
+  const _LessonHeroFallbackGlyph({required this.glyph});
+
+  final String glyph;
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      glyph,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.22),
+        fontSize: 160,
+        fontWeight: FontWeight.w900,
+        height: 1,
+      ),
+    );
   }
 }
 

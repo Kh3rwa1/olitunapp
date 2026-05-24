@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../../../shared/utils/media_type_resolver.dart';
 import 'platform_view_stub.dart'
     if (dart.library.js_interop) 'platform_view_web.dart';
 
@@ -12,11 +13,13 @@ class FullBleedHeroMedia extends StatelessWidget {
     super.key,
     required this.animationUrl,
     required this.imageUrl,
+    this.fallbackUrl,
     required this.fallback,
   });
 
   final String? animationUrl;
   final String? imageUrl;
+  final String? fallbackUrl;
   final Widget fallback;
 
   @override
@@ -28,6 +31,9 @@ class FullBleedHeroMedia extends StatelessWidget {
         : image != null && image.isNotEmpty
         ? image
         : null;
+    final fallbackCandidate =
+        fallbackUrl ??
+        (animation != null && animation.isNotEmpty ? image : null);
 
     return ClipRect(
       child: Stack(
@@ -38,7 +44,7 @@ class FullBleedHeroMedia extends StatelessWidget {
           else
             _HeroMediaSource(
               url: primaryUrl,
-              fallbackUrl: image,
+              fallbackUrl: fallbackCandidate,
               fallback: fallback,
               preferAnimation: animation != null && animation.isNotEmpty,
             ),
@@ -64,24 +70,20 @@ class _HeroMediaSource extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (_isVideoUrl(url)) {
-      return _InteractiveVideoHero(url: url, fallback: _buildFallback());
-    }
-
-    if (_isSvgUrl(url)) {
-      return _SvgHeroMedia(url: url, fallback: _buildFallback());
-    }
-
-    if (_isLottieUrl(url)) {
-      return _InteractiveLottieHero(url: url, fallback: _buildFallback());
-    }
-
-    if (_isHtmlUrl(url)) {
-      return _HtmlHeroMedia(url: url, fallback: _buildFallback());
-    }
-
-    if (_isImageUrl(url)) {
-      return _HeroImage(url: url, fallback: _buildFallback());
+    switch (MediaTypeResolver.resolve(url)) {
+      case MediaKind.video:
+        return _InteractiveVideoHero(url: url, fallback: _buildFallback());
+      case MediaKind.svg:
+        return _SvgHeroMedia(url: url, fallback: _buildFallback());
+      case MediaKind.lottie:
+        return _InteractiveLottieHero(url: url, fallback: _buildFallback());
+      case MediaKind.html:
+        return _HtmlHeroMedia(url: url, fallback: _buildFallback());
+      case MediaKind.image:
+        return _HeroImage(url: url, fallback: _buildFallback());
+      case MediaKind.audio:
+      case MediaKind.unknown:
+        break;
     }
 
     if (preferAnimation) {
@@ -94,28 +96,21 @@ class _HeroMediaSource extends StatelessWidget {
   Widget _buildFallback() {
     final image = fallbackUrl?.trim();
     if (image != null && image.isNotEmpty) {
-      if (_isVideoUrl(image)) {
-        return _InteractiveVideoHero(
-          url: image,
-          fallback: Center(child: fallback),
-        );
+      final centeredFallback = Center(child: fallback);
+      switch (MediaTypeResolver.resolve(image)) {
+        case MediaKind.video:
+          return _InteractiveVideoHero(url: image, fallback: centeredFallback);
+        case MediaKind.svg:
+          return _SvgHeroMedia(url: image, fallback: centeredFallback);
+        case MediaKind.lottie:
+          return _InteractiveLottieHero(url: image, fallback: centeredFallback);
+        case MediaKind.html:
+          return _HtmlHeroMedia(url: image, fallback: centeredFallback);
+        case MediaKind.image:
+        case MediaKind.audio:
+        case MediaKind.unknown:
+          return _HeroImage(url: image, fallback: centeredFallback);
       }
-      if (_isSvgUrl(image)) {
-        return _SvgHeroMedia(
-          url: image,
-          fallback: Center(child: fallback),
-        );
-      }
-      if (_isHtmlUrl(image)) {
-        return _HtmlHeroMedia(
-          url: image,
-          fallback: Center(child: fallback),
-        );
-      }
-      return _HeroImage(
-        url: image,
-        fallback: Center(child: fallback),
-      );
     }
     return Center(child: fallback);
   }
@@ -450,45 +445,6 @@ class _HeroMediaScrim extends StatelessWidget {
       ),
     );
   }
-}
-
-bool _isSvgUrl(String url) {
-  final lower = url.toLowerCase();
-  return lower.contains('.svg') || lower.contains('image/svg');
-}
-
-bool _isLottieUrl(String url) {
-  final lower = url.toLowerCase();
-  return lower.contains('.json') ||
-      lower.contains('.lottie') ||
-      lower.contains('/buckets/animations/');
-}
-
-bool _isVideoUrl(String url) {
-  final lower = url.toLowerCase();
-  return lower.contains('.mp4') ||
-      lower.contains('.webm') ||
-      lower.contains('.mov') ||
-      lower.contains('.m4v') ||
-      lower.contains('.3gp') ||
-      lower.contains('.avi') ||
-      lower.contains('/buckets/videos/');
-}
-
-bool _isHtmlUrl(String url) {
-  final lower = url.toLowerCase();
-  return lower.contains('.html') ||
-      lower.contains('text/html') ||
-      lower.contains('/buckets/html/');
-}
-
-bool _isImageUrl(String url) {
-  final lower = url.toLowerCase();
-  return lower.contains('.png') ||
-      lower.contains('.jpg') ||
-      lower.contains('.jpeg') ||
-      lower.contains('.webp') ||
-      lower.contains('.gif');
 }
 
 class _HtmlHeroMedia extends StatefulWidget {

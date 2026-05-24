@@ -5,6 +5,7 @@ import 'package:file_picker/file_picker.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../../../../shared/utils/media_type_resolver.dart';
 import '../../widgets/admin_form_widgets.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {
@@ -40,7 +41,8 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   String? _selectedCategoryId;
   String _level = 'beginner';
   bool _isActive = true;
-  String? _thumbnailUrl;
+  String? _heroMediaUrl;
+  String? _heroPosterUrl;
 
   bool get _isEditing => widget.lesson != null;
 
@@ -62,7 +64,13 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
       text: (lesson?.estimatedMinutes ?? 5).toString(),
     );
     _orderCtrl = TextEditingController(text: (lesson?.order ?? 0).toString());
-    _thumbnailUrl = lesson?.data?['thumbnailUrl'];
+    _heroMediaUrl =
+        lesson?.data?['heroMediaUrl'] ??
+        lesson?.data?['videoUrl'] ??
+        lesson?.data?['animationUrl'] ??
+        lesson?.data?['imageUrl'] ??
+        lesson?.data?['thumbnailUrl'];
+    _heroPosterUrl = lesson?.data?['heroPosterUrl'];
 
     _isActive = lesson?.isActive ?? true;
     _level = lesson?.level ?? 'beginner';
@@ -288,27 +296,49 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                 ),
                 const SizedBox(height: 14),
                 AdminMediaField(
-                  label: 'Thumbnail Image/GIF',
-                  subtitle: 'Upload or enter direct URL for thumbnail',
-                  icon: Icons.image_rounded,
+                  label: 'Hero Media',
+                  subtitle:
+                      'Supports PNG, JPG, WebP, GIF, SVG, Lottie JSON/.lottie, MP4, WebM, MOV, and M4V.',
+                  icon: Icons.perm_media_rounded,
                   accent: const Color(0xFF3B82F6),
-                  currentUrl: _thumbnailUrl,
-                  uploadFolder: 'lesson-thumbnails',
-                  fileType: FileType.image,
-                  onUploaded: (url) => setState(() => _thumbnailUrl = url),
-                  previewBuilder: (url) => ClipRRect(
-                    borderRadius: BorderRadius.circular(10),
-                    child: Image.network(
-                      url,
-                      height: 120,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, _, _) => const Icon(
-                        Icons.broken_image_rounded,
-                        size: 60,
-                        color: Colors.grey,
-                      ),
-                    ),
-                  ),
+                  currentUrl: _heroMediaUrl,
+                  uploadFolder: 'lesson-hero-media',
+                  fileType: FileType.custom,
+                  allowedExtensions: const [
+                    'png',
+                    'jpg',
+                    'jpeg',
+                    'webp',
+                    'gif',
+                    'svg',
+                    'json',
+                    'lottie',
+                    'mp4',
+                    'webm',
+                    'mov',
+                    'm4v',
+                  ],
+                  onUploaded: (url) => setState(() => _heroMediaUrl = url),
+                ),
+                const SizedBox(height: 14),
+                AdminMediaField(
+                  label: 'Video Poster / Fallback',
+                  subtitle:
+                      'Optional image shown if a video or animation cannot load.',
+                  icon: Icons.photo_rounded,
+                  accent: const Color(0xFF10B981),
+                  currentUrl: _heroPosterUrl,
+                  uploadFolder: 'lesson-hero-posters',
+                  fileType: FileType.custom,
+                  allowedExtensions: const [
+                    'png',
+                    'jpg',
+                    'jpeg',
+                    'webp',
+                    'gif',
+                    'svg',
+                  ],
+                  onUploaded: (url) => setState(() => _heroPosterUrl = url),
                 ),
                 const SizedBox(height: 12),
                 SwitchListTile(
@@ -336,6 +366,36 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                     onPressed: _selectedCategoryId == null
                         ? null
                         : () async {
+                            final heroMediaUrl = _heroMediaUrl?.trim();
+                            final heroPosterUrl = _heroPosterUrl?.trim();
+                            final lessonData = <String, dynamic>{
+                              ...?widget.lesson?.data,
+                            }..removeWhere((_, value) => value == null);
+                            lessonData.remove('heroMediaUrl');
+                            lessonData.remove('heroMediaType');
+                            lessonData.remove('heroPosterUrl');
+                            lessonData.remove('videoUrl');
+                            lessonData.remove('animationUrl');
+                            lessonData.remove('imageUrl');
+                            lessonData.remove('thumbnailUrl');
+                            if (heroMediaUrl != null &&
+                                heroMediaUrl.isNotEmpty) {
+                              final kind = MediaTypeResolver.resolve(
+                                heroMediaUrl,
+                              );
+                              lessonData['heroMediaUrl'] = heroMediaUrl;
+                              lessonData['heroMediaType'] = kind.name;
+                              if (kind == MediaKind.image ||
+                                  kind == MediaKind.svg) {
+                                lessonData['thumbnailUrl'] = heroMediaUrl;
+                              }
+                            }
+                            if (heroPosterUrl != null &&
+                                heroPosterUrl.isNotEmpty) {
+                              lessonData['heroPosterUrl'] = heroPosterUrl;
+                              lessonData['thumbnailUrl'] = heroPosterUrl;
+                            }
+
                             final newLesson = LessonEntity(
                               id: widget.lesson?.id ?? const Uuid().v4(),
                               categoryId: _selectedCategoryId!,
@@ -358,11 +418,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                                     ),
                                   ],
                               isActive: _isActive,
-                              data:
-                                  _thumbnailUrl != null &&
-                                      _thumbnailUrl!.isNotEmpty
-                                  ? {'thumbnailUrl': _thumbnailUrl!}
-                                  : null,
+                              data: lessonData.isEmpty ? null : lessonData,
                             );
 
                             try {

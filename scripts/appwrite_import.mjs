@@ -91,6 +91,9 @@ const FIELD_MAP = {
     estimated_minutes: 'estimatedMinutes',
     description: 'description',
     thumbnail_url: 'thumbnailUrl',
+    hero_media_url: 'heroMediaUrl',
+    hero_media_type: 'heroMediaType',
+    hero_poster_url: 'heroPosterUrl',
     is_premium: 'isPremium',
   },
   lesson_blocks: {

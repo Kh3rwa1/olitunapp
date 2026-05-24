@@ -181,6 +181,9 @@ const collections = [
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'integer', key: 'estimatedMinutes', required: false, default: 5 },
       { type: 'string', key: 'thumbnailUrl', size: 512, required: false },
+      { type: 'string', key: 'heroMediaUrl', size: 1024, required: false },
+      { type: 'string', key: 'heroMediaType', size: 40, required: false },
+      { type: 'string', key: 'heroPosterUrl', size: 1024, required: false },
       { type: 'string', key: 'description', size: 2048, required: false },
       { type: 'string', key: 'audioUrl', size: 512, required: false },
       { type: 'boolean', key: 'isPremium', required: false, default: false },
@@ -796,7 +799,7 @@ const buckets = [
   {
     id: 'videos',
     name: 'Videos',
-    allowedExtensions: ['mp4', 'webm', 'mov'],
+    allowedExtensions: ['mp4', 'webm', 'mov', 'm4v'],
     maxFileSize: 104857600, // 100MB
   },
   {

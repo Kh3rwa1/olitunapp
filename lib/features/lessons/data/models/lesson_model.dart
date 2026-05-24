@@ -29,9 +29,12 @@ class LessonModel extends LessonEntity {
     final resolvedId =
         docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
 
-    // Retrieve thumbnailUrl from document root and inject it into the data map
+    // Retrieve root media fields and inject them into the data map
     // to preserve compatibility with existing UI components
     final thumbnailUrl = json['thumbnailUrl'] as String?;
+    final heroMediaUrl = json['heroMediaUrl'] as String?;
+    final heroMediaType = json['heroMediaType'] as String?;
+    final heroPosterUrl = json['heroPosterUrl'] as String?;
     final rawData = json['data'];
     Map<String, dynamic> parsedData = {};
     if (rawData is Map) {
@@ -44,6 +47,15 @@ class LessonModel extends LessonEntity {
     }
     if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
       parsedData['thumbnailUrl'] = thumbnailUrl;
+    }
+    if (heroMediaUrl != null && heroMediaUrl.isNotEmpty) {
+      parsedData['heroMediaUrl'] = heroMediaUrl;
+    }
+    if (heroMediaType != null && heroMediaType.isNotEmpty) {
+      parsedData['heroMediaType'] = heroMediaType;
+    }
+    if (heroPosterUrl != null && heroPosterUrl.isNotEmpty) {
+      parsedData['heroPosterUrl'] = heroPosterUrl;
     }
 
     return LessonModel(
@@ -76,6 +88,9 @@ class LessonModel extends LessonEntity {
       'estimatedMinutes': estimatedMinutes,
       'isActive': isActive,
       'thumbnailUrl': data?['thumbnailUrl'],
+      'heroMediaUrl': data?['heroMediaUrl'],
+      'heroMediaType': data?['heroMediaType'],
+      'heroPosterUrl': data?['heroPosterUrl'],
       'blocks': blocks
           .map((e) => LessonBlockModel.fromEntity(e).toJson())
           .toList(),

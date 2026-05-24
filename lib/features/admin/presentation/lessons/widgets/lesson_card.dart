@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:lottie/lottie.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../../shared/providers/providers.dart';
+import '../../../../../shared/utils/media_type_resolver.dart';
 
 class LessonCard extends ConsumerWidget {
   final LessonEntity lesson;
@@ -32,7 +34,10 @@ class LessonCard extends ConsumerWidget {
 
     final blockCount = lesson.blocks.length;
     final hasBlocks = blockCount > 0;
-    final thumbnailUrl = lesson.data?['thumbnailUrl'] as String?;
+    final mediaUrl =
+        lesson.data?['heroMediaUrl'] as String? ??
+        lesson.data?['thumbnailUrl'] as String?;
+    final posterUrl = lesson.data?['heroPosterUrl'] as String?;
     final isWide = MediaQuery.of(context).size.width > 800;
     final width = MediaQuery.of(context).size.width;
     final isMobile = width < 600;
@@ -68,7 +73,7 @@ class LessonCard extends ConsumerWidget {
                   child: Row(
                     children: [
                       // Thumbnail or Icon
-                      _buildThumbnail(thumbnailUrl),
+                      _buildThumbnail(mediaUrl, posterUrl),
                       const SizedBox(width: 16),
 
                       // Content
@@ -211,12 +216,13 @@ class LessonCard extends ConsumerWidget {
     );
   }
 
-  Widget _buildThumbnail(String? thumbnailUrl) {
+  Widget _buildThumbnail(String? mediaUrl, String? posterUrl) {
+    final url = mediaUrl?.trim();
     return Container(
       width: 60,
       height: 60,
       decoration: BoxDecoration(
-        gradient: thumbnailUrl == null ? AppColors.premiumCyan : null,
+        gradient: url == null || url.isEmpty ? AppColors.premiumCyan : null,
         borderRadius: BorderRadius.circular(14),
         boxShadow: [
           BoxShadow(
@@ -227,13 +233,50 @@ class LessonCard extends ConsumerWidget {
         ],
       ),
       clipBehavior: Clip.antiAlias,
-      child: thumbnailUrl != null && thumbnailUrl.isNotEmpty
-          ? Image.network(
-              thumbnailUrl,
-              fit: BoxFit.cover,
-              errorBuilder: (_, _, _) => _buildIconFallback(),
-            )
+      child: url != null && url.isNotEmpty
+          ? _buildMediaPreview(url, posterUrl)
           : _buildIconFallback(),
+    );
+  }
+
+  Widget _buildMediaPreview(String url, String? posterUrl) {
+    switch (MediaTypeResolver.resolve(url)) {
+      case MediaKind.video:
+        if (posterUrl != null && posterUrl.trim().isNotEmpty) {
+          return Image.network(
+            posterUrl.trim(),
+            fit: BoxFit.cover,
+            errorBuilder: (_, _, _) => _buildMediaIcon(Icons.movie_rounded),
+          );
+        }
+        return _buildMediaIcon(Icons.play_circle_fill_rounded);
+      case MediaKind.lottie:
+        return Lottie.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _buildMediaIcon(Icons.animation_rounded),
+        );
+      case MediaKind.svg:
+      case MediaKind.image:
+      case MediaKind.html:
+      case MediaKind.audio:
+      case MediaKind.unknown:
+        return Image.network(
+          url,
+          fit: BoxFit.cover,
+          errorBuilder: (_, _, _) => _buildMediaIcon(
+            MediaTypeResolver.resolve(url) == MediaKind.html
+                ? Icons.code_rounded
+                : Icons.image_rounded,
+          ),
+        );
+    }
+  }
+
+  Widget _buildMediaIcon(IconData icon) {
+    return Container(
+      decoration: const BoxDecoration(gradient: AppColors.premiumCyan),
+      child: Center(child: Icon(icon, color: Colors.white, size: 26)),
     );
   }
 

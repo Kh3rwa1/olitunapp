@@ -10,6 +10,9 @@ class LessonModel {
   final List<LessonBlock> blocks;
   final int estimatedMinutes;
   final String? thumbnailUrl;
+  final String? heroMediaUrl;
+  final String? heroMediaType;
+  final String? heroPosterUrl;
   final String? description;
   final String? audioUrl;
   final bool isPremium;
@@ -25,6 +28,9 @@ class LessonModel {
     this.blocks = const [],
     this.estimatedMinutes = 5,
     this.thumbnailUrl,
+    this.heroMediaUrl,
+    this.heroMediaType,
+    this.heroPosterUrl,
     this.description,
     this.audioUrl,
     this.isPremium = false,
@@ -51,6 +57,9 @@ class LessonModel {
           .toList(),
       estimatedMinutes: data['estimatedMinutes'] as int? ?? 5,
       thumbnailUrl: data['thumbnailUrl'] as String?,
+      heroMediaUrl: data['heroMediaUrl'] as String?,
+      heroMediaType: data['heroMediaType'] as String?,
+      heroPosterUrl: data['heroPosterUrl'] as String?,
       description: data['description'] as String?,
       audioUrl: data['audioUrl'] as String?,
       isPremium: data['isPremium'] as bool? ?? false,
@@ -69,6 +78,9 @@ class LessonModel {
       'blocks': blocks.map((b) => b.toMap()).toList(),
       'estimatedMinutes': estimatedMinutes,
       'thumbnailUrl': thumbnailUrl,
+      'heroMediaUrl': heroMediaUrl,
+      'heroMediaType': heroMediaType,
+      'heroPosterUrl': heroPosterUrl,
       'description': description,
       'audioUrl': audioUrl,
       'isPremium': isPremium,
@@ -86,6 +98,9 @@ class LessonModel {
     List<LessonBlock>? blocks,
     int? estimatedMinutes,
     String? thumbnailUrl,
+    String? heroMediaUrl,
+    String? heroMediaType,
+    String? heroPosterUrl,
     String? description,
     String? audioUrl,
     bool? isPremium,
@@ -101,6 +116,9 @@ class LessonModel {
       blocks: blocks ?? this.blocks,
       estimatedMinutes: estimatedMinutes ?? this.estimatedMinutes,
       thumbnailUrl: thumbnailUrl ?? this.thumbnailUrl,
+      heroMediaUrl: heroMediaUrl ?? this.heroMediaUrl,
+      heroMediaType: heroMediaType ?? this.heroMediaType,
+      heroPosterUrl: heroPosterUrl ?? this.heroPosterUrl,
       description: description ?? this.description,
       audioUrl: audioUrl ?? this.audioUrl,
       isPremium: isPremium ?? this.isPremium,

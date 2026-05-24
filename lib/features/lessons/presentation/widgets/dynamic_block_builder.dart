@@ -61,14 +61,19 @@ class DynamicBlockBuilder extends ConsumerWidget {
         cleanCategory.contains('sentence') || cleanCategory.contains('phrase');
 
     final Color accentColor;
+    final LinearGradient brandGradient;
     if (isAlphabet) {
       accentColor = AppColors.primary;
+      brandGradient = AppColors.heroGradient;
     } else if (isNumber) {
       accentColor = AppColors.duoBlue;
+      brandGradient = AppColors.skyBlueGradient;
     } else if (isSentence) {
       accentColor = AppColors.duoOrange;
+      brandGradient = AppColors.sunsetGradient;
     } else {
       accentColor = AppColors.primary;
+      brandGradient = AppColors.heroGradient;
     }
 
     switch (block.type) {
@@ -83,7 +88,11 @@ class DynamicBlockBuilder extends ConsumerWidget {
       case 'svg':
         return _ImageBlock(block: block, isDark: isDark);
       case 'quiz':
-        return _QuizBlock(block: block);
+        return _QuizBlock(
+          block: block,
+          accentColor: accentColor,
+          brandGradient: brandGradient,
+        );
       case 'lottie':
         return _LottieBlock(
           block: block,
@@ -446,8 +455,14 @@ class _ImageBlock extends StatelessWidget {
 /// Quiz CTA block that navigates to the quiz screen.
 class _QuizBlock extends StatelessWidget {
   final LessonBlockEntity block;
+  final Color accentColor;
+  final LinearGradient brandGradient;
 
-  const _QuizBlock({required this.block});
+  const _QuizBlock({
+    required this.block,
+    required this.accentColor,
+    required this.brandGradient,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -462,11 +477,11 @@ class _QuizBlock extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: AppColors.premiumPurple,
+          gradient: brandGradient,
           borderRadius: BorderRadius.circular(20),
           boxShadow: [
             BoxShadow(
-              color: AppColors.primaryPurple.withValues(alpha: 0.3),
+              color: accentColor.withValues(alpha: 0.3),
               blurRadius: 12,
               offset: const Offset(0, 4),
             ),

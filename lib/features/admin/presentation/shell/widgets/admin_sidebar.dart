@@ -190,18 +190,6 @@ class AdminSidebar extends ConsumerWidget {
                 ),
 
                 AdminNavItem(
-                  icon: Icons.school_rounded,
-                  label: 'Lessons',
-                  isSelected:
-                      location == '/admin/lessons' &&
-                      GoRouterState.of(
-                            context,
-                          ).uri.queryParameters['categoryId'] ==
-                          null,
-                  onTap: () => _navigate(context, '/admin/lessons'),
-                  isCompact: isCompact,
-                ),
-                AdminNavItem(
                   icon: Icons.music_note_rounded,
                   label: 'Bakhed & Stories',
                   isSelected: location == '/admin/rhymes',

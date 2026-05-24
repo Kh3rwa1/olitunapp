@@ -110,11 +110,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         child: PressableScale(
                           onTap: () {
                             final category = data.first;
-                            final title = category.titleLatin.toLowerCase();
+                            final id = category.id;
                             final isAlphabet =
-                                category.iconName == 'alphabet' ||
-                                title.contains('alphabet') ||
-                                title.contains('letter');
+                                id == 'cat_alphabets' ||
+                                id == 'cat_letters' ||
+                                id == 'letters';
                             if (isAlphabet) {
                               context.push('/letter/standalone/all');
                             } else {
@@ -166,11 +166,11 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             index: index + 1,
                             child: PressableScale(
                               onTap: () {
-                                final title = category.titleLatin.toLowerCase();
+                                final id = category.id;
                                 final isAlphabet =
-                                    category.iconName == 'alphabet' ||
-                                    title.contains('alphabet') ||
-                                    title.contains('letter');
+                                    id == 'cat_alphabets' ||
+                                    id == 'cat_letters' ||
+                                    id == 'letters';
                                 if (isAlphabet) {
                                   context.push('/letter/standalone/all');
                                 } else {

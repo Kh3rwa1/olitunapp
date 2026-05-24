@@ -253,11 +253,9 @@ class _BentoCategoryCard extends ConsumerWidget {
       child: ExcludeSemantics(
         child: PressableScale(
           onTap: () {
-            final title = category.titleLatin.toLowerCase();
+            final id = category.id;
             final isAlphabet =
-                category.iconName == 'alphabet' ||
-                title.contains('alphabet') ||
-                title.contains('letter');
+                id == 'cat_alphabets' || id == 'cat_letters' || id == 'letters';
             if (isAlphabet) {
               context.push('/letter/standalone/all');
             } else {

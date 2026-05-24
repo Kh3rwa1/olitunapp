@@ -28,6 +28,24 @@ class LessonModel extends LessonEntity {
 
     final resolvedId =
         docId ?? json['id'] as String? ?? json['\$id'] as String? ?? '';
+
+    // Retrieve thumbnailUrl from document root and inject it into the data map
+    // to preserve compatibility with existing UI components
+    final thumbnailUrl = json['thumbnailUrl'] as String?;
+    final rawData = json['data'];
+    Map<String, dynamic> parsedData = {};
+    if (rawData is Map) {
+      parsedData = rawData.cast<String, dynamic>();
+    } else if (rawData is String && rawData.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawData);
+        if (decoded is Map) parsedData = decoded.cast<String, dynamic>();
+      } catch (_) {}
+    }
+    if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
+      parsedData['thumbnailUrl'] = thumbnailUrl;
+    }
+
     return LessonModel(
       id: resolvedId,
       categoryId: json['categoryId'] as String? ?? '',
@@ -38,7 +56,7 @@ class LessonModel extends LessonEntity {
       order: json['order'] as int? ?? 0,
       estimatedMinutes: json['estimatedMinutes'] as int? ?? 5,
       isActive: json['isActive'] as bool? ?? true,
-      data: _parseData(json['data']),
+      data: parsedData.isEmpty ? null : parsedData,
       blocks: blocksJson
           .whereType<Map>()
           .map((e) => LessonBlockModel.fromJson(e.cast<String, dynamic>()))
@@ -57,7 +75,7 @@ class LessonModel extends LessonEntity {
       'order': order,
       'estimatedMinutes': estimatedMinutes,
       'isActive': isActive,
-      'data': data,
+      'thumbnailUrl': data?['thumbnailUrl'],
       'blocks': blocks
           .map((e) => LessonBlockModel.fromEntity(e).toJson())
           .toList(),

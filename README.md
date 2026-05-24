@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <a href="https://olitun.in"><b>Official Website: olitun.in</b></a>
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/github/actions/workflow/status/Kh3rwa1/olitunapp/flutter-ci.yml?branch=main&style=for-the-badge&label=CI" />
   <img src="https://img.shields.io/codecov/c/github/Kh3rwa1/olitunapp?style=for-the-badge&label=coverage" />
   <img src="https://img.shields.io/badge/Flutter-3.35%2B-02569B?style=for-the-badge&logo=flutter" />
@@ -18,7 +22,7 @@
 </p>
 
 <p align="center">
-  <img src="assets/images/onboarding_1.png" width="800" alt="Olitun onboarding preview"/>
+  <img src="assets/images/screenshots/screenshot_lessons.png" width="800" alt="Olitun lessons preview"/>
 </p>
 
 ---
@@ -38,24 +42,24 @@
     <td width="50%">
       <h3>📚 Lessons & Content</h3>
       <p>Progressive alphabet, numbers, words, and sentence lessons with dual-script display (Ol Chiki + Latin transliteration).</p>
-      <img src="assets/images/onboarding_1.png" width="100%" alt="Lessons Screenshot"/>
+      <img src="assets/images/screenshots/screenshot_lessons.png" width="100%" alt="Lessons Screenshot"/>
     </td>
     <td width="50%">
       <h3>🎮 Interactive Quizzes</h3>
       <p>Multiple-choice quizzes with animated feedback, scoring, and mastery levels to keep you engaged.</p>
-      <img src="assets/images/onboarding_2.png" width="100%" alt="Quizzes Screenshot"/>
+      <img src="assets/images/screenshots/screenshot_quizzes.png" width="100%" alt="Quizzes Screenshot"/>
     </td>
   </tr>
   <tr>
     <td width="50%">
       <h3>📈 Progress Tracking</h3>
       <p>Streaks, stars, learning time, and cloud sync ensures your progress is never lost across devices.</p>
-      <img src="assets/images/onboarding_3.png" width="100%" alt="Progress Screenshot"/>
+      <img src="assets/images/screenshots/screenshot_progress.png" width="100%" alt="Progress Screenshot"/>
     </td>
     <td width="50%">
       <h3>🛠️ Admin CMS</h3>
       <p>Full content management dashboard for educators to update lessons, letters, and quizzes in real-time.</p>
-      <img src="assets/icons/olitun_logo_source.png" width="100%" alt="Admin CMS Screenshot"/>
+      <img src="assets/images/screenshots/screenshot_admin.png" width="100%" alt="Admin CMS Screenshot"/>
     </td>
   </tr>
 </table>
@@ -268,6 +272,16 @@ We welcome contributions! Please see our [CONTRIBUTING.md](CONTRIBUTING.md) for 
 ## 🗺️ Roadmap
 
 Track our progress and upcoming features on our [Public Project Board](https://github.com/users/Kh3rwa1/projects/1).
+
+---
+
+## 🏷️ Repository Settings
+
+Ensure the following repository settings are configured in the GitHub repository UI settings page:
+
+*   **Description:** `A beautifully crafted, offline-first learning platform for Ol Chiki (Santali Script) built with Flutter and Appwrite.`
+*   **Homepage:** `https://olitun.in`
+*   **Topics:** `flutter`, `appwrite`, `santali`, `ol-chiki`, `offline-first`, `dart`, `education`, `learning-platform`, `mobile-app`
 
 ---
 

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/theme/admin_tokens.dart';
@@ -21,15 +22,72 @@ class AdminLessonsScreen extends ConsumerStatefulWidget {
 }
 
 class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
+  String? _lastRouteCategoryId;
   String? _selectedCategoryId;
   String _searchQuery = '';
 
+  bool _isStandardCategory(CategoryEntity? category) {
+    if (category == null) return false;
+    final id = category.id;
+    final lowerTitle = category.titleLatin.toLowerCase();
+    return id == 'cat_vocab' ||
+        id == 'cat_words' ||
+        id == 'seed_words' ||
+        lowerTitle.contains('vocab') ||
+        lowerTitle.contains('word') ||
+        id == 'cat_sentences' ||
+        id == 'seed_sentences' ||
+        lowerTitle.contains('sentence') ||
+        id == 'cat_alphabets' ||
+        id == 'cat_letters' ||
+        id == 'letters' ||
+        lowerTitle.contains('alphabet') ||
+        lowerTitle.contains('letter') ||
+        id == 'cat_numbers' ||
+        lowerTitle.contains('number');
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Sync with sidebar selected category ID
+    final routeCategoryId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['categoryId'];
+    if (routeCategoryId != _lastRouteCategoryId) {
+      _lastRouteCategoryId = routeCategoryId;
+      _selectedCategoryId = routeCategoryId;
+    }
+
     final lessonsAsync = ref.watch(lessonNotifierProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
+
+    final categories = categoriesAsync.value ?? const <CategoryEntity>[];
+    final activeCategory = _selectedCategoryId != null
+        ? categories.firstWhere(
+            (c) => c.id == _selectedCategoryId,
+            orElse: () => const CategoryEntity(
+              id: '',
+              titleLatin: 'Lessons',
+              titleOlChiki: '',
+              description: '',
+            ),
+          )
+        : null;
+
+    final headerTitle = activeCategory != null && activeCategory.id.isNotEmpty
+        ? '${activeCategory.titleLatin} Lessons'
+        : 'Lessons';
+
+    final headerSubtitle =
+        activeCategory != null && activeCategory.id.isNotEmpty
+        ? 'Create and manage learning content for ${activeCategory.titleLatin}'
+        : 'Create and manage learning content';
+
+    final headerEyebrow = activeCategory != null && activeCategory.id.isNotEmpty
+        ? 'CONTENT · ${activeCategory.titleLatin.toUpperCase()}'
+        : 'CONTENT · LESSONS';
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -41,10 +99,10 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
         children: [
           // Header
           AdminSectionHeader(
-            title: 'Lessons',
-            subtitle: 'Create and manage learning content',
+            title: headerTitle,
+            subtitle: headerSubtitle,
             icon: Icons.school_rounded,
-            eyebrow: 'CONTENT · LESSONS',
+            eyebrow: headerEyebrow,
             actions: [
               OutlinedButton.icon(
                 onPressed: () => _handleSeedData(context),
@@ -67,7 +125,12 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
               ),
               const SizedBox(width: 12),
               ElevatedButton.icon(
-                onPressed: () => LessonFormSheet.show(context, ref, null),
+                onPressed: () => LessonFormSheet.show(
+                  context,
+                  ref,
+                  null,
+                  initialCategoryId: _selectedCategoryId,
+                ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
@@ -97,23 +160,39 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           const SizedBox(height: 14),
 
           // Category filter chips
-          categoriesAsync.when(
-            data: (categories) => _buildCategoryFilter(categories, isDark),
-            loading: () => const SizedBox(height: 40),
-            error: (_, _) => const SizedBox(),
-          ),
-
-          const SizedBox(height: 16),
+          if (routeCategoryId == null) ...[
+            categoriesAsync.when(
+              data: (categories) => _buildCategoryFilter(categories, isDark),
+              loading: () => const SizedBox(height: 40),
+              error: (_, _) => const SizedBox(),
+            ),
+            const SizedBox(height: 16),
+          ],
 
           // Lessons list
           Expanded(
             child: lessonsAsync.when(
               data: (lessons) {
-                var filtered = _selectedCategoryId == null
-                    ? lessons
-                    : lessons
-                          .where((l) => l.categoryId == _selectedCategoryId)
-                          .toList();
+                var filtered = lessons;
+                if (_selectedCategoryId != null) {
+                  filtered = lessons
+                      .where((l) => l.categoryId == _selectedCategoryId)
+                      .toList();
+                } else {
+                  // Exclude standard subcategories from general Lessons view
+                  filtered = lessons.where((l) {
+                    final cat = categories.firstWhere(
+                      (c) => c.id == l.categoryId,
+                      orElse: () => const CategoryEntity(
+                        id: '',
+                        titleLatin: '',
+                        titleOlChiki: '',
+                        description: '',
+                      ),
+                    );
+                    return !_isStandardCategory(cat);
+                  }).toList();
+                }
 
                 if (_searchQuery.isNotEmpty) {
                   final q = _searchQuery.toLowerCase();
@@ -300,7 +379,12 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
           message:
               'Create your first lesson to start building learning content.',
           actionLabel: 'Create Lesson',
-          onAction: () => LessonFormSheet.show(context, ref, null),
+          onAction: () => LessonFormSheet.show(
+            context,
+            ref,
+            null,
+            initialCategoryId: _selectedCategoryId,
+          ),
         )
         .animate()
         .fadeIn(delay: 200.ms, duration: 500.ms)

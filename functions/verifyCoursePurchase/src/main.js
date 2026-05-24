@@ -77,11 +77,12 @@ export default async ({ req, res, error }) => {
       // Document does not exist, proceed
     }
 
+    const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
     const documentPermissions = [
       `read("user:${userId}")`,
-      `read("team:admins")`,
-      `update("team:admins")`,
-      `delete("team:admins")`
+      `read("team:${adminTeamId}")`,
+      `update("team:${adminTeamId}")`,
+      `delete("team:${adminTeamId}")`
     ];
 
     if (unlockMethod === 'razorpay') {

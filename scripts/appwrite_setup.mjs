@@ -44,7 +44,7 @@ const headers = {
 };
 
 const adminWritePermissions = [
-  'read("any")',
+  'read("users")',
   `create("team:${ADMIN_TEAM_ID}")`,
   `update("team:${ADMIN_TEAM_ID}")`,
   `delete("team:${ADMIN_TEAM_ID}")`,
@@ -919,7 +919,7 @@ async function main() {
   for (const bucket of buckets) {
     console.log(`  📁 Bucket: ${bucket.name} (${bucket.id})`);
     const permissions = bucket.permissions || [
-      'read("any")',
+      'read("users")',
       `create("team:${ADMIN_TEAM_ID}")`,
       `update("team:${ADMIN_TEAM_ID}")`,
       `delete("team:${ADMIN_TEAM_ID}")`,

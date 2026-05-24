@@ -9,13 +9,20 @@ import '../../widgets/admin_form_widgets.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {
   final LessonEntity? lesson;
+  final String? initialCategoryId;
 
-  const LessonFormSheet({super.key, this.lesson});
+  const LessonFormSheet({super.key, this.lesson, this.initialCategoryId});
 
-  static void show(BuildContext context, WidgetRef ref, LessonEntity? lesson) {
+  static void show(
+    BuildContext context,
+    WidgetRef ref,
+    LessonEntity? lesson, {
+    String? initialCategoryId,
+  }) {
     showAdminBottomSheet(
       context: context,
-      builder: (_) => LessonFormSheet(lesson: lesson),
+      builder: (_) =>
+          LessonFormSheet(lesson: lesson, initialCategoryId: initialCategoryId),
     );
   }
 
@@ -46,6 +53,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
 
     _selectedCategoryId =
         lesson?.categoryId ??
+        widget.initialCategoryId ??
         (categories.isNotEmpty ? categories.first.id : null);
     _titleLatinCtrl = TextEditingController(text: lesson?.titleLatin ?? '');
     _titleOlChikiCtrl = TextEditingController(text: lesson?.titleOlChiki ?? '');
@@ -57,6 +65,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
     _thumbnailUrl = lesson?.data?['thumbnailUrl'];
 
     _isActive = lesson?.isActive ?? true;
+    _level = lesson?.level ?? 'beginner';
   }
 
   @override
@@ -338,6 +347,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
                               estimatedMinutes:
                                   int.tryParse(_minutesCtrl.text.trim()) ?? 5,
                               order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
+                              level: _level,
                               blocks:
                                   widget.lesson?.blocks ??
                                   const [

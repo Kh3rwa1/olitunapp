@@ -153,17 +153,20 @@ class QuizScreen extends ConsumerWidget {
                         width: 56,
                         height: 56,
                         decoration: BoxDecoration(
-                          color: AppColors.primary.withValues(alpha: 0.15),
+                          color: AppColors.primary.withValues(alpha: 0.1),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: AppColors.primary.withValues(alpha: 0.3),
+                            color: AppColors.primary.withValues(alpha: 0.2),
                             width: 1.5,
                           ),
                         ),
-                        child: const Center(
-                          child: Text(
-                            '🦉', // AAA Duolingo style Mascot owl
-                            style: TextStyle(fontSize: 30),
+                        child: ClipOval(
+                          child: Padding(
+                            padding: const EdgeInsets.all(4.0),
+                            child: Image.asset(
+                              'assets/images/olitun_mascot.png',
+                              fit: BoxFit.contain,
+                            ),
                           ),
                         ),
                       ),
@@ -252,7 +255,7 @@ class QuizScreen extends ConsumerWidget {
                                   state.selectedAnswer != null
                                       ? question.optionsOlChiki[state
                                             .selectedAnswer!]
-                                      : '      ', // Empty blank
+                                      : ' ── ', // Empty blank line placeholder
                                   style: TextStyle(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w900,

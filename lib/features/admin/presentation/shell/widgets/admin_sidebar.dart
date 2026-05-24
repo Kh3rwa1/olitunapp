@@ -108,7 +108,7 @@ class AdminSidebar extends ConsumerWidget {
                           route = '/admin/numbers';
                           icon = Icons.pin_rounded;
                         } else {
-                          route = '/admin/lessons';
+                          route = '/admin/lessons?categoryId=$id';
                           switch (category.iconName?.toLowerCase()) {
                             case 'alphabet':
                               icon = Icons.text_fields_rounded;
@@ -133,11 +133,13 @@ class AdminSidebar extends ConsumerWidget {
                           }
                         }
 
-                        final isSelected =
-                            (route == '/admin/lessons' &&
-                                location == '/admin/lessons')
-                            ? false
-                            : location == route;
+                        final isSelected = route.startsWith('/admin/lessons?')
+                            ? (location == '/admin/lessons' &&
+                                  GoRouterState.of(
+                                        context,
+                                      ).uri.queryParameters['categoryId'] ==
+                                      id)
+                            : (location == route);
 
                         return AdminNavItem(
                           icon: icon,
@@ -165,7 +167,12 @@ class AdminSidebar extends ConsumerWidget {
                 AdminNavItem(
                   icon: Icons.school_rounded,
                   label: 'Lessons',
-                  isSelected: location.startsWith('/admin/lessons'),
+                  isSelected:
+                      location == '/admin/lessons' &&
+                      GoRouterState.of(
+                            context,
+                          ).uri.queryParameters['categoryId'] ==
+                          null,
                   onTap: () => _navigate(context, '/admin/lessons'),
                   isCompact: isCompact,
                 ),

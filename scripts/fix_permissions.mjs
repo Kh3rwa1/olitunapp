@@ -71,9 +71,13 @@ async function fixPermissions() {
         }
         
         for (const doc of res.documents) {
-          // Check if it already has read("any")
-          if (!doc.$permissions.includes('read("any")')) {
-            const newPermissions = [...doc.$permissions, 'read("any")'];
+          // Check if it already has read("users") and doesn't have read("any")
+          const hasUsersRead = doc.$permissions.includes('read("users")');
+          const hasAnyRead = doc.$permissions.includes('read("any")');
+          if (!hasUsersRead || hasAnyRead) {
+            const newPermissions = doc.$permissions
+              .filter((p) => p !== 'read("any")' && p !== 'read("users")')
+              .concat('read("users")');
             
             // Update the document with new permissions
             await api('PATCH', `/databases/${DATABASE_ID}/collections/${collectionId}/documents/${doc.$id}`, {

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -17,6 +18,41 @@ class AppwriteDbService {
   AppwriteDbService(this._client)
     : _tablesDB = TablesDB(_client),
       storage = Storage(_client);
+
+  // ─── Retry & Backoff Helper ───
+
+  Future<T> _retryWithBackoff<T>(
+    Future<T> Function() action, {
+    int maxRetries = 3,
+    Duration initialDelay = const Duration(milliseconds: 500),
+  }) async {
+    int attempt = 0;
+    while (true) {
+      try {
+        return await action();
+      } catch (e) {
+        attempt++;
+        final isTransient =
+            e is TimeoutException ||
+            (e is AppwriteException &&
+                (e.code == 0 ||
+                    e.type == 'network_failure' ||
+                    e.code == 502 ||
+                    e.code == 503 ||
+                    e.code == 504)) ||
+            e.toString().contains('SocketException') ||
+            e.toString().contains('TimeoutException') ||
+            e.toString().contains('ClientException');
+
+        if (!isTransient || attempt >= maxRetries) {
+          rethrow;
+        }
+
+        final delay = initialDelay * (attempt * attempt); // exponential backoff
+        await Future.delayed(delay);
+      }
+    }
+  }
 
   // ─── Generic CRUD ───
 
@@ -52,18 +88,20 @@ class AppwriteDbService {
     var total = 0;
 
     do {
-      final result = await _tablesDB
-          .listRows(
-            databaseId: AppwriteConfig.databaseId,
-            tableId: collectionId,
-            queries: AppwriteQueryPaging.pagedQueries(
-              baseQueries,
-              limit: pageSize,
-              offset: offset,
-            ),
-            total: true,
-          )
-          .timeout(_readTimeout);
+      final result = await _retryWithBackoff(
+        () => _tablesDB
+            .listRows(
+              databaseId: AppwriteConfig.databaseId,
+              tableId: collectionId,
+              queries: AppwriteQueryPaging.pagedQueries(
+                baseQueries,
+                limit: pageSize,
+                offset: offset,
+              ),
+              total: true,
+            )
+            .timeout(_readTimeout),
+      );
 
       total = result.total;
       rows.addAll(result.rows.map(_rowToMap));
@@ -79,13 +117,15 @@ class AppwriteDbService {
     String collectionId, {
     required List<String> queries,
   }) async {
-    final result = await _tablesDB
-        .listRows(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: collectionId,
-          queries: queries,
-        )
-        .timeout(_readTimeout);
+    final result = await _retryWithBackoff(
+      () => _tablesDB
+          .listRows(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            queries: queries,
+          )
+          .timeout(_readTimeout),
+    );
     return result.rows.map(_rowToMap).toList();
   }
 
@@ -108,13 +148,15 @@ class AppwriteDbService {
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
     }
-    final row = await _tablesDB
-        .getRow(
-          databaseId: AppwriteConfig.databaseId,
-          tableId: collectionId,
-          rowId: documentId,
-        )
-        .timeout(_readTimeout);
+    final row = await _retryWithBackoff(
+      () => _tablesDB
+          .getRow(
+            databaseId: AppwriteConfig.databaseId,
+            tableId: collectionId,
+            rowId: documentId,
+          )
+          .timeout(_readTimeout),
+    );
     final data = Map<String, dynamic>.from(row.data);
     data['id'] = row.$id;
     return data;
@@ -142,7 +184,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [Permission.read(Role.any())],
+            permissions: [Permission.read(Role.users())],
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(
@@ -182,7 +224,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [Permission.read(Role.any())],
+            permissions: [Permission.read(Role.users())],
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(

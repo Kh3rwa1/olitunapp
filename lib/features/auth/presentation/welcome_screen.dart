@@ -433,22 +433,11 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
               )
             else ...[
               // Google "G" icon
-              Container(
-                width: 24,
-                height: 24,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(4),
-                ),
-                child: const Text(
-                  'G',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w700,
-                    color: Color(0xFF4285F4),
-                    height: 1.2,
-                  ),
-                ),
+              Image.asset(
+                'assets/icons/google_logo.png',
+                width: 22,
+                height: 22,
+                fit: BoxFit.contain,
               ),
               const SizedBox(width: 12),
               const Text(

@@ -22,7 +22,7 @@ export const CONTENT_COLLECTIONS = [
   'categories',
 ];
 
-const ACTIONS = new Set(['backup_content', 'wipe_content']);
+const ACTIONS = new Set(['backup_content', 'wipe_content', 'restore_content']);
 
 export function parseBody(body) {
   if (!body) return {};
@@ -62,6 +62,10 @@ export function validateRequest({ method, userId, body }) {
 
   if (body.action === 'wipe_content' && body.confirmation !== 'WIPE ALL') {
     return { status: 400, message: 'Invalid confirmation phrase.' };
+  }
+
+  if (body.action === 'restore_content' && !body.fileId) {
+    return { status: 400, message: 'Missing backup file ID.' };
   }
 
   return null;
@@ -162,6 +166,52 @@ export async function deleteCollectionDocuments(databases, collectionId) {
   }
 }
 
+export function sanitizeDocument(doc) {
+  if (!doc || typeof doc !== 'object') return {};
+  const data = { ...doc };
+  for (const key of Object.keys(data)) {
+    if (key.startsWith('$')) {
+      delete data[key];
+    }
+  }
+  return data;
+}
+
+export async function restoreContent({ databases, storage, fileId }) {
+  const buffer = await storage.getFileDownload(BACKUP_BUCKET_ID, fileId);
+  const backupData = JSON.parse(buffer.toString('utf-8'));
+  if (!backupData || typeof backupData !== 'object' || !backupData.collections) {
+    throw new Error('Invalid backup file structure.');
+  }
+
+  const deleted = {};
+  for (const collectionId of CONTENT_COLLECTIONS) {
+    deleted[collectionId] = await deleteCollectionDocuments(
+      databases,
+      collectionId,
+    );
+  }
+
+  const restored = {};
+  for (const collectionId of CONTENT_COLLECTIONS) {
+    const docs = backupData.collections[collectionId] || [];
+    restored[collectionId] = 0;
+    for (const doc of docs) {
+      const sanitized = sanitizeDocument(doc);
+      await databases.createDocument(
+        DATABASE_ID,
+        collectionId,
+        doc.$id,
+        sanitized,
+        doc.$permissions
+      );
+      restored[collectionId] += 1;
+    }
+  }
+
+  return { restored, deleted };
+}
+
 function json(res, status, payload) {
   return res.json(payload, status);
 }
@@ -207,6 +257,24 @@ export default async ({ req, res, log, error }) => {
       return json(res, 200, {
         success: true,
         backup,
+      });
+    }
+
+    if (body.action === 'restore_content') {
+      const { restored, deleted } = await restoreContent({
+        databases,
+        storage,
+        fileId: body.fileId,
+      });
+
+      log(
+        `Admin maintenance restore_content completed by ${userId} using backup ${body.fileId}; safety backup ${backup.fileId}.`,
+      );
+      return json(res, 200, {
+        success: true,
+        backup,
+        restored,
+        deleted,
       });
     }
 

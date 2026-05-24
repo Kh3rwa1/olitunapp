@@ -75,7 +75,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
             collectionId: 'categories',
             documentId: category.id,
             data: data,
-            permissions: [Permission.read(Role.any())],
+            permissions: [Permission.read(Role.users())],
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {
@@ -99,7 +99,7 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
             collectionId: 'categories',
             documentId: category.id,
             data: data,
-            permissions: [Permission.read(Role.any())],
+            permissions: [Permission.read(Role.users())],
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

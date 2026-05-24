@@ -3,9 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
-import 'dart:ui_web' as ui_web;
-import 'package:web/web.dart' as web;
 import 'package:url_launcher/url_launcher.dart';
+import 'platform_view_stub.dart'
+    if (dart.library.js_interop) 'platform_view_web.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -509,14 +509,7 @@ class _HtmlHeroMediaState extends State<_HtmlHeroMedia> {
     super.initState();
     _viewId = 'html-hero-${widget.url.hashCode}';
     if (kIsWeb) {
-      ui_web.platformViewRegistry.registerViewFactory(
-        _viewId,
-        (int viewId) => web.HTMLIFrameElement()
-          ..src = widget.url
-          ..style.border = 'none'
-          ..style.width = '100%'
-          ..style.height = '100%',
-      );
+      registerHtmlView(_viewId, widget.url);
     }
   }
 

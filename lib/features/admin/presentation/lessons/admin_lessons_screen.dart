@@ -77,17 +77,17 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
         : null;
 
     final headerTitle = activeCategory != null && activeCategory.id.isNotEmpty
-        ? '${activeCategory.titleLatin} Lessons'
-        : 'Lessons';
+        ? '${activeCategory.titleLatin} Subcategories'
+        : 'Subcategories';
 
     final headerSubtitle =
         activeCategory != null && activeCategory.id.isNotEmpty
-        ? 'Create and manage learning content for ${activeCategory.titleLatin}'
-        : 'Create and manage learning content';
+        ? 'Create and manage subcategories for ${activeCategory.titleLatin}'
+        : 'Create and manage subcategories';
 
     final headerEyebrow = activeCategory != null && activeCategory.id.isNotEmpty
         ? 'CONTENT · ${activeCategory.titleLatin.toUpperCase()}'
-        : 'CONTENT · LESSONS';
+        : 'CONTENT · SUBCATEGORIES';
 
     return Padding(
       padding: EdgeInsets.symmetric(
@@ -145,7 +145,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
                 ),
                 icon: const Icon(Icons.add_rounded, size: 18),
                 label: const Text(
-                  'Add Lesson',
+                  'Add Subcategory',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
               ),
@@ -231,7 +231,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
       onChanged: (v) => setState(() => _searchQuery = v),
       style: TextStyle(color: isDark ? Colors.white : Colors.black87),
       decoration: InputDecoration(
-        hintText: 'Search lessons by name...',
+        hintText: 'Search subcategories by name...',
         hintStyle: TextStyle(
           color: isDark ? Colors.white30 : Colors.black26,
           fontWeight: FontWeight.w500,
@@ -375,10 +375,10 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
 
     return AdminEmptyState(
           icon: Icons.school_outlined,
-          title: 'No lessons yet',
+          title: 'No subcategories yet',
           message:
-              'Create your first lesson to start building learning content.',
-          actionLabel: 'Create Lesson',
+              'Create your first subcategory to start building learning content.',
+          actionLabel: 'Create Subcategory',
           onAction: () => LessonFormSheet.show(
             context,
             ref,
@@ -414,7 +414,7 @@ class _AdminLessonsScreenState extends ConsumerState<AdminLessonsScreen> {
   void _showDeleteDialog(BuildContext context, LessonEntity lesson) async {
     final ok = await showAdminConfirmDialog(
       context: context,
-      title: 'Delete Lesson',
+      title: 'Delete Subcategory',
       message:
           'Are you sure you want to delete "${lesson.titleLatin}"? This action cannot be undone.',
     );

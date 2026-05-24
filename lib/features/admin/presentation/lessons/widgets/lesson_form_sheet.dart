@@ -149,7 +149,7 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
               children: [
                 Expanded(
                   child: Text(
-                    _isEditing ? 'Edit Lesson' : 'Create Lesson',
+                    _isEditing ? 'Edit Subcategory' : 'Create Subcategory',
                     style: TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.w800,
@@ -389,7 +389,9 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
 
                             if (context.mounted) Navigator.pop(context);
                           },
-                    child: Text(_isEditing ? 'Save Changes' : 'Create Lesson'),
+                    child: Text(
+                      _isEditing ? 'Save Changes' : 'Create Subcategory',
+                    ),
                   ),
                 ),
               ],

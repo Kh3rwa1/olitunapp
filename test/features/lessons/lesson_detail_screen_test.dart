@@ -10,6 +10,8 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import '../../test_utils.dart';
 
 class MockLessonRepository extends Mock implements LessonRepository {}
@@ -45,6 +47,13 @@ class _MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
       );
 }
 
+class MockCategoryNotifier
+    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
+    with Mock
+    implements CategoryNotifier {
+  MockCategoryNotifier() : super(const AsyncValue.data([]));
+}
+
 void main() {
   late MockLessonRepository mockRepo;
 
@@ -77,6 +86,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
+          categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(const AsyncValue.loading(), mockRepo),
           ),
@@ -101,6 +111,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
+          categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
           lessonNotifierProvider.overrideWith(
             (ref) => _MockLessonNotifier(
               const AsyncValue.data([mockLesson]),
@@ -136,6 +147,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             userStatsProvider.overrideWith((ref) => _MockUserStatsNotifier()),
+            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
             lessonNotifierProvider.overrideWith(
               (ref) => _MockLessonNotifier(
                 const AsyncValue.data([mockLesson]),

@@ -37,10 +37,28 @@ List<LessonEntity> filterAdminContentLessons(
   CategoryEntity? category,
   AdminContentKind kind,
 ) {
-  final candidateIds = kind == AdminContentKind.vocabulary
-      ? <String>{'cat_vocab', 'cat_words', 'seed_words'}
-      : <String>{'cat_sentences', 'seed_sentences'};
-  if (category != null) candidateIds.add(category.id);
+  final candidateIds = <String>{};
+  if (category != null) {
+    candidateIds.add(category.id);
+    final isStandardVocab =
+        category.id == 'cat_vocab' ||
+        category.id == 'cat_words' ||
+        category.id == 'seed_words';
+    final isStandardSentences =
+        category.id == 'cat_sentences' || category.id == 'seed_sentences';
+
+    if (isStandardVocab) {
+      candidateIds.addAll(const {'cat_vocab', 'cat_words', 'seed_words'});
+    } else if (isStandardSentences) {
+      candidateIds.addAll(const {'cat_sentences', 'seed_sentences'});
+    }
+  } else {
+    candidateIds.addAll(
+      kind == AdminContentKind.vocabulary
+          ? const {'cat_vocab', 'cat_words', 'seed_words'}
+          : const {'cat_sentences', 'seed_sentences'},
+    );
+  }
 
   final filtered =
       lessons
@@ -85,6 +103,9 @@ class AdminContentSubcategories extends StatelessWidget {
     required this.onSeed,
     required this.onEdit,
     required this.onDelete,
+    this.selectedLessonId,
+    this.onSelect,
+    this.showContentEditor = true,
   });
 
   final String title;
@@ -97,6 +118,9 @@ class AdminContentSubcategories extends StatelessWidget {
   final VoidCallback onSeed;
   final ValueChanged<LessonEntity> onEdit;
   final ValueChanged<LessonEntity> onDelete;
+  final String? selectedLessonId;
+  final ValueChanged<LessonEntity>? onSelect;
+  final bool showContentEditor;
 
   @override
   Widget build(BuildContext context) {
@@ -153,9 +177,13 @@ class AdminContentSubcategories extends StatelessWidget {
                     lesson: lesson,
                     isDark: isDark,
                     onEdit: () => onEdit(lesson),
-                    onContent: () =>
-                        context.go('/admin/lessons/content/${lesson.id}'),
+                    onContent: showContentEditor
+                        ? () =>
+                              context.go('/admin/lessons/content/${lesson.id}')
+                        : null,
                     onDelete: () => onDelete(lesson),
+                    isSelected: selectedLessonId == lesson.id,
+                    onTap: onSelect != null ? () => onSelect!(lesson) : null,
                   );
                 },
               ),
@@ -230,126 +258,150 @@ class _SubcategoryCard extends StatelessWidget {
     required this.onEdit,
     required this.onContent,
     required this.onDelete,
+    this.isSelected = false,
+    this.onTap,
   });
 
   final LessonEntity lesson;
   final bool isDark;
   final VoidCallback onEdit;
-  final VoidCallback onContent;
+  final VoidCallback? onContent;
   final VoidCallback onDelete;
+  final bool isSelected;
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 268,
-      padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: AdminTokens.sunken(isDark),
+        color: isSelected
+            ? AppColors.primary.withValues(alpha: isDark ? 0.15 : 0.08)
+            : AdminTokens.sunken(isDark),
         borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-        border: Border.all(color: AdminTokens.border(isDark)),
+        border: Border.all(
+          color: isSelected
+              ? AppColors.primary.withValues(alpha: 0.5)
+              : AdminTokens.border(isDark),
+          width: isSelected ? 2 : 1,
+        ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: AppColors.primary.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-                  border: Border.all(
-                    color: AppColors.primary.withValues(alpha: 0.22),
-                  ),
-                ),
-                child: const Icon(
-                  Icons.folder_copy_rounded,
-                  color: AppColors.primary,
-                  size: 20,
-                ),
-              ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+          child: Padding(
+            padding: const EdgeInsets.all(12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Text(
-                      lesson.titleLatin.isEmpty
-                          ? 'Untitled Subcategory'
-                          : lesson.titleLatin,
-                      style: AdminTokens.bodyStrong(isDark),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                    if (lesson.titleOlChiki.isNotEmpty)
-                      Text(
-                        lesson.titleOlChiki,
-                        style: AdminTokens.label(isDark).copyWith(
-                          color: AdminTokens.textSecondary(isDark),
-                          letterSpacing: 0,
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: AppColors.primary.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusSm,
                         ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
+                        border: Border.all(
+                          color: AppColors.primary.withValues(alpha: 0.22),
+                        ),
                       ),
+                      child: const Icon(
+                        Icons.folder_copy_rounded,
+                        color: AppColors.primary,
+                        size: 20,
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            lesson.titleLatin.isEmpty
+                                ? 'Untitled Subcategory'
+                                : lesson.titleLatin,
+                            style: AdminTokens.bodyStrong(isDark),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (lesson.titleOlChiki.isNotEmpty)
+                            Text(
+                              lesson.titleOlChiki,
+                              style: AdminTokens.label(isDark).copyWith(
+                                color: AdminTokens.textSecondary(isDark),
+                                letterSpacing: 0,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                        ],
+                      ),
+                    ),
                   ],
                 ),
-              ),
-            ],
+                const Spacer(),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    _MetaChip(
+                      icon: Icons.sort_rounded,
+                      label: 'Order ${lesson.order}',
+                      isDark: isDark,
+                    ),
+                    _MetaChip(
+                      icon: Icons.school_rounded,
+                      label: lesson.level,
+                      isDark: isDark,
+                    ),
+                    _MetaChip(
+                      icon: Icons.layers_rounded,
+                      label: '${lesson.blocks.length} blocks',
+                      isDark: isDark,
+                    ),
+                    _MetaChip(
+                      icon: lesson.isActive
+                          ? Icons.visibility_rounded
+                          : Icons.visibility_off_rounded,
+                      label: lesson.isActive ? 'Active' : 'Hidden',
+                      isDark: isDark,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    AdminIconAction(
+                      icon: Icons.edit_rounded,
+                      tooltip: 'Edit metadata',
+                      onTap: onEdit,
+                    ),
+                    if (onContent != null) ...[
+                      const SizedBox(width: 8),
+                      AdminIconAction(
+                        icon: Icons.dashboard_customize_rounded,
+                        tooltip: 'Edit content',
+                        onTap: onContent!,
+                      ),
+                    ],
+                    const Spacer(),
+                    AdminIconAction(
+                      icon: Icons.delete_outline_rounded,
+                      tooltip: 'Delete',
+                      destructive: true,
+                      onTap: onDelete,
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          const Spacer(),
-          Wrap(
-            spacing: 6,
-            runSpacing: 6,
-            children: [
-              _MetaChip(
-                icon: Icons.sort_rounded,
-                label: 'Order ${lesson.order}',
-                isDark: isDark,
-              ),
-              _MetaChip(
-                icon: Icons.school_rounded,
-                label: lesson.level,
-                isDark: isDark,
-              ),
-              _MetaChip(
-                icon: Icons.layers_rounded,
-                label: '${lesson.blocks.length} blocks',
-                isDark: isDark,
-              ),
-              _MetaChip(
-                icon: lesson.isActive
-                    ? Icons.visibility_rounded
-                    : Icons.visibility_off_rounded,
-                label: lesson.isActive ? 'Active' : 'Hidden',
-                isDark: isDark,
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            children: [
-              AdminIconAction(
-                icon: Icons.edit_rounded,
-                tooltip: 'Edit metadata',
-                onTap: onEdit,
-              ),
-              const SizedBox(width: 8),
-              AdminIconAction(
-                icon: Icons.dashboard_customize_rounded,
-                tooltip: 'Edit content',
-                onTap: onContent,
-              ),
-              const Spacer(),
-              AdminIconAction(
-                icon: Icons.delete_outline_rounded,
-                tooltip: 'Delete',
-                destructive: true,
-                onTap: onDelete,
-              ),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }

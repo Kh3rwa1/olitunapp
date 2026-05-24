@@ -11,16 +11,21 @@ import '../../widgets/admin_form_widgets.dart';
 
 class SentenceFormSheet extends ConsumerStatefulWidget {
   final SentenceModel? sentence;
-  const SentenceFormSheet({super.key, this.sentence});
+  final String? initialCategory;
+  const SentenceFormSheet({super.key, this.sentence, this.initialCategory});
 
   static void show(
     BuildContext context,
     WidgetRef ref,
-    SentenceModel? sentence,
-  ) {
+    SentenceModel? sentence, {
+    String? initialCategory,
+  }) {
     showAdminBottomSheet(
       context: context,
-      builder: (_) => SentenceFormSheet(sentence: sentence),
+      builder: (_) => SentenceFormSheet(
+        sentence: sentence,
+        initialCategory: initialCategory,
+      ),
     );
   }
 
@@ -69,7 +74,9 @@ class _SentenceFormSheetState extends ConsumerState<SentenceFormSheet> {
     _latinCtrl = TextEditingController(text: s?.sentenceLatin ?? '');
     _meaningCtrl = TextEditingController(text: s?.meaning ?? '');
     _usageCtrl = TextEditingController(text: s?.usage ?? '');
-    _categoryCtrl = TextEditingController(text: s?.category ?? '');
+    _categoryCtrl = TextEditingController(
+      text: s?.category ?? widget.initialCategory ?? '',
+    );
     _pronCtrl = TextEditingController(text: s?.pronunciation ?? '');
     _orderCtrl = TextEditingController(text: (s?.order ?? 0).toString());
     _themeColorCtrl = TextEditingController(text: s?.themeColor ?? '');

@@ -80,48 +80,41 @@ class AdminSidebar extends ConsumerWidget {
                       children: sortedCategories.map((category) {
                         final lowerTitle = category.titleLatin.toLowerCase();
                         final id = category.id;
+                        final iconName = category.iconName?.toLowerCase();
 
-                        String route = '/admin/lessons';
-                        IconData icon = Icons.category_rounded;
+                        String route;
+                        IconData icon;
 
                         if (id == 'cat_vocab' ||
                             id == 'cat_words' ||
                             id == 'seed_words' ||
                             lowerTitle.contains('vocab') ||
-                            lowerTitle.contains('word')) {
-                          route = '/admin/words';
+                            lowerTitle.contains('word') ||
+                            iconName == 'words') {
+                          route = '/admin/words?categoryId=$id';
                           icon = Icons.menu_book_rounded;
                         } else if (id == 'cat_sentences' ||
                             id == 'seed_sentences' ||
-                            lowerTitle.contains('sentence')) {
-                          route = '/admin/sentences';
+                            lowerTitle.contains('sentence') ||
+                            iconName == 'sentences') {
+                          route = '/admin/sentences?categoryId=$id';
                           icon = Icons.format_quote_rounded;
                         } else if (id == 'cat_alphabets' ||
                             id == 'cat_letters' ||
                             id == 'letters' ||
                             lowerTitle.contains('alphabet') ||
-                            lowerTitle.contains('letter')) {
-                          route = '/admin/letters';
+                            lowerTitle.contains('letter') ||
+                            iconName == 'alphabet') {
+                          route = '/admin/letters?categoryId=$id';
                           icon = Icons.text_fields_rounded;
                         } else if (id == 'cat_numbers' ||
-                            lowerTitle.contains('number')) {
-                          route = '/admin/numbers';
+                            lowerTitle.contains('number') ||
+                            iconName == 'numbers') {
+                          route = '/admin/numbers?categoryId=$id';
                           icon = Icons.pin_rounded;
                         } else {
                           route = '/admin/lessons?categoryId=$id';
-                          switch (category.iconName?.toLowerCase()) {
-                            case 'alphabet':
-                              icon = Icons.text_fields_rounded;
-                              break;
-                            case 'numbers':
-                              icon = Icons.pin_rounded;
-                              break;
-                            case 'words':
-                              icon = Icons.menu_book_rounded;
-                              break;
-                            case 'sentences':
-                              icon = Icons.format_quote_rounded;
-                              break;
+                          switch (iconName) {
                             case 'arithmetic':
                               icon = Icons.calculate_rounded;
                               break;
@@ -133,13 +126,45 @@ class AdminSidebar extends ConsumerWidget {
                           }
                         }
 
-                        final isSelected = route.startsWith('/admin/lessons?')
-                            ? (location == '/admin/lessons' &&
-                                  GoRouterState.of(
-                                        context,
-                                      ).uri.queryParameters['categoryId'] ==
-                                      id)
-                            : (location == route);
+                        final targetUri = Uri.parse(route);
+                        final currentUri = GoRouterState.of(context).uri;
+
+                        bool isSelected = currentUri.path == targetUri.path;
+                        if (isSelected) {
+                          final currentId =
+                              currentUri.queryParameters['categoryId'];
+                          final targetId =
+                              targetUri.queryParameters['categoryId'];
+                          if (currentId != targetId) {
+                            final isDefaultWord =
+                                targetUri.path == '/admin/words' &&
+                                (targetId == 'cat_vocab' ||
+                                    targetId == 'cat_words' ||
+                                    targetId == 'seed_words') &&
+                                currentId == null;
+                            final isDefaultSentence =
+                                targetUri.path == '/admin/sentences' &&
+                                (targetId == 'cat_sentences' ||
+                                    targetId == 'seed_sentences') &&
+                                currentId == null;
+                            final isDefaultLetter =
+                                targetUri.path == '/admin/letters' &&
+                                (targetId == 'cat_alphabets' ||
+                                    targetId == 'cat_letters' ||
+                                    targetId == 'letters') &&
+                                currentId == null;
+                            final isDefaultNumber =
+                                targetUri.path == '/admin/numbers' &&
+                                targetId == 'cat_numbers' &&
+                                currentId == null;
+
+                            isSelected =
+                                isDefaultWord ||
+                                isDefaultSentence ||
+                                isDefaultLetter ||
+                                isDefaultNumber;
+                          }
+                        }
 
                         return AdminNavItem(
                           icon: icon,

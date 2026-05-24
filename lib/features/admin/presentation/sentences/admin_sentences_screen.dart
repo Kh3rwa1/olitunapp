@@ -43,15 +43,26 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     final sentencesAsync = ref.watch(sentencesProvider);
     final categories = ref.watch(categoryNotifierProvider).value ?? [];
     final lessons = ref.watch(lessonNotifierProvider).value ?? [];
-    final contentCategory = findAdminContentCategory(
-      categories,
-      AdminContentKind.sentences,
-    );
+
+    final routeCategoryId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['categoryId'];
+    final contentCategory = routeCategoryId != null
+        ? (categories.where((c) => c.id == routeCategoryId).firstOrNull ??
+              findAdminContentCategory(
+                categories,
+                AdminContentKind.sentences,
+              ) ??
+              (categories.isNotEmpty ? categories.first : null))
+        : findAdminContentCategory(categories, AdminContentKind.sentences);
+
     final subcategoryLessons = filterAdminContentLessons(
       lessons,
       contentCategory,
       AdminContentKind.sentences,
     );
+    final selectedLesson = _selectedLesson(subcategoryLessons);
+    final selectedLessonId = selectedLesson?.id;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -66,7 +77,12 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                child: _buildHeader(context, isDark, isWideScreen),
+                child: _buildHeader(
+                  context,
+                  isDark,
+                  isWideScreen,
+                  contentCategory,
+                ),
               ),
             ),
             SliverToBoxAdapter(
@@ -78,12 +94,13 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                   18,
                 ),
                 child: AdminContentSubcategories(
-                  title: 'Sentence Subcategories',
+                  title:
+                      '${contentCategory?.titleLatin ?? "Sentences"} Subcategories',
                   subtitle:
-                      'These are the lesson groups shown inside Sentences on the mobile app.',
-                  emptyTitle: 'No sentence subcategories found',
+                      'These are the lesson groups shown inside ${contentCategory?.titleLatin ?? "Sentences"} on the mobile app.',
+                  emptyTitle: 'No subcategories found',
                   emptyMessage:
-                      'Seed default data or add a subcategory to make Sentences editable.',
+                      'Seed default data or add a subcategory to make editable.',
                   lessons: subcategoryLessons,
                   isDark: isDark,
                   onAdd: () => _addSubcategory(context, contentCategory),
@@ -92,6 +109,17 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                       LessonFormSheet.show(context, ref, lesson),
                   onDelete: (lesson) =>
                       _confirmDeleteSubcategory(context, lesson),
+                  selectedLessonId: selectedLessonId,
+                  onSelect: (lesson) {
+                    setState(() {
+                      if (_selectedCategory == lesson.titleLatin) {
+                        _selectedCategory = null;
+                      } else {
+                        _selectedCategory = lesson.titleLatin;
+                      }
+                    });
+                  },
+                  showContentEditor: false,
                 ),
               ),
             ),
@@ -144,14 +172,18 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
                 final filtered = _selectedCategory == null
                     ? sentences
                     : _filterSentences(sentences, subcategoryLessons);
-                final selectedLesson = _selectedLesson(subcategoryLessons);
                 if (filtered.isEmpty) {
                   return SliverPadding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isWideScreen ? 32 : 20,
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: _emptyState(context, isDark, selectedLesson),
+                      child: _emptyState(
+                        context,
+                        isDark,
+                        selectedLesson,
+                        contentCategory,
+                      ),
                     ),
                   );
                 }
@@ -185,7 +217,12 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => SentenceFormSheet.show(context, ref, null),
+        onPressed: () => SentenceFormSheet.show(
+          context,
+          ref,
+          null,
+          initialCategory: _selectedCategory ?? contentCategory?.titleLatin,
+        ),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
@@ -196,7 +233,12 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
+  Widget _buildHeader(
+    BuildContext context,
+    bool isDark,
+    bool isWideScreen,
+    CategoryEntity? contentCategory,
+  ) {
     final actions = [
       OutlinedButton.icon(
         onPressed: () => _handleSeedData(context),
@@ -215,6 +257,16 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         ),
       ),
     ];
+
+    final isCustom =
+        contentCategory != null &&
+        contentCategory.id != 'cat_sentences' &&
+        contentCategory.id != 'seed_sentences';
+
+    final title = isCustom ? contentCategory.titleLatin : 'Sentences';
+    final eyebrow = isCustom
+        ? 'CONTENT · ${contentCategory.titleLatin.toUpperCase()}'
+        : 'CONTENT · SENTENCES';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -240,9 +292,9 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
         ],
         Expanded(
           child: AdminPageHeader(
-            title: 'Sentences',
+            title: title,
             subtitle: 'Manage phrases and conversations',
-            eyebrow: 'CONTENT · SENTENCES',
+            eyebrow: eyebrow,
             actions: actions,
           ),
         ),
@@ -299,6 +351,7 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     BuildContext context,
     bool isDark,
     LessonEntity? selectedLesson,
+    CategoryEntity? contentCategory,
   ) {
     if (selectedLesson != null && selectedLesson.blocks.isNotEmpty) {
       return Padding(
@@ -324,7 +377,12 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
             ? 'Add sentences for conversational practice.'
             : 'This subcategory has no saved Sentence records or editable lesson blocks yet.',
         actionLabel: 'Add Sentence',
-        onAction: () => SentenceFormSheet.show(context, ref, null),
+        onAction: () => SentenceFormSheet.show(
+          context,
+          ref,
+          null,
+          initialCategory: _selectedCategory ?? contentCategory?.titleLatin,
+        ),
       ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
     );
   }
@@ -622,7 +680,9 @@ class _AdminSentencesScreenState extends ConsumerState<AdminSentencesScreen> {
     try {
       await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
       if (context.mounted) {
-        context.go('/admin/lessons/content/$id');
+        setState(() {
+          _selectedCategory = lesson.titleLatin;
+        });
       }
     } catch (e) {
       if (!context.mounted) return;

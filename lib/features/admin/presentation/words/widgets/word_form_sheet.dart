@@ -11,12 +11,19 @@ import '../../widgets/admin_form_widgets.dart';
 
 class WordFormSheet extends ConsumerStatefulWidget {
   final WordModel? word;
-  const WordFormSheet({super.key, this.word});
+  final String? initialCategory;
+  const WordFormSheet({super.key, this.word, this.initialCategory});
 
-  static void show(BuildContext context, WidgetRef ref, WordModel? word) {
+  static void show(
+    BuildContext context,
+    WidgetRef ref,
+    WordModel? word, {
+    String? initialCategory,
+  }) {
     showAdminBottomSheet(
       context: context,
-      builder: (_) => WordFormSheet(word: word),
+      builder: (_) =>
+          WordFormSheet(word: word, initialCategory: initialCategory),
     );
   }
 
@@ -64,7 +71,9 @@ class _WordFormSheetState extends ConsumerState<WordFormSheet> {
     _wordLatinCtrl = TextEditingController(text: w?.wordLatin ?? '');
     _meaningCtrl = TextEditingController(text: w?.meaning ?? '');
     _usageCtrl = TextEditingController(text: w?.usage ?? '');
-    _categoryCtrl = TextEditingController(text: w?.category ?? '');
+    _categoryCtrl = TextEditingController(
+      text: w?.category ?? widget.initialCategory ?? '',
+    );
     _pronCtrl = TextEditingController(text: w?.pronunciation ?? '');
     _orderCtrl = TextEditingController(text: (w?.order ?? 0).toString());
     _themeColorCtrl = TextEditingController(text: w?.themeColor ?? '');

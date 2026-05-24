@@ -42,15 +42,26 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     final wordsAsync = ref.watch(wordsProvider);
     final categories = ref.watch(categoryNotifierProvider).value ?? [];
     final lessons = ref.watch(lessonNotifierProvider).value ?? [];
-    final contentCategory = findAdminContentCategory(
-      categories,
-      AdminContentKind.vocabulary,
-    );
+
+    final routeCategoryId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['categoryId'];
+    final contentCategory = routeCategoryId != null
+        ? (categories.where((c) => c.id == routeCategoryId).firstOrNull ??
+              findAdminContentCategory(
+                categories,
+                AdminContentKind.vocabulary,
+              ) ??
+              (categories.isNotEmpty ? categories.first : null))
+        : findAdminContentCategory(categories, AdminContentKind.vocabulary);
+
     final subcategoryLessons = filterAdminContentLessons(
       lessons,
       contentCategory,
       AdminContentKind.vocabulary,
     );
+    final selectedLesson = _selectedLesson(subcategoryLessons);
+    final selectedLessonId = selectedLesson?.id;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
@@ -65,7 +76,12 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
             SliverToBoxAdapter(
               child: Padding(
                 padding: EdgeInsets.all(isWideScreen ? 32 : 20),
-                child: _buildHeader(context, isDark, isWideScreen),
+                child: _buildHeader(
+                  context,
+                  isDark,
+                  isWideScreen,
+                  contentCategory,
+                ),
               ),
             ),
             SliverToBoxAdapter(
@@ -77,12 +93,13 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                   18,
                 ),
                 child: AdminContentSubcategories(
-                  title: 'Vocabulary Subcategories',
+                  title:
+                      '${contentCategory?.titleLatin ?? "Vocabulary"} Subcategories',
                   subtitle:
-                      'These are the lesson groups shown inside Vocabulary on the mobile app.',
-                  emptyTitle: 'No vocabulary subcategories found',
+                      'These are the lesson groups shown inside ${contentCategory?.titleLatin ?? "Vocabulary"} on the mobile app.',
+                  emptyTitle: 'No subcategories found',
                   emptyMessage:
-                      'Seed default data or add a subcategory to make Vocabulary editable.',
+                      'Seed default data or add a subcategory to make editable.',
                   lessons: subcategoryLessons,
                   isDark: isDark,
                   onAdd: () => _addSubcategory(context, contentCategory),
@@ -91,6 +108,17 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                       LessonFormSheet.show(context, ref, lesson),
                   onDelete: (lesson) =>
                       _confirmDeleteSubcategory(context, lesson),
+                  selectedLessonId: selectedLessonId,
+                  onSelect: (lesson) {
+                    setState(() {
+                      if (_selectedCategory == lesson.titleLatin) {
+                        _selectedCategory = null;
+                      } else {
+                        _selectedCategory = lesson.titleLatin;
+                      }
+                    });
+                  },
+                  showContentEditor: false,
                 ),
               ),
             ),
@@ -143,14 +171,18 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
                 final filtered = _selectedCategory == null
                     ? words
                     : _filterWords(words, subcategoryLessons);
-                final selectedLesson = _selectedLesson(subcategoryLessons);
                 if (filtered.isEmpty) {
                   return SliverPadding(
                     padding: EdgeInsets.symmetric(
                       horizontal: isWideScreen ? 32 : 20,
                     ),
                     sliver: SliverToBoxAdapter(
-                      child: _emptyState(context, isDark, selectedLesson),
+                      child: _emptyState(
+                        context,
+                        isDark,
+                        selectedLesson,
+                        contentCategory,
+                      ),
                     ),
                   );
                 }
@@ -180,7 +212,12 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         ),
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => WordFormSheet.show(context, ref, null),
+        onPressed: () => WordFormSheet.show(
+          context,
+          ref,
+          null,
+          initialCategory: _selectedCategory ?? contentCategory?.titleLatin,
+        ),
         backgroundColor: AppColors.primary,
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: const Text(
@@ -191,7 +228,12 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     );
   }
 
-  Widget _buildHeader(BuildContext context, bool isDark, bool isWideScreen) {
+  Widget _buildHeader(
+    BuildContext context,
+    bool isDark,
+    bool isWideScreen,
+    CategoryEntity? contentCategory,
+  ) {
     final actions = [
       OutlinedButton.icon(
         onPressed: () => _handleSeedData(context),
@@ -210,6 +252,17 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         ),
       ),
     ];
+
+    final isCustom =
+        contentCategory != null &&
+        contentCategory.id != 'cat_vocab' &&
+        contentCategory.id != 'cat_words' &&
+        contentCategory.id != 'seed_words';
+
+    final title = isCustom ? contentCategory.titleLatin : 'Vocabulary';
+    final eyebrow = isCustom
+        ? 'CONTENT · ${contentCategory.titleLatin.toUpperCase()}'
+        : 'CONTENT · WORDS';
 
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,9 +288,9 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
         ],
         Expanded(
           child: AdminPageHeader(
-            title: 'Vocabulary',
+            title: title,
             subtitle: 'Manage words and their meanings',
-            eyebrow: 'CONTENT · WORDS',
+            eyebrow: eyebrow,
             actions: actions,
           ),
         ),
@@ -294,6 +347,7 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     BuildContext context,
     bool isDark,
     LessonEntity? selectedLesson,
+    CategoryEntity? contentCategory,
   ) {
     if (selectedLesson != null && selectedLesson.blocks.isNotEmpty) {
       return Padding(
@@ -319,7 +373,12 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
             ? 'Add vocabulary words to build the learning dictionary.'
             : 'This subcategory has no saved Word records or editable lesson blocks yet.',
         actionLabel: 'Add Word',
-        onAction: () => WordFormSheet.show(context, ref, null),
+        onAction: () => WordFormSheet.show(
+          context,
+          ref,
+          null,
+          initialCategory: _selectedCategory ?? contentCategory?.titleLatin,
+        ),
       ).animate().fadeIn(delay: 200.ms, duration: 500.ms),
     );
   }
@@ -610,7 +669,9 @@ class _AdminWordsScreenState extends ConsumerState<AdminWordsScreen> {
     try {
       await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
       if (context.mounted) {
-        context.go('/admin/lessons/content/$id');
+        setState(() {
+          _selectedCategory = lesson.titleLatin;
+        });
       }
     } catch (e) {
       if (!context.mounted) return;

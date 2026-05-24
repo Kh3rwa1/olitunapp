@@ -283,7 +283,10 @@ class _LetterDetailScreenState extends ConsumerState<LetterDetailScreen> {
             },
             backgroundColor: accentColor,
             elevation: 4,
-            child: const Icon(Icons.edit_note_rounded, color: textContrastColor),
+            child: const Icon(
+              Icons.edit_note_rounded,
+              color: textContrastColor,
+            ),
           ),
           floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
         );

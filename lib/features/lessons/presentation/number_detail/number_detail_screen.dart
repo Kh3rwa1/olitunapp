@@ -8,6 +8,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/widgets/parallax_hero_sliver_app_bar.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../core/utils/text_match.dart';
@@ -53,18 +54,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     '᱑᱐': '🔟',
   };
 
-  static const List<Color> _accentColors = [
-    Color(0xFF2196F3),
-    Color(0xFF4CAF50),
-    Color(0xFFFFC107),
-    Color(0xFF00bcd4),
-    Color(0xFFE91E63),
-    Color(0xFF009688),
-    Color(0xFF607D8B),
-    Color(0xFFFF5722),
-    Color(0xFFF44336),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -100,10 +89,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         .map((rune) => rune.toRadixString(16))
         .join('-');
     return '$_emojiBaseUrl/$runes.png';
-  }
-
-  Color _getAccentColor(int index) {
-    return _accentColors[index % _accentColors.length];
   }
 
   Color _parseThemeColor(String? colorStr, Color fallback) {
@@ -254,18 +239,13 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
         final currentNumber = numbers[_currentIndex];
         final accentColor = _parseThemeColor(
           currentNumber.themeColor,
-          _getAccentColor(_currentIndex),
+          AppColors.duoBlue,
         );
-        final isLightColor = accentColor.computeLuminance() > 0.55;
-        final textContrastColor = isLightColor
-            ? const Color(0xFF1A1A1A)
-            : Colors.white;
+        const textContrastColor = Colors.white;
 
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor
-                  ? const Color(0xFFF8FAFC)
-                  : accentColor.withValues(alpha: 0.05));
+            : const Color(0xFFF8FAFC);
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -346,50 +326,6 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
     );
   }
 
-  Widget _buildBackgroundAura(Color color, bool isDark) {
-    final double auraOpacity = isDark ? 0.15 : 0.25;
-    return Stack(
-      children: [
-        Positioned(
-          top: -80,
-          right: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity),
-                  blurRadius: 100,
-                  spreadRadius: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: -100,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity * 0.8),
-                  blurRadius: 120,
-                  spreadRadius: 30,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildGlassCard({
     required Widget child,
     required Color themeColor,
@@ -436,15 +372,9 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
   }
 
   Widget _buildNumberPage(NumberModel number, int index, bool isDark) {
-    final defaultAccent = _getAccentColor(index);
-    final accentColor = _parseThemeColor(number.themeColor, defaultAccent);
-    final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor
-        ? const Color(0xFF1A1A1A)
-        : Colors.white;
-    final contentTextColor = isDark
-        ? Colors.white70
-        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final accentColor = _parseThemeColor(number.themeColor, AppColors.duoBlue);
+    const textContrastColor = Colors.white;
+    final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
 
     final emoji = _numberEmojis[number.numeral] ?? '🔢';
     final isThisPlaying = _isAudioPlaying && _playingId == number.id;
@@ -471,18 +401,13 @@ class _NumberDetailScreenState extends ConsumerState<NumberDetailScreen> {
 
     return Stack(
       children: [
-        _buildBackgroundAura(accentColor, isDark),
         CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
             ParallaxHeroSliverAppBar(
-              gradient: LinearGradient(
-                colors: [accentColor, accentColor.withValues(alpha: 0.78)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppColors.skyBlueGradient,
               foregroundColor: textContrastColor,
               glyphColor: textContrastColor,
               glyph: number.numeral,

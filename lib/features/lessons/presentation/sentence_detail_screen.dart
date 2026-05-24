@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/utils/text_match.dart';
@@ -35,18 +36,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   // Sound play state
   bool _isAudioPlaying = false;
   String? _playingId;
-
-  // Accent colors for sentences (excluding purple/violet/lavender)
-  static const List<Color> _accentColors = [
-    Color(0xFFFF9800), // Amber
-    Color(0xFFFF5722), // Orange/Coral
-    Color(0xFF2196F3), // Blue
-    Color(0xFF4CAF50), // Green
-    Color(0xFFE91E63), // Crimson/Rose
-    Color(0xFF009688), // Teal
-    Color(0xFF03A9F4), // Sky Blue
-    Color(0xFF4DB6AC), // Mint
-  ];
 
   static const List<String> _sentenceEmojis = [
     '💬',
@@ -87,9 +76,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
       _playingId = null;
     });
   }
-
-  Color _getAccentColor(int index) =>
-      _accentColors[index % _accentColors.length];
 
   String _getEmoji(int index) =>
       _sentenceEmojis[index % _sentenceEmojis.length];
@@ -229,15 +215,11 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
         final currentSentence = sentences[_currentIndex];
         final accentColor = _parseThemeColor(
           currentSentence.themeColor,
-          _getAccentColor(_currentIndex),
+          AppColors.duoOrange,
         );
-        final isLightColor = accentColor.computeLuminance() > 0.55;
-
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor
-                  ? const Color(0xFFF8FAFC)
-                  : accentColor.withValues(alpha: 0.05));
+            : const Color(0xFFF8FAFC);
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -305,50 +287,6 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
     );
   }
 
-  Widget _buildBackgroundAura(Color color, bool isDark) {
-    final double auraOpacity = isDark ? 0.15 : 0.25;
-    return Stack(
-      children: [
-        Positioned(
-          top: -80,
-          right: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity),
-                  blurRadius: 100,
-                  spreadRadius: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: -100,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity * 0.8),
-                  blurRadius: 120,
-                  spreadRadius: 30,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildGlassCard({
     required Widget child,
     required Color themeColor,
@@ -395,15 +333,12 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
   }
 
   Widget _buildSentencePage(SentenceModel sentence, int index, bool isDark) {
-    final defaultAccent = _getAccentColor(index);
-    final accentColor = _parseThemeColor(sentence.themeColor, defaultAccent);
-    final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor
-        ? const Color(0xFF1A1A1A)
-        : Colors.white;
-    final contentTextColor = isDark
-        ? Colors.white70
-        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final accentColor = _parseThemeColor(
+      sentence.themeColor,
+      AppColors.duoOrange,
+    );
+    const textContrastColor = Colors.white;
+    final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
 
     final emoji = _getEmoji(index);
     final isThisPlaying = _isAudioPlaying && _playingId == sentence.id;
@@ -422,18 +357,13 @@ class _SentenceDetailScreenState extends ConsumerState<SentenceDetailScreen> {
 
     return Stack(
       children: [
-        _buildBackgroundAura(accentColor, isDark),
         CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
             ParallaxHeroSliverAppBar(
-              gradient: LinearGradient(
-                colors: [accentColor, accentColor.withValues(alpha: 0.78)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppColors.sunsetGradient,
               foregroundColor: textContrastColor,
               glyphColor: textContrastColor,
               glyph: emoji,

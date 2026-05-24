@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
+import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/utils/text_match.dart';
@@ -54,18 +55,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
     'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ...': '🙋',
   };
 
-  // Accent colors for words (excluding purple/violet/lavender)
-  static const List<Color> _accentColors = [
-    Color(0xFFFF9800),
-    Color(0xFFFF5722),
-    Color(0xFF2196F3),
-    Color(0xFF4CAF50),
-    Color(0xFFE91E63),
-    Color(0xFF009688),
-    Color(0xFF03A9F4),
-    Color(0xFFE53935),
-  ];
-
   @override
   void initState() {
     super.initState();
@@ -101,10 +90,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         .map((rune) => rune.toRadixString(16))
         .join('-');
     return '$_emojiBaseUrl/$runes.png';
-  }
-
-  Color _getAccentColor(int index) {
-    return _accentColors[index % _accentColors.length];
   }
 
   Color _parseThemeColor(String? colorStr, Color fallback) {
@@ -244,18 +229,13 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
         final currentWord = words[_currentIndex];
         final accentColor = _parseThemeColor(
           currentWord.themeColor,
-          _getAccentColor(_currentIndex),
+          AppColors.primaryPurple,
         );
-        final isLightColor = accentColor.computeLuminance() > 0.55;
-        final textContrastColor = isLightColor
-            ? const Color(0xFF1A1A1A)
-            : Colors.white;
+        const textContrastColor = Colors.white;
 
         final bgColor = isDark
             ? const Color(0xFF0A0E14)
-            : (isLightColor
-                  ? const Color(0xFFF8FAFC)
-                  : accentColor.withValues(alpha: 0.05));
+            : const Color(0xFFF8FAFC);
 
         return Scaffold(
           backgroundColor: bgColor,
@@ -332,50 +312,6 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
     );
   }
 
-  Widget _buildBackgroundAura(Color color, bool isDark) {
-    final double auraOpacity = isDark ? 0.15 : 0.25;
-    return Stack(
-      children: [
-        Positioned(
-          top: -80,
-          right: -80,
-          child: Container(
-            width: 250,
-            height: 250,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity),
-                  blurRadius: 100,
-                  spreadRadius: 20,
-                ),
-              ],
-            ),
-          ),
-        ),
-        Positioned(
-          bottom: 100,
-          left: -100,
-          child: Container(
-            width: 300,
-            height: 300,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              boxShadow: [
-                BoxShadow(
-                  color: color.withValues(alpha: auraOpacity * 0.8),
-                  blurRadius: 120,
-                  spreadRadius: 30,
-                ),
-              ],
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget _buildGlassCard({
     required Widget child,
     required Color themeColor,
@@ -422,15 +358,12 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
   }
 
   Widget _buildWordPage(WordModel word, int index, bool isDark) {
-    final defaultAccent = _getAccentColor(index);
-    final accentColor = _parseThemeColor(word.themeColor, defaultAccent);
-    final isLightColor = accentColor.computeLuminance() > 0.55;
-    final textContrastColor = isLightColor
-        ? const Color(0xFF1A1A1A)
-        : Colors.white;
-    final contentTextColor = isDark
-        ? Colors.white70
-        : (isLightColor ? const Color(0xFF2D3748) : Colors.grey[800]);
+    final accentColor = _parseThemeColor(
+      word.themeColor,
+      AppColors.primaryPurple,
+    );
+    const textContrastColor = Colors.white;
+    final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
 
     final emoji = _wordEmojis[word.wordOlChiki] ?? '📖';
     final isThisPlaying = _isAudioPlaying && _playingId == word.id;
@@ -457,18 +390,13 @@ class _WordDetailScreenState extends ConsumerState<WordDetailScreen> {
 
     return Stack(
       children: [
-        _buildBackgroundAura(accentColor, isDark),
         CustomScrollView(
           physics: const BouncingScrollPhysics(
             parent: AlwaysScrollableScrollPhysics(),
           ),
           slivers: [
             ParallaxHeroSliverAppBar(
-              gradient: LinearGradient(
-                colors: [accentColor, accentColor.withValues(alpha: 0.78)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              gradient: AppColors.purpleGradient,
               foregroundColor: textContrastColor,
               glyphColor: textContrastColor,
               glyph: word.wordOlChiki.characters.isNotEmpty

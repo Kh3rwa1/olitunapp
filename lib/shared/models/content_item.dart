@@ -905,36 +905,92 @@ class ContentItem extends Equatable {
     final resolvedTitleOlChiki =
         (titleOlChiki == null || titleOlChiki!.trim().isEmpty)
         ? title
-        : titleOlChiki;
+        : titleOlChiki!;
 
-    final payload = <String, dynamic>{
-      'categoryId': categoryId,
-      'titleOlChiki': resolvedTitleOlChiki,
-      'subtitle': subtitle,
-      'olChiki': olChiki,
-      'heroMedia': heroMedia != null ? jsonEncode(heroMedia!.toJson()) : null,
-      'blocks': jsonEncode(blocks.map((e) => e.toJson()).toList()),
-      'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
-      'order': order,
-      'isPublished': isPublished,
-      'isPremium': isPremium,
-      'tags': tags,
-      'difficulty': difficulty,
-      'durationSeconds': durationSeconds,
-    };
+    switch (kind) {
+      case ContentKind.lesson:
+        return {
+          'categoryId': categoryId,
+          'titleOlChiki': resolvedTitleOlChiki,
+          'titleLatin': title,
+          'level': 'beginner',
+          'description': subtitle ?? '',
+          'order': order,
+          'estimatedMinutes': durationSeconds != null
+              ? (durationSeconds! / 60).round()
+              : 5,
+          'isActive': isPublished,
+          'isPremium': isPremium,
+          'thumbnailUrl': heroMedia?.url,
+          'heroMediaUrl': heroMedia?.url,
+          'heroMediaType': heroMedia?.kind.name,
+          'heroPosterUrl': heroMedia?.posterUrl,
+          'blocks': jsonEncode(blocks.map((e) => e.toJson()).toList()),
+        };
 
-    // The 'lessons' Appwrite collection schema uses 'titleLatin' as the
-    // required title field; every other collection uses 'title'. Emit both
-    // so a single ContentItem works across all collection schemas without
-    // triggering an unknown-attribute error on non-lesson collections
-    // (Appwrite silently ignores extra fields that aren't in the schema).
-    if (kind == ContentKind.lesson) {
-      payload['titleLatin'] = title;
-    } else {
-      payload['title'] = title;
+      case ContentKind.letter:
+        return {
+          'charOlChiki': olChiki ?? resolvedTitleOlChiki,
+          'transliterationLatin': title,
+          'order': order,
+          'isActive': isPublished,
+          'exampleWord': subtitle ?? '',
+          'audioUrl': heroMedia?.url,
+          'imageUrl': heroMedia?.url,
+          'lottieUrl': heroMedia?.url,
+          'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
+        };
+
+      case ContentKind.number:
+        return {
+          'numeral': olChiki ?? resolvedTitleOlChiki,
+          'value': int.tryParse(title) ?? order,
+          'nameOlChiki': resolvedTitleOlChiki,
+          'nameLatin': title,
+          'order': order,
+          'audioUrl': heroMedia?.url,
+          'imageUrl': heroMedia?.url,
+          'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
+        };
+
+      case ContentKind.word:
+        return {
+          'wordOlChiki': olChiki ?? resolvedTitleOlChiki,
+          'wordLatin': title,
+          'meaning': subtitle ?? '',
+          'usageExample': subtitle ?? '',
+          'category': categoryId,
+          'order': order,
+          'audioUrl': heroMedia?.url,
+          'imageUrl': heroMedia?.url,
+        };
+
+      case ContentKind.sentence:
+        return {
+          'sentenceOlChiki': olChiki ?? resolvedTitleOlChiki,
+          'sentenceLatin': title,
+          'meaning': subtitle ?? '',
+          'usageExample': subtitle ?? '',
+          'category': categoryId,
+          'order': order,
+          'audioUrl': heroMedia?.url,
+          'imageUrl': heroMedia?.url,
+        };
+
+      case ContentKind.rhyme:
+        return {
+          'titleOlChiki': resolvedTitleOlChiki,
+          'titleLatin': title,
+          'contentOlChiki': olChiki ?? '',
+          'contentLatin': subtitle ?? '',
+          'audioUrl': heroMedia?.url,
+          'thumbnailUrl': heroMedia?.url,
+          'categoryId': categoryId,
+          'difficulty': difficulty ?? 'beginner',
+          'durationSeconds': durationSeconds ?? 0,
+          'isPremium': isPremium,
+        };
     }
-
-    return payload;
   }
 
   ContentItem copyWith({

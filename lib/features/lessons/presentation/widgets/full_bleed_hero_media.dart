@@ -437,7 +437,7 @@ class _HeroImage extends StatelessWidget {
           width: double.infinity,
           height: double.infinity,
           fit: BoxFit.cover,
-          errorBuilder: (context, _, __) => fallback,
+          errorBuilder: (context, error, stackTrace) => fallback,
         );
       }
       return SvgPicture.network(
@@ -445,7 +445,7 @@ class _HeroImage extends StatelessWidget {
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        errorBuilder: (context, _, __) => fallback,
+        placeholderBuilder: (context) => fallback,
       );
     }
 
@@ -455,7 +455,7 @@ class _HeroImage extends StatelessWidget {
       height: double.infinity,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.high,
-      errorBuilder: (context, _, __) => fallback,
+      errorBuilder: (context, error, stackTrace) => fallback,
     );
   }
 }

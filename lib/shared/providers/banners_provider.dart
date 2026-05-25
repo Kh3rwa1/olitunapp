@@ -4,12 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final bannersProvider =
     StateNotifierProvider<
       BannersNotifier,
       AsyncValue<List<FeaturedBannerModel>>
-    >(BannersNotifier.new);
+    >((ref) {
+      ref.watch(isAuthenticatedProvider);
+      return BannersNotifier(ref);
+    });
 
 // Alias for backward compatibility
 final featuredBannersProvider = bannersProvider;

@@ -831,12 +831,27 @@ class ContentItem extends Equatable {
       }
     }
 
+    final rawCategoryId = json['category_id'] ?? json['categoryId'];
+    String parsedCategoryId = '';
+    if (rawCategoryId is String) {
+      parsedCategoryId = rawCategoryId;
+    } else if (rawCategoryId is Map) {
+      parsedCategoryId = (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
+    }
+
+    // The 'lessons' Appwrite collection uses 'titleLatin' as the primary title
+    // field name; all other collections use 'title'. Accept both so that
+    // ContentItem can round-trip through any collection schema.
+    final resolvedTitle =
+        (json['title'] as String?)?.isNotEmpty == true
+            ? json['title'] as String
+            : (json['titleLatin'] as String? ?? '');
+
     return ContentItem(
       id: docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '',
       kind: parsedKind,
-      categoryId:
-          json['category_id'] as String? ?? json['categoryId'] as String? ?? '',
-      title: json['title'] as String? ?? '',
+      categoryId: parsedCategoryId,
+      title: resolvedTitle,
       titleOlChiki:
           json['title_ol_chiki'] as String? ?? json['titleOlChiki'] as String?,
       subtitle: json['subtitle'] as String?,
@@ -886,11 +901,16 @@ class ContentItem extends Equatable {
       categoryId.isNotEmpty,
       'ContentItem.toAppwrite(): categoryId must not be empty (kind=$kind, id=$id)',
     );
-    return {
+
+    final resolvedTitleOlChiki =
+        (titleOlChiki == null || titleOlChiki!.trim().isEmpty)
+            ? title
+            : titleOlChiki;
+
+    final payload = <String, dynamic>{
       'kind': kind.name,
       'categoryId': categoryId,
-      'title': title,
-      'titleOlChiki': titleOlChiki,
+      'titleOlChiki': resolvedTitleOlChiki,
       'subtitle': subtitle,
       'olChiki': olChiki,
       'heroMedia': heroMedia != null ? jsonEncode(heroMedia!.toJson()) : null,
@@ -903,6 +923,19 @@ class ContentItem extends Equatable {
       'difficulty': difficulty,
       'durationSeconds': durationSeconds,
     };
+
+    // The 'lessons' Appwrite collection schema uses 'titleLatin' as the
+    // required title field; every other collection uses 'title'. Emit both
+    // so a single ContentItem works across all collection schemas without
+    // triggering an unknown-attribute error on non-lesson collections
+    // (Appwrite silently ignores extra fields that aren't in the schema).
+    if (kind == ContentKind.lesson) {
+      payload['titleLatin'] = title;
+    } else {
+      payload['title'] = title;
+    }
+
+    return payload;
   }
 
   ContentItem copyWith({

@@ -10,6 +10,7 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/quiz_engine/quiz_engine.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
+import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
 /// Concrete lightweight fake implementation of AppwriteDbService to supply test data.
 class FakeAppwriteDbService implements AppwriteDbService {
@@ -315,6 +316,7 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           appwriteDbServiceProvider.overrideWithValue(fakeDb),
+          isAuthenticatedProvider.overrideWith((ref) => true),
           learnerWordsProvider.overrideWith((ref) {
             final list = fakeDb.wordsData.map(WordModel.fromJson).toList();
             return AsyncValue.data(list);

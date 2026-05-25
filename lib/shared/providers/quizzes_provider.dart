@@ -11,11 +11,13 @@ import '../../core/storage/hive_service.dart';
 import '../models/content_models.dart';
 import '../quiz_engine/quiz_engine.dart';
 import 'learner_content_providers.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final quizzesProvider =
-    StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>(
-      QuizzesNotifier.new,
-    );
+    StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
+      ref.watch(isAuthenticatedProvider);
+      return QuizzesNotifier(ref);
+    });
 
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   QuizzesNotifier(this.ref) : super(const AsyncValue.loading()) {

@@ -3,6 +3,7 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/config/appwrite_config.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 class OnboardingGoal {
   final String id;
@@ -25,6 +26,7 @@ class OnboardingGoal {
 }
 
 final appSettingsProvider = FutureProvider<Map<String, dynamic>>((ref) async {
+  ref.watch(isAuthenticatedProvider);
   try {
     final db = ref.read(appwriteDbServiceProvider);
     final docs = await db.listDocuments('app_settings');

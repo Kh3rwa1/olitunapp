@@ -87,7 +87,7 @@ class AppwriteStorageUploadService {
         bucketId: target.bucketId,
         fileId: ID.unique(),
         file: inputFile,
-        permissions: [Permission.read(Role.users())],
+        permissions: [Permission.read(Role.any())],
       );
 
       CrashReporting.addUploadBreadcrumb(

@@ -369,8 +369,9 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
           );
         },
         (_) {
-          if (!kIsWeb) {
-            if (mounted) {
+          if (mounted) {
+            ref.invalidate(isAuthenticatedProvider);
+            if (!kIsWeb) {
               context.go('/');
             }
           }

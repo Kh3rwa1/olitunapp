@@ -3,10 +3,15 @@ import '../../domain/entities/category_entity.dart';
 import '../../domain/repositories/category_repository.dart';
 import 'category_providers.dart';
 
+import '../../../auth/presentation/providers/auth_providers.dart';
+
 final categoryNotifierProvider =
-    StateNotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>(
-      (ref) => CategoryNotifier(ref.watch(categoryRepositoryProvider)),
-    );
+    StateNotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>((
+      ref,
+    ) {
+      ref.watch(isAuthenticatedProvider);
+      return CategoryNotifier(ref.watch(categoryRepositoryProvider));
+    });
 
 class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
   final CategoryRepository _repository;

@@ -9,6 +9,7 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/shared/models/content_item.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 class ContentRepository {
   final Databases _databases;
@@ -611,7 +612,7 @@ class ContentRepository {
             collectionId: collectionId,
             documentId: item.id,
             data: appwritePayload,
-            permissions: [Permission.read(Role.users())],
+            permissions: [Permission.read(Role.any())],
           );
           resultItem = ContentItem.fromJson(doc.data, doc.$id);
         } on AppwriteException catch (ae) {
@@ -622,7 +623,7 @@ class ContentRepository {
               collectionId: collectionId,
               documentId: item.id,
               data: appwritePayload,
-              permissions: [Permission.read(Role.users())],
+              permissions: [Permission.read(Role.any())],
             );
             resultItem = ContentItem.fromJson(doc.data, doc.$id);
           } else {
@@ -705,6 +706,7 @@ final contentListProvider =
       ref,
       arg,
     ) async {
+      ref.watch(isAuthenticatedProvider);
       final kind = arg.$1;
       final categoryId = arg.$2;
       final repo = ref.watch(contentRepositoryProvider);

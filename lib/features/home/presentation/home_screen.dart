@@ -50,12 +50,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Prefetch core content for offline availability
+    // Prefetch core content and refresh categories from Appwrite on every
+    // home-screen mount so newly added categories are always visible.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(learnerWordsProvider);
       ref.read(learnerNumbersProvider);
       ref.read(learnerSentencesProvider);
       ref.read(learnerLettersProvider);
+      // Silently refresh categories in the background — this replaces any
+      // stale cache or static seed data with the live Appwrite list.
+      ref.read(categoryNotifierProvider.notifier).refresh();
     });
   }
 

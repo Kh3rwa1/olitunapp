@@ -58,9 +58,17 @@ class LessonModel extends LessonEntity {
       parsedData['heroPosterUrl'] = heroPosterUrl;
     }
 
+    final rawCategoryId = json['categoryId'] ?? json['category_id'];
+    String parsedCategoryId = '';
+    if (rawCategoryId is String) {
+      parsedCategoryId = rawCategoryId;
+    } else if (rawCategoryId is Map) {
+      parsedCategoryId = (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
+    }
+
     return LessonModel(
       id: resolvedId,
-      categoryId: json['categoryId'] as String? ?? '',
+      categoryId: parsedCategoryId,
       titleOlChiki: json['titleOlChiki'] as String? ?? '',
       titleLatin: json['titleLatin'] as String? ?? '',
       level: json['level'] as String? ?? 'beginner',

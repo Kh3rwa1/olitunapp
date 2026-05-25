@@ -4,12 +4,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final affirmationsProvider =
     StateNotifierProvider<
       AffirmationsNotifier,
       AsyncValue<List<AffirmationModel>>
-    >(AffirmationsNotifier.new);
+    >((ref) {
+      ref.watch(isAuthenticatedProvider);
+      return AffirmationsNotifier(ref);
+    });
 
 class AffirmationsNotifier
     extends StateNotifier<AsyncValue<List<AffirmationModel>>> {

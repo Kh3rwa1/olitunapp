@@ -7,13 +7,15 @@ import '../../core/storage/cache_service.dart';
 import '../../core/observability/crash_reporting.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../../features/rhymes/domain/rhyme_category_model.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
 
 // ============== RHYMES ==============
 
 final rhymesProvider =
-    StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>(
-      RhymesNotifier.new,
-    );
+    StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>((ref) {
+      ref.watch(isAuthenticatedProvider);
+      return RhymesNotifier(ref);
+    });
 
 class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
   RhymesNotifier(this.ref) : super(const AsyncValue.loading()) {

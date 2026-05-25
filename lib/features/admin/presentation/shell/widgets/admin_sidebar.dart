@@ -80,107 +80,35 @@ class AdminSidebar extends ConsumerWidget {
                       children: sortedCategories.map((category) {
                         final id = category.id;
                         final iconName = category.iconName?.toLowerCase();
-
-                        final isStandard = const {
-                          'cat_vocab',
-                          'cat_words',
-                          'seed_words',
-                          'cat_sentences',
-                          'seed_sentences',
-                          'cat_alphabets',
-                          'cat_letters',
-                          'letters',
-                          'cat_numbers',
-                        }.contains(id);
-
-                        String route;
+                        final route = '/admin/lessons?categoryId=$id';
                         IconData icon;
 
-                        if (isStandard) {
-                          if (id == 'cat_vocab' ||
-                              id == 'cat_words' ||
-                              id == 'seed_words') {
-                            route = '/admin/words?categoryId=$id';
-                            icon = Icons.menu_book_rounded;
-                          } else if (id == 'cat_sentences' ||
-                              id == 'seed_sentences') {
-                            route = '/admin/sentences?categoryId=$id';
-                            icon = Icons.format_quote_rounded;
-                          } else if (id == 'cat_alphabets' ||
-                              id == 'cat_letters' ||
-                              id == 'letters') {
-                            route = '/admin/letters?categoryId=$id';
-                            icon = Icons.text_fields_rounded;
-                          } else {
-                            route = '/admin/numbers?categoryId=$id';
+                        switch (iconName) {
+                          case 'alphabet':
+                            icon = Icons.abc_rounded;
+                            break;
+                          case 'numbers':
                             icon = Icons.pin_rounded;
-                          }
-                        } else {
-                          // Custom categories ALWAYS route to their dedicated subcategories screen
-                          route = '/admin/lessons?categoryId=$id';
-                          switch (iconName) {
-                            case 'alphabet':
-                              icon = Icons.abc_rounded;
-                              break;
-                            case 'numbers':
-                              icon = Icons.pin_rounded;
-                              break;
-                            case 'words':
-                              icon = Icons.text_fields_rounded;
-                              break;
-                            case 'sentences':
-                              icon = Icons.format_quote_rounded;
-                              break;
-                            case 'arithmetic':
-                              icon = Icons.calculate_rounded;
-                              break;
-                            case 'stories':
-                              icon = Icons.auto_stories_rounded;
-                              break;
-                            default:
-                              icon = Icons.category_rounded;
-                          }
+                            break;
+                          case 'words':
+                            icon = Icons.text_fields_rounded;
+                            break;
+                          case 'sentences':
+                            icon = Icons.format_quote_rounded;
+                            break;
+                          case 'arithmetic':
+                            icon = Icons.calculate_rounded;
+                            break;
+                          case 'stories':
+                            icon = Icons.auto_stories_rounded;
+                            break;
+                          default:
+                            icon = Icons.category_rounded;
                         }
 
-                        final targetUri = Uri.parse(route);
                         final currentUri = GoRouterState.of(context).uri;
-
-                        bool isSelected = currentUri.path == targetUri.path;
-                        if (isSelected) {
-                          final currentId =
-                              currentUri.queryParameters['categoryId'];
-                          final targetId =
-                              targetUri.queryParameters['categoryId'];
-                          if (currentId != targetId) {
-                            final isDefaultWord =
-                                targetUri.path == '/admin/words' &&
-                                (targetId == 'cat_vocab' ||
-                                    targetId == 'cat_words' ||
-                                    targetId == 'seed_words') &&
-                                currentId == null;
-                            final isDefaultSentence =
-                                targetUri.path == '/admin/sentences' &&
-                                (targetId == 'cat_sentences' ||
-                                    targetId == 'seed_sentences') &&
-                                currentId == null;
-                            final isDefaultLetter =
-                                targetUri.path == '/admin/letters' &&
-                                (targetId == 'cat_alphabets' ||
-                                    targetId == 'cat_letters' ||
-                                    targetId == 'letters') &&
-                                currentId == null;
-                            final isDefaultNumber =
-                                targetUri.path == '/admin/numbers' &&
-                                targetId == 'cat_numbers' &&
-                                currentId == null;
-
-                            isSelected =
-                                isDefaultWord ||
-                                isDefaultSentence ||
-                                isDefaultLetter ||
-                                isDefaultNumber;
-                          }
-                        }
+                        final currentId = currentUri.queryParameters['categoryId'];
+                        final isSelected = currentUri.path == '/admin/lessons' && currentId == id;
 
                         return AdminNavItem(
                           icon: icon,
@@ -203,6 +131,37 @@ class AdminSidebar extends ConsumerWidget {
                     ),
                   ),
                   error: (error, stackTrace) => const SizedBox(),
+                ),
+
+                const SizedBox(height: 18),
+                _SectionLabel(label: 'GLOBAL TABLES', isCompact: isCompact),
+                AdminNavItem(
+                  icon: Icons.text_fields_rounded,
+                  label: 'Letters Database',
+                  isSelected: location == '/admin/letters',
+                  onTap: () => _navigate(context, '/admin/letters'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
+                  icon: Icons.pin_rounded,
+                  label: 'Numbers Database',
+                  isSelected: location == '/admin/numbers',
+                  onTap: () => _navigate(context, '/admin/numbers'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
+                  icon: Icons.menu_book_rounded,
+                  label: 'Words Database',
+                  isSelected: location == '/admin/words',
+                  onTap: () => _navigate(context, '/admin/words'),
+                  isCompact: isCompact,
+                ),
+                AdminNavItem(
+                  icon: Icons.format_quote_rounded,
+                  label: 'Sentences Database',
+                  isSelected: location == '/admin/sentences',
+                  onTap: () => _navigate(context, '/admin/sentences'),
+                  isCompact: isCompact,
                 ),
 
                 AdminNavItem(

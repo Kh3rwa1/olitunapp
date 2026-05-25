@@ -558,6 +558,13 @@ class _AdminContentListScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWideScreen = MediaQuery.of(context).size.width > 800;
 
+    // Default to the first category if kind is lesson and categoryId is null/empty
+    if (widget.kind == ContentKind.lesson &&
+        (_selectedCategoryId == null || _selectedCategoryId!.isEmpty) &&
+        categories.isNotEmpty) {
+      _selectedCategoryId = categories.first.id;
+    }
+
     final headerActions = [
       OutlinedButton.icon(
         onPressed: () => _handleSeedData(context),

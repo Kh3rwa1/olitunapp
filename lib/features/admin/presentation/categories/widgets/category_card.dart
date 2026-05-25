@@ -59,36 +59,7 @@ class CategoryCard extends StatelessWidget {
   }
 
   void _navigateToCategory(BuildContext context, CategoryEntity category) {
-    final id = category.id;
-    final isStandard = const {
-      'cat_vocab',
-      'cat_words',
-      'seed_words',
-      'cat_sentences',
-      'seed_sentences',
-      'cat_alphabets',
-      'cat_letters',
-      'letters',
-      'cat_numbers',
-    }.contains(id);
-
-    String route;
-    if (isStandard) {
-      if (id == 'cat_vocab' || id == 'cat_words' || id == 'seed_words') {
-        route = '/admin/words?categoryId=$id';
-      } else if (id == 'cat_sentences' || id == 'seed_sentences') {
-        route = '/admin/sentences?categoryId=$id';
-      } else if (id == 'cat_alphabets' ||
-          id == 'cat_letters' ||
-          id == 'letters') {
-        route = '/admin/letters?categoryId=$id';
-      } else {
-        route = '/admin/numbers?categoryId=$id';
-      }
-    } else {
-      route = '/admin/lessons?categoryId=$id';
-    }
-    context.go(route);
+    context.go('/admin/lessons?categoryId=${category.id}');
   }
 
   @override

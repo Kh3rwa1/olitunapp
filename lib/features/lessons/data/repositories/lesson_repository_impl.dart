@@ -109,7 +109,7 @@ class LessonRepositoryImpl implements LessonRepository {
     // Vocabulary / Words
     LessonEntity(
       id: 'lesson_words_basics',
-      categoryId: 'seed_words',
+      categoryId: 'cat_vocab',
       titleOlChiki: 'ᱢᱩᱞ ᱥᱟᱹᱵᱟᱹᱫᱽ',
       titleLatin: 'Basic Words',
       blocks: [
@@ -128,7 +128,7 @@ class LessonRepositoryImpl implements LessonRepository {
     // Sentences
     LessonEntity(
       id: 'lesson_sentences_basics',
-      categoryId: 'seed_sentences',
+      categoryId: 'cat_sentences',
       titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ ᱢᱩᱞ',
       titleLatin: 'Simple Sentences',
       blocks: [
@@ -177,16 +177,38 @@ class LessonRepositoryImpl implements LessonRepository {
       final cached = await localDataSource.getLessons();
       return Right(
         cached
-            .where((lesson) => lesson.categoryId == categoryId)
+            .where((lesson) {
+              if (categoryId == 'cat_vocab' ||
+                  categoryId == 'cat_words' ||
+                  categoryId == 'seed_words') {
+                return lesson.categoryId == 'cat_vocab' ||
+                    lesson.categoryId == 'cat_words' ||
+                    lesson.categoryId == 'seed_words';
+              }
+              if (categoryId == 'cat_sentences' ||
+                  categoryId == 'seed_sentences') {
+                return lesson.categoryId == 'cat_sentences' ||
+                    lesson.categoryId == 'seed_sentences';
+              }
+              return lesson.categoryId == categoryId;
+            })
             .map((model) => model.toEntity())
             .toList(),
       );
     } on CacheException {
       // Fallback to static seed lessons for the specific category if cache is empty.
       return Right(
-        _staticSeedLessons
-            .where((lesson) => lesson.categoryId == categoryId)
-            .toList(),
+        _staticSeedLessons.where((lesson) {
+          if (categoryId == 'cat_vocab' ||
+              categoryId == 'cat_words' ||
+              categoryId == 'seed_words') {
+            return lesson.categoryId == 'cat_vocab';
+          }
+          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
+            return lesson.categoryId == 'cat_sentences';
+          }
+          return lesson.categoryId == categoryId;
+        }).toList(),
       );
     } catch (_) {
       return const Left(NetworkFailure());

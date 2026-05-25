@@ -174,7 +174,7 @@ class ContentRepository {
     ContentItem(
       id: 'seed_word_johar',
       kind: ContentKind.word,
-      categoryId: 'seed_words',
+      categoryId: 'cat_vocab',
       title: 'Johar',
       titleOlChiki: 'ᱡᱚᱦᱟᱨ',
       subtitle: 'Hello / Greetings',
@@ -195,7 +195,7 @@ class ContentRepository {
     ContentItem(
       id: 'seed_sentence_celeka',
       kind: ContentKind.sentence,
-      categoryId: 'seed_sentences',
+      categoryId: 'cat_sentences',
       title: 'How are you?',
       titleOlChiki: 'ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?',
       subtitle: 'Am celeka menama?',
@@ -274,6 +274,19 @@ class ContentRepository {
       final fallbackItems = _fallbackSeedItems.where((item) {
         final matchesKind = item.kind == kind;
         if (categoryId != null && categoryId.isNotEmpty) {
+          if (categoryId == 'cat_vocab' ||
+              categoryId == 'cat_words' ||
+              categoryId == 'seed_words') {
+            return matchesKind &&
+                (item.categoryId == 'cat_vocab' ||
+                    item.categoryId == 'cat_words' ||
+                    item.categoryId == 'seed_words');
+          }
+          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
+            return matchesKind &&
+                (item.categoryId == 'cat_sentences' ||
+                    item.categoryId == 'seed_sentences');
+          }
           return matchesKind && item.categoryId == categoryId;
         }
         return matchesKind;
@@ -288,6 +301,19 @@ class ContentRepository {
       final fallbackItems = _fallbackSeedItems.where((item) {
         final matchesKind = item.kind == kind;
         if (categoryId != null && categoryId.isNotEmpty) {
+          if (categoryId == 'cat_vocab' ||
+              categoryId == 'cat_words' ||
+              categoryId == 'seed_words') {
+            return matchesKind &&
+                (item.categoryId == 'cat_vocab' ||
+                    item.categoryId == 'cat_words' ||
+                    item.categoryId == 'seed_words');
+          }
+          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
+            return matchesKind &&
+                (item.categoryId == 'cat_sentences' ||
+                    item.categoryId == 'seed_sentences');
+          }
           return matchesKind && item.categoryId == categoryId;
         }
         return matchesKind;

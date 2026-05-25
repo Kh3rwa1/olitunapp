@@ -70,7 +70,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           totalLessons: 2,
         ),
         CategoryEntity(
-          id: 'seed_words',
+          id: 'cat_vocab',
           titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
           titleLatin: 'Vocabulary',
           iconName: 'vocabulary',
@@ -79,7 +79,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           totalLessons: 5,
         ),
         CategoryEntity(
-          id: 'seed_sentences',
+          id: 'cat_sentences',
           titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ',
           titleLatin: 'Sentences',
           iconName: 'sentences',

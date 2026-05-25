@@ -11,8 +11,8 @@ import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
+import 'package:go_router/go_router.dart';
 import '../providers/rhyme_audio_provider.dart';
-import 'rhyme_detail_sheet.dart';
 
 /// Bento-grid rhyme card with play toggle and mini visualizer.
 class BentoRhymeCard extends ConsumerStatefulWidget {
@@ -75,7 +75,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        RhymeDetailSheet.show(context, widget.rhyme);
+        context.push('/content/rhyme/${widget.rhyme.id}');
       },
       child: GlassCard(
         blur: 12,

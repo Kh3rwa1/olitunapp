@@ -12,6 +12,9 @@ import 'widgets/admin_page_header.dart';
 import '../../../shared/providers/providers.dart';
 import '../../rhymes/domain/rhyme_model.dart';
 import 'widgets/admin_form_widgets.dart';
+import 'package:itun/features/admin/presentation/widgets/content_form.dart';
+import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/repositories/content_repository.dart';
 
 class AdminRhymesScreen extends ConsumerStatefulWidget {
   const AdminRhymesScreen({super.key});
@@ -199,180 +202,131 @@ class _AdminRhymesScreenState extends ConsumerState<AdminRhymesScreen> {
   }
 
   void _showRhymeDialog(BuildContext context, RhymeModel? rhyme) {
-    final titleLatinController = TextEditingController(text: rhyme?.titleLatin);
-    final titleOlChikiController = TextEditingController(
-      text: rhyme?.titleOlChiki,
-    );
-    final contentLatinController = TextEditingController(
-      text: rhyme?.contentLatin,
-    );
-    final contentOlChikiController = TextEditingController(
-      text: rhyme?.contentOlChiki,
-    );
-    final tagsController = TextEditingController(
-      text: rhyme?.tags.join(', ') ?? '',
-    );
-    String? audioUrl = rhyme?.audioUrl;
-    String? thumbnailUrl = rhyme?.thumbnailUrl;
+    ContentItem? initialItem;
+    if (rhyme != null) {
+      final blocks = <ContentBlock>[];
+      if (rhyme.contentOlChiki.isNotEmpty) {
+        blocks.add(
+          TextBlock(
+            id: 'content_ol_chiki',
+            order: 0,
+            markdown: rhyme.contentOlChiki,
+          ),
+        );
+      }
+      if (rhyme.contentLatin.isNotEmpty) {
+        blocks.add(
+          TextBlock(
+            id: 'content_latin',
+            order: 1,
+            markdown: rhyme.contentLatin,
+          ),
+        );
+      }
+      if (rhyme.audioUrl != null && rhyme.audioUrl!.isNotEmpty) {
+        blocks.add(
+          AudioBlock(
+            id: 'audio',
+            order: 2,
+            media: ContentMedia(
+              url: rhyme.audioUrl!,
+              fileId: '',
+              kind: ContentMediaKind.audio,
+            ),
+          ),
+        );
+      }
 
-    // Load categories dynamically
-    final categories = ref.read(rhymeCategoriesProvider).value ?? [];
+      initialItem = ContentItem(
+        id: rhyme.id,
+        kind: ContentKind.rhyme,
+        categoryId: rhyme.categoryId ?? '',
+        title: rhyme.titleLatin,
+        titleOlChiki: rhyme.titleOlChiki,
+        heroMedia:
+            (rhyme.thumbnailUrl != null && rhyme.thumbnailUrl!.isNotEmpty)
+            ? ContentMedia(
+                url: rhyme.thumbnailUrl!,
+                fileId: '',
+                kind: ContentMediaKind.image,
+              )
+            : null,
+        blocks: blocks,
+        tags: rhyme.tags,
+        updatedAt: DateTime.now(),
+      );
+    }
 
-    String? selectedCategoryId =
-        rhyme?.categoryId ??
-        categories
-            .where((c) => c.nameLatin == rhyme?.category)
-            .map((c) => c.id)
-            .firstOrNull ??
-        (categories.isNotEmpty ? categories.first.id : null);
-
-    showDialog(
+    showModalBottomSheet(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          final selectedCategory = categories
-              .where((c) => c.id == selectedCategoryId)
-              .firstOrNull;
-
-          return AlertDialog(
-            title: Text(rhyme == null ? 'Add Rhyme' : 'Edit Rhyme'),
-            content: SizedBox(
-              width: MediaQuery.of(context).size.width < 600 ? null : 500,
-              child: SingleChildScrollView(
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      builder: (_) => Padding(
+        padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom,
+        ),
+        child: SizedBox(
+          height: MediaQuery.of(context).size.height * 0.85,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    TextField(
-                      controller: titleLatinController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title (Latin)',
+                    Text(
+                      rhyme == null ? 'New Rhyme' : 'Edit Rhyme',
+                      style: const TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    TextField(
-                      controller: titleOlChikiController,
-                      decoration: const InputDecoration(
-                        labelText: 'Title (Ol Chiki)',
-                      ),
-                    ),
-                    TextField(
-                      controller: contentLatinController,
-                      decoration: const InputDecoration(
-                        labelText: 'Content (Latin)',
-                      ),
-                      maxLines: 3,
-                    ),
-                    TextField(
-                      controller: contentOlChikiController,
-                      decoration: const InputDecoration(
-                        labelText: 'Content (Ol Chiki)',
-                      ),
-                      maxLines: 3,
-                    ),
-                    TextField(
-                      controller: tagsController,
-                      decoration: const InputDecoration(
-                        labelText: 'Tags (comma-separated)',
-                        hintText: 'e.g., traditional, harvest, dance',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    AdminMediaField(
-                      label: 'Audio',
-                      icon: Icons.audiotrack_rounded,
-                      accent: const Color(0xFF10B981),
-                      currentUrl: audioUrl,
-                      uploadFolder: 'rhymes-audio',
-                      fileType: FileType.audio,
-                      onUploaded: (url) => setDialogState(() => audioUrl = url),
-                    ),
-                    const SizedBox(height: 16),
-                    AdminMediaField(
-                      label: 'Thumbnail',
-                      icon: Icons.image_rounded,
-                      accent: const Color(0xFF3B82F6),
-                      currentUrl: thumbnailUrl,
-                      uploadFolder: 'rhymes-images',
-                      fileType: FileType.image,
-                      onUploaded: (url) =>
-                          setDialogState(() => thumbnailUrl = url),
-                      previewBuilder: (url) => ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: Image.network(
-                          url,
-                          height: 120,
-                          fit: BoxFit.contain,
-                          errorBuilder: (_, _, _) => const Icon(
-                            Icons.broken_image_rounded,
-                            size: 60,
-                            color: Colors.grey,
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    // Category dropdown (dynamic)
-                    DropdownButtonFormField<String>(
-                      initialValue:
-                          categories.any((c) => c.id == selectedCategoryId)
-                          ? selectedCategoryId
-                          : (categories.isNotEmpty
-                                ? categories.first.id
-                                : null),
-                      items: categories
-                          .map(
-                            (c) => DropdownMenuItem(
-                              value: c.id,
-                              child: Text(c.nameLatin),
-                            ),
-                          )
-                          .toList(),
-                      onChanged: (val) {
-                        setDialogState(() {
-                          selectedCategoryId = val;
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Category'),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded),
+                      onPressed: () => Navigator.pop(context),
                     ),
                   ],
                 ),
-              ),
-            ),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text('Cancel'),
-              ),
-              ElevatedButton(
-                onPressed: () {
-                  final newItem = RhymeModel(
-                    id: rhyme?.id ?? const Uuid().v4(),
-                    titleLatin: titleLatinController.text,
-                    titleOlChiki: titleOlChikiController.text,
-                    contentLatin: contentLatinController.text,
-                    contentOlChiki: contentOlChikiController.text,
-                    audioUrl: audioUrl ?? '',
-                    thumbnailUrl: thumbnailUrl ?? '',
-                    categoryId: selectedCategoryId,
-                    category: selectedCategory?.nameLatin,
-                    tags: tagsController.text
-                        .split(',')
-                        .map((s) => s.trim())
-                        .where((s) => s.isNotEmpty)
-                        .toList(),
-                  );
+                const Divider(),
+                Expanded(
+                  child: ContentForm(
+                    kind: ContentKind.rhyme,
+                    initial: initialItem,
+                    onSubmit: (item) async {
+                      final repo = ref.read(contentRepositoryProvider);
+                      final res = await repo.upsert(item);
 
-                  if (rhyme == null) {
-                    ref.read(rhymesProvider.notifier).addRhyme(newItem);
-                  } else {
-                    ref.read(rhymesProvider.notifier).updateRhyme(newItem);
-                  }
-                  Navigator.pop(context);
-                },
-                child: const Text('Save'),
-              ),
-            ],
-          );
-        },
+                      if (mounted) {
+                        res.fold(
+                          (failure) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  'Failed to save rhyme: ${failure.message}',
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          },
+                          (_) {
+                            ref.invalidate(rhymesProvider);
+                            Navigator.pop(context);
+                          },
+                        );
+                      }
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
       ),
     );
   }

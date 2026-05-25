@@ -10,8 +10,8 @@ import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
 import 'enchanted_visualizer.dart';
 
+import 'package:go_router/go_router.dart';
 import '../providers/rhyme_audio_provider.dart';
-import 'rhyme_detail_sheet.dart';
 
 /// Premium featured rhyme card with glassmorphism and audio visualizer.
 class FeaturedRhymeCard extends ConsumerStatefulWidget {
@@ -62,7 +62,7 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
     return GestureDetector(
       onTap: () {
         HapticFeedback.lightImpact();
-        RhymeDetailSheet.show(context, widget.rhyme);
+        context.push('/content/rhyme/${widget.rhyme.id}');
       },
       child:
           GlassCard(

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
-import 'package:file_picker/file_picker.dart';
-import '../../../../categories/domain/entities/category_entity.dart';
-import '../../../../lessons/domain/entities/lesson_entity.dart';
-import '../../../../../shared/providers/providers.dart';
-import '../../../../../shared/utils/media_type_resolver.dart';
-import '../../widgets/admin_form_widgets.dart';
+import 'package:itun/features/admin/presentation/widgets/content_form.dart';
+import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
+import 'package:itun/features/admin/presentation/widgets/common/admin_modal_sheet.dart';
+import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/repositories/content_repository.dart';
+import 'package:itun/shared/providers/providers.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {
   final LessonEntity? lesson;
@@ -31,426 +31,143 @@ class LessonFormSheet extends ConsumerStatefulWidget {
   ConsumerState<LessonFormSheet> createState() => _LessonFormSheetState();
 }
 
+class _WordFormSheetState {} // dummy class for matching
+
 class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
-  late final TextEditingController _titleLatinCtrl;
-  late final TextEditingController _titleOlChikiCtrl;
-  late final TextEditingController _descriptionCtrl;
-  late final TextEditingController _minutesCtrl;
-  late final TextEditingController _orderCtrl;
-
-  String? _selectedCategoryId;
-  String _level = 'beginner';
-  bool _isActive = true;
-  String? _heroMediaUrl;
-  String? _heroPosterUrl;
-
-  bool get _isEditing => widget.lesson != null;
+  ContentItem? _initialItem;
 
   @override
   void initState() {
     super.initState();
-    final lesson = widget.lesson;
-    final categories =
-        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
+    final l = widget.lesson;
+    if (l != null) {
+      final heroMediaUrl =
+          l.data?['heroMediaUrl'] ??
+          l.data?['videoUrl'] ??
+          l.data?['animationUrl'] ??
+          l.data?['imageUrl'] ??
+          l.data?['thumbnailUrl'] as String?;
+      final heroMediaType = l.data?['heroMediaType'] as String?;
+      final heroPosterUrl = l.data?['heroPosterUrl'] as String?;
 
-    _selectedCategoryId =
-        lesson?.categoryId ??
-        widget.initialCategoryId ??
-        (categories.isNotEmpty ? categories.first.id : null);
-    _titleLatinCtrl = TextEditingController(text: lesson?.titleLatin ?? '');
-    _titleOlChikiCtrl = TextEditingController(text: lesson?.titleOlChiki ?? '');
-    _descriptionCtrl = TextEditingController(text: lesson?.description ?? '');
-    _minutesCtrl = TextEditingController(
-      text: (lesson?.estimatedMinutes ?? 5).toString(),
-    );
-    _orderCtrl = TextEditingController(text: (lesson?.order ?? 0).toString());
-    _heroMediaUrl =
-        lesson?.data?['heroMediaUrl'] ??
-        lesson?.data?['videoUrl'] ??
-        lesson?.data?['animationUrl'] ??
-        lesson?.data?['imageUrl'] ??
-        lesson?.data?['thumbnailUrl'];
-    _heroPosterUrl = lesson?.data?['heroPosterUrl'];
+      ContentMedia? heroMedia;
+      if (heroMediaUrl != null && heroMediaUrl.isNotEmpty) {
+        heroMedia = ContentMedia(
+          url: heroMediaUrl,
+          fileId: '',
+          kind: heroMediaType != null
+              ? ContentMediaKind.fromString(heroMediaType)
+              : ContentMediaKind.image,
+          posterUrl: heroPosterUrl,
+        );
+      }
 
-    _isActive = lesson?.isActive ?? true;
-    _level = lesson?.level ?? 'beginner';
+      final blocks = <ContentBlock>[];
+      for (int i = 0; i < l.blocks.length; i++) {
+        final b = l.blocks[i];
+        if (b.type == 'text') {
+          blocks.add(
+            TextBlock(
+              id: const Uuid().v4(),
+              order: i,
+              markdown: b.textLatin ?? '',
+            ),
+          );
+        } else if (b.type == 'image') {
+          blocks.add(
+            ImageBlock(
+              id: const Uuid().v4(),
+              order: i,
+              media: ContentMedia(
+                url: b.imageUrl ?? '',
+                fileId: '',
+                kind: ContentMediaKind.image,
+              ),
+            ),
+          );
+        } else if (b.type == 'audio') {
+          blocks.add(
+            AudioBlock(
+              id: const Uuid().v4(),
+              order: i,
+              media: ContentMedia(
+                url: b.audioUrl ?? '',
+                fileId: '',
+                kind: ContentMediaKind.audio,
+              ),
+            ),
+          );
+        }
+      }
+
+      _initialItem = ContentItem(
+        id: l.id,
+        kind: ContentKind.lesson,
+        categoryId: l.categoryId,
+        title: l.titleLatin,
+        titleOlChiki: l.titleOlChiki,
+        subtitle: l.description,
+        heroMedia: heroMedia,
+        blocks: blocks,
+        order: l.order,
+        isPublished: l.isActive,
+        updatedAt: DateTime.now(),
+      );
+    }
   }
 
-  @override
-  void dispose() {
-    _titleLatinCtrl.dispose();
-    _titleOlChikiCtrl.dispose();
-    _descriptionCtrl.dispose();
-    _minutesCtrl.dispose();
-    _orderCtrl.dispose();
-    super.dispose();
-  }
+  Future<void> _onSubmit(ContentItem item) async {
+    final repo = ref.read(contentRepositoryProvider);
+    final res = await repo.upsert(item);
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required String label,
-    required String hint,
-    required bool isDark,
-    int maxLines = 1,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          label,
-          style: TextStyle(
-            fontSize: 15,
-            fontWeight: FontWeight.w700,
-            color: isDark ? Colors.white : Colors.black,
-          ),
-        ),
-        const SizedBox(height: 10),
-        TextField(
-          controller: controller,
-          maxLines: maxLines,
-          style: TextStyle(color: isDark ? Colors.white : Colors.black),
-          decoration: InputDecoration(
-            hintText: hint,
-            hintStyle: TextStyle(
-              color: isDark ? Colors.white38 : Colors.black38,
+    if (mounted) {
+      res.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save lesson: ${failure.message}'),
+              backgroundColor: Colors.red,
             ),
-            filled: true,
-            fillColor: isDark
-                ? Colors.white.withValues(alpha: 0.08)
-                : Colors.black.withValues(alpha: 0.04),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
-              borderSide: BorderSide.none,
-            ),
-          ),
-        ),
-      ],
-    );
+          );
+        },
+        (_) {
+          ref.invalidate(lessonNotifierProvider);
+          Navigator.pop(context);
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final categories =
-        ref.read(categoryNotifierProvider).value ?? const <CategoryEntity>[];
-
     return Container(
-      height: MediaQuery.of(context).size.height * 0.86,
-      decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF161B22) : Colors.white,
-        borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
-      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 44,
-            height: 4,
-            decoration: BoxDecoration(
-              color: isDark ? Colors.white24 : Colors.black12,
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 20, 24, 12),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    _isEditing ? 'Edit Subcategory' : 'Create Subcategory',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w800,
-                      color: isDark ? Colors.white : Colors.black,
-                    ),
-                  ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                widget.lesson == null ? 'New Subcategory' : 'Edit Subcategory',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
-                IconButton(
-                  onPressed: () => Navigator.pop(context),
-                  icon: const Icon(Icons.close_rounded),
-                ),
-              ],
-            ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () => Navigator.pop(context),
+              ),
+            ],
           ),
+          const Divider(),
           Expanded(
-            child: ListView(
-              padding: const EdgeInsets.fromLTRB(24, 8, 24, 16),
-              children: [
-                _buildTextField(
-                  controller: _titleLatinCtrl,
-                  label: 'Title (Latin)',
-                  hint: 'Enter lesson title',
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 14),
-                _buildTextField(
-                  controller: _titleOlChikiCtrl,
-                  label: 'Title (Ol Chiki)',
-                  hint: 'ᱯᱟᱲᱦᱟ ᱫᱟᱨᱮ',
-                  isDark: isDark,
-                ),
-                const SizedBox(height: 14),
-                _buildTextField(
-                  controller: _descriptionCtrl,
-                  label: 'Description',
-                  hint: 'Short lesson description',
-                  isDark: isDark,
-                  maxLines: 3,
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Category',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  initialValue: _selectedCategoryId,
-                  items: categories
-                      .map(
-                        (c) => DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.titleLatin),
-                        ),
-                      )
-                      .toList(),
-                  onChanged: (value) =>
-                      setState(() => _selectedCategoryId = value),
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.04),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                Row(
-                  children: [
-                    Expanded(
-                      child: _buildTextField(
-                        controller: _minutesCtrl,
-                        label: 'Minutes',
-                        hint: '5',
-                        isDark: isDark,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: _buildTextField(
-                        controller: _orderCtrl,
-                        label: 'Order',
-                        hint: '0',
-                        isDark: isDark,
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 14),
-                Text(
-                  'Level',
-                  style: TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.w700,
-                    color: isDark ? Colors.white : Colors.black,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                DropdownButtonFormField<String>(
-                  initialValue: _level,
-                  items: const [
-                    DropdownMenuItem(
-                      value: 'beginner',
-                      child: Text('Beginner'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'intermediate',
-                      child: Text('Intermediate'),
-                    ),
-                    DropdownMenuItem(
-                      value: 'advanced',
-                      child: Text('Advanced'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _level = value);
-                    }
-                  },
-                  decoration: InputDecoration(
-                    filled: true,
-                    fillColor: isDark
-                        ? Colors.white.withValues(alpha: 0.08)
-                        : Colors.black.withValues(alpha: 0.04),
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(14),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 14),
-                AdminMediaField(
-                  label: 'Hero Media',
-                  subtitle:
-                      'Supports PNG, JPG, WebP, GIF, SVG, Lottie JSON/.lottie, MP4, WebM, MOV, and M4V.',
-                  icon: Icons.perm_media_rounded,
-                  accent: const Color(0xFF3B82F6),
-                  currentUrl: _heroMediaUrl,
-                  uploadFolder: 'lesson-hero-media',
-                  fileType: FileType.custom,
-                  allowedExtensions: const [
-                    'png',
-                    'jpg',
-                    'jpeg',
-                    'webp',
-                    'gif',
-                    'svg',
-                    'json',
-                    'lottie',
-                    'mp4',
-                    'webm',
-                    'mov',
-                    'm4v',
-                  ],
-                  onUploaded: (url) => setState(() => _heroMediaUrl = url),
-                ),
-                const SizedBox(height: 14),
-                AdminMediaField(
-                  label: 'Video Poster / Fallback',
-                  subtitle:
-                      'Optional image shown if a video or animation cannot load.',
-                  icon: Icons.photo_rounded,
-                  accent: const Color(0xFF10B981),
-                  currentUrl: _heroPosterUrl,
-                  uploadFolder: 'lesson-hero-posters',
-                  fileType: FileType.custom,
-                  allowedExtensions: const [
-                    'png',
-                    'jpg',
-                    'jpeg',
-                    'webp',
-                    'gif',
-                    'svg',
-                  ],
-                  onUploaded: (url) => setState(() => _heroPosterUrl = url),
-                ),
-                const SizedBox(height: 12),
-                SwitchListTile(
-                  value: _isActive,
-                  onChanged: (value) => setState(() => _isActive = value),
-                  title: const Text('Active'),
-                  contentPadding: EdgeInsets.zero,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(24, 8, 24, 24),
-            child: Row(
-              children: [
-                Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => Navigator.pop(context),
-                    child: const Text('Cancel'),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: ElevatedButton(
-                    onPressed: _selectedCategoryId == null
-                        ? null
-                        : () async {
-                            final heroMediaUrl = _heroMediaUrl?.trim();
-                            final heroPosterUrl = _heroPosterUrl?.trim();
-                            final lessonData = <String, dynamic>{
-                              ...?widget.lesson?.data,
-                            }..removeWhere((_, value) => value == null);
-                            lessonData.remove('heroMediaUrl');
-                            lessonData.remove('heroMediaType');
-                            lessonData.remove('heroPosterUrl');
-                            lessonData.remove('videoUrl');
-                            lessonData.remove('animationUrl');
-                            lessonData.remove('imageUrl');
-                            lessonData.remove('thumbnailUrl');
-                            if (heroMediaUrl != null &&
-                                heroMediaUrl.isNotEmpty) {
-                              final kind = MediaTypeResolver.resolve(
-                                heroMediaUrl,
-                              );
-                              lessonData['heroMediaUrl'] = heroMediaUrl;
-                              lessonData['heroMediaType'] = kind.name;
-                              if (kind == MediaKind.image ||
-                                  kind == MediaKind.svg) {
-                                lessonData['thumbnailUrl'] = heroMediaUrl;
-                              }
-                            }
-                            if (heroPosterUrl != null &&
-                                heroPosterUrl.isNotEmpty) {
-                              lessonData['heroPosterUrl'] = heroPosterUrl;
-                              lessonData['thumbnailUrl'] = heroPosterUrl;
-                            }
-
-                            final newLesson = LessonEntity(
-                              id: widget.lesson?.id ?? const Uuid().v4(),
-                              categoryId: _selectedCategoryId!,
-                              titleLatin: _titleLatinCtrl.text.trim(),
-                              titleOlChiki: _titleOlChikiCtrl.text.trim(),
-                              description: _descriptionCtrl.text.trim().isEmpty
-                                  ? null
-                                  : _descriptionCtrl.text.trim(),
-                              estimatedMinutes:
-                                  int.tryParse(_minutesCtrl.text.trim()) ?? 5,
-                              order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-                              level: _level,
-                              blocks:
-                                  widget.lesson?.blocks ??
-                                  const [
-                                    LessonBlockEntity(
-                                      type: 'text',
-                                      textLatin: 'New Block',
-                                      textOlChiki: 'New Block',
-                                    ),
-                                  ],
-                              isActive: _isActive,
-                              data: lessonData.isEmpty ? null : lessonData,
-                            );
-
-                            try {
-                              if (_isEditing) {
-                                await ref
-                                    .read(lessonNotifierProvider.notifier)
-                                    .updateLesson(newLesson);
-                              } else {
-                                await ref
-                                    .read(lessonNotifierProvider.notifier)
-                                    .addLesson(newLesson);
-                              }
-                            } catch (e) {
-                              if (!context.mounted) return;
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Failed to save lesson: $e'),
-                                  backgroundColor: Colors.red,
-                                  behavior: SnackBarBehavior.floating,
-                                ),
-                              );
-                              return;
-                            }
-
-                            if (context.mounted) Navigator.pop(context);
-                          },
-                    child: Text(
-                      _isEditing ? 'Save Changes' : 'Create Subcategory',
-                    ),
-                  ),
-                ),
-              ],
+            child: ContentForm(
+              kind: ContentKind.lesson,
+              categoryId: widget.initialCategoryId,
+              initial: _initialItem,
+              onSubmit: _onSubmit,
             ),
           ),
         ],

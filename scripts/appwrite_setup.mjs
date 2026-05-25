@@ -187,8 +187,9 @@ const collections = [
       { type: 'string', key: 'description', size: 2048, required: false },
       { type: 'string', key: 'audioUrl', size: 512, required: false },
       { type: 'boolean', key: 'isPremium', required: false, default: false },
-      // blocks stored as JSON string (Appwrite has no native JSON array attribute)
       { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_category', type: 'key', attributes: ['categoryId'] },
@@ -228,6 +229,9 @@ const collections = [
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'string', key: 'pronunciation', size: 100, required: false },
       { type: 'string', key: 'themeColor', size: 50, required: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -248,6 +252,9 @@ const collections = [
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'string', key: 'themeColor', size: 50, required: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -269,6 +276,9 @@ const collections = [
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'string', key: 'themeColor', size: 50, required: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -290,6 +300,9 @@ const collections = [
       { type: 'integer', key: 'order', required: false, default: 0 },
       { type: 'boolean', key: 'isActive', required: false, default: true },
       { type: 'string', key: 'themeColor', size: 50, required: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_order', type: 'key', attributes: ['order'], orders: ['ASC'] },
@@ -311,6 +324,9 @@ const collections = [
       { type: 'string', key: 'difficulty', size: 10, required: false, default: 'easy' },
       { type: 'integer', key: 'durationSeconds', required: false, default: 0 },
       { type: 'boolean', key: 'isPremium', required: false, default: false },
+      { type: 'string', key: 'hero_media', size: 1000000, required: false },
+      { type: 'string', key: 'blocks', size: 1000000, required: false },
+      { type: 'string', key: 'tracing', size: 1000000, required: false },
     ],
     indexes: [
       { key: 'idx_category', type: 'key', attributes: ['categoryId'] },

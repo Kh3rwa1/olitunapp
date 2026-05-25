@@ -12,13 +12,11 @@ import '../../features/auth/presentation/welcome_screen.dart';
 import '../../features/auth/presentation/email_auth_screen.dart';
 import '../../features/main/presentation/main_shell_screen.dart';
 import '../../features/lessons/presentation/category_lessons_screen.dart';
-import '../../features/lessons/presentation/lesson_detail_screen.dart';
 import '../../features/lessons/presentation/lesson_block_detail_screen.dart';
-import '../../features/lessons/presentation/letter_detail_screen.dart';
-import '../../features/lessons/presentation/word_detail_screen.dart';
-import '../../features/lessons/presentation/number_detail/number_detail_screen.dart';
-import '../../features/lessons/presentation/sentence_detail_screen.dart';
 import '../../features/lessons/presentation/practice/practice_screen.dart';
+import '../../features/content/presentation/content_detail_screen.dart';
+import '../../shared/models/content_item.dart';
+
 import '../../features/quiz/presentation/quiz_list_screen.dart';
 import '../../features/quiz/presentation/quiz_screen.dart';
 import '../../features/quiz/presentation/mistake_review_screen.dart';
@@ -282,12 +280,12 @@ final routerProvider = Provider<GoRouter>((ref) {
           categoryId: state.pathParameters['categoryId'] ?? '',
         ),
       ),
-      _drillRoute(
+      GoRoute(
         path: '/lesson/:lessonId',
-        name: RouteNames.lessonDetail,
-        child: (_, state) => LessonDetailScreen(
-          lessonId: state.pathParameters['lessonId'] ?? '',
-        ),
+        redirect: (context, state) {
+          final id = state.pathParameters['lessonId'];
+          return '/content/lesson/$id';
+        },
       ),
       _drillRoute(
         path: '/lesson/:lessonId/block/:blockIndex',
@@ -301,33 +299,42 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
-      _drillRoute(
+      GoRoute(
         path: '/letter/:lessonId/:letterId',
-        child: (_, state) => LetterDetailScreen(
-          lessonId: state.pathParameters['lessonId'] ?? '',
-          letterId: state.pathParameters['letterId'] ?? '',
-        ),
+        redirect: (context, state) {
+          final id = state.pathParameters['letterId'];
+          return '/content/letter/$id';
+        },
       ),
-      _drillRoute(
+      GoRoute(
         path: '/word/:lessonId/:wordId',
-        child: (_, state) => WordDetailScreen(
-          lessonId: state.pathParameters['lessonId'] ?? '',
-          wordId: state.pathParameters['wordId'] ?? '',
-        ),
+        redirect: (context, state) {
+          final id = state.pathParameters['wordId'];
+          return '/content/word/$id';
+        },
       ),
-      _drillRoute(
+      GoRoute(
         path: '/number/:lessonId/:numberId',
-        child: (_, state) => NumberDetailScreen(
-          lessonId: state.pathParameters['lessonId'] ?? '',
-          numberId: state.pathParameters['numberId'] ?? '',
-        ),
+        redirect: (context, state) {
+          final id = state.pathParameters['numberId'];
+          return '/content/number/$id';
+        },
+      ),
+      GoRoute(
+        path: '/sentence/:lessonId/:sentenceId',
+        redirect: (context, state) {
+          final id = state.pathParameters['sentenceId'];
+          return '/content/sentence/$id';
+        },
       ),
       _drillRoute(
-        path: '/sentence/:lessonId/:sentenceId',
-        child: (_, state) => SentenceDetailScreen(
-          lessonId: state.pathParameters['lessonId'] ?? '',
-          sentenceId: state.pathParameters['sentenceId'] ?? '',
-        ),
+        path: '/content/:kind/:id',
+        child: (_, state) {
+          final kindStr = state.pathParameters['kind'] ?? 'lesson';
+          final id = state.pathParameters['id'] ?? '';
+          final kind = ContentKind.fromString(kindStr);
+          return ContentDetailScreen(kind: kind, id: id);
+        },
       ),
       _drillRoute(
         path: '/practice/:char/:name',

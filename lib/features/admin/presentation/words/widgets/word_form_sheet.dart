@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
-import 'package:file_picker/file_picker.dart';
-import '../../../../../core/theme/admin_tokens.dart';
-import '../../../../../shared/models/content_models.dart';
-import '../../../../../shared/providers/providers.dart';
-import '../../widgets/admin_content_subcategories.dart';
-import '../../widgets/admin_form_widgets.dart';
+import 'package:itun/features/admin/presentation/widgets/content_form.dart';
+import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/features/admin/presentation/widgets/common/admin_modal_sheet.dart';
+import 'package:itun/shared/repositories/content_repository.dart';
+import 'package:itun/shared/providers/providers.dart';
 
 class WordFormSheet extends ConsumerStatefulWidget {
   final WordModel? word;
@@ -32,547 +29,118 @@ class WordFormSheet extends ConsumerStatefulWidget {
 }
 
 class _WordFormSheetState extends ConsumerState<WordFormSheet> {
-  late final TextEditingController _wordOlChikiCtrl;
-  late final TextEditingController _wordLatinCtrl;
-  late final TextEditingController _meaningCtrl;
-  late final TextEditingController _usageCtrl;
-  late final TextEditingController _categoryCtrl;
-  late final TextEditingController _pronCtrl;
-  late final TextEditingController _orderCtrl;
-  late final TextEditingController _themeColorCtrl;
-
-  String? _audioUrl;
-  String? _mediaUrl;
-
-  bool get _isEditing =>
-      widget.word != null && !widget.word!.id.startsWith('lesson_block_');
-
-  bool _isAnimationOrVideoOrHtml(String url) {
-    final lower = url.toLowerCase();
-    return lower.contains('.json') ||
-        lower.contains('.lottie') ||
-        lower.contains('.mp4') ||
-        lower.contains('.webm') ||
-        lower.contains('.mov') ||
-        lower.contains('.m4v') ||
-        lower.contains('.3gp') ||
-        lower.contains('.avi') ||
-        lower.contains('.html') ||
-        lower.contains('/buckets/animations/') ||
-        lower.contains('/buckets/videos/') ||
-        lower.contains('/buckets/html/');
-  }
+  ContentItem? _initialItem;
 
   @override
   void initState() {
     super.initState();
     final w = widget.word;
-    _wordOlChikiCtrl = TextEditingController(text: w?.wordOlChiki ?? '');
-    _wordLatinCtrl = TextEditingController(text: w?.wordLatin ?? '');
-    _meaningCtrl = TextEditingController(text: w?.meaning ?? '');
-    _usageCtrl = TextEditingController(text: w?.usage ?? '');
-    _categoryCtrl = TextEditingController(
-      text: w?.category ?? widget.initialCategory ?? '',
-    );
-    _pronCtrl = TextEditingController(text: w?.pronunciation ?? '');
-    _orderCtrl = TextEditingController(text: (w?.order ?? 0).toString());
-    _themeColorCtrl = TextEditingController(text: w?.themeColor ?? '');
-    _audioUrl = w?.audioUrl;
-    _mediaUrl = w?.animationUrl ?? w?.imageUrl;
-  }
-
-  @override
-  void dispose() {
-    _wordOlChikiCtrl.dispose();
-    _wordLatinCtrl.dispose();
-    _meaningCtrl.dispose();
-    _usageCtrl.dispose();
-    _categoryCtrl.dispose();
-    _pronCtrl.dispose();
-    _orderCtrl.dispose();
-    _themeColorCtrl.dispose();
-    super.dispose();
-  }
-
-  Future<void> _save() async {
-    HapticFeedback.lightImpact();
-    final media = _mediaUrl?.trim();
-    final isAnim = media != null && _isAnimationOrVideoOrHtml(media);
-
-    final word = WordModel(
-      id: _isEditing ? widget.word!.id : const Uuid().v4(),
-      wordOlChiki: _wordOlChikiCtrl.text.trim(),
-      wordLatin: _wordLatinCtrl.text.trim(),
-      meaning: _meaningCtrl.text.trim(),
-      usage: _usageCtrl.text.trim().isNotEmpty ? _usageCtrl.text.trim() : null,
-      category: _categoryCtrl.text.trim().isNotEmpty
-          ? _categoryCtrl.text.trim()
-          : null,
-      pronunciation: _pronCtrl.text.trim().isNotEmpty
-          ? _pronCtrl.text.trim()
-          : null,
-      order: int.tryParse(_orderCtrl.text.trim()) ?? 0,
-      audioUrl: _audioUrl,
-      imageUrl: isAnim ? null : media,
-      animationUrl: isAnim ? media : null,
-      themeColor: _themeColorCtrl.text.trim().isNotEmpty
-          ? _themeColorCtrl.text.trim()
-          : null,
-    );
-    try {
-      if (_isEditing) {
-        await ref.read(wordsProvider.notifier).updateWord(word);
-      } else {
-        await ref.read(wordsProvider.notifier).addWord(word);
+    if (w != null) {
+      final hasMedia = w.imageUrl != null || w.animationUrl != null;
+      final blocks = <ContentBlock>[];
+      if (w.meaning.isNotEmpty) {
+        blocks.add(TextBlock(id: 'meaning', order: 0, markdown: w.meaning));
       }
-    } catch (e) {
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Failed to save word: $e'),
-          backgroundColor: Colors.red,
-          behavior: SnackBarBehavior.floating,
-        ),
+      if (w.usage != null && w.usage!.isNotEmpty) {
+        blocks.add(TextBlock(id: 'usage', order: 1, markdown: w.usage!));
+      }
+      if (w.audioUrl != null && w.audioUrl!.isNotEmpty) {
+        blocks.add(
+          AudioBlock(
+            id: 'pronunciation_audio',
+            order: blocks.length,
+            media: ContentMedia(
+              url: w.audioUrl!,
+              fileId: '',
+              kind: ContentMediaKind.audio,
+            ),
+            transcript: w.pronunciation,
+          ),
+        );
+      }
+
+      _initialItem = ContentItem(
+        id: w.id,
+        kind: ContentKind.word,
+        categoryId: w.category ?? widget.initialCategory ?? '',
+        title: w.wordLatin,
+        titleOlChiki: w.wordOlChiki,
+        olChiki: w.wordOlChiki,
+        subtitle: w.pronunciation,
+        heroMedia: hasMedia
+            ? ContentMedia(
+                url: w.animationUrl ?? w.imageUrl!,
+                fileId: '',
+                kind: w.animationUrl != null
+                    ? ContentMediaKind.lottie
+                    : ContentMediaKind.image,
+              )
+            : null,
+        blocks: blocks,
+        order: w.order,
+        isPublished: w.isActive,
+        difficulty: w.themeColor,
+        updatedAt: DateTime.now(),
       );
-      return;
     }
-    if (!mounted) return;
-    Navigator.pop(context);
+  }
+
+  Future<void> _onSubmit(ContentItem item) async {
+    final repo = ref.read(contentRepositoryProvider);
+    final res = await repo.upsert(item);
+
+    if (mounted) {
+      res.fold(
+        (failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to save word: ${failure.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        },
+        (_) {
+          ref.invalidate(wordsProvider);
+          Navigator.pop(context);
+        },
+      );
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Container(
-      height: MediaQuery.of(context).size.height * 0.88,
-      decoration: BoxDecoration(
-        color: AdminTokens.overlay(isDark),
-        borderRadius: const BorderRadius.vertical(
-          top: Radius.circular(AdminTokens.radius2xl),
-        ),
-        boxShadow: AdminTokens.overlayShadow(isDark),
-      ),
-      child: Column(
-        children: [
-          Container(
-            margin: const EdgeInsets.only(top: 12),
-            width: 44,
-            height: 4,
-            decoration: BoxDecoration(
-              color: AdminTokens.borderStrong(isDark),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          _buildTitle(isDark),
-          Divider(height: 1, color: AdminTokens.divider(isDark)),
-          Expanded(child: _buildFields(isDark)),
-          _buildActions(isDark),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildTitle(bool isDark) {
-    return Padding(
-      padding: const EdgeInsets.all(24),
-      child: Row(
-        children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF8B5CF6), Color(0xFF6D28D9)],
-              ),
-              borderRadius: BorderRadius.circular(14),
-            ),
-            child: Icon(
-              _isEditing ? Icons.edit_rounded : Icons.add_rounded,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Text(
-            _isEditing ? 'Edit Word' : 'New Word',
-            style: TextStyle(
-              fontSize: 22,
-              fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : Colors.black,
-            ),
-          ),
-          const Spacer(),
-          IconButton(
-            onPressed: () => Navigator.pop(context),
-            icon: Icon(
-              Icons.close_rounded,
-              color: isDark ? Colors.white54 : Colors.black45,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  bool get _isCategoryLocked =>
-      widget.word == null &&
-      widget.initialCategory != null &&
-      widget.initialCategory!.isNotEmpty;
-
-  Widget _buildFields(bool isDark) {
-    final categories = ref.watch(categoryNotifierProvider).value ?? [];
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
-    final contentCategory = findAdminContentCategory(
-      categories,
-      AdminContentKind.vocabulary,
-    );
-    final vocabularyLessons = filterAdminContentLessons(
-      lessons,
-      contentCategory,
-      AdminContentKind.vocabulary,
-    );
-
-    final dropdownOptions = vocabularyLessons
-        .map((l) => l.titleLatin.trim())
-        .where((title) => title.isNotEmpty)
-        .toSet()
-        .toList();
-
-    // Ensure initialCategory and current word category are in the options list to prevent Flutter assertion crashes
-    final initialCat = widget.initialCategory?.trim();
-    if (initialCat != null &&
-        initialCat.isNotEmpty &&
-        !dropdownOptions.contains(initialCat)) {
-      dropdownOptions.add(initialCat);
-    }
-    final currentWordCat = widget.word?.category?.trim();
-    if (currentWordCat != null &&
-        currentWordCat.isNotEmpty &&
-        !dropdownOptions.contains(currentWordCat)) {
-      dropdownOptions.add(currentWordCat);
-    }
-    final currentText = _categoryCtrl.text.trim();
-    if (currentText.isNotEmpty && !dropdownOptions.contains(currentText)) {
-      dropdownOptions.add(currentText);
-    }
-
-    if (dropdownOptions.isEmpty) {
-      dropdownOptions.add('General Vocabulary');
-    }
-
-    // Guarantee _categoryCtrl.text is never empty if we have options
-    final defaultVal = dropdownOptions.contains(_categoryCtrl.text.trim())
-        ? _categoryCtrl.text.trim()
-        : dropdownOptions.first;
-    if (_categoryCtrl.text != defaultVal) {
-      _categoryCtrl.text = defaultVal;
-    }
-
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          AdminTextField(
-            controller: _wordOlChikiCtrl,
-            label: 'Word (Ol Chiki)',
-            hint: 'e.g., ᱡᱚᱦᱟᱨ',
-          ),
-          const SizedBox(height: 20),
-          AdminTextField(
-            controller: _wordLatinCtrl,
-            label: 'Word (Latin)',
-            hint: 'e.g., Johar',
-          ),
-          const SizedBox(height: 20),
-          AdminTextField(
-            controller: _meaningCtrl,
-            label: 'Meaning (English)',
-            hint: 'e.g., Hello / Greetings',
-          ),
-          const SizedBox(height: 20),
-          AdminTextField(
-            controller: _usageCtrl,
-            label: 'Usage Example (optional)',
-            hint: 'e.g., "Johar!" — used as a greeting',
-            maxLines: 2,
-          ),
-          const SizedBox(height: 20),
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
-                child: _buildCategoryDropdown(
-                  isDark: isDark,
-                  options: dropdownOptions,
-                  isLocked: _isCategoryLocked,
+              Text(
+                widget.word == null ? 'New Word' : 'Edit Word',
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: AdminTextField(
-                  controller: _orderCtrl,
-                  label: 'Order',
-                  hint: '0',
-                  keyboardType: TextInputType.number,
-                  prefixIcon: Icons.sort_rounded,
-                ),
+              IconButton(
+                icon: const Icon(Icons.close_rounded),
+                onPressed: () => Navigator.pop(context),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          AdminTextField(
-            controller: _pronCtrl,
-            label: 'Pronunciation (optional)',
-            hint: 'e.g., jo-har',
-          ),
-          const SizedBox(height: 24),
-          _buildThemeColorSelector(isDark),
-          const SizedBox(height: 24),
-          AdminMediaField(
-            label: 'Audio Pronunciation',
-            icon: Icons.audiotrack_rounded,
-            accent: const Color(0xFF8B5CF6),
-            currentUrl: _audioUrl,
-            uploadFolder: 'words-audio',
-            fileType: FileType.audio,
-            onUploaded: (url) => setState(() => _audioUrl = url),
-          ),
-          const SizedBox(height: 24),
-          AdminMediaField(
-            label: 'Hero Media (Optional)',
-            subtitle:
-                'Upload high-quality image, GIF, SVG, Lottie (JSON), audio, video, or HTML file',
-            icon: Icons.play_circle_outline_rounded,
-            accent: const Color(0xFF6366F1),
-            currentUrl: _mediaUrl,
-            uploadFolder: 'words-media',
-            fileType: FileType.any,
-            onUploaded: (url) => setState(() => _mediaUrl = url),
+          const Divider(),
+          Expanded(
+            child: ContentForm(
+              kind: ContentKind.word,
+              categoryId: widget.initialCategory,
+              initial: _initialItem,
+              onSubmit: _onSubmit,
+            ),
           ),
         ],
       ),
-    );
-  }
-
-  Widget _buildActions(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-      decoration: BoxDecoration(
-        color: AdminTokens.baseTint(isDark),
-        border: Border(top: BorderSide(color: AdminTokens.divider(isDark))),
-      ),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          children: [
-            Expanded(
-              child: AdminSecondaryButton(
-                label: 'Cancel',
-                onTap: () => Navigator.pop(context),
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              flex: 2,
-              child: AdminPrimaryButton(
-                label: _isEditing ? 'Save Changes' : 'Add Word',
-                icon: _isEditing ? Icons.save_rounded : Icons.add_rounded,
-                onTap: _save,
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCategoryDropdown({
-    required bool isDark,
-    required List<String> options,
-    required bool isLocked,
-  }) {
-    final currentValue =
-        _categoryCtrl.text.trim().isNotEmpty &&
-            options.contains(_categoryCtrl.text.trim())
-        ? _categoryCtrl.text.trim()
-        : (options.isNotEmpty ? options.first : null);
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          isLocked
-              ? 'Category / Subcategory (Locked)'
-              : 'Category / Subcategory',
-          style: AdminTokens.label(isDark).copyWith(
-            color: isLocked ? AdminTokens.textSecondary(isDark) : null,
-          ),
-        ),
-        const SizedBox(height: AdminTokens.space2),
-        DropdownButtonFormField<String>(
-          initialValue: currentValue,
-          items: options
-              .map(
-                (opt) => DropdownMenuItem<String>(
-                  value: opt,
-                  child: Text(
-                    opt,
-                    style: AdminTokens.bodyStrong(isDark).copyWith(
-                      color: isLocked
-                          ? AdminTokens.textSecondary(isDark)
-                          : null,
-                    ),
-                  ),
-                ),
-              )
-              .toList(),
-          onChanged: isLocked
-              ? null
-              : (val) {
-                  if (val != null) {
-                    setState(() {
-                      _categoryCtrl.text = val;
-                    });
-                  }
-                },
-          style: AdminTokens.bodyStrong(isDark),
-          decoration: InputDecoration(
-            filled: true,
-            fillColor: isLocked
-                ? AdminTokens.baseTint(isDark)
-                : AdminTokens.sunken(isDark),
-            prefixIcon: Icon(
-              isLocked ? Icons.lock_outline_rounded : Icons.label_rounded,
-              size: 20,
-              color: AdminTokens.textTertiary(isDark),
-            ),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              borderSide: BorderSide(color: AdminTokens.border(isDark)),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              borderSide: BorderSide(color: AdminTokens.border(isDark)),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              borderSide: const BorderSide(
-                color: AdminTokens.accent,
-                width: 1.5,
-              ),
-            ),
-            contentPadding: const EdgeInsets.symmetric(
-              horizontal: 16,
-              vertical: 14,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildThemeColorSelector(bool isDark) {
-    // Avoid purple/violet per Purple Ban.
-    final presets = [
-      {'name': 'Mint', 'hex': '#10B981'},
-      {'name': 'Teal', 'hex': '#14B8A6'},
-      {'name': 'Sky', 'hex': '#0EA5E9'},
-      {'name': 'Rose', 'hex': '#F43F5E'},
-      {'name': 'Amber', 'hex': '#F59E0B'},
-      {'name': 'Charcoal', 'hex': '#1E293B'},
-      {'name': 'White', 'hex': '#FFFFFF'},
-    ];
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Theme Color (Optional)',
-          style: TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black54,
-          ),
-        ),
-        const SizedBox(height: 12),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const BouncingScrollPhysics(),
-          child: Row(
-            children: [
-              for (final p in presets)
-                GestureDetector(
-                  onTap: () {
-                    HapticFeedback.selectionClick();
-                    setState(() => _themeColorCtrl.text = p['hex']!);
-                  },
-                  child: Container(
-                    width: 40,
-                    height: 40,
-                    margin: const EdgeInsets.only(right: 12),
-                    decoration: BoxDecoration(
-                      color: Color(
-                        int.parse(p['hex']!.replaceFirst('#', '0xFF')),
-                      ),
-                      shape: BoxShape.circle,
-                      border: Border.all(
-                        color: _themeColorCtrl.text.toUpperCase() == p['hex']
-                            ? (isDark ? Colors.white : Colors.black)
-                            : (isDark ? Colors.white24 : Colors.black12),
-                        width: _themeColorCtrl.text.toUpperCase() == p['hex']
-                            ? 2
-                            : 1,
-                      ),
-                      boxShadow: [
-                        if (_themeColorCtrl.text.toUpperCase() == p['hex'])
-                          BoxShadow(
-                            color: Color(
-                              int.parse(p['hex']!.replaceFirst('#', '0xFF')),
-                            ).withValues(alpha: 0.4),
-                            blurRadius: 8,
-                            spreadRadius: 2,
-                          ),
-                      ],
-                    ),
-                  ),
-                ),
-              GestureDetector(
-                onTap: () {
-                  HapticFeedback.selectionClick();
-                  setState(() => _themeColorCtrl.clear());
-                },
-                child: Container(
-                  width: 40,
-                  height: 40,
-                  margin: const EdgeInsets.only(right: 12),
-                  decoration: BoxDecoration(
-                    color: isDark ? Colors.white10 : Colors.black12,
-                    shape: BoxShape.circle,
-                    border: Border.all(
-                      color: _themeColorCtrl.text.isEmpty
-                          ? (isDark ? Colors.white : Colors.black)
-                          : Colors.transparent,
-                      width: 2,
-                    ),
-                  ),
-                  child: Icon(
-                    Icons.format_color_reset_rounded,
-                    size: 20,
-                    color: isDark ? Colors.white54 : Colors.black54,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-        const SizedBox(height: 16),
-        AdminTextField(
-          controller: _themeColorCtrl,
-          label: 'Custom HEX Code',
-          hint: 'e.g., #FF5722',
-          prefixIcon: Icons.color_lens_rounded,
-        ),
-      ],
     );
   }
 }

@@ -908,7 +908,6 @@ class ContentItem extends Equatable {
         : titleOlChiki;
 
     final payload = <String, dynamic>{
-      'kind': kind.name,
       'categoryId': categoryId,
       'titleOlChiki': resolvedTitleOlChiki,
       'subtitle': subtitle,

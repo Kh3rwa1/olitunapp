@@ -11,7 +11,8 @@ extension FailureToUiMessage on Failure {
       return 'Please sign in again to continue.';
     }
     if (m.contains('404')) return 'This content was not found.';
-    if (m.contains('TracingRequired')) return 'Tracing data is required for letters and numbers.';
+    if (m.contains('TracingRequired'))
+      return 'Tracing data is required for letters and numbers.';
     return m.length > 140 ? '${m.substring(0, 140)}…' : m;
   }
 }

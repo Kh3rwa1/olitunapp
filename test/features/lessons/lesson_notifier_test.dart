@@ -152,27 +152,33 @@ void main() {
             final categoryId = arg.$2;
             if (kind == ContentKind.lesson) {
               if (categoryId == null) {
-                return sampleLessons.map((l) => ContentItem(
-                  id: l.id,
-                  kind: ContentKind.lesson,
-                  categoryId: l.categoryId,
-                  title: l.titleLatin,
-                  titleOlChiki: l.titleOlChiki,
-                  blocks: const [],
-                  updatedAt: DateTime.now(),
-                )).toList();
+                return sampleLessons
+                    .map(
+                      (l) => ContentItem(
+                        id: l.id,
+                        kind: ContentKind.lesson,
+                        categoryId: l.categoryId,
+                        title: l.titleLatin,
+                        titleOlChiki: l.titleOlChiki,
+                        blocks: const [],
+                        updatedAt: DateTime.now(),
+                      ),
+                    )
+                    .toList();
               } else {
                 return sampleLessons
                     .where((l) => l.categoryId == categoryId)
-                    .map((l) => ContentItem(
-                      id: l.id,
-                      kind: ContentKind.lesson,
-                      categoryId: l.categoryId,
-                      title: l.titleLatin,
-                      titleOlChiki: l.titleOlChiki,
-                      blocks: const [],
-                      updatedAt: DateTime.now(),
-                    ))
+                    .map(
+                      (l) => ContentItem(
+                        id: l.id,
+                        kind: ContentKind.lesson,
+                        categoryId: l.categoryId,
+                        title: l.titleLatin,
+                        titleOlChiki: l.titleOlChiki,
+                        blocks: const [],
+                        updatedAt: DateTime.now(),
+                      ),
+                    )
                     .toList();
               }
             }
@@ -182,17 +188,23 @@ void main() {
       );
       addTearDown(container.dispose);
 
-      await container.read(contentListProvider((ContentKind.lesson, 'alphabets')).future);
+      await container.read(
+        contentListProvider((ContentKind.lesson, 'alphabets')).future,
+      );
       final filtered = container.read(lessonsByCategoryProvider('alphabets'));
       expect(filtered.value?.length, 1);
       expect(filtered.value?.first.id, 'l1');
 
-      await container.read(contentListProvider((ContentKind.lesson, 'numbers')).future);
+      await container.read(
+        contentListProvider((ContentKind.lesson, 'numbers')).future,
+      );
       final nums = container.read(lessonsByCategoryProvider('numbers'));
       expect(nums.value?.length, 1);
       expect(nums.value?.first.id, 'l2');
 
-      await container.read(contentListProvider((ContentKind.lesson, 'nonexistent')).future);
+      await container.read(
+        contentListProvider((ContentKind.lesson, 'nonexistent')).future,
+      );
       final empty = container.read(lessonsByCategoryProvider('nonexistent'));
       expect(empty.value?.length, 0);
     });

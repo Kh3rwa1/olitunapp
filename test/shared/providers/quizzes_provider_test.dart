@@ -316,11 +316,15 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           appwriteDbServiceProvider.overrideWithValue(fakeDb),
           learnerWordsProvider.overrideWith((ref) {
-            final list = fakeDb.wordsData.map((w) => WordModel.fromJson(w)).toList();
+            final list = fakeDb.wordsData
+                .map((w) => WordModel.fromJson(w))
+                .toList();
             return AsyncValue.data(list);
           }),
           learnerSentencesProvider.overrideWith((ref) {
-            final list = fakeDb.sentencesData.map((s) => SentenceModel.fromJson(s)).toList();
+            final list = fakeDb.sentencesData
+                .map((s) => SentenceModel.fromJson(s))
+                .toList();
             return AsyncValue.data(list);
           }),
         ],

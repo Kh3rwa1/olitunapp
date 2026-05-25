@@ -107,8 +107,11 @@ class AdminSidebar extends ConsumerWidget {
                         }
 
                         final currentUri = GoRouterState.of(context).uri;
-                        final currentId = currentUri.queryParameters['categoryId'];
-                        final isSelected = currentUri.path == '/admin/lessons' && currentId == id;
+                        final currentId =
+                            currentUri.queryParameters['categoryId'];
+                        final isSelected =
+                            currentUri.path == '/admin/lessons' &&
+                            currentId == id;
 
                         return AdminNavItem(
                           icon: icon,

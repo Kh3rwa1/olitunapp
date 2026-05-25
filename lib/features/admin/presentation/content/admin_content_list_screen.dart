@@ -547,7 +547,9 @@ class _AdminContentListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final routeCategoryId = GoRouterState.of(context).uri.queryParameters['categoryId'];
+    final routeCategoryId = GoRouterState.of(
+      context,
+    ).uri.queryParameters['categoryId'];
     if (routeCategoryId != _lastRouteCategoryId) {
       _lastRouteCategoryId = routeCategoryId;
       _selectedCategoryId = routeCategoryId;
@@ -1345,7 +1347,8 @@ class _AdminContentListScreenState
                   AdminIconAction(
                     icon: Icons.dashboard_customize_rounded,
                     tooltip: 'Edit content blocks',
-                    onTap: () => context.go('/admin/lessons/content/${item.id}'),
+                    onTap: () =>
+                        context.go('/admin/lessons/content/${item.id}'),
                   ),
                   const SizedBox(width: 6),
                 ],

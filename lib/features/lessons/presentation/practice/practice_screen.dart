@@ -81,7 +81,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
   _PracticeTarget? _nextPracticeTarget(String currentChar) {
     final letters = [
       for (final letter
-          in ref.read(learnerLettersProvider).valueOrNull ?? const <LetterModel>[])
+          in ref.read(learnerLettersProvider).valueOrNull ??
+              const <LetterModel>[])
         if (letter.isActive && letter.charOlChiki.isNotEmpty) letter,
     ]..sort((a, b) => a.order.compareTo(b.order));
 
@@ -100,7 +101,8 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
 
     final numbers = [
       for (final number
-          in ref.read(learnerNumbersProvider).valueOrNull ?? const <NumberModel>[])
+          in ref.read(learnerNumbersProvider).valueOrNull ??
+              const <NumberModel>[])
         if (number.isActive && number.numeral.isNotEmpty) number,
     ]..sort((a, b) => a.order.compareTo(b.order));
 

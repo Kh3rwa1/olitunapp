@@ -28,27 +28,19 @@ extension ContentBlockToLegacy on ContentBlock {
     } else if (self is AudioBlock) {
       audioUrl = self.media.url;
       textLatin = self.media.caption;
-      blockData = {
-        'transcript': self.transcript,
-      };
+      blockData = {'transcript': self.transcript};
     } else if (self is LottieBlock) {
       imageUrl = self.media.url;
-      blockData = {
-        'loop': self.loop,
-      };
+      blockData = {'loop': self.loop};
     } else if (self is QuizBlock) {
-      blockData = {
-        'quizId': self.quizId,
-      };
+      blockData = {'quizId': self.quizId};
     } else if (self is GlyphBlock) {
       textOlChiki = self.olChiki;
       textLatin = self.latin;
       audioUrl = self.audioUrl;
     } else if (self is CalloutBlock) {
       textLatin = self.text;
-      blockData = {
-        'style': self.variant.name,
-      };
+      blockData = {'style': self.variant.name};
     } else if (self is TracingBlock) {
       blockData = self.config.toJson();
     }
@@ -103,7 +95,8 @@ extension ContentItemToLegacy on ContentItem {
     final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;
     final firstImage = blocks.whereType<ImageBlock>().firstOrNull?.media.url;
     final firstText = blocks.whereType<TextBlock>().firstOrNull?.markdown;
-    final parsedValue = int.tryParse(id.replaceAll(RegExp(r'[^0-9]'), '')) ?? order;
+    final parsedValue =
+        int.tryParse(id.replaceAll(RegExp(r'[^0-9]'), '')) ?? order;
 
     return NumberModel(
       id: id,
@@ -143,7 +136,9 @@ extension ContentItemToLegacy on ContentItem {
       titleOlChiki: titleOlChiki ?? '',
       titleLatin: title,
       order: order,
-      estimatedMinutes: durationSeconds != null ? (durationSeconds! / 60).round() : 5,
+      estimatedMinutes: durationSeconds != null
+          ? (durationSeconds! / 60).round()
+          : 5,
       blocks: blocks.map((b) => b.toLessonBlockEntity()).toList(),
     );
   }

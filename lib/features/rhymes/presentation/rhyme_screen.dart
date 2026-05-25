@@ -92,9 +92,9 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       }
     });
 
-    final rhymesAsync = ref.watch(contentListProvider((ContentKind.rhyme, null))).whenData(
-      (list) => list.map((item) => item.toRhymeModel()).toList(),
-    );
+    final rhymesAsync = ref
+        .watch(contentListProvider((ContentKind.rhyme, null)))
+        .whenData((list) => list.map((item) => item.toRhymeModel()).toList());
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
     final catRhymes = rhymesAsync.maybeWhen(
       data: (list) => list
@@ -121,7 +121,9 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             child: SafeArea(
               child: BrandedRefreshIndicator(
                 onRefresh: () async {
-                  ref.invalidate(contentListProvider((ContentKind.rhyme, null)));
+                  ref.invalidate(
+                    contentListProvider((ContentKind.rhyme, null)),
+                  );
                 },
                 child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -650,7 +652,8 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: AppErrorState(
             message: 'Could not load the rhymes list.',
-            onRetry: () => ref.refresh(contentListProvider((ContentKind.rhyme, null))),
+            onRetry: () =>
+                ref.refresh(contentListProvider((ContentKind.rhyme, null))),
           ),
         ),
       ),

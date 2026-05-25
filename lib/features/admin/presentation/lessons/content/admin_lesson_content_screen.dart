@@ -680,7 +680,11 @@ class _AdminLessonContentScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => context.go(_lesson != null && _lesson!.categoryId.isNotEmpty ? '/admin/lessons?categoryId=${_lesson!.categoryId}' : '/admin/lessons'),
+                  onTap: () => context.go(
+                    _lesson != null && _lesson!.categoryId.isNotEmpty
+                        ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
+                        : '/admin/lessons',
+                  ),
                   child: const Text(
                     'Lessons',
                     style: TextStyle(
@@ -719,7 +723,11 @@ class _AdminLessonContentScreenState
                 ? Row(
                     children: [
                       ScaleButton(
-                        onPressed: () => context.go(_lesson != null && _lesson!.categoryId.isNotEmpty ? '/admin/lessons?categoryId=${_lesson!.categoryId}' : '/admin/lessons'),
+                        onPressed: () => context.go(
+                          _lesson != null && _lesson!.categoryId.isNotEmpty
+                              ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
+                              : '/admin/lessons',
+                        ),
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -905,7 +913,11 @@ class _AdminLessonContentScreenState
                       Row(
                         children: [
                           ScaleButton(
-                            onPressed: () => context.go(_lesson != null && _lesson!.categoryId.isNotEmpty ? '/admin/lessons?categoryId=${_lesson!.categoryId}' : '/admin/lessons'),
+                            onPressed: () => context.go(
+                              _lesson != null && _lesson!.categoryId.isNotEmpty
+                                  ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
+                                  : '/admin/lessons',
+                            ),
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(

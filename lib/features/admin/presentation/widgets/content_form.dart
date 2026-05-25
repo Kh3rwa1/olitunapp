@@ -61,7 +61,10 @@ class _ContentFormState extends ConsumerState<ContentForm> {
       text: (widget.initial?.order ?? 0).toString(),
     );
 
-    _selectedCategoryId = widget.initial?.categoryId ?? widget.categoryId;
+    _selectedCategoryId =
+        (widget.initial != null && widget.initial!.categoryId.isNotEmpty)
+        ? widget.initial!.categoryId
+        : (widget.categoryId?.isNotEmpty == true ? widget.categoryId : null);
     _isPublished = widget.initial?.isPublished ?? false;
     _isPremium = widget.initial?.isPremium ?? false;
     if (widget.initial?.tags != null) {
@@ -83,6 +86,26 @@ class _ContentFormState extends ConsumerState<ContentForm> {
     _olChikiController.dispose();
     _orderController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Once the categories provider resolves, if we still have no selected
+    // category in the dropdown, try to sync _selectedCategoryId so the
+    // dropdown renders the correct pre-selected value.
+    if (_selectedCategoryId == null || _selectedCategoryId!.isEmpty) {
+      final fallback = widget.categoryId;
+      if (fallback != null && fallback.isNotEmpty) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) {
+            setState(() {
+              _selectedCategoryId = fallback;
+            });
+          }
+        });
+      }
+    }
   }
 
   void _addTag(String tag) {
@@ -486,25 +509,46 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                   const SizedBox(height: 16),
 
                   // Category Dropdown
-                  DropdownButtonFormField<String>(
-                    value: categories.any((c) => c.id == _selectedCategoryId)
-                        ? _selectedCategoryId
-                        : null,
-                    items: categories.map((c) {
-                      return DropdownMenuItem(
-                        value: c.id,
-                        child: Text(c.titleLatin),
-                      );
-                    }).toList(),
-                    onChanged: (val) {
-                      setState(() {
-                        _selectedCategoryId = val;
-                      });
-                    },
-                    decoration: const InputDecoration(labelText: 'Category*'),
-                    validator: (val) =>
-                        val == null ? 'Please select a category' : null,
-                  ),
+                  // If categories haven't loaded yet but we already know the
+                  // categoryId (from the parent screen), show a placeholder.
+                  if (categories.isEmpty && _selectedCategoryId != null) ...[
+                    InputDecorator(
+                      decoration: const InputDecoration(
+                        labelText: 'Category*',
+                        border: OutlineInputBorder(),
+                      ),
+                      child: Text(
+                        'Category set: $_selectedCategoryId',
+                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
+                      ),
+                    ),
+                  ] else
+                    DropdownButtonFormField<String>(
+                      value: categories.any((c) => c.id == _selectedCategoryId)
+                          ? _selectedCategoryId
+                          : null,
+                      items: categories.map((c) {
+                        return DropdownMenuItem(
+                          value: c.id,
+                          child: Text(c.titleLatin),
+                        );
+                      }).toList(),
+                      onChanged: (val) {
+                        setState(() {
+                          _selectedCategoryId = val;
+                        });
+                      },
+                      decoration: const InputDecoration(labelText: 'Category*'),
+                      validator: (val) {
+                        // Accept if the dropdown has a value OR if _selectedCategoryId
+                        // is already set (e.g. categories still loading)
+                        final effective = val ?? _selectedCategoryId;
+                        if (effective == null || effective.isEmpty) {
+                          return 'Please select a category';
+                        }
+                        return null;
+                      },
+                    ),
                   const SizedBox(height: 16),
 
                   // Switches

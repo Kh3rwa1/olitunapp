@@ -58,6 +58,14 @@ class _AdminContentListScreenState
         _selectedIds.clear();
       });
     }
+    // If the route's categoryId changed, update our selection
+    if (oldWidget.categoryId != widget.categoryId &&
+        widget.categoryId != null) {
+      setState(() {
+        _selectedCategoryId = widget.categoryId;
+        _lastRouteCategoryId = widget.categoryId;
+      });
+    }
   }
 
   @override
@@ -553,7 +561,12 @@ class _AdminContentListScreenState
     final routeCategoryId = widget.categoryId;
     if (routeCategoryId != _lastRouteCategoryId) {
       _lastRouteCategoryId = routeCategoryId;
-      _selectedCategoryId = routeCategoryId;
+      // Use addPostFrameCallback to avoid mutating state during build
+      if (routeCategoryId != null) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) setState(() => _selectedCategoryId = routeCategoryId);
+        });
+      }
     }
 
     final listAsync = ref.watch(contentListProvider((widget.kind, null)));
@@ -565,7 +578,13 @@ class _AdminContentListScreenState
     if (widget.kind == ContentKind.lesson &&
         (_selectedCategoryId == null || _selectedCategoryId!.isEmpty) &&
         categories.isNotEmpty) {
-      _selectedCategoryId = categories.first.id;
+      // Use a post-frame callback to avoid build-time side effects
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted &&
+            (_selectedCategoryId == null || _selectedCategoryId!.isEmpty)) {
+          setState(() => _selectedCategoryId = categories.first.id);
+        }
+      });
     }
 
     final headerActions = [

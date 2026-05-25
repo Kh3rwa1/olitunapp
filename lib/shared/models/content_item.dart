@@ -882,6 +882,10 @@ class ContentItem extends Equatable {
   }
 
   Map<String, dynamic> toAppwrite() {
+    assert(
+      categoryId.isNotEmpty,
+      'ContentItem.toAppwrite(): categoryId must not be empty (kind=$kind, id=$id)',
+    );
     return {
       'kind': kind.name,
       'category_id': categoryId,

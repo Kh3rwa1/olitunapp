@@ -466,17 +466,47 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
 
   String? _lessonHeroMediaUrl(LessonEntity lesson) {
     final data = lesson.data;
-    if (data == null) return null;
-    final candidates = [
-      data['heroMediaUrl'],
-      data['videoUrl'],
-      data['animationUrl'],
-      data['imageUrl'],
-      data['thumbnailUrl'],
-    ];
-    for (final candidate in candidates) {
-      if (candidate is String && candidate.trim().isNotEmpty) {
-        return candidate.trim();
+    if (data != null) {
+      final candidates = [
+        data['heroMediaUrl'],
+        data['videoUrl'],
+        data['animationUrl'],
+        data['imageUrl'],
+        data['thumbnailUrl'],
+      ];
+      for (final candidate in candidates) {
+        if (candidate is String && candidate.trim().isNotEmpty) {
+          return candidate.trim();
+        }
+      }
+    }
+
+    if (lesson.blocks.isNotEmpty) {
+      for (final block in lesson.blocks) {
+        final bData = block.data;
+        if (bData != null) {
+          final candidates = [
+            bData['heroMediaUrl'],
+            bData['mediaUrl'],
+            bData['videoUrl'],
+            bData['animationUrl'],
+            bData['htmlUrl'],
+            bData['imageUrl'],
+          ];
+          for (final candidate in candidates) {
+            if (candidate is String && candidate.trim().isNotEmpty) {
+              return candidate.trim();
+            }
+          }
+        }
+        if (block.imageUrl != null && block.imageUrl!.trim().isNotEmpty) {
+          return block.imageUrl!.trim();
+        }
+        if (block.type == 'video' &&
+            block.audioUrl != null &&
+            block.audioUrl!.trim().isNotEmpty) {
+          return block.audioUrl!.trim();
+        }
       }
     }
     return null;
@@ -563,13 +593,39 @@ class _LessonDetailScreenState extends ConsumerState<LessonDetailScreen> {
         // Find intro/explanatory blocks (text longer than 3 characters is a general description, not a single letter/numeral)
         final introBlocks = lesson.blocks.where((block) {
           final text = block.textOlChiki?.trim() ?? '';
-          if (text.isEmpty) return true;
+          final hasMedia =
+              block.type != 'text' ||
+              block.imageUrl != null ||
+              block.audioUrl != null ||
+              (block.data != null &&
+                  (block.data!['heroMediaUrl'] != null ||
+                      block.data!['mediaUrl'] != null ||
+                      block.data!['videoUrl'] != null ||
+                      block.data!['animationUrl'] != null ||
+                      block.data!['htmlUrl'] != null ||
+                      block.data!['imageUrl'] != null ||
+                      block.data!['htmlContent'] != null));
+
+          if (hasMedia || text.isEmpty) return true;
           return (isAlphabet || isNumber) ? text.length > 3 : false;
         }).toList();
 
         final gridBlocks = lesson.blocks.where((block) {
           final text = block.textOlChiki?.trim() ?? '';
-          if (text.isEmpty) return false;
+          final hasMedia =
+              block.type != 'text' ||
+              block.imageUrl != null ||
+              block.audioUrl != null ||
+              (block.data != null &&
+                  (block.data!['heroMediaUrl'] != null ||
+                      block.data!['mediaUrl'] != null ||
+                      block.data!['videoUrl'] != null ||
+                      block.data!['animationUrl'] != null ||
+                      block.data!['htmlUrl'] != null ||
+                      block.data!['imageUrl'] != null ||
+                      block.data!['htmlContent'] != null));
+
+          if (hasMedia || text.isEmpty) return false;
           return (isAlphabet || isNumber) ? text.length <= 3 : true;
         }).toList();
 

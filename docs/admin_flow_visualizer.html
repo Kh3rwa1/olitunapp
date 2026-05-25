@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Olitun App Hierarchy & Flow Visualizer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #0A0E14;
+      --panel-dark: #121820;
+      --panel-hover: #1A222C;
+      --accent: #10B981;
+      --accent-glow: rgba(16, 185, 129, 0.2);
+      --accent-sky: #0EA5E9;
+      --accent-sky-glow: rgba(14, 165, 233, 0.2);
+      --border: rgba(255, 255, 255, 0.08);
+      --border-active: rgba(16, 185, 129, 0.3);
+      --text-main: #FFFFFF;
+      --text-muted: #8E9BAE;
+      --text-secondary: #CBD5E1;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Outfit', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      padding: 40px 24px;
+    }
+
+    /* Background glow decorations */
+    .glow-bg {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, rgba(0,0,0,0) 70%);
+      top: -200px;
+      right: -200px;
+      z-index: -1;
+      pointer-events: none;
+    }
+    .glow-bg-2 {
+      position: fixed;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(14, 165, 233, 0.05) 0%, rgba(0,0,0,0) 70%);
+      bottom: -150px;
+      left: -150px;
+      z-index: -1;
+      pointer-events: none;
+    }
+
+    header {
+      max-width: 1200px;
+      margin: 0 auto 48px auto;
+      text-align: center;
+      width: 100%;
+    }
+
+    .badge {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 6px 14px;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      display: inline-block;
+      margin-bottom: 16px;
+      box-shadow: 0 0 16px var(--accent-glow);
+    }
+
+    h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 42px;
+      font-weight: 900;
+      letter-spacing: -1px;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #FFF 30%, #94A3B8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      font-size: 16px;
+      color: var(--text-muted);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      width: 100%;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 40px;
+    }
+
+    /* Flow Steps Chart */
+    .flow-steps {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+      width: 100%;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    @media (max-width: 1024px) {
+      .flow-steps {
+        grid-template-columns: 1fr;
+        gap: 30px;
+      }
+      .step-card::after {
+        display: none !important;
+      }
+    }
+
+    .step-card {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 30px 24px;
+      text-align: center;
+      position: relative;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .step-card::after {
+      content: '→';
+      position: absolute;
+      right: -24px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--accent);
+      font-size: 24px;
+      font-weight: bold;
+      z-index: 10;
+      pointer-events: none;
+      opacity: 0.7;
+    }
+
+    .step-card:last-child::after {
+      display: none;
+    }
+
+    .step-card:hover {
+      transform: translateY(-6px);
+      border-color: var(--border-active);
+      box-shadow: 0 16px 40px rgba(16, 185, 129, 0.06);
+    }
+
+    .step-num {
+      width: 44px;
+      height: 44px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 20px auto;
+      font-weight: 800;
+      font-size: 16px;
+      color: var(--accent-sky);
+    }
+
+    .step-card.active .step-num {
+      background: var(--accent-sky-glow);
+      border-color: var(--accent-sky);
+      color: #FFF;
+      box-shadow: 0 0 16px var(--accent-sky-glow);
+    }
+
+    .step-card h3 {
+      font-size: 18px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .step-card p {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* Flow Visualizer Simulator Frame */
+    .simulator-container {
+      background: var(--panel-dark);
+      border: 1px solid var(--border);
+      border-radius: 32px;
+      overflow: hidden;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      display: flex;
+      flex-direction: column;
+      height: 650px;
+    }
+
+    .simulator-header {
+      background: rgba(255,255,255,0.02);
+      border-bottom: 1px solid var(--border);
+      padding: 18px 24px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .dots {
+      display: flex;
+      gap: 6px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.15);
+    }
+    .dot.red { background: #FF5F56; }
+    .dot.yellow { background: #FFBD2E; }
+    .dot.green { background: #27C93F; }
+
+    .simulator-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-left: 12px;
+    }
+
+    .simulator-body {
+      display: flex;
+      flex: 1;
+      height: calc(100% - 60px);
+    }
+
+    /* Left Sidebar Menu Mockup */
+    .sidebar-mockup {
+      width: 240px;
+      border-right: 1px solid var(--border);
+      padding: 24px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      background: rgba(0, 0, 0, 0.15);
+    }
+
+    .nav-item {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--text-secondary);
+    }
+
+    .nav-item.active {
+      background: rgba(16, 185, 129, 0.08);
+      color: var(--accent);
+      border-left: 3px solid var(--accent);
+      padding-left: 13px;
+    }
+
+    /* Main Console */
+    .console-mockup {
+      flex: 1;
+      padding: 32px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .breadcrumb {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .breadcrumb span.active {
+      color: var(--text-main);
+    }
+
+    .console-title-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 28px;
+    }
+
+    .console-title-row h2 {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.5px;
+    }
+
+    .btn {
+      background: var(--accent);
+      color: #000;
+      font-size: 14px;
+      font-weight: 800;
+      padding: 10px 20px;
+      border-radius: 12px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s ease;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px var(--accent-glow);
+    }
+
+    /* Views inside simulator */
+    .simulator-view {
+      display: none;
+      animation: fadeIn 0.3s ease forwards;
+    }
+
+    .simulator-view.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards Grid styles */
+    .grid-mockup {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .mock-card {
+      background: rgba(255,255,255,0.02);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mock-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: transparent;
+      transition: background-color 0.2s ease;
+    }
+
+    .mock-card:hover {
+      background: rgba(255,255,255,0.04);
+      border-color: rgba(255, 255, 255, 0.15);
+      transform: translateY(-4px);
+    }
+
+    .mock-card.selected::before {
+      background: var(--accent);
+    }
+
+    .mock-card h4 {
+      font-size: 17px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      color: var(--text-main);
+    }
+
+    .mock-card .meta {
+      font-size: 13px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 12px;
+    }
+
+    .mock-card .desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+
+    /* Special Lesson detailed list */
+    .lesson-blocks-header {
+      background: rgba(16, 185, 129, 0.05);
+      border: 1px solid var(--border-active);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .blocks-container {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .block-row-mock {
+      background: rgba(255,255,255,0.01);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .block-row-mock:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: var(--border-active);
+    }
+
+    .block-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .block-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255,255,255,0.03);
+      color: var(--accent-sky);
+    }
+
+    .block-text h5 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-main);
+    }
+
+    .block-text p {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Modal Form Sheet Mock */
+    .modal-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(5, 7, 10, 0.85);
+      z-index: 100;
+      backdrop-filter: blur(12px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.2s ease forwards;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-sheet {
+      background: var(--panel-dark);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      width: 580px;
+      border-radius: 28px;
+      overflow: hidden;
+      box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+      animation: scaleUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    @keyframes scaleUp {
+      from { transform: scale(0.95); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+
+    .modal-head {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .modal-head h3 {
+      font-size: 20px;
+      font-weight: 800;
+    }
+
+    .close-btn {
+      background: rgba(255,255,255,0.05);
+      border: none;
+      color: var(--text-main);
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .modal-form-body {
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .form-group label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .form-input {
+      background: rgba(0,0,0,0.25);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #FFF;
+      font-size: 14px;
+      outline: none;
+      transition: border-color 0.2s ease;
+    }
+
+    .form-input:focus {
+      border-color: var(--accent);
+    }
+
+    .color-picker-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 6px;
+    }
+
+    .color-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: all 0.2s ease;
+    }
+
+    .color-circle:hover {
+      transform: scale(1.1);
+    }
+
+    .color-circle.selected {
+      border-color: #FFF;
+      box-shadow: 0 0 10px rgba(255,255,255,0.2);
+    }
+
+    .modal-foot {
+      padding: 16px 24px 24px 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+
+    .btn-secondary {
+      background: rgba(255,255,255,0.04);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    
+    .btn-secondary:hover {
+      background: rgba(255,255,255,0.08);
+      transform: none;
+      box-shadow: none;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="glow-bg"></div>
+  <div class="glow-bg-2"></div>
+
+  <header>
+    <div class="badge">Olitun CMS Architecture</div>
+    <h1>App Content Hierarchy & Flow</h1>
+    <p>Understand how standard and custom categories nest subcategories, lessons, and content blocks to build an interactive, immersive learning experience on mobile.</p>
+  </header>
+
+  <main>
+    <!-- Flow Steps Chart -->
+    <section class="flow-steps">
+      <div class="step-card active" id="flow-1">
+        <div class="step-num">1</div>
+        <h3>Category</h3>
+        <p>High-level modules (Standard sections like Alphabets/Vocabulary or Custom pages created by Admins).</p>
+      </div>
+      <div class="step-card" id="flow-2">
+        <div class="step-num">2</div>
+        <h3>Subcategory</h3>
+        <p>Specific sub-groups (e.g. "Greetings", "Animal Vocabulary") inside a Category that group related lessons.</p>
+      </div>
+      <div class="step-card" id="flow-3">
+        <div class="step-num">3</div>
+        <h3>Lesson</h3>
+        <p>Individual lesson page (e.g. "Lesson Vocab Basics") containing titles, levels, and content blocks.</p>
+      </div>
+      <div class="step-card" id="flow-4">
+        <div class="step-num">4</div>
+        <h3>Content / Blocks</h3>
+        <p>Granular building blocks inside the lesson detail slider (Images, Lotties, Audio, and rich Text Blocks).</p>
+      </div>
+    </section>
+
+    <!-- Simulator Console -->
+    <section class="simulator-container">
+      <div class="simulator-header">
+        <div class="dots">
+          <div class="dot red"></div>
+          <div class="dot yellow"></div>
+          <div class="dot green"></div>
+        </div>
+        <div class="simulator-title">Olitun Admin Console Simulator</div>
+      </div>
+
+      <div class="simulator-body">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar-mockup">
+          <div class="nav-item active" onclick="showView('categories', 1)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="d4 6h16M4 12h16M4 18h16"></path></svg>
+            Categories
+          </div>
+          <div class="nav-item" onclick="showView('subcategories', 2)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            Subcategories
+          </div>
+          <div class="nav-item" onclick="showView('lessons', 3)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Lessons
+          </div>
+          <div class="nav-item" onclick="showView('details', 4)">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+            Lesson Content
+          </div>
+        </aside>
+
+        <!-- Dynamic Console Viewport -->
+        <section class="console-mockup">
+
+          <!-- 1. Categories View -->
+          <div class="simulator-view active" id="view-categories">
+            <div class="breadcrumb">
+              <span>Admin</span> &gt; <span class="active">Categories</span>
+            </div>
+            <div class="console-title-row">
+              <h2>Categories Manager</h2>
+              <button class="btn">+ Add Category</button>
+            </div>
+            <div class="grid-mockup">
+              <div class="mock-card selected" onclick="showView('subcategories', 2, 'Vocabulary')">
+                <h4>Vocabulary</h4>
+                <div class="meta">🟢 Standard</div>
+                <div class="desc">Standard category for learning words, expressions, and translations.</div>
+              </div>
+              <div class="mock-card" onclick="showView('subcategories', 2, 'Alphabets')">
+                <h4>Alphabets</h4>
+                <div class="meta">🟢 Standard</div>
+                <div class="desc">Standard category for learning individual Ol Chiki script characters.</div>
+              </div>
+              <div class="mock-card" onclick="showView('subcategories', 2, 'Santali Customs')">
+                <h4>Santali Customs</h4>
+                <div class="meta">🌐 Custom (Sidebar)</div>
+                <div class="desc">Admin-created category that automatically populates in the client side sidebar.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Subcategories View -->
+          <div class="simulator-view" id="view-subcategories">
+            <div class="breadcrumb">
+              <span>Admin</span> &gt; <span class="cat-crumb">Vocabulary</span> &gt; <span class="active">Subcategories</span>
+            </div>
+            <div class="console-title-row">
+              <h2 id="subcat-title">Vocabulary Subcategories</h2>
+              <button class="btn">+ Add Subcategory</button>
+            </div>
+            <div class="grid-mockup" id="subcat-grid">
+              <div class="mock-card selected" onclick="showView('lessons', 3, 'Greetings & Basics')">
+                <h4>Greetings & Basics</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Basic phrases like "Johar", "Thank you", and daily pleasantries.</div>
+              </div>
+              <div class="mock-card" onclick="showView('lessons', 3, 'Animals & Nature')">
+                <h4>Animals & Nature</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Common words and pronunciations for animals, plants, and natural items.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 3. Lessons View -->
+          <div class="simulator-view" id="view-lessons">
+            <div class="breadcrumb">
+              <span>Admin</span> &gt; <span class="cat-crumb">Vocabulary</span> &gt; <span class="subcat-crumb">Greetings & Basics</span> &gt; <span class="active">Lessons</span>
+            </div>
+            <div class="console-title-row">
+              <h2 id="lessons-title">Greetings & Basics Lessons</h2>
+              <button class="btn">+ Add Lesson</button>
+            </div>
+            <div class="grid-mockup">
+              <div class="mock-card selected" onclick="showView('details', 4, 'Lesson Vocab Basics')">
+                <h4>Lesson Vocab Basics</h4>
+                <div class="meta">⏱️ 5 min | 🎓 Beginner</div>
+                <div class="desc">Start learning Santali greetings like Johar with dynamic, swipeable content blocks.</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- 4. Content Blocks View -->
+          <div class="simulator-view" id="view-details">
+            <div class="breadcrumb">
+              <span>Admin</span> &gt; <span>Vocabulary</span> &gt; <span>Greetings & Basics</span> &gt; <span class="lesson-crumb">Lesson Vocab Basics</span> &gt; <span class="active">Content</span>
+            </div>
+            <div class="console-title-row">
+              <h2>Content Blocks Manager</h2>
+              <button class="btn" style="background:#0EA5E9;color:#000;">+ Add Block</button>
+            </div>
+            
+            <div class="lesson-blocks-header">
+              <div class="block-icon" style="background:rgba(16,185,129,0.1);color:var(--accent);"><svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg></div>
+              <div>
+                <h4 style="font-size:15px;font-weight:800;">Lesson Vocab Basics Content Studio</h4>
+                <p style="font-size:12px;color:var(--text-muted);margin-top:2px;">Drag blocks to reorder. Tapping a text block opens the new, unified rich universal form!</p>
+              </div>
+            </div>
+
+            <div class="blocks-container">
+              <div class="block-row-mock" onclick="openUniversalForm('Johar', 'Hello / Greetings', '#10B981', 'jo-har')">
+                <div class="block-info">
+                  <div class="block-icon" style="background:rgba(16,185,129,0.1);color:var(--accent);">Tt</div>
+                  <div class="block-text">
+                    <h5>Text Block: Johar</h5>
+                    <p>Ol Chiki: ᱡᱚᱦᱟᱨ | Latin: Hello / Greetings | Pronunciation: jo-har | Theme: Mint</p>
+                  </div>
+                </div>
+                <div style="color:var(--accent);font-size:12px;font-weight:700;">Universal Form &gt;</div>
+              </div>
+              
+              <div class="block-row-mock" onclick="openUniversalForm('Sarhaw', 'Thank you', '#F43F5E', 'sar-haw')">
+                <div class="block-info">
+                  <div class="block-icon" style="background:rgba(16,185,129,0.1);color:var(--accent);">Tt</div>
+                  <div class="block-text">
+                    <h5>Text Block: Sarhaw</h5>
+                    <p>Ol Chiki: ᱥᱟᱨᱦᱟᱣ | Latin: Thank you | Pronunciation: sar-haw | Theme: Rose</p>
+                  </div>
+                </div>
+                <div style="color:var(--accent);font-size:12px;font-weight:700;">Universal Form &gt;</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Interactive Modal Sheet Simulation -->
+          <div class="modal-overlay" id="modalForm">
+            <div class="modal-sheet">
+              <div class="modal-head">
+                <h3>Edit Text Block (Universal Form)</h3>
+                <button class="close-btn" onclick="closeUniversalForm()">&times;</button>
+              </div>
+              <div class="modal-form-body">
+                <div class="form-group">
+                  <label>Ol Chiki Text</label>
+                  <input type="text" class="form-input" id="form-olchiki" value="ᱡᱚᱦᱟᱨ">
+                </div>
+                <div class="form-group">
+                  <label>Latin Text / Meaning</label>
+                  <input type="text" class="form-input" id="form-latin" value="Hello / Greetings">
+                </div>
+                <div class="form-group">
+                  <label>Pronunciation (optional)</label>
+                  <input type="text" class="form-input" id="form-pron" value="jo-har">
+                </div>
+                <div class="form-group">
+                  <label>Theme Color (Optional)</label>
+                  <div class="color-picker-row">
+                    <div class="color-circle" style="background:#10B981;" onclick="selectColor(this, '#10B981')"></div>
+                    <div class="color-circle" style="background:#14B8A6;" onclick="selectColor(this, '#14B8A6')"></div>
+                    <div class="color-circle" style="background:#0EA5E9;" onclick="selectColor(this, '#0EA5E9')"></div>
+                    <div class="color-circle" style="background:#F43F5E;" onclick="selectColor(this, '#F43F5E')"></div>
+                    <div class="color-circle" style="background:#F59E0B;" onclick="selectColor(this, '#F59E0B')"></div>
+                  </div>
+                  <input type="text" class="form-input" id="form-color-hex" value="#10B981" style="margin-top:10px;" placeholder="Custom HEX e.g. #FF5722">
+                </div>
+                <div class="form-group">
+                  <label>Audio Pronunciation</label>
+                  <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);padding:14px;border-radius:10px;text-align:center;font-size:13px;color:var(--text-muted);">
+                    🎵 audio_johar.mp3 (Uploaded to Appwrite words-audio bucket)
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label>Hero Media (Optional)</label>
+                  <div style="background:rgba(255,255,255,0.03);border:1px dashed var(--border);padding:14px;border-radius:10px;text-align:center;font-size:13px;color:var(--text-muted);">
+                    🖼️ illustration_johar.json (Lottie Animation - loops inside preview header)
+                  </div>
+                </div>
+              </div>
+              <div class="modal-foot">
+                <button class="btn btn-secondary" onclick="closeUniversalForm()">Cancel</button>
+                <button class="btn" onclick="closeUniversalForm()" style="background:#10B981;color:#000;">Save Changes</button>
+              </div>
+            </div>
+          </div>
+
+        </section>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    function showView(viewId, flowStep, catName = '') {
+      // Toggle sidebar active highlights
+      const navItems = document.querySelectorAll('.nav-item');
+      navItems.forEach(item => item.classList.remove('active'));
+      const activeNavIdx = flowStep - 1;
+      if(navItems[activeNavIdx]) {
+        navItems[activeNavIdx].classList.add('active');
+      }
+
+      // Update flow headers active highlights
+      const steps = document.querySelectorAll('.step-card');
+      steps.forEach((s, idx) => {
+        if(idx + 1 === flowStep) {
+          s.classList.add('active');
+        } else {
+          s.classList.remove('active');
+        }
+      });
+
+      // Update actual views
+      const views = document.querySelectorAll('.simulator-view');
+      views.forEach(v => v.classList.remove('active'));
+      
+      const targetView = document.getElementById('view-' + viewId);
+      if(targetView) {
+        targetView.classList.add('active');
+      }
+
+      // Custom title replacements based on selected mock details
+      if(catName) {
+        if(viewId === 'subcategories') {
+          document.querySelectorAll('.cat-crumb').forEach(el => el.textContent = catName);
+          document.getElementById('subcat-title').textContent = catName + ' Subcategories';
+          
+          // Render subcategory grid content dynamically to make it realistic
+          const grid = document.getElementById('subcat-grid');
+          if(catName === 'Santali Customs') {
+            grid.innerHTML = `
+              <div class="mock-card selected" onclick="showView('lessons', 3, 'Traditional Songs')">
+                <h4>Traditional Songs</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Lyrics and notes on historic folklore, rhymes, and Santal melodies.</div>
+              </div>
+            `;
+          } else if(catName === 'Alphabets') {
+            grid.innerHTML = `
+              <div class="mock-card selected" onclick="showView('lessons', 3, 'Basics of Ol Chiki')">
+                <h4>Basics of Ol Chiki</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Individual vowels, consonants, and tracing drills for beginners.</div>
+              </div>
+            `;
+          } else {
+            grid.innerHTML = `
+              <div class="mock-card selected" onclick="showView('lessons', 3, 'Greetings & Basics')">
+                <h4>Greetings & Basics</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Basic phrases like "Johar", "Thank you", and daily pleasantries.</div>
+              </div>
+              <div class="mock-card" onclick="showView('lessons', 3, 'Animals & Nature')">
+                <h4>Animals & Nature</h4>
+                <div class="meta">Subcategory</div>
+                <div class="desc">Common words and pronunciations for animals, plants, and natural items.</div>
+              </div>
+            `;
+          }
+        } else if(viewId === 'lessons') {
+          document.querySelectorAll('.subcat-crumb').forEach(el => el.textContent = catName);
+          document.getElementById('lessons-title').textContent = catName + ' Lessons';
+        } else if(viewId === 'details') {
+          document.querySelectorAll('.lesson-crumb').forEach(el => el.textContent = catName);
+        }
+      }
+    }
+
+    function openUniversalForm(olchiki, latin, colorHex, pron) {
+      document.getElementById('form-olchiki').value = olchiki;
+      document.getElementById('form-latin').value = latin;
+      document.getElementById('form-pron').value = pron;
+      document.getElementById('form-color-hex').value = colorHex;
+      
+      const circles = document.querySelectorAll('.color-circle');
+      circles.forEach(c => {
+        c.classList.remove('selected');
+        // Simple RGB to Hex comparison helper
+        if(c.style.backgroundColor.includes(hexToRgb(colorHex))) {
+          c.classList.add('selected');
+        }
+      });
+
+      document.getElementById('modalForm').classList.add('active');
+    }
+
+    function closeUniversalForm() {
+      document.getElementById('modalForm').classList.remove('active');
+    }
+
+    function selectColor(el, colorHex) {
+      const circles = document.querySelectorAll('.color-circle');
+      circles.forEach(c => c.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('form-color-hex').value = colorHex;
+    }
+
+    function hexToRgb(hex) {
+      const bigint = parseInt(hex.replace('#', ''), 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `rgb(${r}, ${g}, ${b})`;
+    }
+  </script>
+</body>
+</html>

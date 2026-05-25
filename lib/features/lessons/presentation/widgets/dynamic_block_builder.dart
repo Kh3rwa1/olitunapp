@@ -70,6 +70,7 @@ class DynamicBlockBuilder extends ConsumerWidget {
               block: block,
               isDark: isDark,
               accentColor: accentColor,
+              isSvg: block.type == 'svg',
             ),
             const SizedBox(height: 12),
             textBlock,
@@ -98,15 +99,6 @@ class DynamicBlockBuilder extends ConsumerWidget {
           brandGradient: brandGradient,
         );
       case 'html':
-        final mediaUrl = _blockVisualMediaUrl(block);
-        if (mediaUrl != null) {
-          return _UniversalMediaBlock(
-            lessonId: lessonId,
-            block: block,
-            isDark: isDark,
-            accentColor: accentColor,
-          );
-        }
         return _HtmlBlock(
           block: block,
           isDark: isDark,
@@ -120,6 +112,7 @@ class DynamicBlockBuilder extends ConsumerWidget {
             block: block,
             isDark: isDark,
             accentColor: accentColor,
+            isSvg: block.type == 'svg',
           );
         }
         return const SizedBox.shrink();
@@ -427,12 +420,14 @@ class _UniversalMediaBlock extends ConsumerWidget {
     required this.block,
     required this.isDark,
     required this.accentColor,
+    this.isSvg = false,
   });
 
   final String lessonId;
   final LessonBlockEntity block;
   final bool isDark;
   final Color accentColor;
+  final bool isSvg;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -470,6 +465,7 @@ class _UniversalMediaBlock extends ConsumerWidget {
             child: FullBleedHeroMedia(
               animationUrl: _isLottieMedia(url) ? url : null,
               imageUrl: url,
+              isSvg: isSvg,
               fallback: Icon(
                 Icons.perm_media_rounded,
                 size: 52,

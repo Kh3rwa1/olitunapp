@@ -15,12 +15,14 @@ class FullBleedHeroMedia extends StatelessWidget {
     required this.imageUrl,
     this.fallbackUrl,
     required this.fallback,
+    this.isSvg = false,
   });
 
   final String? animationUrl;
   final String? imageUrl;
   final String? fallbackUrl;
   final Widget fallback;
+  final bool isSvg;
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +49,7 @@ class FullBleedHeroMedia extends StatelessWidget {
               fallbackUrl: fallbackCandidate,
               fallback: fallback,
               preferAnimation: animation != null && animation.isNotEmpty,
+              isSvg: isSvg,
             ),
           const _HeroMediaScrim(),
         ],
@@ -61,12 +64,14 @@ class _HeroMediaSource extends StatelessWidget {
     required this.fallbackUrl,
     required this.fallback,
     required this.preferAnimation,
+    required this.isSvg,
   });
 
   final String url;
   final String? fallbackUrl;
   final Widget fallback;
   final bool preferAnimation;
+  final bool isSvg;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +85,7 @@ class _HeroMediaSource extends StatelessWidget {
       case MediaKind.html:
         return _HtmlHeroMedia(url: url, fallback: _buildFallback());
       case MediaKind.image:
-        return _HeroImage(url: url, fallback: _buildFallback());
+        return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg);
       case MediaKind.audio:
       case MediaKind.unknown:
         break;
@@ -90,7 +95,7 @@ class _HeroMediaSource extends StatelessWidget {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
 
-    return _HeroImage(url: url, fallback: _buildFallback());
+    return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg);
   }
 
   Widget _buildFallback() {
@@ -407,20 +412,50 @@ class _SvgHeroMedia extends StatelessWidget {
 }
 
 class _HeroImage extends StatelessWidget {
-  const _HeroImage({required this.url, required this.fallback});
-
   final String url;
+  final bool isSvg;
   final Widget fallback;
+
+  const _HeroImage({
+    required this.url,
+    required this.fallback,
+    this.isSvg = false,
+  });
 
   @override
   Widget build(BuildContext context) {
+    final effectiveIsSvg =
+        isSvg ||
+        url.toLowerCase().contains('.svg') ||
+        MediaTypeResolver.resolve(url) == MediaKind.image &&
+            url.contains('svg');
+
+    if (effectiveIsSvg) {
+      if (kIsWeb) {
+        return Image.network(
+          url,
+          width: double.infinity,
+          height: double.infinity,
+          fit: BoxFit.cover,
+          errorBuilder: (context, _, __) => fallback,
+        );
+      }
+      return SvgPicture.network(
+        url,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
+        errorBuilder: (context, _, __) => fallback,
+      );
+    }
+
     return Image.network(
       url,
       width: double.infinity,
       height: double.infinity,
       fit: BoxFit.cover,
       filterQuality: FilterQuality.high,
-      errorBuilder: (context, _, _) => fallback,
+      errorBuilder: (context, _, __) => fallback,
     );
   }
 }

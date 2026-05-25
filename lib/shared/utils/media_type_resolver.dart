@@ -15,14 +15,17 @@ class MediaTypeResolver {
           '.3gp',
           '.avi',
         ]) ||
-        lower.contains('/buckets/videos/')) {
+        lower.contains('/buckets/videos/') ||
+        lower.contains('/buckets/lesson-video/')) {
       return MediaKind.video;
     }
     if (_hasAny(lower, const ['.json', '.lottie']) ||
         lower.contains('/buckets/animations/')) {
       return MediaKind.lottie;
     }
-    if (lower.contains('.svg') || lower.contains('image/svg')) {
+    if (lower.contains('.svg') ||
+        lower.contains('image/svg') ||
+        lower.contains('/buckets/lesson-svgs/')) {
       return MediaKind.svg;
     }
     if (_hasAny(lower, const ['.html', '.htm']) ||
@@ -31,11 +34,18 @@ class MediaTypeResolver {
       return MediaKind.html;
     }
     if (_hasAny(lower, const ['.mp3', '.wav', '.ogg', '.aac', '.m4a']) ||
-        lower.contains('/buckets/audio/')) {
+        lower.contains('/buckets/audio/') ||
+        lower.contains('/buckets/lesson-audio/')) {
       return MediaKind.audio;
     }
     if (_hasAny(lower, const ['.png', '.jpg', '.jpeg', '.webp', '.gif']) ||
-        lower.contains('/buckets/images/')) {
+        lower.contains('/buckets/images/') ||
+        lower.contains('/buckets/lesson-images/') ||
+        lower.contains('/buckets/lesson-media/')) {
+      // Fallback: lesson-media typically contains images if it's not matched by other checks.
+      // If they uploaded a video, it would go to lesson-video bucket according to UploadService!
+      // But wait! If UploadService uses targetForFilename, it goes to 'videos' bucket!
+      // So if it somehow ended up in lesson-media, we treat it as image.
       return MediaKind.image;
     }
 

@@ -115,5 +115,9 @@ final bakhedListenedTodayProvider =
 final quickWinCompletedTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
       final today = ref.watch(currentDateProvider);
-      return DailyMissionNotifier(ref, 'mission_quick_win_completed_date', today);
+      return DailyMissionNotifier(
+        ref,
+        'mission_quick_win_completed_date',
+        today,
+      );
     });

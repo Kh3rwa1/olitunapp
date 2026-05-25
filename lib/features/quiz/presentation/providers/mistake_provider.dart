@@ -7,6 +7,8 @@ import '../../../../core/storage/hive_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../core/logging/app_logger.dart';
 
+import '../../../auth/presentation/providers/auth_providers.dart';
+
 class MistakeItem {
   final String quizId;
   final String questionId;
@@ -197,6 +199,9 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
   }
 
   Future<void> syncFromBackend() async {
+    final isAuth = _ref.read(isAuthenticatedProvider).value ?? false;
+    if (!isAuth) return;
+
     try {
       final functions = Functions(
         _ref.read(appwriteAuthServiceProvider).client,

@@ -78,7 +78,11 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
     }
   }
 
-  void _synthesizeLegacy(LessonEntity l, {ContentMedia? heroMedia, String? subtitle}) {
+  void _synthesizeLegacy(
+    LessonEntity l, {
+    ContentMedia? heroMedia,
+    String? subtitle,
+  }) {
     final blocks = <ContentBlock>[];
     for (int i = 0; i < l.blocks.length; i++) {
       final b = l.blocks[i];
@@ -131,7 +135,6 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
       updatedAt: DateTime.now(),
     );
   }
-
 
   Future<void> _onSubmit(ContentItem item) async {
     final repo = ref.read(contentRepositoryProvider);

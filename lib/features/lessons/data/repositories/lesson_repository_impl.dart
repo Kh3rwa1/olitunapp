@@ -60,6 +60,56 @@ class LessonRepositoryImpl implements LessonRepository {
     }
   }
 
+  static const _staticSeedLessons = [
+    // Basics of Ol Chiki
+    LessonEntity(
+      id: 'lesson_alphabet_0',
+      categoryId: 'cat_alphabets',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱢᱩᱞ',
+      titleLatin: 'Basics of Ol Chiki',
+      order: 0,
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+          textLatin: 'Ol Chiki is the writing system for the Santali language',
+        ),
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱚ',
+          textLatin: 'Letter "a" – the first letter of Ol Chiki',
+        ),
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱛ',
+          textLatin: 'Letter "at" – used in words like ᱛᱟᱞᱟ (below)',
+        ),
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱚᱛ',
+          textLatin: 'Practice: Combine ᱚ + ᱛ to form "at"',
+        ),
+      ],
+    ),
+    // Numbers 0-9
+    LessonEntity(
+      id: 'lesson_numbers_0_9',
+      categoryId: 'cat_numbers',
+      titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
+      titleLatin: 'Numbers 0-9',
+      order: 0,
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: '᱐',
+          textLatin: '0 – Zero',
+        ),
+        LessonBlockEntity(type: 'text', textOlChiki: '᱑', textLatin: '1 – One'),
+        LessonBlockEntity(type: 'text', textOlChiki: '᱒', textLatin: '2 – Two'),
+      ],
+    ),
+  ];
+
   Future<Either<Failure, List<LessonEntity>>> _getCachedLessons(
     String originalMessage, [
     int? originalCode,
@@ -68,11 +118,8 @@ class LessonRepositoryImpl implements LessonRepository {
       final cached = await localDataSource.getLessons();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(
-        _recordedServerFailure(
-          ServerException(message: originalMessage, code: originalCode),
-        ),
-      );
+      // Fallback to static seed lessons if both remote fetch fails and local cache is empty.
+      return const Right(_staticSeedLessons);
     }
   }
 
@@ -90,10 +137,11 @@ class LessonRepositoryImpl implements LessonRepository {
             .toList(),
       );
     } on CacheException {
-      return Left(
-        _recordedServerFailure(
-          ServerException(message: originalMessage, code: originalCode),
-        ),
+      // Fallback to static seed lessons for the specific category if cache is empty.
+      return Right(
+        _staticSeedLessons
+            .where((lesson) => lesson.categoryId == categoryId)
+            .toList(),
       );
     } catch (_) {
       return const Left(NetworkFailure());

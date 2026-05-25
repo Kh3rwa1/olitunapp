@@ -350,7 +350,11 @@ void main() {
         final quizzes = await container
             .read(quizzesProvider.notifier)
             .stream
-            .firstWhere((s) => s.value?.any((q) => q.id == 'quiz_dynamic_hybrid_beginner') ?? false)
+            .firstWhere(
+              (s) =>
+                  s.value?.any((q) => q.id == 'quiz_dynamic_hybrid_beginner') ??
+                  false,
+            )
             .then((s) => s.value!);
 
         // Verify the beginner hybrid challenge exists

@@ -49,11 +49,56 @@ class CategoryRepositoryImpl implements CategoryRepository {
       final cached = await localDataSource.getCategories();
       return Right(cached.map((m) => m.toEntity()).toList());
     } on CacheException {
-      return Left(
-        _recordedServerFailure(
-          ServerException(message: originalMessage, code: originalCode),
+      // Fallback to static seed categories if both remote fetch fails and local cache is empty.
+      // This ensures guest/offline mode has active paths on the very first startup.
+      const staticSeedCategories = [
+        CategoryEntity(
+          id: 'cat_alphabets',
+          titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+          titleLatin: 'Alphabets',
+          iconName: 'alphabet',
+          gradientPreset: 'sky',
+          order: 0,
+          totalLessons: 5,
         ),
-      );
+        CategoryEntity(
+          id: 'cat_numbers',
+          titleOlChiki: 'ᱮᱞᱠᱷᱟ',
+          titleLatin: 'Numbers',
+          iconName: 'numbers',
+          gradientPreset: 'peach',
+          order: 1,
+          totalLessons: 2,
+        ),
+        CategoryEntity(
+          id: 'seed_words',
+          titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ',
+          titleLatin: 'Vocabulary',
+          iconName: 'vocabulary',
+          gradientPreset: 'rose',
+          order: 2,
+          totalLessons: 5,
+        ),
+        CategoryEntity(
+          id: 'seed_sentences',
+          titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ',
+          titleLatin: 'Sentences',
+          iconName: 'sentences',
+          gradientPreset: 'emerald',
+          order: 3,
+          totalLessons: 1,
+        ),
+        CategoryEntity(
+          id: 'cat_greetings',
+          titleOlChiki: 'ᱡᱚᱦᱟᱨ ᱜᱮ',
+          titleLatin: 'Greetings',
+          iconName: 'greetings',
+          gradientPreset: 'indigo',
+          order: 4,
+          totalLessons: 1,
+        ),
+      ];
+      return const Right(staticSeedCategories);
     }
   }
 

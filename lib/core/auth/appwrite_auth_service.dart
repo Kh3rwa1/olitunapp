@@ -141,9 +141,22 @@ class AppwriteAuthService {
 
   // Singleton pattern — one SDK Client shared across the app
   AppwriteAuthService._internal() {
-    _client = Client()
-        .setEndpoint(AppwriteConfig.endpoint)
-        .setProject(AppwriteConfig.projectId);
+    _client = Client();
+    final endpoint = AppwriteConfig.endpoint;
+    final projectId = AppwriteConfig.projectId;
+
+    if (endpoint.isNotEmpty) {
+      _client.setEndpoint(endpoint);
+    } else {
+      // Use a safe placeholder to avoid synchronous AppwriteException during testing or guest mode
+      _client.setEndpoint('https://localhost/v1');
+    }
+
+    if (projectId.isNotEmpty) {
+      _client.setProject(projectId);
+    } else {
+      _client.setProject('placeholder');
+    }
 
     if (const bool.fromEnvironment('ALLOW_SELF_SIGNED')) {
       _client.setSelfSigned();

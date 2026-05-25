@@ -35,19 +35,14 @@ class MediaUploader {
 
       InputFile inputFile;
       if (file.bytes != null) {
-        inputFile = InputFile.fromBytes(
-          bytes: file.bytes!,
-          filename: filename,
-        );
+        inputFile = InputFile.fromBytes(bytes: file.bytes!, filename: filename);
       } else if (file.path != null) {
-        inputFile = InputFile.fromPath(
-          path: file.path!,
-          filename: filename,
-        );
+        inputFile = InputFile.fromPath(path: file.path!, filename: filename);
       } else {
         return left(
           const ValidationFailure(
-            message: 'File data is not available (both bytes and path are null)',
+            message:
+                'File data is not available (both bytes and path are null)',
           ),
         );
       }

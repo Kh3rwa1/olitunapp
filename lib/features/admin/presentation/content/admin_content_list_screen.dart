@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -24,20 +25,39 @@ class AdminContentListScreen extends ConsumerStatefulWidget {
   const AdminContentListScreen({super.key, required this.kind});
 
   @override
-  ConsumerState<AdminContentListScreen> createState() => _AdminContentListScreenState();
+  ConsumerState<AdminContentListScreen> createState() =>
+      _AdminContentListScreenState();
 }
 
-class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen> {
+class _AdminContentListScreenState
+    extends ConsumerState<AdminContentListScreen> {
   String _searchQuery = '';
   String? _selectedCategoryId;
   String _publishFilter = 'All'; // 'All', 'Published', 'Draft'
   String _premiumFilter = 'All'; // 'All', 'Premium', 'Free'
-  
+
   Set<String> _selectedIds = {};
   final ScrollController _scrollController = ScrollController();
+  Timer? _debounce;
+
+  @override
+  void didUpdateWidget(covariant AdminContentListScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.kind != widget.kind) {
+      _debounce?.cancel();
+      setState(() {
+        _searchQuery = '';
+        _selectedCategoryId = null;
+        _publishFilter = 'All';
+        _premiumFilter = 'All';
+        _selectedIds.clear();
+      });
+    }
+  }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _scrollController.dispose();
     super.dispose();
   }
@@ -137,9 +157,9 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
   Future<void> _handleSeedData(BuildContext context) async {
     final ok = await showAdminConfirmDialog(
       context: context,
-      title: 'Seed Default Data',
+      title: 'Seed All Default Data',
       message:
-          'This will populate your database with sample categories, letters, lessons, and numbers. Existing custom data is preserved and not overwritten.',
+          'This will populate all categories, letters, subcategories, numbers, and words into your database. Existing custom data is preserved and not overwritten.',
     );
 
     if (ok == true) {
@@ -181,26 +201,31 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
   }
 
   Future<void> _exportToCsv(List<ContentItem> items) async {
-    const csvHeader = 'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Updated At\n';
-    final csvRows = items.map((item) {
-      return [
-        item.id,
-        item.kind.name,
-        item.title,
-        item.titleOlChiki ?? '',
-        item.olChiki ?? '',
-        item.subtitle ?? '',
-        item.categoryId,
-        item.isPublished.toString(),
-        item.isPremium.toString(),
-        item.order.toString(),
-        item.tags.join('; '),
-        item.updatedAt.toIso8601String(),
-      ].map((val) {
-        final escaped = val.replaceAll('"', '""');
-        return '"$escaped"';
-      }).join(',');
-    }).join('\n');
+    const csvHeader =
+        'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Updated At\n';
+    final csvRows = items
+        .map((item) {
+          return [
+                item.id,
+                item.kind.name,
+                item.title,
+                item.titleOlChiki ?? '',
+                item.olChiki ?? '',
+                item.subtitle ?? '',
+                item.categoryId,
+                item.isPublished.toString(),
+                item.isPremium.toString(),
+                item.order.toString(),
+                item.tags.join('; '),
+                item.updatedAt.toIso8601String(),
+              ]
+              .map((val) {
+                final escaped = val.replaceAll('"', '""');
+                return '"$escaped"';
+              })
+              .join(',');
+        })
+        .join('\n');
 
     final csvContent = csvHeader + csvRows;
     final filename = 'Olitun_${widget.kind.name}_Export.csv';
@@ -231,8 +256,13 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     }
   }
 
-  Future<void> _bulkPublish(List<ContentItem> filteredItems, bool publish) async {
-    final selectedItems = filteredItems.where((e) => _selectedIds.contains(e.id)).toList();
+  Future<void> _bulkPublish(
+    List<ContentItem> filteredItems,
+    bool publish,
+  ) async {
+    final selectedItems = filteredItems
+        .where((e) => _selectedIds.contains(e.id))
+        .toList();
     if (selectedItems.isEmpty) return;
 
     showDialog(
@@ -243,11 +273,21 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
 
     final repo = ref.read(contentRepositoryProvider);
     int successCount = 0;
-    
-    for (final item in selectedItems) {
-      final updated = item.copyWith(isPublished: publish, updatedAt: DateTime.now());
-      final res = await repo.upsert(updated);
-      res.fold((_) {}, (_) => successCount++);
+
+    // Concurrently process bulk updates in batches of 5 to maximize speed safely
+    const batchSize = 5;
+    for (int i = 0; i < selectedItems.length; i += batchSize) {
+      final batch = selectedItems.skip(i).take(batchSize);
+      await Future.wait(
+        batch.map((item) async {
+          final updated = item.copyWith(
+            isPublished: publish,
+            updatedAt: DateTime.now(),
+          );
+          final res = await repo.upsert(updated);
+          res.fold((_) {}, (_) => successCount++);
+        }),
+      );
     }
 
     if (mounted) {
@@ -258,7 +298,9 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
       _invalidateAllProviders();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Successfully updated $successCount items to ${publish ? "Published" : "Draft"}'),
+          content: Text(
+            'Successfully updated $successCount items to ${publish ? "Published" : "Draft"}',
+          ),
           backgroundColor: AppColors.primary,
         ),
       );
@@ -266,13 +308,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
   }
 
   Future<void> _bulkDelete(List<ContentItem> filteredItems) async {
-    final selectedItems = filteredItems.where((e) => _selectedIds.contains(e.id)).toList();
+    final selectedItems = filteredItems
+        .where((e) => _selectedIds.contains(e.id))
+        .toList();
     if (selectedItems.isEmpty) return;
 
     final confirm = await showAdminConfirmDialog(
       context: context,
       title: 'Bulk Delete',
-      message: 'Are you sure you want to delete ${selectedItems.length} items? This action cannot be undone.',
+      message:
+          'Are you sure you want to delete ${selectedItems.length} items? This action cannot be undone.',
     );
 
     if (confirm != true) return;
@@ -287,9 +332,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     final repo = ref.read(contentRepositoryProvider);
     int successCount = 0;
 
-    for (final item in selectedItems) {
-      final res = await repo.delete(widget.kind, item.id);
-      res.fold((_) {}, (_) => successCount++);
+    // Concurrently delete items in batches of 5 to maximize speed safely
+    const batchSize = 5;
+    for (int i = 0; i < selectedItems.length; i += batchSize) {
+      final batch = selectedItems.skip(i).take(batchSize);
+      await Future.wait(
+        batch.map((item) async {
+          final res = await repo.delete(widget.kind, item.id);
+          res.fold((_) {}, (_) => successCount++);
+        }),
+      );
     }
 
     if (mounted) {
@@ -316,19 +368,21 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
 
     final repo = ref.read(contentRepositoryProvider);
     final res = await repo.get(widget.kind, item.id);
-    
+
     if (context.mounted) {
       Navigator.pop(context); // close loader
     }
 
     res.fold(
       (failure) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to load item: ${failure.message}'),
-            backgroundColor: Colors.red,
-          ),
-        );
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Failed to load item: ${failure.message}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
       },
       (fullyLoadedItem) {
         _showFormSheet(context, fullyLoadedItem);
@@ -340,7 +394,8 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     final ok = await showAdminConfirmDialog(
       context: context,
       title: 'Delete Content',
-      message: 'Are you sure you want to delete this "${item.title}" item? This action cannot be undone.',
+      message:
+          'Are you sure you want to delete this "${item.title}" item? This action cannot be undone.',
     );
     if (ok == true) {
       HapticFeedback.mediumImpact();
@@ -348,21 +403,25 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
       final res = await repo.delete(widget.kind, item.id);
       res.fold(
         (failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to delete: ${failure.message}'),
-              backgroundColor: Colors.red,
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to delete: ${failure.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
         },
         (_) {
           _invalidateAllProviders();
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Item deleted successfully'),
-              backgroundColor: AppColors.primary,
-            ),
-          );
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Item deleted successfully'),
+                backgroundColor: AppColors.primary,
+              ),
+            );
+          }
         },
       );
     }
@@ -393,9 +452,7 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      initialItem == null
-                          ? 'New $_title'
-                          : 'Edit $_title',
+                      initialItem == null ? 'New $_title' : 'Edit $_title',
                       style: const TextStyle(
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
@@ -420,12 +477,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                       if (mounted) {
                         res.fold(
                           (failure) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('Failed to save: ${failure.message}'),
-                                backgroundColor: Colors.red,
-                              ),
-                            );
+                            if (context.mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Failed to save: ${failure.message}',
+                                  ),
+                                  backgroundColor: Colors.red,
+                                ),
+                              );
+                            }
                           },
                           (_) {
                             _invalidateAllProviders();
@@ -460,7 +521,9 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
 
     // Category filter
     if (_selectedCategoryId != null) {
-      filtered = filtered.where((item) => item.categoryId == _selectedCategoryId).toList();
+      filtered = filtered
+          .where((item) => item.categoryId == _selectedCategoryId)
+          .toList();
     }
 
     // Publish status filter
@@ -499,7 +562,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
           ),
         ),
         icon: const Icon(Icons.cloud_download_rounded, size: 18),
-        label: const Text('Seed Default Data', style: TextStyle(fontWeight: FontWeight.w700)),
+        label: const Text(
+          'Seed Default Data',
+          style: TextStyle(fontWeight: FontWeight.w700),
+        ),
       ),
       const SizedBox(width: 8),
       listAsync.when(
@@ -514,7 +580,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
             ),
           ),
           icon: const Icon(Icons.download_rounded, size: 18),
-          label: const Text('CSV Export', style: TextStyle(fontWeight: FontWeight.w700)),
+          label: const Text(
+            'CSV Export',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
         ),
         loading: () => const SizedBox(),
         error: (err, st) => const SizedBox(),
@@ -539,10 +608,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                         padding: const EdgeInsets.all(10),
                         decoration: BoxDecoration(
                           color: AdminTokens.sunken(isDark),
-                          borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusSm,
+                          ),
                           border: Border.all(color: AdminTokens.border(isDark)),
                         ),
-                        child: Icon(Icons.arrow_back_rounded, color: AdminTokens.textPrimary(isDark), size: 18),
+                        child: Icon(
+                          Icons.arrow_back_rounded,
+                          color: AdminTokens.textPrimary(isDark),
+                          size: 18,
+                        ),
                       ),
                     ),
                     const SizedBox(width: 12),
@@ -575,8 +650,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                   if (filtered.isEmpty) {
                     return _buildEmptyState(isDark);
                   }
-                  
-                  final isGrid = widget.kind == ContentKind.letter || widget.kind == ContentKind.number;
+
+                  final isGrid =
+                      widget.kind == ContentKind.letter ||
+                      widget.kind == ContentKind.number;
                   if (isGrid) {
                     return _buildGridView(filtered, isDark, isWideScreen);
                   }
@@ -594,16 +671,21 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
           ],
         ),
       ),
-      
+
       // Bulk Actions Bar
       bottomNavigationBar: _selectedIds.isEmpty
           ? null
           : listAsync.when(
               data: (items) {
                 final filtered = _getFilteredItems(items);
-                final allSelected = _selectedIds.length == filtered.length && filtered.isNotEmpty;
+                final allSelected =
+                    _selectedIds.length == filtered.length &&
+                    filtered.isNotEmpty;
                 return Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 24,
+                    vertical: 16,
+                  ),
                   decoration: BoxDecoration(
                     color: isDark ? const Color(0xFF1E1E2E) : Colors.white,
                     boxShadow: [
@@ -613,23 +695,33 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                         offset: const Offset(0, -4),
                       ),
                     ],
-                    border: Border(top: BorderSide(color: isDark ? Colors.white10 : Colors.black12)),
+                    border: Border(
+                      top: BorderSide(
+                        color: isDark ? Colors.white10 : Colors.black12,
+                      ),
+                    ),
                   ),
                   child: SafeArea(
                     child: Row(
                       children: [
-                        Checkbox(
-                          value: allSelected,
-                          activeColor: AppColors.primary,
-                          onChanged: (val) {
-                            setState(() {
-                              if (val == true) {
-                                _selectedIds = filtered.map((e) => e.id).toSet();
-                              } else {
-                                _selectedIds.clear();
-                              }
-                            });
-                          },
+                        Semantics(
+                          label: 'Select all filtered items',
+                          checked: allSelected,
+                          child: Checkbox(
+                            value: allSelected,
+                            activeColor: AppColors.primary,
+                            onChanged: (val) {
+                              setState(() {
+                                if (val == true) {
+                                  _selectedIds = filtered
+                                      .map((e) => e.id)
+                                      .toSet();
+                                } else {
+                                  _selectedIds.clear();
+                                }
+                              });
+                            },
+                          ),
                         ),
                         Text(
                           '${_selectedIds.length} items selected',
@@ -648,8 +740,13 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                             backgroundColor: const Color(0xFF10B981),
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -661,21 +758,34 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                             backgroundColor: Colors.amber[700],
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
                         ElevatedButton.icon(
                           onPressed: () => _bulkDelete(filtered),
-                          icon: const Icon(Icons.delete_forever_rounded, size: 16),
+                          icon: const Icon(
+                            Icons.delete_forever_rounded,
+                            size: 16,
+                          ),
                           label: const Text('Delete'),
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.red,
                             foregroundColor: Colors.white,
                             elevation: 0,
-                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 12,
+                            ),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                           ),
                         ),
                       ],
@@ -693,7 +803,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
         icon: const Icon(Icons.add_rounded, color: Colors.white),
         label: Text(
           'Add $_title',
-          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+          style: const TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       ),
     );
@@ -708,27 +821,54 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
             Expanded(
               flex: 3,
               child: TextField(
-                onChanged: (v) => setState(() => _searchQuery = v),
+                onChanged: (v) {
+                  _debounce?.cancel();
+                  _debounce = Timer(const Duration(milliseconds: 300), () {
+                    setState(() {
+                      _searchQuery = v;
+                      _selectedIds
+                          .clear(); // Auto-clear selection when filter changes
+                    });
+                  });
+                },
                 style: TextStyle(color: isDark ? Colors.white : Colors.black87),
                 decoration: InputDecoration(
                   hintText: 'Search $_title...',
-                  hintStyle: TextStyle(color: isDark ? Colors.white30 : Colors.black26),
-                  prefixIcon: Icon(Icons.search_rounded, color: isDark ? Colors.white30 : Colors.black26, size: 20),
+                  hintStyle: TextStyle(
+                    color: isDark ? Colors.white30 : Colors.black26,
+                  ),
+                  prefixIcon: Icon(
+                    Icons.search_rounded,
+                    color: isDark ? Colors.white30 : Colors.black26,
+                    size: 20,
+                  ),
                   filled: true,
-                  fillColor: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
+                  fillColor: isDark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.black.withValues(alpha: 0.03),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black12),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                    ),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: isDark ? Colors.white10 : Colors.black12),
+                    borderSide: BorderSide(
+                      color: isDark ? Colors.white10 : Colors.black12,
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
+                    borderSide: const BorderSide(
+                      color: AppColors.primary,
+                      width: 1.5,
+                    ),
                   ),
-                  contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 14,
+                  ),
                   isDense: true,
                 ),
               ),
@@ -738,7 +878,11 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
             _buildDropdown(
               value: _publishFilter,
               items: ['All', 'Published', 'Draft'],
-              onChanged: (v) => setState(() => _publishFilter = v!),
+              onChanged: (v) => setState(() {
+                _publishFilter = v!;
+                _selectedIds
+                    .clear(); // Auto-clear selection when filter changes
+              }),
               isDark: isDark,
             ),
             const SizedBox(width: 8),
@@ -746,12 +890,16 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
             _buildDropdown(
               value: _premiumFilter,
               items: ['All', 'Premium', 'Free'],
-              onChanged: (v) => setState(() => _premiumFilter = v!),
+              onChanged: (v) => setState(() {
+                _premiumFilter = v!;
+                _selectedIds
+                    .clear(); // Auto-clear selection when filter changes
+              }),
               isDark: isDark,
             ),
           ],
         ),
-        
+
         // Category chips row (if categories exist)
         if (categories.isNotEmpty) ...[
           const SizedBox(height: 12),
@@ -762,7 +910,11 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                 _buildFilterChip(
                   label: 'All Categories',
                   isSelected: _selectedCategoryId == null,
-                  onTap: () => setState(() => _selectedCategoryId = null),
+                  onTap: () => setState(() {
+                    _selectedCategoryId = null;
+                    _selectedIds
+                        .clear(); // Auto-clear selection when filter changes
+                  }),
                   isDark: isDark,
                 ),
                 ...categories.map(
@@ -771,7 +923,11 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                     child: _buildFilterChip(
                       label: cat.titleLatin,
                       isSelected: _selectedCategoryId == cat.id,
-                      onTap: () => setState(() => _selectedCategoryId = cat.id),
+                      onTap: () => setState(() {
+                        _selectedCategoryId = cat.id;
+                        _selectedIds
+                            .clear(); // Auto-clear selection when filter changes
+                      }),
                       isDark: isDark,
                     ),
                   ),
@@ -790,29 +946,32 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     required ValueChanged<String?> onChanged,
     required bool isDark,
   }) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
-      decoration: BoxDecoration(
-        color: isDark ? Colors.white.withValues(alpha: 0.05) : Colors.black.withValues(alpha: 0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
-      ),
-      child: DropdownButtonHideUnderline(
-        child: DropdownButton<String>(
-          value: value,
-          dropdownColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
-          style: TextStyle(
-            fontSize: 13,
-            fontWeight: FontWeight.w600,
-            color: isDark ? Colors.white70 : Colors.black87,
+    return Semantics(
+      label: 'Dropdown filter for $value',
+      button: true,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.05)
+              : Colors.black.withValues(alpha: 0.03),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: isDark ? Colors.white10 : Colors.black12),
+        ),
+        child: DropdownButtonHideUnderline(
+          child: DropdownButton<String>(
+            value: value,
+            dropdownColor: isDark ? const Color(0xFF1E1E2E) : Colors.white,
+            style: TextStyle(
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+            onChanged: onChanged,
+            items: items.map((String val) {
+              return DropdownMenuItem<String>(value: val, child: Text(val));
+            }).toList(),
           ),
-          onChanged: onChanged,
-          items: items.map((String val) {
-            return DropdownMenuItem<String>(
-              value: val,
-              child: Text(val),
-            );
-          }).toList(),
         ),
       ),
     );
@@ -824,24 +983,39 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     required VoidCallback onTap,
     required bool isDark,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-        decoration: BoxDecoration(
-          color: isSelected ? AppColors.primary : (isDark ? Colors.white.withValues(alpha: 0.06) : Colors.black.withValues(alpha: 0.04)),
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: isSelected ? AppColors.primary : (isDark ? Colors.white.withValues(alpha: 0.1) : Colors.black.withValues(alpha: 0.08)),
+    return Semantics(
+      label: 'Category chip: $label',
+      selected: isSelected,
+      button: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 200),
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.06)
+                      : Colors.black.withValues(alpha: 0.04)),
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : (isDark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.08)),
+            ),
           ),
-        ),
-        child: Text(
-          label,
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            color: isSelected ? Colors.white : (isDark ? Colors.white60 : Colors.black54),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+              color: isSelected
+                  ? Colors.white
+                  : (isDark ? Colors.white60 : Colors.black54),
+            ),
           ),
         ),
       ),
@@ -852,16 +1026,26 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
     return AdminEmptyState(
       icon: _icon,
       title: 'No items found',
-      message: 'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
+      message:
+          'No $_title match your filter or search query. Seed sample data or tap the "+" button to add one manually.',
       actionLabel: 'Add $_title',
       onAction: () => _showFormSheet(context, null),
     );
   }
 
-  Widget _buildGridView(List<ContentItem> items, bool isDark, bool isWideScreen) {
+  Widget _buildGridView(
+    List<ContentItem> items,
+    bool isDark,
+    bool isWideScreen,
+  ) {
     return GridView.builder(
       controller: _scrollController,
-      padding: EdgeInsets.fromLTRB(isWideScreen ? 32 : 20, 0, isWideScreen ? 32 : 20, 100),
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
       gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: isWideScreen ? 6 : 3,
         crossAxisSpacing: 14,
@@ -872,29 +1056,177 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
       itemBuilder: (context, index) {
         final item = items[index];
         final isSelected = _selectedIds.contains(item.id);
-        
+
         return InkWell(
-          onTap: () => _editItem(context, item),
-          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-          child: AnimatedContainer(
-            duration: 200.ms,
-            decoration: BoxDecoration(
-              color: isSelected 
-                  ? AppColors.primary.withValues(alpha: 0.08) 
-                  : AdminTokens.raised(isDark),
+              onTap: () => _editItem(context, item),
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-              border: Border.all(
-                color: isSelected ? AppColors.primary : AdminTokens.border(isDark),
-                width: isSelected ? 2 : 1,
+              child: AnimatedContainer(
+                duration: 200.ms,
+                decoration: BoxDecoration(
+                  color: isSelected
+                      ? AppColors.primary.withValues(alpha: 0.08)
+                      : AdminTokens.raised(isDark),
+                  borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                  border: Border.all(
+                    color: isSelected
+                        ? AppColors.primary
+                        : AdminTokens.border(isDark),
+                    width: isSelected ? 2 : 1,
+                  ),
+                  boxShadow: AdminTokens.raisedShadow(isDark),
+                ),
+                child: Stack(
+                  children: [
+                    // Checkbox for bulk actions
+                    Positioned(
+                      top: 4,
+                      left: 4,
+                      child: Semantics(
+                        label: 'Select ${item.title}',
+                        checked: isSelected,
+                        child: Checkbox(
+                          value: isSelected,
+                          activeColor: AppColors.primary,
+                          onChanged: (val) {
+                            setState(() {
+                              if (val == true) {
+                                _selectedIds.add(item.id);
+                              } else {
+                                _selectedIds.remove(item.id);
+                              }
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+
+                    // Status Dots
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: Row(
+                        children: [
+                          if (item.isPremium)
+                            const Icon(
+                              Icons.star_rounded,
+                              color: Colors.amber,
+                              size: 14,
+                            ),
+                          const SizedBox(width: 4),
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: item.isPublished
+                                  ? const Color(0xFF10B981)
+                                  : Colors.grey,
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Core content: character or numeral
+                    Align(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 16),
+                          (() {
+                            final glyphText =
+                                item.olChiki ?? item.titleOlChiki ?? item.title;
+                            final isShort = glyphText.length <= 3;
+                            return Text(
+                              glyphText,
+                              style: TextStyle(
+                                fontFamily: 'OlChiki',
+                                fontSize: isShort ? 32 : 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              textAlign: TextAlign.center,
+                              maxLines: 2,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          })(),
+                          const SizedBox(height: 8),
+                          Text(
+                            item.title,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w700,
+                              color: isDark ? Colors.white70 : Colors.black87,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Delete Button at bottom
+                    Positioned(
+                      bottom: 2,
+                      right: 2,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.delete_outline_rounded,
+                          size: 18,
+                          color: Colors.redAccent,
+                        ),
+                        onPressed: () => _confirmDelete(context, item),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              boxShadow: AdminTokens.raisedShadow(isDark),
+            )
+            .animate()
+            .fadeIn(delay: (index * 40).ms)
+            .scale(begin: const Offset(0.95, 0.95));
+      },
+    );
+  }
+
+  Widget _buildListView(
+    List<ContentItem> items,
+    bool isDark,
+    bool isWideScreen,
+  ) {
+    return ListView.builder(
+      controller: _scrollController,
+      padding: EdgeInsets.fromLTRB(
+        isWideScreen ? 32 : 20,
+        0,
+        isWideScreen ? 32 : 20,
+        100,
+      ),
+      itemCount: items.length,
+      itemBuilder: (context, index) {
+        final item = items[index];
+        final isSelected = _selectedIds.contains(item.id);
+
+        return Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.primary.withValues(alpha: 0.05)
+                : AdminTokens.raised(isDark),
+            borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.primary
+                  : AdminTokens.border(isDark),
+              width: isSelected ? 1.5 : 1,
             ),
-            child: Stack(
+            boxShadow: AdminTokens.raisedShadow(isDark),
+          ),
+          child: ListTile(
+            contentPadding: const EdgeInsets.all(16),
+            leading: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                // Checkbox for bulk actions
-                Positioned(
-                  top: 4,
-                  left: 4,
+                Semantics(
+                  label: 'Select ${item.title}',
+                  checked: isSelected,
                   child: Checkbox(
                     value: isSelected,
                     activeColor: AppColors.primary,
@@ -909,110 +1241,6 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                     },
                   ),
                 ),
-                
-                // Status Dots
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: Row(
-                    children: [
-                      if (item.isPremium)
-                        const Icon(Icons.star_rounded, color: Colors.amber, size: 14),
-                      const SizedBox(width: 4),
-                      Container(
-                        width: 8,
-                        height: 8,
-                        decoration: BoxDecoration(
-                          color: item.isPublished ? const Color(0xFF10B981) : Colors.grey,
-                          shape: BoxShape.circle,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Core content: character or numeral
-                Align(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const SizedBox(height: 16),
-                      Text(
-                        item.olChiki ?? item.titleOlChiki ?? item.title,
-                        style: const TextStyle(
-                          fontFamily: 'OlChiki',
-                          fontSize: 32,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        item.title,
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                          color: isDark ? Colors.white70 : Colors.black87,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-
-                // Delete Button at bottom
-                Positioned(
-                  bottom: 2,
-                  right: 2,
-                  child: IconButton(
-                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
-                    onPressed: () => _confirmDelete(context, item),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ).animate().fadeIn(delay: (index * 40).ms).scale(begin: const Offset(0.95, 0.95));
-      },
-    );
-  }
-
-  Widget _buildListView(List<ContentItem> items, bool isDark, bool isWideScreen) {
-    return ListView.builder(
-      controller: _scrollController,
-      padding: EdgeInsets.fromLTRB(isWideScreen ? 32 : 20, 0, isWideScreen ? 32 : 20, 100),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        final isSelected = _selectedIds.contains(item.id);
-        
-        return Container(
-          margin: const EdgeInsets.only(bottom: 12),
-          decoration: BoxDecoration(
-            color: isSelected ? AppColors.primary.withValues(alpha: 0.05) : AdminTokens.raised(isDark),
-            borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
-            border: Border.all(
-              color: isSelected ? AppColors.primary : AdminTokens.border(isDark),
-              width: isSelected ? 1.5 : 1,
-            ),
-            boxShadow: AdminTokens.raisedShadow(isDark),
-          ),
-          child: ListTile(
-            contentPadding: const EdgeInsets.all(16),
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Checkbox(
-                  value: isSelected,
-                  activeColor: AppColors.primary,
-                  onChanged: (val) {
-                    setState(() {
-                      if (val == true) {
-                        _selectedIds.add(item.id);
-                      } else {
-                        _selectedIds.remove(item.id);
-                      }
-                    });
-                  },
-                ),
                 const SizedBox(width: 8),
                 Container(
                   width: 52,
@@ -1024,11 +1252,14 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                   ),
                   child: item.heroMedia != null
                       ? ClipRRect(
-                          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                          borderRadius: BorderRadius.circular(
+                            AdminTokens.radiusMd,
+                          ),
                           child: Image.network(
                             item.heroMedia!.url,
                             fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) => Icon(_icon, color: AdminTokens.accent),
+                            errorBuilder: (context, error, stackTrace) =>
+                                Icon(_icon, color: AdminTokens.accent),
                           ),
                         )
                       : Icon(_icon, color: AdminTokens.accent),
@@ -1061,7 +1292,10 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                   const SizedBox(height: 4),
                   Text(
                     item.subtitle!,
-                    style: TextStyle(color: isDark ? Colors.white60 : Colors.black54, fontSize: 13),
+                    style: TextStyle(
+                      color: isDark ? Colors.white60 : Colors.black54,
+                      fontSize: 13,
+                    ),
                   ),
                 ],
                 const SizedBox(height: 8),
@@ -1072,7 +1306,9 @@ class _AdminContentListScreenState extends ConsumerState<AdminContentListScreen>
                     // Published badge
                     _buildStatusChip(
                       label: item.isPublished ? 'Published' : 'Draft',
-                      color: item.isPublished ? const Color(0xFF10B981) : Colors.grey,
+                      color: item.isPublished
+                          ? const Color(0xFF10B981)
+                          : Colors.grey,
                       isDark: isDark,
                     ),
                     // Premium badge

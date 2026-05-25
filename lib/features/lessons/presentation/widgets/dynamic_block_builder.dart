@@ -54,14 +54,26 @@ class DynamicBlockBuilder extends ConsumerWidget {
 
     switch (block.type) {
       case 'text':
-        final textBlock = _TextBlock(
-          lessonId: lessonId,
-          block: block,
-          isDark: isDark,
-          accentColor: accentColor,
-        );
+      case 'image':
+      case 'svg':
+      case 'video':
+      case 'lottie':
+        final hasText =
+            (block.textOlChiki?.trim().isNotEmpty == true) ||
+            (block.textLatin?.trim().isNotEmpty == true);
         final mediaUrl = _blockVisualMediaUrl(block);
+
+        final textBlock = hasText
+            ? _TextBlock(
+                lessonId: lessonId,
+                block: block,
+                isDark: isDark,
+                accentColor: accentColor,
+              )
+            : const SizedBox.shrink();
+
         if (mediaUrl == null) return textBlock;
+
         return Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -70,21 +82,13 @@ class DynamicBlockBuilder extends ConsumerWidget {
               block: block,
               isDark: isDark,
               accentColor: accentColor,
-              isSvg: block.type == 'svg',
+              isSvg:
+                  block.type == 'svg' ||
+                  mediaUrl.toLowerCase().contains('.svg'),
             ),
-            const SizedBox(height: 12),
+            if (hasText) const SizedBox(height: 12),
             textBlock,
           ],
-        );
-      case 'image':
-      case 'svg':
-      case 'video':
-      case 'lottie':
-        return _UniversalMediaBlock(
-          lessonId: lessonId,
-          block: block,
-          isDark: isDark,
-          accentColor: accentColor,
         );
       case 'audio':
         return _AudioBlock(

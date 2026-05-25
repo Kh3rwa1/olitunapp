@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
@@ -70,13 +68,40 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
     final block = widget.block;
     olChikiCtrl = TextEditingController(text: block.textOlChiki ?? '');
     latinCtrl = TextEditingController(text: block.textLatin ?? '');
-    _imageUrl = block.type == 'video'
-        ? (block.imageUrl ?? block.audioUrl)
-        : block.imageUrl;
+
+    // Parse visual media universally across candidates
+    final candidates = [
+      block.data?['heroMediaUrl'],
+      block.data?['mediaUrl'],
+      block.data?['videoUrl'],
+      block.data?['animationUrl'],
+      block.data?['htmlUrl'],
+      block.data?['imageUrl'],
+      block.imageUrl,
+      if (block.type == 'video') block.audioUrl,
+    ];
+    String? matchedUrl;
+    for (final c in candidates) {
+      if (c is String && c.trim().isNotEmpty) {
+        matchedUrl = c.trim();
+        break;
+      }
+    }
+
+    if (matchedUrl != null) {
+      if (MediaTypeResolver.resolve(matchedUrl) == MediaKind.lottie) {
+        _animationUrl = matchedUrl;
+        _imageUrl = null;
+      } else {
+        _imageUrl = matchedUrl;
+        _animationUrl = null;
+      }
+    } else {
+      _imageUrl = null;
+      _animationUrl = null;
+    }
+
     _audioUrl = block.audioUrl;
-    _animationUrl = block.type == 'lottie'
-        ? (block.data?['animationUrl'] ?? block.imageUrl)
-        : block.data?['animationUrl'];
     quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
     _pronCtrl = TextEditingController(text: block.data?['pronunciation'] ?? '');
     _themeColorCtrl = TextEditingController(
@@ -101,25 +126,35 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
               ? _imageUrl!.trim()
               : null);
 
+    final finalAudioUrl = _audioUrl?.trim().isNotEmpty == true
+        ? _audioUrl!.trim()
+        : null;
+    String? finalImageUrl = (_imageUrl != null && _imageUrl!.trim().isNotEmpty)
+        ? _imageUrl!.trim()
+        : null;
+    final finalAnimationUrl =
+        (_animationUrl != null && _animationUrl!.trim().isNotEmpty)
+        ? _animationUrl!.trim()
+        : null;
+
+    // For Lottie animations, we set imageUrl = finalAnimationUrl for compatibility
+    if (finalAnimationUrl != null) {
+      finalImageUrl = finalAnimationUrl;
+    }
+
     final updatedBlock = LessonBlockEntity(
       type: widget.block.type,
       textOlChiki: olChikiCtrl.text.isEmpty ? null : olChikiCtrl.text,
       textLatin: latinCtrl.text.isEmpty ? null : latinCtrl.text,
-      imageUrl: widget.block.type == 'lottie'
-          ? _animationUrl
-          : (widget.block.type == 'video'
-                ? _imageUrl
-                : (_imageUrl != null && _imageUrl!.isNotEmpty
-                      ? _imageUrl
-                      : null)),
+      imageUrl: finalImageUrl,
       audioUrl: widget.block.type == 'video'
-          ? _imageUrl
-          : (_audioUrl != null && _audioUrl!.isNotEmpty ? _audioUrl : null),
+          ? (finalImageUrl ?? finalAudioUrl)
+          : finalAudioUrl,
       data: {
         ...?widget.block.data,
-        'animationUrl': (_animationUrl != null && _animationUrl!.isNotEmpty)
-            ? _animationUrl
-            : null,
+        'animationUrl': finalAnimationUrl,
+        'mediaUrl': mediaUrl,
+        'heroMediaUrl': mediaUrl,
         'mediaType': mediaUrl != null
             ? MediaTypeResolver.appwriteHeroMediaType(mediaUrl)
             : null,
@@ -542,10 +577,16 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                     _buildLinkedContentPanel(linkedContent, isDark),
                     const SizedBox(height: 20),
                   ],
-                  if (block.type == 'text') ...[
+                  if (block.type == 'quiz') ...[
+                    AdminTextField(
+                      controller: quizRefCtrl,
+                      label: 'Quiz Reference ID',
+                      hint: 'Start typing quiz ID...',
+                    ),
+                  ] else ...[
                     AdminTextField(
                       controller: olChikiCtrl,
-                      label: 'Ol Chiki Text',
+                      label: 'Ol Chiki Text (Optional)',
                       hint: 'Enter Ol Chiki text',
                       maxLines: 3,
                     ),
@@ -556,8 +597,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                         Expanded(
                           child: AdminTextField(
                             controller: latinCtrl,
-                            label: 'Latin Text / Meaning',
-                            hint: 'Enter translation',
+                            label:
+                                'Translation / Latin Text / Caption (Optional)',
+                            hint: 'Enter English translation or caption',
                             maxLines: 3,
                           ),
                         ),
@@ -600,14 +642,14 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                     const SizedBox(height: 20),
                     AdminTextField(
                       controller: _pronCtrl,
-                      label: 'Pronunciation (optional)',
+                      label: 'Pronunciation Guide (Optional)',
                       hint: 'e.g., pronunciation guide',
                     ),
                     const SizedBox(height: 24),
                     _buildThemeColorSelector(isDark),
                     const SizedBox(height: 24),
                     AdminMediaField(
-                      label: 'Audio Pronunciation',
+                      label: 'Audio Pronunciation (Optional)',
                       icon: Icons.audiotrack_rounded,
                       accent: const Color(0xFF8B5CF6),
                       currentUrl: _audioUrl,
@@ -617,9 +659,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                     ),
                     const SizedBox(height: 24),
                     AdminMediaField(
-                      label: 'Hero Media (Optional)',
+                      label: 'Visual Media (Optional)',
                       subtitle:
-                          'Supports image, WebP, GIF, SVG, Lottie, MP4, WebM, MOV, M4V, and HTML URLs.',
+                          'Supports PNG, JPG, WebP, GIF, SVG, Lottie JSON, MP4/webm video, or HTML.',
                       icon: Icons.perm_media_rounded,
                       accent: const Color(0xFF6366F1),
                       currentUrl: _animationUrl ?? _imageUrl,
@@ -654,132 +696,6 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                           }
                         });
                       },
-                    ),
-                  ],
-                  if (block.type == 'image' || block.type == 'svg') ...[
-                    AdminMediaField(
-                      label: block.type == 'svg'
-                          ? 'SVG / Animated SVG'
-                          : 'Image',
-                      subtitle: block.type == 'svg'
-                          ? 'Upload an SVG file or paste an SVG URL'
-                          : null,
-                      icon: block.type == 'svg'
-                          ? Icons.polyline_rounded
-                          : Icons.image_rounded,
-                      accent: AppColors.primary,
-                      currentUrl: _imageUrl,
-                      uploadFolder: block.type == 'svg'
-                          ? 'lesson-svgs'
-                          : 'lesson-images',
-                      fileType: FileType.custom,
-                      allowedExtensions: block.type == 'svg'
-                          ? const ['svg']
-                          : const ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
-                      onUploaded: (url) => setState(() => _imageUrl = url),
-                      previewBuilder: (url) => ClipRRect(
-                        borderRadius: BorderRadius.circular(10),
-                        child: block.type == 'svg'
-                            ? Container(
-                                height: 120,
-                                color: Colors.white,
-                                child: SvgPicture.network(
-                                  url,
-                                  placeholderBuilder: (_) => const Center(
-                                    child: CircularProgressIndicator(
-                                      strokeWidth: 2,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            : Image.network(
-                                url,
-                                height: 120,
-                                fit: BoxFit.contain,
-                                errorBuilder: (_, _, _) => const Icon(
-                                  Icons.broken_image_rounded,
-                                  size: 60,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                      ),
-                    ),
-                  ],
-                  if (block.type == 'audio') ...[
-                    AdminMediaField(
-                      label: 'Audio',
-                      icon: Icons.audiotrack_rounded,
-                      accent: const Color(0xFF10B981),
-                      currentUrl: _audioUrl,
-                      uploadFolder: 'lesson-audio',
-                      fileType: FileType.audio,
-                      onUploaded: (url) => setState(() => _audioUrl = url),
-                    ),
-                  ],
-                  if (block.type == 'video') ...[
-                    AdminMediaField(
-                      label: 'Video',
-                      icon: Icons.videocam_rounded,
-                      accent: const Color(0xFFF59E0B),
-                      currentUrl: _imageUrl,
-                      uploadFolder: 'lesson-video',
-                      fileType: FileType.custom,
-                      allowedExtensions: const ['mp4', 'webm', 'mov', 'm4v'],
-                      onUploaded: (url) => setState(() => _imageUrl = url),
-                    ),
-                  ],
-                  if (block.type == 'quiz') ...[
-                    AdminTextField(
-                      controller: quizRefCtrl,
-                      label: 'Quiz Reference ID',
-                      hint: 'Start typing quiz ID...',
-                    ),
-                  ],
-                  if (block.type == 'lottie') ...[
-                    AdminMediaField(
-                      label: 'Lottie Animation',
-                      icon: Icons.animation_rounded,
-                      accent: const Color(0xFF6366F1),
-                      currentUrl: _animationUrl,
-                      uploadFolder: 'animations',
-                      fileType: FileType.custom,
-                      allowedExtensions: const ['json', 'lottie'],
-                      onUploaded: (url) => setState(() => _animationUrl = url),
-                      previewBuilder: (url) => Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(
-                            color: Colors.grey.withValues(alpha: 0.1),
-                          ),
-                        ),
-                        child: Center(
-                          child: Lottie.network(
-                            url,
-                            height: 100,
-                            fit: BoxFit.contain,
-                            errorBuilder: (_, _, _) => const Icon(
-                              Icons.broken_image_rounded,
-                              size: 48,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
-
-                  if (block.type == 'image' ||
-                      block.type == 'svg' ||
-                      block.type == 'audio' ||
-                      block.type == 'video' ||
-                      block.type == 'lottie') ...[
-                    const SizedBox(height: 16),
-                    AdminTextField(
-                      controller: latinCtrl,
-                      label: 'Caption / Label',
-                      hint: 'Enter a label',
                     ),
                   ],
                 ],

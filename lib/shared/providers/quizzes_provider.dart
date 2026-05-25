@@ -10,8 +10,7 @@ import '../../core/storage/cache_service.dart';
 import '../../core/storage/hive_service.dart';
 import '../models/content_models.dart';
 import '../quiz_engine/quiz_engine.dart';
-import 'sentences_provider.dart';
-import 'words_provider.dart';
+import 'learner_content_providers.dart';
 
 final quizzesProvider =
     StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>(
@@ -23,8 +22,8 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
     _loadQuizzes();
     Future.microtask(() {
       if (!mounted) return;
-      ref.listen(wordsProvider, (_, _) => _updateDynamicQuizzes());
-      ref.listen(sentencesProvider, (_, _) => _updateDynamicQuizzes());
+      ref.listen(learnerWordsProvider, (_, _) => _updateDynamicQuizzes());
+      ref.listen(learnerSentencesProvider, (_, _) => _updateDynamicQuizzes());
       _updateDynamicQuizzes();
     });
   }
@@ -42,8 +41,8 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   void _updateDynamicQuizzes() {
     if (!mounted) return;
 
-    final words = ref.read(wordsProvider).value;
-    final sentences = ref.read(sentencesProvider).value;
+    final words = ref.read(learnerWordsProvider).value;
+    final sentences = ref.read(learnerSentencesProvider).value;
     if (words == null || sentences == null) {
       if (_baseQuizzes.isNotEmpty) {
         state = AsyncValue.data(_baseQuizzes);

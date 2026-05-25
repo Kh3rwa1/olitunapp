@@ -34,8 +34,8 @@ class LetterGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allLetters = ref.watch(lettersProvider).value ?? [];
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final allLetters = ref.watch(learnerLettersProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     // Scope letters to this lesson's blocks
@@ -167,8 +167,8 @@ class NumberGridContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allNumbers = ref.watch(numbersProvider).value ?? [];
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final allNumbers = ref.watch(learnerNumbersProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final numbers = _scopeNumbers(allNumbers, lesson);
@@ -339,8 +339,8 @@ class VocabularyListContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allWords = ref.watch(wordsProvider).value ?? [];
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final allWords = ref.watch(learnerWordsProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final words = _scopeWords(allWords, lesson);
@@ -541,8 +541,8 @@ class SentenceListContent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final allSentences = ref.watch(sentencesProvider).value ?? [];
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final allSentences = ref.watch(learnerSentencesProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
 
     final sentences = _scopeSentences(allSentences, lesson);
@@ -908,7 +908,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
             ? _resolveNavRoute(ref, lessonId, textLatin)
             : null);
 
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blocks = lesson?.blocks ?? [];
     final blockIndex = blocks.indexOf(block);
@@ -986,7 +986,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           if (activeRoute.contains('/word/')) {
                             final wordId = activeRoute.split('/').last;
                             final matchedWord =
-                                ref.read(wordsProvider).value ?? [];
+                                ref.read(learnerWordsProvider).value ?? [];
                             final matchedWordEntity = matchedWord
                                 .where((w) => w.id == wordId)
                                 .firstOrNull;
@@ -996,7 +996,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
                           } else if (activeRoute.contains('/sentence/')) {
                             final sentenceId = activeRoute.split('/').last;
                             final matchedSentence =
-                                ref.read(sentencesProvider).value ?? [];
+                                ref.read(learnerSentencesProvider).value ?? [];
                             final matchedSentenceEntity = matchedSentence
                                 .where((s) => s.id == sentenceId)
                                 .firstOrNull;
@@ -1065,7 +1065,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
               .toList()
         : [t];
 
-    final letters = ref.read(lettersProvider).value ?? [];
+    final letters = ref.read(learnerLettersProvider).value ?? [];
     for (final part in parts) {
       final matched = letters
           .where(
@@ -1077,7 +1077,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/letter/$lessonId/${matched.charOlChiki}';
     }
 
-    final numbers = ref.read(numbersProvider).value ?? [];
+    final numbers = ref.read(learnerNumbersProvider).value ?? [];
     for (final part in parts) {
       final matched = numbers
           .where(
@@ -1091,7 +1091,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/number/$lessonId/${matched.id}';
     }
 
-    final words = ref.read(wordsProvider).value ?? [];
+    final words = ref.read(learnerWordsProvider).value ?? [];
     for (final part in parts) {
       final matched = words
           .where(
@@ -1104,7 +1104,7 @@ class DynamicBlockGridCell extends ConsumerWidget {
       if (matched != null) return '/word/$lessonId/${matched.id}';
     }
 
-    final sentences = ref.read(sentencesProvider).value ?? [];
+    final sentences = ref.read(learnerSentencesProvider).value ?? [];
     for (final part in parts) {
       final matched = sentences
           .where(

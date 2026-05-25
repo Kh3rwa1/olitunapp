@@ -2,6 +2,9 @@ sealed class Failure {
   final String message;
   final int? code;
   const Failure({required this.message, this.code});
+
+  @override
+  String toString() => '$runtimeType: $message';
 }
 
 class ServerFailure extends Failure {

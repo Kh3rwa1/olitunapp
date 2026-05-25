@@ -13,6 +13,9 @@ import '../../../core/motion/branded_refresh.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../domain/rhyme_model.dart';
+import '../../../shared/models/content_item.dart';
+import '../../../shared/models/content_item_extensions.dart';
+import '../../../shared/repositories/content_repository.dart';
 
 import 'widgets/whimsical_background.dart';
 import 'widgets/tilt_card.dart';
@@ -85,11 +88,13 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       final nextOnline =
           next.value != null && !next.value!.contains(ConnectivityResult.none);
       if (prevOffline && nextOnline) {
-        ref.invalidate(rhymesProvider);
+        ref.invalidate(contentListProvider((ContentKind.rhyme, null)));
       }
     });
 
-    final rhymesAsync = ref.watch(rhymesProvider);
+    final rhymesAsync = ref.watch(contentListProvider((ContentKind.rhyme, null))).whenData(
+      (list) => list.map((item) => item.toRhymeModel()).toList(),
+    );
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
     final catRhymes = rhymesAsync.maybeWhen(
       data: (list) => list
@@ -116,7 +121,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
             child: SafeArea(
               child: BrandedRefreshIndicator(
                 onRefresh: () async {
-                  ref.invalidate(rhymesProvider);
+                  ref.invalidate(contentListProvider((ContentKind.rhyme, null)));
                 },
                 child: CustomScrollView(
                   physics: const BouncingScrollPhysics(),
@@ -645,7 +650,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: AppErrorState(
             message: 'Could not load the rhymes list.',
-            onRetry: () => ref.refresh(rhymesProvider),
+            onRetry: () => ref.refresh(contentListProvider((ContentKind.rhyme, null))),
           ),
         ),
       ),

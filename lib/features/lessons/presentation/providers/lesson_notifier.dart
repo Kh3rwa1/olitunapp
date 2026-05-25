@@ -3,7 +3,11 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../domain/entities/lesson_entity.dart';
 import '../../domain/repositories/lesson_repository.dart';
 import 'lesson_providers.dart';
+import '../../../../shared/models/content_item.dart';
+import '../../../../shared/models/content_item_extensions.dart';
+import '../../../../shared/repositories/content_repository.dart';
 
+@Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lessonNotifierProvider =
     StateNotifierProvider<LessonNotifier, AsyncValue<List<LessonEntity>>>(
       (ref) => LessonNotifier(ref.watch(lessonRepositoryProvider), ref: ref),
@@ -11,13 +15,15 @@ final lessonNotifierProvider =
 
 final lessonsByCategoryProvider =
     Provider.family<AsyncValue<List<LessonEntity>>, String>((ref, categoryId) {
-      final lessonsAsync = ref.watch(lessonNotifierProvider);
+      final lessonsAsync = ref.watch(
+        contentListProvider((ContentKind.lesson, categoryId)),
+      );
       return lessonsAsync.when(
-        data: (lessons) => AsyncValue.data(
-          lessons.where((l) => l.categoryId == categoryId).toList(),
+        data: (items) => AsyncValue.data(
+          items.map((item) => item.toLessonEntity()).toList(),
         ),
         loading: () => const AsyncValue.loading(),
-        error: AsyncValue.error,
+        error: (err, stack) => AsyncValue.error(err, stack),
       );
     });
 

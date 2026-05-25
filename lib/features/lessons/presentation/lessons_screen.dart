@@ -39,7 +39,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
           data: (data) => BrandedRefreshIndicator(
             onRefresh: () async {
               await ref.read(categoryNotifierProvider.notifier).refresh();
-              await ref.read(lessonNotifierProvider.notifier).refresh();
+              ref.invalidate(contentListProvider((ContentKind.lesson, null)));
             },
             child: SingleChildScrollView(
               physics: const AlwaysScrollableScrollPhysics(),

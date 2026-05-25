@@ -9,6 +9,7 @@ import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/quiz_engine/quiz_engine.dart';
+import 'package:itun/shared/providers/learner_content_providers.dart';
 
 /// Concrete lightweight fake implementation of AppwriteDbService to supply test data.
 class FakeAppwriteDbService implements AppwriteDbService {
@@ -309,15 +310,27 @@ void main() {
       return nextState.value!;
     }
 
+    ProviderContainer createContainer(FakeAppwriteDbService fakeDb) {
+      return ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          appwriteDbServiceProvider.overrideWithValue(fakeDb),
+          learnerWordsProvider.overrideWith((ref) {
+            final list = fakeDb.wordsData.map((w) => WordModel.fromJson(w)).toList();
+            return AsyncValue.data(list);
+          }),
+          learnerSentencesProvider.overrideWith((ref) {
+            final list = fakeDb.sentencesData.map((s) => SentenceModel.fromJson(s)).toList();
+            return AsyncValue.data(list);
+          }),
+        ],
+      );
+    }
+
     test(
       'initializes with default alphabets and numbers quizzes when database is empty',
       () async {
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            appwriteDbServiceProvider.overrideWithValue(fakeDb),
-          ],
-        );
+        final container = createContainer(fakeDb);
         addTearDown(container.dispose);
 
         // Read quizzes notifier initial state
@@ -338,12 +351,7 @@ void main() {
         fakeDb.wordsData = dummyWords.map((w) => w.toJson()).toList();
         fakeDb.sentencesData = dummySentences.map((s) => s.toJson()).toList();
 
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            appwriteDbServiceProvider.overrideWithValue(fakeDb),
-          ],
-        );
+        final container = createContainer(fakeDb);
         addTearDown(container.dispose);
 
         // Wait specifically for the dynamic hybrid quizzes to be compiled
@@ -425,12 +433,7 @@ void main() {
         fakeDb.wordsData = [];
         fakeDb.sentencesData = [];
 
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            appwriteDbServiceProvider.overrideWithValue(fakeDb),
-          ],
-        );
+        final container = createContainer(fakeDb);
         addTearDown(container.dispose);
 
         final quizzes = await waitForQuizzes(container);
@@ -481,12 +484,7 @@ void main() {
           ).toJson(),
         ];
 
-        final container = ProviderContainer(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-            appwriteDbServiceProvider.overrideWithValue(fakeDb),
-          ],
-        );
+        final container = createContainer(fakeDb);
         addTearDown(container.dispose);
 
         await waitForQuizzes(container);

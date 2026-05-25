@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
 import '../models/content_models.dart';
 
+@Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final sentencesProvider =
     StateNotifierProvider<SentencesNotifier, AsyncValue<List<SentenceModel>>>(
       SentencesNotifier.new,

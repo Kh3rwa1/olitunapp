@@ -13,3 +13,4 @@ export 'content/affirmation_model.dart';
 export 'content/purchase_model.dart';
 export 'content/waitlist_model.dart';
 export 'content_item.dart';
+export 'content_item_extensions.dart';

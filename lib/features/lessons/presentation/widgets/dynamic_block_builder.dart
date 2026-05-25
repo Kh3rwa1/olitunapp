@@ -151,7 +151,7 @@ class _TextBlock extends ConsumerWidget {
 
     final navRoute = _resolveNavRoute(ref, lessonId, displayText);
 
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blocks = lesson?.blocks ?? [];
     final blockIndex = blocks.indexOf(block);
@@ -274,7 +274,7 @@ class _TextBlock extends ConsumerWidget {
     // --- PHASE 1: EXACT MATCHES (to prevent fuzzy hijacking) ---
 
     // 1. Letters exact match
-    final letters = ref.read(lettersProvider).value ?? [];
+    final letters = ref.read(learnerLettersProvider).value ?? [];
     for (final part in parts) {
       final matched = letters
           .where(
@@ -289,7 +289,7 @@ class _TextBlock extends ConsumerWidget {
     }
 
     // 2. Numbers exact match
-    final numbers = ref.read(numbersProvider).value ?? [];
+    final numbers = ref.read(learnerNumbersProvider).value ?? [];
     for (final part in parts) {
       final matched = numbers
           .where(
@@ -306,7 +306,7 @@ class _TextBlock extends ConsumerWidget {
     }
 
     // 3. Words exact match
-    final words = ref.read(wordsProvider).value ?? [];
+    final words = ref.read(learnerWordsProvider).value ?? [];
     for (final part in parts) {
       final matched = words
           .where(
@@ -322,7 +322,7 @@ class _TextBlock extends ConsumerWidget {
     }
 
     // 4. Sentences exact match
-    final sentences = ref.read(sentencesProvider).value ?? [];
+    final sentences = ref.read(learnerSentencesProvider).value ?? [];
     for (final part in parts) {
       final matched = sentences
           .where(
@@ -438,7 +438,7 @@ class _UniversalMediaBlock extends ConsumerWidget {
     final url = _blockVisualMediaUrl(block);
     if (url == null) return const SizedBox.shrink();
 
-    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final lessons = ref.watch(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
     final blockIndex = lesson?.blocks.indexOf(block) ?? -1;
     final route = blockIndex >= 0

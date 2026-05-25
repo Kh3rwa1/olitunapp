@@ -7,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
+import '../../../shared/repositories/content_repository.dart';
+import '../../../shared/models/content_item.dart';
 import '../../../shared/providers/purchases_provider.dart';
 import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
@@ -29,7 +31,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(lessonNotifierProvider.notifier).refresh();
+    ref.invalidate(contentListProvider((ContentKind.lesson, null)));
   }
 
   LinearGradient _getGradient(String preset) {
@@ -197,7 +199,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       const SizedBox(height: 20),
                       TextButton.icon(
                         onPressed: () =>
-                            ref.read(lessonNotifierProvider.notifier).refresh(),
+                            ref.invalidate(contentListProvider((ContentKind.lesson, null))),
                         icon: const Icon(Icons.refresh_rounded),
                         label: const Text('Retry'),
                         style: TextButton.styleFrom(

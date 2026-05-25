@@ -5,6 +5,7 @@ import '../../core/api/appwrite_db_service.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 
+@Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lettersProvider =
     StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>(
       LettersNotifier.new,

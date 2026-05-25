@@ -52,16 +52,16 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.initState();
     // Prefetch core content for offline availability
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(wordsProvider);
-      ref.read(numbersProvider);
-      ref.read(sentencesProvider);
-      ref.read(lettersProvider);
+      ref.read(learnerWordsProvider);
+      ref.read(learnerNumbersProvider);
+      ref.read(learnerSentencesProvider);
+      ref.read(learnerLettersProvider);
     });
   }
 
   Future<void> _onRefresh() async {
     await ref.read(categoryNotifierProvider.notifier).refresh();
-    await ref.read(lessonNotifierProvider.notifier).refresh();
+    ref.invalidate(contentListProvider((ContentKind.lesson, null)));
   }
 
   @override
@@ -75,7 +75,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final completedIds =
         ref.watch(userStatsProvider).value?.completedLessons ?? {};
-    final allLessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final allLessons = ref.watch(learnerLessonsProvider).value ?? [];
     final nextLesson = continueLessonFor(
       lessons: allLessons,
       completedLessonIds: completedIds,

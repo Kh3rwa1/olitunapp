@@ -65,7 +65,7 @@ class _LessonBlockDetailScreenState
     });
 
     // Auto-play audio for the new block if available.
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+    final lessons = ref.read(learnerLessonsProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
     if (lesson != null && index >= 0 && index < lesson.blocks.length) {
       final block = lesson.blocks[index];
@@ -112,7 +112,7 @@ class _LessonBlockDetailScreenState
 
   @override
   Widget build(BuildContext context) {
-    final lessonsAsync = ref.watch(lessonNotifierProvider);
+    final lessonsAsync = ref.watch(learnerLessonsProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return lessonsAsync.when(

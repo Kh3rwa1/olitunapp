@@ -108,7 +108,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_letter_la_1',
           order: 0,
-          markdown: '# Letter La (ᱞ)\n\nThe letter **La** represents the sound /l/ in Ol Chiki.',
+          markdown:
+              '# Letter La (ᱞ)\n\nThe letter **La** represents the sound /l/ in Ol Chiki.',
         ),
       ],
       tracing: const TracingConfig(
@@ -146,7 +147,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_number_1_1',
           order: 0,
-          markdown: '# Numeral 1 (᱑)\n\nThis represents the number **One** (ᱢᱤᱫ) in Ol Chiki.',
+          markdown:
+              '# Numeral 1 (᱑)\n\nThis represents the number **One** (ᱢᱤᱫ) in Ol Chiki.',
         ),
       ],
       tracing: const TracingConfig(
@@ -184,7 +186,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_word_johar_1',
           order: 0,
-          markdown: '# Johar (ᱡᱚᱦᱟᱨ)\n\n**Johar** is the standard greeting in Santali, meaning "Hello" or "Greetings". It conveys deep respect.',
+          markdown:
+              '# Johar (ᱡᱚᱦᱟᱨ)\n\n**Johar** is the standard greeting in Santali, meaning "Hello" or "Greetings". It conveys deep respect.',
         ),
       ],
       updatedAt: DateTime(2026),
@@ -204,7 +207,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_sentence_celeka_1',
           order: 0,
-          markdown: '# How are you?\n\n**ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?** (Am celeka menama?) is used to ask "How are you?" to one person.',
+          markdown:
+              '# How are you?\n\n**ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?** (Am celeka menama?) is used to ask "How are you?" to one person.',
         ),
       ],
       updatedAt: DateTime(2026),
@@ -223,7 +227,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_lesson_basics_1',
           order: 0,
-          markdown: '# Basics of Ol Chiki\n\nLearn the foundational concepts of the Ol Chiki writing system.',
+          markdown:
+              '# Basics of Ol Chiki\n\nLearn the foundational concepts of the Ol Chiki writing system.',
         ),
       ],
       updatedAt: DateTime(2026),
@@ -242,7 +247,8 @@ class ContentRepository {
         TextBlock(
           id: 'b_rhyme_traditional_1',
           order: 0,
-          markdown: '# Traditional Santali Rhyme\n\nEnjoy learning through songs and stories passed down through generations.',
+          markdown:
+              '# Traditional Santali Rhyme\n\nEnjoy learning through songs and stories passed down through generations.',
         ),
       ],
       updatedAt: DateTime(2026),

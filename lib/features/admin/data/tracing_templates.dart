@@ -33,10 +33,7 @@ Map<String, TracingConfig> _buildTracingTemplates() {
       );
     }
 
-    map[glyph] = TracingConfig(
-      glyph: glyph,
-      strokes: strokes,
-    );
+    map[glyph] = TracingConfig(glyph: glyph, strokes: strokes);
   }
 
   return map;

@@ -30,17 +30,27 @@ class MediaUploader {
       }
 
       final file = result.files.first;
-      final path = file.path;
-      if (path == null) {
-        return left(
-          const ValidationFailure(message: 'File path not available'),
-        );
-      }
-
       final bucketId = _getBucketId(kind, file.name);
       final filename = _storageFilename(file.name, folder);
 
-      final inputFile = InputFile.fromPath(path: path, filename: filename);
+      InputFile inputFile;
+      if (file.bytes != null) {
+        inputFile = InputFile.fromBytes(
+          bytes: file.bytes!,
+          filename: filename,
+        );
+      } else if (file.path != null) {
+        inputFile = InputFile.fromPath(
+          path: file.path!,
+          filename: filename,
+        );
+      } else {
+        return left(
+          const ValidationFailure(
+            message: 'File data is not available (both bytes and path are null)',
+          ),
+        );
+      }
 
       final uploaded = await _storage.createFile(
         bucketId: bucketId,

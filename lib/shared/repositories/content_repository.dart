@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -100,7 +101,7 @@ class ContentRepository {
       final cacheKey = _cacheListKey(kind, categoryId);
       final cached = await CacheService.getList<ContentItem>(
         cacheKey,
-        (json) => ContentItem.fromJson(json),
+        ContentItem.fromJson,
       );
 
       if (cached != null && cached.isNotEmpty) {
@@ -146,7 +147,7 @@ class ContentRepository {
       final cacheKey = _cacheItemKey(kind, id);
       final cached = await CacheService.get<ContentItem>(
         cacheKey,
-        (json) => ContentItem.fromJson(json),
+        ContentItem.fromJson,
       );
 
       if (cached != null) {

@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
@@ -14,7 +13,7 @@ class MediaUploader {
 
   MediaUploader(this._client) : _storage = Storage(_client);
 
-  /// Picks a file and uploads it to Appwrite Storage, returning Either<Failure, ContentMedia>.
+  /// Picks a file and uploads it to Appwrite Storage, returning `Either<Failure, ContentMedia>`.
   /// If [allowedExtensions] is provided, it filters the file picker.
   Future<Either<Failure, ContentMedia>> pickAndUpload({
     required ContentMediaKind kind,

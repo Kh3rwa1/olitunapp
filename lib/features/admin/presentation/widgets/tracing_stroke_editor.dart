@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:itun/features/admin/data/tracing_templates.dart';
@@ -89,12 +90,10 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
   void _addCustomStroke() {
     if (_drawnRawPoints.length < 2) return;
 
-    // Normalize drawn points (assuming 0..300 canvas size inside sheet)
     final path = _drawnRawPoints.map((p) {
       return TracingPoint(
         x: (p.dx / 300.0).clamp(0.0, 1.0),
         y: (p.dy / 300.0).clamp(0.0, 1.0),
-        isControlPoint: false,
       );
     }).toList();
 
@@ -102,7 +101,6 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
       id: 'stroke_${widget.glyph}_custom_${DateTime.now().millisecondsSinceEpoch}',
       order: _strokes.length,
       path: path,
-      direction: TracingDirection.custom,
       hintText: 'Custom Stroke ${_strokes.length + 1}',
     );
 
@@ -230,7 +228,6 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                       child: Slider(
                         value: _tolerance,
                         min: 0.1,
-                        max: 1.0,
                         divisions: 18,
                         activeColor: const Color(0xFF3B82F6),
                         onChanged: (val) {

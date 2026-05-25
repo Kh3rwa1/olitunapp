@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -284,9 +285,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
 
   void _onPanEnd(DragEndDetails details, Size size) {
     if (_currentRawPoints.length < 2) {
-      setState(() {
-        _currentRawPoints.clear();
-      });
+      setState(_currentRawPoints.clear);
       return;
     }
 
@@ -366,9 +365,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
       });
     } else {
       // Rejection
-      setState(() {
-        _currentRawPoints.clear();
-      });
+      setState(_currentRawPoints.clear);
     }
   }
 
@@ -594,10 +591,13 @@ class _TracingPainter extends CustomPainter {
   }
 
   void _paintExampleAutoAnimation(Canvas canvas, Size size) {
-    if (exampleStrokeIndex < 0 || exampleStrokeIndex >= config.strokes.length)
+    if (exampleStrokeIndex < 0 || exampleStrokeIndex >= config.strokes.length) {
       return;
+    }
     final stroke = config.strokes[exampleStrokeIndex];
-    if (stroke.path.length < 2) return;
+    if (stroke.path.length < 2) {
+      return;
+    }
 
     final paint = Paint()
       ..color = accentColor.withOpacity(0.75)

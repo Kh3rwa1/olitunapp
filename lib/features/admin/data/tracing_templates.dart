@@ -28,7 +28,6 @@ Map<String, TracingConfig> _buildTracingTemplates() {
           id: 'stroke_${glyph}_$i',
           order: i,
           path: path,
-          direction: TracingDirection.custom,
           hintText: 'Stroke ${i + 1}',
         ),
       );
@@ -37,9 +36,6 @@ Map<String, TracingConfig> _buildTracingTemplates() {
     map[glyph] = TracingConfig(
       glyph: glyph,
       strokes: strokes,
-      guide: TracingGuide.dotted,
-      strokeWidth: 12.0,
-      tolerance: 0.6,
     );
   }
 
@@ -66,8 +62,5 @@ TracingConfig getFallbackTemplate(String glyph) {
         hintText: 'Trace the box around the glyph',
       ),
     ],
-    guide: TracingGuide.dotted,
-    strokeWidth: 12.0,
-    tolerance: 0.6,
   );
 }

@@ -31,8 +31,6 @@ class LessonFormSheet extends ConsumerStatefulWidget {
   ConsumerState<LessonFormSheet> createState() => _LessonFormSheetState();
 }
 
-class _WordFormSheetState {} // dummy class for matching
-
 class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   ContentItem? _initialItem;
 

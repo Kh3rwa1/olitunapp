@@ -2,9 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
-import 'package:uuid/uuid.dart';
-import 'package:file_picker/file_picker.dart';
-
 import '../../../core/theme/admin_tokens.dart';
 import '../../../core/theme/app_colors.dart';
 import 'widgets/admin_empty_state.dart';

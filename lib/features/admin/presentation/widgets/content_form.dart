@@ -1,5 +1,5 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
@@ -347,7 +347,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
           title: const Text('Tracing Strokes Required'),
           content: Text(
             'This content type (${widget.kind.name}) requires standard tracing configuration. '
-            'Would you like to pre-fill standard templates for ${glyphValue} now?',
+            'Would you like to pre-fill standard templates for $glyphValue now?',
           ),
           actions: [
             TextButton(

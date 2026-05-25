@@ -803,6 +803,12 @@ const buckets = [
     maxFileSize: 104857600, // 100MB
   },
   {
+    id: 'html',
+    name: 'Interactive HTML',
+    allowedExtensions: ['html', 'htm'],
+    maxFileSize: 5242880, // 5MB
+  },
+  {
     id: 'admin_backups',
     name: 'Admin Backups',
     allowedExtensions: ['json'],

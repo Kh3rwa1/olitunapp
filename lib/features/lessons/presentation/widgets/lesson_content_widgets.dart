@@ -910,11 +910,10 @@ class DynamicBlockGridCell extends ConsumerWidget {
 
     final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
-    final textBlocks =
-        lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];
-    final textBlockIndex = textBlocks.indexOf(block);
-    final fallbackRoute = textBlockIndex != -1
-        ? '/lesson/$lessonId/block/$textBlockIndex'
+    final blocks = lesson?.blocks ?? [];
+    final blockIndex = blocks.indexOf(block);
+    final fallbackRoute = blockIndex != -1
+        ? '/lesson/$lessonId/block/$blockIndex'
         : null;
 
     final activeRoute = navRoute ?? fallbackRoute;

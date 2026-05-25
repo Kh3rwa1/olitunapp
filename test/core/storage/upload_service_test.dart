@@ -20,6 +20,12 @@ void main() {
         AppwriteStorageUploadService.targetForFilename('intro.mov').bucketId,
         'videos',
       );
+      expect(
+        AppwriteStorageUploadService.targetForFilename(
+          'interactive.html',
+        ).bucketId,
+        'html',
+      );
     });
 
     test('rejects unsupported file types before upload', () {

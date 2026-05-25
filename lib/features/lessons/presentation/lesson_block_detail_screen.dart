@@ -9,6 +9,7 @@ import '../../../core/motion/motion.dart';
 import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
+import '../../../shared/utils/media_type_resolver.dart';
 import '../domain/entities/lesson_entity.dart';
 import 'widgets/full_bleed_hero_media.dart';
 
@@ -63,17 +64,17 @@ class _LessonBlockDetailScreenState
       _playingId = null;
     });
 
-    // Auto-play audio for the new block if available
+    // Auto-play audio for the new block if available.
     final lessons = ref.read(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == widget.lessonId).firstOrNull;
-    if (lesson != null) {
-      final textBlocks = lesson.blocks.where((b) => b.type == 'text').toList();
-      if (index >= 0 && index < textBlocks.length) {
-        final block = textBlocks[index];
-        final audioUrl = block.audioUrl;
-        if (audioUrl != null && audioUrl.isNotEmpty) {
-          _playAudio(audioUrl, '${block.textOlChiki}_$index');
-        }
+    if (lesson != null && index >= 0 && index < lesson.blocks.length) {
+      final block = lesson.blocks[index];
+      final audioUrl = block.audioUrl;
+      if (audioUrl != null && audioUrl.isNotEmpty) {
+        _playAudio(
+          audioUrl,
+          '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+        );
       }
     }
   }
@@ -142,12 +143,9 @@ class _LessonBlockDetailScreenState
           );
         }
 
-        // Scope only to text blocks to enable clean slider navigation
-        final textBlocks = lesson.blocks
-            .where((b) => b.type == 'text')
-            .toList();
+        final contentBlocks = lesson.blocks;
 
-        if (textBlocks.isEmpty) {
+        if (contentBlocks.isEmpty) {
           return Scaffold(
             backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
             body: _DetailLoadError(
@@ -159,8 +157,8 @@ class _LessonBlockDetailScreenState
         }
 
         // Safe indexing
-        final safeIndex = _currentIndex.clamp(0, textBlocks.length - 1);
-        final currentBlock = textBlocks[safeIndex];
+        final safeIndex = _currentIndex.clamp(0, contentBlocks.length - 1);
+        final currentBlock = contentBlocks[safeIndex];
 
         // Parse custom color or fallback to brand neon green
         final rawThemeColor = currentBlock.data?['themeColor'] as String?;
@@ -191,9 +189,7 @@ class _LessonBlockDetailScreenState
                 end: Alignment.bottomRight,
               );
 
-        final animationUrl =
-            currentBlock.data?['animationUrl'] as String? ??
-            currentBlock.imageUrl;
+        final animationUrl = _blockVisualMediaUrl(currentBlock);
 
         final heroIllustration = AnimatedSwitcher(
           duration: const Duration(milliseconds: 300),
@@ -208,8 +204,7 @@ class _LessonBlockDetailScreenState
                 type: MaterialType.transparency,
                 child: FullBleedHeroMedia(
                   animationUrl:
-                      animationUrl != null &&
-                          animationUrl.toLowerCase().endsWith('.json')
+                      animationUrl != null && _isLottieMedia(animationUrl)
                       ? animationUrl
                       : null,
                   imageUrl: animationUrl,
@@ -246,7 +241,8 @@ class _LessonBlockDetailScreenState
                   ParallaxHeroSliverAppBar(
                     gradient: AppColors.heroGradient,
                     glyph:
-                        currentBlock.textOlChiki != null &&
+                        animationUrl == null &&
+                            currentBlock.textOlChiki != null &&
                             currentBlock.textOlChiki!.isNotEmpty
                         ? currentBlock.textOlChiki!.characters.first
                         : null,
@@ -289,10 +285,10 @@ class _LessonBlockDetailScreenState
                   PageView.builder(
                     controller: _pageController,
                     onPageChanged: _onPageChanged,
-                    itemCount: textBlocks.length,
+                    itemCount: contentBlocks.length,
                     physics: const BouncingScrollPhysics(),
                     itemBuilder: (context, index) {
-                      final block = textBlocks[index];
+                      final block = contentBlocks[index];
                       return _buildBlockContent(
                         block,
                         index,
@@ -307,7 +303,7 @@ class _LessonBlockDetailScreenState
                     right: 0,
                     child: IgnorePointer(
                       child: _buildPageIndicator(
-                        textBlocks.length,
+                        contentBlocks.length,
                         blockThemeColor,
                         isDark,
                       ),
@@ -320,6 +316,32 @@ class _LessonBlockDetailScreenState
         );
       },
     );
+  }
+
+  String? _blockVisualMediaUrl(LessonBlockEntity block) {
+    final data = block.data;
+    final candidates = [
+      data?['heroMediaUrl'],
+      data?['mediaUrl'],
+      data?['videoUrl'],
+      data?['animationUrl'],
+      data?['htmlUrl'],
+      data?['imageUrl'],
+      block.imageUrl,
+      if (block.type == 'video') block.audioUrl,
+    ];
+
+    for (final candidate in candidates) {
+      if (candidate is String && candidate.trim().isNotEmpty) {
+        final value = candidate.trim();
+        if (MediaTypeResolver.isRenderableHero(value)) return value;
+      }
+    }
+    return null;
+  }
+
+  bool _isLottieMedia(String url) {
+    return MediaTypeResolver.resolve(url) == MediaKind.lottie;
   }
 
   Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
@@ -398,6 +420,73 @@ class _LessonBlockDetailScreenState
     );
   }
 
+  Widget _buildInlineMedia(String url, Color accentColor) {
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(28),
+      child: SizedBox(
+        width: double.infinity,
+        height: 260,
+        child: FullBleedHeroMedia(
+          animationUrl: _isLottieMedia(url) ? url : null,
+          imageUrl: url,
+          fallback: Icon(
+            Icons.perm_media_rounded,
+            size: 56,
+            color: accentColor.withValues(alpha: 0.45),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAudioCard(
+    LessonBlockEntity block,
+    int index,
+    Color accentColor,
+    bool isDark,
+  ) {
+    final label = block.textLatin?.trim().isNotEmpty == true
+        ? block.textLatin!.trim()
+        : 'Play audio';
+    final isThisPlaying =
+        _isAudioPlaying &&
+        _playingId ==
+            '${block.textOlChiki ?? block.textLatin ?? block.type}_$index';
+    return _buildGlassCard(
+      themeColor: accentColor,
+      isDark: isDark,
+      child: Row(
+        children: [
+          IconButton.filled(
+            onPressed: () => _playAudio(
+              block.audioUrl!,
+              '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+            ),
+            icon: const Icon(Icons.play_arrow_rounded),
+            style: IconButton.styleFrom(
+              backgroundColor: accentColor,
+              foregroundColor: Colors.white,
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              label,
+              style: TextStyle(
+                fontWeight: FontWeight.w800,
+                color: isDark ? Colors.white : const Color(0xFF1F2937),
+              ),
+            ),
+          ),
+          SoundWaveIndicator(
+            color: isDark ? Colors.white : accentColor,
+            isPlaying: isThisPlaying,
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBlockContent(
     LessonBlockEntity block,
     int index,
@@ -431,53 +520,68 @@ class _LessonBlockDetailScreenState
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        // Large Ol Chiki character card
-                        Center(
-                          child: Container(
-                            width: double.infinity,
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 36,
-                              horizontal: 24,
-                            ),
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  accentColor.withValues(alpha: 0.15),
-                                  accentColor.withValues(alpha: 0.25),
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
+                        if (_blockVisualMediaUrl(block) != null) ...[
+                          _buildInlineMedia(
+                            _blockVisualMediaUrl(block)!,
+                            accentColor,
+                          ),
+                          const SizedBox(height: 20),
+                        ],
+                        if (block.type == 'audio' &&
+                            block.audioUrl != null &&
+                            block.audioUrl!.isNotEmpty) ...[
+                          _buildAudioCard(block, index, accentColor, isDark),
+                          const SizedBox(height: 20),
+                        ],
+                        if (textOlChiki.isNotEmpty || textLatin.isNotEmpty) ...[
+                          // Large Ol Chiki character card
+                          Center(
+                            child: Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 36,
+                                horizontal: 24,
                               ),
-                              borderRadius: BorderRadius.circular(32),
-                              border: Border.all(
-                                color: accentColor.withValues(alpha: 0.4),
-                                width: 4,
-                              ),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: accentColor.withValues(alpha: 0.2),
-                                  blurRadius: 30,
-                                  offset: const Offset(0, 10),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    accentColor.withValues(alpha: 0.15),
+                                    accentColor.withValues(alpha: 0.25),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
                                 ),
-                              ],
-                            ),
-                            child: Center(
-                              child: Text(
-                                textOlChiki.isNotEmpty
-                                    ? textOlChiki
-                                    : textLatin,
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: textOlChiki.length < 5 ? 46 : 28,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white : accentColor,
-                                  letterSpacing: 1,
+                                borderRadius: BorderRadius.circular(32),
+                                border: Border.all(
+                                  color: accentColor.withValues(alpha: 0.4),
+                                  width: 4,
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: accentColor.withValues(alpha: 0.2),
+                                    blurRadius: 30,
+                                    offset: const Offset(0, 10),
+                                  ),
+                                ],
+                              ),
+                              child: Center(
+                                child: Text(
+                                  textOlChiki.isNotEmpty
+                                      ? textOlChiki
+                                      : textLatin,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: textOlChiki.length < 5 ? 46 : 28,
+                                    fontWeight: FontWeight.w900,
+                                    color: isDark ? Colors.white : accentColor,
+                                    letterSpacing: 1,
+                                  ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 20),
+                          const SizedBox(height: 20),
+                        ],
 
                         // Translation badge
                         if (textOlChiki.isNotEmpty && textLatin.isNotEmpty) ...[

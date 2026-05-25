@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../core/accessibility/learning_semantics.dart';
+import '../../../../core/audio/audio_service.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
+import '../../../../shared/utils/media_type_resolver.dart';
 import '../../domain/entities/lesson_entity.dart';
+import 'full_bleed_hero_media.dart';
 
 /// Robust fuzzy matching for Ol Chiki text against entity labels.
 bool _isFuzzyMatch(String target, String entityText) {
@@ -54,34 +54,74 @@ class DynamicBlockBuilder extends ConsumerWidget {
 
     switch (block.type) {
       case 'text':
-        return _TextBlock(
+        final textBlock = _TextBlock(
           lessonId: lessonId,
           block: block,
           isDark: isDark,
           accentColor: accentColor,
         );
+        final mediaUrl = _blockVisualMediaUrl(block);
+        if (mediaUrl == null) return textBlock;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _UniversalMediaBlock(
+              lessonId: lessonId,
+              block: block,
+              isDark: isDark,
+              accentColor: accentColor,
+            ),
+            const SizedBox(height: 12),
+            textBlock,
+          ],
+        );
       case 'image':
       case 'svg':
-        return _ImageBlock(block: block, isDark: isDark);
+      case 'video':
+      case 'lottie':
+        return _UniversalMediaBlock(
+          lessonId: lessonId,
+          block: block,
+          isDark: isDark,
+          accentColor: accentColor,
+        );
+      case 'audio':
+        return _AudioBlock(
+          block: block,
+          isDark: isDark,
+          accentColor: accentColor,
+        );
       case 'quiz':
         return _QuizBlock(
           block: block,
           accentColor: accentColor,
           brandGradient: brandGradient,
         );
-      case 'lottie':
-        return _LottieBlock(
-          block: block,
-          isDark: isDark,
-          accentColor: accentColor,
-        );
       case 'html':
+        final mediaUrl = _blockVisualMediaUrl(block);
+        if (mediaUrl != null) {
+          return _UniversalMediaBlock(
+            lessonId: lessonId,
+            block: block,
+            isDark: isDark,
+            accentColor: accentColor,
+          );
+        }
         return _HtmlBlock(
           block: block,
           isDark: isDark,
           accentColor: accentColor,
         );
       default:
+        final mediaUrl = _blockVisualMediaUrl(block);
+        if (mediaUrl != null) {
+          return _UniversalMediaBlock(
+            lessonId: lessonId,
+            block: block,
+            isDark: isDark,
+            accentColor: accentColor,
+          );
+        }
         return const SizedBox.shrink();
     }
   }
@@ -116,11 +156,10 @@ class _TextBlock extends ConsumerWidget {
 
     final lessons = ref.watch(lessonNotifierProvider).value ?? [];
     final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
-    final textBlocks =
-        lesson?.blocks.where((b) => b.type == 'text').toList() ?? [];
-    final textBlockIndex = textBlocks.indexOf(block);
-    final fallbackRoute = textBlockIndex != -1
-        ? '/lesson/$lessonId/block/$textBlockIndex'
+    final blocks = lesson?.blocks ?? [];
+    final blockIndex = blocks.indexOf(block);
+    final fallbackRoute = blockIndex != -1
+        ? '/lesson/$lessonId/block/$blockIndex'
         : null;
 
     final activeRoute = navRoute ?? fallbackRoute;
@@ -356,84 +395,162 @@ class _TextBlock extends ConsumerWidget {
   }
 }
 
-/// Image content block with caption, supporting standard images (WebP/PNG/JPG) and SVGs dynamically.
-class _ImageBlock extends StatelessWidget {
+String? _blockVisualMediaUrl(LessonBlockEntity block) {
+  final data = block.data;
+  final candidates = [
+    data?['heroMediaUrl'],
+    data?['mediaUrl'],
+    data?['videoUrl'],
+    data?['animationUrl'],
+    data?['htmlUrl'],
+    data?['imageUrl'],
+    block.imageUrl,
+    if (block.type == 'video') block.audioUrl,
+  ];
+
+  for (final candidate in candidates) {
+    if (candidate is String && candidate.trim().isNotEmpty) {
+      final value = candidate.trim();
+      if (MediaTypeResolver.isRenderableHero(value)) return value;
+    }
+  }
+  return null;
+}
+
+bool _isLottieMedia(String url) {
+  return MediaTypeResolver.resolve(url) == MediaKind.lottie;
+}
+
+class _UniversalMediaBlock extends ConsumerWidget {
+  const _UniversalMediaBlock({
+    required this.lessonId,
+    required this.block,
+    required this.isDark,
+    required this.accentColor,
+  });
+
+  final String lessonId;
   final LessonBlockEntity block;
   final bool isDark;
-
-  const _ImageBlock({required this.block, required this.isDark});
+  final Color accentColor;
 
   @override
-  Widget build(BuildContext context) {
-    final url = block.imageUrl ?? '';
-    final isSvg = url.toLowerCase().endsWith('.svg') || block.type == 'svg';
+  Widget build(BuildContext context, WidgetRef ref) {
+    final url = _blockVisualMediaUrl(block);
+    if (url == null) return const SizedBox.shrink();
 
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(16),
+    final lessons = ref.watch(lessonNotifierProvider).value ?? [];
+    final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+    final blockIndex = lesson?.blocks.indexOf(block) ?? -1;
+    final route = blockIndex >= 0
+        ? '/lesson/$lessonId/block/$blockIndex'
+        : null;
+    final caption = block.textLatin?.trim() ?? '';
+
+    final card = Container(
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+        borderRadius: BorderRadius.circular(22),
+        border: Border.all(color: accentColor.withValues(alpha: 0.16)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: isDark ? 0.22 : 0.06),
+            blurRadius: 16,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          isSvg
-              ? (kIsWeb
-                    ? Image.network(
-                        url,
-                        width: double.infinity,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            color: Colors.grey.withValues(alpha: 0.1),
-                            child: const Center(
-                              child: Icon(Icons.broken_image_rounded),
-                            ),
-                          );
-                        },
-                      )
-                    : SvgPicture.network(
-                        url,
-                        width: double.infinity,
-                        placeholderBuilder: (BuildContext context) => Container(
-                          height: 200,
-                          color: Colors.grey.withValues(alpha: 0.05),
-                          child: const Center(
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          ),
-                        ),
-                        errorBuilder: (context, error, stackTrace) {
-                          return Container(
-                            height: 200,
-                            color: Colors.grey.withValues(alpha: 0.1),
-                            child: const Center(
-                              child: Icon(Icons.broken_image_rounded),
-                            ),
-                          );
-                        },
-                      ))
-              : Image.network(
-                  url,
-                  width: double.infinity,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return Container(
-                      height: 200,
-                      color: Colors.grey.withValues(alpha: 0.1),
-                      child: const Center(
-                        child: Icon(Icons.broken_image_rounded),
-                      ),
-                    );
-                  },
+          SizedBox(
+            height: 220,
+            child: FullBleedHeroMedia(
+              animationUrl: _isLottieMedia(url) ? url : null,
+              imageUrl: url,
+              fallback: Icon(
+                Icons.perm_media_rounded,
+                size: 52,
+                color: accentColor.withValues(alpha: 0.55),
+              ),
+            ),
+          ),
+          if (caption.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              child: Text(
+                caption,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: FontWeight.w600,
+                  color: isDark ? Colors.white70 : Colors.black87,
                 ),
-          if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              block.textLatin!,
-              style: TextStyle(
-                fontSize: 14,
-                color: isDark ? Colors.white54 : Colors.black54,
-                fontStyle: FontStyle.italic,
+              ),
+            ),
+        ],
+      ),
+    );
+
+    if (route == null) return card;
+    return ScaleButton(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        context.push(route);
+      },
+      child: card,
+    );
+  }
+}
+
+class _AudioBlock extends ConsumerWidget {
+  const _AudioBlock({
+    required this.block,
+    required this.isDark,
+    required this.accentColor,
+  });
+
+  final LessonBlockEntity block;
+  final bool isDark;
+  final Color accentColor;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final audioUrl = block.audioUrl?.trim();
+    if (audioUrl == null || audioUrl.isEmpty) return const SizedBox.shrink();
+    final label = block.textLatin?.trim().isNotEmpty == true
+        ? block.textLatin!.trim()
+        : 'Play audio';
+
+    return ScaleButton(
+      onPressed: () {
+        HapticFeedback.lightImpact();
+        ref.read(audioServiceProvider).playUrl(audioUrl);
+      },
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.all(18),
+        decoration: BoxDecoration(
+          color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(color: accentColor.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.play_circle_fill_rounded, color: accentColor, size: 34),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontWeight: FontWeight.w800,
+                  color: isDark ? Colors.white : Colors.black87,
+                ),
               ),
             ),
           ],
-        ],
+        ),
       ),
     );
   }
@@ -511,251 +628,6 @@ class _QuizBlock extends StatelessWidget {
             const Icon(Icons.arrow_forward_rounded, color: Colors.white),
           ],
         ),
-      ),
-    );
-  }
-}
-
-/// Interactive Lottie animation block supporting play/pause on tap,
-/// double-tap reset and replay, speed multiplier selection, and loop toggling.
-class _LottieBlock extends StatefulWidget {
-  final LessonBlockEntity block;
-  final bool isDark;
-  final Color accentColor;
-
-  const _LottieBlock({
-    required this.block,
-    required this.isDark,
-    required this.accentColor,
-  });
-
-  @override
-  State<_LottieBlock> createState() => _LottieBlockState();
-}
-
-class _LottieBlockState extends State<_LottieBlock>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _controller;
-  bool _isPlaying = true;
-  bool _isLooping = true;
-  double _speed = 1.0;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    );
-    _controller.addStatusListener((status) {
-      if (status == AnimationStatus.completed) {
-        if (_isLooping) {
-          _controller.repeat();
-        } else {
-          setState(() {
-            _isPlaying = false;
-          });
-        }
-      }
-    });
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _togglePlay() {
-    HapticFeedback.lightImpact();
-    setState(() {
-      _isPlaying = !_isPlaying;
-      if (_isPlaying) {
-        _controller.forward();
-      } else {
-        _controller.stop();
-      }
-    });
-  }
-
-  void _resetAndPlay() {
-    HapticFeedback.mediumImpact();
-    _controller.reset();
-    _controller.forward();
-    setState(() {
-      _isPlaying = true;
-    });
-  }
-
-  void _setSpeed(double speed) {
-    HapticFeedback.selectionClick();
-    setState(() {
-      _speed = speed;
-      _controller.duration = Duration(milliseconds: (2000 / _speed).round());
-      if (_isPlaying) {
-        _controller.repeat();
-      }
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final animationUrl =
-        widget.block.data?['animationUrl'] as String? ?? widget.block.imageUrl;
-    if (animationUrl == null || animationUrl.isEmpty) {
-      return const SizedBox.shrink();
-    }
-
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: widget.isDark ? AppColors.darkSurfaceElevated : Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: Colors.grey.withValues(alpha: 0.1)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: widget.isDark ? 0.2 : 0.04),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
-          ),
-        ],
-      ),
-      child: Column(
-        children: [
-          GestureDetector(
-            onTap: _togglePlay,
-            onDoubleTap: _resetAndPlay,
-            child: Stack(
-              alignment: Alignment.center,
-              children: [
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(16),
-                  child: Lottie.network(
-                    animationUrl,
-                    width: double.infinity,
-                    height: 200,
-                    controller: _controller,
-                    onLoaded: (composition) {
-                      _controller.duration = composition.duration;
-                      _controller.repeat();
-                    },
-                    errorBuilder: (context, error, stackTrace) {
-                      return Container(
-                        height: 200,
-                        color: Colors.grey.withValues(alpha: 0.1),
-                        child: const Center(
-                          child: Icon(Icons.broken_image_rounded),
-                        ),
-                      );
-                    },
-                  ),
-                ),
-
-                // Play/Pause subtle floating state indicator overlay
-                AnimatedOpacity(
-                  opacity: _isPlaying ? 0.0 : 1.0,
-                  duration: const Duration(milliseconds: 300),
-                  child: Container(
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: const Icon(
-                      Icons.play_arrow_rounded,
-                      color: Colors.white,
-                      size: 28,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 12),
-
-          // Interactive controls bar
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              // Speed selector
-              Row(
-                children: [0.5, 1.0, 1.5, 2.0].map((s) {
-                  final isSelected = _speed == s;
-                  return GestureDetector(
-                    onTap: () => _setSpeed(s),
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 6),
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 8,
-                        vertical: 4,
-                      ),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? widget.accentColor
-                            : Colors.grey.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        '${s}x',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: isSelected
-                              ? Colors.white
-                              : (widget.isDark
-                                    ? Colors.white70
-                                    : Colors.black87),
-                        ),
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-
-              // Action buttons (Reset, Loop)
-              Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.replay_rounded, size: 20),
-                    onPressed: _resetAndPlay,
-                    tooltip: 'Reset animation',
-                  ),
-                  IconButton(
-                    icon: Icon(
-                      _isLooping
-                          ? Icons.loop_rounded
-                          : Icons.play_disabled_rounded,
-                      size: 20,
-                      color: _isLooping ? widget.accentColor : Colors.grey,
-                    ),
-                    onPressed: () {
-                      HapticFeedback.lightImpact();
-                      setState(() {
-                        _isLooping = !_isLooping;
-                      });
-                    },
-                    tooltip: 'Toggle loop',
-                  ),
-                ],
-              ),
-            ],
-          ),
-
-          if (widget.block.textLatin != null &&
-              widget.block.textLatin!.isNotEmpty) ...[
-            const SizedBox(height: 8),
-            Text(
-              widget.block.textLatin!,
-              style: TextStyle(
-                fontSize: 14,
-                color: widget.isDark ? Colors.white54 : Colors.black54,
-                fontStyle: FontStyle.italic,
-              ),
-            ),
-          ],
-        ],
       ),
     );
   }

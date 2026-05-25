@@ -92,6 +92,24 @@ void main() {
       );
       expect(err, isNull);
     });
+
+    test('accepts valid html', () {
+      final err = UploadRules.validate(
+        filename: 'interactive.html',
+        sizeBytes: 512 * 1024,
+        category: UploadCategory.html,
+      );
+      expect(err, isNull);
+    });
+
+    test('rejects oversized html', () {
+      final err = UploadRules.validate(
+        filename: 'large.html',
+        sizeBytes: 6 * 1024 * 1024,
+        category: UploadCategory.html,
+      );
+      expect(err, contains('too large'));
+    });
   });
 
   group('UploadRules.sanitizeFilename', () {

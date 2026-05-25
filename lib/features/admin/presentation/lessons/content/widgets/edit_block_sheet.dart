@@ -9,6 +9,7 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../../core/api/ai_service.dart';
 import '../../../../../../shared/providers/providers.dart';
+import '../../../../../../shared/utils/media_type_resolver.dart';
 import '../../../widgets/admin_form_widgets.dart';
 import '../../../letters/widgets/letter_form_sheet.dart';
 import '../../../numbers/widgets/number_form_sheet.dart';
@@ -94,6 +95,12 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
   }
 
   void _save() {
+    final mediaUrl = (_animationUrl != null && _animationUrl!.trim().isNotEmpty)
+        ? _animationUrl!.trim()
+        : ((_imageUrl != null && _imageUrl!.trim().isNotEmpty)
+              ? _imageUrl!.trim()
+              : null);
+
     final updatedBlock = LessonBlockEntity(
       type: widget.block.type,
       textOlChiki: olChikiCtrl.text.isEmpty ? null : olChikiCtrl.text,
@@ -112,6 +119,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
         ...?widget.block.data,
         'animationUrl': (_animationUrl != null && _animationUrl!.isNotEmpty)
             ? _animationUrl
+            : null,
+        'mediaType': mediaUrl != null
+            ? MediaTypeResolver.appwriteHeroMediaType(mediaUrl)
             : null,
         'quizRefId': quizRefCtrl.text.isNotEmpty ? quizRefCtrl.text : null,
         'pronunciation': _pronCtrl.text.trim().isNotEmpty
@@ -609,16 +619,33 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                     AdminMediaField(
                       label: 'Hero Media (Optional)',
                       subtitle:
-                          'Upload high-quality image, GIF, SVG, or Lottie (JSON) file',
-                      icon: Icons.image_rounded,
+                          'Supports image, WebP, GIF, SVG, Lottie, MP4, WebM, MOV, M4V, and HTML URLs.',
+                      icon: Icons.perm_media_rounded,
                       accent: const Color(0xFF6366F1),
                       currentUrl: _animationUrl ?? _imageUrl,
                       uploadFolder: 'lesson-media',
-                      fileType: FileType.any,
+                      fileType: FileType.custom,
+                      allowedExtensions: const [
+                        'png',
+                        'jpg',
+                        'jpeg',
+                        'webp',
+                        'gif',
+                        'svg',
+                        'json',
+                        'lottie',
+                        'mp4',
+                        'webm',
+                        'mov',
+                        'm4v',
+                        'html',
+                        'htm',
+                      ],
                       onUploaded: (url) {
                         setState(() {
                           if (url != null &&
-                              url.toLowerCase().endsWith('.json')) {
+                              MediaTypeResolver.resolve(url) ==
+                                  MediaKind.lottie) {
                             _animationUrl = url;
                             _imageUrl = null;
                           } else {
@@ -626,42 +653,6 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                             _animationUrl = null;
                           }
                         });
-                      },
-                      previewBuilder: (url) {
-                        final isLottie = url.toLowerCase().endsWith('.json');
-                        return Container(
-                          height: 120,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                              color: Colors.grey.withValues(alpha: 0.1),
-                            ),
-                          ),
-                          child: Center(
-                            child: isLottie
-                                ? Lottie.network(
-                                    url,
-                                    height: 100,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, _, _) => const Icon(
-                                      Icons.broken_image_rounded,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                  )
-                                : Image.network(
-                                    url,
-                                    height: 100,
-                                    fit: BoxFit.contain,
-                                    errorBuilder: (_, _, _) => const Icon(
-                                      Icons.broken_image_rounded,
-                                      size: 48,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                          ),
-                        );
                       },
                     ),
                   ],
@@ -681,12 +672,10 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       uploadFolder: block.type == 'svg'
                           ? 'lesson-svgs'
                           : 'lesson-images',
-                      fileType: block.type == 'svg'
-                          ? FileType.custom
-                          : FileType.image,
+                      fileType: FileType.custom,
                       allowedExtensions: block.type == 'svg'
                           ? const ['svg']
-                          : null,
+                          : const ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
                       onUploaded: (url) => setState(() => _imageUrl = url),
                       previewBuilder: (url) => ClipRRect(
                         borderRadius: BorderRadius.circular(10),
@@ -734,22 +723,9 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       accent: const Color(0xFFF59E0B),
                       currentUrl: _imageUrl,
                       uploadFolder: 'lesson-video',
-                      fileType: FileType.video,
+                      fileType: FileType.custom,
+                      allowedExtensions: const ['mp4', 'webm', 'mov', 'm4v'],
                       onUploaded: (url) => setState(() => _imageUrl = url),
-                      previewBuilder: (url) => Container(
-                        height: 120,
-                        decoration: BoxDecoration(
-                          color: Colors.black.withValues(alpha: 0.05),
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        child: const Center(
-                          child: Icon(
-                            Icons.play_circle_fill_rounded,
-                            size: 48,
-                            color: Color(0xFFF59E0B),
-                          ),
-                        ),
-                      ),
                     ),
                   ],
                   if (block.type == 'quiz') ...[
@@ -767,7 +743,7 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       currentUrl: _animationUrl,
                       uploadFolder: 'animations',
                       fileType: FileType.custom,
-                      allowedExtensions: const ['json'],
+                      allowedExtensions: const ['json', 'lottie'],
                       onUploaded: (url) => setState(() => _animationUrl = url),
                       previewBuilder: (url) => Container(
                         height: 120,

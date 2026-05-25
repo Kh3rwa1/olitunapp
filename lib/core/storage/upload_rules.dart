@@ -14,6 +14,7 @@ class UploadRules {
   static const int maxAudioBytes = 20 * 1024 * 1024; // 20 MB
   static const int maxAnimationBytes = 2 * 1024 * 1024; // 2 MB
   static const int maxVideoBytes = 50 * 1024 * 1024; // 50 MB
+  static const int maxHtmlBytes = 5 * 1024 * 1024; // 5 MB
 
   /// Allowed extensions per category.
   static const Set<String> imageExtensions = {
@@ -33,6 +34,7 @@ class UploadRules {
   };
   static const Set<String> animationExtensions = {'json', 'lottie'};
   static const Set<String> videoExtensions = {'mp4', 'webm', 'mov', 'm4v'};
+  static const Set<String> htmlExtensions = {'html', 'htm'};
 
   /// Characters allowed in filenames after sanitisation.
   static final RegExp _safeFilename = RegExp(r'^[A-Za-z0-9._-]+$');
@@ -108,6 +110,8 @@ class UploadRules {
         return animationExtensions;
       case UploadCategory.video:
         return videoExtensions;
+      case UploadCategory.html:
+        return htmlExtensions;
     }
   }
 
@@ -121,9 +125,11 @@ class UploadRules {
         return maxAnimationBytes;
       case UploadCategory.video:
         return maxVideoBytes;
+      case UploadCategory.html:
+        return maxHtmlBytes;
     }
   }
 }
 
 /// Upload content categories.
-enum UploadCategory { image, audio, animation, video }
+enum UploadCategory { image, audio, animation, video, html }

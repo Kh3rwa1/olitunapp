@@ -160,7 +160,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
       await authRepo.signInAnonymously();
       ref.invalidate(isAuthenticatedProvider);
     } catch (e) {
-      // Gracefully catch any errors (e.g. offline/network failures) 
+      // Gracefully catch any errors (e.g. offline/network failures)
       // and continue to ensure guest mode is still usable offline.
     } finally {
       if (mounted) {

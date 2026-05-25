@@ -92,6 +92,163 @@ class ContentRepository {
     }
   }
 
+  static final List<ContentItem> _fallbackSeedItems = [
+    ContentItem(
+      id: 'seed_letter_la',
+      kind: ContentKind.letter,
+      categoryId: 'cat_alphabets',
+      title: 'La',
+      titleOlChiki: 'ᱞ',
+      subtitle: 'Letter La',
+      olChiki: 'ᱞ',
+      order: 1,
+      isPublished: true,
+      tags: const ['alphabet', 'basic'],
+      blocks: const [
+        TextBlock(
+          id: 'b_letter_la_1',
+          order: 0,
+          markdown: '# Letter La (ᱞ)\n\nThe letter **La** represents the sound /l/ in Ol Chiki.',
+        ),
+      ],
+      tracing: const TracingConfig(
+        glyph: 'ᱞ',
+        strokes: [
+          TracingStroke(
+            id: 'stroke_la_fallback',
+            order: 0,
+            path: [
+              TracingPoint(x: 0.2, y: 0.2),
+              TracingPoint(x: 0.8, y: 0.2),
+              TracingPoint(x: 0.8, y: 0.8),
+              TracingPoint(x: 0.2, y: 0.8),
+              TracingPoint(x: 0.2, y: 0.2),
+            ],
+            direction: TracingDirection.clockwise,
+            hintText: 'Trace the letter La',
+          ),
+        ],
+      ),
+      updatedAt: DateTime(2026),
+    ),
+    ContentItem(
+      id: 'seed_number_1',
+      kind: ContentKind.number,
+      categoryId: 'cat_numbers',
+      title: 'One',
+      titleOlChiki: 'ᱢᱤᱫ',
+      subtitle: 'Numeral 1',
+      olChiki: '᱑',
+      order: 1,
+      isPublished: true,
+      tags: const ['number', 'counting'],
+      blocks: const [
+        TextBlock(
+          id: 'b_number_1_1',
+          order: 0,
+          markdown: '# Numeral 1 (᱑)\n\nThis represents the number **One** (ᱢᱤᱫ) in Ol Chiki.',
+        ),
+      ],
+      tracing: const TracingConfig(
+        glyph: '᱑',
+        strokes: [
+          TracingStroke(
+            id: 'stroke_one_fallback',
+            order: 0,
+            path: [
+              TracingPoint(x: 0.2, y: 0.2),
+              TracingPoint(x: 0.8, y: 0.2),
+              TracingPoint(x: 0.8, y: 0.8),
+              TracingPoint(x: 0.2, y: 0.8),
+              TracingPoint(x: 0.2, y: 0.2),
+            ],
+            direction: TracingDirection.clockwise,
+            hintText: 'Trace the number One',
+          ),
+        ],
+      ),
+      updatedAt: DateTime(2026),
+    ),
+    ContentItem(
+      id: 'seed_word_johar',
+      kind: ContentKind.word,
+      categoryId: 'seed_words',
+      title: 'Johar',
+      titleOlChiki: 'ᱡᱚᱦᱟᱨ',
+      subtitle: 'Hello / Greetings',
+      olChiki: 'ᱡᱚᱦᱟᱨ',
+      order: 1,
+      isPublished: true,
+      tags: const ['vocabulary', 'greeting'],
+      blocks: const [
+        TextBlock(
+          id: 'b_word_johar_1',
+          order: 0,
+          markdown: '# Johar (ᱡᱚᱦᱟᱨ)\n\n**Johar** is the standard greeting in Santali, meaning "Hello" or "Greetings". It conveys deep respect.',
+        ),
+      ],
+      updatedAt: DateTime(2026),
+    ),
+    ContentItem(
+      id: 'seed_sentence_celeka',
+      kind: ContentKind.sentence,
+      categoryId: 'seed_sentences',
+      title: 'How are you?',
+      titleOlChiki: 'ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?',
+      subtitle: 'Am celeka menama?',
+      olChiki: 'ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?',
+      order: 1,
+      isPublished: true,
+      tags: const ['conversation', 'basic'],
+      blocks: const [
+        TextBlock(
+          id: 'b_sentence_celeka_1',
+          order: 0,
+          markdown: '# How are you?\n\n**ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?** (Am celeka menama?) is used to ask "How are you?" to one person.',
+        ),
+      ],
+      updatedAt: DateTime(2026),
+    ),
+    ContentItem(
+      id: 'seed_lesson_basics',
+      kind: ContentKind.lesson,
+      categoryId: 'cat_alphabets',
+      title: 'Basics of Ol Chiki',
+      titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱢᱩᱞ',
+      subtitle: 'Introductory lesson',
+      order: 1,
+      isPublished: true,
+      tags: const ['basics', 'intro'],
+      blocks: const [
+        TextBlock(
+          id: 'b_lesson_basics_1',
+          order: 0,
+          markdown: '# Basics of Ol Chiki\n\nLearn the foundational concepts of the Ol Chiki writing system.',
+        ),
+      ],
+      updatedAt: DateTime(2026),
+    ),
+    ContentItem(
+      id: 'seed_rhyme_traditional',
+      kind: ContentKind.rhyme,
+      categoryId: 'cat_greetings',
+      title: 'Traditional Song',
+      titleOlChiki: 'ᱫᱚᱝ ᱥᱮᱨᱮᱧ',
+      subtitle: 'A beautiful traditional rhyme',
+      order: 1,
+      isPublished: true,
+      tags: const ['rhyme', 'culture'],
+      blocks: const [
+        TextBlock(
+          id: 'b_rhyme_traditional_1',
+          order: 0,
+          markdown: '# Traditional Santali Rhyme\n\nEnjoy learning through songs and stories passed down through generations.',
+        ),
+      ],
+      updatedAt: DateTime(2026),
+    ),
+  ];
+
   Future<Either<Failure, List<ContentItem>>> _getCachedList(
     ContentKind kind,
     String? categoryId,
@@ -107,8 +264,33 @@ class ContentRepository {
       if (cached != null && cached.isNotEmpty) {
         return right(cached);
       }
+
+      final fallbackItems = _fallbackSeedItems.where((item) {
+        final matchesKind = item.kind == kind;
+        if (categoryId != null && categoryId.isNotEmpty) {
+          return matchesKind && item.categoryId == categoryId;
+        }
+        return matchesKind;
+      }).toList();
+
+      if (fallbackItems.isNotEmpty) {
+        return right(fallbackItems);
+      }
+
       return left(ServerFailure(message: originalError));
     } catch (e) {
+      final fallbackItems = _fallbackSeedItems.where((item) {
+        final matchesKind = item.kind == kind;
+        if (categoryId != null && categoryId.isNotEmpty) {
+          return matchesKind && item.categoryId == categoryId;
+        }
+        return matchesKind;
+      }).toList();
+
+      if (fallbackItems.isNotEmpty) {
+        return right(fallbackItems);
+      }
+
       return left(CacheFailure(message: 'Failed to read cached content: $e'));
     }
   }
@@ -153,8 +335,27 @@ class ContentRepository {
       if (cached != null) {
         return right(cached);
       }
+
+      final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
+        (item) => item?.id == id && item?.kind == kind,
+        orElse: () => null,
+      );
+
+      if (fallbackItem != null) {
+        return right(fallbackItem);
+      }
+
       return left(ServerFailure(message: originalError));
     } catch (e) {
+      final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
+        (item) => item?.id == id && item?.kind == kind,
+        orElse: () => null,
+      );
+
+      if (fallbackItem != null) {
+        return right(fallbackItem);
+      }
+
       return left(CacheFailure(message: 'Failed to read cached item: $e'));
     }
   }

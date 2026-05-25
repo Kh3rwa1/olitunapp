@@ -186,6 +186,15 @@ class AppwriteAuthService {
     }
   }
 
+  /// Sign in anonymously (for guest/offline mode access to remote Appwrite collections)
+  Future<models.Session> signInAnonymously() async {
+    AppLogger.debug('Appwrite: Creating anonymous session');
+    final session = await _account.createAnonymousSession();
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_hasLocalSessionKey, true);
+    return session;
+  }
+
   // ─── Email OTP ───
 
   /// Send OTP code to email. Returns userId needed for session creation.

@@ -22,6 +22,7 @@ abstract class AuthRemoteDataSource {
   Future<String> sendOtp(String email);
   Future<UserModel> verifyOtp({required String userId, required String secret});
   Future<void> signInWithGoogle();
+  Future<UserModel> signInAnonymously();
   Future<Map<String, dynamic>> getUserPrefs();
   Future<void> updateUserPrefs(Map<String, dynamic> prefs);
 }
@@ -200,6 +201,22 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     } on AppwriteException catch (e) {
       throw ServerException(
         message: e.message ?? 'Google sign in failed',
+        code: e.code,
+      );
+    } catch (e) {
+      throw ServerException(message: e.toString());
+    }
+  }
+
+  @override
+  Future<UserModel> signInAnonymously() async {
+    try {
+      await authService.signInAnonymously();
+      final user = await account.get();
+      return UserModel.fromJson(user.toMap());
+    } on AppwriteException catch (e) {
+      throw ServerException(
+        message: e.message ?? 'Anonymous sign in failed',
         code: e.code,
       );
     } catch (e) {

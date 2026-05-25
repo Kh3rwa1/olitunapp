@@ -193,6 +193,20 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<Either<Failure, UserEntity>> signInAnonymously() async {
+    if (await networkInfo.isConnected) {
+      try {
+        final result = await remoteDataSource.signInAnonymously();
+        return Right(result.toEntity());
+      } on ServerException catch (e) {
+        return Left(_serverFailure(e));
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
   Future<Either<Failure, Map<String, dynamic>>> getUserPrefs() async {
     if (await networkInfo.isConnected) {
       try {

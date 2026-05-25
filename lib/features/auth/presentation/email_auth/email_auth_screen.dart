@@ -150,11 +150,30 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
 
   Future<void> _handleSkip() async {
     HapticFeedback.lightImpact();
-    final showOnboarding = ref.read(onboardingProvider);
-    if (showOnboarding) {
-      context.go('/onboarding');
-    } else {
-      context.go('/');
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final authRepo = ref.read(authRepositoryProvider);
+      await authRepo.signInAnonymously();
+      ref.invalidate(isAuthenticatedProvider);
+    } catch (e) {
+      // Gracefully catch any errors (e.g. offline/network failures) 
+      // and continue to ensure guest mode is still usable offline.
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+        final showOnboarding = ref.read(onboardingProvider);
+        if (showOnboarding) {
+          context.go('/onboarding');
+        } else {
+          context.go('/');
+        }
+      }
     }
   }
 

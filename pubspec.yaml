@@ -30,7 +30,7 @@ dependencies:
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
   flutter_svg: ^2.0.17
-  fl_chart: ^0.70.2
+  fl_chart: ^1.2.0
 
   # Audio & Video
   audioplayers: ^6.6.0

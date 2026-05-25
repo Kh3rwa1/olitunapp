@@ -58,7 +58,6 @@ class CategoryRepositoryImpl implements CategoryRepository {
           titleLatin: 'Alphabets',
           iconName: 'alphabet',
           gradientPreset: 'sky',
-          order: 0,
           totalLessons: 5,
         ),
         CategoryEntity(

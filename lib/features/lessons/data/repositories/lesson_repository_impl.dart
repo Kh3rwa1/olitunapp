@@ -67,7 +67,6 @@ class LessonRepositoryImpl implements LessonRepository {
       categoryId: 'cat_alphabets',
       titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱢᱩᱞ',
       titleLatin: 'Basics of Ol Chiki',
-      order: 0,
       blocks: [
         LessonBlockEntity(
           type: 'text',
@@ -97,7 +96,6 @@ class LessonRepositoryImpl implements LessonRepository {
       categoryId: 'cat_numbers',
       titleOlChiki: '᱐-᱙ ᱮᱞᱠᱷᱟ',
       titleLatin: 'Numbers 0-9',
-      order: 0,
       blocks: [
         LessonBlockEntity(
           type: 'text',

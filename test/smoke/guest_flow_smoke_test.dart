@@ -37,8 +37,8 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             // Enforce Guest Mode (user is not logged in)
-            isAuthenticatedProvider.overrideWith((ref) => Future.value(false)),
-            currentUserProvider.overrideWith((ref) => Future.value(null)),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
 
             // Override stats provider with empty guest stats
             userStatsProvider.overrideWith((ref) {

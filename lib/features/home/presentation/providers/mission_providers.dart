@@ -58,20 +58,17 @@ class CurrentDateNotifier extends StateNotifier<String> {
 class DailyMissionNotifier extends StateNotifier<bool> {
   final Ref _ref;
   final String _prefKey;
+  final String _today;
 
-  DailyMissionNotifier(this._ref, this._prefKey) : super(false) {
+  DailyMissionNotifier(this._ref, this._prefKey, this._today) : super(false) {
     _loadState();
-    _ref.listen<String>(currentDateProvider, (previous, next) {
-      _loadState();
-    });
   }
 
   void _loadState() {
     try {
       final prefs = _ref.read(sharedPreferencesProvider);
       final savedDate = prefs.getString(_prefKey) ?? '';
-      final today = _ref.read(currentDateProvider);
-      state = savedDate == today;
+      state = savedDate == _today;
     } catch (_) {
       state = false;
     }
@@ -81,8 +78,7 @@ class DailyMissionNotifier extends StateNotifier<bool> {
     try {
       final prefs = _ref.read(sharedPreferencesProvider);
       if (completed) {
-        final today = _ref.read(currentDateProvider);
-        await prefs.setString(_prefKey, today);
+        await prefs.setString(_prefKey, _today);
         state = true;
       } else {
         await prefs.remove(_prefKey);
@@ -100,20 +96,24 @@ class DailyMissionNotifier extends StateNotifier<bool> {
 
 final lessonCompletedTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      return DailyMissionNotifier(ref, 'mission_lesson_completed_date');
+      final today = ref.watch(currentDateProvider);
+      return DailyMissionNotifier(ref, 'mission_lesson_completed_date', today);
     });
 
 final quizTakenTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      return DailyMissionNotifier(ref, 'mission_quiz_taken_date');
+      final today = ref.watch(currentDateProvider);
+      return DailyMissionNotifier(ref, 'mission_quiz_taken_date', today);
     });
 
 final bakhedListenedTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      return DailyMissionNotifier(ref, 'mission_bakhed_listened_date');
+      final today = ref.watch(currentDateProvider);
+      return DailyMissionNotifier(ref, 'mission_bakhed_listened_date', today);
     });
 
 final quickWinCompletedTodayProvider =
     StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      return DailyMissionNotifier(ref, 'mission_quick_win_completed_date');
+      final today = ref.watch(currentDateProvider);
+      return DailyMissionNotifier(ref, 'mission_quick_win_completed_date', today);
     });

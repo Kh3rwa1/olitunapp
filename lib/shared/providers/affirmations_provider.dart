@@ -104,16 +104,14 @@ final todayAffirmationProvider = Provider<AsyncValue<AffirmationModel?>>((ref) {
 
 final todayAffirmationReadProvider =
     StateNotifierProvider<TodayAffirmationReadNotifier, bool>((ref) {
-      final notifier = TodayAffirmationReadNotifier(ref);
-      ref.listen(todayAffirmationProvider, (prev, next) {
-        notifier._load();
-      });
-      return notifier;
+      final todayAff = ref.watch(todayAffirmationProvider).value;
+      return TodayAffirmationReadNotifier(ref, todayAff?.id);
     });
 
 class TodayAffirmationReadNotifier extends StateNotifier<bool> {
   final Ref ref;
-  TodayAffirmationReadNotifier(this.ref) : super(false) {
+  final String? todayAffId;
+  TodayAffirmationReadNotifier(this.ref, this.todayAffId) : super(false) {
     _load();
   }
 
@@ -123,19 +121,17 @@ class TodayAffirmationReadNotifier extends StateNotifier<bool> {
   }
 
   Future<void> _load() async {
-    final todayAff = ref.read(todayAffirmationProvider).value;
-    if (todayAff == null) return;
+    if (todayAffId == null) return;
     final data = await CacheService.get(
-      'affirmation_read_${_dateKey}_${todayAff.id}',
+      'affirmation_read_${_dateKey}_$todayAffId',
       (json) => json['read'] as bool,
     );
     state = data ?? false;
   }
 
   Future<void> markAsRead() async {
-    final todayAff = ref.read(todayAffirmationProvider).value;
-    if (todayAff == null) return;
-    await CacheService.set('affirmation_read_${_dateKey}_${todayAff.id}', {
+    if (todayAffId == null) return;
+    await CacheService.set('affirmation_read_${_dateKey}_$todayAffId', {
       'read': true,
     }, ttl: const Duration(days: 2));
     state = true;

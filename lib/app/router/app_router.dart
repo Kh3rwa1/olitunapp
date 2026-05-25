@@ -36,7 +36,7 @@ import '../../features/admin/presentation/quizzes/admin_quizzes_screen.dart';
 import '../../features/admin/presentation/numbers/admin_numbers_screen.dart';
 import '../../features/admin/presentation/words/admin_words_screen.dart';
 import '../../features/admin/presentation/sentences/admin_sentences_screen.dart';
-import '../../features/admin/presentation/admin_rhymes_screen.dart';
+import '../../features/admin/presentation/rhymes/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
 import '../../features/admin/presentation/affirmations/admin_affirmations_screen.dart';

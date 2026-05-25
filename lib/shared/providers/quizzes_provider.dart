@@ -21,8 +21,12 @@ final quizzesProvider =
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   QuizzesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadQuizzes();
-    ref.listen(wordsProvider, (_, _) => _updateDynamicQuizzes());
-    ref.listen(sentencesProvider, (_, _) => _updateDynamicQuizzes());
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.listen(wordsProvider, (_, _) => _updateDynamicQuizzes());
+      ref.listen(sentencesProvider, (_, _) => _updateDynamicQuizzes());
+      _updateDynamicQuizzes();
+    });
   }
 
   final Ref ref;

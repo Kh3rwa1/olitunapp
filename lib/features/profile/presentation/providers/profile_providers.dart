@@ -119,24 +119,27 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   void _setupConnectivityListener() {
     final ref = _ref;
     if (ref == null) return;
-    ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
-      previous,
-      next,
-    ) {
-      next.whenOrNull(
-        data: (results) {
-          final isOffline =
-              results.contains(ConnectivityResult.none) || results.isEmpty;
-          final previouslyOffline =
-              previous == null ||
-              previous.valueOrNull == null ||
-              previous.valueOrNull!.contains(ConnectivityResult.none) ||
-              previous.valueOrNull!.isEmpty;
-          if (!isOffline && previouslyOffline) {
-            syncPendingStats();
-          }
-        },
-      );
+    Future.microtask(() {
+      if (!mounted) return;
+      ref.listen<AsyncValue<List<ConnectivityResult>>>(appConnectivityProvider, (
+        previous,
+        next,
+      ) {
+        next.whenOrNull(
+          data: (results) {
+            final isOffline =
+                results.contains(ConnectivityResult.none) || results.isEmpty;
+            final previouslyOffline =
+                previous == null ||
+                previous.valueOrNull == null ||
+                previous.valueOrNull!.contains(ConnectivityResult.none) ||
+                previous.valueOrNull!.isEmpty;
+            if (!isOffline && previouslyOffline) {
+              syncPendingStats();
+            }
+          },
+        );
+      });
     });
   }
 

@@ -33,86 +33,105 @@ class LessonFormSheet extends ConsumerStatefulWidget {
 
 class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
   ContentItem? _initialItem;
+  bool _isLoading = false;
 
   @override
   void initState() {
     super.initState();
+    _loadInitialItem();
+  }
+
+  Future<void> _loadInitialItem() async {
     final l = widget.lesson;
-    if (l != null) {
-      final heroMediaUrl =
-          l.data?['heroMediaUrl'] ??
-          l.data?['videoUrl'] ??
-          l.data?['animationUrl'] ??
-          l.data?['imageUrl'] ??
-          l.data?['thumbnailUrl'] as String?;
-      final heroMediaType = l.data?['heroMediaType'] as String?;
-      final heroPosterUrl = l.data?['heroPosterUrl'] as String?;
+    if (l == null) return;
 
-      ContentMedia? heroMedia;
-      if (heroMediaUrl != null && heroMediaUrl.isNotEmpty) {
-        heroMedia = ContentMedia(
-          url: heroMediaUrl,
-          fileId: '',
-          kind: heroMediaType != null
-              ? ContentMediaKind.fromString(heroMediaType)
-              : ContentMediaKind.image,
-          posterUrl: heroPosterUrl,
-        );
-      }
+    setState(() {
+      _isLoading = true;
+    });
 
-      final blocks = <ContentBlock>[];
-      for (int i = 0; i < l.blocks.length; i++) {
-        final b = l.blocks[i];
-        if (b.type == 'text') {
-          blocks.add(
-            TextBlock(
-              id: const Uuid().v4(),
-              order: i,
-              markdown: b.textLatin ?? '',
-            ),
-          );
-        } else if (b.type == 'image') {
-          blocks.add(
-            ImageBlock(
-              id: const Uuid().v4(),
-              order: i,
-              media: ContentMedia(
-                url: b.imageUrl ?? '',
-                fileId: '',
-                kind: ContentMediaKind.image,
-              ),
-            ),
-          );
-        } else if (b.type == 'audio') {
-          blocks.add(
-            AudioBlock(
-              id: const Uuid().v4(),
-              order: i,
-              media: ContentMedia(
-                url: b.audioUrl ?? '',
-                fileId: '',
-                kind: ContentMediaKind.audio,
-              ),
-            ),
+    final repo = ref.read(contentRepositoryProvider);
+    final res = await repo.get(ContentKind.lesson, l.id);
+
+    res.fold(
+      (failure) {
+        // Fallback to legacy synthesis
+        _synthesizeLegacy(l);
+      },
+      (item) {
+        if (item.blocks.isNotEmpty) {
+          _initialItem = item;
+        } else {
+          // Fallback to legacy synthesis for blocks, but read heroMedia and subtitle directly from the fetched item
+          _synthesizeLegacy(
+            l,
+            heroMedia: item.heroMedia,
+            subtitle: item.subtitle,
           );
         }
-      }
+      },
+    );
 
-      _initialItem = ContentItem(
-        id: l.id,
-        kind: ContentKind.lesson,
-        categoryId: l.categoryId,
-        title: l.titleLatin,
-        titleOlChiki: l.titleOlChiki,
-        subtitle: l.description,
-        heroMedia: heroMedia,
-        blocks: blocks,
-        order: l.order,
-        isPublished: l.isActive,
-        updatedAt: DateTime.now(),
-      );
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
+
+  void _synthesizeLegacy(LessonEntity l, {ContentMedia? heroMedia, String? subtitle}) {
+    final blocks = <ContentBlock>[];
+    for (int i = 0; i < l.blocks.length; i++) {
+      final b = l.blocks[i];
+      if (b.type == 'text') {
+        blocks.add(
+          TextBlock(
+            id: const Uuid().v4(),
+            order: i,
+            markdown: b.textLatin ?? '',
+          ),
+        );
+      } else if (b.type == 'image') {
+        blocks.add(
+          ImageBlock(
+            id: const Uuid().v4(),
+            order: i,
+            media: ContentMedia(
+              url: b.imageUrl ?? '',
+              fileId: '',
+              kind: ContentMediaKind.image,
+            ),
+          ),
+        );
+      } else if (b.type == 'audio') {
+        blocks.add(
+          AudioBlock(
+            id: const Uuid().v4(),
+            order: i,
+            media: ContentMedia(
+              url: b.audioUrl ?? '',
+              fileId: '',
+              kind: ContentMediaKind.audio,
+            ),
+          ),
+        );
+      }
+    }
+
+    _initialItem = ContentItem(
+      id: l.id,
+      kind: ContentKind.lesson,
+      categoryId: l.categoryId,
+      title: l.titleLatin,
+      titleOlChiki: l.titleOlChiki,
+      subtitle: subtitle ?? l.description,
+      heroMedia: heroMedia,
+      blocks: blocks,
+      order: l.order,
+      isPublished: l.isActive,
+      updatedAt: DateTime.now(),
+    );
+  }
+
 
   Future<void> _onSubmit(ContentItem item) async {
     final repo = ref.read(contentRepositoryProvider);
@@ -161,12 +180,14 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
           ),
           const Divider(),
           Expanded(
-            child: ContentForm(
-              kind: ContentKind.lesson,
-              categoryId: widget.initialCategoryId,
-              initial: _initialItem,
-              onSubmit: _onSubmit,
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ContentForm(
+                    kind: ContentKind.lesson,
+                    categoryId: widget.initialCategoryId,
+                    initial: _initialItem,
+                    onSubmit: _onSubmit,
+                  ),
           ),
         ],
       ),

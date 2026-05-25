@@ -743,8 +743,15 @@ class ContentItem extends Equatable {
     }
   }
 
-  factory ContentItem.fromJson(Map<String, dynamic> json, [String? docId]) {
-    final rawKind = json['kind'] as String? ?? 'lesson';
+  factory ContentItem.fromJson(
+    Map<String, dynamic> json, [
+    String? docId,
+    ContentKind? expectedKind,
+  ]) {
+    // Appwrite collection documents intentionally do not store a `kind`
+    // attribute. The repository knows which collection it queried and passes
+    // [expectedKind] so that legacy collection-specific keys round-trip safely.
+    final rawKind = expectedKind?.name ?? json['kind'] as String? ?? 'lesson';
     final parsedKind = ContentKind.fromString(rawKind);
 
     final rawTracing = json['tracing'];
@@ -762,8 +769,6 @@ class ContentItem extends Equatable {
         parsedTracing = TracingConfig.fromJson(rawTracing);
       }
     }
-
-    validate(parsedKind, parsedTracing);
 
     final rawHeroMedia = json['hero_media'] ?? json['heroMedia'];
     ContentMedia? parsedHeroMedia;
@@ -800,7 +805,8 @@ class ContentItem extends Equatable {
       }
     }
 
-    final rawUpdatedAt = json['updatedAt'] ?? json['updated_at'];
+    final rawUpdatedAt =
+        json['updatedAt'] ?? json['updated_at'] ?? json[r'$updatedAt'];
     DateTime parsedUpdatedAt = DateTime.now();
     if (rawUpdatedAt != null) {
       if (rawUpdatedAt is String) {
@@ -831,7 +837,14 @@ class ContentItem extends Equatable {
       }
     }
 
-    final rawCategoryId = json['category_id'] ?? json['categoryId'];
+    final rawCategoryId =
+        json['category_id'] ??
+        json['categoryId'] ??
+        ((parsedKind == ContentKind.word ||
+                parsedKind == ContentKind.sentence ||
+                parsedKind == ContentKind.rhyme)
+            ? json['category']
+            : null);
     String parsedCategoryId = '';
     if (rawCategoryId is String) {
       parsedCategoryId = rawCategoryId;
@@ -840,22 +853,121 @@ class ContentItem extends Equatable {
           (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
     }
 
-    // The 'lessons' Appwrite collection uses 'titleLatin' as the primary title
-    // field name; all other collections use 'title'. Accept both so that
-    // ContentItem can round-trip through any collection schema.
-    final resolvedTitle = (json['title'] as String?)?.isNotEmpty == true
-        ? json['title'] as String
-        : (json['titleLatin'] as String? ?? '');
+    String? firstString(List<dynamic> values) {
+      for (final value in values) {
+        if (value is String && value.isNotEmpty) return value;
+      }
+      return null;
+    }
+
+    var resolvedTitle = firstString([json['title'], json['titleLatin']]) ?? '';
+    var resolvedTitleOlChiki = firstString([
+      json['title_ol_chiki'],
+      json['titleOlChiki'],
+    ]);
+    var resolvedSubtitle = json['subtitle'] as String?;
+    var resolvedOlChiki = firstString([json['ol_chiki'], json['olChiki']]);
+
+    switch (parsedKind) {
+      case ContentKind.lesson:
+        resolvedTitle =
+            firstString([json['title'], json['titleLatin']]) ?? resolvedTitle;
+        resolvedSubtitle =
+            firstString([json['subtitle'], json['description']]) ??
+            resolvedSubtitle;
+        break;
+      case ContentKind.letter:
+        resolvedTitle =
+            firstString([json['title'], json['transliterationLatin']]) ??
+            resolvedTitle;
+        resolvedTitleOlChiki ??= json['charOlChiki'] as String?;
+        resolvedOlChiki ??= json['charOlChiki'] as String?;
+        resolvedSubtitle =
+            firstString([
+              json['subtitle'],
+              json['exampleWordLatin'],
+              json['exampleWordOlChiki'],
+            ]) ??
+            resolvedSubtitle;
+        break;
+      case ContentKind.number:
+        resolvedTitle =
+            firstString([json['title'], json['nameLatin']]) ?? resolvedTitle;
+        resolvedTitleOlChiki ??= json['nameOlChiki'] as String?;
+        resolvedOlChiki ??= json['numeral'] as String?;
+        break;
+      case ContentKind.word:
+        resolvedTitle =
+            firstString([json['title'], json['wordLatin']]) ?? resolvedTitle;
+        resolvedTitleOlChiki ??= json['wordOlChiki'] as String?;
+        resolvedOlChiki ??= json['wordOlChiki'] as String?;
+        resolvedSubtitle =
+            firstString([json['subtitle'], json['meaning']]) ??
+            resolvedSubtitle;
+        break;
+      case ContentKind.sentence:
+        resolvedTitle =
+            firstString([json['title'], json['sentenceLatin']]) ??
+            resolvedTitle;
+        resolvedTitleOlChiki ??= json['sentenceOlChiki'] as String?;
+        resolvedOlChiki ??= json['sentenceOlChiki'] as String?;
+        resolvedSubtitle =
+            firstString([json['subtitle'], json['meaning']]) ??
+            resolvedSubtitle;
+        break;
+      case ContentKind.rhyme:
+        resolvedTitle =
+            firstString([json['title'], json['titleLatin']]) ?? resolvedTitle;
+        resolvedOlChiki ??= json['contentOlChiki'] as String?;
+        resolvedSubtitle =
+            firstString([json['subtitle'], json['contentLatin']]) ??
+            resolvedSubtitle;
+        break;
+    }
+
+    if (parsedHeroMedia == null) {
+      String? legacyMediaUrl;
+      ContentMediaKind? legacyMediaKind;
+      if (parsedKind == ContentKind.lesson) {
+        legacyMediaUrl = firstString([
+          json['heroMediaUrl'],
+          json['thumbnailUrl'],
+        ]);
+        final rawMediaType = json['heroMediaType'] as String?;
+        if (rawMediaType != null) {
+          try {
+            legacyMediaKind = ContentMediaKind.fromString(rawMediaType);
+          } catch (_) {}
+        }
+        legacyMediaKind ??= ContentMediaKind.image;
+      } else if (firstString([json['animationUrl']]) != null) {
+        legacyMediaUrl = json['animationUrl'] as String;
+        legacyMediaKind = ContentMediaKind.lottie;
+      } else if (firstString([json['imageUrl'], json['thumbnailUrl']]) !=
+          null) {
+        legacyMediaUrl = firstString([json['imageUrl'], json['thumbnailUrl']]);
+        legacyMediaKind = ContentMediaKind.image;
+      } else if (firstString([json['audioUrl']]) != null) {
+        legacyMediaUrl = json['audioUrl'] as String;
+        legacyMediaKind = ContentMediaKind.audio;
+      }
+      if (legacyMediaUrl != null && legacyMediaKind != null) {
+        parsedHeroMedia = ContentMedia(
+          url: legacyMediaUrl,
+          fileId: '',
+          kind: legacyMediaKind,
+        );
+      }
+    }
 
     return ContentItem(
       id: docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '',
       kind: parsedKind,
       categoryId: parsedCategoryId,
       title: resolvedTitle,
-      titleOlChiki:
-          json['title_ol_chiki'] as String? ?? json['titleOlChiki'] as String?,
-      subtitle: json['subtitle'] as String?,
-      olChiki: json['ol_chiki'] as String? ?? json['olChiki'] as String?,
+      titleOlChiki: resolvedTitleOlChiki,
+      subtitle: resolvedSubtitle,
+      olChiki: resolvedOlChiki,
       heroMedia: parsedHeroMedia,
       blocks: parsedBlocks,
       tracing: parsedTracing,
@@ -863,7 +975,8 @@ class ContentItem extends Equatable {
       isPublished:
           json['is_published'] as bool? ??
           json['isPublished'] as bool? ??
-          false,
+          json['isActive'] as bool? ??
+          true,
       isPremium:
           json['is_premium'] as bool? ?? json['isPremium'] as bool? ?? false,
       tags: parsedTags,
@@ -897,8 +1010,13 @@ class ContentItem extends Equatable {
   }
 
   Map<String, dynamic> toAppwrite() {
+    final requiresCategory =
+        kind == ContentKind.lesson ||
+        kind == ContentKind.word ||
+        kind == ContentKind.sentence ||
+        kind == ContentKind.rhyme;
     assert(
-      categoryId.isNotEmpty,
+      !requiresCategory || categoryId.isNotEmpty,
       'ContentItem.toAppwrite(): categoryId must not be empty (kind=$kind, id=$id)',
     );
 
@@ -906,6 +1024,24 @@ class ContentItem extends Equatable {
         (titleOlChiki == null || titleOlChiki!.trim().isEmpty)
         ? title
         : titleOlChiki!;
+    final encodedHeroMedia = heroMedia == null
+        ? null
+        : jsonEncode(heroMedia!.toJson());
+    final encodedBlocks = jsonEncode(blocks.map((e) => e.toJson()).toList());
+    final encodedTracing = tracing == null
+        ? null
+        : jsonEncode(tracing!.toJson());
+    final imageUrl =
+        heroMedia?.kind == ContentMediaKind.image ||
+            heroMedia?.kind == ContentMediaKind.svg
+        ? heroMedia?.url
+        : null;
+    final audioUrl = heroMedia?.kind == ContentMediaKind.audio
+        ? heroMedia?.url
+        : null;
+    final animationUrl = heroMedia?.kind == ContentMediaKind.lottie
+        ? heroMedia?.url
+        : null;
 
     switch (kind) {
       case ContentKind.lesson:
@@ -925,7 +1061,9 @@ class ContentItem extends Equatable {
           'heroMediaUrl': heroMedia?.url,
           'heroMediaType': heroMedia?.kind.name,
           'heroPosterUrl': heroMedia?.posterUrl,
-          'blocks': jsonEncode(blocks.map((e) => e.toJson()).toList()),
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
 
       case ContentKind.letter:
@@ -934,11 +1072,13 @@ class ContentItem extends Equatable {
           'transliterationLatin': title,
           'order': order,
           'isActive': isPublished,
-          'exampleWord': subtitle ?? '',
-          'audioUrl': heroMedia?.url,
-          'imageUrl': heroMedia?.url,
-          'lottieUrl': heroMedia?.url,
-          'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
+          'exampleWordLatin': subtitle,
+          'audioUrl': audioUrl,
+          'imageUrl': imageUrl,
+          'animationUrl': animationUrl,
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
 
       case ContentKind.number:
@@ -948,9 +1088,13 @@ class ContentItem extends Equatable {
           'nameOlChiki': resolvedTitleOlChiki,
           'nameLatin': title,
           'order': order,
-          'audioUrl': heroMedia?.url,
-          'imageUrl': heroMedia?.url,
-          'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
+          'isActive': isPublished,
+          'audioUrl': audioUrl,
+          'imageUrl': imageUrl,
+          'animationUrl': animationUrl,
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
 
       case ContentKind.word:
@@ -958,11 +1102,15 @@ class ContentItem extends Equatable {
           'wordOlChiki': olChiki ?? resolvedTitleOlChiki,
           'wordLatin': title,
           'meaning': subtitle ?? '',
-          'usageExample': subtitle ?? '',
           'category': categoryId,
           'order': order,
-          'audioUrl': heroMedia?.url,
-          'imageUrl': heroMedia?.url,
+          'isActive': isPublished,
+          'audioUrl': audioUrl,
+          'imageUrl': imageUrl,
+          'animationUrl': animationUrl,
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
 
       case ContentKind.sentence:
@@ -970,11 +1118,15 @@ class ContentItem extends Equatable {
           'sentenceOlChiki': olChiki ?? resolvedTitleOlChiki,
           'sentenceLatin': title,
           'meaning': subtitle ?? '',
-          'usageExample': subtitle ?? '',
           'category': categoryId,
           'order': order,
-          'audioUrl': heroMedia?.url,
-          'imageUrl': heroMedia?.url,
+          'isActive': isPublished,
+          'audioUrl': audioUrl,
+          'imageUrl': imageUrl,
+          'animationUrl': animationUrl,
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
 
       case ContentKind.rhyme:
@@ -983,12 +1135,16 @@ class ContentItem extends Equatable {
           'titleLatin': title,
           'contentOlChiki': olChiki ?? '',
           'contentLatin': subtitle ?? '',
-          'audioUrl': heroMedia?.url,
-          'thumbnailUrl': heroMedia?.url,
+          'audioUrl': audioUrl,
+          'thumbnailUrl': imageUrl,
           'categoryId': categoryId,
+          'tags': tags,
           'difficulty': difficulty ?? 'beginner',
           'durationSeconds': durationSeconds ?? 0,
           'isPremium': isPremium,
+          'hero_media': encodedHeroMedia,
+          'blocks': encodedBlocks,
+          'tracing': encodedTracing,
         };
     }
   }

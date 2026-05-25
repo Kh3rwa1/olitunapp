@@ -55,6 +55,108 @@ extension ContentBlockToLegacy on ContentBlock {
   }
 }
 
+extension LessonBlockEntityToContentBlock on LessonBlockEntity {
+  /// Converts a legacy [LessonBlockEntity] back to a universal [ContentBlock].
+  ContentBlock toContentBlock(int index) {
+    final blockId = 'block_${type}_$index';
+    switch (type) {
+      case 'text':
+        return TextBlock(
+          id: blockId,
+          order: index,
+          markdown: textOlChiki ?? textLatin ?? '',
+        );
+      case 'image':
+      case 'svg':
+        return ImageBlock(
+          id: blockId,
+          order: index,
+          media: ContentMedia(
+            url: imageUrl ?? '',
+            fileId: '',
+            kind: type == 'svg' ? ContentMediaKind.svg : ContentMediaKind.image,
+          ),
+          caption: textLatin,
+        );
+      case 'video':
+        return VideoBlock(
+          id: blockId,
+          order: index,
+          media: ContentMedia(
+            url: audioUrl ?? '',
+            fileId: '',
+            kind: ContentMediaKind.video,
+            caption: textLatin,
+          ),
+          posterUrl: imageUrl,
+          autoplay: data?['autoplay'] as bool? ?? false,
+          durationSeconds: data?['durationSeconds'] as int?,
+        );
+      case 'audio':
+        return AudioBlock(
+          id: blockId,
+          order: index,
+          media: ContentMedia(
+            url: audioUrl ?? '',
+            fileId: '',
+            kind: ContentMediaKind.audio,
+            caption: textLatin,
+          ),
+          transcript: data?['transcript'] as String?,
+        );
+      case 'lottie':
+        return LottieBlock(
+          id: blockId,
+          order: index,
+          media: ContentMedia(
+            url: imageUrl ?? '',
+            fileId: '',
+            kind: ContentMediaKind.lottie,
+          ),
+          loop: data?['loop'] as bool? ?? true,
+        );
+      case 'quiz':
+        return QuizBlock(
+          id: blockId,
+          order: index,
+          quizId: data?['quizId'] as String? ?? '',
+        );
+      case 'glyph':
+        return GlyphBlock(
+          id: blockId,
+          order: index,
+          olChiki: textOlChiki ?? '',
+          latin: textLatin ?? '',
+          audioUrl: audioUrl,
+        );
+      case 'callout':
+        return CalloutBlock(
+          id: blockId,
+          order: index,
+          text: textLatin ?? '',
+          variant: CalloutVariant.fromString(
+            data?['style'] as String? ?? 'note',
+          ),
+        );
+      case 'tracing':
+        return TracingBlock(
+          id: blockId,
+          order: index,
+          config: data != null
+              ? TracingConfig.fromJson(data!)
+              : const TracingConfig(glyph: '', strokes: []),
+        );
+      default:
+        // Fallback: treat unknown types as text blocks
+        return TextBlock(
+          id: blockId,
+          order: index,
+          markdown: textLatin ?? textOlChiki ?? '',
+        );
+    }
+  }
+}
+
 extension ContentItemToLegacy on ContentItem {
   WordModel toWordModel() {
     final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;

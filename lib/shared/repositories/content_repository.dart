@@ -38,6 +38,22 @@ class ContentRepository {
     }
   }
 
+  String? _categoryAttribute(ContentKind kind) {
+    switch (kind) {
+      case ContentKind.lesson:
+      case ContentKind.rhyme:
+        return 'categoryId';
+      case ContentKind.word:
+      case ContentKind.sentence:
+        return 'category';
+      case ContentKind.letter:
+      case ContentKind.number:
+        return null;
+    }
+  }
+
+  bool _hasOrderAttribute(ContentKind kind) => kind != ContentKind.rhyme;
+
   String _cacheListKey(ContentKind kind, String? categoryId) {
     return 'content_list_${kind.name}_${categoryId ?? 'all'}';
   }
@@ -56,10 +72,13 @@ class ContentRepository {
 
     if (await _networkInfo.isConnected) {
       try {
+        final categoryAttribute = _categoryAttribute(kind);
         final List<String> queries = [
-          if (categoryId != null && categoryId.isNotEmpty)
-            Query.equal('categoryId', categoryId),
-          Query.orderAsc('order'),
+          if (categoryAttribute != null &&
+              categoryId != null &&
+              categoryId.isNotEmpty)
+            Query.equal(categoryAttribute, categoryId),
+          if (_hasOrderAttribute(kind)) Query.orderAsc('order'),
           Query.limit(500),
         ];
 
@@ -71,7 +90,7 @@ class ContentRepository {
         );
 
         final items = response.map((doc) {
-          return ContentItem.fromJson(doc.data, doc.$id);
+          return ContentItem.fromJson(doc.data, doc.$id, kind);
         }).toList();
 
         // Update local cache
@@ -458,7 +477,7 @@ class ContentRepository {
       final cacheKey = _cacheListKey(kind, categoryId);
       final cached = await CacheService.getList<ContentItem>(
         cacheKey,
-        ContentItem.fromJson,
+        (data) => ContentItem.fromJson(data, null, kind),
       );
 
       if (cached != null && cached.isNotEmpty) {
@@ -534,7 +553,7 @@ class ContentRepository {
           documentId: id,
         );
 
-        final item = ContentItem.fromJson(doc.data, doc.$id);
+        final item = ContentItem.fromJson(doc.data, doc.$id, kind);
         await CacheService.set(cacheKey, item.toJson());
 
         return right(item);
@@ -555,7 +574,7 @@ class ContentRepository {
       final cacheKey = _cacheItemKey(kind, id);
       final cached = await CacheService.get<ContentItem>(
         cacheKey,
-        ContentItem.fromJson,
+        (data) => ContentItem.fromJson(data, null, kind),
       );
 
       if (cached != null) {
@@ -614,7 +633,7 @@ class ContentRepository {
             data: appwritePayload,
             permissions: [Permission.read(Role.any())],
           );
-          resultItem = ContentItem.fromJson(doc.data, doc.$id);
+          resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
         } on AppwriteException catch (ae) {
           if (ae.code == 409) {
             // Document already exists, perform update
@@ -625,7 +644,7 @@ class ContentRepository {
               data: appwritePayload,
               permissions: [Permission.read(Role.any())],
             );
-            resultItem = ContentItem.fromJson(doc.data, doc.$id);
+            resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
           } else {
             rethrow;
           }

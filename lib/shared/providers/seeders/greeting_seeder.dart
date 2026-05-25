@@ -1,15 +1,13 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
-import '../providers.dart';
 
 class GreetingSeeder {
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
+    Future<void> Function(LessonModel) addLessonIfNew,
   ) async {
-    final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
-
     final actualGreetingsId = await addCategoryIfNew(
       const CategoryModel(
         id: 'cat_phrases',
@@ -161,7 +159,7 @@ class GreetingSeeder {
 
     for (int i = 0; i < greetingLessons.length; i++) {
       final lesson = greetingLessons[i];
-      await lessonsNotifier.addLesson(
+      await addLessonIfNew(
         LessonModel(
           id: lesson['id'] as String,
           categoryId: actualGreetingsId,

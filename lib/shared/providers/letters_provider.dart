@@ -149,9 +149,9 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
     }
   }
 
-  void addLetter(LetterModel item) => add(item);
-  void updateLetter(LetterModel item) => update(item);
-  void deleteLetter(String id) => delete(id);
+  Future<void> addLetter(LetterModel item) => add(item);
+  Future<void> updateLetter(LetterModel item) => update(item);
+  Future<void> deleteLetter(String id) => delete(id);
 
   Future<void> seed() async => _loadLetters();
 }

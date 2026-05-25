@@ -1,7 +1,9 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../core/api/appwrite_db_service.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
+import '../../features/lessons/domain/entities/lesson_entity.dart';
 import 'providers.dart';
 import 'seeders/alphabet_seeder.dart';
 import 'seeders/greeting_seeder.dart';
@@ -39,11 +41,27 @@ Future<void> seedAppContent(WidgetRef ref) async {
     return cat.id; // Return new ID
   }
 
-  final actualAlphabetsId = await AlphabetSeeder.seed(ref, addCategoryIfNew);
-  await NumberSeeder.seed(ref, addCategoryIfNew);
-  await VocabSeeder.seed(ref, addCategoryIfNew);
-  await SentenceSeeder.seed(ref, addCategoryIfNew);
-  await GreetingSeeder.seed(ref, addCategoryIfNew);
+  final lessonRows = await ref
+      .read(appwriteDbServiceProvider)
+      .listDocuments('lessons');
+  final existingLessonIds = lessonRows
+      .map((row) => row['id'] as String)
+      .toSet();
+
+  Future<void> addLessonIfNew(LessonEntity lesson) async {
+    if (!existingLessonIds.add(lesson.id)) return;
+    await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
+  }
+
+  final actualAlphabetsId = await AlphabetSeeder.seed(
+    ref,
+    addCategoryIfNew,
+    addLessonIfNew,
+  );
+  await NumberSeeder.seed(ref, addCategoryIfNew, addLessonIfNew);
+  await VocabSeeder.seed(ref, addCategoryIfNew, addLessonIfNew);
+  await SentenceSeeder.seed(ref, addCategoryIfNew, addLessonIfNew);
+  await GreetingSeeder.seed(ref, addCategoryIfNew, addLessonIfNew);
 
   try {
     await QuizSeeder.seed(ref, actualAlphabetsId);

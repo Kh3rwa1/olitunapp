@@ -7,9 +7,9 @@ class NumberSeeder {
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
+    Future<void> Function(LessonModel) addLessonIfNew,
   ) async {
     final numbersNotifier = ref.read(numbersProvider.notifier);
-    final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
 
     final actualNumbersId = await addCategoryIfNew(
       const CategoryModel(
@@ -40,7 +40,7 @@ class NumberSeeder {
       '9 – Nine',
     ];
 
-    await lessonsNotifier.addLesson(
+    await addLessonIfNew(
       LessonModel(
         id: 'lesson_numbers_0_9',
         categoryId: actualNumbersId,
@@ -85,7 +85,7 @@ class NumberSeeder {
       '20 – Twenty',
     ];
 
-    await lessonsNotifier.addLesson(
+    await addLessonIfNew(
       LessonModel(
         id: 'lesson_numbers_10_20',
         categoryId: actualNumbersId,

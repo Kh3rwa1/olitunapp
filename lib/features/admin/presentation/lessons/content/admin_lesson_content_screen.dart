@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../../core/theme/app_colors.dart';
-import '../../../../lessons/presentation/providers/lesson_notifier.dart';
+import '../../../../../shared/models/content_item.dart';
+import '../../../../../shared/models/content_item_extensions.dart';
+import '../../../../../shared/repositories/content_repository.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../lessons/presentation/widgets/dynamic_block_builder.dart';
@@ -28,6 +30,7 @@ class _AdminLessonContentScreenState
   bool _isLoading = true;
   bool _hasChanges = false;
   bool _isSaving = false;
+  ContentItem? _contentItem;
   LessonEntity? _lesson;
 
   late ScrollController _leftScrollController;
@@ -79,54 +82,105 @@ class _AdminLessonContentScreenState
     }
   }
 
-  void _loadData() {
-    final lessons = ref.read(lessonNotifierProvider).value ?? [];
+  Future<void> _loadData() async {
     try {
-      _lesson = lessons.firstWhere((l) => l.id == widget.lessonId);
-      _blocks = List.from(_lesson!.blocks);
-      setState(() => _isLoading = false);
+      final repo = ref.read(contentRepositoryProvider);
+      final result = await repo.get(ContentKind.lesson, widget.lessonId);
+      result.fold(
+        (failure) {
+          if (mounted) context.go('/admin/lessons');
+        },
+        (item) {
+          _contentItem = item;
+          _lesson = item.toLessonEntity();
+          _blocks = List.from(_lesson!.blocks);
+          if (mounted) setState(() => _isLoading = false);
+        },
+      );
     } catch (e) {
-      context.go('/admin/lessons');
+      if (mounted) context.go('/admin/lessons');
     }
   }
 
   Future<void> _saveChanges() async {
-    if (_lesson == null || _isSaving) return;
+    if (_contentItem == null || _isSaving) return;
 
     setState(() => _isSaving = true);
 
     try {
-      final updatedLesson = _lesson!.copyWith(blocks: _blocks);
-      await ref
-          .read(lessonNotifierProvider.notifier)
-          .updateLesson(updatedLesson);
+      // Convert LessonBlockEntity list back to ContentBlock list
+      final contentBlocks = _blocks
+          .asMap()
+          .entries
+          .map((e) => e.value.toContentBlock(e.key))
+          .toList();
 
-      setState(() {
-        _hasChanges = false;
-        _isSaving = false;
-      });
+      // Update the ContentItem with new blocks
+      final updatedItem = _contentItem!.copyWith(
+        blocks: contentBlocks,
+        updatedAt: DateTime.now(),
+      );
 
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Row(
-              children: [
-                Icon(Icons.check_circle_rounded, color: Colors.white, size: 18),
-                SizedBox(width: 10),
-                Text(
-                  'Content saved successfully!',
-                  style: TextStyle(fontWeight: FontWeight.w600),
+      // Upsert via the universal content repository
+      final repo = ref.read(contentRepositoryProvider);
+      final result = await repo.upsert(updatedItem);
+
+      result.fold(
+        (failure) {
+          setState(() => _isSaving = false);
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to save: ${failure.message}'),
+                backgroundColor: Colors.red,
+                behavior: SnackBarBehavior.floating,
+              ),
+            );
+          }
+        },
+        (savedItem) {
+          // Update local state with the saved item
+          _contentItem = savedItem;
+          _lesson = savedItem.toLessonEntity();
+
+          // Invalidate providers so mobile app picks up changes
+          ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+          ref.invalidate(
+            contentDetailProvider((ContentKind.lesson, widget.lessonId)),
+          );
+
+          setState(() {
+            _hasChanges = false;
+            _isSaving = false;
+          });
+
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(
+                      Icons.check_circle_rounded,
+                      color: Colors.white,
+                      size: 18,
+                    ),
+                    SizedBox(width: 10),
+                    Text(
+                      'Content saved successfully!',
+                      style: TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-            backgroundColor: const Color(0xFF10B981),
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-          ),
-        );
-      }
+                backgroundColor: const Color(0xFF10B981),
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10),
+                ),
+              ),
+            );
+          }
+        },
+      );
     } catch (e) {
       setState(() => _isSaving = false);
       if (mounted) {

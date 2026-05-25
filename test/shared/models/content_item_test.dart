@@ -85,17 +85,20 @@ void main() {
 
   group('ContentItem Validation Invariant Tests', () {
     test(
-      'Instantiating letter kind with null tracing config throws ContentValidationException',
+      'legacy letter without tracing can load but cannot be saved as-is',
       () {
+        final item = ContentItem.fromJson({
+          'kind': 'letter',
+          'category_id': 'cat1',
+          'title': 'Letter A',
+          'updatedAt': DateTime.now().toIso8601String(),
+          'blocks': '[]',
+          'tracing': null,
+        });
+
+        expect(item.tracing, isNull);
         expect(
-          () => ContentItem.fromJson({
-            'kind': 'letter',
-            'category_id': 'cat1',
-            'title': 'Letter A',
-            'updatedAt': DateTime.now().toIso8601String(),
-            'blocks': '[]',
-            'tracing': null,
-          }),
+          () => ContentItem.validate(item.kind, item.tracing),
           throwsA(isA<ContentValidationException>()),
         );
       },
@@ -139,6 +142,106 @@ void main() {
       expect(item.title, 'Intro Santali');
       expect(item.kind, ContentKind.lesson);
       expect(item.tracing, isNull);
+    });
+  });
+
+  group('ContentItem Appwrite Collection Contracts', () {
+    const tracing = TracingConfig(glyph: 'ᱚ', strokes: []);
+
+    ContentItem item(
+      ContentKind kind, {
+      String subtitle = 'Summary',
+      ContentMedia? heroMedia,
+    }) {
+      return ContentItem(
+        id: 'item_1',
+        kind: kind,
+        categoryId: 'cat_1',
+        title: 'Latin title',
+        titleOlChiki: 'ᱚ',
+        subtitle: subtitle,
+        olChiki: 'ᱚ',
+        heroMedia: heroMedia,
+        blocks: const [TextBlock(id: 'b1', order: 0, markdown: 'Body')],
+        tracing: kind == ContentKind.letter || kind == ContentKind.number
+            ? tracing
+            : null,
+        isPublished: true,
+        tags: const ['tag'],
+        updatedAt: DateTime(2026),
+      );
+    }
+
+    test('lesson summary maps to description, never subtitle', () {
+      final payload = item(ContentKind.lesson).toAppwrite();
+
+      expect(payload['description'], 'Summary');
+      expect(payload['titleLatin'], 'Latin title');
+      expect(payload['isActive'], isTrue);
+      expect(payload.containsKey('subtitle'), isFalse);
+    });
+
+    test('letter uses declared media and example word attributes', () {
+      final payload = item(
+        ContentKind.letter,
+        heroMedia: const ContentMedia(
+          url: 'https://example.com/a.json',
+          fileId: 'file_1',
+          kind: ContentMediaKind.lottie,
+        ),
+      ).toAppwrite();
+
+      expect(payload['exampleWordLatin'], 'Summary');
+      expect(payload['animationUrl'], 'https://example.com/a.json');
+      expect(payload.containsKey('exampleWord'), isFalse);
+      expect(payload.containsKey('lottieUrl'), isFalse);
+    });
+
+    test('word and sentence do not write nonexistent usageExample', () {
+      for (final kind in [ContentKind.word, ContentKind.sentence]) {
+        final payload = item(kind).toAppwrite();
+
+        expect(payload['meaning'], 'Summary');
+        expect(payload['isActive'], isTrue);
+        expect(payload.containsKey('usageExample'), isFalse);
+        expect(payload['blocks'], isA<String>());
+      }
+    });
+
+    test('known collection type parses deployed keys without a kind field', () {
+      final lesson = ContentItem.fromJson(
+        {
+          'categoryId': 'cat_1',
+          'titleLatin': 'Greetings',
+          'titleOlChiki': 'ᱡᱚᱦᱟᱨ',
+          'description': 'Introduction',
+          'isActive': true,
+          'blocks': '[]',
+        },
+        'lesson_1',
+        ContentKind.lesson,
+      );
+      final word = ContentItem.fromJson(
+        {
+          'wordLatin': 'johar',
+          'wordOlChiki': 'ᱡᱚᱦᱟᱨ',
+          'meaning': 'hello',
+          'category': 'cat_words',
+          'isActive': true,
+          'blocks': '[]',
+        },
+        'word_1',
+        ContentKind.word,
+      );
+
+      expect(lesson.kind, ContentKind.lesson);
+      expect(lesson.subtitle, 'Introduction');
+      expect(word.kind, ContentKind.word);
+      expect(word.title, 'johar');
+      expect(word.olChiki, 'ᱡᱚᱦᱟᱨ');
+      expect(word.subtitle, 'hello');
+      expect(word.categoryId, 'cat_words');
+      expect(word.isPublished, isTrue);
     });
   });
 }

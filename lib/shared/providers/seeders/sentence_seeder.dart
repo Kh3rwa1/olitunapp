@@ -7,9 +7,9 @@ class SentenceSeeder {
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
+    Future<void> Function(LessonModel) addLessonIfNew,
   ) async {
     final sentencesNotifier = ref.read(sentencesProvider.notifier);
-    final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
 
     final actualSentencesId = await addCategoryIfNew(
       const CategoryModel(
@@ -1756,7 +1756,7 @@ class SentenceSeeder {
 
     for (int i = 0; i < sentenceLessons.length; i++) {
       final lesson = sentenceLessons[i];
-      await lessonsNotifier.addLesson(
+      await addLessonIfNew(
         LessonModel(
           id: lesson['id'] as String,
           categoryId: actualSentencesId,

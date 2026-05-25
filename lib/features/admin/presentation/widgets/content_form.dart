@@ -44,6 +44,15 @@ class _ContentFormState extends ConsumerState<ContentForm> {
   TracingConfig? _tracingConfig;
   final List<ContentBlock> _blocks = [];
 
+  bool get _requiresCategory =>
+      widget.kind != ContentKind.letter && widget.kind != ContentKind.number;
+  bool get _supportsPublished => widget.kind != ContentKind.rhyme;
+  bool get _supportsPremium =>
+      widget.kind == ContentKind.lesson || widget.kind == ContentKind.rhyme;
+  bool get _supportsSubtitle => widget.kind != ContentKind.number;
+  bool get _supportsOrder => widget.kind != ContentKind.rhyme;
+  bool get _supportsTags => widget.kind == ContentKind.rhyme;
+
   @override
   void initState() {
     super.initState();
@@ -340,7 +349,8 @@ class _ContentFormState extends ConsumerState<ContentForm> {
         ? _selectedCategoryId!
         : widget.categoryId;
 
-    if (resolvedCategoryId == null || resolvedCategoryId.isEmpty) {
+    if (_requiresCategory &&
+        (resolvedCategoryId == null || resolvedCategoryId.isEmpty)) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -355,7 +365,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
     final item = ContentItem(
       id: widget.initial?.id ?? const Uuid().v4(),
       kind: widget.kind,
-      categoryId: resolvedCategoryId,
+      categoryId: resolvedCategoryId ?? widget.kind.name,
       title: _titleController.text.trim(),
       titleOlChiki: _titleOlChikiController.text.trim().isNotEmpty
           ? _titleOlChikiController.text.trim()
@@ -498,101 +508,111 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                     ),
                   ],
 
-                  const SizedBox(height: 12),
-                  TextFormField(
-                    controller: _subtitleController,
-                    decoration: const InputDecoration(
-                      labelText: 'Subtitle / Translation / Summary',
-                    ),
-                    maxLines: 2,
-                  ),
-                  const SizedBox(height: 16),
-
-                  // Category Dropdown
-                  // If categories haven't loaded yet but we already know the
-                  // categoryId (from the parent screen), show a placeholder.
-                  if (categories.isEmpty && _selectedCategoryId != null) ...[
-                    InputDecorator(
+                  if (_supportsSubtitle) ...[
+                    const SizedBox(height: 12),
+                    TextFormField(
+                      controller: _subtitleController,
                       decoration: const InputDecoration(
-                        labelText: 'Category*',
-                        border: OutlineInputBorder(),
+                        labelText: 'Subtitle / Translation / Summary',
                       ),
-                      child: Text(
-                        'Category set: $_selectedCategoryId',
-                        style: TextStyle(fontSize: 14, color: Colors.grey[600]),
-                      ),
+                      maxLines: 2,
                     ),
-                  ] else
-                    DropdownButtonFormField<String>(
-                      value: categories.any((c) => c.id == _selectedCategoryId)
-                          ? _selectedCategoryId
-                          : null,
-                      items: categories.map((c) {
-                        return DropdownMenuItem(
-                          value: c.id,
-                          child: Text(c.titleLatin),
-                        );
-                      }).toList(),
-                      onChanged: (val) {
-                        setState(() {
-                          _selectedCategoryId = val;
-                        });
-                      },
-                      decoration: const InputDecoration(labelText: 'Category*'),
-                      validator: (val) {
-                        // Accept if the dropdown has a value OR if _selectedCategoryId
-                        // is already set (e.g. categories still loading)
-                        final effective = val ?? _selectedCategoryId;
-                        if (effective == null || effective.isEmpty) {
-                          return 'Please select a category';
-                        }
-                        return null;
-                      },
-                    ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
-                  // Switches
-                  Row(
-                    children: [
-                      Expanded(
-                        child: SwitchListTile(
-                          title: const Text(
-                            'Published',
-                            style: TextStyle(fontSize: 13),
-                          ),
-                          value: _isPublished,
-                          activeColor: const Color(0xFF10B981),
-                          onChanged: (val) =>
-                              setState(() => _isPublished = val),
+                  if (_requiresCategory) ...[
+                    // If categories have not loaded but this route supplied a
+                    // category, preserve it rather than blocking a save.
+                    if (categories.isEmpty && _selectedCategoryId != null)
+                      InputDecorator(
+                        decoration: const InputDecoration(
+                          labelText: 'Category*',
+                          border: OutlineInputBorder(),
                         ),
-                      ),
-                      Expanded(
-                        child: SwitchListTile(
-                          title: const Text(
-                            'Premium',
-                            style: TextStyle(fontSize: 13),
+                        child: Text(
+                          'Category set: $_selectedCategoryId',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[600],
                           ),
-                          value: _isPremium,
-                          activeColor: const Color(0xFFF59E0B),
-                          onChanged: (val) => setState(() => _isPremium = val),
                         ),
+                      )
+                    else
+                      DropdownButtonFormField<String>(
+                        value:
+                            categories.any((c) => c.id == _selectedCategoryId)
+                            ? _selectedCategoryId
+                            : null,
+                        items: categories.map((c) {
+                          return DropdownMenuItem(
+                            value: c.id,
+                            child: Text(c.titleLatin),
+                          );
+                        }).toList(),
+                        onChanged: (val) {
+                          setState(() {
+                            _selectedCategoryId = val;
+                          });
+                        },
+                        decoration: const InputDecoration(
+                          labelText: 'Category*',
+                        ),
+                        validator: (val) {
+                          final effective = val ?? _selectedCategoryId;
+                          if (effective == null || effective.isEmpty) {
+                            return 'Please select a category';
+                          }
+                          return null;
+                        },
                       ),
-                    ],
-                  ),
+                    const SizedBox(height: 16),
+                  ],
+
+                  if (_supportsPublished || _supportsPremium)
+                    Row(
+                      children: [
+                        if (_supportsPublished)
+                          Expanded(
+                            child: SwitchListTile(
+                              title: const Text(
+                                'Published',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: _isPublished,
+                              activeColor: const Color(0xFF10B981),
+                              onChanged: (val) =>
+                                  setState(() => _isPublished = val),
+                            ),
+                          ),
+                        if (_supportsPremium)
+                          Expanded(
+                            child: SwitchListTile(
+                              title: const Text(
+                                'Premium',
+                                style: TextStyle(fontSize: 13),
+                              ),
+                              value: _isPremium,
+                              activeColor: const Color(0xFFF59E0B),
+                              onChanged: (val) =>
+                                  setState(() => _isPremium = val),
+                            ),
+                          ),
+                      ],
+                    ),
                   const SizedBox(height: 12),
 
-                  // Order
-                  TextFormField(
-                    controller: _orderController,
-                    decoration: const InputDecoration(
-                      labelText: 'Sort Order Index',
+                  if (_supportsOrder) ...[
+                    TextFormField(
+                      controller: _orderController,
+                      decoration: const InputDecoration(
+                        labelText: 'Sort Order Index',
+                      ),
+                      keyboardType: TextInputType.number,
                     ),
-                    keyboardType: TextInputType.number,
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 16),
+                  ],
 
-                  // Tags
-                  _buildTagsField(isDark),
+                  if (_supportsTags) _buildTagsField(isDark),
                 ],
               ),
             ),

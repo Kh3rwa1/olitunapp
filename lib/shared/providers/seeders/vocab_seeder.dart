@@ -7,9 +7,9 @@ class VocabSeeder {
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
+    Future<void> Function(LessonModel) addLessonIfNew,
   ) async {
     final wordsNotifier = ref.read(wordsProvider.notifier);
-    final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
 
     final actualVocabId = await addCategoryIfNew(
       const CategoryModel(
@@ -1683,7 +1683,7 @@ class VocabSeeder {
 
     for (int i = 0; i < vocabLessons.length; i++) {
       final lesson = vocabLessons[i];
-      await lessonsNotifier.addLesson(
+      await addLessonIfNew(
         LessonModel(
           id: lesson['id'] as String,
           categoryId: actualVocabId,

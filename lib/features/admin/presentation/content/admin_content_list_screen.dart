@@ -44,6 +44,16 @@ class _AdminContentListScreenState
   Timer? _debounce;
   String? _lastRouteCategoryId;
 
+  bool get _supportsCategory =>
+      widget.kind == ContentKind.word ||
+      widget.kind == ContentKind.sentence ||
+      widget.kind == ContentKind.lesson ||
+      widget.kind == ContentKind.rhyme;
+  bool get _supportsPublished => widget.kind != ContentKind.rhyme;
+  bool get _supportsPremium =>
+      widget.kind == ContentKind.lesson || widget.kind == ContentKind.rhyme;
+  bool get _supportsTags => widget.kind == ContentKind.rhyme;
+
   @override
   void didUpdateWidget(covariant AdminContentListScreen oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -533,23 +543,23 @@ class _AdminContentListScreenState
     }
 
     // Category filter
-    if (_selectedCategoryId != null) {
+    if (_supportsCategory && _selectedCategoryId != null) {
       filtered = filtered
           .where((item) => item.categoryId == _selectedCategoryId)
           .toList();
     }
 
     // Publish status filter
-    if (_publishFilter == 'Published') {
+    if (_supportsPublished && _publishFilter == 'Published') {
       filtered = filtered.where((item) => item.isPublished).toList();
-    } else if (_publishFilter == 'Draft') {
+    } else if (_supportsPublished && _publishFilter == 'Draft') {
       filtered = filtered.where((item) => !item.isPublished).toList();
     }
 
     // Premium status filter
-    if (_premiumFilter == 'Premium') {
+    if (_supportsPremium && _premiumFilter == 'Premium') {
       filtered = filtered.where((item) => item.isPremium).toList();
-    } else if (_premiumFilter == 'Free') {
+    } else if (_supportsPremium && _premiumFilter == 'Free') {
       filtered = filtered.where((item) => !item.isPremium).toList();
     }
 
@@ -769,42 +779,47 @@ class _AdminContentListScreenState
                           ),
                         ),
                         const Spacer(),
-                        ElevatedButton.icon(
-                          onPressed: () => _bulkPublish(filtered, true),
-                          icon: const Icon(Icons.publish_rounded, size: 16),
-                          label: const Text('Publish'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFF10B981),
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        ElevatedButton.icon(
-                          onPressed: () => _bulkPublish(filtered, false),
-                          icon: const Icon(Icons.unpublished_rounded, size: 16),
-                          label: const Text('Draft'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.amber[700],
-                            foregroundColor: Colors.white,
-                            elevation: 0,
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 12,
-                            ),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
+                        if (_supportsPublished) ...[
+                          ElevatedButton.icon(
+                            onPressed: () => _bulkPublish(filtered, true),
+                            icon: const Icon(Icons.publish_rounded, size: 16),
+                            label: const Text('Publish'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF10B981),
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
                             ),
                           ),
-                        ),
-                        const SizedBox(width: 8),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: () => _bulkPublish(filtered, false),
+                            icon: const Icon(
+                              Icons.unpublished_rounded,
+                              size: 16,
+                            ),
+                            label: const Text('Draft'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.amber[700],
+                              foregroundColor: Colors.white,
+                              elevation: 0,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 12,
+                              ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
                         ElevatedButton.icon(
                           onPressed: () => _bulkDelete(filtered),
                           icon: const Icon(
@@ -910,35 +925,35 @@ class _AdminContentListScreenState
                 ),
               ),
             ),
-            const SizedBox(width: 12),
-            // Publish status dropdown
-            _buildDropdown(
-              value: _publishFilter,
-              items: ['All', 'Published', 'Draft'],
-              onChanged: (v) => setState(() {
-                _publishFilter = v!;
-                _selectedIds
-                    .clear(); // Auto-clear selection when filter changes
-              }),
-              isDark: isDark,
-            ),
-            const SizedBox(width: 8),
-            // Premium status dropdown
-            _buildDropdown(
-              value: _premiumFilter,
-              items: ['All', 'Premium', 'Free'],
-              onChanged: (v) => setState(() {
-                _premiumFilter = v!;
-                _selectedIds
-                    .clear(); // Auto-clear selection when filter changes
-              }),
-              isDark: isDark,
-            ),
+            if (_supportsPublished) ...[
+              const SizedBox(width: 12),
+              _buildDropdown(
+                value: _publishFilter,
+                items: ['All', 'Published', 'Draft'],
+                onChanged: (v) => setState(() {
+                  _publishFilter = v!;
+                  _selectedIds.clear();
+                }),
+                isDark: isDark,
+              ),
+            ],
+            if (_supportsPremium) ...[
+              const SizedBox(width: 8),
+              _buildDropdown(
+                value: _premiumFilter,
+                items: ['All', 'Premium', 'Free'],
+                onChanged: (v) => setState(() {
+                  _premiumFilter = v!;
+                  _selectedIds.clear();
+                }),
+                isDark: isDark,
+              ),
+            ],
           ],
         ),
 
         // Category chips row (if categories exist)
-        if (categories.isNotEmpty) ...[
+        if (_supportsCategory && categories.isNotEmpty) ...[
           const SizedBox(height: 12),
           SingleChildScrollView(
             scrollDirection: Axis.horizontal,
@@ -1143,7 +1158,7 @@ class _AdminContentListScreenState
                       right: 8,
                       child: Row(
                         children: [
-                          if (item.isPremium)
+                          if (_supportsPremium && item.isPremium)
                             const Icon(
                               Icons.star_rounded,
                               color: Colors.amber,
@@ -1340,22 +1355,22 @@ class _AdminContentListScreenState
                   spacing: 6,
                   runSpacing: 4,
                   children: [
-                    // Published badge
-                    _buildStatusChip(
-                      label: item.isPublished ? 'Published' : 'Draft',
-                      color: item.isPublished
-                          ? const Color(0xFF10B981)
-                          : Colors.grey,
-                      isDark: isDark,
-                    ),
-                    // Premium badge
-                    _buildStatusChip(
-                      label: item.isPremium ? 'Premium' : 'Free',
-                      color: item.isPremium ? Colors.amber : Colors.blue,
-                      isDark: isDark,
-                    ),
-                    // Tags
-                    ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
+                    if (_supportsPublished)
+                      _buildStatusChip(
+                        label: item.isPublished ? 'Published' : 'Draft',
+                        color: item.isPublished
+                            ? const Color(0xFF10B981)
+                            : Colors.grey,
+                        isDark: isDark,
+                      ),
+                    if (_supportsPremium)
+                      _buildStatusChip(
+                        label: item.isPremium ? 'Premium' : 'Free',
+                        color: item.isPremium ? Colors.amber : Colors.blue,
+                        isDark: isDark,
+                      ),
+                    if (_supportsTags)
+                      ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
                   ],
                 ),
               ],

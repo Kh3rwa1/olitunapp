@@ -8,9 +8,9 @@ class AlphabetSeeder {
   static Future<String> seed(
     WidgetRef ref,
     Future<String> Function(CategoryModel) addCategoryIfNew,
+    Future<void> Function(LessonModel) addLessonIfNew,
   ) async {
     final lettersNotifier = ref.read(lettersProvider.notifier);
-    final lessonsNotifier = ref.read(lessonNotifierProvider.notifier);
 
     final actualAlphabetsId = await addCategoryIfNew(
       const CategoryModel(
@@ -30,7 +30,7 @@ class AlphabetSeeder {
       ['ᱞ', 'al'],
     ];
     for (int i = 0; i < letters.length; i++) {
-      lettersNotifier.addLetter(
+      await lettersNotifier.addLetter(
         LetterModel(
           id: 'letter_${letters[i][1]}',
           charOlChiki: letters[i][0],
@@ -191,7 +191,7 @@ class AlphabetSeeder {
 
     for (int i = 0; i < alphabetLessons.length; i++) {
       final lesson = alphabetLessons[i];
-      await lessonsNotifier.addLesson(
+      await addLessonIfNew(
         LessonModel(
           id: lesson['id'] as String,
           categoryId: actualAlphabetsId,

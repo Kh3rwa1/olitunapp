@@ -72,7 +72,7 @@ void main() {
       );
     });
 
-    test('returns ServerFailure when offline AND cache empty', () async {
+    test('returns static seed lessons when offline AND cache empty', () async {
       when(() => network.isConnected).thenAnswer((_) async => false);
       when(
         () => local.getLessons(),
@@ -80,10 +80,10 @@ void main() {
 
       final result = await repo.getLessons();
 
-      result.match((failure) {
-        expect(failure, isA<ServerFailure>());
-        expect(failure.message, 'No internet connection');
-      }, (_) => fail('should be left'));
+      result.match((_) => fail('should be right'), (lessons) {
+        expect(lessons, isNotEmpty);
+        expect(lessons.first.id, 'lesson_alphabet_0');
+      });
     });
 
     test('uses cache when offline AND cache populated', () async {
@@ -139,7 +139,7 @@ void main() {
     );
 
     test(
-      'returns ServerFailure when remote and cache both fail online',
+      'returns static seed lessons by category when remote and cache both fail online',
       () async {
         when(() => network.isConnected).thenAnswer((_) async => true);
         when(
@@ -149,12 +149,12 @@ void main() {
           () => local.getLessons(),
         ).thenThrow(CacheException(message: 'no cache'));
 
-        final result = await repo.getLessonsByCategory('cat');
+        final result = await repo.getLessonsByCategory('cat_alphabets');
 
-        result.match((failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, 'nope');
-        }, (_) => fail('should be left'));
+        result.match((_) => fail('should be right'), (lessons) {
+          expect(lessons, isNotEmpty);
+          expect(lessons.first.id, 'lesson_alphabet_0');
+        });
       },
     );
   });

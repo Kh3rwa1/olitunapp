@@ -106,6 +106,53 @@ class LessonRepositoryImpl implements LessonRepository {
         LessonBlockEntity(type: 'text', textOlChiki: '᱒', textLatin: '2 – Two'),
       ],
     ),
+    // Vocabulary / Words
+    LessonEntity(
+      id: 'lesson_words_basics',
+      categoryId: 'seed_words',
+      titleOlChiki: 'ᱢᱩᱞ ᱥᱟᱹᱵᱟᱹᱫᱽ',
+      titleLatin: 'Basic Words',
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱡᱚᱦᱟᱨ',
+          textLatin: 'Johar – Hello / Greetings',
+        ),
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱥᱟᱨᱦᱟᱣ',
+          textLatin: 'Sarhaw – Thank you',
+        ),
+      ],
+    ),
+    // Sentences
+    LessonEntity(
+      id: 'lesson_sentences_basics',
+      categoryId: 'seed_sentences',
+      titleOlChiki: 'ᱨᱚᱲ ᱛᱮᱭᱟᱨ ᱢᱩᱞ',
+      titleLatin: 'Simple Sentences',
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱟᱢ ᱪᱮᱞᱮᱠᱟ ᱢᱮᱱᱟᱢᱟ?',
+          textLatin: 'Am celeka menama? – How are you?',
+        ),
+      ],
+    ),
+    // Greetings & Stories
+    LessonEntity(
+      id: 'lesson_greetings_basics',
+      categoryId: 'cat_greetings',
+      titleOlChiki: 'ᱡᱚᱦᱟᱨ ᱢᱩᱞ',
+      titleLatin: 'Greetings & Phrases',
+      blocks: [
+        LessonBlockEntity(
+          type: 'text',
+          textOlChiki: 'ᱥᱟᱹᱜᱩᱱ ᱥᱮᱛᱟᱜ',
+          textLatin: 'Sagun Setag – Good morning',
+        ),
+      ],
+    ),
   ];
 
   Future<Either<Failure, List<LessonEntity>>> _getCachedLessons(

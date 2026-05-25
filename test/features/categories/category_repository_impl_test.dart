@@ -65,8 +65,7 @@ void main() {
     );
   });
 
-  test('returns ServerFailure when offline AND cache miss '
-      '(propagates "No internet connection" message)', () async {
+  test('returns static seed categories when offline AND cache miss', () async {
     when(() => network.isConnected).thenAnswer((_) async => false);
     when(
       () => local.getCategories(),
@@ -74,10 +73,10 @@ void main() {
 
     final result = await repo.getCategories();
 
-    result.match((failure) {
-      expect(failure, isA<ServerFailure>());
-      expect(failure.message, 'No internet connection');
-    }, (_) => fail('should be left'));
+    result.match((_) => fail('should be right'), (cats) {
+      expect(cats, isNotEmpty);
+      expect(cats.first.id, 'cat_alphabets');
+    });
   });
 
   test('getCategoryById surfaces ServerFailure on remote error', () async {

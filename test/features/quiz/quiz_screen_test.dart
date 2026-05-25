@@ -9,6 +9,8 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
+import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
@@ -57,6 +59,10 @@ void main() {
           userStatsProvider.overrideWith(
             (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            MockLearningAnalyticsService(),
+          ),
         ],
       ),
     );
@@ -76,6 +82,10 @@ void main() {
           ),
           userStatsProvider.overrideWith(
             (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+          ),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            MockLearningAnalyticsService(),
           ),
         ],
       ),
@@ -111,6 +121,10 @@ void main() {
           ),
           userStatsProvider.overrideWith(
             (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+          ),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            MockLearningAnalyticsService(),
           ),
         ],
       ),
@@ -163,6 +177,10 @@ void main() {
           userStatsProvider.overrideWith(
             (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          learningAnalyticsServiceProvider.overrideWithValue(
+            MockLearningAnalyticsService(),
+          ),
         ],
       ),
     );
@@ -196,4 +214,40 @@ class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
   Future<void> saveQuizResult(QuizResultEntity result) async {}
   @override
   Future<void> addStars(int count) async {}
+}
+
+class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
+    with Mock
+    implements MistakeNotifier {
+  MockMistakeNotifier(super.state);
+
+  @override
+  Future<void> recordMistake({
+    required String quizId,
+    required int questionIndex,
+    required QuizQuestion question,
+    String? wrongAnswer,
+  }) async {}
+
+  @override
+  Future<void> masterMistake({
+    required String quizId,
+    required int questionIndex,
+  }) async {}
+
+  @override
+  Future<void> syncFromBackend() async {}
+}
+
+class MockLearningAnalyticsService extends Mock
+    implements LearningAnalyticsService {
+  @override
+  Future<void> track(
+    String eventName, {
+    String? source,
+    String? sourceId,
+    Map<String, dynamic> metadata = const {},
+    String? learnerLevel,
+    String? scriptMode,
+  }) async {}
 }

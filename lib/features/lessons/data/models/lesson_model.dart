@@ -63,7 +63,8 @@ class LessonModel extends LessonEntity {
     if (rawCategoryId is String) {
       parsedCategoryId = rawCategoryId;
     } else if (rawCategoryId is Map) {
-      parsedCategoryId = (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
+      parsedCategoryId =
+          (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
     }
 
     return LessonModel(

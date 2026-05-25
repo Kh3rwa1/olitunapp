@@ -836,16 +836,16 @@ class ContentItem extends Equatable {
     if (rawCategoryId is String) {
       parsedCategoryId = rawCategoryId;
     } else if (rawCategoryId is Map) {
-      parsedCategoryId = (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
+      parsedCategoryId =
+          (rawCategoryId['\$id'] ?? rawCategoryId['id'] ?? '') as String;
     }
 
     // The 'lessons' Appwrite collection uses 'titleLatin' as the primary title
     // field name; all other collections use 'title'. Accept both so that
     // ContentItem can round-trip through any collection schema.
-    final resolvedTitle =
-        (json['title'] as String?)?.isNotEmpty == true
-            ? json['title'] as String
-            : (json['titleLatin'] as String? ?? '');
+    final resolvedTitle = (json['title'] as String?)?.isNotEmpty == true
+        ? json['title'] as String
+        : (json['titleLatin'] as String? ?? '');
 
     return ContentItem(
       id: docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '',
@@ -904,8 +904,8 @@ class ContentItem extends Equatable {
 
     final resolvedTitleOlChiki =
         (titleOlChiki == null || titleOlChiki!.trim().isEmpty)
-            ? title
-            : titleOlChiki;
+        ? title
+        : titleOlChiki;
 
     final payload = <String, dynamic>{
       'kind': kind.name,

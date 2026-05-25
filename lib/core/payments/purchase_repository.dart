@@ -30,12 +30,15 @@ class PurchaseRepository {
         ],
       );
 
-      final categoryIds = result.map((doc) {
-        final raw = doc['categoryId'];
-        if (raw is String) return raw;
-        if (raw is Map) return (raw['\$id'] ?? raw['id'] ?? '') as String;
-        return '';
-      }).where((id) => id.isNotEmpty).toSet();
+      final categoryIds = result
+          .map((doc) {
+            final raw = doc['categoryId'];
+            if (raw is String) return raw;
+            if (raw is Map) return (raw['\$id'] ?? raw['id'] ?? '') as String;
+            return '';
+          })
+          .where((id) => id.isNotEmpty)
+          .toSet();
 
       // Save cache (1 day TTL)
       await CacheService.set(_cacheKey, {'ids': categoryIds.toList()});

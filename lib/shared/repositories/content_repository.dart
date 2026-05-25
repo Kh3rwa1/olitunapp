@@ -57,7 +57,7 @@ class ContentRepository {
       try {
         final List<String> queries = [
           if (categoryId != null && categoryId.isNotEmpty)
-            Query.equal('category_id', categoryId),
+            Query.equal('categoryId', categoryId),
           Query.orderAsc('order'),
           Query.limit(500),
         ];

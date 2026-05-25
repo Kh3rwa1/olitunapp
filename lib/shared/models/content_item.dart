@@ -888,20 +888,20 @@ class ContentItem extends Equatable {
     );
     return {
       'kind': kind.name,
-      'category_id': categoryId,
+      'categoryId': categoryId,
       'title': title,
-      'title_ol_chiki': titleOlChiki,
+      'titleOlChiki': titleOlChiki,
       'subtitle': subtitle,
-      'ol_chiki': olChiki,
-      'hero_media': heroMedia != null ? jsonEncode(heroMedia!.toJson()) : null,
+      'olChiki': olChiki,
+      'heroMedia': heroMedia != null ? jsonEncode(heroMedia!.toJson()) : null,
       'blocks': jsonEncode(blocks.map((e) => e.toJson()).toList()),
       'tracing': tracing != null ? jsonEncode(tracing!.toJson()) : null,
       'order': order,
-      'is_published': isPublished,
-      'is_premium': isPremium,
+      'isPublished': isPublished,
+      'isPremium': isPremium,
       'tags': tags,
       'difficulty': difficulty,
-      'duration_seconds': durationSeconds,
+      'durationSeconds': durationSeconds,
     };
   }
 

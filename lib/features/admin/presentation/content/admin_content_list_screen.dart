@@ -39,6 +39,7 @@ class _AdminContentListScreenState
   Set<String> _selectedIds = {};
   final ScrollController _scrollController = ScrollController();
   Timer? _debounce;
+  String? _lastRouteCategoryId;
 
   @override
   void didUpdateWidget(covariant AdminContentListScreen oldWidget) {
@@ -48,6 +49,7 @@ class _AdminContentListScreenState
       setState(() {
         _searchQuery = '';
         _selectedCategoryId = null;
+        _lastRouteCategoryId = null;
         _publishFilter = 'All';
         _premiumFilter = 'All';
         _selectedIds.clear();
@@ -545,6 +547,12 @@ class _AdminContentListScreenState
 
   @override
   Widget build(BuildContext context) {
+    final routeCategoryId = GoRouterState.of(context).uri.queryParameters['categoryId'];
+    if (routeCategoryId != _lastRouteCategoryId) {
+      _lastRouteCategoryId = routeCategoryId;
+      _selectedCategoryId = routeCategoryId;
+    }
+
     final listAsync = ref.watch(contentListProvider((widget.kind, null)));
     final categories = ref.watch(categoryNotifierProvider).value ?? [];
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -1326,9 +1334,17 @@ class _AdminContentListScreenState
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
+                if (widget.kind == ContentKind.lesson) ...[
+                  AdminIconAction(
+                    icon: Icons.dashboard_customize_rounded,
+                    tooltip: 'Edit content blocks',
+                    onTap: () => context.go('/admin/lessons/content/${item.id}'),
+                  ),
+                  const SizedBox(width: 6),
+                ],
                 AdminIconAction(
                   icon: Icons.edit_rounded,
-                  tooltip: 'Edit',
+                  tooltip: 'Edit metadata',
                   onTap: () => _editItem(context, item),
                 ),
                 const SizedBox(width: 6),

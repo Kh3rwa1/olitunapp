@@ -3,10 +3,14 @@ import 'package:itun/features/admin/presentation/content/admin_content_list_scre
 import 'package:itun/shared/models/content_item.dart';
 
 class AdminLessonsScreen extends StatelessWidget {
-  const AdminLessonsScreen({super.key});
+  final String? categoryId;
+  const AdminLessonsScreen({super.key, this.categoryId});
 
   @override
   Widget build(BuildContext context) {
-    return const AdminContentListScreen(kind: ContentKind.lesson);
+    return AdminContentListScreen(
+      kind: ContentKind.lesson,
+      categoryId: categoryId,
+    );
   }
 }

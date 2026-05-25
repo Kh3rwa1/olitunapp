@@ -284,7 +284,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         path: '/lesson/:lessonId',
         redirect: (context, state) {
           final id = state.pathParameters['lessonId'];
-          return '/content/lesson/$id';
+          return '/lesson/$id/block/0';
         },
       ),
       _drillRoute(
@@ -389,11 +389,15 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           adminRoute(
             path: '/admin/letters',
-            builder: (context, state) => const AdminLettersScreen(),
+            builder: (context, state) => AdminLettersScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/lessons',
-            builder: (context, state) => const AdminLessonsScreen(),
+            builder: (context, state) => AdminLessonsScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/lessons/content/:lessonId',
@@ -404,15 +408,21 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           adminRoute(
             path: '/admin/numbers',
-            builder: (context, state) => const AdminNumbersScreen(),
+            builder: (context, state) => AdminNumbersScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/words',
-            builder: (context, state) => const AdminWordsScreen(),
+            builder: (context, state) => AdminWordsScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/sentences',
-            builder: (context, state) => const AdminSentencesScreen(),
+            builder: (context, state) => AdminSentencesScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/quizzes',
@@ -420,7 +430,9 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           adminRoute(
             path: '/admin/rhymes',
-            builder: (context, state) => const AdminRhymesScreen(),
+            builder: (context, state) => AdminRhymesScreen(
+              categoryId: state.uri.queryParameters['categoryId'],
+            ),
           ),
           adminRoute(
             path: '/admin/media',

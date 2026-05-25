@@ -13,9 +13,6 @@ import '../../../core/motion/branded_refresh.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../domain/rhyme_model.dart';
-import '../../../shared/models/content_item.dart';
-import '../../../shared/models/content_item_extensions.dart';
-import '../../../shared/repositories/content_repository.dart';
 
 import 'widgets/whimsical_background.dart';
 import 'widgets/tilt_card.dart';

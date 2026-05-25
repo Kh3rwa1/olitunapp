@@ -4,8 +4,6 @@ import 'package:uuid/uuid.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/admin/presentation/widgets/common/admin_modal_sheet.dart';
-import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/shared/providers/providers.dart';
 
 class LessonFormSheet extends ConsumerStatefulWidget {

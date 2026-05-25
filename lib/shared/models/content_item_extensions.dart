@@ -1,6 +1,5 @@
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/rhymes/domain/rhyme_model.dart';
-import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/models/content_models.dart';
 
 extension ContentBlockToLegacy on ContentBlock {

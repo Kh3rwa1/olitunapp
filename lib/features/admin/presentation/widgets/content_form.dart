@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
-import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/features/admin/presentation/widgets/media_picker_field.dart';
 import 'package:itun/features/admin/presentation/widgets/tracing_stroke_editor.dart';
 import 'package:itun/features/admin/data/tracing_templates.dart';
@@ -312,10 +311,28 @@ class _ContentFormState extends ConsumerState<ContentForm> {
       return;
     }
 
+    // Resolve categoryId: prefer dropdown selection, fall back to parent-provided value
+    final resolvedCategoryId =
+        (_selectedCategoryId != null && _selectedCategoryId!.isNotEmpty)
+        ? _selectedCategoryId!
+        : widget.categoryId;
+
+    if (resolvedCategoryId == null || resolvedCategoryId.isEmpty) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Please select a category before saving.'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+      return;
+    }
+
     final item = ContentItem(
       id: widget.initial?.id ?? const Uuid().v4(),
       kind: widget.kind,
-      categoryId: _selectedCategoryId ?? '',
+      categoryId: resolvedCategoryId,
       title: _titleController.text.trim(),
       titleOlChiki: _titleOlChikiController.text.trim().isNotEmpty
           ? _titleOlChikiController.text.trim()

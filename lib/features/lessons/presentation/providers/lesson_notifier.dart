@@ -23,7 +23,7 @@ final lessonsByCategoryProvider =
           items.map((item) => item.toLessonEntity()).toList(),
         ),
         loading: () => const AsyncValue.loading(),
-        error: (err, stack) => AsyncValue.error(err, stack),
+        error: AsyncValue.error,
       );
     });
 

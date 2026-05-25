@@ -10,8 +10,6 @@ import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../shared/models/content_item.dart';
-import '../../../../shared/repositories/content_repository.dart';
 import '../../../../shared/providers/providers.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_empty_state.dart';
@@ -22,7 +20,12 @@ import '../widgets/content_form.dart';
 /// Parameterized by [ContentKind] to manage Letters, Numbers, Words, Sentences, Lessons, and Rhymes.
 class AdminContentListScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
-  const AdminContentListScreen({super.key, required this.kind});
+  final String? categoryId;
+  const AdminContentListScreen({
+    super.key,
+    required this.kind,
+    this.categoryId,
+  });
 
   @override
   ConsumerState<AdminContentListScreen> createState() =>
@@ -547,9 +550,7 @@ class _AdminContentListScreenState
 
   @override
   Widget build(BuildContext context) {
-    final routeCategoryId = GoRouterState.of(
-      context,
-    ).uri.queryParameters['categoryId'];
+    final routeCategoryId = widget.categoryId;
     if (routeCategoryId != _lastRouteCategoryId) {
       _lastRouteCategoryId = routeCategoryId;
       _selectedCategoryId = routeCategoryId;

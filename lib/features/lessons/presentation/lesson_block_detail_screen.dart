@@ -45,7 +45,8 @@ class _LessonBlockDetailScreenState
     SystemChrome.setSystemUIOverlayStyle(
       const SystemUiOverlayStyle(
         statusBarColor: Colors.transparent,
-        statusBarIconBrightness: Brightness.dark,
+        statusBarIconBrightness: Brightness.light,
+        statusBarBrightness: Brightness.dark, // for iOS
       ),
     );
   }
@@ -167,151 +168,77 @@ class _LessonBlockDetailScreenState
           AppColors.primary,
         );
 
-        final bgGradient = isDark
-            ? LinearGradient(
-                colors: [
-                  blockThemeColor.withValues(alpha: 0.18),
-                  const Color(0xFF08120E),
-                  const Color(0xFF0A0E14),
-                ],
-                stops: const [0.0, 0.45, 1.0],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              )
-            : LinearGradient(
-                colors: [
-                  blockThemeColor.withValues(alpha: 0.12),
-                  blockThemeColor.withValues(alpha: 0.04),
-                  Colors.white,
-                ],
-                stops: const [0.0, 0.35, 1.0],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              );
-
-        final animationUrl = _blockVisualMediaUrl(currentBlock);
-
-        final heroIllustration = AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: KeyedSubtree(
-            key: ValueKey<String>('illustration_${lesson.id}_$safeIndex'),
-            child: Hero(
-              tag: MotionTokens.heroTag(
-                'lesson_block',
-                '${lesson.id}_$safeIndex',
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          body: Stack(
+            children: [
+              Positioned.fill(
+                child: PageView.builder(
+                  controller: _pageController,
+                  onPageChanged: _onPageChanged,
+                  itemCount: contentBlocks.length,
+                  physics: const BouncingScrollPhysics(),
+                  itemBuilder: (context, index) {
+                    final block = contentBlocks[index];
+                    return _buildBlockContent(
+                      block,
+                      index,
+                      blockThemeColor,
+                      isDark,
+                    );
+                  },
+                ),
               ),
-              child: Material(
-                type: MaterialType.transparency,
-                child: FullBleedHeroMedia(
-                  animationUrl:
-                      animationUrl != null && _isLottieMedia(animationUrl)
-                      ? animationUrl
-                      : null,
-                  imageUrl: animationUrl,
-                  fallback: Center(
-                    child: Icon(
-                      Icons.menu_book_rounded,
-                      size: 100,
-                      color: blockThemeColor.withValues(alpha: 0.3),
-                    ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                left: 12,
+                child: IconButton(
+                  icon: const Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                    size: 28,
+                  ),
+                  onPressed: () =>
+                      context.canPop() ? context.pop() : context.go('/'),
+                ),
+              ),
+              Positioned(
+                top: MediaQuery.of(context).padding.top + 8,
+                right: 12,
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 200),
+                  child: currentBlock.audioUrl != null &&
+                          currentBlock.audioUrl!.isNotEmpty
+                      ? IconButton(
+                          key: ValueKey<String>(
+                            'audio_${lesson.id}_$safeIndex',
+                          ),
+                          icon: const Icon(
+                            Icons.volume_up_rounded,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                          onPressed: () => _playAudio(
+                            currentBlock.audioUrl!,
+                            '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                          ),
+                        )
+                      : const SizedBox.shrink(),
+                ),
+              ),
+              Positioned(
+                bottom: MediaQuery.of(context).padding.bottom + 24,
+                left: 0,
+                right: 0,
+                child: IgnorePointer(
+                  child: _buildPageIndicator(
+                    contentBlocks.length,
+                    blockThemeColor,
+                    isDark,
                   ),
                 ),
               ),
-            ),
-          ),
-        );
-
-        final appBarTitle = AnimatedSwitcher(
-          duration: const Duration(milliseconds: 300),
-          child: Text(
-            currentBlock.textLatin ?? lesson.titleLatin,
-            key: ValueKey<String>('title_${lesson.id}_$safeIndex'),
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-        );
-
-        return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-          extendBody: true,
-          body: Container(
-            decoration: BoxDecoration(gradient: bgGradient),
-            child: NestedScrollView(
-              headerSliverBuilder: (context, innerBoxIsScrolled) {
-                return [
-                  ParallaxHeroSliverAppBar(
-                    gradient: AppColors.heroGradient,
-                    glyph:
-                        animationUrl == null &&
-                            currentBlock.textOlChiki != null &&
-                            currentBlock.textOlChiki!.isNotEmpty
-                        ? currentBlock.textOlChiki!.characters.first
-                        : null,
-                    title: appBarTitle,
-                    leading: IconButton(
-                      icon: const Icon(Icons.arrow_back_rounded),
-                      onPressed: () =>
-                          context.canPop() ? context.pop() : context.go('/'),
-                    ),
-                    actions: [
-                      AnimatedSwitcher(
-                        duration: const Duration(milliseconds: 300),
-                        child:
-                            currentBlock.audioUrl != null &&
-                                currentBlock.audioUrl!.isNotEmpty
-                            ? Padding(
-                                key: ValueKey<String>(
-                                  'audio_${lesson.id}_$safeIndex',
-                                ),
-                                padding: const EdgeInsets.only(right: 8.0),
-                                child: IconButton(
-                                  icon: const Icon(Icons.volume_up_rounded),
-                                  onPressed: () => _playAudio(
-                                    currentBlock.audioUrl!,
-                                    '${currentBlock.textOlChiki}_$safeIndex',
-                                  ),
-                                ),
-                              )
-                            : const SizedBox.shrink(),
-                      ),
-                    ],
-                    expandedHeight: 320,
-                    heroChild: heroIllustration,
-                    heroChildFullBleed: true,
-                  ),
-                ];
-              },
-              body: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _pageController,
-                    onPageChanged: _onPageChanged,
-                    itemCount: contentBlocks.length,
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      final block = contentBlocks[index];
-                      return _buildBlockContent(
-                        block,
-                        index,
-                        blockThemeColor,
-                        isDark,
-                      );
-                    },
-                  ),
-                  Positioned(
-                    bottom: MediaQuery.of(context).padding.bottom + 24,
-                    left: 0,
-                    right: 0,
-                    child: IgnorePointer(
-                      child: _buildPageIndicator(
-                        contentBlocks.length,
-                        blockThemeColor,
-                        isDark,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ),
+            ],
           ),
         );
       },
@@ -493,111 +420,176 @@ class _LessonBlockDetailScreenState
     Color accentColor,
     bool isDark,
   ) {
-    const textContrastColor = Colors.white;
-    final contentTextColor = isDark ? Colors.white70 : const Color(0xFF2D3748);
-    final isThisPlaying =
-        _isAudioPlaying && _playingId == '${block.textOlChiki}_$index';
-
     final textOlChiki = block.textOlChiki ?? '';
     final textLatin = block.textLatin ?? '';
-    final pronunciation = block.data?['pronunciation'] as String?;
+    final pron = block.data?['pronunciation'] as String?;
+    final displayText = pron != null && pron.isNotEmpty
+        ? '$textLatin ($pron)'
+        : textLatin;
+
+    final glyph = textOlChiki.trim().isNotEmpty
+        ? textOlChiki.trim().characters.first
+        : (textLatin.trim().isNotEmpty
+            ? textLatin.trim().characters.first
+            : '');
+
+    final animationUrl = _blockVisualMediaUrl(block);
+    final isThisPlaying =
+        _isAudioPlaying && _playingId == '${block.textOlChiki}_$index';
 
     return Builder(
       builder: (context) {
         return LayoutBuilder(
           builder: (context, constraints) {
+            final topHeight = constraints.maxHeight * 0.40;
+            final bottomHeight = constraints.maxHeight * 0.60;
+
             return SingleChildScrollView(
-              controller: PrimaryScrollController.of(context),
-              physics: const BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
+              physics: const BouncingScrollPhysics(),
               child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: Container(
-                    constraints: const BoxConstraints(maxWidth: 480),
-                    padding: const EdgeInsets.fromLTRB(24, 32, 24, 140),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        if (_blockVisualMediaUrl(block) != null) ...[
-                          _buildInlineMedia(
-                            _blockVisualMediaUrl(block)!,
+                constraints: BoxConstraints(
+                  minHeight: constraints.maxHeight,
+                ),
+                child: Column(
+                  children: [
+                    // Top Section: Green gradient
+                    Container(
+                      height: topHeight,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor.withValues(alpha: 0.9),
                             accentColor,
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-                        if (block.type == 'audio' &&
-                            block.audioUrl != null &&
-                            block.audioUrl!.isNotEmpty) ...[
-                          _buildAudioCard(block, index, accentColor, isDark),
-                          const SizedBox(height: 20),
-                        ],
-                        if (textOlChiki.isNotEmpty || textLatin.isNotEmpty) ...[
-                          // Large Ol Chiki character card
-                          Center(
-                            child: Container(
-                              width: double.infinity,
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 36,
-                                horizontal: 24,
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                      ),
+                      child: Stack(
+                        children: [
+                          if (glyph.isNotEmpty)
+                            Positioned(
+                              right: -30,
+                              bottom: -40,
+                              child: Opacity(
+                                opacity: 0.15,
+                                child: Text(
+                                  glyph,
+                                  style: const TextStyle(
+                                    fontSize: 260,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    height: 1,
+                                  ),
+                                ),
                               ),
+                            ),
+                          if (animationUrl != null)
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(24, 48, 24, 60),
+                              child: Center(
+                                child: FullBleedHeroMedia(
+                                  animationUrl: _isLottieMedia(animationUrl)
+                                      ? animationUrl
+                                      : null,
+                                  imageUrl: animationUrl,
+                                  fallback: const SizedBox.shrink(),
+                                ),
+                              ),
+                            ),
+                          Positioned(
+                            left: 24,
+                            bottom: 16,
+                            child: Text(
+                              displayText,
+                              style: const TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w800,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    // Bottom Section: White or Dark surface
+                    Container(
+                      height: bottomHeight,
+                      width: double.infinity,
+                      color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+                      child: SingleChildScrollView(
+                        padding: const EdgeInsets.only(bottom: 60),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const SizedBox(height: 36),
+                            // Large character card
+                            Container(
+                              width: 190,
+                              height: 190,
                               decoration: BoxDecoration(
                                 gradient: LinearGradient(
-                                  colors: [
-                                    accentColor.withValues(alpha: 0.15),
-                                    accentColor.withValues(alpha: 0.25),
-                                  ],
+                                  colors: isDark
+                                      ? [
+                                          Colors.white.withValues(alpha: 0.04),
+                                          Colors.white.withValues(alpha: 0.08),
+                                        ]
+                                      : [
+                                          accentColor.withValues(alpha: 0.08),
+                                          accentColor.withValues(alpha: 0.18),
+                                        ],
                                   begin: Alignment.topLeft,
                                   end: Alignment.bottomRight,
                                 ),
                                 borderRadius: BorderRadius.circular(32),
                                 border: Border.all(
-                                  color: accentColor.withValues(alpha: 0.4),
-                                  width: 4,
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : accentColor.withValues(alpha: 0.25),
+                                  width: 3.5,
                                 ),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: accentColor.withValues(alpha: 0.2),
-                                    blurRadius: 30,
-                                    offset: const Offset(0, 10),
+                                    color: isDark
+                                        ? Colors.black.withValues(alpha: 0.25)
+                                        : accentColor.withValues(alpha: 0.12),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
                                   ),
                                 ],
                               ),
                               child: Center(
                                 child: Text(
-                                  textOlChiki.isNotEmpty
-                                      ? textOlChiki
-                                      : textLatin,
+                                  textOlChiki.isNotEmpty ? textOlChiki : textLatin,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: textOlChiki.length < 5 ? 46 : 28,
+                                    fontSize: (textOlChiki.isNotEmpty
+                                                ? textOlChiki
+                                                : textLatin)
+                                            .length < 3
+                                        ? 72
+                                        : 40,
                                     fontWeight: FontWeight.w900,
                                     color: isDark ? Colors.white : accentColor,
-                                    letterSpacing: 1,
                                   ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 20),
-                        ],
-
-                        // Translation badge
-                        if (textOlChiki.isNotEmpty && textLatin.isNotEmpty) ...[
-                          Center(
-                            child: Container(
+                            const SizedBox(height: 24),
+                            // Pill button
+                            Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 32,
-                                vertical: 12,
+                                horizontal: 36,
+                                vertical: 14,
                               ),
                               decoration: BoxDecoration(
                                 color: accentColor,
-                                borderRadius: BorderRadius.circular(20),
+                                borderRadius: BorderRadius.circular(24),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: accentColor.withValues(alpha: 0.4),
-                                    blurRadius: 15,
+                                    color: accentColor.withValues(alpha: 0.3),
+                                    blurRadius: 16,
                                     offset: const Offset(0, 6),
                                   ),
                                 ],
@@ -605,82 +597,74 @@ class _LessonBlockDetailScreenState
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  Flexible(
-                                    child: Text(
-                                      textLatin.toUpperCase(),
-                                      textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.w900,
-                                        color: textContrastColor,
-                                        letterSpacing: 1.5,
-                                      ),
+                                  Text(
+                                    displayText.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      letterSpacing: 1.2,
                                     ),
                                   ),
                                   if (block.audioUrl != null &&
                                       block.audioUrl!.isNotEmpty) ...[
                                     const SizedBox(width: 12),
                                     SoundWaveIndicator(
-                                      color: textContrastColor,
+                                      color: Colors.white,
                                       isPlaying: isThisPlaying,
                                     ),
                                   ],
                                 ],
                               ),
                             ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-
-                        // Pronunciation guide card
-                        if (pronunciation != null &&
-                            pronunciation.isNotEmpty) ...[
-                          _buildGlassCard(
-                            themeColor: accentColor,
-                            isDark: isDark,
-                            child: Column(
-                              children: [
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.record_voice_over_rounded,
-                                      color: isDark
-                                          ? Colors.white
-                                          : accentColor,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      'Pronunciation',
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w700,
-                                        color: isDark
-                                            ? Colors.white
-                                            : accentColor,
+                            if (pron != null && pron.isNotEmpty) ...[
+                              const SizedBox(height: 24),
+                              Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                child: _buildGlassCard(
+                                  themeColor: accentColor,
+                                  isDark: isDark,
+                                  child: Column(
+                                    children: [
+                                      Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.record_voice_over_rounded,
+                                            color: isDark ? Colors.white : accentColor,
+                                            size: 24,
+                                          ),
+                                          const SizedBox(width: 8),
+                                          Text(
+                                            'Pronunciation',
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w700,
+                                              color: isDark ? Colors.white : accentColor,
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 12),
-                                Text(
-                                  pronunciation,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 16,
-                                    height: 1.5,
-                                    color: contentTextColor,
+                                      const SizedBox(height: 12),
+                                      Text(
+                                        pron,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 16,
+                                          height: 1.5,
+                                          color: isDark ? Colors.white70 : const Color(0xFF2D3748),
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
-                              ],
-                            ),
-                          ),
-                          const SizedBox(height: 16),
-                        ],
-                      ],
+                              ),
+                            ],
+                          ],
+                        ),
+                      ),
                     ),
-                  ),
+                  ],
                 ),
               ),
             );

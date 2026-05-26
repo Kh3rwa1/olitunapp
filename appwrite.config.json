@@ -324,8 +324,127 @@
     ],
     "buckets": [
         {
+            "$id": "olitun_media",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Olitun Media",
+            "enabled": true,
+            "maximumFileSize": 50000000,
+            "allowedFileExtensions": [
+                "image/png",
+                "image/jpeg",
+                "image/gif",
+                "image/webp",
+                "image/svg+xml",
+                "audio/mpeg",
+                "audio/wav",
+                "audio/ogg",
+                "audio/mp4",
+                "audio/aac",
+                "video/mp4",
+                "video/webm",
+                "application/json"
+            ],
+            "compression": "gzip",
+            "encryption": false,
+            "antivirus": false
+        },
+        {
+            "$id": "audio",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Audio Files",
+            "enabled": true,
+            "maximumFileSize": 52428800,
+            "allowedFileExtensions": [
+                "mp3",
+                "wav",
+                "ogg",
+                "m4a",
+                "aac"
+            ],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
+            "$id": "images",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Images",
+            "enabled": true,
+            "maximumFileSize": 10485760,
+            "allowedFileExtensions": [
+                "jpg",
+                "jpeg",
+                "png",
+                "gif",
+                "webp",
+                "svg"
+            ],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": false
+        },
+        {
+            "$id": "animations",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Lottie Animations",
+            "enabled": true,
+            "maximumFileSize": 5242880,
+            "allowedFileExtensions": [
+                "json",
+                "lottie"
+            ],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": false
+        },
+        {
+            "$id": "videos",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Videos",
+            "enabled": true,
+            "maximumFileSize": 104857600,
+            "allowedFileExtensions": [
+                "mp4",
+                "webm",
+                "mov",
+                "m4v"
+            ],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
+        },
+        {
             "$id": "admin_backups",
-            "name": "Admin Backups",
             "$permissions": [
                 "read(\"team:admins\")",
                 "create(\"team:admins\")",
@@ -333,15 +452,35 @@
                 "delete(\"team:admins\")"
             ],
             "fileSecurity": false,
+            "name": "Admin Backups",
             "enabled": true,
-            "maximumFileSize": 50000000,
+            "maximumFileSize": 104857600,
             "allowedFileExtensions": [
                 "json"
             ],
-            "compression": "gzip",
+            "compression": "none",
             "encryption": true,
-            "antivirus": true,
-            "transformations": false
+            "antivirus": true
+        },
+        {
+            "$id": "html",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Interactive HTML",
+            "enabled": true,
+            "maximumFileSize": 5242880,
+            "allowedFileExtensions": [
+                "html",
+                "htm"
+            ],
+            "compression": "none",
+            "encryption": true,
+            "antivirus": true
         }
     ]
 }

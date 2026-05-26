@@ -341,6 +341,95 @@
   ],
   "buckets": [
     {
+      "$id": "audio",
+      "name": "Audio Files",
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"team:admins\")",
+        "update(\"team:admins\")",
+        "delete(\"team:admins\")"
+      ],
+      "fileSecurity": false,
+      "enabled": true,
+      "maximumFileSize": 52428800,
+      "allowedFileExtensions": [
+        "mp3",
+        "wav",
+        "ogg",
+        "m4a",
+        "aac"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": true
+    },
+    {
+      "$id": "images",
+      "name": "Images",
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"team:admins\")",
+        "update(\"team:admins\")",
+        "delete(\"team:admins\")"
+      ],
+      "fileSecurity": false,
+      "enabled": true,
+      "maximumFileSize": 10485760,
+      "allowedFileExtensions": [
+        "jpg",
+        "jpeg",
+        "png",
+        "gif",
+        "webp",
+        "svg"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": false
+    },
+    {
+      "$id": "animations",
+      "name": "Lottie Animations",
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"team:admins\")",
+        "update(\"team:admins\")",
+        "delete(\"team:admins\")"
+      ],
+      "fileSecurity": false,
+      "enabled": true,
+      "maximumFileSize": 5242880,
+      "allowedFileExtensions": [
+        "json",
+        "lottie"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": false
+    },
+    {
+      "$id": "videos",
+      "name": "Videos",
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"team:admins\")",
+        "update(\"team:admins\")",
+        "delete(\"team:admins\")"
+      ],
+      "fileSecurity": false,
+      "enabled": true,
+      "maximumFileSize": 104857600,
+      "allowedFileExtensions": [
+        "mp4",
+        "webm",
+        "mov",
+        "m4v"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": true
+    },
+    {
       "$id": "admin_backups",
       "name": "Admin Backups",
       "$permissions": [
@@ -351,14 +440,33 @@
       ],
       "fileSecurity": false,
       "enabled": true,
-      "maximumFileSize": 50000000,
+      "maximumFileSize": 104857600,
       "allowedFileExtensions": [
         "json"
       ],
-      "compression": "gzip",
+      "compression": "none",
       "encryption": true,
-      "antivirus": true,
-      "transformations": false
+      "antivirus": true
+    },
+    {
+      "$id": "html",
+      "name": "Interactive HTML",
+      "$permissions": [
+        "read(\"any\")",
+        "create(\"team:admins\")",
+        "update(\"team:admins\")",
+        "delete(\"team:admins\")"
+      ],
+      "fileSecurity": false,
+      "enabled": true,
+      "maximumFileSize": 5242880,
+      "allowedFileExtensions": [
+        "html",
+        "htm"
+      ],
+      "compression": "none",
+      "encryption": true,
+      "antivirus": true
     }
   ],
   "sites": [

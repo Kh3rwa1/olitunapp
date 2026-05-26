@@ -83,6 +83,10 @@ class AppwriteStorageUploadService {
         '→ ${target.bucketId}/$filename',
       );
 
+      AppLogger.debug(
+        'Resolved upload target: bucketId=${target.bucketId}, contentType=${target.contentType}, filename=$filename',
+      );
+
       final uploaded = await _storage.createFile(
         bucketId: target.bucketId,
         fileId: ID.unique(),

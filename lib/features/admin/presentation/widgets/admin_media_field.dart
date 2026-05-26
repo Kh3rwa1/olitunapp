@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:lottie/lottie.dart';
+import 'package:appwrite/appwrite.dart';
 import '../../../../core/storage/upload_service.dart';
 import '../../../../shared/widgets/video_display.dart';
 
@@ -115,11 +116,29 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
         );
       }
     } catch (e) {
-      AppLogger.debug('Error picking ${widget.label}: $e');
+      AppLogger.debug(
+        'Error picking ${widget.label}: $e',
+        fields: {
+          'error': e.toString(),
+          if (e is AppwriteException) ...{
+            'code': e.code ?? 0,
+            'type': e.type ?? '',
+            'message': e.message ?? '',
+          },
+        },
+      );
       if (mounted) setState(() => _uploading = false);
       if (mounted) {
+        final isAppwrite = e is AppwriteException;
+        final message = isAppwrite
+            ? 'Error [${e.code}]: ${e.message} (Type: ${e.type})'
+            : 'Error: $e';
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
+          SnackBar(
+            content: Text(message),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: isAppwrite ? 8 : 4),
+          ),
         );
       }
     }

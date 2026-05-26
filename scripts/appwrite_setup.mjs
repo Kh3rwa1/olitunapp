@@ -799,36 +799,42 @@ const buckets = [
     name: 'Audio Files',
     allowedExtensions: ['mp3', 'wav', 'ogg', 'm4a', 'aac'],
     maxFileSize: 52428800, // 50MB
+    antivirus: true,
   },
   {
     id: 'images',
     name: 'Images',
     allowedExtensions: ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'],
     maxFileSize: 10485760, // 10MB
+    antivirus: false,
   },
   {
     id: 'animations',
     name: 'Lottie Animations',
     allowedExtensions: ['json', 'lottie'],
     maxFileSize: 5242880, // 5MB
+    antivirus: false,
   },
   {
     id: 'videos',
     name: 'Videos',
     allowedExtensions: ['mp4', 'webm', 'mov', 'm4v'],
     maxFileSize: 104857600, // 100MB
+    antivirus: true,
   },
   {
     id: 'html',
     name: 'Interactive HTML',
     allowedExtensions: ['html', 'htm'],
     maxFileSize: 5242880, // 5MB
+    antivirus: true,
   },
   {
     id: 'admin_backups',
     name: 'Admin Backups',
     allowedExtensions: ['json'],
     maxFileSize: 104857600, // 100MB
+    antivirus: true,
     permissions: [
       `read("team:${ADMIN_TEAM_ID}")`,
       `create("team:${ADMIN_TEAM_ID}")`,
@@ -944,7 +950,7 @@ async function main() {
   for (const bucket of buckets) {
     console.log(`  📁 Bucket: ${bucket.name} (${bucket.id})`);
     const permissions = bucket.permissions || [
-      'read("users")',
+      'read("any")',
       `create("team:${ADMIN_TEAM_ID}")`,
       `update("team:${ADMIN_TEAM_ID}")`,
       `delete("team:${ADMIN_TEAM_ID}")`,
@@ -957,6 +963,7 @@ async function main() {
       maximumFileSize: bucket.maxFileSize,
       allowedFileExtensions: bucket.allowedExtensions,
       enabled: true,
+      antivirus: bucket.antivirus ?? true,
     });
     await api('PUT', `/storage/buckets/${bucket.id}`, {
       name: bucket.name,
@@ -965,6 +972,7 @@ async function main() {
       maximumFileSize: bucket.maxFileSize,
       allowedFileExtensions: bucket.allowedExtensions,
       enabled: true,
+      antivirus: bucket.antivirus ?? true,
     });
     console.log(`  ✅ Done: ${bucket.name}`);
   }

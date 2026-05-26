@@ -68,6 +68,26 @@ class MediaTypeResolver {
     }
   }
 
+  static MediaKind resolveFromType(String? type) {
+    if (type == null) return MediaKind.unknown;
+    switch (type.toLowerCase().trim()) {
+      case 'image':
+        return MediaKind.image;
+      case 'svg':
+        return MediaKind.svg;
+      case 'video':
+        return MediaKind.video;
+      case 'lottie':
+        return MediaKind.lottie;
+      case 'html':
+        return MediaKind.html;
+      case 'audio':
+        return MediaKind.audio;
+      default:
+        return MediaKind.unknown;
+    }
+  }
+
   static bool _hasAny(String value, List<String> needles) {
     return needles.any(value.contains);
   }

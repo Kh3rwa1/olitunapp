@@ -394,7 +394,10 @@ class _TextBlock extends ConsumerWidget {
 
 String? _blockVisualMediaUrl(LessonBlockEntity block) {
   final data = block.data;
+  final isVideo = block.type == 'video' ||
+      (data?['mediaType'] as String?) == 'video';
   final candidates = [
+    if (isVideo) block.audioUrl,
     data?['heroMediaUrl'],
     data?['mediaUrl'],
     data?['videoUrl'],
@@ -402,7 +405,7 @@ String? _blockVisualMediaUrl(LessonBlockEntity block) {
     data?['htmlUrl'],
     data?['imageUrl'],
     block.imageUrl,
-    if (block.type == 'video') block.audioUrl,
+    if (!isVideo) block.audioUrl,
   ];
 
   for (final candidate in candidates) {
@@ -467,11 +470,24 @@ class _UniversalMediaBlock extends ConsumerWidget {
           SizedBox(
             height: 220,
             child: FullBleedHeroMedia(
-              animationUrl: _isLottieMedia(url) ? url : null,
+              mediaKind: MediaTypeResolver.resolveFromType(
+                block.data?['mediaType'] as String? ?? block.type,
+              ),
+              animationUrl: (block.type == 'lottie' ||
+                      (block.data?['mediaType'] as String?) == 'lottie' ||
+                      _isLottieMedia(url))
+                  ? url
+                  : null,
               imageUrl: url,
-              isSvg: isSvg,
+              isSvg: isSvg || (block.data?['mediaType'] as String?) == 'svg',
               fallback: Icon(
-                Icons.perm_media_rounded,
+                block.type == 'video' ||
+                        (block.data?['mediaType'] as String?) == 'video'
+                    ? Icons.videocam_rounded
+                    : (block.type == 'lottie' ||
+                            (block.data?['mediaType'] as String?) == 'lottie'
+                        ? Icons.animation_rounded
+                        : Icons.perm_media_rounded),
                 size: 52,
                 color: accentColor.withValues(alpha: 0.55),
               ),

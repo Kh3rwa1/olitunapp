@@ -247,7 +247,10 @@ class _LessonBlockDetailScreenState
 
   String? _blockVisualMediaUrl(LessonBlockEntity block) {
     final data = block.data;
+    final isVideo = block.type == 'video' ||
+        (data?['mediaType'] as String?) == 'video';
     final candidates = [
+      if (isVideo) block.audioUrl,
       data?['heroMediaUrl'],
       data?['mediaUrl'],
       data?['videoUrl'],
@@ -255,7 +258,7 @@ class _LessonBlockDetailScreenState
       data?['htmlUrl'],
       data?['imageUrl'],
       block.imageUrl,
-      if (block.type == 'video') block.audioUrl,
+      if (!isVideo) block.audioUrl,
     ];
 
     for (final candidate in candidates) {
@@ -488,13 +491,30 @@ class _LessonBlockDetailScreenState
                           if (animationUrl != null)
                             Padding(
                               padding: const EdgeInsets.fromLTRB(24, 48, 24, 60),
-                              child: Center(
-                                child: FullBleedHeroMedia(
-                                  animationUrl: _isLottieMedia(animationUrl)
-                                      ? animationUrl
-                                      : null,
-                                  imageUrl: animationUrl,
-                                  fallback: const SizedBox.shrink(),
+                              child: FullBleedHeroMedia(
+                                mediaKind: MediaTypeResolver.resolveFromType(
+                                  block.data?['mediaType'] as String? ?? block.type,
+                                ),
+                                animationUrl: (block.type == 'lottie' ||
+                                        (block.data?['mediaType'] as String?) == 'lottie' ||
+                                        _isLottieMedia(animationUrl))
+                                    ? animationUrl
+                                    : null,
+                                imageUrl: animationUrl,
+                                isSvg: block.type == 'svg' ||
+                                    (block.data?['mediaType'] as String?) == 'svg',
+                                fallback: Center(
+                                  child: Icon(
+                                    block.type == 'video' ||
+                                            (block.data?['mediaType'] as String?) == 'video'
+                                        ? Icons.videocam_rounded
+                                        : (block.type == 'lottie' ||
+                                                (block.data?['mediaType'] as String?) == 'lottie'
+                                            ? Icons.animation_rounded
+                                            : Icons.image_rounded),
+                                    size: 64,
+                                    color: Colors.white.withValues(alpha: 0.35),
+                                  ),
                                 ),
                               ),
                             ),

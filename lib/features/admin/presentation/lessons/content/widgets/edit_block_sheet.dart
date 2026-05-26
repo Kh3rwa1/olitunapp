@@ -155,9 +155,13 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
         'animationUrl': finalAnimationUrl,
         'mediaUrl': mediaUrl,
         'heroMediaUrl': mediaUrl,
-        'mediaType': mediaUrl != null
-            ? MediaTypeResolver.appwriteHeroMediaType(mediaUrl)
-            : null,
+        'mediaType': widget.block.type != 'text' &&
+                widget.block.type != 'quiz' &&
+                widget.block.type != 'audio'
+            ? widget.block.type
+            : (mediaUrl != null
+                ? MediaTypeResolver.appwriteHeroMediaType(mediaUrl)
+                : null),
         'quizRefId': quizRefCtrl.text.isNotEmpty ? quizRefCtrl.text : null,
         'pronunciation': _pronCtrl.text.trim().isNotEmpty
             ? _pronCtrl.text.trim()

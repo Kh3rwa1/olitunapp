@@ -16,6 +16,7 @@ class FullBleedHeroMedia extends StatelessWidget {
     this.fallbackUrl,
     required this.fallback,
     this.isSvg = false,
+    this.mediaKind,
   });
 
   final String? animationUrl;
@@ -23,6 +24,7 @@ class FullBleedHeroMedia extends StatelessWidget {
   final String? fallbackUrl;
   final Widget fallback;
   final bool isSvg;
+  final MediaKind? mediaKind;
 
   @override
   Widget build(BuildContext context) {
@@ -50,6 +52,7 @@ class FullBleedHeroMedia extends StatelessWidget {
               fallback: fallback,
               preferAnimation: animation != null && animation.isNotEmpty,
               isSvg: isSvg,
+              mediaKind: mediaKind,
             ),
           const _HeroMediaScrim(),
         ],
@@ -65,6 +68,7 @@ class _HeroMediaSource extends StatelessWidget {
     required this.fallback,
     required this.preferAnimation,
     required this.isSvg,
+    this.mediaKind,
   });
 
   final String url;
@@ -72,10 +76,15 @@ class _HeroMediaSource extends StatelessWidget {
   final Widget fallback;
   final bool preferAnimation;
   final bool isSvg;
+  final MediaKind? mediaKind;
 
   @override
   Widget build(BuildContext context) {
-    switch (MediaTypeResolver.resolve(url)) {
+    final resolvedKind = mediaKind != null && mediaKind != MediaKind.unknown
+        ? mediaKind!
+        : MediaTypeResolver.resolve(url);
+
+    switch (resolvedKind) {
       case MediaKind.video:
         return _InteractiveVideoHero(url: url, fallback: _buildFallback());
       case MediaKind.svg:
@@ -85,7 +94,7 @@ class _HeroMediaSource extends StatelessWidget {
       case MediaKind.html:
         return _HtmlHeroMedia(url: url, fallback: _buildFallback());
       case MediaKind.image:
-        return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg);
+        return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg || resolvedKind == MediaKind.svg);
       case MediaKind.audio:
       case MediaKind.unknown:
         break;
@@ -95,7 +104,7 @@ class _HeroMediaSource extends StatelessWidget {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
 
-    return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg);
+    return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg || resolvedKind == MediaKind.svg);
   }
 
   Widget _buildFallback() {

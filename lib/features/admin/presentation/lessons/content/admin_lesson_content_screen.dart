@@ -13,8 +13,7 @@ import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../lessons/presentation/widgets/dynamic_block_builder.dart';
 import 'controllers/block_reorder_controller.dart';
 import 'widgets/lesson_block_card.dart';
-import 'widgets/add_block_sheet.dart';
-import 'widgets/edit_block_sheet.dart';
+import 'widgets/universal_block_sheet.dart';
 
 class AdminLessonContentScreen extends ConsumerStatefulWidget {
   final String lessonId;
@@ -246,28 +245,33 @@ class _AdminLessonContentScreenState
     }
   }
 
-  void _addBlock(String type) {
-    final draftBlock = LessonBlockEntity(type: type);
-    EditBlockSheet.show(
+  /// Opens [UniversalBlockSheet] for add (no [existing]) or edit (with [existing]).
+  void _openBlockSheet({int? index, LessonBlockEntity? existing}) {
+    if (index != null) setState(() => _hoveredOrFocusedIndex = index);
+    // Derive a slug from the category title so tracing gate is human-readable.
+    final slug = (_contentItem?.title ?? '').toLowerCase().trim();
+    showModalBottomSheet<void>(
       context: context,
-      block: draftBlock,
-      onUpdate: (updatedBlock) {
-        setState(() {
-          _blocks.add(updatedBlock);
-          _markDirty();
-          _hoveredOrFocusedIndex = _blocks.length - 1;
-        });
-        _scheduleAutoSave();
-      },
-    );
-  }
-
-  void _editBlock(int index, LessonBlockEntity block) {
-    setState(() => _hoveredOrFocusedIndex = index);
-    EditBlockSheet.show(
-      context: context,
-      block: block,
-      onUpdate: (updatedBlock) => _updateBlock(index, updatedBlock),
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => UniversalBlockSheet(
+        existing: existing,
+        categorySlug: slug,
+        onSubmit: (block) {
+          if (existing == null) {
+            // Add new block
+            setState(() {
+              _blocks.add(block);
+              _markDirty();
+              _hoveredOrFocusedIndex = _blocks.length - 1;
+            });
+          } else {
+            // Update existing block
+            _updateBlock(index ?? _blocks.indexOf(existing), block);
+          }
+          _scheduleAutoSave();
+        },
+      ),
     );
   }
 
@@ -409,14 +413,19 @@ class _AdminLessonContentScreenState
                                             child: GestureDetector(
                                               onTap: () {
                                                 _syncScroll(index, true);
-                                                _editBlock(index, block);
+                                                _openBlockSheet(
+                                                  index: index,
+                                                  existing: block,
+                                                );
                                               },
                                               child: LessonBlockCard(
                                                 index: index,
                                                 block: block,
                                                 isDark: isDark,
-                                                onEdit: () =>
-                                                    _editBlock(index, block),
+                                                onEdit: () => _openBlockSheet(
+                                                  index: index,
+                                                  existing: block,
+                                                ),
                                                 onDelete: () =>
                                                     _removeBlock(index),
                                               ),
@@ -473,13 +482,18 @@ class _AdminLessonContentScreenState
                                       ),
                                       margin: const EdgeInsets.only(bottom: 12),
                                       child: GestureDetector(
-                                        onTap: () => _editBlock(index, block),
+                                        onTap: () => _openBlockSheet(
+                                          index: index,
+                                          existing: block,
+                                        ),
                                         child: LessonBlockCard(
                                           index: index,
                                           block: block,
                                           isDark: isDark,
-                                          onEdit: () =>
-                                              _editBlock(index, block),
+                                          onEdit: () => _openBlockSheet(
+                                            index: index,
+                                            existing: block,
+                                          ),
                                           onDelete: () => _removeBlock(index),
                                         ),
                                       ),
@@ -493,7 +507,7 @@ class _AdminLessonContentScreenState
           ],
         ),
         floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => AddBlockSheet.show(context, _addBlock),
+          onPressed: _openBlockSheet,
           backgroundColor: AppColors.primary,
           icon: const Icon(Icons.add_rounded, color: Colors.white),
           label: const Text(
@@ -944,7 +958,7 @@ class _AdminLessonContentScreenState
                         ),
                       const SizedBox(width: 10),
                       ScaleButton(
-                        onPressed: () => AddBlockSheet.show(context, _addBlock),
+                        onPressed: _openBlockSheet,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 14,
@@ -1129,8 +1143,7 @@ class _AdminLessonContentScreenState
                             const SizedBox(width: 10),
                           ],
                           ScaleButton(
-                            onPressed: () =>
-                                AddBlockSheet.show(context, _addBlock),
+                            onPressed: _openBlockSheet,
                             child: Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -1311,7 +1324,7 @@ class _AdminLessonContentScreenState
           ),
           const SizedBox(height: 24),
           OutlinedButton.icon(
-            onPressed: () => AddBlockSheet.show(context, _addBlock),
+            onPressed: _openBlockSheet,
             style: OutlinedButton.styleFrom(
               foregroundColor: AppColors.primary,
               side: const BorderSide(color: AppColors.primary),

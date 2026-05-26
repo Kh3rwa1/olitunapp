@@ -70,9 +70,21 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
 
   Future<void> _pick() async {
     try {
+      // file_picker rule: allowedExtensions is ONLY valid with FileType.custom.
+      // Passing it alongside FileType.video/image/audio throws:
+      //   "Custom extension filters are only allowed with FileType.custom"
+      // So we normalise here: if extensions are provided, force FileType.custom.
+      final hasExtensions =
+          widget.allowedExtensions != null &&
+          widget.allowedExtensions!.isNotEmpty;
+      final effectiveType = hasExtensions ? FileType.custom : widget.fileType;
+      final effectiveExtensions = hasExtensions
+          ? widget.allowedExtensions
+          : null;
+
       final result = await FilePicker.platform.pickFiles(
-        type: widget.fileType,
-        allowedExtensions: widget.allowedExtensions,
+        type: effectiveType,
+        allowedExtensions: effectiveExtensions,
         withData: true,
       );
       if (result == null || result.files.isEmpty) return;
@@ -104,7 +116,7 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
       }
     } catch (e) {
       AppLogger.debug('Error picking ${widget.label}: $e');
-      setState(() => _uploading = false);
+      if (mounted) setState(() => _uploading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),

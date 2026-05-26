@@ -11,8 +11,9 @@ extension ContentBlockToLegacy on ContentBlock {
     Map<String, dynamic>? blockData;
 
     final self = this;
-    if (self is TextBlock) {
-      textLatin = self.markdown;
+        if (self is TextBlock) {
+      textLatin = self.textLatin ?? self.markdown;
+      textOlChiki = self.textOlChiki;
     } else if (self is ImageBlock) {
       imageUrl = self.media.url;
       textLatin = self.caption;
@@ -64,7 +65,9 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
         return TextBlock(
           id: blockId,
           order: index,
-          markdown: textOlChiki ?? textLatin ?? '',
+          markdown: textLatin ?? textOlChiki ?? '',
+          textOlChiki: textOlChiki,
+          textLatin: textLatin,
         );
       case 'image':
       case 'svg':

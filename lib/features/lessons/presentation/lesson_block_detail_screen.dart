@@ -1,11 +1,15 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'dart:ui';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/audio/audio_service.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../core/presentation/animations/scale_button.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
 import '../domain/entities/lesson_entity.dart';
@@ -189,34 +193,26 @@ class _LessonBlockDetailScreenState
               ),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 8,
-                left: 12,
-                child: IconButton(
-                  icon: const Icon(
-                    Icons.arrow_back_rounded,
-                    color: Colors.white,
-                    size: 28,
-                  ),
+                left: 16,
+                child: _buildFloatingButton(
+                  icon: Icons.arrow_back_rounded,
                   onPressed: () =>
                       context.canPop() ? context.pop() : context.go('/'),
                 ),
               ),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 8,
-                right: 12,
+                right: 16,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
                   child:
                       currentBlock.audioUrl != null &&
                           currentBlock.audioUrl!.isNotEmpty
-                      ? IconButton(
+                      ? _buildFloatingButton(
                           key: ValueKey<String>(
                             'audio_${lesson.id}_$safeIndex',
                           ),
-                          icon: const Icon(
-                            Icons.volume_up_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
+                          icon: Icons.volume_up_rounded,
                           onPressed: () => _playAudio(
                             currentBlock.audioUrl!,
                             '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
@@ -349,6 +345,33 @@ class _LessonBlockDetailScreenState
     );
   }
 
+  Widget _buildFloatingButton({
+    Key? key,
+    required IconData icon,
+    required VoidCallback onPressed,
+  }) {
+    return ClipRRect(
+      key: key,
+      borderRadius: BorderRadius.circular(50),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.25),
+            shape: BoxShape.circle,
+            border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
+          ),
+          child: IconButton(
+            icon: Icon(icon, color: Colors.white, size: 24),
+            onPressed: onPressed,
+            padding: const EdgeInsets.all(10),
+            constraints: const BoxConstraints(),
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBlockContent(
     LessonBlockEntity block,
     int index,
@@ -370,14 +393,15 @@ class _LessonBlockDetailScreenState
 
     final animationUrl = _blockVisualMediaUrl(block);
     final isThisPlaying =
-        _isAudioPlaying && _playingId == '${block.textOlChiki}_$index';
+        _isAudioPlaying &&
+        _playingId ==
+            '${block.textOlChiki ?? block.textLatin ?? block.type}_$index';
 
     return Builder(
       builder: (context) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            final topHeight = constraints.maxHeight * 0.40;
-            final bottomHeight = constraints.maxHeight * 0.60;
+            final topHeight = constraints.maxHeight * 0.44;
 
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -385,14 +409,14 @@ class _LessonBlockDetailScreenState
                 constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: [
-                    // Top Section: Green gradient
+                    // Top Section: Cinematic Green/Theme Gradient
                     Container(
                       height: topHeight,
                       width: double.infinity,
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: [
-                            accentColor.withValues(alpha: 0.9),
+                            accentColor.withValues(alpha: 0.85),
                             accentColor,
                           ],
                           begin: Alignment.topLeft,
@@ -400,32 +424,30 @@ class _LessonBlockDetailScreenState
                         ),
                       ),
                       child: Stack(
+                        clipBehavior: Clip.none,
                         children: [
                           if (glyph.isNotEmpty)
                             Positioned(
-                              right: -30,
-                              bottom: -40,
-                              child: Opacity(
-                                opacity: 0.15,
-                                child: Text(
-                                  glyph,
-                                  style: const TextStyle(
-                                    fontSize: 260,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    height: 1,
+                              right: -20,
+                              top: -20,
+                              child: IgnorePointer(
+                                child: Opacity(
+                                  opacity: animationUrl != null ? 0.08 : 0.18,
+                                  child: Text(
+                                    glyph,
+                                    style: const TextStyle(
+                                      fontSize: 240,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.white,
+                                      height: 1,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
-                          if (animationUrl != null)
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                24,
-                                48,
-                                24,
-                                60,
-                              ),
+                          if (animationUrl != null) ...[
+                            // Edge-to-Edge Hero Media
+                            Positioned.fill(
                               child: FullBleedHeroMedia(
                                 mediaKind: MediaTypeResolver.resolveFromType(
                                   block.data?['mediaType'] as String? ??
@@ -462,34 +484,95 @@ class _LessonBlockDetailScreenState
                                 ),
                               ),
                             ),
+                            // Dark elegant gradient overlay for text readability
+                            Positioned.fill(
+                              child: IgnorePointer(
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: LinearGradient(
+                                      colors: [
+                                        Colors.black.withValues(alpha: 0.45),
+                                        Colors.transparent,
+                                        Colors.transparent,
+                                        Colors.black.withValues(alpha: 0.65),
+                                      ],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      stops: const [0.0, 0.25, 0.65, 1.0],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                          // Title Overlay Text
                           Positioned(
                             left: 24,
-                            bottom: 16,
-                            child: Text(
-                              displayText,
-                              style: const TextStyle(
-                                fontSize: 28,
-                                fontWeight: FontWeight.w800,
-                                color: Colors.white,
-                              ),
+                            bottom: 24,
+                            right: 24,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8,
+                                    vertical: 4,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withValues(alpha: 0.15),
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    (block.data?['mediaType'] as String? ??
+                                            block.type)
+                                        .toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.w800,
+                                      color: Colors.white,
+                                      letterSpacing: 1.5,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  displayText,
+                                  style: const TextStyle(
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black38,
+                                        offset: Offset(0, 2),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Bottom Section: White or Dark surface
+                    // Bottom Section: White or Dark surface (Fluid layout, no nested scroll)
                     Container(
-                      height: bottomHeight,
                       width: double.infinity,
                       color: isDark ? const Color(0xFF0A0E14) : Colors.white,
-                      child: SingleChildScrollView(
-                        padding: const EdgeInsets.only(bottom: 60),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const SizedBox(height: 36),
-                            // Large character card
-                            Container(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const SizedBox(height: 40),
+                          // Large character card with entrance & optional loop breathing animation
+                          () {
+                            final isTest =
+                                !kIsWeb &&
+                                Platform.environment.containsKey(
+                                  'FLUTTER_TEST',
+                                );
+                            Widget card = Container(
                               width: 190,
                               height: 190,
                               decoration: BoxDecoration(
@@ -543,22 +626,61 @@ class _LessonBlockDetailScreenState
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(height: 24),
-                            // Pill button
-                            Container(
+                            );
+
+                            card = card
+                                .animate()
+                                .fade(
+                                  duration: const Duration(milliseconds: 500),
+                                )
+                                .slide(
+                                  begin: const Offset(0, 0.1),
+                                  end: Offset.zero,
+                                  duration: const Duration(milliseconds: 500),
+                                  curve: Curves.easeOutCubic,
+                                );
+
+                            if (!isTest) {
+                              card = card
+                                  .animate(
+                                    onPlay: (controller) =>
+                                        controller.repeat(reverse: true),
+                                  )
+                                  .scale(
+                                    begin: const Offset(1.0, 1.0),
+                                    end: const Offset(1.04, 1.04),
+                                    duration: const Duration(
+                                      milliseconds: 2400,
+                                    ),
+                                    curve: Curves.easeInOut,
+                                  );
+                            }
+                            return card;
+                          }(),
+                          const SizedBox(height: 28),
+                          // Pill button (interactive ScaleButton)
+                          ScaleButton(
+                            onPressed:
+                                block.audioUrl != null &&
+                                    block.audioUrl!.isNotEmpty
+                                ? () => _playAudio(
+                                    block.audioUrl!,
+                                    '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+                                  )
+                                : null,
+                            child: Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 36,
-                                vertical: 14,
+                                horizontal: 40,
+                                vertical: 16,
                               ),
                               decoration: BoxDecoration(
                                 color: accentColor,
-                                borderRadius: BorderRadius.circular(24),
+                                borderRadius: BorderRadius.circular(28),
                                 boxShadow: [
                                   BoxShadow(
-                                    color: accentColor.withValues(alpha: 0.3),
-                                    blurRadius: 16,
-                                    offset: const Offset(0, 6),
+                                    color: accentColor.withValues(alpha: 0.35),
+                                    blurRadius: 20,
+                                    offset: const Offset(0, 8),
                                   ),
                                 ],
                               ),
@@ -576,7 +698,7 @@ class _LessonBlockDetailScreenState
                                   ),
                                   if (block.audioUrl != null &&
                                       block.audioUrl!.isNotEmpty) ...[
-                                    const SizedBox(width: 12),
+                                    const SizedBox(width: 14),
                                     SoundWaveIndicator(
                                       color: Colors.white,
                                       isPlaying: isThisPlaying,
@@ -585,60 +707,63 @@ class _LessonBlockDetailScreenState
                                 ],
                               ),
                             ),
-                            if (pron != null && pron.isNotEmpty) ...[
-                              const SizedBox(height: 24),
-                              Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 24,
-                                ),
-                                child: _buildGlassCard(
-                                  themeColor: accentColor,
-                                  isDark: isDark,
-                                  child: Column(
-                                    children: [
-                                      Row(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Icon(
-                                            Icons.record_voice_over_rounded,
+                          ),
+                          if (pron != null && pron.isNotEmpty) ...[
+                            const SizedBox(height: 28),
+                            Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 24,
+                              ),
+                              child: _buildGlassCard(
+                                themeColor: accentColor,
+                                isDark: isDark,
+                                child: Column(
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Icon(
+                                          Icons.record_voice_over_rounded,
+                                          color: isDark
+                                              ? Colors.white
+                                              : accentColor,
+                                          size: 24,
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Text(
+                                          'Pronunciation',
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w700,
                                             color: isDark
                                                 ? Colors.white
                                                 : accentColor,
-                                            size: 24,
                                           ),
-                                          const SizedBox(width: 8),
-                                          Text(
-                                            'Pronunciation',
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w700,
-                                              color: isDark
-                                                  ? Colors.white
-                                                  : accentColor,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                      const SizedBox(height: 12),
-                                      Text(
-                                        pron,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          height: 1.5,
-                                          color: isDark
-                                              ? Colors.white70
-                                              : const Color(0xFF2D3748),
                                         ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      pron,
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(
+                                        fontSize: 16,
+                                        height: 1.5,
+                                        color: isDark
+                                            ? Colors.white70
+                                            : const Color(0xFF2D3748),
                                       ),
-                                    ],
-                                  ),
+                                    ),
+                                  ],
                                 ),
                               ),
-                            ],
+                            ),
                           ],
-                        ),
+                          const SizedBox(
+                            height: 100,
+                          ), // elegant bottom padding for indicator overlay
+                        ],
                       ),
                     ),
                   ],

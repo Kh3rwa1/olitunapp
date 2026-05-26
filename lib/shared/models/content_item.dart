@@ -390,7 +390,11 @@ class TextBlock extends ContentBlock {
     return TextBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
-      markdown: json['markdown'] as String? ?? json['textLatin'] as String? ?? json['textOlChiki'] as String? ?? '',
+      markdown:
+          json['markdown'] as String? ??
+          json['textLatin'] as String? ??
+          json['textOlChiki'] as String? ??
+          '',
       textOlChiki: json['textOlChiki'] as String?,
       textLatin: json['textLatin'] as String?,
     );
@@ -432,7 +436,9 @@ class ImageBlock extends ContentBlock {
       parsedMedia = ContentMedia(
         url: json['imageUrl'] as String? ?? json['mediaUrl'] as String? ?? '',
         fileId: '',
-        kind: json['type'] == 'svg' ? ContentMediaKind.svg : ContentMediaKind.image,
+        kind: json['type'] == 'svg'
+            ? ContentMediaKind.svg
+            : ContentMediaKind.image,
       );
     }
     return ImageBlock(
@@ -487,14 +493,19 @@ class VideoBlock extends ContentBlock {
       );
     }
 
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return VideoBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       posterUrl: json['posterUrl'] as String? ?? json['imageUrl'] as String?,
-      durationSeconds: json['durationSeconds'] as int? ?? rawData?['durationSeconds'] as int?,
-      autoplay: json['autoplay'] as bool? ?? rawData?['autoplay'] as bool? ?? false,
+      durationSeconds:
+          json['durationSeconds'] as int? ??
+          rawData?['durationSeconds'] as int?,
+      autoplay:
+          json['autoplay'] as bool? ?? rawData?['autoplay'] as bool? ?? false,
     );
   }
 
@@ -546,12 +557,15 @@ class AudioBlock extends ContentBlock {
       );
     }
 
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return AudioBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
-      transcript: json['transcript'] as String? ?? rawData?['transcript'] as String?,
+      transcript:
+          json['transcript'] as String? ?? rawData?['transcript'] as String?,
     );
   }
 
@@ -594,7 +608,9 @@ class LottieBlock extends ContentBlock {
       );
     }
 
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return LottieBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
@@ -628,11 +644,18 @@ class QuizBlock extends ContentBlock {
   }) : super(type: 'quiz');
 
   factory QuizBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return QuizBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
-      quizId: json['quizId'] as String? ?? json['quiz_id'] as String? ?? rawData?['quizId'] as String? ?? rawData?['quizRefId'] as String? ?? '',
+      quizId:
+          json['quizId'] as String? ??
+          json['quiz_id'] as String? ??
+          rawData?['quizId'] as String? ??
+          rawData?['quizRefId'] as String? ??
+          '',
     );
   }
 
@@ -662,7 +685,11 @@ class GlyphBlock extends ContentBlock {
     return GlyphBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
-      olChiki: json['olChiki'] as String? ?? json['ol_chiki'] as String? ?? json['textOlChiki'] as String? ?? '',
+      olChiki:
+          json['olChiki'] as String? ??
+          json['ol_chiki'] as String? ??
+          json['textOlChiki'] as String? ??
+          '',
       latin: json['latin'] as String? ?? json['textLatin'] as String? ?? '',
       audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
     );
@@ -696,7 +723,9 @@ class CalloutBlock extends ContentBlock {
   }) : super(type: 'callout');
 
   factory CalloutBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return CalloutBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
@@ -732,7 +761,9 @@ class TracingBlock extends ContentBlock {
   }) : super(type: 'tracing');
 
   factory TracingBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map ? json['data'] as Map<String, dynamic> : null;
+    final rawData = json['data'] is Map
+        ? json['data'] as Map<String, dynamic>
+        : null;
     return TracingBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,

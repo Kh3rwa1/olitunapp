@@ -115,10 +115,9 @@ class _AdminLessonContentScreenState
     });
   }
 
-  String get _backRoute =>
-      _lesson != null && _lesson!.categoryId.isNotEmpty
-          ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
-          : '/admin/lessons';
+  String get _backRoute => _lesson != null && _lesson!.categoryId.isNotEmpty
+      ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
+      : '/admin/lessons';
 
   Future<void> _navigateBack() async {
     if (_hasChanges) {
@@ -315,173 +314,176 @@ class _AdminLessonContentScreenState
         await _navigateBack();
       },
       child: Scaffold(
-      backgroundColor: Colors.transparent,
-      body: Column(
-        children: [
-          // Top Bar with breadcrumb, title, and save
-          _buildTopBar(isDark, isWide),
+        backgroundColor: Colors.transparent,
+        body: Column(
+          children: [
+            // Top Bar with breadcrumb, title, and save
+            _buildTopBar(isDark, isWide),
 
-          Expanded(
-            child: isWide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      // Left Column: Block Editor (60% width)
-                      Expanded(
-                        flex: 6,
-                        child: Column(
-                          children: [
-                            // Lesson summary card
-                            _buildLessonSummary(isDark, isWide),
+            Expanded(
+              child: isWide
+                  ? Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // Left Column: Block Editor (60% width)
+                        Expanded(
+                          flex: 6,
+                          child: Column(
+                            children: [
+                              // Lesson summary card
+                              _buildLessonSummary(isDark, isWide),
 
-                            // Block list
-                            Expanded(
-                              child: _blocks.isEmpty
-                                  ? _buildEmptyBlocksState(isDark)
-                                  : ReorderableListView.builder(
-                                      scrollController: _leftScrollController,
-                                      padding: const EdgeInsets.fromLTRB(
-                                        32,
-                                        12,
-                                        32,
-                                        100,
-                                      ),
-                                      itemCount: _blocks.length,
-                                      buildDefaultDragHandles: false,
-                                      // ignore: deprecated_member_use
-                                      onReorder: _moveBlock,
-                                      proxyDecorator:
-                                          (child, index, animation) {
-                                            return Material(
-                                              elevation: 8,
-                                              color: Colors.transparent,
+                              // Block list
+                              Expanded(
+                                child: _blocks.isEmpty
+                                    ? _buildEmptyBlocksState(isDark)
+                                    : ReorderableListView.builder(
+                                        scrollController: _leftScrollController,
+                                        padding: const EdgeInsets.fromLTRB(
+                                          32,
+                                          12,
+                                          32,
+                                          100,
+                                        ),
+                                        itemCount: _blocks.length,
+                                        buildDefaultDragHandles: false,
+                                        // ignore: deprecated_member_use
+                                        onReorder: _moveBlock,
+                                        proxyDecorator:
+                                            (child, index, animation) {
+                                              return Material(
+                                                elevation: 8,
+                                                color: Colors.transparent,
+                                                borderRadius:
+                                                    BorderRadius.circular(16),
+                                                child: child,
+                                              );
+                                            },
+                                        itemBuilder: (context, index) {
+                                          final block = _blocks[index];
+                                          final isHighlighted =
+                                              index == _hoveredOrFocusedIndex;
+                                          return Container(
+                                            key: ValueKey(
+                                              'block_${block.hashCode}_$index',
+                                            ),
+                                            margin: const EdgeInsets.only(
+                                              bottom: 12,
+                                            ),
+                                            decoration: BoxDecoration(
                                               borderRadius:
                                                   BorderRadius.circular(16),
-                                              child: child,
-                                            );
-                                          },
-                                      itemBuilder: (context, index) {
-                                        final block = _blocks[index];
-                                        final isHighlighted =
-                                            index == _hoveredOrFocusedIndex;
-                                        return Container(
-                                          key: ValueKey(
-                                            'block_${block.hashCode}_$index',
-                                          ),
-                                          margin: const EdgeInsets.only(
-                                            bottom: 12,
-                                          ),
-                                          decoration: BoxDecoration(
-                                            borderRadius: BorderRadius.circular(
-                                              16,
+                                              boxShadow: isHighlighted
+                                                  ? [
+                                                      BoxShadow(
+                                                        color:
+                                                            const Color(
+                                                              0xFF2ECC71,
+                                                            ).withValues(
+                                                              alpha: 0.35,
+                                                            ),
+                                                        blurRadius: 16,
+                                                        spreadRadius: 2,
+                                                      ),
+                                                    ]
+                                                  : null,
                                             ),
-                                            boxShadow: isHighlighted
-                                                ? [
-                                                    BoxShadow(
-                                                      color: const Color(
-                                                        0xFF2ECC71,
-                                                      ).withValues(alpha: 0.35),
-                                                      blurRadius: 16,
-                                                      spreadRadius: 2,
-                                                    ),
-                                                  ]
-                                                : null,
-                                          ),
-                                          child: GestureDetector(
-                                            onTap: () {
-                                              _syncScroll(index, true);
-                                              _editBlock(index, block);
-                                            },
-                                            child: LessonBlockCard(
-                                              index: index,
-                                              block: block,
-                                              isDark: isDark,
-                                              onEdit: () =>
-                                                  _editBlock(index, block),
-                                              onDelete: () =>
-                                                  _removeBlock(index),
+                                            child: GestureDetector(
+                                              onTap: () {
+                                                _syncScroll(index, true);
+                                                _editBlock(index, block);
+                                              },
+                                              child: LessonBlockCard(
+                                                index: index,
+                                                block: block,
+                                                isDark: isDark,
+                                                onEdit: () =>
+                                                    _editBlock(index, block),
+                                                onDelete: () =>
+                                                    _removeBlock(index),
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      },
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Divider line
-                      Container(
-                        width: 1,
-                        color: isDark ? Colors.white12 : Colors.black12,
-                      ),
-                      // Right Column: Mockup Live Preview (40% width)
-                      Expanded(flex: 4, child: _buildMockupPreview(isDark)),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      // Lesson summary card
-                      _buildLessonSummary(isDark, isWide),
-
-                      // Block list
-                      Expanded(
-                        child: _blocks.isEmpty
-                            ? _buildEmptyBlocksState(isDark)
-                            : ReorderableListView.builder(
-                                padding: const EdgeInsets.fromLTRB(
-                                  16,
-                                  12,
-                                  16,
-                                  100,
-                                ),
-                                itemCount: _blocks.length,
-                                buildDefaultDragHandles: false,
-                                // ignore: deprecated_member_use
-                                onReorder: _moveBlock,
-                                proxyDecorator: (child, index, animation) {
-                                  return Material(
-                                    elevation: 8,
-                                    color: Colors.transparent,
-                                    borderRadius: BorderRadius.circular(16),
-                                    child: child,
-                                  );
-                                },
-                                itemBuilder: (context, index) {
-                                  final block = _blocks[index];
-                                  return Container(
-                                    key: ValueKey(
-                                      'block_${block.hashCode}_$index',
-                                    ),
-                                    margin: const EdgeInsets.only(bottom: 12),
-                                    child: GestureDetector(
-                                      onTap: () => _editBlock(index, block),
-                                      child: LessonBlockCard(
-                                        index: index,
-                                        block: block,
-                                        isDark: isDark,
-                                        onEdit: () => _editBlock(index, block),
-                                        onDelete: () => _removeBlock(index),
+                                          );
+                                        },
                                       ),
-                                    ),
-                                  );
-                                },
                               ),
-                      ),
-                    ],
-                  ),
+                            ],
+                          ),
+                        ),
+                        // Divider line
+                        Container(
+                          width: 1,
+                          color: isDark ? Colors.white12 : Colors.black12,
+                        ),
+                        // Right Column: Mockup Live Preview (40% width)
+                        Expanded(flex: 4, child: _buildMockupPreview(isDark)),
+                      ],
+                    )
+                  : Column(
+                      children: [
+                        // Lesson summary card
+                        _buildLessonSummary(isDark, isWide),
+
+                        // Block list
+                        Expanded(
+                          child: _blocks.isEmpty
+                              ? _buildEmptyBlocksState(isDark)
+                              : ReorderableListView.builder(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    16,
+                                    12,
+                                    16,
+                                    100,
+                                  ),
+                                  itemCount: _blocks.length,
+                                  buildDefaultDragHandles: false,
+                                  // ignore: deprecated_member_use
+                                  onReorder: _moveBlock,
+                                  proxyDecorator: (child, index, animation) {
+                                    return Material(
+                                      elevation: 8,
+                                      color: Colors.transparent,
+                                      borderRadius: BorderRadius.circular(16),
+                                      child: child,
+                                    );
+                                  },
+                                  itemBuilder: (context, index) {
+                                    final block = _blocks[index];
+                                    return Container(
+                                      key: ValueKey(
+                                        'block_${block.hashCode}_$index',
+                                      ),
+                                      margin: const EdgeInsets.only(bottom: 12),
+                                      child: GestureDetector(
+                                        onTap: () => _editBlock(index, block),
+                                        child: LessonBlockCard(
+                                          index: index,
+                                          block: block,
+                                          isDark: isDark,
+                                          onEdit: () =>
+                                              _editBlock(index, block),
+                                          onDelete: () => _removeBlock(index),
+                                        ),
+                                      ),
+                                    );
+                                  },
+                                ),
+                        ),
+                      ],
+                    ),
+            ),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () => AddBlockSheet.show(context, _addBlock),
+          backgroundColor: AppColors.primary,
+          icon: const Icon(Icons.add_rounded, color: Colors.white),
+          label: const Text(
+            'Add Block',
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
           ),
-        ],
-      ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => AddBlockSheet.show(context, _addBlock),
-        backgroundColor: AppColors.primary,
-        icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: const Text(
-          'Add Block',
-          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
-    ),
     );
   }
 

@@ -11,7 +11,7 @@ extension ContentBlockToLegacy on ContentBlock {
     Map<String, dynamic>? blockData;
 
     final self = this;
-        if (self is TextBlock) {
+    if (self is TextBlock) {
       textLatin = self.textLatin ?? self.markdown;
       textOlChiki = self.textOlChiki;
     } else if (self is ImageBlock) {

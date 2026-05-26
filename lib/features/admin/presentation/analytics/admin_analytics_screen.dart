@@ -782,7 +782,9 @@ class _DauTrendCard extends StatelessWidget {
                   touchTooltipData: LineTouchTooltipData(
                     fitInsideHorizontally: true,
                     fitInsideVertically: true,
-                    tooltipRoundedRadius: 10,
+                    tooltipBorderRadius: const BorderRadius.all(
+                      Radius.circular(10),
+                    ),
                     tooltipBorder: BorderSide(
                       color: AdminTokens.border(isDark),
                     ),
@@ -1063,7 +1065,9 @@ class _TopEventsCard extends StatelessWidget {
                   touchTooltipData: BarTouchTooltipData(
                     fitInsideHorizontally: true,
                     fitInsideVertically: true,
-                    tooltipRoundedRadius: 10,
+                    tooltipBorderRadius: const BorderRadius.all(
+                      Radius.circular(10),
+                    ),
                     tooltipBorder: BorderSide(
                       color: AdminTokens.border(isDark),
                     ),

@@ -165,7 +165,7 @@ class AnalyticsChart extends StatelessWidget {
               color: AdminTokens.accent.withValues(alpha: 0.4),
               width: 1.5,
             ),
-            tooltipRoundedRadius: 12,
+            tooltipBorderRadius: const BorderRadius.all(Radius.circular(12)),
             maxContentWidth: 160,
             tooltipPadding: const EdgeInsets.symmetric(
               horizontal: 12,

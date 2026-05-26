@@ -170,70 +170,76 @@ class _LessonBlockDetailScreenState
           AppColors.primary,
         );
 
+        final bgGradient = isDark
+            ? LinearGradient(
+                colors: [
+                  const Color(0xFF080B12),
+                  blockThemeColor.withValues(alpha: 0.08),
+                  const Color(0xFF0D121F),
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              )
+            : LinearGradient(
+                colors: [
+                  blockThemeColor.withValues(alpha: 0.05),
+                  const Color(0xFFF3F5F9),
+                  Colors.white,
+                ],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              );
+
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
-          body: Stack(
-            children: [
-              Positioned.fill(
-                child: PageView.builder(
-                  controller: _pageController,
-                  onPageChanged: _onPageChanged,
-                  itemCount: contentBlocks.length,
-                  physics: const BouncingScrollPhysics(),
-                  itemBuilder: (context, index) {
-                    final block = contentBlocks[index];
-                    return _buildBlockContent(
-                      block,
-                      index,
-                      blockThemeColor,
-                      isDark,
-                    );
-                  },
-                ),
-              ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                left: 16,
-                child: _buildFloatingButton(
-                  icon: Icons.arrow_back_rounded,
-                  onPressed: () =>
-                      context.canPop() ? context.pop() : context.go('/'),
-                ),
-              ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 8,
-                right: 16,
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 200),
-                  child:
-                      currentBlock.audioUrl != null &&
-                          currentBlock.audioUrl!.isNotEmpty
-                      ? _buildFloatingButton(
-                          key: ValueKey<String>(
-                            'audio_${lesson.id}_$safeIndex',
-                          ),
-                          icon: Icons.volume_up_rounded,
-                          onPressed: () => _playAudio(
-                            currentBlock.audioUrl!,
-                            '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
-                          ),
-                        )
-                      : const SizedBox.shrink(),
-                ),
-              ),
-              Positioned(
-                bottom: MediaQuery.of(context).padding.bottom + 24,
-                left: 0,
-                right: 0,
-                child: IgnorePointer(
-                  child: _buildPageIndicator(
-                    contentBlocks.length,
-                    blockThemeColor,
-                    isDark,
+          body: AnimatedContainer(
+            duration: const Duration(milliseconds: 500),
+            curve: Curves.easeInOut,
+            decoration: BoxDecoration(gradient: bgGradient),
+            child: Stack(
+              children: [
+                Positioned.fill(
+                  child: PageView.builder(
+                    controller: _pageController,
+                    onPageChanged: _onPageChanged,
+                    itemCount: contentBlocks.length,
+                    physics: const BouncingScrollPhysics(),
+                    itemBuilder: (context, index) {
+                      final block = contentBlocks[index];
+                      final pageRawColor = block.data?['themeColor'] as String?;
+                      final pageThemeColor = _parseThemeColor(
+                        pageRawColor,
+                        AppColors.primary,
+                      );
+                      return _buildBlockContent(
+                        block,
+                        index,
+                        pageThemeColor,
+                        isDark,
+                      );
+                    },
                   ),
                 ),
-              ),
-            ],
+                Positioned(
+                  top: MediaQuery.of(context).padding.top + 8,
+                  left: 0,
+                  right: 0,
+                  child: _buildTopNavBar(
+                    context,
+                    contentBlocks.length,
+                    safeIndex,
+                    blockThemeColor,
+                    isDark,
+                    currentBlock.audioUrl != null &&
+                        currentBlock.audioUrl!.isNotEmpty,
+                    () => _playAudio(
+                      currentBlock.audioUrl!,
+                      '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                    ),
+                    ValueKey<String>('audio_${lesson.id}_$safeIndex'),
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },
@@ -267,37 +273,6 @@ class _LessonBlockDetailScreenState
 
   bool _isLottieMedia(String url) {
     return MediaTypeResolver.resolve(url) == MediaKind.lottie;
-  }
-
-  Widget _buildPageIndicator(int count, Color accentColor, bool isDark) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: List.generate(count, (index) {
-        final isActive = index == _currentIndex;
-        return AnimatedContainer(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
-          margin: const EdgeInsets.symmetric(horizontal: 4),
-          width: isActive ? 28 : 10,
-          height: 10,
-          decoration: BoxDecoration(
-            color: isActive
-                ? accentColor
-                : (isDark ? Colors.white30 : Colors.black26),
-            borderRadius: BorderRadius.circular(5),
-            boxShadow: isActive
-                ? [
-                    BoxShadow(
-                      color: accentColor.withValues(alpha: 0.4),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ]
-                : null,
-          ),
-        );
-      }),
-    );
   }
 
   Widget _buildGlassCard({
@@ -372,6 +347,87 @@ class _LessonBlockDetailScreenState
     );
   }
 
+  Widget _buildTopNavBar(
+    BuildContext context,
+    int totalSteps,
+    int currentStep,
+    Color accentColor,
+    bool isDark,
+    bool hasAudio,
+    VoidCallback? onAudioPressed,
+    ValueKey<String>? audioKey,
+  ) {
+    final progress = (totalSteps > 0) ? (currentStep + 1) / totalSteps : 0.0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Row(
+        children: [
+          _buildFloatingButton(
+            icon: Icons.arrow_back_rounded,
+            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Stack(
+              children: [
+                Container(
+                  height: 10,
+                  decoration: BoxDecoration(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.12)
+                        : Colors.black.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(5),
+                  ),
+                ),
+                LayoutBuilder(
+                  builder: (context, constraints) {
+                    return AnimatedContainer(
+                      duration: const Duration(milliseconds: 300),
+                      curve: Curves.easeOutCubic,
+                      width: constraints.maxWidth * progress,
+                      height: 10,
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            accentColor.withValues(alpha: 0.7),
+                            accentColor,
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: accentColor.withValues(alpha: 0.4),
+                            blurRadius: 6,
+                            offset: const Offset(0, 1),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 16),
+          SizedBox(
+            width: 44,
+            height: 44,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 200),
+              child: hasAudio && onAudioPressed != null
+                  ? _buildFloatingButton(
+                      key: audioKey,
+                      icon: Icons.volume_up_rounded,
+                      onPressed: onAudioPressed,
+                    )
+                  : const SizedBox.shrink(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildBlockContent(
     LessonBlockEntity block,
     int index,
@@ -402,6 +458,23 @@ class _LessonBlockDetailScreenState
         return LayoutBuilder(
           builder: (context, constraints) {
             final topHeight = constraints.maxHeight * 0.44;
+            final blendColor = isDark
+                ? const Color(0xFF0F1422)
+                : const Color(0xFFF5F7FB);
+
+            final titleTextColor = (animationUrl != null)
+                ? Colors.white
+                : (isDark ? Colors.white : const Color(0xFF1E293B));
+
+            final badgeBgColor = (animationUrl != null)
+                ? Colors.white.withValues(alpha: 0.15)
+                : (isDark
+                      ? Colors.white.withValues(alpha: 0.1)
+                      : accentColor.withValues(alpha: 0.08));
+
+            final badgeTextColor = (animationUrl != null)
+                ? Colors.white
+                : (isDark ? Colors.white70 : accentColor);
 
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
@@ -413,16 +486,18 @@ class _LessonBlockDetailScreenState
                     Container(
                       height: topHeight,
                       width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            accentColor.withValues(alpha: 0.85),
-                            accentColor,
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
+                      decoration: animationUrl == null
+                          ? null
+                          : BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  accentColor.withValues(alpha: 0.85),
+                                  accentColor,
+                                ],
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                              ),
+                            ),
                       child: Stack(
                         clipBehavior: Clip.none,
                         children: [
@@ -432,13 +507,17 @@ class _LessonBlockDetailScreenState
                               top: -20,
                               child: IgnorePointer(
                                 child: Opacity(
-                                  opacity: animationUrl != null ? 0.08 : 0.18,
+                                  opacity: animationUrl != null ? 0.06 : 0.14,
                                   child: Text(
                                     glyph,
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 240,
                                       fontWeight: FontWeight.w900,
-                                      color: Colors.white,
+                                      color: animationUrl != null
+                                          ? Colors.white
+                                          : (isDark
+                                                ? Colors.white
+                                                : accentColor),
                                       height: 1,
                                     ),
                                   ),
@@ -484,7 +563,7 @@ class _LessonBlockDetailScreenState
                                 ),
                               ),
                             ),
-                            // Dark elegant gradient overlay for text readability
+                            // Dark elegant gradient overlay for text readability + blending bottom edge
                             Positioned.fill(
                               child: IgnorePointer(
                                 child: Container(
@@ -494,11 +573,11 @@ class _LessonBlockDetailScreenState
                                         Colors.black.withValues(alpha: 0.45),
                                         Colors.transparent,
                                         Colors.transparent,
-                                        Colors.black.withValues(alpha: 0.65),
+                                        blendColor,
                                       ],
                                       begin: Alignment.topCenter,
                                       end: Alignment.bottomCenter,
-                                      stops: const [0.0, 0.25, 0.65, 1.0],
+                                      stops: const [0.0, 0.25, 0.75, 1.0],
                                     ),
                                   ),
                                 ),
@@ -508,7 +587,7 @@ class _LessonBlockDetailScreenState
                           // Title Overlay Text
                           Positioned(
                             left: 24,
-                            bottom: 24,
+                            bottom: 12,
                             right: 24,
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -516,21 +595,28 @@ class _LessonBlockDetailScreenState
                               children: [
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 4,
+                                    horizontal: 10,
+                                    vertical: 5,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(6),
+                                    color: badgeBgColor,
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: animationUrl != null
+                                        ? null
+                                        : Border.all(
+                                            color: badgeTextColor.withValues(
+                                              alpha: 0.15,
+                                            ),
+                                          ),
                                   ),
                                   child: Text(
                                     (block.data?['mediaType'] as String? ??
                                             block.type)
                                         .toUpperCase(),
-                                    style: const TextStyle(
+                                    style: TextStyle(
                                       fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: Colors.white,
+                                      fontWeight: FontWeight.w900,
+                                      color: badgeTextColor,
                                       letterSpacing: 1.5,
                                     ),
                                   ),
@@ -538,17 +624,19 @@ class _LessonBlockDetailScreenState
                                 const SizedBox(height: 8),
                                 Text(
                                   displayText,
-                                  style: const TextStyle(
+                                  style: TextStyle(
                                     fontSize: 32,
                                     fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                    shadows: [
-                                      Shadow(
-                                        color: Colors.black38,
-                                        offset: Offset(0, 2),
-                                        blurRadius: 4,
-                                      ),
-                                    ],
+                                    color: titleTextColor,
+                                    shadows: animationUrl != null
+                                        ? [
+                                            const Shadow(
+                                              color: Colors.black38,
+                                              offset: Offset(0, 2),
+                                              blurRadius: 4,
+                                            ),
+                                          ]
+                                        : null,
                                   ),
                                 ),
                               ],
@@ -557,108 +645,15 @@ class _LessonBlockDetailScreenState
                         ],
                       ),
                     ),
-                    // Bottom Section: White or Dark surface (Fluid layout, no nested scroll)
+                    // Bottom Section: Translucent surface (Fluid layout, no nested scroll)
                     Container(
                       width: double.infinity,
-                      color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+                      color: Colors.transparent,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const SizedBox(height: 40),
+                          const SizedBox(height: 32),
                           // Large character card with entrance & optional loop breathing animation
-                          () {
-                            final isTest =
-                                !kIsWeb &&
-                                Platform.environment.containsKey(
-                                  'FLUTTER_TEST',
-                                );
-                            Widget card = Container(
-                              width: 190,
-                              height: 190,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isDark
-                                      ? [
-                                          Colors.white.withValues(alpha: 0.04),
-                                          Colors.white.withValues(alpha: 0.08),
-                                        ]
-                                      : [
-                                          accentColor.withValues(alpha: 0.08),
-                                          accentColor.withValues(alpha: 0.18),
-                                        ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(32),
-                                border: Border.all(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : accentColor.withValues(alpha: 0.25),
-                                  width: 3.5,
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: isDark
-                                        ? Colors.black.withValues(alpha: 0.25)
-                                        : accentColor.withValues(alpha: 0.12),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  textOlChiki.isNotEmpty
-                                      ? textOlChiki
-                                      : textLatin,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize:
-                                        (textOlChiki.isNotEmpty
-                                                    ? textOlChiki
-                                                    : textLatin)
-                                                .length <
-                                            3
-                                        ? 72
-                                        : 40,
-                                    fontWeight: FontWeight.w900,
-                                    color: isDark ? Colors.white : accentColor,
-                                  ),
-                                ),
-                              ),
-                            );
-
-                            card = card
-                                .animate()
-                                .fade(
-                                  duration: const Duration(milliseconds: 500),
-                                )
-                                .slide(
-                                  begin: const Offset(0, 0.1),
-                                  end: Offset.zero,
-                                  duration: const Duration(milliseconds: 500),
-                                  curve: Curves.easeOutCubic,
-                                );
-
-                            if (!isTest) {
-                              card = card
-                                  .animate(
-                                    onPlay: (controller) =>
-                                        controller.repeat(reverse: true),
-                                  )
-                                  .scale(
-                                    begin: const Offset(1.0, 1.0),
-                                    end: const Offset(1.04, 1.04),
-                                    duration: const Duration(
-                                      milliseconds: 2400,
-                                    ),
-                                    curve: Curves.easeInOut,
-                                  );
-                            }
-                            return card;
-                          }(),
-                          const SizedBox(height: 28),
-                          // Pill button (interactive ScaleButton)
                           ScaleButton(
                             onPressed:
                                 block.audioUrl != null &&
@@ -668,37 +663,316 @@ class _LessonBlockDetailScreenState
                                     '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
                                   )
                                 : null,
-                            child: Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 40,
-                                vertical: 16,
-                              ),
-                              decoration: BoxDecoration(
-                                color: accentColor,
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: accentColor.withValues(alpha: 0.35),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
+                            child: () {
+                              final isTest =
+                                  !kIsWeb &&
+                                  Platform.environment.containsKey(
+                                    'FLUTTER_TEST',
+                                  );
+                              Widget card = Container(
+                                width: 210,
+                                height: 210,
+                                decoration: BoxDecoration(
+                                  color: Colors.transparent,
+                                  borderRadius: BorderRadius.circular(36),
+                                ),
+                                child: Stack(
+                                  alignment: Alignment.center,
+                                  children: [
+                                    // Outer Glow Ring
+                                    Positioned.fill(
+                                      child: Container(
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(
+                                            36,
+                                          ),
+                                          border: Border.all(
+                                            color: (isDark
+                                                ? Colors.white.withValues(
+                                                    alpha: 0.05,
+                                                  )
+                                                : accentColor.withValues(
+                                                    alpha: 0.15,
+                                                  )),
+                                            width: 2.0,
+                                          ),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: accentColor.withValues(
+                                                alpha: isDark ? 0.15 : 0.2,
+                                              ),
+                                              blurRadius: 28,
+                                              offset: const Offset(0, 10),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                    // Glass body
+                                    Positioned.fill(
+                                      child: ClipRRect(
+                                        borderRadius: BorderRadius.circular(36),
+                                        child: BackdropFilter(
+                                          filter: ImageFilter.blur(
+                                            sigmaX: 16,
+                                            sigmaY: 16,
+                                          ),
+                                          child: Container(
+                                            decoration: BoxDecoration(
+                                              gradient: LinearGradient(
+                                                colors: isDark
+                                                    ? [
+                                                        Colors.white.withValues(
+                                                          alpha: 0.06,
+                                                        ),
+                                                        Colors.white.withValues(
+                                                          alpha: 0.02,
+                                                        ),
+                                                      ]
+                                                    : [
+                                                        Colors.white.withValues(
+                                                          alpha: 0.8,
+                                                        ),
+                                                        Colors.white.withValues(
+                                                          alpha: 0.45,
+                                                        ),
+                                                      ],
+                                                begin: Alignment.topLeft,
+                                                end: Alignment.bottomRight,
+                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(36),
+                                              border: Border.all(
+                                                color: isDark
+                                                    ? Colors.white.withValues(
+                                                        alpha: 0.1,
+                                                      )
+                                                    : Colors.white.withValues(
+                                                        alpha: 0.6,
+                                                      ),
+                                                width: 1.5,
+                                              ),
+                                            ),
+                                            child: Stack(
+                                              alignment: Alignment.center,
+                                              children: [
+                                                // Subtle Watermark
+                                                CustomPaint(
+                                                  size: const Size(210, 210),
+                                                  painter: _WatermarkPainter(
+                                                    text: textOlChiki.isNotEmpty
+                                                        ? textOlChiki
+                                                        : textLatin,
+                                                    style: TextStyle(
+                                                      fontSize: 160,
+                                                      fontWeight:
+                                                          FontWeight.w900,
+                                                      color:
+                                                          (isDark
+                                                                  ? Colors.white
+                                                                  : accentColor)
+                                                              .withValues(
+                                                                alpha: 0.04,
+                                                              ),
+                                                    ),
+                                                  ),
+                                                ),
+                                                // Main Character Text
+                                                Text(
+                                                  textOlChiki.isNotEmpty
+                                                      ? textOlChiki
+                                                      : textLatin,
+                                                  style: TextStyle(
+                                                    fontSize:
+                                                        (textOlChiki.isNotEmpty
+                                                                    ? textOlChiki
+                                                                    : textLatin)
+                                                                .length <
+                                                            3
+                                                        ? 84
+                                                        : 44,
+                                                    fontWeight: FontWeight.w900,
+                                                    color: isDark
+                                                        ? Colors.white
+                                                        : accentColor,
+                                                    shadows: [
+                                                      Shadow(
+                                                        color: isDark
+                                                            ? Colors.black
+                                                                  .withValues(
+                                                                    alpha: 0.3,
+                                                                  )
+                                                            : accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.15,
+                                                                  ),
+                                                        offset: const Offset(
+                                                          0,
+                                                          3,
+                                                        ),
+                                                        blurRadius: 6,
+                                                      ),
+                                                    ],
+                                                  ),
+                                                ),
+                                                // Pulsing speaker icon
+                                                Positioned(
+                                                  top: 16,
+                                                  right: 16,
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.all(6),
+                                                    decoration: BoxDecoration(
+                                                      color: (isDark
+                                                          ? Colors.white
+                                                                .withValues(
+                                                                  alpha: 0.08,
+                                                                )
+                                                          : accentColor
+                                                                .withValues(
+                                                                  alpha: 0.08,
+                                                                )),
+                                                      shape: BoxShape.circle,
+                                                      border: Border.all(
+                                                        color: (isDark
+                                                            ? Colors.white
+                                                                  .withValues(
+                                                                    alpha: 0.12,
+                                                                  )
+                                                            : accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.12,
+                                                                  )),
+                                                      ),
+                                                    ),
+                                                    child: Icon(
+                                                      Icons.volume_up_rounded,
+                                                      color: isDark
+                                                          ? Colors.white70
+                                                          : accentColor,
+                                                      size: 14,
+                                                    ),
+                                                  ),
+                                                ),
+                                                // Tap to Hear Badge
+                                                Positioned(
+                                                  bottom: 16,
+                                                  child: Container(
+                                                    padding:
+                                                        const EdgeInsets.symmetric(
+                                                          horizontal: 14,
+                                                          vertical: 5,
+                                                        ),
+                                                    decoration: BoxDecoration(
+                                                      color: (isDark
+                                                          ? Colors.white
+                                                                .withValues(
+                                                                  alpha: 0.06,
+                                                                )
+                                                          : accentColor
+                                                                .withValues(
+                                                                  alpha: 0.06,
+                                                                )),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            14,
+                                                          ),
+                                                      border: Border.all(
+                                                        color: (isDark
+                                                            ? Colors.white
+                                                                  .withValues(
+                                                                    alpha: 0.1,
+                                                                  )
+                                                            : accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.1,
+                                                                  )),
+                                                      ),
+                                                    ),
+                                                    child: Text(
+                                                      'TAP TO HEAR',
+                                                      style: TextStyle(
+                                                        fontSize: 9,
+                                                        fontWeight:
+                                                            FontWeight.w800,
+                                                        color: isDark
+                                                            ? Colors.white70
+                                                            : accentColor,
+                                                        letterSpacing: 1.2,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              card = card
+                                  .animate()
+                                  .fade(
+                                    duration: const Duration(milliseconds: 500),
+                                  )
+                                  .slide(
+                                    begin: const Offset(0, 0.1),
+                                    end: Offset.zero,
+                                    duration: const Duration(milliseconds: 500),
+                                    curve: Curves.easeOutCubic,
+                                  );
+
+                              if (!isTest) {
+                                card = card
+                                    .animate(
+                                      onPlay: (controller) =>
+                                          controller.repeat(reverse: true),
+                                    )
+                                    .scale(
+                                      begin: const Offset(1.0, 1.0),
+                                      end: const Offset(1.04, 1.04),
+                                      duration: const Duration(
+                                        milliseconds: 2400,
+                                      ),
+                                      curve: Curves.easeInOut,
+                                    );
+                              }
+                              return card;
+                            }(),
+                          ),
+                          const SizedBox(height: 32),
+                          // Tactile 3D Action Button
+                          Container(
+                            constraints: const BoxConstraints(maxWidth: 320),
+                            padding: const EdgeInsets.symmetric(horizontal: 24),
+                            child: _Tactile3DButton(
+                              color: accentColor,
+                              onPressed:
+                                  block.audioUrl != null &&
+                                      block.audioUrl!.isNotEmpty
+                                  ? () => _playAudio(
+                                      block.audioUrl!,
+                                      '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+                                    )
+                                  : null,
                               child: Row(
-                                mainAxisSize: MainAxisSize.min,
+                                mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Text(
                                     displayText.toUpperCase(),
                                     style: const TextStyle(
-                                      fontSize: 18,
+                                      fontSize: 16,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.white,
-                                      letterSpacing: 1.2,
+                                      letterSpacing: 1.5,
                                     ),
                                   ),
                                   if (block.audioUrl != null &&
                                       block.audioUrl!.isNotEmpty) ...[
-                                    const SizedBox(width: 14),
+                                    const SizedBox(width: 12),
                                     SoundWaveIndicator(
                                       color: Colors.white,
                                       isPlaying: isThisPlaying,
@@ -709,7 +983,7 @@ class _LessonBlockDetailScreenState
                             ),
                           ),
                           if (pron != null && pron.isNotEmpty) ...[
-                            const SizedBox(height: 28),
+                            const SizedBox(height: 32),
                             Padding(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 24,
@@ -717,42 +991,63 @@ class _LessonBlockDetailScreenState
                               child: _buildGlassCard(
                                 themeColor: accentColor,
                                 isDark: isDark,
-                                child: Column(
+                                radius: 20,
+                                padding: 18,
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.record_voice_over_rounded,
-                                          color: isDark
-                                              ? Colors.white
-                                              : accentColor,
-                                          size: 24,
-                                        ),
-                                        const SizedBox(width: 8),
-                                        Text(
-                                          'Pronunciation',
-                                          style: TextStyle(
-                                            fontSize: 16,
-                                            fontWeight: FontWeight.w700,
-                                            color: isDark
-                                                ? Colors.white
-                                                : accentColor,
-                                          ),
-                                        ),
-                                      ],
+                                    Container(
+                                      width: 4,
+                                      height: 52,
+                                      decoration: BoxDecoration(
+                                        color: accentColor,
+                                        borderRadius: BorderRadius.circular(2),
+                                      ),
                                     ),
-                                    const SizedBox(height: 12),
-                                    Text(
-                                      pron,
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        height: 1.5,
-                                        color: isDark
-                                            ? Colors.white70
-                                            : const Color(0xFF2D3748),
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Icon(
+                                                Icons.hearing_rounded,
+                                                color: isDark
+                                                    ? Colors.white70
+                                                    : accentColor,
+                                                size: 18,
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Text(
+                                                'Pronunciation',
+                                                style: TextStyle(
+                                                  fontSize: 11,
+                                                  fontWeight: FontWeight.w900,
+                                                  color: isDark
+                                                      ? Colors.white70
+                                                      : accentColor,
+                                                  letterSpacing: 1.5,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 8),
+                                          Text(
+                                            pron,
+                                            style: TextStyle(
+                                              fontSize: 15,
+                                              fontWeight: FontWeight.w600,
+                                              height: 1.4,
+                                              color: isDark
+                                                  ? Colors.white.withValues(
+                                                      alpha: 0.9,
+                                                    )
+                                                  : const Color(0xFF1A202C),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ],
@@ -761,8 +1056,8 @@ class _LessonBlockDetailScreenState
                             ),
                           ],
                           const SizedBox(
-                            height: 100,
-                          ), // elegant bottom padding for indicator overlay
+                            height: 120,
+                          ), // elegant bottom padding for unified scroll spacing
                         ],
                       ),
                     ),
@@ -935,5 +1230,138 @@ class _SoundWaveIndicatorState extends ConsumerState<SoundWaveIndicator>
         );
       },
     );
+  }
+}
+
+class _Tactile3DButton extends StatefulWidget {
+  const _Tactile3DButton({
+    required this.child,
+    required this.onPressed,
+    required this.color,
+  });
+
+  final Widget child;
+  final VoidCallback? onPressed;
+  final Color color;
+
+  @override
+  State<_Tactile3DButton> createState() => _Tactile3DButtonState();
+}
+
+class _Tactile3DButtonState extends State<_Tactile3DButton> {
+  bool _isPressed = false;
+  static const double buttonHeight = 56.0;
+
+  @override
+  Widget build(BuildContext context) {
+    final hasCallback = widget.onPressed != null;
+    final buttonColor = hasCallback ? widget.color : Colors.grey.shade400;
+
+    // Darker shade for the 3D bottom base shadow
+    final hsl = HSLColor.fromColor(buttonColor);
+    final darkColor = hsl
+        .withLightness((hsl.lightness - 0.15).clamp(0.0, 1.0))
+        .toColor();
+
+    const shadowHeight = 4.0;
+    final pushOffset = _isPressed ? 3.0 : 0.0;
+
+    return GestureDetector(
+      onTapDown: hasCallback
+          ? (_) {
+              HapticFeedback.lightImpact();
+              setState(() => _isPressed = true);
+            }
+          : null,
+      onTapUp: hasCallback
+          ? (_) {
+              setState(() => _isPressed = false);
+              widget.onPressed?.call();
+            }
+          : null,
+      onTapCancel: hasCallback
+          ? () {
+              setState(() => _isPressed = false);
+            }
+          : null,
+      child: SizedBox(
+        height: buttonHeight + shadowHeight,
+        child: Stack(
+          children: [
+            // Darker 3D Base
+            Positioned(
+              bottom: 0,
+              left: 0,
+              right: 0,
+              height: buttonHeight,
+              child: Container(
+                decoration: BoxDecoration(
+                  color: darkColor,
+                  borderRadius: BorderRadius.circular(buttonHeight / 2),
+                ),
+              ),
+            ),
+            // Sliding Top Face
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 60),
+              top: pushOffset,
+              left: 0,
+              right: 0,
+              height: buttonHeight,
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      buttonColor,
+                      HSLColor.fromColor(buttonColor)
+                          .withLightness((hsl.lightness - 0.05).clamp(0.0, 1.0))
+                          .toColor(),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                  borderRadius: BorderRadius.circular(buttonHeight / 2),
+                  boxShadow: _isPressed
+                      ? []
+                      : [
+                          BoxShadow(
+                            color: buttonColor.withValues(alpha: 0.3),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
+                          ),
+                        ],
+                ),
+                child: Center(child: widget.child),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _WatermarkPainter extends CustomPainter {
+  final String text;
+  final TextStyle style;
+
+  _WatermarkPainter({required this.text, required this.style});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final textPainter = TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+      textAlign: TextAlign.center,
+    );
+    textPainter.layout();
+    final x = (size.width - textPainter.width) / 2;
+    final y = (size.height - textPainter.height) / 2;
+    textPainter.paint(canvas, Offset(x, y));
+  }
+
+  @override
+  bool shouldRepaint(covariant _WatermarkPainter oldDelegate) {
+    return oldDelegate.text != text || oldDelegate.style != style;
   }
 }

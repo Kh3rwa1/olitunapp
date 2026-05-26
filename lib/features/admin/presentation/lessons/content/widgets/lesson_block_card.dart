@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
+import '../../../../../../shared/widgets/lottie_display.dart';
+import '../../../../../../shared/widgets/animated_svg_display.dart';
 
 class LessonBlockCard extends StatelessWidget {
   final int index;
@@ -228,10 +228,30 @@ class LessonBlockCard extends StatelessWidget {
                   width: double.infinity,
                   height: 140,
                   child: isSvg
-                      ? SvgPicture.network(
-                          url,
-                          placeholderBuilder: (_) => const Center(
+                      ? AnimatedSvgDisplay(
+                          url: url,
+                          placeholder: const Center(
                             child: CircularProgressIndicator(strokeWidth: 2),
+                          ),
+                          errorWidget: const Center(
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(
+                                  Icons.broken_image_rounded,
+                                  color: Colors.grey,
+                                  size: 36,
+                                ),
+                                SizedBox(height: 4),
+                                Text(
+                                  'Failed to load SVG',
+                                  style: TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         )
                       : Image.network(
@@ -286,11 +306,10 @@ class LessonBlockCard extends StatelessWidget {
                   width: double.infinity,
                   height: 140,
                   child: Center(
-                    child: Lottie.network(
-                      url,
+                    child: LottieDisplay(
+                      url: url,
                       height: 120,
-                      fit: BoxFit.contain,
-                      errorBuilder: (ctx, err, trace) => const Column(
+                      errorWidget: const Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Icon(

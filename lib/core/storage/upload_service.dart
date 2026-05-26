@@ -32,11 +32,6 @@ class AppwriteStorageUploadService {
       'application/json',
       UploadCategory.animation,
     ),
-    'lottie': UploadTarget(
-      'animations',
-      'application/json',
-      UploadCategory.animation,
-    ),
     'mp4': UploadTarget('videos', 'video/mp4', UploadCategory.video),
     'webm': UploadTarget('videos', 'video/webm', UploadCategory.video),
     'mov': UploadTarget('videos', 'video/quicktime', UploadCategory.video),
@@ -117,6 +112,11 @@ class AppwriteStorageUploadService {
   @visibleForTesting
   static UploadTarget targetForFilename(String filename) {
     final ext = filename.split('.').last.toLowerCase();
+    if (ext == 'lottie') {
+      throw Exception(
+        'dotLottie (.lottie) files are not supported. Please upload standard Lottie JSON (.json) files.',
+      );
+    }
     final target = _targetsByExtension[ext];
     if (target == null) {
       throw Exception('Unsupported file type: $filename');

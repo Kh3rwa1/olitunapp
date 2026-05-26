@@ -1,10 +1,10 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:video_player/video_player.dart';
+import 'package:itun/shared/widgets/lottie_display.dart';
+import 'package:itun/shared/widgets/animated_svg_display.dart';
 
 class ContentHero extends StatefulWidget {
   final ContentItem item;
@@ -250,17 +250,15 @@ class _ContentHeroState extends State<ContentHero> {
               const Icon(Icons.broken_image, color: Colors.white30, size: 48),
         );
       case ContentMediaKind.svg:
-        return SvgPicture.network(
-          media.url,
+        return AnimatedSvgDisplay(
+          url: media.url,
           fit: BoxFit.cover,
-          placeholderBuilder: (context) => Container(color: Colors.black12),
+          placeholder: Container(color: Colors.black12),
         );
       case ContentMediaKind.lottie:
-        return Lottie.network(
-          media.url,
-          fit: BoxFit.contain,
-          errorBuilder: (context, error, stackTrace) =>
-              const Icon(Icons.broken_image, color: Colors.white30),
+        return LottieDisplay(
+          url: media.url,
+          errorWidget: const Icon(Icons.broken_image, color: Colors.white30),
         );
       case ContentMediaKind.video:
         return _buildVideoPlayer(media);

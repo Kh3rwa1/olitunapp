@@ -32,7 +32,7 @@ class UploadRules {
     'aac',
     'm4a',
   };
-  static const Set<String> animationExtensions = {'json', 'lottie'};
+  static const Set<String> animationExtensions = {'json'};
   static const Set<String> videoExtensions = {'mp4', 'webm', 'mov', 'm4v'};
   static const Set<String> htmlExtensions = {'html', 'htm'};
 
@@ -49,6 +49,10 @@ class UploadRules {
     if (filename.isEmpty) return 'Filename is empty.';
 
     final ext = filename.split('.').last.toLowerCase();
+    if (ext == 'lottie') {
+      return 'dotLottie (.lottie) files are not supported. Please export and upload as Lottie JSON (.json) files.';
+    }
+
     final allowed = _allowedExtensions(category);
     if (!allowed.contains(ext)) {
       return 'Unsupported file type ".$ext". Allowed: ${allowed.map((e) => '.$e').join(', ')}';

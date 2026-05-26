@@ -1,13 +1,12 @@
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/storage/upload_service.dart';
 import '../../../../shared/widgets/video_display.dart';
+import '../../../../shared/widgets/lottie_display.dart';
+import '../../../../shared/widgets/animated_svg_display.dart';
 
 /// Reusable media upload row used for audio, image, and animation fields
 /// across the entire admin panel (letters, numbers, words, sentences, lessons, etc.).
@@ -309,40 +308,28 @@ class _AdminMediaFieldState extends ConsumerState<AdminMediaField> {
     if (isVideo) {
       child = VideoDisplay(url: url);
     } else if (isLottie) {
-      child = Lottie.network(
-        url,
+      child = LottieDisplay(
+        url: url,
         height: 140,
-        fit: BoxFit.contain,
-        errorBuilder: (_, _, _) => const Icon(
+        errorWidget: const Icon(
           Icons.broken_image_rounded,
           size: 48,
           color: Colors.grey,
         ),
       );
     } else if (isSvg) {
-      child = kIsWeb
-          ? Image.network(
-              url,
-              height: 140,
-              fit: BoxFit.contain,
-              errorBuilder: (_, _, _) => const Icon(
-                Icons.broken_image_rounded,
-                size: 48,
-                color: Colors.grey,
-              ),
-            )
-          : SvgPicture.network(
-              url,
-              height: 140,
-              placeholderBuilder: (_) => const Center(
-                child: CircularProgressIndicator(strokeWidth: 2),
-              ),
-              errorBuilder: (_, _, _) => const Icon(
-                Icons.broken_image_rounded,
-                size: 48,
-                color: Colors.grey,
-              ),
-            );
+      child = AnimatedSvgDisplay(
+        url: url,
+        height: 140,
+        placeholder: const Center(
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+        errorWidget: const Icon(
+          Icons.broken_image_rounded,
+          size: 48,
+          color: Colors.grey,
+        ),
+      );
     } else if (isHtml) {
       child = const Column(
         mainAxisAlignment: MainAxisAlignment.center,

@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:lottie/lottie.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import 'package:video_player/video_player.dart';
 
@@ -17,6 +16,7 @@ import 'package:itun/shared/widgets/content_hero.dart';
 import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
+import 'package:itun/shared/widgets/lottie_display.dart';
 
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -252,11 +252,10 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         final lottieBlock = block as LottieBlock;
         return ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Lottie.network(
-            lottieBlock.media.url,
+          child: LottieDisplay(
+            url: lottieBlock.media.url,
             repeat: lottieBlock.loop,
             height: 240,
-            fit: BoxFit.contain,
           ),
         );
 

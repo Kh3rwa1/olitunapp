@@ -260,7 +260,6 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                       'gif',
                       'svg',
                       'json',
-                      'lottie',
                       'mp4',
                       'webm',
                       'mov',

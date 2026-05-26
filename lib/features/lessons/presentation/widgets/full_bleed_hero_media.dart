@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../../../../shared/utils/media_type_resolver.dart';
 import 'platform_view_stub.dart'
     if (dart.library.js_interop) 'platform_view_web.dart';
+import '../../../../shared/widgets/lottie_display.dart';
+import '../../../../shared/widgets/animated_svg_display.dart';
 
 class FullBleedHeroMedia extends StatelessWidget {
   const FullBleedHeroMedia({
@@ -350,13 +350,12 @@ class _InteractiveLottieHeroState extends State<_InteractiveLottieHero>
               ? (details) =>
                     _scrub(details.localPosition.dx, constraints.maxWidth)
               : null,
-          child: Lottie.network(
-            widget.url,
+          child: LottieDisplay(
+            url: widget.url,
             controller: _controller,
             width: double.infinity,
             height: double.infinity,
             fit: BoxFit.cover,
-            repeat: true,
             onLoaded: (composition) {
               _controller.duration = composition.duration;
               _isLoaded = true;
@@ -364,15 +363,10 @@ class _InteractiveLottieHeroState extends State<_InteractiveLottieHero>
                 _controller.repeat();
               }
             },
-            frameBuilder: (context, child, composition) {
-              if (composition == null) {
-                return const Center(
-                  child: CircularProgressIndicator(strokeWidth: 2),
-                );
-              }
-              return child;
-            },
-            errorBuilder: (context, error, stackTrace) => widget.fallback,
+            placeholder: const Center(
+              child: CircularProgressIndicator(strokeWidth: 2),
+            ),
+            errorWidget: widget.fallback,
           ),
         );
       },
@@ -406,24 +400,15 @@ class _SvgHeroMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (kIsWeb) {
-      return Image.network(
-        url,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) => fallback,
-      );
-    }
-
-    return SvgPicture.network(
-      url,
+    return AnimatedSvgDisplay(
+      url: url,
       width: double.infinity,
       height: double.infinity,
       fit: BoxFit.cover,
-      errorBuilder: (context, error, stackTrace) => fallback,
-      placeholderBuilder: (context) =>
-          const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+      placeholder: const Center(
+        child: CircularProgressIndicator(strokeWidth: 2),
+      ),
+      errorWidget: fallback,
     );
   }
 }
@@ -448,21 +433,13 @@ class _HeroImage extends StatelessWidget {
             url.contains('svg');
 
     if (effectiveIsSvg) {
-      if (kIsWeb) {
-        return Image.network(
-          url,
-          width: double.infinity,
-          height: double.infinity,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) => fallback,
-        );
-      }
-      return SvgPicture.network(
-        url,
+      return AnimatedSvgDisplay(
+        url: url,
         width: double.infinity,
         height: double.infinity,
         fit: BoxFit.cover,
-        placeholderBuilder: (context) => fallback,
+        placeholder: fallback,
+        errorWidget: fallback,
       );
     }
 

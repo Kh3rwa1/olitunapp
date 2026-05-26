@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:lottie/lottie.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../../../shared/utils/media_type_resolver.dart';
+import '../../../../../shared/widgets/lottie_display.dart';
+import '../../../../../shared/widgets/animated_svg_display.dart';
 
 class LessonCard extends ConsumerWidget {
   final LessonEntity lesson;
@@ -251,12 +252,18 @@ class LessonCard extends ConsumerWidget {
         }
         return _buildMediaIcon(Icons.play_circle_fill_rounded);
       case MediaKind.lottie:
-        return Lottie.network(
-          url,
+        return LottieDisplay(
+          url: url,
           fit: BoxFit.cover,
-          errorBuilder: (_, _, _) => _buildMediaIcon(Icons.animation_rounded),
+          errorWidget: _buildMediaIcon(Icons.animation_rounded),
         );
       case MediaKind.svg:
+        return AnimatedSvgDisplay(
+          url: url,
+          fit: BoxFit.cover,
+          placeholder: _buildMediaIcon(Icons.image_rounded),
+          errorWidget: _buildMediaIcon(Icons.image_rounded),
+        );
       case MediaKind.image:
       case MediaKind.html:
       case MediaKind.audio:

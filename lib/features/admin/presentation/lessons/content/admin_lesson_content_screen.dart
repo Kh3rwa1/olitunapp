@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/models/content_item_extensions.dart';
 import '../../../../../shared/repositories/content_repository.dart';
+import '../../../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';
 import '../../../../lessons/presentation/widgets/dynamic_block_builder.dart';
@@ -36,6 +38,7 @@ class _AdminLessonContentScreenState
   late ScrollController _leftScrollController;
   late ScrollController _previewScrollController;
   int? _hoveredOrFocusedIndex;
+  Timer? _autoSaveTimer;
 
   @override
   void initState() {
@@ -47,6 +50,7 @@ class _AdminLessonContentScreenState
 
   @override
   void dispose() {
+    _autoSaveTimer?.cancel();
     _leftScrollController.dispose();
     _previewScrollController.dispose();
     super.dispose();
@@ -102,6 +106,29 @@ class _AdminLessonContentScreenState
     }
   }
 
+  void _scheduleAutoSave() {
+    _autoSaveTimer?.cancel();
+    _autoSaveTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted && _hasChanges && !_isSaving) {
+        _saveChanges();
+      }
+    });
+  }
+
+  String get _backRoute =>
+      _lesson != null && _lesson!.categoryId.isNotEmpty
+          ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
+          : '/admin/lessons';
+
+  Future<void> _navigateBack() async {
+    if (_hasChanges) {
+      // Auto-save before leaving
+      _autoSaveTimer?.cancel();
+      await _saveChanges();
+    }
+    if (mounted) context.go(_backRoute);
+  }
+
   Future<void> _saveChanges() async {
     if (_contentItem == null || _isSaving) return;
 
@@ -143,11 +170,18 @@ class _AdminLessonContentScreenState
           _contentItem = savedItem;
           _lesson = savedItem.toLessonEntity();
 
-          // Invalidate providers so mobile app picks up changes
+          // Invalidate providers so dashboard & mobile app picks up changes
           ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+          if (_lesson != null && _lesson!.categoryId.isNotEmpty) {
+            ref.invalidate(
+              contentListProvider((ContentKind.lesson, _lesson!.categoryId)),
+            );
+          }
           ref.invalidate(
             contentDetailProvider((ContentKind.lesson, widget.lessonId)),
           );
+          // ignore: deprecated_member_use
+          ref.invalidate(lessonNotifierProvider);
 
           setState(() {
             _hasChanges = false;
@@ -206,6 +240,7 @@ class _AdminLessonContentScreenState
           _hasChanges = true;
           _hoveredOrFocusedIndex = _blocks.length - 1;
         });
+        _scheduleAutoSave();
       },
     );
   }
@@ -224,6 +259,7 @@ class _AdminLessonContentScreenState
       _blocks[index] = block;
       _hasChanges = true;
     });
+    _scheduleAutoSave();
   }
 
   void _removeBlock(int index) {
@@ -232,6 +268,7 @@ class _AdminLessonContentScreenState
       _blocks.removeAt(index);
       _hasChanges = true;
     });
+    _scheduleAutoSave();
 
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -256,6 +293,7 @@ class _AdminLessonContentScreenState
       _blocks = reorderLessonBlocks(_blocks, oldIndex, newIndex);
       _hasChanges = true;
     });
+    _scheduleAutoSave();
   }
 
   @override
@@ -270,7 +308,13 @@ class _AdminLessonContentScreenState
       );
     }
 
-    return Scaffold(
+    return PopScope(
+      canPop: false,
+      onPopInvokedWithResult: (didPop, _) async {
+        if (didPop) return;
+        await _navigateBack();
+      },
+      child: Scaffold(
       backgroundColor: Colors.transparent,
       body: Column(
         children: [
@@ -437,6 +481,7 @@ class _AdminLessonContentScreenState
           style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
         ),
       ),
+    ),
     );
   }
 
@@ -734,11 +779,7 @@ class _AdminLessonContentScreenState
             Row(
               children: [
                 GestureDetector(
-                  onTap: () => context.go(
-                    _lesson != null && _lesson!.categoryId.isNotEmpty
-                        ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
-                        : '/admin/lessons',
-                  ),
+                  onTap: _navigateBack,
                   child: const Text(
                     'Lessons',
                     style: TextStyle(
@@ -777,11 +818,7 @@ class _AdminLessonContentScreenState
                 ? Row(
                     children: [
                       ScaleButton(
-                        onPressed: () => context.go(
-                          _lesson != null && _lesson!.categoryId.isNotEmpty
-                              ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
-                              : '/admin/lessons',
-                        ),
+                        onPressed: _navigateBack,
                         child: Container(
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
@@ -967,11 +1004,7 @@ class _AdminLessonContentScreenState
                       Row(
                         children: [
                           ScaleButton(
-                            onPressed: () => context.go(
-                              _lesson != null && _lesson!.categoryId.isNotEmpty
-                                  ? '/admin/lessons?categoryId=${_lesson!.categoryId}'
-                                  : '/admin/lessons',
-                            ),
+                            onPressed: _navigateBack,
                             child: Container(
                               padding: const EdgeInsets.all(8),
                               decoration: BoxDecoration(

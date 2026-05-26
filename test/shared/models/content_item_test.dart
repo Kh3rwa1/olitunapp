@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/models/content_models.dart';
 
 void main() {
@@ -243,5 +242,47 @@ void main() {
       expect(word.categoryId, 'cat_words');
       expect(word.isPublished, isTrue);
     });
+  });
+
+  group('ContentBlock Rich Media / Legacy Properties Round-Trip', () {
+    test(
+      'TextBlock rich media properties save and load correctly via meta',
+      () {
+        const block = TextBlock(
+          id: 'b1',
+          order: 0,
+          markdown: 'Greetings',
+          textOlChiki: 'ᱡᱚᱦᱟᱨ',
+          textLatin: 'hello',
+          meta: {
+            'pronunciation': 'johar',
+            'themeColor': '#10B981',
+            'customField': 'q1',
+          },
+        );
+
+        // JSON Round-trip
+        final json = block.toJson();
+        expect(json['meta']['pronunciation'], 'johar');
+        expect(json['meta']['themeColor'], '#10B981');
+        expect(json['meta']['customField'], 'q1');
+
+        final parsed = ContentBlock.fromJson(json) as TextBlock;
+        expect(parsed.meta['pronunciation'], 'johar');
+        expect(parsed.meta['themeColor'], '#10B981');
+        expect(parsed.meta['customField'], 'q1');
+
+        // Extension conversions (toLegacy/toContentBlock)
+        final legacy = block.toLessonBlockEntity();
+        expect(legacy.data?['pronunciation'], 'johar');
+        expect(legacy.data?['themeColor'], '#10B981');
+        expect(legacy.data?['customField'], 'q1');
+
+        final reconverted = legacy.toContentBlock(0) as TextBlock;
+        expect(reconverted.meta['pronunciation'], 'johar');
+        expect(reconverted.meta['themeColor'], '#10B981');
+        expect(reconverted.meta['customField'], 'q1');
+      },
+    );
   });
 }

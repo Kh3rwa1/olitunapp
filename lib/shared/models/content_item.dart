@@ -332,15 +332,17 @@ sealed class ContentBlock extends Equatable {
   final String id;
   final int order;
   final String type;
+  final Map<String, dynamic> meta; // NEW — admin/editor passthrough
 
   const ContentBlock({
     required this.id,
     required this.order,
     required this.type,
+    this.meta = const {},
   });
 
   @override
-  List<Object?> get props => [id, order, type];
+  List<Object?> get props => [id, order, type, meta];
 
   factory ContentBlock.fromJson(Map<String, dynamic> json) {
     final type = json['type'] as String? ?? 'text';
@@ -365,7 +367,6 @@ sealed class ContentBlock extends Equatable {
       case 'tracing':
         return TracingBlock.fromJson(json);
       default:
-        // Safe fallback for unknown/custom/html blocks to prevent crashes/disappearing content
         return TextBlock.fromJson(json);
     }
   }
@@ -384,6 +385,7 @@ class TextBlock extends ContentBlock {
     required this.markdown,
     this.textOlChiki,
     this.textLatin,
+    super.meta = const {},
   }) : super(type: 'text');
 
   factory TextBlock.fromJson(Map<String, dynamic> json) {
@@ -397,6 +399,7 @@ class TextBlock extends ContentBlock {
           '',
       textOlChiki: json['textOlChiki'] as String?,
       textLatin: json['textLatin'] as String?,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -409,6 +412,7 @@ class TextBlock extends ContentBlock {
       'markdown': markdown,
       if (textOlChiki != null) 'textOlChiki': textOlChiki,
       if (textLatin != null) 'textLatin': textLatin,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -425,16 +429,19 @@ class ImageBlock extends ContentBlock {
     required super.order,
     required this.media,
     this.caption,
+    super.meta = const {},
   }) : super(type: 'image');
 
   factory ImageBlock.fromJson(Map<String, dynamic> json) {
     final rawMedia = json['media'];
     ContentMedia parsedMedia;
     if (rawMedia is Map<String, dynamic>) {
-      parsedMedia = ContentMedia.fromJson(rawMedia);
+      parsedMedia = ContentMedia.fromJson(rawMedia.cast<String, dynamic>());
     } else {
       parsedMedia = ContentMedia(
-        url: json['imageUrl'] as String? ?? json['mediaUrl'] as String? ?? '',
+        url:
+            (json['imageUrl'] ?? json['mediaUrl'] ?? json['url'] ?? '')
+                as String,
         fileId: '',
         kind: json['type'] == 'svg'
             ? ContentMediaKind.svg
@@ -446,6 +453,7 @@ class ImageBlock extends ContentBlock {
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       caption: json['caption'] as String? ?? json['textLatin'] as String?,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -457,6 +465,7 @@ class ImageBlock extends ContentBlock {
       'type': 'image',
       'media': media.toJson(),
       if (caption != null) 'caption': caption,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -467,68 +476,59 @@ class ImageBlock extends ContentBlock {
 class VideoBlock extends ContentBlock {
   final ContentMedia media;
   final String? posterUrl;
-  final int? durationSeconds;
   final bool autoplay;
+  final int? durationSeconds;
 
   const VideoBlock({
     required super.id,
     required super.order,
     required this.media,
     this.posterUrl,
-    this.durationSeconds,
     this.autoplay = false,
+    this.durationSeconds,
+    super.meta = const {},
   }) : super(type: 'video');
 
   factory VideoBlock.fromJson(Map<String, dynamic> json) {
-    final rawMedia = json['media'];
-    ContentMedia parsedMedia;
-    if (rawMedia is Map<String, dynamic>) {
-      parsedMedia = ContentMedia.fromJson(rawMedia);
-    } else {
-      parsedMedia = ContentMedia(
-        url: json['audioUrl'] as String? ?? '',
-        fileId: '',
-        kind: ContentMediaKind.video,
-        caption: json['textLatin'] as String?,
-      );
-    }
-
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final mediaJson = json['media'];
     return VideoBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
-      media: parsedMedia,
+      media: mediaJson is Map
+          ? ContentMedia.fromJson(mediaJson.cast<String, dynamic>())
+          : ContentMedia(
+              url:
+                  (json['videoUrl'] ?? json['audioUrl'] ?? json['url'] ?? '')
+                      as String,
+              fileId: '',
+              kind: ContentMediaKind.video,
+            ),
       posterUrl: json['posterUrl'] as String? ?? json['imageUrl'] as String?,
-      durationSeconds:
-          json['durationSeconds'] as int? ??
-          rawData?['durationSeconds'] as int?,
-      autoplay:
-          json['autoplay'] as bool? ?? rawData?['autoplay'] as bool? ?? false,
+      autoplay: json['autoplay'] as bool? ?? false,
+      durationSeconds: json['durationSeconds'] as int?,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
   @override
-  Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'order': order,
-      'type': 'video',
-      'media': media.toJson(),
-      if (posterUrl != null) 'posterUrl': posterUrl,
-      if (durationSeconds != null) 'durationSeconds': durationSeconds,
-      'autoplay': autoplay,
-    };
-  }
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'order': order,
+    'type': 'video',
+    'media': media.toJson(),
+    if (posterUrl != null) 'posterUrl': posterUrl,
+    'autoplay': autoplay,
+    if (durationSeconds != null) 'durationSeconds': durationSeconds,
+    if (meta.isNotEmpty) 'meta': meta,
+  };
 
   @override
   List<Object?> get props => [
     ...super.props,
     media,
     posterUrl,
-    durationSeconds,
     autoplay,
+    durationSeconds,
   ];
 }
 
@@ -541,31 +541,30 @@ class AudioBlock extends ContentBlock {
     required super.order,
     required this.media,
     this.transcript,
+    super.meta = const {},
   }) : super(type: 'audio');
 
   factory AudioBlock.fromJson(Map<String, dynamic> json) {
     final rawMedia = json['media'];
     ContentMedia parsedMedia;
     if (rawMedia is Map<String, dynamic>) {
-      parsedMedia = ContentMedia.fromJson(rawMedia);
+      parsedMedia = ContentMedia.fromJson(rawMedia.cast<String, dynamic>());
     } else {
       parsedMedia = ContentMedia(
-        url: json['audioUrl'] as String? ?? '',
+        url: (json['audioUrl'] ?? json['url'] ?? '') as String,
         fileId: '',
         kind: ContentMediaKind.audio,
-        caption: json['textLatin'] as String?,
       );
     }
 
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final rawData = json['data'] is Map ? json['data'] as Map : null;
     return AudioBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       transcript:
           json['transcript'] as String? ?? rawData?['transcript'] as String?,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -577,6 +576,7 @@ class AudioBlock extends ContentBlock {
       'type': 'audio',
       'media': media.toJson(),
       if (transcript != null) 'transcript': transcript,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -593,29 +593,29 @@ class LottieBlock extends ContentBlock {
     required super.order,
     required this.media,
     this.loop = true,
+    super.meta = const {},
   }) : super(type: 'lottie');
 
   factory LottieBlock.fromJson(Map<String, dynamic> json) {
     final rawMedia = json['media'];
     ContentMedia parsedMedia;
     if (rawMedia is Map<String, dynamic>) {
-      parsedMedia = ContentMedia.fromJson(rawMedia);
+      parsedMedia = ContentMedia.fromJson(rawMedia.cast<String, dynamic>());
     } else {
       parsedMedia = ContentMedia(
-        url: json['imageUrl'] as String? ?? '',
+        url: (json['imageUrl'] ?? json['url'] ?? '') as String,
         fileId: '',
         kind: ContentMediaKind.lottie,
       );
     }
 
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final rawData = json['data'] is Map ? json['data'] as Map : null;
     return LottieBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       loop: json['loop'] as bool? ?? rawData?['loop'] as bool? ?? true,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -627,6 +627,7 @@ class LottieBlock extends ContentBlock {
       'type': 'lottie',
       'media': media.toJson(),
       'loop': loop,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -641,27 +642,34 @@ class QuizBlock extends ContentBlock {
     required super.id,
     required super.order,
     required this.quizId,
+    super.meta = const {},
   }) : super(type: 'quiz');
 
   factory QuizBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final rawData = json['data'] is Map ? json['data'] as Map : null;
     return QuizBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       quizId:
-          json['quizId'] as String? ??
-          json['quiz_id'] as String? ??
-          rawData?['quizId'] as String? ??
-          rawData?['quizRefId'] as String? ??
-          '',
+          (json['quizId'] ??
+                  json['quizRefId'] ??
+                  rawData?['quizId'] ??
+                  rawData?['quizRefId'] ??
+                  '')
+              as String,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
   @override
   Map<String, dynamic> toJson() {
-    return {'id': id, 'order': order, 'type': 'quiz', 'quizId': quizId};
+    return {
+      'id': id,
+      'order': order,
+      'type': 'quiz',
+      'quizId': quizId,
+      if (meta.isNotEmpty) 'meta': meta,
+    };
   }
 
   @override
@@ -679,6 +687,7 @@ class GlyphBlock extends ContentBlock {
     required this.olChiki,
     required this.latin,
     this.audioUrl,
+    super.meta = const {},
   }) : super(type: 'glyph');
 
   factory GlyphBlock.fromJson(Map<String, dynamic> json) {
@@ -692,6 +701,7 @@ class GlyphBlock extends ContentBlock {
           '',
       latin: json['latin'] as String? ?? json['textLatin'] as String? ?? '',
       audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -704,6 +714,7 @@ class GlyphBlock extends ContentBlock {
       'olChiki': olChiki,
       'latin': latin,
       if (audioUrl != null) 'audioUrl': audioUrl,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -720,12 +731,11 @@ class CalloutBlock extends ContentBlock {
     required super.order,
     required this.text,
     required this.variant,
+    super.meta = const {},
   }) : super(type: 'callout');
 
   factory CalloutBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final rawData = json['data'] is Map ? json['data'] as Map : null;
     return CalloutBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
@@ -733,6 +743,7 @@ class CalloutBlock extends ContentBlock {
       variant: CalloutVariant.fromString(
         json['variant'] as String? ?? rawData?['style'] as String? ?? 'note',
       ),
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -744,6 +755,7 @@ class CalloutBlock extends ContentBlock {
       'type': 'callout',
       'text': text,
       'variant': variant.name,
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 
@@ -758,20 +770,20 @@ class TracingBlock extends ContentBlock {
     required super.id,
     required super.order,
     required this.config,
+    super.meta = const {},
   }) : super(type: 'tracing');
 
   factory TracingBlock.fromJson(Map<String, dynamic> json) {
-    final rawData = json['data'] is Map
-        ? json['data'] as Map<String, dynamic>
-        : null;
+    final rawData = json['data'] is Map ? json['data'] as Map : null;
     return TracingBlock(
       id: json['id'] as String? ?? '',
       order: json['order'] as int? ?? 0,
       config: TracingConfig.fromJson(
         json['config'] is Map<String, dynamic>
             ? json['config'] as Map<String, dynamic>
-            : (rawData ?? const {}),
+            : (rawData?.cast<String, dynamic>() ?? const {}),
       ),
+      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
     );
   }
 
@@ -782,6 +794,7 @@ class TracingBlock extends ContentBlock {
       'order': order,
       'type': 'tracing',
       'config': config.toJson(),
+      if (meta.isNotEmpty) 'meta': meta,
     };
   }
 

@@ -57,9 +57,12 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
   late final TextEditingController quizRefCtrl;
   late final TextEditingController _pronCtrl;
   late final TextEditingController _themeColorCtrl;
-  String? _imageUrl;
-  String? _audioUrl;
-  String? _animationUrl;
+
+  String? _mediaUrl; // canonical media URL for image/svg/video/audio/lottie
+  MediaKind? _mediaKind; // resolved kind, not inferred from field name
+  String? _posterUrl; // video poster only
+  String?
+  _audioUrl; // optional secondary audio (e.g. for text/glyph pronunciation)
   bool isTranslating = false;
 
   @override
@@ -69,44 +72,67 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
     olChikiCtrl = TextEditingController(text: block.textOlChiki ?? '');
     latinCtrl = TextEditingController(text: block.textLatin ?? '');
 
-    // Parse visual media universally across candidates
-    final candidates = [
-      block.data?['heroMediaUrl'],
-      block.data?['mediaUrl'],
-      block.data?['videoUrl'],
-      block.data?['animationUrl'],
-      block.data?['htmlUrl'],
-      block.data?['imageUrl'],
-      block.imageUrl,
-      if (block.type == 'video') block.audioUrl,
-    ];
-    String? matchedUrl;
-    for (final c in candidates) {
-      if (c is String && c.trim().isNotEmpty) {
-        matchedUrl = c.trim();
-        break;
+    // Canonical resolution: prefer data.media.url, then legacy fallbacks
+    final dataMedia = (block.data?['media'] is Map)
+        ? (block.data!['media'] as Map).cast<String, dynamic>()
+        : null;
+
+    final candidate =
+        dataMedia?['url'] as String? ??
+        block.data?['heroMediaUrl'] as String? ??
+        block.data?['mediaUrl'] as String? ??
+        block.data?['videoUrl'] as String? ??
+        block.data?['animationUrl'] as String? ??
+        block.data?['imageUrl'] as String? ??
+        (block.type == 'video' ? block.audioUrl : null) ??
+        block.imageUrl;
+
+    if (candidate != null && candidate.trim().isNotEmpty) {
+      _mediaUrl = candidate.trim();
+      final declaredKind =
+          dataMedia?['kind'] as String? ?? block.data?['mediaType'] as String?;
+      _mediaKind = declaredKind != null
+          ? MediaTypeResolver.resolveFromType(declaredKind)
+          : MediaTypeResolver.resolve(_mediaUrl);
+      // For text blocks with type==text, kind stays null
+      if (_mediaKind == MediaKind.unknown) {
+        _mediaKind = _inferKindFromBlockType(block.type);
       }
     }
 
-    if (matchedUrl != null) {
-      if (MediaTypeResolver.resolve(matchedUrl) == MediaKind.lottie) {
-        _animationUrl = matchedUrl;
-        _imageUrl = null;
-      } else {
-        _imageUrl = matchedUrl;
-        _animationUrl = null;
-      }
-    } else {
-      _imageUrl = null;
-      _animationUrl = null;
-    }
+    _posterUrl =
+        block.data?['posterUrl'] as String? ??
+        (block.type == 'video' ? block.imageUrl : null);
 
-    _audioUrl = block.audioUrl;
-    quizRefCtrl = TextEditingController(text: block.data?['quizRefId'] ?? '');
-    _pronCtrl = TextEditingController(text: block.data?['pronunciation'] ?? '');
-    _themeColorCtrl = TextEditingController(
-      text: block.data?['themeColor'] ?? '',
+    // Audio: only used when block.type=='audio' OR as pronunciation aid
+    _audioUrl = block.type == 'video' ? null : block.audioUrl;
+
+    quizRefCtrl = TextEditingController(
+      text: (block.data?['quizId'] ?? block.data?['quizRefId'] ?? '') as String,
     );
+    _pronCtrl = TextEditingController(
+      text: block.data?['pronunciation'] as String? ?? '',
+    );
+    _themeColorCtrl = TextEditingController(
+      text: block.data?['themeColor'] as String? ?? '',
+    );
+  }
+
+  MediaKind? _inferKindFromBlockType(String t) {
+    switch (t) {
+      case 'image':
+        return MediaKind.image;
+      case 'svg':
+        return MediaKind.svg;
+      case 'video':
+        return MediaKind.video;
+      case 'audio':
+        return MediaKind.audio;
+      case 'lottie':
+        return MediaKind.lottie;
+      default:
+        return null;
+    }
   }
 
   @override
@@ -120,59 +146,74 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
   }
 
   void _save() {
-    final mediaUrl = (_animationUrl != null && _animationUrl!.trim().isNotEmpty)
-        ? _animationUrl!.trim()
-        : ((_imageUrl != null && _imageUrl!.trim().isNotEmpty)
-              ? _imageUrl!.trim()
-              : null);
-
-    final finalAudioUrl = _audioUrl?.trim().isNotEmpty == true
+    final cleanedMediaUrl = _mediaUrl?.trim().isNotEmpty == true
+        ? _mediaUrl!.trim()
+        : null;
+    final cleanedPoster = _posterUrl?.trim().isNotEmpty == true
+        ? _posterUrl!.trim()
+        : null;
+    final cleanedAudio = _audioUrl?.trim().isNotEmpty == true
         ? _audioUrl!.trim()
         : null;
-    String? finalImageUrl = (_imageUrl != null && _imageUrl!.trim().isNotEmpty)
-        ? _imageUrl!.trim()
-        : null;
-    final finalAnimationUrl =
-        (_animationUrl != null && _animationUrl!.trim().isNotEmpty)
-        ? _animationUrl!.trim()
+    final resolvedKind = cleanedMediaUrl != null
+        ? (_mediaKind ?? MediaTypeResolver.resolve(cleanedMediaUrl))
         : null;
 
-    // For Lottie animations, we set imageUrl = finalAnimationUrl for compatibility
-    if (finalAnimationUrl != null) {
-      finalImageUrl = finalAnimationUrl;
+    // Build the canonical media map ONCE.
+    final mediaMap = cleanedMediaUrl == null
+        ? null
+        : {
+            'url': cleanedMediaUrl,
+            'kind': (resolvedKind ?? MediaKind.unknown).name,
+            // fileId could be threaded through from upload widget; leave empty for now
+            'fileId': '',
+          };
+
+    // Preserve any unknown keys from original data so we don't drop user edits made elsewhere
+    final preservedData = <String, dynamic>{...?widget.block.data};
+
+    // Strip legacy keys we now own canonically
+    for (final k in const [
+      'heroMediaUrl',
+      'mediaUrl',
+      'videoUrl',
+      'animationUrl',
+      'imageUrl',
+      'mediaType',
+      'quizRefId',
+    ]) {
+      preservedData.remove(k);
     }
 
-    final updatedBlock = LessonBlockEntity(
+    final newData = <String, dynamic>{
+      ...preservedData,
+      'media': ?mediaMap,
+      'posterUrl': ?cleanedPoster,
+      if (quizRefCtrl.text.trim().isNotEmpty) 'quizId': quizRefCtrl.text.trim(),
+      if (_pronCtrl.text.trim().isNotEmpty)
+        'pronunciation': _pronCtrl.text.trim(),
+      if (_themeColorCtrl.text.trim().isNotEmpty)
+        'themeColor': _themeColorCtrl.text.trim(),
+      // Stable block id — only generate once
+      'id':
+          (preservedData['id'] as String?) ??
+          'blk_${widget.block.type}_${DateTime.now().microsecondsSinceEpoch}',
+    };
+
+    final updated = LessonBlockEntity(
       type: widget.block.type,
-      textOlChiki: olChikiCtrl.text.isEmpty ? null : olChikiCtrl.text,
-      textLatin: latinCtrl.text.isEmpty ? null : latinCtrl.text,
-      imageUrl: finalImageUrl,
-      audioUrl: widget.block.type == 'video'
-          ? (finalImageUrl ?? finalAudioUrl)
-          : finalAudioUrl,
-      data: {
-        ...?widget.block.data,
-        'animationUrl': finalAnimationUrl,
-        'mediaUrl': mediaUrl,
-        'heroMediaUrl': mediaUrl,
-        'mediaType':
-            widget.block.type != 'text' &&
-                widget.block.type != 'quiz' &&
-                widget.block.type != 'audio'
-            ? widget.block.type
-            : (mediaUrl != null
-                  ? MediaTypeResolver.appwriteHeroMediaType(mediaUrl)
-                  : null),
-        'quizRefId': quizRefCtrl.text.isNotEmpty ? quizRefCtrl.text : null,
-        'pronunciation': _pronCtrl.text.trim().isNotEmpty
-            ? _pronCtrl.text.trim()
-            : null,
-        'themeColor': _themeColorCtrl.text.trim().isNotEmpty
-            ? _themeColorCtrl.text.trim()
-            : null,
-      }..removeWhere((key, value) => value == null),
+      textOlChiki: olChikiCtrl.text.trim().isEmpty
+          ? null
+          : olChikiCtrl.text.trim(),
+      textLatin: latinCtrl.text.trim().isEmpty ? null : latinCtrl.text.trim(),
+      // Keep legacy fields populated for any old read paths still hanging around,
+      // but mobile/admin should now read from data.media.
+      imageUrl: widget.block.type == 'video' ? cleanedPoster : cleanedMediaUrl,
+      audioUrl: widget.block.type == 'video' ? cleanedMediaUrl : cleanedAudio,
+      data: newData,
     );
-    widget.onUpdate(updatedBlock);
+
+    widget.onUpdate(updated);
     Navigator.pop(context);
   }
 
@@ -489,6 +530,21 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
         iconColor = Colors.green;
         typeLabel = 'Quiz Block';
         break;
+      case 'glyph':
+        icon = Icons.abc_rounded;
+        iconColor = const Color(0xFFEC4899);
+        typeLabel = 'Glyph Block';
+        break;
+      case 'callout':
+        icon = Icons.lightbulb_rounded;
+        iconColor = const Color(0xFFF59E0B);
+        typeLabel = 'Callout Block';
+        break;
+      case 'tracing':
+        icon = Icons.gesture_rounded;
+        iconColor = const Color(0xFF14B8A6);
+        typeLabel = 'Tracing Block';
+        break;
       default:
         icon = Icons.extension;
         iconColor = Colors.grey;
@@ -667,45 +723,41 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
                       onUploaded: (url) => setState(() => _audioUrl = url),
                     ),
                     const SizedBox(height: 24),
-                    AdminMediaField(
-                      label: 'Visual Media (Optional)',
-                      subtitle:
-                          'Supports PNG, JPG, WebP, GIF, SVG, Lottie JSON, MP4/webm video, or HTML.',
-                      icon: Icons.perm_media_rounded,
-                      accent: const Color(0xFF6366F1),
-                      currentUrl: _animationUrl ?? _imageUrl,
-                      uploadFolder: 'lesson-media',
-                      fileType: FileType.custom,
-                      allowedExtensions: const [
-                        'png',
-                        'jpg',
-                        'jpeg',
-                        'webp',
-                        'gif',
-                        'svg',
-                        'json',
-                        'lottie',
-                        'mp4',
-                        'webm',
-                        'mov',
-                        'm4v',
-                        'html',
-                        'htm',
+                    // === MEDIA SECTION ===
+                    if (widget.block.type != 'text' &&
+                        widget.block.type != 'quiz') ...[
+                      AdminMediaField(
+                        label: _mediaFieldLabel(widget.block.type),
+                        subtitle: _mediaFieldSubtitle(widget.block.type),
+                        icon: Icons.perm_media_rounded,
+                        accent: const Color(0xFF6366F1),
+                        currentUrl: _mediaUrl,
+                        uploadFolder: _uploadFolderFor(widget.block.type),
+                        fileType: _filePickerTypeFor(widget.block.type),
+                        allowedExtensions: _allowedExtsFor(widget.block.type),
+                        onUploaded: (url) {
+                          setState(() {
+                            _mediaUrl = url;
+                            _mediaKind = url == null
+                                ? null
+                                : MediaTypeResolver.resolve(url);
+                          });
+                        },
+                      ),
+                      if (widget.block.type == 'video') ...[
+                        const SizedBox(height: 24),
+                        AdminMediaField(
+                          label: 'Poster Image (Optional)',
+                          subtitle: 'Shown before video plays. PNG/JPG/WebP.',
+                          icon: Icons.image_rounded,
+                          accent: const Color(0xFF8B5CF6),
+                          currentUrl: _posterUrl,
+                          uploadFolder: 'lesson-posters',
+                          fileType: FileType.image,
+                          onUploaded: (url) => setState(() => _posterUrl = url),
+                        ),
                       ],
-                      onUploaded: (url) {
-                        setState(() {
-                          if (url != null &&
-                              MediaTypeResolver.resolve(url) ==
-                                  MediaKind.lottie) {
-                            _animationUrl = url;
-                            _imageUrl = null;
-                          } else {
-                            _imageUrl = url;
-                            _animationUrl = null;
-                          }
-                        });
-                      },
-                    ),
+                    ],
                   ],
                 ],
               ),
@@ -772,6 +824,48 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
       ),
     );
   }
+
+  String _mediaFieldLabel(String t) => switch (t) {
+    'image' => 'Image',
+    'svg' => 'SVG Vector',
+    'video' => 'Video File',
+    'audio' => 'Audio File',
+    'lottie' => 'Lottie Animation (.json)',
+    _ => 'Media',
+  };
+
+  String _mediaFieldSubtitle(String t) => switch (t) {
+    'image' => 'Supports PNG, JPG, WebP, GIF.',
+    'svg' => 'Supports SVG vector file.',
+    'video' => 'Supports MP4, WebM, MOV.',
+    'audio' => 'Supports MP3, WAV, M4A.',
+    'lottie' => 'Supports JSON Lottie animations.',
+    _ => 'Supports web-compatible formats.',
+  };
+
+  List<String> _allowedExtsFor(String t) => switch (t) {
+    'image' => const ['png', 'jpg', 'jpeg', 'webp', 'gif'],
+    'svg' => const ['svg'],
+    'video' => const ['mp4', 'webm', 'mov', 'm4v'],
+    'audio' => const ['mp3', 'wav', 'm4a', 'aac', 'ogg'],
+    'lottie' => const ['json', 'lottie'],
+    _ => const [],
+  };
+
+  FileType _filePickerTypeFor(String t) => switch (t) {
+    'image' || 'svg' => FileType.image,
+    'video' => FileType.video,
+    'audio' => FileType.audio,
+    _ => FileType.custom,
+  };
+
+  String _uploadFolderFor(String t) => switch (t) {
+    'video' => 'lesson-videos',
+    'audio' => 'lesson-audio',
+    'lottie' => 'lesson-animations',
+    'svg' => 'lesson-svgs',
+    _ => 'lesson-images',
+  };
 }
 
 class _LinkedContentMatch {

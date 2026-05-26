@@ -10,7 +10,6 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/features/lessons/presentation/widgets/full_bleed_hero_media.dart';
-import 'package:itun/shared/utils/media_type_resolver.dart';
 
 class MockAudioService extends Mock implements AudioService {
   @override
@@ -183,7 +182,7 @@ void main() {
       ProviderScope(
         overrides: [
           learnerLessonsProvider.overrideWithValue(
-            AsyncValue.error('Error loading', StackTrace.empty),
+            const AsyncValue.error('Error loading', StackTrace.empty),
           ),
         ],
         child: const MaterialApp(

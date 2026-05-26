@@ -63,6 +63,21 @@ class LessonBlockCard extends StatelessWidget {
         color = Colors.green;
         title = 'Quiz Block';
         break;
+      case 'glyph':
+        icon = Icons.abc_rounded;
+        color = const Color(0xFFEC4899);
+        title = 'Glyph Block';
+        break;
+      case 'callout':
+        icon = Icons.lightbulb_rounded;
+        color = const Color(0xFFF59E0B);
+        title = 'Callout Block';
+        break;
+      case 'tracing':
+        icon = Icons.gesture_rounded;
+        color = const Color(0xFF14B8A6);
+        title = 'Tracing Block';
+        break;
       default:
         icon = Icons.extension;
         color = Colors.grey;
@@ -415,7 +430,7 @@ class LessonBlockCard extends StatelessWidget {
         );
 
       case 'quiz':
-        final refId = block.data?['quizRefId'];
+        final refId = block.data?['quizId'] ?? block.data?['quizRefId'];
         return Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -451,7 +466,7 @@ class LessonBlockCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      refId != null && refId.isNotEmpty
+                      refId != null && refId.toString().isNotEmpty
                           ? 'Ref ID: $refId'
                           : 'No Quiz Reference Selected',
                       style: TextStyle(
@@ -469,6 +484,67 @@ class LessonBlockCard extends StatelessWidget {
               ),
             ],
           ),
+        );
+
+      case 'glyph':
+        final hasOl =
+            block.textOlChiki != null && block.textOlChiki!.isNotEmpty;
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              hasOl ? block.textOlChiki! : 'No Ol Chiki glyph entered',
+              style: const TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Color(0xFFEC4899),
+              ),
+            ),
+            if (block.textLatin != null && block.textLatin!.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Text(
+                'Pronounced: ${block.textLatin!}',
+                style: TextStyle(
+                  fontSize: 14,
+                  color: isDark ? Colors.white60 : Colors.black54,
+                ),
+              ),
+            ],
+          ],
+        );
+
+      case 'callout':
+        return Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: Colors.amber.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.amber.withValues(alpha: 0.3)),
+          ),
+          child: Text(
+            block.textLatin ?? 'Callout note text',
+            style: TextStyle(
+              fontSize: 14,
+              color: isDark ? Colors.white70 : Colors.black87,
+            ),
+          ),
+        );
+
+      case 'tracing':
+        final glyph = block.data?['glyph'] as String? ?? '';
+        return Row(
+          children: [
+            const Icon(Icons.gesture_rounded, color: Color(0xFF14B8A6)),
+            const SizedBox(width: 8),
+            Text(
+              'Tracing Canvas: $glyph',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
+                color: isDark ? Colors.white70 : Colors.black87,
+              ),
+            ),
+          ],
         );
 
       default:

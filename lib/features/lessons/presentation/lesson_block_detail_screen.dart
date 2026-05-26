@@ -5,8 +5,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/audio/audio_service.dart';
-import '../../../core/motion/motion.dart';
-import '../../../core/widgets/parallax_hero_sliver_app_bar.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
@@ -347,73 +345,6 @@ class _LessonBlockDetailScreenState
           ),
           child: child,
         ),
-      ),
-    );
-  }
-
-  Widget _buildInlineMedia(String url, Color accentColor) {
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(28),
-      child: SizedBox(
-        width: double.infinity,
-        height: 260,
-        child: FullBleedHeroMedia(
-          animationUrl: _isLottieMedia(url) ? url : null,
-          imageUrl: url,
-          fallback: Icon(
-            Icons.perm_media_rounded,
-            size: 56,
-            color: accentColor.withValues(alpha: 0.45),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildAudioCard(
-    LessonBlockEntity block,
-    int index,
-    Color accentColor,
-    bool isDark,
-  ) {
-    final label = block.textLatin?.trim().isNotEmpty == true
-        ? block.textLatin!.trim()
-        : 'Play audio';
-    final isThisPlaying =
-        _isAudioPlaying &&
-        _playingId ==
-            '${block.textOlChiki ?? block.textLatin ?? block.type}_$index';
-    return _buildGlassCard(
-      themeColor: accentColor,
-      isDark: isDark,
-      child: Row(
-        children: [
-          IconButton.filled(
-            onPressed: () => _playAudio(
-              block.audioUrl!,
-              '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
-            ),
-            icon: const Icon(Icons.play_arrow_rounded),
-            style: IconButton.styleFrom(
-              backgroundColor: accentColor,
-              foregroundColor: Colors.white,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontWeight: FontWeight.w800,
-                color: isDark ? Colors.white : const Color(0xFF1F2937),
-              ),
-            ),
-          ),
-          SoundWaveIndicator(
-            color: isDark ? Colors.white : accentColor,
-            isPlaying: isThisPlaying,
-          ),
-        ],
       ),
     );
   }

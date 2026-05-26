@@ -45,6 +45,26 @@ class LessonModel extends LessonEntity {
         if (decoded is Map) parsedData = decoded.cast<String, dynamic>();
       } catch (_) {}
     }
+    final rawHeroMedia = json['hero_media'];
+    if (rawHeroMedia != null &&
+        rawHeroMedia is String &&
+        rawHeroMedia.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawHeroMedia);
+        if (decoded is Map) {
+          parsedData['heroMedia'] = decoded.cast<String, dynamic>();
+        }
+      } catch (_) {}
+    }
+    final rawTracing = json['tracing'];
+    if (rawTracing != null && rawTracing is String && rawTracing.isNotEmpty) {
+      try {
+        final decoded = jsonDecode(rawTracing);
+        if (decoded is Map) {
+          parsedData['tracing'] = decoded.cast<String, dynamic>();
+        }
+      } catch (_) {}
+    }
     if (thumbnailUrl != null && thumbnailUrl.isNotEmpty) {
       parsedData['thumbnailUrl'] = thumbnailUrl;
     }
@@ -100,6 +120,10 @@ class LessonModel extends LessonEntity {
       'heroMediaUrl': data?['heroMediaUrl'],
       'heroMediaType': data?['heroMediaType'],
       'heroPosterUrl': data?['heroPosterUrl'],
+      'hero_media': data?['heroMedia'] != null
+          ? jsonEncode(data!['heroMedia'])
+          : null,
+      'tracing': data?['tracing'] != null ? jsonEncode(data!['tracing']) : null,
       'blocks': blocks
           .map((e) => LessonBlockModel.fromEntity(e).toJson())
           .toList(),

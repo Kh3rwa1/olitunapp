@@ -32,8 +32,17 @@ class _AdminLessonContentScreenState
   bool _isLoading = true;
   bool _hasChanges = false;
   bool _isSaving = false;
+  bool _changedDuringSave = false;
   ContentItem? _contentItem;
   LessonEntity? _lesson;
+
+  void _markDirty() {
+    if (_isSaving) {
+      _changedDuringSave = true;
+    } else {
+      _hasChanges = true;
+    }
+  }
 
   late ScrollController _leftScrollController;
   late ScrollController _previewScrollController;
@@ -132,6 +141,7 @@ class _AdminLessonContentScreenState
     if (_contentItem == null || _isSaving) return;
 
     setState(() => _isSaving = true);
+    _changedDuringSave = false;
 
     try {
       // Convert LessonBlockEntity list back to ContentBlock list
@@ -168,6 +178,8 @@ class _AdminLessonContentScreenState
           // Update local state with the saved item
           _contentItem = savedItem;
           _lesson = savedItem.toLessonEntity();
+          // Re-sync local blocks from saved doc so we keep server-assigned IDs etc.
+          _blocks = List.from(_lesson!.blocks);
 
           // Invalidate providers so dashboard & mobile app picks up changes
           ref.invalidate(contentListProvider((ContentKind.lesson, null)));
@@ -183,8 +195,14 @@ class _AdminLessonContentScreenState
           ref.invalidate(lessonNotifierProvider);
 
           setState(() {
-            _hasChanges = false;
             _isSaving = false;
+            if (_changedDuringSave) {
+              _hasChanges = true;
+              _changedDuringSave = false;
+              _scheduleAutoSave(); // re-fire for the diff
+            } else {
+              _hasChanges = false;
+            }
           });
 
           if (mounted) {
@@ -236,7 +254,7 @@ class _AdminLessonContentScreenState
       onUpdate: (updatedBlock) {
         setState(() {
           _blocks.add(updatedBlock);
-          _hasChanges = true;
+          _markDirty();
           _hoveredOrFocusedIndex = _blocks.length - 1;
         });
         _scheduleAutoSave();
@@ -256,7 +274,7 @@ class _AdminLessonContentScreenState
   void _updateBlock(int index, LessonBlockEntity block) {
     setState(() {
       _blocks[index] = block;
-      _hasChanges = true;
+      _markDirty();
     });
     _scheduleAutoSave();
   }
@@ -265,7 +283,7 @@ class _AdminLessonContentScreenState
     final block = _blocks[index];
     setState(() {
       _blocks.removeAt(index);
-      _hasChanges = true;
+      _markDirty();
     });
     _scheduleAutoSave();
 
@@ -277,7 +295,7 @@ class _AdminLessonContentScreenState
           onPressed: () {
             setState(() {
               _blocks.insert(index, block);
-              _hasChanges = true;
+              _markDirty();
             });
           },
         ),
@@ -290,7 +308,7 @@ class _AdminLessonContentScreenState
   void _moveBlock(int oldIndex, int newIndex) {
     setState(() {
       _blocks = reorderLessonBlocks(_blocks, oldIndex, newIndex);
-      _hasChanges = true;
+      _markDirty();
     });
     _scheduleAutoSave();
   }

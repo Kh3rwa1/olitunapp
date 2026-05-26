@@ -17,7 +17,8 @@ class MockAudioService extends Mock implements AudioService {
   Future<void> playUrl(String url) async {}
 }
 
-const svgData = '<svg height="100" width="100"><circle cx="50" cy="50" r="40" /></svg>';
+const svgData =
+    '<svg height="100" width="100"><circle cx="50" cy="50" r="40" /></svg>';
 
 class MockHttpOverrides extends HttpOverrides {
   @override
@@ -31,9 +32,11 @@ class FakeHttpClient implements HttpClient {
   Duration? connectionTimeout;
 
   @override
-  Future<HttpClientRequest> getUrl(Uri url) => Future.value(FakeHttpClientRequest());
+  Future<HttpClientRequest> getUrl(Uri url) =>
+      Future.value(FakeHttpClientRequest());
   @override
-  Future<HttpClientRequest> openUrl(String method, Uri url) => Future.value(FakeHttpClientRequest());
+  Future<HttpClientRequest> openUrl(String method, Uri url) =>
+      Future.value(FakeHttpClientRequest());
 
   @override
   dynamic noSuchMethod(Invocation invocation) => null;
@@ -144,20 +147,14 @@ void main() {
           textOlChiki: 'ᱚ',
           textLatin: 'At',
           audioUrl: 'https://example.com/audio1.mp3',
-          data: {
-            'pronunciation': 'at',
-            'themeColor': '#10B981',
-          },
+          data: {'pronunciation': 'at', 'themeColor': '#10B981'},
         ),
         LessonBlockEntity(
           type: 'text',
           textOlChiki: 'ᱛ',
           textLatin: 'Ot',
           audioUrl: 'https://example.com/audio2.mp3',
-          data: {
-            'pronunciation': 'ot',
-            'themeColor': '#14B8A6',
-          },
+          data: {'pronunciation': 'ot', 'themeColor': '#14B8A6'},
         ),
       ],
     ),
@@ -185,7 +182,9 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          learnerLessonsProvider.overrideWithValue(AsyncValue.error('Error loading', StackTrace.empty)),
+          learnerLessonsProvider.overrideWithValue(
+            AsyncValue.error('Error loading', StackTrace.empty),
+          ),
         ],
         child: const MaterialApp(
           home: LessonBlockDetailScreen(
@@ -219,101 +218,111 @@ void main() {
     expect(find.text('Lesson not found'), findsOneWidget);
   });
 
-  testWidgets('LessonBlockDetailScreen renders content details and page swiping works', (tester) async {
-    final mockAudioService = MockAudioService();
+  testWidgets(
+    'LessonBlockDetailScreen renders content details and page swiping works',
+    (tester) async {
+      final mockAudioService = MockAudioService();
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          learnerLessonsProvider.overrideWithValue(AsyncValue.data(mockLessons)),
-          audioServiceProvider.overrideWithValue(mockAudioService),
-          reduceVisualEffectsProvider.overrideWithValue(false),
-        ],
-        child: const MaterialApp(
-          home: LessonBlockDetailScreen(
-            lessonId: 'lesson_1',
-            initialBlockIndex: 0,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            learnerLessonsProvider.overrideWithValue(
+              AsyncValue.data(mockLessons),
+            ),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_1',
+              initialBlockIndex: 0,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    // Verify first page renders details
-    expect(find.text('At (at)'), findsOneWidget);
-    expect(find.text('AT (AT)'), findsOneWidget);
-    expect(find.text('Pronunciation'), findsOneWidget);
-    expect(find.text('at'), findsOneWidget);
+      // Verify first page renders details
+      expect(find.text('At (at)'), findsOneWidget);
+      expect(find.text('AT (AT)'), findsOneWidget);
+      expect(find.text('Pronunciation'), findsOneWidget);
+      expect(find.text('at'), findsOneWidget);
 
-    // Slide/Swipe to the second page
-    final pageViewFinder = find.byType(PageView);
-    expect(pageViewFinder, findsOneWidget);
+      // Slide/Swipe to the second page
+      final pageViewFinder = find.byType(PageView);
+      expect(pageViewFinder, findsOneWidget);
 
-    await tester.fling(pageViewFinder, const Offset(-400, 0), 1000);
-    await tester.pumpAndSettle();
+      await tester.fling(pageViewFinder, const Offset(-400, 0), 1000);
+      await tester.pumpAndSettle();
 
-    // Verify second page renders details
-    expect(find.text('Ot (ot)'), findsOneWidget);
-    expect(find.text('OT (OT)'), findsOneWidget);
-    expect(find.text('ot'), findsOneWidget);
-  });
+      // Verify second page renders details
+      expect(find.text('Ot (ot)'), findsOneWidget);
+      expect(find.text('OT (OT)'), findsOneWidget);
+      expect(find.text('ot'), findsOneWidget);
+    },
+  );
 
-  testWidgets('LessonBlockDetailScreen resolves and renders different media types correctly', (tester) async {
-    final mockAudioService = MockAudioService();
-    final mediaLessons = [
-      const LessonEntity(
-        id: 'lesson_2',
-        categoryId: 'cat_1',
-        titleOlChiki: 'ᱛᱤ',
-        titleLatin: 'Ti',
-        blocks: [
-          LessonBlockEntity(
-            type: 'image',
-            textLatin: 'Image Block',
-            imageUrl: 'https://example.com/storage/buckets/images/files/img/view',
-          ),
-          LessonBlockEntity(
-            type: 'text',
-            textLatin: 'SVG Block',
-            imageUrl: 'https://example.com/storage/buckets/images/files/svg/view',
-            data: {
-              'mediaType': 'svg',
-            },
-          ),
-        ],
-      ),
-    ];
+  testWidgets(
+    'LessonBlockDetailScreen resolves and renders different media types correctly',
+    (tester) async {
+      final mockAudioService = MockAudioService();
+      final mediaLessons = [
+        const LessonEntity(
+          id: 'lesson_2',
+          categoryId: 'cat_1',
+          titleOlChiki: 'ᱛᱤ',
+          titleLatin: 'Ti',
+          blocks: [
+            LessonBlockEntity(
+              type: 'image',
+              textLatin: 'Image Block',
+              imageUrl:
+                  'https://example.com/storage/buckets/images/files/img/view',
+            ),
+            LessonBlockEntity(
+              type: 'text',
+              textLatin: 'SVG Block',
+              imageUrl:
+                  'https://example.com/storage/buckets/images/files/svg/view',
+              data: {'mediaType': 'svg'},
+            ),
+          ],
+        ),
+      ];
 
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          learnerLessonsProvider.overrideWithValue(AsyncValue.data(mediaLessons)),
-          audioServiceProvider.overrideWithValue(mockAudioService),
-          reduceVisualEffectsProvider.overrideWithValue(false),
-        ],
-        child: const MaterialApp(
-          home: LessonBlockDetailScreen(
-            lessonId: 'lesson_2',
-            initialBlockIndex: 0,
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            learnerLessonsProvider.overrideWithValue(
+              AsyncValue.data(mediaLessons),
+            ),
+            audioServiceProvider.overrideWithValue(mockAudioService),
+            reduceVisualEffectsProvider.overrideWithValue(false),
+          ],
+          child: const MaterialApp(
+            home: LessonBlockDetailScreen(
+              lessonId: 'lesson_2',
+              initialBlockIndex: 0,
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    await tester.pumpAndSettle();
+      await tester.pumpAndSettle();
 
-    // Verify first page renders image visual media details
-    expect(find.byType(FullBleedHeroMedia), findsOneWidget);
-    expect(find.text('Image Block'), findsNWidgets(2));
+      // Verify first page renders image visual media details
+      expect(find.byType(FullBleedHeroMedia), findsOneWidget);
+      expect(find.text('Image Block'), findsNWidgets(2));
 
-    // Swipe to second page (SVG block)
-    final pageViewFinder = find.byType(PageView);
-    await tester.fling(pageViewFinder, const Offset(-400, 0), 1000);
-    await tester.pumpAndSettle();
+      // Swipe to second page (SVG block)
+      final pageViewFinder = find.byType(PageView);
+      await tester.fling(pageViewFinder, const Offset(-400, 0), 1000);
+      await tester.pumpAndSettle();
 
-    // Verify second page renders SVG visual media details
-    expect(find.byType(FullBleedHeroMedia), findsOneWidget);
-    expect(find.text('SVG Block'), findsNWidgets(2));
-  });
+      // Verify second page renders SVG visual media details
+      expect(find.byType(FullBleedHeroMedia), findsOneWidget);
+      expect(find.text('SVG Block'), findsNWidgets(2));
+    },
+  );
 }

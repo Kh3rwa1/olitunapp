@@ -394,8 +394,8 @@ class _TextBlock extends ConsumerWidget {
 
 String? _blockVisualMediaUrl(LessonBlockEntity block) {
   final data = block.data;
-  final isVideo = block.type == 'video' ||
-      (data?['mediaType'] as String?) == 'video';
+  final isVideo =
+      block.type == 'video' || (data?['mediaType'] as String?) == 'video';
   final candidates = [
     if (isVideo) block.audioUrl,
     data?['heroMediaUrl'],
@@ -473,7 +473,8 @@ class _UniversalMediaBlock extends ConsumerWidget {
               mediaKind: MediaTypeResolver.resolveFromType(
                 block.data?['mediaType'] as String? ?? block.type,
               ),
-              animationUrl: (block.type == 'lottie' ||
+              animationUrl:
+                  (block.type == 'lottie' ||
                       (block.data?['mediaType'] as String?) == 'lottie' ||
                       _isLottieMedia(url))
                   ? url
@@ -485,9 +486,9 @@ class _UniversalMediaBlock extends ConsumerWidget {
                         (block.data?['mediaType'] as String?) == 'video'
                     ? Icons.videocam_rounded
                     : (block.type == 'lottie' ||
-                            (block.data?['mediaType'] as String?) == 'lottie'
-                        ? Icons.animation_rounded
-                        : Icons.perm_media_rounded),
+                              (block.data?['mediaType'] as String?) == 'lottie'
+                          ? Icons.animation_rounded
+                          : Icons.perm_media_rounded),
                 size: 52,
                 color: accentColor.withValues(alpha: 0.55),
               ),

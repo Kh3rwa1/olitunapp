@@ -207,7 +207,8 @@ class _LessonBlockDetailScreenState
                 right: 12,
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 200),
-                  child: currentBlock.audioUrl != null &&
+                  child:
+                      currentBlock.audioUrl != null &&
                           currentBlock.audioUrl!.isNotEmpty
                       ? IconButton(
                           key: ValueKey<String>(
@@ -247,8 +248,8 @@ class _LessonBlockDetailScreenState
 
   String? _blockVisualMediaUrl(LessonBlockEntity block) {
     final data = block.data;
-    final isVideo = block.type == 'video' ||
-        (data?['mediaType'] as String?) == 'video';
+    final isVideo =
+        block.type == 'video' || (data?['mediaType'] as String?) == 'video';
     final candidates = [
       if (isVideo) block.audioUrl,
       data?['heroMediaUrl'],
@@ -433,8 +434,8 @@ class _LessonBlockDetailScreenState
     final glyph = textOlChiki.trim().isNotEmpty
         ? textOlChiki.trim().characters.first
         : (textLatin.trim().isNotEmpty
-            ? textLatin.trim().characters.first
-            : '');
+              ? textLatin.trim().characters.first
+              : '');
 
     final animationUrl = _blockVisualMediaUrl(block);
     final isThisPlaying =
@@ -450,9 +451,7 @@ class _LessonBlockDetailScreenState
             return SingleChildScrollView(
               physics: const BouncingScrollPhysics(),
               child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: constraints.maxHeight,
-                ),
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
                 child: Column(
                   children: [
                     // Top Section: Green gradient
@@ -490,28 +489,42 @@ class _LessonBlockDetailScreenState
                             ),
                           if (animationUrl != null)
                             Padding(
-                              padding: const EdgeInsets.fromLTRB(24, 48, 24, 60),
+                              padding: const EdgeInsets.fromLTRB(
+                                24,
+                                48,
+                                24,
+                                60,
+                              ),
                               child: FullBleedHeroMedia(
                                 mediaKind: MediaTypeResolver.resolveFromType(
-                                  block.data?['mediaType'] as String? ?? block.type,
+                                  block.data?['mediaType'] as String? ??
+                                      block.type,
                                 ),
-                                animationUrl: (block.type == 'lottie' ||
-                                        (block.data?['mediaType'] as String?) == 'lottie' ||
+                                animationUrl:
+                                    (block.type == 'lottie' ||
+                                        (block.data?['mediaType'] as String?) ==
+                                            'lottie' ||
                                         _isLottieMedia(animationUrl))
                                     ? animationUrl
                                     : null,
                                 imageUrl: animationUrl,
-                                isSvg: block.type == 'svg' ||
-                                    (block.data?['mediaType'] as String?) == 'svg',
+                                isSvg:
+                                    block.type == 'svg' ||
+                                    (block.data?['mediaType'] as String?) ==
+                                        'svg',
                                 fallback: Center(
                                   child: Icon(
                                     block.type == 'video' ||
-                                            (block.data?['mediaType'] as String?) == 'video'
+                                            (block.data?['mediaType']
+                                                    as String?) ==
+                                                'video'
                                         ? Icons.videocam_rounded
                                         : (block.type == 'lottie' ||
-                                                (block.data?['mediaType'] as String?) == 'lottie'
-                                            ? Icons.animation_rounded
-                                            : Icons.image_rounded),
+                                                  (block.data?['mediaType']
+                                                          as String?) ==
+                                                      'lottie'
+                                              ? Icons.animation_rounded
+                                              : Icons.image_rounded),
                                     size: 64,
                                     color: Colors.white.withValues(alpha: 0.35),
                                   ),
@@ -581,13 +594,17 @@ class _LessonBlockDetailScreenState
                               ),
                               child: Center(
                                 child: Text(
-                                  textOlChiki.isNotEmpty ? textOlChiki : textLatin,
+                                  textOlChiki.isNotEmpty
+                                      ? textOlChiki
+                                      : textLatin,
                                   textAlign: TextAlign.center,
                                   style: TextStyle(
-                                    fontSize: (textOlChiki.isNotEmpty
-                                                ? textOlChiki
-                                                : textLatin)
-                                            .length < 3
+                                    fontSize:
+                                        (textOlChiki.isNotEmpty
+                                                    ? textOlChiki
+                                                    : textLatin)
+                                                .length <
+                                            3
                                         ? 72
                                         : 40,
                                     fontWeight: FontWeight.w900,
@@ -640,18 +657,23 @@ class _LessonBlockDetailScreenState
                             if (pron != null && pron.isNotEmpty) ...[
                               const SizedBox(height: 24),
                               Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 24),
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 24,
+                                ),
                                 child: _buildGlassCard(
                                   themeColor: accentColor,
                                   isDark: isDark,
                                   child: Column(
                                     children: [
                                       Row(
-                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
                                         children: [
                                           Icon(
                                             Icons.record_voice_over_rounded,
-                                            color: isDark ? Colors.white : accentColor,
+                                            color: isDark
+                                                ? Colors.white
+                                                : accentColor,
                                             size: 24,
                                           ),
                                           const SizedBox(width: 8),
@@ -660,7 +682,9 @@ class _LessonBlockDetailScreenState
                                             style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w700,
-                                              color: isDark ? Colors.white : accentColor,
+                                              color: isDark
+                                                  ? Colors.white
+                                                  : accentColor,
                                             ),
                                           ),
                                         ],
@@ -672,7 +696,9 @@ class _LessonBlockDetailScreenState
                                         style: TextStyle(
                                           fontSize: 16,
                                           height: 1.5,
-                                          color: isDark ? Colors.white70 : const Color(0xFF2D3748),
+                                          color: isDark
+                                              ? Colors.white70
+                                              : const Color(0xFF2D3748),
                                         ),
                                       ),
                                     ],

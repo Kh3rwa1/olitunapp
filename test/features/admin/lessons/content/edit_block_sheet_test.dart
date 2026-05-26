@@ -25,14 +25,17 @@ class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>>
   MockWordsNotifier() : super(const AsyncValue.data([]));
 }
 
-class MockSentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>>
+class MockSentencesNotifier
+    extends StateNotifier<AsyncValue<List<SentenceModel>>>
     with Mock
     implements SentencesNotifier {
   MockSentencesNotifier() : super(const AsyncValue.data([]));
 }
 
 void main() {
-  testWidgets('EditBlockSheet renders without throwing', (WidgetTester tester) async {
+  testWidgets('EditBlockSheet renders without throwing', (
+    WidgetTester tester,
+  ) async {
     const block = LessonBlockEntity(
       type: 'text',
       textOlChiki: 'hbj',

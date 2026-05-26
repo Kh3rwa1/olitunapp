@@ -94,7 +94,11 @@ class _HeroMediaSource extends StatelessWidget {
       case MediaKind.html:
         return _HtmlHeroMedia(url: url, fallback: _buildFallback());
       case MediaKind.image:
-        return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg || resolvedKind == MediaKind.svg);
+        return _HeroImage(
+          url: url,
+          fallback: _buildFallback(),
+          isSvg: isSvg || resolvedKind == MediaKind.svg,
+        );
       case MediaKind.audio:
       case MediaKind.unknown:
         break;
@@ -104,7 +108,11 @@ class _HeroMediaSource extends StatelessWidget {
       return _InteractiveLottieHero(url: url, fallback: _buildFallback());
     }
 
-    return _HeroImage(url: url, fallback: _buildFallback(), isSvg: isSvg || resolvedKind == MediaKind.svg);
+    return _HeroImage(
+      url: url,
+      fallback: _buildFallback(),
+      isSvg: isSvg || resolvedKind == MediaKind.svg,
+    );
   }
 
   Widget _buildFallback() {

@@ -1,0 +1,30 @@
+{
+  "collectionId": "rate_limits",
+  "attributes": [
+    {
+      "key": "clientIp",
+      "type": "string",
+      "size": 64,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "count",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "windowStart",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    }
+  ]
+}

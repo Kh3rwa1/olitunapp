@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fpdart/fpdart.dart' hide State;
-import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
@@ -13,7 +11,6 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:mocktail/mocktail.dart';
-import '../../test_utils.dart';
 
 class MockLearningAnalyticsService extends Mock
     implements LearningAnalyticsService {}

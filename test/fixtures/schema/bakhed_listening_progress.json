@@ -1,0 +1,58 @@
+{
+  "collectionId": "bakhed_listening_progress",
+  "attributes": [
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "bakhedId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "listenedPercent",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "completed80Percent",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "completedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lastPositionMs",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "updatedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

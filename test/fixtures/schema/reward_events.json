@@ -1,0 +1,63 @@
+{
+  "collectionId": "reward_events",
+  "attributes": [
+    {
+      "key": "rewardEventId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "sourceType",
+      "type": "string",
+      "size": 80,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "sourceId",
+      "type": "string",
+      "size": 120,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "starsAwarded",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "badgeId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "reason",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

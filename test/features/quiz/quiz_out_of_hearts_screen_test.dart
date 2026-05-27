@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/features/quiz/presentation/widgets/quiz_out_of_hearts_screen.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/core/storage/hive_service.dart';
-import 'package:mocktail/mocktail.dart';
 import '../../test_utils.dart';
 
 class TestQuizSessionNotifier extends QuizSessionNotifier {
@@ -22,7 +20,7 @@ class TestQuizSessionNotifier extends QuizSessionNotifier {
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
-  final mockQuizId = 'test_quiz';
+  const mockQuizId = 'test_quiz';
   final mockQuestions = [
     QuizQuestion(
       promptOlChiki: 'Q1',

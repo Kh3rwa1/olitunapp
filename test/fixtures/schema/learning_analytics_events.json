@@ -1,0 +1,98 @@
+{
+  "collectionId": "learning_analytics_events",
+  "attributes": [
+    {
+      "key": "eventId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "eventName",
+      "type": "string",
+      "size": 80,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "eventVersion",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 80,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "sessionId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "source",
+      "type": "string",
+      "size": 80,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "sourceId",
+      "type": "string",
+      "size": 120,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "learnerLevel",
+      "type": "string",
+      "size": 40,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "scriptMode",
+      "type": "string",
+      "size": 40,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "platform",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "dateKey",
+      "type": "string",
+      "size": 10,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "occurredAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "metadata",
+      "type": "string",
+      "size": 4096,
+      "array": false,
+      "required": false
+    }
+  ]
+}

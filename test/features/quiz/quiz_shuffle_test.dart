@@ -2,7 +2,6 @@ import 'dart:math';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:fpdart/fpdart.dart' hide State;
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/quiz/presentation/providers/quiz_session_notifier.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -62,7 +61,6 @@ void main() {
         promptOlChiki: 'Q0',
         optionsLatin: ['A0', 'B0', 'C0'],
         optionsOlChiki: ['A0', 'B0', 'C0'],
-        correctIndex: 0,
       ),
       QuizQuestion(
         promptOlChiki: 'Q1',

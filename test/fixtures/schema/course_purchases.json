@@ -1,0 +1,91 @@
+{
+  "collectionId": "course_purchases",
+  "attributes": [
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "categoryId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "unlockMethod",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "amountPaidInr",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": true,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "razorpayPaymentId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "razorpayOrderId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "razorpaySignature",
+      "type": "string",
+      "size": 512,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "reviewCompletedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "reviewPlatform",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "purchasedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "verifiedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

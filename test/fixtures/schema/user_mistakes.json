@@ -1,0 +1,102 @@
+{
+  "collectionId": "user_mistakes",
+  "attributes": [
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "quizId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "questionId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "questionIndex",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "wrongAnswer",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "correctAnswer",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "questionSnapshot",
+      "type": "string",
+      "size": 10000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "timesMissed",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "timesReviewed",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "isMastered",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "masteredAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lastMissedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lastReviewedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

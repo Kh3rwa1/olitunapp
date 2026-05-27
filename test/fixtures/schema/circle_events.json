@@ -1,0 +1,77 @@
+{
+  "collectionId": "circle_events",
+  "attributes": [
+    {
+      "key": "circleId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "weekId",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "eventType",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "sourceId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "points",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "metadata",
+      "type": "string",
+      "size": 4096,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "dateKey",
+      "type": "string",
+      "size": 10,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "dedupeKey",
+      "type": "string",
+      "size": 64,
+      "array": false,
+      "required": false
+    }
+  ]
+}

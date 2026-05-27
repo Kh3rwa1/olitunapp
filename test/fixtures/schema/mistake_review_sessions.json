@@ -1,0 +1,51 @@
+{
+  "collectionId": "mistake_review_sessions",
+  "attributes": [
+    {
+      "key": "sessionId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "questionIds",
+      "type": "string",
+      "size": 4096,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "score",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "total",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "completedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

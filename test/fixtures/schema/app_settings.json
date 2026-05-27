@@ -1,0 +1,19 @@
+{
+  "collectionId": "app_settings",
+  "attributes": [
+    {
+      "key": "settingKey",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "settingValue",
+      "type": "string",
+      "size": 10000,
+      "array": false,
+      "required": false
+    }
+  ]
+}

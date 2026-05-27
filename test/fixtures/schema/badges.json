@@ -1,0 +1,118 @@
+{
+  "collectionId": "badges",
+  "attributes": [
+    {
+      "key": "badgeId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "name",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "description",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "category",
+      "type": "string",
+      "size": 40,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "icon",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "target",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 1,
+      "max": 10000
+    },
+    {
+      "key": "rewardStars",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "unlockRule",
+      "type": "string",
+      "size": 4096,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "sortOrder",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "version",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "updatedBy",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "updatedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

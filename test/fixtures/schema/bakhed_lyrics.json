@@ -1,0 +1,60 @@
+{
+  "collectionId": "bakhed_lyrics",
+  "attributes": [
+    {
+      "key": "bakhedId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "lineIndex",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": true,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "startMs",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "endMs",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "olChiki",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "latin",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "meaning",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    }
+  ]
+}

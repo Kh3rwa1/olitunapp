@@ -1,0 +1,141 @@
+{
+  "collectionId": "categories",
+  "attributes": [
+    {
+      "key": "titleOlChiki",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "titleLatin",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "iconName",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "iconUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lottieUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "gradientPreset",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "orderIndex",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "totalLessons",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "description",
+      "type": "string",
+      "size": 5000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "animationUrl",
+      "type": "string",
+      "size": 512,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "order",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "unlockMode",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "priceInr",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "previewLessonCount",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "courseDescription",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "courseOutcome",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "courseHeroImageUrl",
+      "type": "string",
+      "size": 1024,
+      "array": false,
+      "required": false
+    }
+  ]
+}

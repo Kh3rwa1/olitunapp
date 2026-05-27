@@ -1,0 +1,54 @@
+{
+  "collectionId": "admin_audit_logs",
+  "attributes": [
+    {
+      "key": "actorUserId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "action",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "targetType",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "targetId",
+      "type": "string",
+      "size": 120,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "metadata",
+      "type": "string",
+      "size": 10000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "success",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,154 @@
+{
+  "collectionId": "rhymes",
+  "attributes": [
+    {
+      "key": "titleOlChiki",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "titleLatin",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "contentOlChiki",
+      "type": "string",
+      "size": 50000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "contentLatin",
+      "type": "string",
+      "size": 50000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "audioUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "thumbnailUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "category",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "subcategory",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "difficulty",
+      "type": "string",
+      "size": null,
+      "array": false,
+      "required": false,
+      "elements": [
+        "easy",
+        "medium",
+        "hard"
+      ]
+    },
+    {
+      "key": "durationSeconds",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "isPremium",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "categoryId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "subcategoryId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "tags",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "hero_media",
+      "type": "string",
+      "size": 1000000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "blocks",
+      "type": "string",
+      "size": 1000000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "tracing",
+      "type": "string",
+      "size": 1000000,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "audioFileId",
+      "type": "string",
+      "size": 64,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "durationMs",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 3600000
+    },
+    {
+      "key": "tagsList",
+      "type": "string",
+      "size": 64,
+      "array": true,
+      "required": false
+    }
+  ]
+}

@@ -1,0 +1,127 @@
+{
+  "collectionId": "mission_templates",
+  "attributes": [
+    {
+      "key": "missionId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "title",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "description",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "type",
+      "type": "string",
+      "size": 60,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "targetCount",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 1,
+      "max": 10
+    },
+    {
+      "key": "rewardStars",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "circlePoints",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 100
+    },
+    {
+      "key": "learnerLevel",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "isQuickWin",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "sortOrder",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "version",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "updatedBy",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "updatedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

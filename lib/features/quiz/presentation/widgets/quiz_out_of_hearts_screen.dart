@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
-import '../../../../core/motion/motion.dart';
 import '../providers/quiz_session_notifier.dart';
 
 class QuizOutOfHeartsScreen extends ConsumerWidget {

@@ -1,0 +1,107 @@
+{
+  "collectionId": "banners",
+  "attributes": [
+    {
+      "key": "title",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "subtitle",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "imageUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lottieUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "buttonText",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "actionUrl",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "gradientPreset",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "bgColor",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "textColor",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "orderIndex",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "animationUrl",
+      "type": "string",
+      "size": 512,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "targetRoute",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "order",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    }
+  ]
+}

@@ -1,0 +1,58 @@
+{
+  "collectionId": "quizzes",
+  "attributes": [
+    {
+      "key": "categoryId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "title",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "level",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "order",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "isActive",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "passingScore",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "questions",
+      "type": "string",
+      "size": 1000000,
+      "array": false,
+      "required": false
+    }
+  ]
+}

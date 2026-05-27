@@ -1,0 +1,90 @@
+{
+  "collectionId": "gamification_config",
+  "attributes": [
+    {
+      "key": "configId",
+      "type": "string",
+      "size": 40,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "weeklyCircleMaxMembers",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 1,
+      "max": 50
+    },
+    {
+      "key": "weeklyCircleMinActiveMembers",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 1,
+      "max": 50
+    },
+    {
+      "key": "bakhedCompletionThreshold",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 50,
+      "max": 95
+    },
+    {
+      "key": "streakShieldMax",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": 0,
+      "max": 5
+    },
+    {
+      "key": "quickWinEnabled",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "weeklyCircleEnabled",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "badgesEnabled",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "mistakeReviewEnabled",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "updatedBy",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "updatedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

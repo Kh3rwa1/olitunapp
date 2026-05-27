@@ -1,0 +1,63 @@
+{
+  "collectionId": "daily_affirmations",
+  "attributes": [
+    {
+      "key": "olChikiText",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "santaliPhonetic",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "englishMeaning",
+      "type": "string",
+      "size": 500,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "audioUrl",
+      "type": "string",
+      "size": 1024,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "category",
+      "type": "string",
+      "size": 50,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "isPremium",
+      "type": "boolean",
+      "size": null,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "order",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": true,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "publishedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    }
+  ]
+}

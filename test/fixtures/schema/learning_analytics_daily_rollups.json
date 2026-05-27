@@ -1,0 +1,65 @@
+{
+  "collectionId": "learning_analytics_daily_rollups",
+  "attributes": [
+    {
+      "key": "rollupId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "dateKey",
+      "type": "string",
+      "size": 10,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "eventName",
+      "type": "string",
+      "size": 80,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "totalEvents",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "uniqueUsers",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "platformBreakdown",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "sourceBreakdown",
+      "type": "string",
+      "size": 2048,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "updatedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

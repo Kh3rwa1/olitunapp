@@ -1,0 +1,123 @@
+{
+  "collectionId": "weekly_circles",
+  "attributes": [
+    {
+      "key": "circleId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "weekId",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "learnerLevel",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "activityTier",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "scriptMode",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "memberCount",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "targetMembers",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "maxMembers",
+      "type": "integer",
+      "size": null,
+      "array": false,
+      "required": false,
+      "min": -9223372036854776000,
+      "max": 9223372036854776000
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "startsAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "endsAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "circleName",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "circleTemplateId",
+      "type": "string",
+      "size": 100,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "theme",
+      "type": "string",
+      "size": 40,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "icon",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": false
+    }
+  ]
+}

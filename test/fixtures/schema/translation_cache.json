@@ -1,0 +1,33 @@
+{
+  "collectionId": "translation_cache",
+  "attributes": [
+    {
+      "key": "cacheKey",
+      "type": "string",
+      "size": 64,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "translation",
+      "type": "string",
+      "size": 10000,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "detectedLanguage",
+      "type": "string",
+      "size": 16,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "targetLang",
+      "type": "string",
+      "size": 16,
+      "array": false,
+      "required": false
+    }
+  ]
+}

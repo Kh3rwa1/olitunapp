@@ -1365,7 +1365,7 @@ class ContentItem extends Equatable {
           if (tagsLegacy != null) 'tags': tagsLegacy,
           // ignore: use_null_aware_elements
           if (tagsArray.isNotEmpty) 'tagsList': tagsArray,
-          'difficulty': difficulty ?? 'beginner',
+          'difficulty': difficulty ?? 'easy',
           'durationSeconds': durationSeconds ?? 0,
           'isPremium': isPremium,
           'hero_media': encodedHeroMedia,

@@ -8,6 +8,8 @@ import '../providers/typing_practice_controller.dart';
 class OlChikiKeyboard extends ConsumerWidget {
   final TypingPracticeArgs args;
 
+  // Optimized via selective state provider watching (needsDigits select)
+  // to completely avoid entire keyboard rebuilds on every single keystroke.
   const OlChikiKeyboard({
     super.key,
     required this.args,

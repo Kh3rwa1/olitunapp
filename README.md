@@ -62,6 +62,14 @@
       <img src="assets/images/screenshots/screenshot_admin.png" width="100%" alt="Admin CMS Screenshot"/>
     </td>
   </tr>
+  <tr>
+    <td width="50%">
+      <h3>⌨️ Active Recall Typing</h3>
+      <p>Active recall typing practice for vocabulary and sentences. Users type Ol Chiki characters using a custom on-screen keyboard, earning 5 stars per completion. Toggleable in settings; respects cultural separation (bakhed/mantras remain listening-only).</p>
+    </td>
+    <td width="50%">
+    </td>
+  </tr>
 </table>
 
 ---

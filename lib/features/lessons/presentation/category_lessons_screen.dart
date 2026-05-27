@@ -1,3 +1,4 @@
+import 'dart:ui' show ImageFilter;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -51,6 +52,199 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     }
   }
 
+  Widget _buildBackButton(BuildContext context, bool isDark) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16.0),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: PressableScale(
+          onTap: () => context.canPop() ? context.pop() : context.go('/'),
+          child: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: Colors.black.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.15),
+              ),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(20),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+                child: const Center(
+                  child: Icon(
+                    Icons.arrow_back_rounded,
+                    color: Colors.white,
+                    size: 20,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeaderBadge({required IconData icon, required String label}) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 13,
+            color: Colors.white,
+          ),
+          const SizedBox(width: 5),
+          Text(
+            label,
+            style: const TextStyle(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: Colors.white,
+              letterSpacing: 0.1,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildTimelineItem({
+    required Widget card,
+    required int index,
+    required bool isFirst,
+    required bool isLast,
+    required bool isDark,
+    required bool isLocked,
+    required Color themeColor,
+    required LinearGradient gradient,
+  }) {
+    return IntrinsicHeight(
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          // Timeline Column
+          SizedBox(
+            width: 48,
+            child: CustomPaint(
+              painter: _TimelinePainter(
+                isFirst: isFirst,
+                isLast: isLast,
+                color: themeColor,
+                isDark: isDark,
+              ),
+              child: Stack(
+                alignment: Alignment.topCenter,
+                children: [
+                  Positioned(
+                    top: 14,
+                    child: _buildStepNode(
+                      index: index,
+                      themeColor: themeColor,
+                      isDark: isDark,
+                      isLocked: isLocked,
+                      gradient: gradient,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          // Card Column
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.only(bottom: 20),
+              child: card,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStepNode({
+    required int index,
+    required Color themeColor,
+    required bool isDark,
+    required bool isLocked,
+    required LinearGradient gradient,
+  }) {
+    if (isLocked) {
+      return Container(
+        width: 36,
+        height: 36,
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+            width: 1.5,
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 6,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+        ),
+        child: Center(
+          child: Icon(
+            Icons.lock_rounded,
+            color: isDark ? Colors.white38 : Colors.black38,
+            size: 14,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 36,
+      height: 36,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        shape: BoxShape.circle,
+        border: Border.all(
+          color: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          width: 2.5,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: themeColor.withValues(alpha: 0.3),
+            blurRadius: 8,
+            offset: const Offset(0, 3),
+            spreadRadius: -1,
+          ),
+        ],
+      ),
+      child: Center(
+        child: Text(
+          '${index + 1}',
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w900,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final categories = ref.watch(categoryNotifierProvider);
@@ -74,6 +268,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     }
 
     final brandGradient = _getGradient(category.gradientPreset);
+    final themeColor = brandGradient.colors.first;
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
@@ -85,24 +280,161 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
           ),
           slivers: [
             SliverAppBar(
+              expandedHeight: 240.0,
               pinned: true,
               elevation: 0,
-              backgroundColor: Colors.transparent,
-              leading: IconButton(
-                icon: const Icon(Icons.arrow_back_rounded, color: Colors.white),
-                onPressed: () =>
-                    context.canPop() ? context.pop() : context.go('/'),
-              ),
-              title: Text(
-                category.titleLatin,
-                style: TextStyle(
-                  fontFamily: primaryLocalizedFontFamily(scriptMode),
-                  color: Colors.white,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              flexibleSpace: Container(
-                decoration: BoxDecoration(gradient: brandGradient),
+              backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+              leadingWidth: 72,
+              leading: _buildBackButton(context, isDark),
+              flexibleSpace: LayoutBuilder(
+                builder: (context, constraints) {
+                  final top = constraints.biggest.height;
+                  final isCollapsed = top <= kToolbarHeight + MediaQuery.of(context).padding.top;
+                  
+                  return FlexibleSpaceBar(
+                    centerTitle: true,
+                    title: isCollapsed
+                        ? Text(
+                            category.titleLatin,
+                            style: TextStyle(
+                              fontFamily: primaryLocalizedFontFamily(scriptMode),
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              fontSize: 18,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withValues(alpha: 0.2),
+                                  offset: const Offset(0, 1),
+                                  blurRadius: 2,
+                                ),
+                              ],
+                            ),
+                          )
+                        : null,
+                    background: Container(
+                      decoration: BoxDecoration(
+                        gradient: brandGradient,
+                      ),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          // Decorative ambient overlays
+                          Positioned(
+                            right: -40,
+                            top: -40,
+                            child: Container(
+                              width: 180,
+                              height: 180,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withValues(alpha: 0.08),
+                              ),
+                            ),
+                          ),
+                          Positioned(
+                            left: -50,
+                            bottom: -30,
+                            child: Container(
+                              width: 200,
+                              height: 200,
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white.withValues(alpha: 0.05),
+                              ),
+                            ),
+                          ),
+                          // Content layout
+                          Padding(
+                            padding: EdgeInsets.fromLTRB(
+                              20,
+                              MediaQuery.of(context).padding.top + 48,
+                              20,
+                              20,
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                if (category.titleOlChiki.isNotEmpty) ...[
+                                  Text(
+                                    category.titleOlChiki,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                      color: Colors.white70,
+                                      letterSpacing: 1.5,
+                                      fontFamily: 'OlChiki',
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                ],
+                                Text(
+                                  category.titleLatin,
+                                  style: TextStyle(
+                                    fontFamily: primaryLocalizedFontFamily(scriptMode),
+                                    fontSize: 32,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                    letterSpacing: -0.8,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withValues(alpha: 0.12),
+                                        offset: const Offset(0, 2),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                if (category.description != null &&
+                                    category.description!.isNotEmpty) ...[
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    category.description!,
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: Colors.white.withValues(alpha: 0.9),
+                                      fontWeight: FontWeight.w400,
+                                      height: 1.35,
+                                    ),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ],
+                                const SizedBox(height: 14),
+                                SingleChildScrollView(
+                                  scrollDirection: Axis.horizontal,
+                                  physics: const BouncingScrollPhysics(),
+                                  child: Row(
+                                    children: [
+                                      _buildHeaderBadge(
+                                        icon: Icons.menu_book_rounded,
+                                        label: '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _buildHeaderBadge(
+                                        icon: category.unlockMode == 'free'
+                                            ? Icons.stars_rounded
+                                            : Icons.workspace_premium_rounded,
+                                        label: category.unlockMode == 'free'
+                                            ? 'Free Access'
+                                            : 'Premium',
+                                      ),
+                                      const SizedBox(width: 8),
+                                      _buildHeaderBadge(
+                                        icon: Icons.cloud_done_rounded,
+                                        label: 'Offline Ready',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
               ),
             ),
             lessons.when(
@@ -118,7 +450,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 final isUnlocked = purchasedCategories.contains(category.id);
 
                 return SliverPadding(
-                  padding: const EdgeInsets.fromLTRB(20, 20, 20, 140),
+                  padding: const EdgeInsets.fromLTRB(16, 24, 16, 140),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
                       final lesson = data[index];
@@ -138,7 +470,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         scriptMode: scriptMode,
                       );
 
-                      return _LessonCard(
+                      final cardWidget = _LessonCard(
                         lesson: lesson,
                         primaryTitle: primaryTitle,
                         secondaryTitle: secondaryTitle ?? '',
@@ -146,6 +478,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         isDark: isDark,
                         index: index,
                         isLocked: isLocked,
+                        gradient: brandGradient,
+                        themeColor: themeColor,
                         showPreviewBadge:
                             isPremium &&
                             !isUnlocked &&
@@ -161,6 +495,25 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 );
                               }
                             : () => context.push('/lesson/${lesson.id}'),
+                      );
+
+                      return _buildTimelineItem(
+                        card: cardWidget,
+                        index: index,
+                        isFirst: index == 0,
+                        isLast: index == data.length - 1,
+                        isDark: isDark,
+                        isLocked: isLocked,
+                        themeColor: themeColor,
+                        gradient: brandGradient,
+                      )
+                      .animate()
+                      .fadeIn(delay: (index * 80).ms, duration: 400.ms)
+                      .slideY(
+                        begin: 0.08,
+                        end: 0,
+                        curve: MotionTokens.emphasized,
+                        duration: 450.ms,
                       );
                     }, childCount: data.length),
                   ),
@@ -296,6 +649,42 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   }
 }
 
+class _TimelinePainter extends CustomPainter {
+  final bool isFirst;
+  final bool isLast;
+  final Color color;
+  final bool isDark;
+
+  _TimelinePainter({
+    required this.isFirst,
+    required this.isLast,
+    required this.color,
+    required this.isDark,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color.withValues(alpha: isDark ? 0.25 : 0.12)
+      ..strokeWidth = 2.5
+      ..strokeCap = StrokeCap.round;
+
+    final double centerX = size.width / 2;
+    final double startY = isFirst ? 32.0 : 0.0;
+    final double endY = isLast ? 32.0 : size.height;
+
+    canvas.drawLine(Offset(centerX, startY), Offset(centerX, endY), paint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _TimelinePainter oldDelegate) {
+    return oldDelegate.isFirst != isFirst ||
+        oldDelegate.isLast != isLast ||
+        oldDelegate.color != color ||
+        oldDelegate.isDark != isDark;
+  }
+}
+
 class _LessonCard extends StatelessWidget {
   final dynamic lesson;
   final String primaryTitle;
@@ -306,6 +695,8 @@ class _LessonCard extends StatelessWidget {
   final VoidCallback onTap;
   final bool isLocked;
   final bool showPreviewBadge;
+  final LinearGradient gradient;
+  final Color themeColor;
 
   const _LessonCard({
     required this.lesson,
@@ -315,219 +706,279 @@ class _LessonCard extends StatelessWidget {
     required this.isDark,
     required this.index,
     required this.onTap,
+    required this.gradient,
+    required this.themeColor,
     this.isLocked = false,
     this.showPreviewBadge = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-          padding: const EdgeInsets.only(bottom: 14),
-          child: PressableScale(
-            onTap: onTap,
-            child: Hero(
-              tag: MotionTokens.heroTag('lesson', lesson.id),
-              child: Container(
-                padding: const EdgeInsets.all(18),
-                decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: isLocked ? 0.03 : 0.06)
-                      : (isLocked ? Colors.grey.shade100 : Colors.white),
-                  borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: isDark
-                        ? Colors.white10
-                        : Colors.black.withValues(
-                            alpha: isLocked ? 0.02 : 0.05,
-                          ),
-                  ),
-                  boxShadow: isDark
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.05),
-                            blurRadius: 15,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                ),
-                child: Row(
+    final activeBgColor = isDark
+        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+        : Colors.white;
+    final lockedBgColor = isDark
+        ? const Color(0xFF0F172A).withValues(alpha: 0.2)
+        : const Color(0xFFF8FAFC);
+
+    final activeBorderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.04);
+    final lockedBorderColor = isDark
+        ? Colors.white.withValues(alpha: 0.03)
+        : Colors.black.withValues(alpha: 0.02);
+
+    return PressableScale(
+      onTap: onTap,
+      child: Hero(
+        tag: MotionTokens.heroTag('lesson', lesson.id),
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: isLocked ? lockedBgColor : activeBgColor,
+            borderRadius: BorderRadius.circular(20),
+            border: Border.all(
+              color: isLocked ? lockedBorderColor : activeBorderColor,
+            ),
+            boxShadow: isLocked || isDark
+                ? null
+                : [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.02),
+                      blurRadius: 10,
+                      offset: const Offset(0, 4),
+                    ),
+                    BoxShadow(
+                      color: themeColor.withValues(alpha: 0.03),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
+                    ),
+                  ],
+          ),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Container(
-                      width: 50,
-                      height: 50,
-                      decoration: BoxDecoration(
-                        gradient: AppColors.heroGradient,
-                        borderRadius: BorderRadius.circular(14),
+                    Row(
+                      children: [
+                        _buildLevelBadge(lesson.level, isDark),
+                        if (showPreviewBadge) ...[
+                          const SizedBox(width: 6),
+                          _buildPreviewBadge(isDark),
+                        ],
+                      ],
+                    ),
+                    const SizedBox(height: 10),
+                    Text(
+                      primaryTitle,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w800,
+                        fontFamily: primaryLocalizedFontFamily(scriptMode),
+                        color: isLocked
+                            ? (isDark ? Colors.white38 : Colors.black38)
+                            : (isDark ? Colors.white : Colors.black87),
+                        letterSpacing: -0.2,
                       ),
-                      child: Center(
-                        child: Text(
-                          '${index + 1}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                          ),
+                    ),
+                    if (secondaryTitle.isNotEmpty) ...[
+                      const SizedBox(height: 3),
+                      Text(
+                        secondaryTitle,
+                        style: TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          fontFamily: 'OlChiki',
+                          color: isLocked
+                              ? (isDark ? Colors.white24 : Colors.black26)
+                              : (isDark ? Colors.white54 : Colors.black45),
                         ),
                       ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            primaryTitle,
-                            style: TextStyle(
-                              fontSize: 17,
-                              fontWeight: FontWeight.w700,
-                              fontFamily: primaryLocalizedFontFamily(
-                                scriptMode,
-                              ),
-                              color: isDark ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          if (secondaryTitle.isNotEmpty)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 2),
-                              child: Text(
-                                secondaryTitle,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  fontFamily: 'OlChiki',
-                                  color: isDark
-                                      ? Colors.white54
-                                      : Colors.black45,
-                                ),
-                              ),
-                            ),
-                          if (lesson.description != null)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 6),
-                              child: Text(
-                                lesson.description!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: isDark
-                                      ? Colors.white38
-                                      : Colors.black38,
-                                ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          const SizedBox(height: 8),
-                          Wrap(
-                            spacing: 8,
-                            runSpacing: 4,
-                            crossAxisAlignment: WrapCrossAlignment.center,
-                            children: [
-                              _buildLevelBadge(lesson.level),
-                              if (showPreviewBadge)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 8,
-                                    vertical: 3,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: AppColors.primary.withValues(
-                                      alpha: 0.12,
-                                    ),
-                                    borderRadius: BorderRadius.circular(20),
-                                    border: Border.all(
-                                      color: AppColors.primary.withValues(
-                                        alpha: 0.3,
-                                      ),
-                                    ),
-                                  ),
-                                  child: const Text(
-                                    'FREE PREVIEW',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w800,
-                                      color: AppColors.primary,
-                                      letterSpacing: 0.2,
-                                    ),
-                                  ),
-                                ),
-                              Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Icon(
-                                    Icons.cloud_done_rounded,
-                                    size: 14,
-                                    color: isLocked
-                                        ? Colors.grey
-                                        : AppColors.primary,
-                                  ),
-                                  const SizedBox(width: 4),
-                                  Text(
-                                    'Available Offline',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w600,
-                                      color: isLocked
-                                          ? Colors.grey
-                                          : AppColors.primary,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ],
+                    ],
+                    if (lesson.description != null &&
+                        lesson.description!.isNotEmpty) ...[
+                      const SizedBox(height: 8),
+                      Text(
+                        lesson.description!,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isLocked
+                              ? (isDark ? Colors.white24 : Colors.black26)
+                              : (isDark ? Colors.white38 : Colors.black54),
+                          height: 1.25,
+                        ),
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
-                    ),
-                    Icon(
-                      isLocked ? Icons.lock_rounded : Icons.play_circle_rounded,
-                      color: isLocked ? Colors.grey : AppColors.primary,
-                      size: 32,
+                    ],
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(
+                          Icons.cloud_done_rounded,
+                          size: 13,
+                          color: isLocked
+                              ? (isDark ? Colors.white24 : Colors.black26)
+                              : themeColor.withValues(alpha: 0.8),
+                        ),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Available Offline',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.w600,
+                            color: isLocked
+                                ? (isDark ? Colors.white24 : Colors.black26)
+                                : (isDark ? Colors.white54 : Colors.black54),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
               ),
-            ),
+              const SizedBox(width: 12),
+              _buildCTA(isLocked, isDark),
+            ],
           ),
-        )
-        .animate()
-        .fadeIn(delay: (index * 80).ms, duration: 400.ms)
-        .slideX(begin: 0.1);
+        ),
+      ),
+    );
   }
 
-  Widget _buildLevelBadge(String level) {
+  Widget _buildLevelBadge(String level, bool isDark) {
     Color badgeColor;
     String label;
+    IconData icon;
 
     switch (level.toLowerCase()) {
       case 'advanced':
         badgeColor = AppColors.duoRed;
         label = 'Advanced';
+        icon = Icons.whatshot_rounded;
         break;
       case 'intermediate':
         badgeColor = AppColors.duoOrange;
         label = 'Intermediate';
+        icon = Icons.bolt_rounded;
         break;
       case 'beginner':
       default:
         badgeColor = AppColors.duoGreen;
         label = 'Beginner';
+        icon = Icons.star_rounded;
         break;
     }
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: badgeColor.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: badgeColor.withValues(alpha: 0.3)),
+        color: badgeColor.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: badgeColor.withValues(alpha: isDark ? 0.3 : 0.15),
+        ),
       ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontSize: 10,
-          fontWeight: FontWeight.w800,
-          color: badgeColor,
-          letterSpacing: 0.2,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            icon,
+            size: 11,
+            color: badgeColor,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: badgeColor,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPreviewBadge(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.duoYellow.withValues(alpha: isDark ? 0.15 : 0.08),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: AppColors.duoYellow.withValues(alpha: isDark ? 0.3 : 0.15),
+        ),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Icon(
+            Icons.workspace_premium_rounded,
+            size: 11,
+            color: AppColors.duoYellow,
+          ),
+          const SizedBox(width: 4),
+          Text(
+            'FREE PREVIEW',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.w800,
+              color: isDark ? AppColors.duoYellow : AppColors.duoYellowDark,
+              letterSpacing: 0.3,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCTA(bool isLocked, bool isDark) {
+    if (isLocked) {
+      return Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFE2E8F0),
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFCBD5E1),
+          ),
+        ),
+        child: Center(
+          child: Icon(
+            Icons.lock_rounded,
+            color: isDark ? Colors.white24 : Colors.black26,
+            size: 16,
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      width: 40,
+      height: 40,
+      decoration: BoxDecoration(
+        gradient: gradient,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(
+            color: themeColor.withValues(alpha: 0.35),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: const Center(
+        child: Icon(
+          Icons.play_arrow_rounded,
+          color: Colors.white,
+          size: 20,
         ),
       ),
     );

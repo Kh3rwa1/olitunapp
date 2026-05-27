@@ -17,6 +17,9 @@ import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/shared/widgets/lottie_display.dart';
+import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
+import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
+import 'package:itun/features/practice/data/typing_practice_settings.dart';
 
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -98,7 +101,63 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     bool isDark,
     Color accentColor,
   ) {
-    // 1. Resolve content blocks
+    // 1. Check if eligible for typing practice
+    final settings = ref.watch(typingPracticeSettingsProvider);
+    final bool isEligible = settings.enabled &&
+        (item.kind == ContentKind.word || item.kind == ContentKind.sentence) &&
+        item.olChiki != null &&
+        item.olChiki!.isNotEmpty &&
+        item.olChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+    final typingPracticeArgs = isEligible
+        ? TypingPracticeArgs(
+            itemKey: item.id,
+            target: item.olChiki!,
+            latin: item.title,
+            meaning: item.subtitle ?? '',
+            contentType: item.kind == ContentKind.word ? 'word' : 'sentence',
+          )
+        : null;
+
+    final typingState = isEligible && typingPracticeArgs != null
+        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
+        : null;
+
+    if (isEligible && typingState != null && typingPracticeArgs != null) {
+      if (typingState.phase != TypingPhase.idle) {
+        return Scaffold(
+          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          appBar: AppBar(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.close_rounded),
+              onPressed: () {
+                ref
+                    .read(typingPracticeControllerProvider(typingPracticeArgs).notifier)
+                    .tryAgain();
+              },
+            ),
+            title: Text(
+              item.kind == ContentKind.word ? 'Practice Word' : 'Practice Sentence',
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+            ),
+            centerTitle: true,
+          ),
+          body: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.only(top: 20),
+              child: TypingPracticePanel(
+                args: typingPracticeArgs,
+                audioUrl: item.audioUrl,
+              ),
+            ),
+          ),
+        );
+      }
+    }
+
+    // 2. Resolve content blocks
     final List<ContentBlock> blocks = [...item.blocks];
 
     // 2. Auto-inject tracing config if kind requires it and not explicitly added
@@ -420,6 +479,90 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     Color accentColor,
     bool isDark,
   ) {
+    final settings = ref.watch(typingPracticeSettingsProvider);
+    final bool isEligible = settings.enabled &&
+        (item.kind == ContentKind.word || item.kind == ContentKind.sentence) &&
+        item.olChiki != null &&
+        item.olChiki!.isNotEmpty &&
+        item.olChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+    if (isEligible) {
+      final typingPracticeArgs = TypingPracticeArgs(
+        itemKey: item.id,
+        target: item.olChiki!,
+        latin: item.title,
+        meaning: item.subtitle ?? '',
+        contentType: item.kind == ContentKind.word ? 'word' : 'sentence',
+      );
+      final typingState = ref.watch(typingPracticeControllerProvider(typingPracticeArgs));
+
+      if (typingState.phase == TypingPhase.idle) {
+        return Container(
+          padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+          decoration: BoxDecoration(
+            color: (isDark ? const Color(0xFF0F141C) : Colors.white).withOpacity(0.85),
+            border: Border(
+              top: BorderSide(
+                color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
+                width: 1.5,
+              ),
+            ),
+          ),
+          child: SafeArea(
+            top: false,
+            child: Row(
+              children: [
+                if (item.audioUrl != null) ...[
+                  IconButton(
+                    icon: const Icon(Icons.volume_up_rounded),
+                    color: AppColors.primary,
+                    onPressed: () {
+                      ref.read(audioServiceProvider).playUrl(item.audioUrl!);
+                    },
+                    style: IconButton.styleFrom(
+                      backgroundColor: AppColors.primary.withOpacity(0.1),
+                      padding: const EdgeInsets.all(12),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        side: const BorderSide(color: AppColors.primary, width: 1),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                ],
+                Expanded(
+                  child: SizedBox(
+                    height: 52,
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        ref
+                            .read(typingPracticeControllerProvider(typingPracticeArgs).notifier)
+                            .startPractice();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primary,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16),
+                        ),
+                      ),
+                      icon: const Icon(Icons.keyboard_outlined, color: Colors.black),
+                      label: const Text(
+                        'Practice Typing',
+                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      } else {
+        return const SizedBox.shrink();
+      }
+    }
+
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(

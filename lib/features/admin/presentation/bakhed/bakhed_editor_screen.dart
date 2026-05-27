@@ -1131,6 +1131,7 @@ class _LyricsTabState extends ConsumerState<_LyricsTab> {
           Expanded(
             child: ReorderableListView.builder(
               itemCount: lyricsState.currentLines.length,
+              // ignore: deprecated_member_use
               onReorder: lyricsNotifier.reorderLines,
               itemBuilder: (context, index) {
                 final line = lyricsState.currentLines[index];

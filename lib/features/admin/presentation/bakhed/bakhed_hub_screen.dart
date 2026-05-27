@@ -8,6 +8,8 @@ import '../../../../shared/providers/providers.dart';
 import '../../data/bakhed_repository.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/admin_empty_state.dart';
+import '../../domain/content_badge_resolver.dart';
+import '../widgets/content_type_badge.dart';
 
 class BakhedHubScreen extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -395,34 +397,51 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                         CrossAxisAlignment.start,
                                     children: [
                                       // Thumbnail
-                                      Container(
-                                        width: 60,
-                                        height: 60,
-                                        decoration: BoxDecoration(
-                                          color: AdminTokens.sunken(isDark),
-                                          borderRadius: BorderRadius.circular(
-                                            AdminTokens.radiusSm,
-                                          ),
-                                          image:
-                                              item.heroMedia?.url.isNotEmpty ==
-                                                  true
-                                              ? DecorationImage(
-                                                  image: NetworkImage(
-                                                    item.heroMedia!.url,
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : null,
-                                        ),
-                                        child:
-                                            item.heroMedia?.url.isNotEmpty ==
-                                                true
-                                            ? null
-                                            : const Icon(
-                                                Icons.music_note_rounded,
-                                                color: AppColors.primary,
-                                                size: 28,
+                                      Stack(
+                                        clipBehavior: Clip.none,
+                                        children: [
+                                          Container(
+                                            width: 60,
+                                            height: 60,
+                                            decoration: BoxDecoration(
+                                              color: AdminTokens.sunken(isDark),
+                                              borderRadius: BorderRadius.circular(
+                                                AdminTokens.radiusSm,
                                               ),
+                                              image:
+                                                  item.heroMedia?.url.isNotEmpty ==
+                                                      true
+                                                  ? DecorationImage(
+                                                      image: NetworkImage(
+                                                        item.heroMedia!.url,
+                                                      ),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : null,
+                                            ),
+                                            child:
+                                                item.heroMedia?.url.isNotEmpty ==
+                                                    true
+                                                ? null
+                                                : const Icon(
+                                                    Icons.music_note_rounded,
+                                                    color: AppColors.primary,
+                                                    size: 28,
+                                                  ),
+                                          ),
+                                          Positioned(
+                                            bottom: -4,
+                                            right: -4,
+                                            child: ContentTypeBadge(
+                                              type: resolveBadgeType(
+                                                kind: item.kind,
+                                                categoryId: item.categoryId,
+                                              ),
+                                              size: 24,
+                                              hasShadowRing: true,
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                       const SizedBox(width: 12),
 

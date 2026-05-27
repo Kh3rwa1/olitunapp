@@ -28,7 +28,10 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalStars = QuizScoringRules.calculateStars(score, bonusStars: bonusStars);
+    final totalStars = QuizScoringRules.calculateStars(
+      score,
+      bonusStars: bonusStars,
+    );
 
     void showMistakesSheet() {
       showModalBottomSheet(

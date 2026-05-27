@@ -322,44 +322,46 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       itemCount: 4,
       itemBuilder: (context, index) {
         return Container(
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-         .fade(begin: 0.4, end: 0.8, duration: 800.ms);
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            )
+            .animate(onPlay: (controller) => controller.repeat(reverse: true))
+            .fade(begin: 0.4, end: 0.8, duration: 800.ms);
       },
     );
   }
 
   Widget _buildStatsSkeleton(bool isDark) {
     return Column(
-      children: [
-        Container(
-          height: 100,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-        const SizedBox(height: 24),
-        Container(
-          height: 60,
-          width: double.infinity,
-          decoration: BoxDecoration(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : Colors.black.withValues(alpha: 0.03),
-            borderRadius: BorderRadius.circular(20),
-          ),
-        ),
-      ],
-    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-     .fade(begin: 0.4, end: 0.8, duration: 800.ms);
+          children: [
+            Container(
+              height: 100,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+            const SizedBox(height: 24),
+            Container(
+              height: 60,
+              width: double.infinity,
+              decoration: BoxDecoration(
+                color: isDark
+                    ? Colors.white.withValues(alpha: 0.05)
+                    : Colors.black.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(20),
+              ),
+            ),
+          ],
+        )
+        .animate(onPlay: (controller) => controller.repeat(reverse: true))
+        .fade(begin: 0.4, end: 0.8, duration: 800.ms);
   }
 }

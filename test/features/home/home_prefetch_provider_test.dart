@@ -27,7 +27,9 @@ void main() {
         // Override the core providers with simple data to avoid actual DB loading
         learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
         learnerNumbersProvider.overrideWith((ref) => const AsyncValue.data([])),
-        learnerSentencesProvider.overrideWith((ref) => const AsyncValue.data([])),
+        learnerSentencesProvider.overrideWith(
+          (ref) => const AsyncValue.data([]),
+        ),
         learnerLettersProvider.overrideWith((ref) => const AsyncValue.data([])),
       ],
     );
@@ -38,39 +40,45 @@ void main() {
   });
 
   group('HomePrefetchNotifier Tests', () {
-    test('initial prefetch triggers category refresh and reads core contents', () async {
-      final notifier = container.read(homePrefetchProvider.notifier);
+    test(
+      'initial prefetch triggers category refresh and reads core contents',
+      () async {
+        final notifier = container.read(homePrefetchProvider.notifier);
 
-      // Verify initial state
-      final initialState = container.read(homePrefetchProvider);
-      expect(initialState.isPrefetching, isFalse);
-      expect(initialState.lastCategoryRefresh, isNull);
+        // Verify initial state
+        final initialState = container.read(homePrefetchProvider);
+        expect(initialState.isPrefetching, isFalse);
+        expect(initialState.lastCategoryRefresh, isNull);
 
-      // Call prefetch
-      await notifier.prefetch();
+        // Call prefetch
+        await notifier.prefetch();
 
-      // Verify category refresh was called
-      verify(() => mockCategoryNotifier.refresh()).called(1);
+        // Verify category refresh was called
+        verify(() => mockCategoryNotifier.refresh()).called(1);
 
-      // Verify state was updated with timestamp and isPrefetching became false
-      final stateAfter = container.read(homePrefetchProvider);
-      expect(stateAfter.isPrefetching, isFalse);
-      expect(stateAfter.lastCategoryRefresh, isNotNull);
-    });
+        // Verify state was updated with timestamp and isPrefetching became false
+        final stateAfter = container.read(homePrefetchProvider);
+        expect(stateAfter.isPrefetching, isFalse);
+        expect(stateAfter.lastCategoryRefresh, isNotNull);
+      },
+    );
 
-    test('subsequent prefetch within threshold skips category refresh', () async {
-      final notifier = container.read(homePrefetchProvider.notifier);
+    test(
+      'subsequent prefetch within threshold skips category refresh',
+      () async {
+        final notifier = container.read(homePrefetchProvider.notifier);
 
-      // First prefetch
-      await notifier.prefetch();
-      verify(() => mockCategoryNotifier.refresh()).called(1);
+        // First prefetch
+        await notifier.prefetch();
+        verify(() => mockCategoryNotifier.refresh()).called(1);
 
-      // Second prefetch immediately after
-      await notifier.prefetch();
+        // Second prefetch immediately after
+        await notifier.prefetch();
 
-      // Verify refresh was NOT called again (still total of 1 call)
-      verifyNever(() => mockCategoryNotifier.refresh());
-    });
+        // Verify refresh was NOT called again (still total of 1 call)
+        verifyNever(() => mockCategoryNotifier.refresh());
+      },
+    );
 
     test('prefetch with forceRefresh: true bypasses staleness check', () async {
       final notifier = container.read(homePrefetchProvider.notifier);

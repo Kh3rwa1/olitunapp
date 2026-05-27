@@ -46,7 +46,10 @@ class QuizCompleteScreen extends ConsumerWidget {
         ? (score / totalQuestions * 100).round()
         : 0;
     final isPassing = QuizScoringRules.isPassing(score, totalQuestions);
-    final totalStars = QuizScoringRules.calculateStars(score, bonusStars: bonusStars);
+    final totalStars = QuizScoringRules.calculateStars(
+      score,
+      bonusStars: bonusStars,
+    );
     final reduceEffects = ref.watch(reduceVisualEffectsProvider);
 
     Widget buildBentoCard({

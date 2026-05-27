@@ -6,10 +6,7 @@ class HomePrefetchState {
   final bool isPrefetching;
   final DateTime? lastCategoryRefresh;
 
-  HomePrefetchState({
-    required this.isPrefetching,
-    this.lastCategoryRefresh,
-  });
+  HomePrefetchState({required this.isPrefetching, this.lastCategoryRefresh});
 
   HomePrefetchState copyWith({
     bool? isPrefetching,
@@ -27,7 +24,7 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
   static const _stalenessThreshold = Duration(minutes: 5);
 
   HomePrefetchNotifier(this._ref)
-      : super(HomePrefetchState(isPrefetching: false));
+    : super(HomePrefetchState(isPrefetching: false));
 
   Future<void> prefetch({bool forceRefresh = false}) async {
     // 1. Trigger reading of core learner content providers
@@ -39,7 +36,9 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
     // 2. Check category list staleness and refresh if needed
     final lastRefresh = state.lastCategoryRefresh;
     final now = DateTime.now();
-    final isStale = lastRefresh == null || now.difference(lastRefresh) > _stalenessThreshold;
+    final isStale =
+        lastRefresh == null ||
+        now.difference(lastRefresh) > _stalenessThreshold;
 
     if (isStale || forceRefresh) {
       state = state.copyWith(isPrefetching: true);
@@ -58,5 +57,5 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
 
 final homePrefetchProvider =
     StateNotifierProvider<HomePrefetchNotifier, HomePrefetchState>((ref) {
-  return HomePrefetchNotifier(ref);
-});
+      return HomePrefetchNotifier(ref);
+    });

@@ -38,9 +38,7 @@ class FillBlankQuestionCard extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.primary.withValues(
-              alpha: isDark ? 0.05 : 0.08,
-            ),
+            color: AppColors.primary.withValues(alpha: isDark ? 0.05 : 0.08),
             blurRadius: 20,
             offset: const Offset(0, 8),
           ),
@@ -141,11 +139,13 @@ class FillBlankQuestionCard extends StatelessWidget {
                         decoration: BoxDecoration(
                           color: selectedAnswer != null
                               ? (isAnswered
-                                  ? (selectedAnswer == question.correctIndex
-                                      ? AppColors.success
-                                      : AppColors.error)
-                                  : AppColors.primary)
-                              : (isDark ? AppColors.quizDarkCardAlt : Colors.white),
+                                    ? (selectedAnswer == question.correctIndex
+                                          ? AppColors.success
+                                          : AppColors.error)
+                                    : AppColors.primary)
+                              : (isDark
+                                    ? AppColors.quizDarkCardAlt
+                                    : Colors.white),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
                             color: selectedAnswer != null
@@ -159,13 +159,14 @@ class FillBlankQuestionCard extends StatelessWidget {
                           boxShadow: selectedAnswer != null
                               ? [
                                   BoxShadow(
-                                    color: (isAnswered
-                                            ? (selectedAnswer ==
-                                                    question.correctIndex
-                                                ? AppColors.success
-                                                : AppColors.error)
-                                            : AppColors.primary)
-                                        .withValues(alpha: 0.3),
+                                    color:
+                                        (isAnswered
+                                                ? (selectedAnswer ==
+                                                          question.correctIndex
+                                                      ? AppColors.success
+                                                      : AppColors.error)
+                                                : AppColors.primary)
+                                            .withValues(alpha: 0.3),
                                     blurRadius: 8,
                                     offset: const Offset(0, 3),
                                   ),
@@ -180,7 +181,9 @@ class FillBlankQuestionCard extends StatelessWidget {
                             fontSize: 20,
                             fontWeight: FontWeight.w900,
                             fontFamily: 'OlChiki',
-                            color: selectedAnswer != null ? Colors.white : AppColors.primary,
+                            color: selectedAnswer != null
+                                ? Colors.white
+                                : AppColors.primary,
                           ),
                         ),
                       ),
@@ -203,10 +206,7 @@ class FillBlankQuestionCard extends StatelessWidget {
           if (question.blankSentenceLatin != null) ...[
             const SizedBox(height: 24),
             Container(
-              padding: const EdgeInsets.symmetric(
-                horizontal: 16,
-                vertical: 8,
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
               decoration: BoxDecoration(
                 color: isDark
                     ? Colors.white.withValues(alpha: 0.03)

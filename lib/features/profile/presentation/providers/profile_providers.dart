@@ -605,8 +605,9 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
                   metadata: {
                     'score': sanitized.score,
                     'totalQuestions': sanitized.totalQuestions,
-                    'percent': (sanitized.score / sanitized.totalQuestions * 100)
-                        .round(),
+                    'percent':
+                        (sanitized.score / sanitized.totalQuestions * 100)
+                            .round(),
                     'passed': sanitized.isPassing,
                   },
                 ) ??

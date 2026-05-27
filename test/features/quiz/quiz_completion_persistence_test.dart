@@ -139,7 +139,9 @@ void main() {
         // Complete the quiz
         notifier.nextQuestion(mockQuiz);
 
-        final state = container.read(quizSessionNotifierProvider('test_quiz_id'));
+        final state = container.read(
+          quizSessionNotifierProvider('test_quiz_id'),
+        );
         expect(state.isQuizComplete, isTrue);
 
         // Verify we saved result and added stars
@@ -149,24 +151,31 @@ void main() {
       },
     );
 
-    test('Completion handles exceptions thrown by userStatsProvider gracefully', () {
-      // Configure mockUserStats to throw an exception when saving quiz result
-      when(() => mockUserStats.saveQuizResult(any())).thenThrow(Exception('Appwrite offline error'));
+    test(
+      'Completion handles exceptions thrown by userStatsProvider gracefully',
+      () {
+        // Configure mockUserStats to throw an exception when saving quiz result
+        when(
+          () => mockUserStats.saveQuizResult(any()),
+        ).thenThrow(Exception('Appwrite offline error'));
 
-      final notifier = container.read(
-        quizSessionNotifierProvider('test_quiz_id').notifier,
-      );
-      notifier.startQuiz(mockQuiz);
+        final notifier = container.read(
+          quizSessionNotifierProvider('test_quiz_id').notifier,
+        );
+        notifier.startQuiz(mockQuiz);
 
-      final displayedQ = notifier.displayedQuestion(mockQuiz);
-      notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
+        final displayedQ = notifier.displayedQuestion(mockQuiz);
+        notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
 
-      // Trigger nextQuestion which completes the quiz and persists.
-      // This should run without throwing because we wrapped it in a try-catch.
-      expect(() => notifier.nextQuestion(mockQuiz), returnsNormally);
+        // Trigger nextQuestion which completes the quiz and persists.
+        // This should run without throwing because we wrapped it in a try-catch.
+        expect(() => notifier.nextQuestion(mockQuiz), returnsNormally);
 
-      final state = container.read(quizSessionNotifierProvider('test_quiz_id'));
-      expect(state.isQuizComplete, isTrue);
-    });
+        final state = container.read(
+          quizSessionNotifierProvider('test_quiz_id'),
+        );
+        expect(state.isQuizComplete, isTrue);
+      },
+    );
   });
 }

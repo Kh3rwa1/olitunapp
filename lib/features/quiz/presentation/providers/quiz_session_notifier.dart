@@ -203,7 +203,10 @@ class QuizSessionNotifier
       if (_shouldUseHaptics) {
         HapticFeedback.lightImpact();
         if (scoredState.comboStreak > 0 && scoredState.comboStreak % 5 == 0) {
-          Future.delayed(const Duration(milliseconds: 150), HapticFeedback.mediumImpact);
+          Future.delayed(
+            const Duration(milliseconds: 150),
+            HapticFeedback.mediumImpact,
+          );
         }
       }
     } else {
@@ -250,7 +253,10 @@ class QuizSessionNotifier
   Future<void> _persistFailure(QuizModel quiz) async {
     if (_shouldUseHaptics) {
       HapticFeedback.heavyImpact();
-      Future.delayed(const Duration(milliseconds: 200), HapticFeedback.heavyImpact);
+      Future.delayed(
+        const Duration(milliseconds: 200),
+        HapticFeedback.heavyImpact,
+      );
     }
     try {
       final statsNotifier = ref.read(userStatsProvider.notifier);
@@ -265,7 +271,10 @@ class QuizSessionNotifier
         ),
       );
       await statsNotifier.addStars(
-        QuizScoringRules.calculateStars(state.score, bonusStars: state.bonusStars),
+        QuizScoringRules.calculateStars(
+          state.score,
+          bonusStars: state.bonusStars,
+        ),
       );
 
       unawaited(
@@ -303,7 +312,10 @@ class QuizSessionNotifier
       state = state.copyWith(isQuizComplete: true);
       if (_shouldUseHaptics) {
         HapticFeedback.mediumImpact();
-        Future.delayed(const Duration(milliseconds: 100), HapticFeedback.heavyImpact);
+        Future.delayed(
+          const Duration(milliseconds: 100),
+          HapticFeedback.heavyImpact,
+        );
       }
 
       try {
@@ -318,7 +330,10 @@ class QuizSessionNotifier
           ),
         );
         statsNotifier.addStars(
-          QuizScoringRules.calculateStars(state.score, bonusStars: state.bonusStars),
+          QuizScoringRules.calculateStars(
+            state.score,
+            bonusStars: state.bonusStars,
+          ),
         );
         ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
       } catch (e, st) {

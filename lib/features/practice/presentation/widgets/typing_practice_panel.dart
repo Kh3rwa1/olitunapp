@@ -106,6 +106,7 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
       _lastAttempts = state.attemptsTotal;
       if (state.wrongAtPosition > 0) {
         _triggerShake();
+        // ignore: deprecated_member_use
         SemanticsService.announce('Incorrect, try again', TextDirection.ltr);
       }
     }
@@ -113,15 +114,18 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     // Announce correct keypress / character deletion
     if (state.typedSoFar.length > _lastTypedLength) {
       _lastTypedLength = state.typedSoFar.length;
+      // ignore: deprecated_member_use
       SemanticsService.announce('Letter accepted', TextDirection.ltr);
     } else if (state.typedSoFar.length < _lastTypedLength) {
       _lastTypedLength = state.typedSoFar.length;
+      // ignore: deprecated_member_use
       SemanticsService.announce('Letter deleted', TextDirection.ltr);
     }
 
     // Auto-play audio once on completion
     if (state.phase == TypingPhase.complete && !_audioPlayedOnComplete) {
       _audioPlayedOnComplete = true;
+      // ignore: deprecated_member_use
       SemanticsService.announce(
         'Practice complete, 5 stars earned',
         TextDirection.ltr,

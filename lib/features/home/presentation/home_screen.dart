@@ -13,6 +13,7 @@ import 'widgets/today_affirmation_card.dart';
 import 'widgets/next_best_action_card.dart';
 import 'widgets/today_mission_card.dart';
 import 'widgets/home_content_grid.dart';
+import 'providers/home_prefetch_provider.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -50,21 +51,15 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // Prefetch core content and refresh categories from Appwrite on every
-    // home-screen mount so newly added categories are always visible.
+    // Prefetch core content and refresh categories using homePrefetchProvider
+    // with staleness check to prevent redundant network hits.
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref.read(learnerWordsProvider);
-      ref.read(learnerNumbersProvider);
-      ref.read(learnerSentencesProvider);
-      ref.read(learnerLettersProvider);
-      // Silently refresh categories in the background — this replaces any
-      // stale cache or static seed data with the live Appwrite list.
-      ref.read(categoryNotifierProvider.notifier).refresh();
+      ref.read(homePrefetchProvider.notifier).prefetch();
     });
   }
 
   Future<void> _onRefresh() async {
-    await ref.read(categoryNotifierProvider.notifier).refresh();
+    await ref.read(homePrefetchProvider.notifier).prefetch(forceRefresh: true);
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
   }
 
@@ -76,6 +71,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final displayUserName = isGuest ? 'Explorer' : userName;
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
+    // Watch prefetch provider to trigger rebuilds or updates
+    ref.watch(homePrefetchProvider);
 
     final completedIds =
         ref.watch(userStatsProvider).value?.completedLessons ?? {};

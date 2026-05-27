@@ -7,6 +7,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
 import '../../../../../shared/providers/providers.dart';
 import '../../../../../shared/widgets/state_widgets.dart';
+import '../../../../quiz/domain/quiz_scoring_rules.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String? quizId;
@@ -136,7 +137,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
   void _showResultDialog() {
     final percentage = (_score / _questions.length * 100).round();
-    final isPassing = percentage >= 70;
+    final isPassing = QuizScoringRules.isPassing(_score, _questions.length);
 
     final stats = ref.read(userStatsProvider).value;
     final _ = stats?.categoryMastery[_quiz?.categoryId] ?? 0;
@@ -154,7 +155,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen>
 
     // Award stars based on performance
     if (isPassing) {
-      statsNotifier.addStars(_score * 5); // 5 stars per correct answer
+      statsNotifier.addStars(QuizScoringRules.calculateStars(_score));
     }
 
     showDialog(

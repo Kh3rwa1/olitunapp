@@ -4,6 +4,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
+import '../../domain/quiz_scoring_rules.dart';
 import '../providers/quiz_session_notifier.dart';
 
 class QuizOutOfHeartsScreen extends ConsumerWidget {
@@ -27,7 +28,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalStars = (score * 5) + bonusStars;
+    final totalStars = QuizScoringRules.calculateStars(score, bonusStars: bonusStars);
 
     void showMistakesSheet() {
       showModalBottomSheet(

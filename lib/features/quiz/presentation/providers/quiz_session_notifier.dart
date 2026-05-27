@@ -8,6 +8,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
+import '../../domain/quiz_scoring_rules.dart';
 import 'mistake_provider.dart';
 
 class QuizSessionState {
@@ -254,7 +255,9 @@ class QuizSessionNotifier
           failedNoHearts: true,
         ),
       );
-      await statsNotifier.addStars((state.score * 5) + state.bonusStars);
+      await statsNotifier.addStars(
+        QuizScoringRules.calculateStars(state.score, bonusStars: state.bonusStars),
+      );
 
       unawaited(
         ref
@@ -301,7 +304,9 @@ class QuizSessionNotifier
             completedAt: completedAt,
           ),
         );
-        statsNotifier.addStars((state.score * 5) + state.bonusStars);
+        statsNotifier.addStars(
+          QuizScoringRules.calculateStars(state.score, bonusStars: state.bonusStars),
+        );
         ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
       } catch (e, st) {
         AppLogger.debug('Failed to finish quiz: $e\n$st');

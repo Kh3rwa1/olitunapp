@@ -1,4 +1,5 @@
 import 'package:equatable/equatable.dart';
+import '../../../quiz/domain/quiz_scoring_rules.dart';
 
 class QuizResultEntity extends Equatable {
   final String quizId;
@@ -17,8 +18,7 @@ class QuizResultEntity extends Equatable {
 
   bool get isPassing =>
       failedNoHearts != true &&
-      totalQuestions > 0 &&
-      (score / totalQuestions) >= 0.7;
+      QuizScoringRules.isPassing(score, totalQuestions);
 
   @override
   List<Object?> get props => [

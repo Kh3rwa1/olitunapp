@@ -9,6 +9,7 @@ import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
+import '../../domain/quiz_scoring_rules.dart';
 import 'mistake_review_card.dart';
 
 bool get _isTesting {
@@ -44,8 +45,8 @@ class QuizCompleteScreen extends ConsumerWidget {
     final percentage = totalQuestions > 0
         ? (score / totalQuestions * 100).round()
         : 0;
-    final isPassing = percentage >= 70;
-    final totalStars = (score * 5) + bonusStars;
+    final isPassing = QuizScoringRules.isPassing(score, totalQuestions);
+    final totalStars = QuizScoringRules.calculateStars(score, bonusStars: bonusStars);
     final reduceEffects = ref.watch(reduceVisualEffectsProvider);
 
     Widget buildBentoCard({

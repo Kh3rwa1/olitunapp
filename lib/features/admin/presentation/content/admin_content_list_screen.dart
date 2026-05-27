@@ -1275,137 +1275,154 @@ class _AdminContentListScreenState
             color: Colors.transparent,
             borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
             clipBehavior: Clip.antiAlias,
-            child: ListTile(
-              contentPadding: const EdgeInsets.all(16),
-              leading: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Semantics(
-                    label: 'Select ${item.title}',
-                    checked: isSelected,
-                    child: Checkbox(
-                      value: isSelected,
-                      activeColor: AppColors.primary,
-                      onChanged: (val) {
-                        setState(() {
-                          if (val == true) {
-                            _selectedIds.add(item.id);
-                          } else {
-                            _selectedIds.remove(item.id);
-                          }
-                        });
-                      },
+            child: InkWell(
+              onTap: () => _editItem(context, item),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24.5),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Leading section
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Semantics(
+                          label: 'Select ${item.title}',
+                          checked: isSelected,
+                          child: Checkbox(
+                            value: isSelected,
+                            activeColor: AppColors.primary,
+                            onChanged: (val) {
+                              setState(() {
+                                if (val == true) {
+                                  _selectedIds.add(item.id);
+                                } else {
+                                  _selectedIds.remove(item.id);
+                                }
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 52,
+                          height: 52,
+                          decoration: BoxDecoration(
+                            color: AdminTokens.accentSoft(isDark),
+                            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+                            border: Border.all(color: AdminTokens.border(isDark)),
+                          ),
+                          child:
+                              item.heroMedia != null &&
+                                  item.heroMedia!.url.trim().isNotEmpty
+                              ? ClipRRect(
+                                  borderRadius: BorderRadius.circular(
+                                    AdminTokens.radiusMd,
+                                  ),
+                                  child: Image.network(
+                                    item.heroMedia!.url,
+                                    fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) =>
+                                        Icon(_icon, color: AdminTokens.accent),
+                                  ),
+                                )
+                              : Icon(_icon, color: AdminTokens.accent),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(width: 8),
-                  Container(
-                    width: 52,
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: AdminTokens.accentSoft(isDark),
-                      borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                      border: Border.all(color: AdminTokens.border(isDark)),
-                    ),
-                    child:
-                        item.heroMedia != null &&
-                            item.heroMedia!.url.trim().isNotEmpty
-                        ? ClipRRect(
-                            borderRadius: BorderRadius.circular(
-                              AdminTokens.radiusMd,
+                    const SizedBox(width: 16),
+                    
+                    // Middle section: Title, Subtitle, Chips
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Text(
+                                item.title,
+                                style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 16),
+                              ),
+                              if (item.titleOlChiki != null) ...[
+                                const SizedBox(width: 8),
+                                Text(
+                                  '(${item.titleOlChiki})',
+                                  style: TextStyle(
+                                    fontFamily: 'OlChiki',
+                                    fontSize: 16,
+                                    color: isDark ? Colors.white60 : Colors.black54,
+                                  ),
+                                ),
+                              ],
+                            ],
+                          ),
+                          if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              item.subtitle!,
+                              style: TextStyle(
+                                color: isDark ? Colors.white60 : Colors.black54,
+                                fontSize: 13,
+                              ),
                             ),
-                            child: Image.network(
-                              item.heroMedia!.url,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Icon(_icon, color: AdminTokens.accent),
-                            ),
-                          )
-                        : Icon(_icon, color: AdminTokens.accent),
-                  ),
-                ],
-              ),
-              title: Row(
-                children: [
-                  Text(
-                    item.title,
-                    style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 16),
-                  ),
-                  if (item.titleOlChiki != null) ...[
-                    const SizedBox(width: 8),
-                    Text(
-                      '(${item.titleOlChiki})',
-                      style: TextStyle(
-                        fontFamily: 'OlChiki',
-                        fontSize: 16,
-                        color: isDark ? Colors.white60 : Colors.black54,
+                          ],
+                          const SizedBox(height: 8),
+                          Wrap(
+                            spacing: 6,
+                            runSpacing: 4,
+                            children: [
+                              if (_supportsPublished)
+                                _buildStatusChip(
+                                  label: item.isPublished ? 'Published' : 'Draft',
+                                  color: item.isPublished
+                                      ? const Color(0xFF10B981)
+                                      : Colors.grey,
+                                  isDark: isDark,
+                                ),
+                              if (_supportsPremium)
+                                _buildStatusChip(
+                                  label: item.isPremium ? 'Premium' : 'Free',
+                                  color: item.isPremium ? Colors.amber : Colors.blue,
+                                  isDark: isDark,
+                                ),
+                              if (_supportsTags)
+                                ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ],
-              ),
-              subtitle: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
-                    const SizedBox(height: 4),
-                    Text(
-                      item.subtitle!,
-                      style: TextStyle(
-                        color: isDark ? Colors.white60 : Colors.black54,
-                        fontSize: 13,
-                      ),
+                    const SizedBox(width: 16),
+                    
+                    // Trailing actions section
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.kind == ContentKind.lesson) ...[
+                          AdminIconAction(
+                            icon: Icons.dashboard_customize_rounded,
+                            tooltip: 'Edit content blocks',
+                            onTap: () =>
+                                context.go('/admin/lessons/content/${item.id}'),
+                          ),
+                          const SizedBox(width: 6),
+                        ],
+                        AdminIconAction(
+                          icon: Icons.edit_rounded,
+                          tooltip: 'Edit metadata',
+                          onTap: () => _editItem(context, item),
+                        ),
+                        const SizedBox(width: 6),
+                        AdminIconAction(
+                          icon: Icons.delete_outline_rounded,
+                          tooltip: 'Delete',
+                          destructive: true,
+                          onTap: () => _confirmDelete(context, item),
+                        ),
+                      ],
                     ),
                   ],
-                  const SizedBox(height: 8),
-                  Wrap(
-                    spacing: 6,
-                    runSpacing: 4,
-                    children: [
-                      if (_supportsPublished)
-                        _buildStatusChip(
-                          label: item.isPublished ? 'Published' : 'Draft',
-                          color: item.isPublished
-                              ? const Color(0xFF10B981)
-                              : Colors.grey,
-                          isDark: isDark,
-                        ),
-                      if (_supportsPremium)
-                        _buildStatusChip(
-                          label: item.isPremium ? 'Premium' : 'Free',
-                          color: item.isPremium ? Colors.amber : Colors.blue,
-                          isDark: isDark,
-                        ),
-                      if (_supportsTags)
-                        ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
-                    ],
-                  ),
-                ],
-              ),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (widget.kind == ContentKind.lesson) ...[
-                    AdminIconAction(
-                      icon: Icons.dashboard_customize_rounded,
-                      tooltip: 'Edit content blocks',
-                      onTap: () =>
-                          context.go('/admin/lessons/content/${item.id}'),
-                    ),
-                    const SizedBox(width: 6),
-                  ],
-                  AdminIconAction(
-                    icon: Icons.edit_rounded,
-                    tooltip: 'Edit metadata',
-                    onTap: () => _editItem(context, item),
-                  ),
-                  const SizedBox(width: 6),
-                  AdminIconAction(
-                    icon: Icons.delete_outline_rounded,
-                    tooltip: 'Delete',
-                    destructive: true,
-                    onTap: () => _confirmDelete(context, item),
-                  ),
-                ],
+                ),
               ),
             ),
           ),

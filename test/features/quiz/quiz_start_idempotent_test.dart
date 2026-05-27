@@ -67,16 +67,18 @@ void main() {
     SharedPreferences.setMockInitialValues({});
     mockPrefs = await SharedPreferences.getInstance();
     mockAnalytics = MockLearningAnalyticsService();
-    
+
     // Stub the track call
-    when(() => mockAnalytics.track(
-          any(),
-          source: any(named: 'source'),
-          sourceId: any(named: 'sourceId'),
-          metadata: any(named: 'metadata'),
-          learnerLevel: any(named: 'learnerLevel'),
-          scriptMode: any(named: 'scriptMode'),
-        )).thenAnswer((_) async {});
+    when(
+      () => mockAnalytics.track(
+        any(),
+        source: any(named: 'source'),
+        sourceId: any(named: 'sourceId'),
+        metadata: any(named: 'metadata'),
+        learnerLevel: any(named: 'learnerLevel'),
+        scriptMode: any(named: 'scriptMode'),
+      ),
+    ).thenAnswer((_) async {});
   });
 
   final mockQuiz = QuizModel(
@@ -104,59 +106,63 @@ void main() {
     totalStars: 0,
   );
 
-  testWidgets('QuizScreen startQuiz is called exactly once despite parent rebuilds',
-      (tester) async {
-    final rebuilderKey = GlobalKey<StatefulRebuilderState>();
+  testWidgets(
+    'QuizScreen startQuiz is called exactly once despite parent rebuilds',
+    (tester) async {
+      final rebuilderKey = GlobalKey<StatefulRebuilderState>();
 
-    final container = ProviderContainer(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        quizzesProvider.overrideWith(
-          (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
-        ),
-        userStatsProvider.overrideWith(
-          (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
-        ),
-        mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
-        learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
-      ],
-    );
+      final container = ProviderContainer(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(mockPrefs),
+          quizzesProvider.overrideWith(
+            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+          ),
+          userStatsProvider.overrideWith(
+            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+          ),
+          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
+        ],
+      );
 
-    await tester.pumpWidget(
-      UncontrolledProviderScope(
-        container: container,
-        child: MaterialApp(
-          home: StatefulRebuilder(
-            key: rebuilderKey,
-            child: const QuizScreen(quizId: 'test_quiz'),
+      await tester.pumpWidget(
+        UncontrolledProviderScope(
+          container: container,
+          child: MaterialApp(
+            home: StatefulRebuilder(
+              key: rebuilderKey,
+              child: const QuizScreen(quizId: 'test_quiz'),
+            ),
           ),
         ),
-      ),
-    );
+      );
 
-    // Initial pump and Settle to let ref.listen trigger and startQuiz execute
-    await tester.pumpAndSettle();
+      // Initial pump and Settle to let ref.listen trigger and startQuiz execute
+      await tester.pumpAndSettle();
 
-    // Trigger parent rebuilds via state changes
-    rebuilderKey.currentState?.rebuild();
-    await tester.pumpAndSettle();
+      // Trigger parent rebuilds via state changes
+      rebuilderKey.currentState?.rebuild();
+      await tester.pumpAndSettle();
 
-    rebuilderKey.currentState?.rebuild();
-    await tester.pumpAndSettle();
+      rebuilderKey.currentState?.rebuild();
+      await tester.pumpAndSettle();
 
-    rebuilderKey.currentState?.rebuild();
-    await tester.pumpAndSettle();
+      rebuilderKey.currentState?.rebuild();
+      await tester.pumpAndSettle();
 
-    // Assert that analytics track(LearningAnalyticsEvents.quizAttempted) was called exactly once
-    verify(() => mockAnalytics.track(
+      // Assert that analytics track(LearningAnalyticsEvents.quizAttempted) was called exactly once
+      verify(
+        () => mockAnalytics.track(
           LearningAnalyticsEvents.quizAttempted,
           source: any(named: 'source'),
           sourceId: 'test_quiz',
           metadata: any(named: 'metadata'),
-        )).called(1);
+        ),
+      ).called(1);
 
-    // Assert state is started
-    final state = container.read(quizSessionNotifierProvider('test_quiz'));
-    expect(state.hasStarted, isTrue);
-  });
+      // Assert state is started
+      final state = container.read(quizSessionNotifierProvider('test_quiz'));
+      expect(state.hasStarted, isTrue);
+    },
+  );
 }

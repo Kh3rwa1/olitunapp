@@ -113,7 +113,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           final notifier = ref.read(
             quizSessionNotifierProvider(widget.quizId).notifier,
           );
-          final question = quiz.questions[state.currentQuestion];
+          final question = notifier.displayedQuestion(quiz);
           final totalQs = quiz.questions.length;
           final isFillBlank = question.type == 'fill_blank';
 

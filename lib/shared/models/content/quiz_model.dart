@@ -144,6 +144,38 @@ class QuizQuestion {
       'distractors': distractors,
     };
   }
+
+  QuizQuestion copyWith({
+    String? type,
+    String? promptOlChiki,
+    String? promptLatin,
+    List<String>? optionsOlChiki,
+    List<String>? optionsLatin,
+    int? correctIndex,
+    String? explanation,
+    String? audioUrl,
+    String? imageUrl,
+    String? blankSentenceOlChiki,
+    String? blankSentenceLatin,
+    String? correctAnswer,
+    List<String>? distractors,
+  }) {
+    return QuizQuestion(
+      type: type ?? this.type,
+      promptOlChiki: promptOlChiki ?? this.promptOlChiki,
+      promptLatin: promptLatin ?? this.promptLatin,
+      optionsOlChiki: optionsOlChiki ?? this.optionsOlChiki,
+      optionsLatin: optionsLatin ?? this.optionsLatin,
+      correctIndex: correctIndex ?? this.correctIndex,
+      explanation: explanation ?? this.explanation,
+      audioUrl: audioUrl ?? this.audioUrl,
+      imageUrl: imageUrl ?? this.imageUrl,
+      blankSentenceOlChiki: blankSentenceOlChiki ?? this.blankSentenceOlChiki,
+      blankSentenceLatin: blankSentenceLatin ?? this.blankSentenceLatin,
+      correctAnswer: correctAnswer ?? this.correctAnswer,
+      distractors: distractors ?? this.distractors,
+    );
+  }
 }
 
 List<dynamic> _decodeQuizQuestions(dynamic value) {

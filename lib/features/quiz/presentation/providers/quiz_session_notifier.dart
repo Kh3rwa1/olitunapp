@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -21,6 +22,8 @@ class QuizSessionState {
   final int bonusStars;
   final List<int> incorrectQuestionIndices;
   final bool hasStarted;
+  final List<int> questionOrder;
+  final List<List<int>> optionOrders;
 
   const QuizSessionState({
     this.currentQuestion = 0,
@@ -35,6 +38,8 @@ class QuizSessionState {
     this.bonusStars = 0,
     this.incorrectQuestionIndices = const [],
     this.hasStarted = false,
+    this.questionOrder = const [],
+    this.optionOrders = const [],
   });
 
   QuizSessionState copyWith({
@@ -50,6 +55,8 @@ class QuizSessionState {
     int? bonusStars,
     List<int>? incorrectQuestionIndices,
     bool? hasStarted,
+    List<int>? questionOrder,
+    List<List<int>>? optionOrders,
     bool clearSelectedAnswer = false,
   }) {
     return QuizSessionState(
@@ -68,6 +75,8 @@ class QuizSessionState {
       incorrectQuestionIndices:
           incorrectQuestionIndices ?? this.incorrectQuestionIndices,
       hasStarted: hasStarted ?? this.hasStarted,
+      questionOrder: questionOrder ?? this.questionOrder,
+      optionOrders: optionOrders ?? this.optionOrders,
     );
   }
 }
@@ -94,7 +103,10 @@ QuizSessionState applyQuizAnswerResult(
     hearts = (hearts - 1).clamp(0, 3);
     comboStreak = 0;
     comboMultiplier = 1;
-    incorrectIndices.add(current.currentQuestion);
+    final origIdx = current.questionOrder.isNotEmpty
+        ? current.questionOrder[current.currentQuestion]
+        : current.currentQuestion;
+    incorrectIndices.add(origIdx);
   }
 
   return current.copyWith(
@@ -115,9 +127,23 @@ class QuizSessionNotifier
     return const QuizSessionState();
   }
 
-  void startQuiz(QuizModel quiz) {
+  void startQuiz(QuizModel quiz, {Random? testRng}) {
     if (state.hasStarted) return;
-    state = state.copyWith(hasStarted: true);
+
+    final rng =
+        testRng ??
+        Random(DateTime.now().millisecondsSinceEpoch ^ quiz.id.hashCode);
+    final questionOrder = List<int>.generate(quiz.questions.length, (i) => i)
+      ..shuffle(rng);
+    final optionOrders = quiz.questions.map((q) {
+      return List<int>.generate(q.optionsLatin.length, (i) => i)..shuffle(rng);
+    }).toList();
+
+    state = state.copyWith(
+      hasStarted: true,
+      questionOrder: questionOrder,
+      optionOrders: optionOrders,
+    );
 
     unawaited(
       ref
@@ -136,11 +162,38 @@ class QuizSessionNotifier
     );
   }
 
+  QuizQuestion displayedQuestion(QuizModel quiz) {
+    if (state.questionOrder.isEmpty ||
+        state.currentQuestion >= state.questionOrder.length) {
+      return quiz.questions[state.currentQuestion];
+    }
+    final origIdx = state.questionOrder[state.currentQuestion];
+    final raw = quiz.questions[origIdx];
+
+    if (state.optionOrders.isEmpty ||
+        state.currentQuestion >= state.optionOrders.length) {
+      return raw;
+    }
+    final perm = state.optionOrders[state.currentQuestion];
+    final newOptionsLatin = perm.map((i) => raw.optionsLatin[i]).toList();
+    final newOptionsOlChiki = perm.map((i) => raw.optionsOlChiki[i]).toList();
+    final newCorrectIndex = perm.indexOf(raw.correctIndex);
+    return raw.copyWith(
+      optionsLatin: newOptionsLatin,
+      optionsOlChiki: newOptionsOlChiki,
+      correctIndex: newCorrectIndex,
+    );
+  }
+
   void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
     if (state.isAnswered) return;
 
     final isCorrect = index == question.correctIndex;
     final scoredState = applyQuizAnswerResult(state, isCorrect: isCorrect);
+
+    final origIdx = state.questionOrder.isNotEmpty
+        ? state.questionOrder[state.currentQuestion]
+        : state.currentQuestion;
 
     if (isCorrect) {
       if (_shouldUseHaptics) HapticFeedback.lightImpact();
@@ -149,7 +202,7 @@ class QuizSessionNotifier
           .read(mistakeProvider.notifier)
           .recordMistake(
             quizId: quiz.id,
-            questionIndex: state.currentQuestion,
+            questionIndex: origIdx,
             question: question,
             wrongAnswer: index < question.optionsLatin.length
                 ? question.optionsLatin[index]
@@ -168,7 +221,7 @@ class QuizSessionNotifier
             source: 'quiz_session',
             sourceId: quiz.id,
             metadata: {
-              'questionIndex': state.currentQuestion,
+              'questionIndex': origIdx,
               'isCorrect': isCorrect,
               'selectedIndex': index,
               'correctIndex': question.correctIndex,

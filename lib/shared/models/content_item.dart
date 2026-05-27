@@ -104,6 +104,7 @@ class ContentMedia extends Equatable {
   final ContentMediaKind kind;
   final String? caption;
   final int? durationSeconds;
+  final int? durationMs;
   final String? posterUrl;
 
   const ContentMedia({
@@ -112,6 +113,7 @@ class ContentMedia extends Equatable {
     required this.kind,
     this.caption,
     this.durationSeconds,
+    this.durationMs,
     this.posterUrl,
   });
 
@@ -123,6 +125,7 @@ class ContentMedia extends Equatable {
       caption: json['caption'] as String?,
       durationSeconds:
           json['durationSeconds'] as int? ?? json['duration_seconds'] as int?,
+      durationMs: json['durationMs'] as int? ?? json['duration_ms'] as int?,
       posterUrl: json['posterUrl'] as String? ?? json['poster_url'] as String?,
     );
   }
@@ -134,6 +137,7 @@ class ContentMedia extends Equatable {
       'kind': kind.name,
       if (caption != null) 'caption': caption,
       if (durationSeconds != null) 'durationSeconds': durationSeconds,
+      if (durationMs != null) 'durationMs': durationMs,
       if (posterUrl != null) 'posterUrl': posterUrl,
     };
   }
@@ -144,6 +148,7 @@ class ContentMedia extends Equatable {
     ContentMediaKind? kind,
     String? caption,
     int? durationSeconds,
+    int? durationMs,
     String? posterUrl,
   }) {
     return ContentMedia(
@@ -152,6 +157,7 @@ class ContentMedia extends Equatable {
       kind: kind ?? this.kind,
       caption: caption ?? this.caption,
       durationSeconds: durationSeconds ?? this.durationSeconds,
+      durationMs: durationMs ?? this.durationMs,
       posterUrl: posterUrl ?? this.posterUrl,
     );
   }
@@ -163,6 +169,7 @@ class ContentMedia extends Equatable {
     kind,
     caption,
     durationSeconds,
+    durationMs,
     posterUrl,
   ];
 }

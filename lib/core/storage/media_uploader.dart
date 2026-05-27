@@ -1,3 +1,7 @@
+import 'dart:typed_data';
+import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:just_audio/just_audio.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:fpdart/fpdart.dart';
@@ -54,12 +58,23 @@ class MediaUploader {
         permissions: [Permission.read(Role.any())],
       );
 
+      int? durationMs;
+      if (kind == ContentMediaKind.audio ||
+          file.name.toLowerCase().endsWith('.mp3') ||
+          file.name.toLowerCase().endsWith('.m4a') ||
+          file.name.toLowerCase().endsWith('.wav') ||
+          file.name.toLowerCase().endsWith('.ogg') ||
+          file.name.toLowerCase().endsWith('.aac')) {
+        durationMs = await _probeAudioDurationMs(file);
+      }
+
       final viewUrl = _constructViewUrl(bucketId, uploaded.$id);
 
       final media = ContentMedia(
         url: viewUrl,
         fileId: uploaded.$id,
         kind: kind,
+        durationMs: durationMs,
       );
 
       return right(media);
@@ -154,6 +169,60 @@ class MediaUploader {
         .replaceAll(RegExp(r'_+'), '_');
 
     return '$cleanFolder-$timestamp-$sanitizedFilename';
+  }
+
+  /// Probes audio duration synchronously before upload completes.
+  /// Visible for testing.
+  Future<int?> probeAudioDurationMs(PlatformFile file) =>
+      _probeAudioDurationMs(file);
+
+  /// Probes audio duration synchronously before upload completes.
+  /// On native: uses setFilePath (memory-efficient).
+  /// On web: loads full file into memory via BytesAudioSource.
+  /// TODO(perf): For web with files >10MB, parse MP3 header directly
+  ///   instead of loading full bytes into just_audio.
+  Future<int?> _probeAudioDurationMs(PlatformFile file) async {
+    final probe = AudioPlayer();
+    try {
+      if (kIsWeb) {
+        if (file.bytes == null) return null;
+        await probe
+            .setAudioSource(_BytesAudioSource(file.bytes!))
+            .timeout(const Duration(seconds: 10));
+      } else {
+        if (file.path == null) return null;
+        await probe
+            .setFilePath(file.path!)
+            .timeout(const Duration(seconds: 10));
+      }
+      return probe.duration?.inMilliseconds;
+    } catch (e, st) {
+      AppLogger.debug(
+        'Audio duration probe failed',
+        name: 'MediaUploader',
+        fields: {'error': e.toString(), 'stackTrace': st.toString()},
+      );
+      return null;
+    } finally {
+      await probe.dispose();
+    }
+  }
+}
+
+class _BytesAudioSource extends StreamAudioSource {
+  final Uint8List _buffer;
+  _BytesAudioSource(this._buffer) : super(tag: '_BytesAudioSource');
+  @override
+  Future<StreamAudioResponse> request([int? start, int? end]) async {
+    start ??= 0;
+    end ??= _buffer.length;
+    return StreamAudioResponse(
+      sourceLength: _buffer.length,
+      contentLength: end - start,
+      offset: start,
+      stream: Stream.value(_buffer.sublist(start, end)),
+      contentType: 'audio/mpeg',
+    );
   }
 }
 

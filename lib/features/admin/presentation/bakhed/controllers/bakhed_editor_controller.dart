@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:itun/core/logging/app_logger.dart';
 import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/providers/bakhed_content_provider.dart';
@@ -869,16 +870,58 @@ final bakhedNotesEditorProvider =
       return BakhedNotesEditorNotifier(bakhedId, repository, ref);
     });
 
-final bakhedAudioPlayerProvider = Provider.autoDispose
-    .family<AudioPlayer, String>((ref, bakhedId) {
-      final player = AudioPlayer();
-      final item = ref
+final bakhedAudioPlayerProvider = Provider.autoDispose.family<AudioPlayer, String>((
+  ref,
+  bakhedId,
+) {
+  final player = AudioPlayer();
+
+  // Listen to the audioUrl changes in the editor state.
+  // This ensures the player dynamically loads the audio URL when it becomes available
+  // (e.g. after the document loads asynchronously or after a new audio file is uploaded).
+  ref.listen<String?>(
+    bakhedEditorControllerProvider(
+      bakhedId,
+    ).select((s) => s.item.value?.audioUrl),
+    (previous, next) {
+      if (next != null && next.isNotEmpty && next != previous) {
+        player.setUrl(next).catchError((e) {
+          AppLogger.debug('bakhedAudioPlayer: Error setting URL ($next): $e');
+          return null;
+        });
+      } else if (next == null || next.isEmpty) {
+        player.stop();
+      }
+    },
+    fireImmediately: true,
+  );
+
+  // Listen to the player's duration stream to automatically update the document's durationMs
+  // when the player client-side decodes and resolves the audio file metadata.
+  final subscription = player.durationStream.listen((duration) {
+    if (duration != null && duration > Duration.zero) {
+      final notifier = ref.read(
+        bakhedEditorControllerProvider(bakhedId).notifier,
+      );
+      final currentItem = ref
           .read(bakhedEditorControllerProvider(bakhedId))
           .item
           .value;
-      if (item != null && item.audioUrl != null && item.audioUrl!.isNotEmpty) {
-        player.setUrl(item.audioUrl!).catchError((_) => null);
+      if (currentItem != null &&
+          currentItem.durationMs != duration.inMilliseconds) {
+        notifier.updateAudio(
+          currentItem.audioUrl,
+          currentItem.audioFileId,
+          duration.inMilliseconds,
+        );
       }
-      ref.onDispose(player.dispose);
-      return player;
-    });
+    }
+  });
+
+  ref.onDispose(() {
+    subscription.cancel();
+    player.dispose();
+  });
+
+  return player;
+});

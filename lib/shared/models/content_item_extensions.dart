@@ -335,8 +335,13 @@ extension ContentItemToLegacy on ContentItem {
       titleLatin: title,
       contentOlChiki: olChiki ?? '',
       contentLatin: subtitle ?? '',
-      audioUrl: heroMedia?.url ?? firstAudio,
-      thumbnailUrl: heroMedia?.url ?? firstImage,
+      audioUrl:
+          audioUrl ??
+          (heroMedia?.kind == ContentMediaKind.audio ? heroMedia?.url : null) ??
+          firstAudio,
+      thumbnailUrl:
+          (heroMedia?.kind == ContentMediaKind.image ? heroMedia?.url : null) ??
+          firstImage,
       categoryId: categoryId,
       category: categoryId,
       tags: tags,

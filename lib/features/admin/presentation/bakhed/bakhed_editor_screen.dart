@@ -479,8 +479,9 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
                   label: 'Cover Image (Thumbnail)',
                   kind: ContentMediaKind.image,
                   value: item.heroMedia,
+                  onRemove: notifier.markForDeletion,
                   onChanged: (media) {
-                    notifier.updateThumbnailUrl(media?.url);
+                    notifier.updateThumbnail(media);
                   },
                 ),
               ],
@@ -536,9 +537,7 @@ class _AudioTab extends ConsumerWidget {
                   'Upload an MP3 play-along audio file. This will enable synchronized scrolling lyrics and word-by-word reading highlighting in the learner interface.',
                   style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
-                const SizedBox(height: 24),
-
-                MediaPickerField(
+                const SizedBox(height: 24),                 MediaPickerField(
                   label: 'Audio File (MP3)',
                   kind: ContentMediaKind.audio,
                   value: item.audioUrl != null && item.audioUrl!.isNotEmpty
@@ -549,6 +548,7 @@ class _AudioTab extends ConsumerWidget {
                         )
                       : null,
                   onUploadStateChanged: notifier.setUploadInProgress,
+                  onRemove: notifier.markForDeletion,
                   onChanged: (media) {
                     notifier.updateAudio(
                       media?.url,
@@ -1566,6 +1566,15 @@ class _VocabularyCard extends ConsumerWidget {
                                     kind: ContentMediaKind.audio,
                                   )
                                 : null,
+                            onRemove: (fileId) {
+                              ref
+                                  .read(
+                                    bakhedEditorControllerProvider(
+                                      bakhedId,
+                                    ).notifier,
+                                  )
+                                  .markForDeletion(fileId);
+                            },
                             onChanged: (media) {
                               final items = List<BakhedVocabularyItem>.from(
                                 state.currentItems,

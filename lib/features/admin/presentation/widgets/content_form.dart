@@ -622,6 +622,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
             _buildCard(
               isDark: isDark,
               title: 'Hero Cover Media',
+              // TODO(orphan-bug): Address in standard CMS form state refactoring
               child: MediaPickerField(
                 label: 'Cover Visual Element',
                 kind: widget.kind == ContentKind.lesson
@@ -974,6 +975,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                           maxLines: 8,
                         ),
                       if (block is ImageBlock) ...[
+                        // TODO(orphan-bug): Address in standard CMS form state refactoring
                         MediaPickerField(
                           label: 'Image Asset',
                           kind: ContentMediaKind.image,
@@ -989,6 +991,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                         ),
                       ],
                       if (block is VideoBlock) ...[
+                        // TODO(orphan-bug): Address in standard CMS form state refactoring
                         MediaPickerField(
                           label: 'Video Clip',
                           kind: ContentMediaKind.video,
@@ -1004,6 +1007,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                         ),
                       ],
                       if (block is AudioBlock) ...[
+                        // TODO(orphan-bug): Address in standard CMS form state refactoring
                         MediaPickerField(
                           label: 'Audio Pronunciation',
                           kind: ContentMediaKind.audio,
@@ -1020,6 +1024,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                         ),
                       ],
                       if (block is LottieBlock)
+                        // TODO(orphan-bug): Address in standard CMS form state refactoring
                         MediaPickerField(
                           label: 'Lottie JSON Animation',
                           kind: ContentMediaKind.lottie,
@@ -1047,6 +1052,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
                             labelText: 'Latin pronunciation name',
                           ),
                         ),
+                        // TODO(orphan-bug): Address in standard CMS form state refactoring
                         MediaPickerField(
                           label: 'Audio Pronunciation',
                           kind: ContentMediaKind.audio,

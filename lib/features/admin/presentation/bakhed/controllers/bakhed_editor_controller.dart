@@ -6,6 +6,7 @@ import '../../../../admin/data/bakhed_repository.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../../../core/api/appwrite_db_service.dart';
+import 'package:itun/core/storage/media_uploader.dart';
 
 enum SaveResult { success, concurrencyConflict, uploadInProgress, failure }
 
@@ -20,6 +21,7 @@ class BakhedEditorState {
   final String? errorMessage;
   final double uploadProgress;
   final bool isUploading;
+  final List<String> pendingDeletions;
 
   BakhedEditorState({
     required this.item,
@@ -28,6 +30,7 @@ class BakhedEditorState {
     this.errorMessage,
     this.uploadProgress = 0.0,
     this.isUploading = false,
+    this.pendingDeletions = const [],
   });
 
   BakhedEditorState copyWith({
@@ -37,6 +40,7 @@ class BakhedEditorState {
     String? errorMessage,
     double? uploadProgress,
     bool? isUploading,
+    List<String>? pendingDeletions,
   }) {
     return BakhedEditorState(
       item: item ?? this.item,
@@ -45,6 +49,7 @@ class BakhedEditorState {
       errorMessage: errorMessage ?? this.errorMessage,
       uploadProgress: uploadProgress ?? this.uploadProgress,
       isUploading: isUploading ?? this.isUploading,
+      pendingDeletions: pendingDeletions ?? this.pendingDeletions,
     );
   }
 }
@@ -66,6 +71,14 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     state = state.copyWith(isUploading: _inflightUploads > 0);
   }
 
+  void markForDeletion(String fileId) {
+    if (fileId.isEmpty) return;
+    state = state.copyWith(
+      pendingDeletions: [...state.pendingDeletions, fileId],
+      isDirty: true,
+    );
+  }
+
   BakhedEditorNotifier(this.bakhedId, this._repository, this._ref)
     : super(BakhedEditorState(item: const AsyncValue.loading())) {
     load();
@@ -79,7 +92,11 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
         item: AsyncValue.error(failure, StackTrace.current),
       ),
       (item) =>
-          state = state.copyWith(item: AsyncValue.data(item), isDirty: false),
+          state = state.copyWith(
+            item: AsyncValue.data(item),
+            isDirty: false,
+            pendingDeletions: const [],
+          ),
     );
   }
 
@@ -119,17 +136,14 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     });
   }
 
-  void updateThumbnailUrl(String? url) {
+  void updateThumbnail(ContentMedia? media) {
     state.item.whenData((item) {
-      final updatedMedia =
-          item.heroMedia?.copyWith(url: url ?? '') ??
-          ContentMedia(
-            url: url ?? '',
-            fileId: '',
-            kind: ContentMediaKind.image,
-          );
+      final oldFileId = item.heroMedia?.fileId;
+      if (oldFileId != null && oldFileId.isNotEmpty && oldFileId != media?.fileId) {
+        markForDeletion(oldFileId);
+      }
       state = state.copyWith(
-        item: AsyncValue.data(item.copyWith(heroMedia: updatedMedia)),
+        item: AsyncValue.data(item.copyWith(heroMedia: media)),
         isDirty: true,
       );
     });
@@ -174,12 +188,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     // listener will backfill on first playback as a fallback.
     final currentItem = initialItem;
 
-    state = BakhedEditorState(
-      item: state.item,
-      isDirty: state.isDirty,
-      isSaving: true,
-      uploadProgress: state.uploadProgress,
-    );
+    state = state.copyWith(isSaving: true);
 
     try {
       // 1. Optimistic Concurrency Check
@@ -415,13 +424,41 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
           return SaveResult.failure;
         },
         (_) {
+          // Deletion of pending files after successful DB commit (Pattern A)
+          final deletions = List<String>.from(state.pendingDeletions);
           state = state.copyWith(
             item: AsyncValue.data(
               currentItem.copyWith(updatedAt: nextUpdatedAt),
             ),
             isSaving: false,
             isDirty: false,
+            pendingDeletions: const [],
           );
+
+          final uploader = _ref.read(mediaUploaderProvider);
+          // Execute deletions in background so it doesn't block the UI transit
+          Future.microtask(() async {
+            for (final fileId in deletions) {
+              try {
+                final delRes = await uploader.delete(fileId);
+                delRes.fold(
+                  (f) => AppLogger.debug(
+                    'Failed to clean up pending media file $fileId during save commit: ${f.message}',
+                    name: 'BakhedEditorController',
+                  ),
+                  (_) => AppLogger.debug(
+                    'Successfully cleaned up pending media file $fileId during save commit',
+                    name: 'BakhedEditorController',
+                  ),
+                );
+              } catch (e) {
+                AppLogger.debug(
+                  'Error deleting pending media file $fileId during save commit: $e',
+                  name: 'BakhedEditorController',
+                );
+              }
+            }
+          });
 
           // Re-initialize original lists to establish new baseline for edits
           if (lyricsState.isLoaded) {
@@ -728,6 +765,23 @@ class BakhedVocabularyEditorNotifier
   }
 
   void removeItem(String id, int sortOrder) {
+    final removedItem = state.currentItems.firstWhere(
+      (e) => (id.isNotEmpty && e.id == id) || (id.isEmpty && e.sortOrder == sortOrder),
+      orElse: () => const BakhedVocabularyItem(
+        id: '',
+        olChiki: '',
+        latin: '',
+        meaning: '',
+        audioFileId: '',
+        sortOrder: -1,
+      ),
+    );
+    if (removedItem.audioFileId.isNotEmpty) {
+      _ref
+          .read(bakhedEditorControllerProvider(bakhedId).notifier)
+          .markForDeletion(removedItem.audioFileId);
+    }
+
     final updated = state.currentItems.where((e) {
       if (id.isNotEmpty && e.id == id) return false;
       return e.sortOrder != sortOrder;

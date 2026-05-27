@@ -11,6 +11,7 @@ class MediaPickerField extends ConsumerStatefulWidget {
   final ContentMedia? value;
   final ValueChanged<ContentMedia?> onChanged;
   final ValueChanged<bool>? onUploadStateChanged;
+  final ValueChanged<String>? onRemove;
 
   const MediaPickerField({
     super.key,
@@ -19,6 +20,7 @@ class MediaPickerField extends ConsumerStatefulWidget {
     this.value,
     required this.onChanged,
     this.onUploadStateChanged,
+    this.onRemove,
   });
 
   @override
@@ -48,6 +50,11 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
             });
           },
           (media) {
+            if (widget.value != null &&
+                widget.value!.fileId.isNotEmpty &&
+                widget.onRemove != null) {
+              widget.onRemove!(widget.value!.fileId);
+            }
             widget.onChanged(media);
           },
         );
@@ -63,9 +70,12 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
   }
 
   void _clearMedia() {
-    // Optionally trigger delete from Appwrite storage in background
-    if (widget.value != null) {
-      ref.read(mediaUploaderProvider).delete(widget.value!.fileId);
+    if (widget.value != null && widget.value!.fileId.isNotEmpty) {
+      if (widget.onRemove != null) {
+        widget.onRemove!(widget.value!.fileId);
+      } else {
+        ref.read(mediaUploaderProvider).delete(widget.value!.fileId);
+      }
     }
     widget.onChanged(null);
   }

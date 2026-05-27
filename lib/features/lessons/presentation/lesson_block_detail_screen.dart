@@ -206,24 +206,36 @@ class _LessonBlockDetailScreenState
                     onPageChanged: _onPageChanged,
                     itemCount: contentBlocks.length,
                     physics: (() {
-                      final settings = ref.watch(typingPracticeSettingsProvider);
-                      final isCurrentEligible = settings.enabled &&
-                          (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
+                      final settings = ref.watch(
+                        typingPracticeSettingsProvider,
+                      );
+                      final isCurrentEligible =
+                          settings.enabled &&
+                          (currentBlock.type == 'word' ||
+                              currentBlock.type == 'sentence') &&
                           currentBlock.type != 'rhyme' &&
                           currentBlock.type != 'rhymes' &&
                           currentBlock.textOlChiki != null &&
                           currentBlock.textOlChiki!.isNotEmpty &&
-                          currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+                          currentBlock.textOlChiki!.runes.any(
+                            (r) => r >= 0x1C50 && r <= 0x1C7F,
+                          );
 
                       if (isCurrentEligible) {
                         final typingPracticeArgs = TypingPracticeArgs(
-                          itemKey: '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                          itemKey:
+                              '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
                           target: currentBlock.textOlChiki!,
                           latin: currentBlock.textLatin ?? '',
-                          meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
+                          meaning:
+                              (currentBlock.data?['pronunciation']
+                                  as String?) ??
+                              '',
                           contentType: currentBlock.type,
                         );
-                        final typingState = ref.watch(typingPracticeControllerProvider(typingPracticeArgs));
+                        final typingState = ref.watch(
+                          typingPracticeControllerProvider(typingPracticeArgs),
+                        );
                         if (typingState.phase != TypingPhase.idle) {
                           return const NeverScrollableScrollPhysics();
                         }
@@ -252,29 +264,44 @@ class _LessonBlockDetailScreenState
                   right: 0,
                   child: () {
                     final settings = ref.watch(typingPracticeSettingsProvider);
-                    final isCurrentEligible = settings.enabled &&
-                        (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
+                    final isCurrentEligible =
+                        settings.enabled &&
+                        (currentBlock.type == 'word' ||
+                            currentBlock.type == 'sentence') &&
                         currentBlock.type != 'rhyme' &&
                         currentBlock.type != 'rhymes' &&
                         currentBlock.textOlChiki != null &&
                         currentBlock.textOlChiki!.isNotEmpty &&
-                        currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+                        currentBlock.textOlChiki!.runes.any(
+                          (r) => r >= 0x1C50 && r <= 0x1C7F,
+                        );
 
                     final typingPracticeArgs = isCurrentEligible
                         ? TypingPracticeArgs(
-                            itemKey: '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                            itemKey:
+                                '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
                             target: currentBlock.textOlChiki!,
                             latin: currentBlock.textLatin ?? '',
-                            meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
+                            meaning:
+                                (currentBlock.data?['pronunciation']
+                                    as String?) ??
+                                '',
                             contentType: currentBlock.type,
                           )
                         : null;
 
-                    final typingState = isCurrentEligible && typingPracticeArgs != null
-                        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
+                    final typingState =
+                        isCurrentEligible && typingPracticeArgs != null
+                        ? ref.watch(
+                            typingPracticeControllerProvider(
+                              typingPracticeArgs,
+                            ),
+                          )
                         : null;
 
-                    final isTypingActive = typingState != null && typingState.phase != TypingPhase.idle;
+                    final isTypingActive =
+                        typingState != null &&
+                        typingState.phase != TypingPhase.idle;
 
                     return _buildTopNavBar(
                       context,
@@ -294,7 +321,11 @@ class _LessonBlockDetailScreenState
                       onBackPressed: isTypingActive
                           ? () {
                               ref
-                                  .read(typingPracticeControllerProvider(typingPracticeArgs!).notifier)
+                                  .read(
+                                    typingPracticeControllerProvider(
+                                      typingPracticeArgs!,
+                                    ).notifier,
+                                  )
                                   .tryAgain();
                             }
                           : null,
@@ -429,7 +460,9 @@ class _LessonBlockDetailScreenState
         children: [
           _buildFloatingButton(
             icon: backIcon ?? Icons.arrow_back_rounded,
-            onPressed: onBackPressed ?? () => context.canPop() ? context.pop() : context.go('/'),
+            onPressed:
+                onBackPressed ??
+                () => context.canPop() ? context.pop() : context.go('/'),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -500,7 +533,8 @@ class _LessonBlockDetailScreenState
     bool isDark,
   ) {
     final settings = ref.watch(typingPracticeSettingsProvider);
-    final bool isEligible = settings.enabled &&
+    final bool isEligible =
+        settings.enabled &&
         (block.type == 'word' || block.type == 'sentence') &&
         block.type != 'rhyme' &&
         block.type != 'rhymes' &&
@@ -510,7 +544,8 @@ class _LessonBlockDetailScreenState
 
     final typingPracticeArgs = isEligible
         ? TypingPracticeArgs(
-            itemKey: '${widget.lessonId}_${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+            itemKey:
+                '${widget.lessonId}_${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
             target: block.textOlChiki!,
             latin: block.textLatin ?? '',
             meaning: (block.data?['pronunciation'] as String?) ?? '',
@@ -550,7 +585,9 @@ class _LessonBlockDetailScreenState
       builder: (context) {
         return LayoutBuilder(
           builder: (context, constraints) {
-            if (isEligible && typingState != null && typingState.phase != TypingPhase.idle) {
+            if (isEligible &&
+                typingState != null &&
+                typingState.phase != TypingPhase.idle) {
               return SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
                 child: ConstrainedBox(
@@ -1179,23 +1216,28 @@ class _LessonBlockDetailScreenState
                                     color: AppColors.primary,
                                     onPressed: () {
                                       ref
-                                          .read(typingPracticeControllerProvider(typingPracticeArgs!).notifier)
+                                          .read(
+                                            typingPracticeControllerProvider(
+                                              typingPracticeArgs!,
+                                            ).notifier,
+                                          )
                                           .startPractice();
                                     },
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                    child: const Row(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
-                                        const Icon(
+                                        Icon(
                                           Icons.keyboard_outlined,
                                           color: Colors.black,
                                         ),
-                                        const SizedBox(width: 12),
+                                        SizedBox(width: 12),
                                         Flexible(
                                           child: Text(
                                             'PRACTICE TYPING',
                                             overflow: TextOverflow.ellipsis,
                                             maxLines: 1,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 16,
                                               fontWeight: FontWeight.w900,
                                               color: Colors.black,
@@ -1217,7 +1259,8 @@ class _LessonBlockDetailScreenState
                                           )
                                         : null,
                                     child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
                                       children: [
                                         Flexible(
                                           child: Text(

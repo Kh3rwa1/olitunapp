@@ -103,7 +103,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
   ) {
     // 1. Check if eligible for typing practice
     final settings = ref.watch(typingPracticeSettingsProvider);
-    final bool isEligible = settings.enabled &&
+    final bool isEligible =
+        settings.enabled &&
         (item.kind == ContentKind.word || item.kind == ContentKind.sentence) &&
         item.olChiki != null &&
         item.olChiki!.isNotEmpty &&
@@ -134,12 +135,18 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               icon: const Icon(Icons.close_rounded),
               onPressed: () {
                 ref
-                    .read(typingPracticeControllerProvider(typingPracticeArgs).notifier)
+                    .read(
+                      typingPracticeControllerProvider(
+                        typingPracticeArgs,
+                      ).notifier,
+                    )
                     .tryAgain();
               },
             ),
             title: Text(
-              item.kind == ContentKind.word ? 'Practice Word' : 'Practice Sentence',
+              item.kind == ContentKind.word
+                  ? 'Practice Word'
+                  : 'Practice Sentence',
               style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
             centerTitle: true,
@@ -480,7 +487,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     bool isDark,
   ) {
     final settings = ref.watch(typingPracticeSettingsProvider);
-    final bool isEligible = settings.enabled &&
+    final bool isEligible =
+        settings.enabled &&
         (item.kind == ContentKind.word || item.kind == ContentKind.sentence) &&
         item.olChiki != null &&
         item.olChiki!.isNotEmpty &&
@@ -494,13 +502,16 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         meaning: item.subtitle ?? '',
         contentType: item.kind == ContentKind.word ? 'word' : 'sentence',
       );
-      final typingState = ref.watch(typingPracticeControllerProvider(typingPracticeArgs));
+      final typingState = ref.watch(
+        typingPracticeControllerProvider(typingPracticeArgs),
+      );
 
       if (typingState.phase == TypingPhase.idle) {
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           decoration: BoxDecoration(
-            color: (isDark ? const Color(0xFF0F141C) : Colors.white).withOpacity(0.85),
+            color: (isDark ? const Color(0xFF0F141C) : Colors.white)
+                .withOpacity(0.85),
             border: Border(
               top: BorderSide(
                 color: (isDark ? Colors.white : Colors.black).withOpacity(0.08),
@@ -524,7 +535,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       padding: const EdgeInsets.all(12),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: AppColors.primary, width: 1),
+                        side: const BorderSide(color: AppColors.primary),
                       ),
                     ),
                   ),
@@ -536,7 +547,11 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     child: ElevatedButton.icon(
                       onPressed: () {
                         ref
-                            .read(typingPracticeControllerProvider(typingPracticeArgs).notifier)
+                            .read(
+                              typingPracticeControllerProvider(
+                                typingPracticeArgs,
+                              ).notifier,
+                            )
                             .startPractice();
                       },
                       style: ElevatedButton.styleFrom(
@@ -546,10 +561,16 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                           borderRadius: BorderRadius.circular(16),
                         ),
                       ),
-                      icon: const Icon(Icons.keyboard_outlined, color: Colors.black),
+                      icon: const Icon(
+                        Icons.keyboard_outlined,
+                        color: Colors.black,
+                      ),
                       label: const Text(
                         'Practice Typing',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ),
                   ),

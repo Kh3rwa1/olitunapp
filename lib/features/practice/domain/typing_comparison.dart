@@ -15,17 +15,19 @@ class TypingComparisonResult extends Equatable {
 
   @override
   List<Object?> get props => [
-        matchedPrefixLength,
-        isComplete,
-        mistakeAtIndex,
-        expectedNextChar,
-      ];
+    matchedPrefixLength,
+    isComplete,
+    mistakeAtIndex,
+    expectedNextChar,
+  ];
 }
 
 class TypingComparison {
   // Ol Chiki Unicode range: U+1C50 to U+1C7F (which contains 0-9 and letters)
   // Plus space, Danda (। - U+0964), Latin digits 0-9, and standard terminal punctuation for fallback/normalization support
-  static final RegExp _validCharsRegex = RegExp(r'^[\s\u1C50-\u1C7F\u09640-9.!?]+$');
+  static final RegExp _validCharsRegex = RegExp(
+    r'^[\s\u1C50-\u1C7F\u09640-9.!?]+$',
+  );
 
   static bool isValidInputChar(String char) {
     if (char.isEmpty) return false;
@@ -61,8 +63,12 @@ class TypingComparison {
     // For Ol Chiki, the characters are mostly single code points (U+1C50 to U+1C7F)
     // with no multi-byte diacritics requiring complex NFC decomposition/composition.
     // Standard normalize operation is a clean trim and whitespace collapse:
-    String normTyped = _normalizeDigits(typed.trim().replaceAll(RegExp(r'\s+'), ' '));
-    String normTarget = _normalizeDigits(target.trim().replaceAll(RegExp(r'\s+'), ' '));
+    String normTyped = _normalizeDigits(
+      typed.trim().replaceAll(RegExp(r'\s+'), ' '),
+    );
+    String normTarget = _normalizeDigits(
+      target.trim().replaceAll(RegExp(r'\s+'), ' '),
+    );
 
     // 2. Reject non-Ol-Chiki characters in typed string
     if (normTyped.isNotEmpty && !_validCharsRegex.hasMatch(normTyped)) {
@@ -95,7 +101,6 @@ class TypingComparison {
       return const TypingComparisonResult(
         matchedPrefixLength: 0,
         isComplete: true,
-        expectedNextChar: null,
       );
     }
 
@@ -119,8 +124,12 @@ class TypingComparison {
       }
     }
 
-    final bool isComplete = matchedLength == normTarget.length && mistakeIdx == null;
-    final String? expectedNext = (isComplete || matchedLength >= normTarget.length) ? null : normTarget[matchedLength];
+    final bool isComplete =
+        matchedLength == normTarget.length && mistakeIdx == null;
+    final String? expectedNext =
+        (isComplete || matchedLength >= normTarget.length)
+        ? null
+        : normTarget[matchedLength];
 
     return TypingComparisonResult(
       matchedPrefixLength: matchedLength,

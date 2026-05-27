@@ -79,9 +79,7 @@ Future<void> pumpPracticeWidget(
         themeMode: themeMode,
         theme: ThemeData.light(),
         darkTheme: ThemeData.dark(),
-        home: Scaffold(
-          body: widget,
-        ),
+        home: Scaffold(body: widget),
       ),
     ),
   );

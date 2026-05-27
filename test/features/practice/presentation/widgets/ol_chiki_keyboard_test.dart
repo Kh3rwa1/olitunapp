@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/features/practice/presentation/widgets/ol_chiki_keyboard.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import '../../test_helpers/typing_practice_pump.dart';
@@ -25,43 +24,52 @@ void main() {
     setUp(() {
       mockUserStats = MockUserStatsNotifier();
       registerFallbackValue(argsNoDigits);
-      registerFallbackValue(const TypingPracticeState(
-        phase: TypingPhase.idle,
-        typedSoFar: '',
-        attemptsTotal: 0,
-        wrongAtPosition: 0,
-        withHint: false,
-      ));
-    });
-
-    testWidgets('1. Renders key rows and actions in light theme without digits row when needsDigits is false', (tester) async {
-      await pumpPracticeWidget(
-        tester,
-        const OlChikiKeyboard(args: argsNoDigits),
-        args: argsNoDigits,
-        state: const TypingPracticeState(
-          phase: TypingPhase.typing,
+      registerFallbackValue(
+        const TypingPracticeState(
+          phase: TypingPhase.idle,
           typedSoFar: '',
           attemptsTotal: 0,
           wrongAtPosition: 0,
           withHint: false,
-          needsDigits: false,
         ),
-        mockUserStats: mockUserStats,
       );
-
-      // Verify letters are present
-      expect(find.text('ᱚ'), findsOneWidget); // vowel row
-      expect(find.text('ᱛ'), findsOneWidget); // consonant row
-      expect(find.text(' SPACE '), findsNothing); // SPACE text is capitalized and has style spacing
-      expect(find.text('SPACE'), findsOneWidget);
-      expect(find.text('DONE'), findsOneWidget);
-
-      // Digits are NOT present
-      expect(find.text('᱐'), findsNothing);
     });
 
-    testWidgets('2. Renders dynamic digits row when needsDigits is true', (tester) async {
+    testWidgets(
+      '1. Renders key rows and actions in light theme without digits row when needsDigits is false',
+      (tester) async {
+        await pumpPracticeWidget(
+          tester,
+          const OlChikiKeyboard(args: argsNoDigits),
+          args: argsNoDigits,
+          state: const TypingPracticeState(
+            phase: TypingPhase.typing,
+            typedSoFar: '',
+            attemptsTotal: 0,
+            wrongAtPosition: 0,
+            withHint: false,
+          ),
+          mockUserStats: mockUserStats,
+        );
+
+        // Verify letters are present
+        expect(find.text('ᱚ'), findsOneWidget); // vowel row
+        expect(find.text('ᱛ'), findsOneWidget); // consonant row
+        expect(
+          find.text(' SPACE '),
+          findsNothing,
+        ); // SPACE text is capitalized and has style spacing
+        expect(find.text('SPACE'), findsOneWidget);
+        expect(find.text('DONE'), findsOneWidget);
+
+        // Digits are NOT present
+        expect(find.text('᱐'), findsNothing);
+      },
+    );
+
+    testWidgets('2. Renders dynamic digits row when needsDigits is true', (
+      tester,
+    ) async {
       await pumpPracticeWidget(
         tester,
         const OlChikiKeyboard(args: argsWithDigits),
@@ -82,14 +90,18 @@ void main() {
       expect(find.text('᱑'), findsOneWidget);
     });
 
-    testWidgets('3. Keystroke interactions dispatch to controller', (tester) async {
-      final controller = MockTypingPracticeController(const TypingPracticeState(
-        phase: TypingPhase.typing,
-        typedSoFar: '',
-        attemptsTotal: 0,
-        wrongAtPosition: 0,
-        withHint: false,
-      ));
+    testWidgets('3. Keystroke interactions dispatch to controller', (
+      tester,
+    ) async {
+      final controller = MockTypingPracticeController(
+        const TypingPracticeState(
+          phase: TypingPhase.typing,
+          typedSoFar: '',
+          attemptsTotal: 0,
+          wrongAtPosition: 0,
+          withHint: false,
+        ),
+      );
 
       await pumpPracticeWidget(
         tester,
@@ -127,14 +139,18 @@ void main() {
       expect(controller.appendedChars, contains('।'));
     });
 
-    testWidgets('4. Done key triggers completed state transition', (tester) async {
-      final controller = MockTypingPracticeController(const TypingPracticeState(
-        phase: TypingPhase.complete,
-        typedSoFar: '\u1C5A\u1C5B',
-        attemptsTotal: 0,
-        wrongAtPosition: 0,
-        withHint: false,
-      ));
+    testWidgets('4. Done key triggers completed state transition', (
+      tester,
+    ) async {
+      final controller = MockTypingPracticeController(
+        const TypingPracticeState(
+          phase: TypingPhase.complete,
+          typedSoFar: '\u1C5A\u1C5B',
+          attemptsTotal: 0,
+          wrongAtPosition: 0,
+          withHint: false,
+        ),
+      );
 
       await pumpPracticeWidget(
         tester,
@@ -156,7 +172,9 @@ void main() {
       expect(controller.markCelebrationDoneCalled, isTrue);
     });
 
-    testWidgets('5. Golden Test: OlChikiKeyboard light theme with digits', (tester) async {
+    testWidgets('5. Golden Test: OlChikiKeyboard light theme with digits', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(390, 420);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -174,7 +192,6 @@ void main() {
           needsDigits: true,
         ),
         mockUserStats: mockUserStats,
-        themeMode: ThemeMode.light,
       );
 
       await tester.pumpAndSettle();
@@ -184,7 +201,9 @@ void main() {
       );
     });
 
-    testWidgets('6. Golden Test: OlChikiKeyboard dark theme without digits', (tester) async {
+    testWidgets('6. Golden Test: OlChikiKeyboard dark theme without digits', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(390, 360);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() => tester.view.resetPhysicalSize());
@@ -199,7 +218,6 @@ void main() {
           attemptsTotal: 0,
           wrongAtPosition: 0,
           withHint: false,
-          needsDigits: false,
         ),
         mockUserStats: mockUserStats,
         themeMode: ThemeMode.dark,

@@ -10,10 +10,7 @@ class TypingPracticeSettings {
     required this.lenientPunctuation,
   });
 
-  TypingPracticeSettings copyWith({
-    bool? enabled,
-    bool? lenientPunctuation,
-  }) {
+  TypingPracticeSettings copyWith({bool? enabled, bool? lenientPunctuation}) {
     return TypingPracticeSettings(
       enabled: enabled ?? this.enabled,
       lenientPunctuation: lenientPunctuation ?? this.lenientPunctuation,
@@ -56,5 +53,5 @@ class TypingPracticeSettingsNotifier extends Notifier<TypingPracticeSettings> {
 
 final typingPracticeSettingsProvider =
     NotifierProvider<TypingPracticeSettingsNotifier, TypingPracticeSettings>(
-  TypingPracticeSettingsNotifier.new,
-);
+      TypingPracticeSettingsNotifier.new,
+    );

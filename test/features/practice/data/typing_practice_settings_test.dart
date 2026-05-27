@@ -13,27 +13,26 @@ void main() {
       prefs = await SharedPreferences.getInstance();
     });
 
-    test('1. Defaults to enabled = true, lenientPunctuation = true when prefs are empty', () {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      '1. Defaults to enabled = true, lenientPunctuation = true when prefs are empty',
+      () {
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
 
-      final settings = container.read(typingPracticeSettingsProvider);
-      expect(settings.enabled, isTrue);
-      expect(settings.lenientPunctuation, isTrue);
-    });
+        final settings = container.read(typingPracticeSettingsProvider);
+        expect(settings.enabled, isTrue);
+        expect(settings.lenientPunctuation, isTrue);
+      },
+    );
 
     test('2. Restores saved settings from SharedPreferences', () {
       prefs.setBool('typing_practice_enabled', false);
       prefs.setBool('typing_lenient_punctuation', false);
 
       final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
       );
       addTearDown(container.dispose);
 
@@ -42,42 +41,54 @@ void main() {
       expect(settings.lenientPunctuation, isFalse);
     });
 
-    test('3. toggleEnabled and setEnabled persists updates in SharedPreferences', () async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      '3. toggleEnabled and setEnabled persists updates in SharedPreferences',
+      () async {
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(typingPracticeSettingsProvider.notifier);
+        final notifier = container.read(
+          typingPracticeSettingsProvider.notifier,
+        );
 
-      expect(container.read(typingPracticeSettingsProvider).enabled, isTrue);
+        expect(container.read(typingPracticeSettingsProvider).enabled, isTrue);
 
-      await notifier.toggleEnabled();
-      expect(container.read(typingPracticeSettingsProvider).enabled, isFalse);
-      expect(prefs.getBool('typing_practice_enabled'), isFalse);
+        await notifier.toggleEnabled();
+        expect(container.read(typingPracticeSettingsProvider).enabled, isFalse);
+        expect(prefs.getBool('typing_practice_enabled'), isFalse);
 
-      await notifier.setEnabled(true);
-      expect(container.read(typingPracticeSettingsProvider).enabled, isTrue);
-      expect(prefs.getBool('typing_practice_enabled'), isTrue);
-    });
+        await notifier.setEnabled(true);
+        expect(container.read(typingPracticeSettingsProvider).enabled, isTrue);
+        expect(prefs.getBool('typing_practice_enabled'), isTrue);
+      },
+    );
 
-    test('4. toggleLenientPunctuation persists update in SharedPreferences', () async {
-      final container = ProviderContainer(
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(prefs),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      '4. toggleLenientPunctuation persists update in SharedPreferences',
+      () async {
+        final container = ProviderContainer(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+        );
+        addTearDown(container.dispose);
 
-      final notifier = container.read(typingPracticeSettingsProvider.notifier);
+        final notifier = container.read(
+          typingPracticeSettingsProvider.notifier,
+        );
 
-      expect(container.read(typingPracticeSettingsProvider).lenientPunctuation, isTrue);
+        expect(
+          container.read(typingPracticeSettingsProvider).lenientPunctuation,
+          isTrue,
+        );
 
-      await notifier.toggleLenientPunctuation();
-      expect(container.read(typingPracticeSettingsProvider).lenientPunctuation, isFalse);
-      expect(prefs.getBool('typing_lenient_punctuation'), isFalse);
-    });
+        await notifier.toggleLenientPunctuation();
+        expect(
+          container.read(typingPracticeSettingsProvider).lenientPunctuation,
+          isFalse,
+        );
+        expect(prefs.getBool('typing_lenient_punctuation'), isFalse);
+      },
+    );
   });
 }

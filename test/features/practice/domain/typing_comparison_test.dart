@@ -6,7 +6,6 @@ void main() {
     // Helper to generate Ol Chiki characters safely
     // ᱚ U+1C5A, ᱟ U+1C5B, ᱤ U+1C5C, ᱩ U+1C5D
     const ol1 = '\u1C5A\u1C5B\u1C5C'; // ᱚᱟᱤ
-    const ol2 = '\u1C5A\u1C5B\u1C5D'; // ᱚᱟᱩ
 
     test('1. Exact match of pure Ol Chiki text', () {
       final result = TypingComparison.compareInput(ol1, ol1);
@@ -25,7 +24,10 @@ void main() {
     });
 
     test('3. First mistake at index detected', () {
-      final result = TypingComparison.compareInput('\u1C5A\u1C5D', ol1); // Second char is incorrect
+      final result = TypingComparison.compareInput(
+        '\u1C5A\u1C5D',
+        ol1,
+      ); // Second char is incorrect
       expect(result.isComplete, isFalse);
       expect(result.matchedPrefixLength, 1);
       expect(result.mistakeAtIndex, 1);
@@ -57,7 +59,7 @@ void main() {
     test('7. Lenient punctuation strips terminal punctuation', () {
       const typed = '$ol1 '; // trailing space
       const target = '$ol1\u0964'; // target has trailing Danda ।
-      final result = TypingComparison.compareInput(typed, target, lenientPunctuation: true);
+      final result = TypingComparison.compareInput(typed, target);
       expect(result.isComplete, isTrue);
       expect(result.matchedPrefixLength, 3);
     });
@@ -65,14 +67,18 @@ void main() {
     test('8. Lenient punctuation works with periods and exclamation marks', () {
       const typed = '$ol1!';
       const target = '$ol1.';
-      final result = TypingComparison.compareInput(typed, target, lenientPunctuation: true);
+      final result = TypingComparison.compareInput(typed, target);
       expect(result.isComplete, isTrue);
     });
 
     test('9. Strict punctuation mode does not ignore punctuation', () {
-      const typed = '$ol1';
+      const typed = ol1;
       const target = '$ol1\u0964';
-      final result = TypingComparison.compareInput(typed, target, lenientPunctuation: false);
+      final result = TypingComparison.compareInput(
+        typed,
+        target,
+        lenientPunctuation: false,
+      );
       expect(result.isComplete, isFalse);
       expect(result.matchedPrefixLength, 3);
       expect(result.expectedNextChar, '\u0964');
@@ -105,11 +111,14 @@ void main() {
       expect(() => TypingComparison.compareInput(ol1, ''), throwsArgumentError);
     });
 
-    test('14. Extra trailing characters beyond target length detected as mistake', () {
-      final result = TypingComparison.compareInput('$ol1\u1C5A', ol1);
-      expect(result.isComplete, isFalse);
-      expect(result.matchedPrefixLength, 3);
-      expect(result.mistakeAtIndex, 3);
-    });
+    test(
+      '14. Extra trailing characters beyond target length detected as mistake',
+      () {
+        final result = TypingComparison.compareInput('$ol1\u1C5A', ol1);
+        expect(result.isComplete, isFalse);
+        expect(result.matchedPrefixLength, 3);
+        expect(result.mistakeAtIndex, 3);
+      },
+    );
   });
 }

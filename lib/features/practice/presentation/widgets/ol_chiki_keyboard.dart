@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
@@ -10,10 +9,7 @@ class OlChikiKeyboard extends ConsumerWidget {
 
   // Optimized via selective state provider watching (needsDigits select)
   // to completely avoid entire keyboard rebuilds on every single keystroke.
-  const OlChikiKeyboard({
-    super.key,
-    required this.args,
-  });
+  const OlChikiKeyboard({super.key, required this.args});
 
   static const List<String> vowels = ['ᱚ', 'ᱟ', 'ᱤ', 'ᱩ', 'ᱮ', 'ᱳ'];
   static const List<String> consonantsR1 = ['ᱛ', 'ᱜ', 'ᱝ', 'ᱞ', 'ᱠ', 'ᱡ'];
@@ -49,58 +45,107 @@ class OlChikiKeyboard extends ConsumerWidget {
   String _getA11yLabel(String char) {
     switch (char) {
       // Digits
-      case '᱐': return 'Ol Chiki digit zero';
-      case '᱑': return 'Ol Chiki digit one';
-      case '᱒': return 'Ol Chiki digit two';
-      case '᱓': return 'Ol Chiki digit three';
-      case '᱔': return 'Ol Chiki digit four';
-      case '᱕': return 'Ol Chiki digit five';
-      case '᱖': return 'Ol Chiki digit six';
-      case '᱗': return 'Ol Chiki digit seven';
-      case '᱘': return 'Ol Chiki digit eight';
-      case '᱙': return 'Ol Chiki digit nine';
+      case '᱐':
+        return 'Ol Chiki digit zero';
+      case '᱑':
+        return 'Ol Chiki digit one';
+      case '᱒':
+        return 'Ol Chiki digit two';
+      case '᱓':
+        return 'Ol Chiki digit three';
+      case '᱔':
+        return 'Ol Chiki digit four';
+      case '᱕':
+        return 'Ol Chiki digit five';
+      case '᱖':
+        return 'Ol Chiki digit six';
+      case '᱗':
+        return 'Ol Chiki digit seven';
+      case '᱘':
+        return 'Ol Chiki digit eight';
+      case '᱙':
+        return 'Ol Chiki digit nine';
       // Vowels
-      case 'ᱚ': return 'Ol Chiki letter LA';
-      case 'ᱟ': return 'Ol Chiki letter LAA';
-      case 'ᱤ': return 'Ol Chiki letter LI';
-      case 'ᱩ': return 'Ol Chiki letter LU';
-      case 'ᱮ': return 'Ol Chiki letter LE';
-      case 'ᱳ': return 'Ol Chiki letter O';
+      case 'ᱚ':
+        return 'Ol Chiki letter LA';
+      case 'ᱟ':
+        return 'Ol Chiki letter LAA';
+      case 'ᱤ':
+        return 'Ol Chiki letter LI';
+      case 'ᱩ':
+        return 'Ol Chiki letter LU';
+      case 'ᱮ':
+        return 'Ol Chiki letter LE';
+      case 'ᱳ':
+        return 'Ol Chiki letter O';
       // Consonants
-      case 'ᱛ': return 'Ol Chiki letter AT';
-      case 'ᱜ': return 'Ol Chiki letter AG';
-      case 'ᱝ': return 'Ol Chiki letter ANG';
-      case 'ᱞ': return 'Ol Chiki letter AL';
-      case 'ᱠ': return 'Ol Chiki letter AAK';
-      case 'ᱡ': return 'Ol Chiki letter AAJ';
-      case 'ᱢ': return 'Ol Chiki letter AAM';
-      case 'ᱣ': return 'Ol Chiki letter AAW';
-      case 'ᱥ': return 'Ol Chiki letter IS';
-      case 'ᱦ': return 'Ol Chiki letter IH';
-      case 'ᱧ': return 'Ol Chiki letter INY';
-      case 'ᱨ': return 'Ol Chiki letter IR';
-      case 'ᱪ': return 'Ol Chiki letter UC';
-      case 'ᱫ': return 'Ol Chiki letter UD';
-      case 'ᱬ': return 'Ol Chiki letter UNN';
-      case 'ᱭ': return 'Ol Chiki letter UY';
-      case 'ᱯ': return 'Ol Chiki letter EP';
-      case 'ᱰ': return 'Ol Chiki letter ED';
-      case 'ᱱ': return 'Ol Chiki letter EN';
-      case 'ᱲ': return 'Ol Chiki letter ERR';
-      case 'ᱴ': return 'Ol Chiki letter OT';
-      case 'ᱵ': return 'Ol Chiki letter OB';
-      case 'ᱶ': return 'Ol Chiki letter OV';
-      case 'ᱷ': return 'Ol Chiki letter OH';
+      case 'ᱛ':
+        return 'Ol Chiki letter AT';
+      case 'ᱜ':
+        return 'Ol Chiki letter AG';
+      case 'ᱝ':
+        return 'Ol Chiki letter ANG';
+      case 'ᱞ':
+        return 'Ol Chiki letter AL';
+      case 'ᱠ':
+        return 'Ol Chiki letter AAK';
+      case 'ᱡ':
+        return 'Ol Chiki letter AAJ';
+      case 'ᱢ':
+        return 'Ol Chiki letter AAM';
+      case 'ᱣ':
+        return 'Ol Chiki letter AAW';
+      case 'ᱥ':
+        return 'Ol Chiki letter IS';
+      case 'ᱦ':
+        return 'Ol Chiki letter IH';
+      case 'ᱧ':
+        return 'Ol Chiki letter INY';
+      case 'ᱨ':
+        return 'Ol Chiki letter IR';
+      case 'ᱪ':
+        return 'Ol Chiki letter UC';
+      case 'ᱫ':
+        return 'Ol Chiki letter UD';
+      case 'ᱬ':
+        return 'Ol Chiki letter UNN';
+      case 'ᱭ':
+        return 'Ol Chiki letter UY';
+      case 'ᱯ':
+        return 'Ol Chiki letter EP';
+      case 'ᱰ':
+        return 'Ol Chiki letter ED';
+      case 'ᱱ':
+        return 'Ol Chiki letter EN';
+      case 'ᱲ':
+        return 'Ol Chiki letter ERR';
+      case 'ᱴ':
+        return 'Ol Chiki letter OT';
+      case 'ᱵ':
+        return 'Ol Chiki letter OB';
+      case 'ᱶ':
+        return 'Ol Chiki letter OV';
+      case 'ᱷ':
+        return 'Ol Chiki letter OH';
       // Modifiers & Punctuation
-      case 'ᱸ': return 'Ol Chiki MU TTUDDAG';
-      case 'ᱹ': return 'Ol Chiki GAAHLAA TTUDAAG';
-      case 'ᱺ': return 'Ol Chiki MU-GAAHLAA TTUDAAG';
-      case 'ᱻ': return 'Ol Chiki RELAA';
-      case 'ᱼ': return 'Ol Chiki PHAARKAA';
-      case 'ᱽ': return 'Ol Chiki AHAD';
-      case '᱾': return 'Ol Chiki punctuation MUCAAD';
-      case '᱿': return 'Ol Chiki punctuation DOUBLE MUCAAD';
-      default: return 'Ol Chiki character $char';
+      case 'ᱸ':
+        return 'Ol Chiki MU TTUDDAG';
+      case 'ᱹ':
+        return 'Ol Chiki GAAHLAA TTUDAAG';
+      case 'ᱺ':
+        return 'Ol Chiki MU-GAAHLAA TTUDAAG';
+      case 'ᱻ':
+        return 'Ol Chiki RELAA';
+      case 'ᱼ':
+        return 'Ol Chiki PHAARKAA';
+      case 'ᱽ':
+        return 'Ol Chiki AHAD';
+      case '᱾':
+        return 'Ol Chiki punctuation MUCAAD';
+      case '᱿':
+        return 'Ol Chiki punctuation DOUBLE MUCAAD';
+      default:
+        return 'Ol Chiki character $char';
     }
   }
 
@@ -119,9 +164,7 @@ class OlChikiKeyboard extends ConsumerWidget {
     return Container(
       decoration: BoxDecoration(
         color: keyboardBg,
-        border: Border(
-          top: BorderSide(color: borderCol, width: 1.5),
-        ),
+        border: Border(top: BorderSide(color: borderCol, width: 1.5)),
       ),
       child: SafeArea(
         top: false,
@@ -136,7 +179,12 @@ class OlChikiKeyboard extends ConsumerWidget {
               child: needsDigits
                   ? Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: _buildKeyRow(context, ref, olChikiDigits, isDigit: true),
+                      child: _buildKeyRow(
+                        context,
+                        ref,
+                        olChikiDigits,
+                        isDigit: true,
+                      ),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -188,8 +236,9 @@ class OlChikiKeyboard extends ConsumerWidget {
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final keyColor = isDark ? AppColors.charcoal : Colors.white;
-    final textColor =
-        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final textColor = isDark
+        ? AppColors.textPrimaryDark
+        : AppColors.textPrimaryLight;
     final a11yLabel = _getA11yLabel(char);
 
     return Semantics(
@@ -212,7 +261,6 @@ class OlChikiKeyboard extends ConsumerWidget {
               color: isDark
                   ? Colors.white10
                   : Colors.black.withValues(alpha: 0.08),
-              width: 1,
             ),
             boxShadow: [
               BoxShadow(
@@ -325,7 +373,6 @@ class OlChikiKeyboard extends ConsumerWidget {
           ),
           // । Danda Key
           Expanded(
-            flex: 1,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
               child: Semantics(

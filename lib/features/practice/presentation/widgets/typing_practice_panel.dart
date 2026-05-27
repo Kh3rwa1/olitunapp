@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
@@ -22,7 +21,8 @@ class TypingPracticePanel extends ConsumerStatefulWidget {
   });
 
   @override
-  ConsumerState<TypingPracticePanel> createState() => _TypingPracticePanelState();
+  ConsumerState<TypingPracticePanel> createState() =>
+      _TypingPracticePanelState();
 }
 
 class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
@@ -48,13 +48,31 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
       vsync: this,
     );
 
-    _shakeAnimation = TweenSequence<double>([
-      TweenSequenceItem(tween: Tween<double>(begin: 0.0, end: -8.0), weight: 1),
-      TweenSequenceItem(tween: Tween<double>(begin: -8.0, end: 8.0), weight: 2),
-      TweenSequenceItem(tween: Tween<double>(begin: 8.0, end: -4.0), weight: 2),
-      TweenSequenceItem(tween: Tween<double>(begin: -4.0, end: 4.0), weight: 2),
-      TweenSequenceItem(tween: Tween<double>(begin: 4.0, end: 0.0), weight: 1),
-    ]).animate(CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut));
+    _shakeAnimation =
+        TweenSequence<double>([
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 0.0, end: -8.0),
+            weight: 1,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: -8.0, end: 8.0),
+            weight: 2,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 8.0, end: -4.0),
+            weight: 2,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: -4.0, end: 4.0),
+            weight: 2,
+          ),
+          TweenSequenceItem(
+            tween: Tween<double>(begin: 4.0, end: 0.0),
+            weight: 1,
+          ),
+        ]).animate(
+          CurvedAnimation(parent: _shakeController, curve: Curves.easeInOut),
+        );
   }
 
   @override
@@ -104,7 +122,10 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     // Auto-play audio once on completion
     if (state.phase == TypingPhase.complete && !_audioPlayedOnComplete) {
       _audioPlayedOnComplete = true;
-      SemanticsService.announce('Practice complete, 5 stars earned', TextDirection.ltr);
+      SemanticsService.announce(
+        'Practice complete, 5 stars earned',
+        TextDirection.ltr,
+      );
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _playAudio();
       });
@@ -113,7 +134,9 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     // Sync input controller value and cursor position
     if (_textController.text != state.typedSoFar) {
       _textController.text = state.typedSoFar;
-      _textController.selection = TextSelection.collapsed(offset: state.typedSoFar.length);
+      _textController.selection = TextSelection.collapsed(
+        offset: state.typedSoFar.length,
+      );
     }
 
     // Done State Layout
@@ -140,18 +163,30 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
           alignment: Alignment.center,
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
-            opacity: state.attemptsTotal >= 6 && state.phase == TypingPhase.typing ? 1.0 : 0.0,
+            opacity:
+                state.attemptsTotal >= 6 && state.phase == TypingPhase.typing
+                ? 1.0
+                : 0.0,
             child: IgnorePointer(
-              ignoring: state.attemptsTotal < 6 || state.phase != TypingPhase.typing,
+              ignoring:
+                  state.attemptsTotal < 6 || state.phase != TypingPhase.typing,
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: TextButton.icon(
                   onPressed: () {
                     ref
-                        .read(typingPracticeControllerProvider(widget.args).notifier)
+                        .read(
+                          typingPracticeControllerProvider(
+                            widget.args,
+                          ).notifier,
+                        )
                         .revealAndContinue();
                   },
-                  icon: const Icon(Icons.visibility_rounded, size: 16, color: AppColors.primary),
+                  icon: const Icon(
+                    Icons.visibility_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
                   label: const Text(
                     'REVEAL & CONTINUE',
                     style: TextStyle(
@@ -163,10 +198,13 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                   ),
                   style: TextButton.styleFrom(
                     backgroundColor: AppColors.primary.withValues(alpha: 0.1),
-                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(30),
-                      side: const BorderSide(color: AppColors.primary, width: 1),
+                      side: const BorderSide(color: AppColors.primary),
                     ),
                   ),
                 ),
@@ -175,18 +213,22 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
           ),
         ),
         // On-screen custom keyboard
-        RepaintBoundary(
-          child: OlChikiKeyboard(args: widget.args),
-        ),
+        RepaintBoundary(child: OlChikiKeyboard(args: widget.args)),
       ],
     );
   }
 
-  Widget _buildInputCard(BuildContext context, TypingPracticeState state, bool isDark) {
+  Widget _buildInputCard(
+    BuildContext context,
+    TypingPracticeState state,
+    bool isDark,
+  ) {
     final cardBg = isDark
         ? AppColors.charcoal.withValues(alpha: 0.5)
         : Colors.white.withValues(alpha: 0.8);
-    final cardBorder = isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05);
+    final cardBorder = isDark
+        ? Colors.white10
+        : Colors.black.withValues(alpha: 0.05);
 
     final showCelebration = state.phase == TypingPhase.complete;
 
@@ -196,10 +238,12 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorder, width: 1),
+          border: Border.all(color: cardBorder),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.black26
+                  : Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -227,11 +271,15 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                             letterSpacing: 1.5,
                           ),
                         ),
-                        if (widget.audioUrl != null || widget.onPlayAudio != null)
+                        if (widget.audioUrl != null ||
+                            widget.onPlayAudio != null)
                           Material(
                             color: Colors.transparent,
                             child: IconButton(
-                              icon: const Icon(Icons.volume_up_rounded, size: 20),
+                              icon: const Icon(
+                                Icons.volume_up_rounded,
+                                size: 20,
+                              ),
                               color: AppColors.primary,
                               padding: EdgeInsets.zero,
                               constraints: const BoxConstraints(),
@@ -257,14 +305,20 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                             widget.args.meaning,
                             style: TextStyle(
                               fontSize: 13,
-                              color: isDark ? Colors.grey.shade400 : Colors.grey.shade600,
+                              color: isDark
+                                  ? Colors.grey.shade400
+                                  : Colors.grey.shade600,
                             ),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 16),
-                    Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+                    Divider(
+                      color: isDark
+                          ? Colors.white10
+                          : Colors.black.withValues(alpha: 0.05),
+                    ),
                     const SizedBox(height: 12),
                     // Target Field input area
                     _buildInputFieldArea(context, state, isDark),
@@ -285,7 +339,11 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     );
   }
 
-  Widget _buildInputFieldArea(BuildContext context, TypingPracticeState state, bool isDark) {
+  Widget _buildInputFieldArea(
+    BuildContext context,
+    TypingPracticeState state,
+    bool isDark,
+  ) {
     final borderCol = state.wrongAtPosition > 0
         ? Colors.redAccent.withValues(alpha: 0.6)
         : (isDark ? Colors.white24 : Colors.black12);
@@ -332,7 +390,8 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
               fontSize: 26,
               letterSpacing: 4.0,
               fontWeight: FontWeight.bold,
-              color: Colors.transparent, // Fully transparent so RichText shows through
+              color: Colors
+                  .transparent, // Fully transparent so RichText shows through
             ),
             decoration: const InputDecoration(
               border: InputBorder.none,
@@ -385,13 +444,18 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
       if (withHint) {
         spans.add(TextSpan(text: nextChar, style: hintStyle));
       } else {
-        spans.add(TextSpan(text: nextChar == ' ' ? ' ' : '_', style: dashStyle));
+        spans.add(
+          TextSpan(text: nextChar == ' ' ? ' ' : '_', style: dashStyle),
+        );
       }
 
       // Render remaining character dashes
       if (typed.length + 1 < target.length) {
         final remaining = target.substring(typed.length + 1);
-        final dashes = remaining.split('').map((c) => c == ' ' ? ' ' : '_').join('');
+        final dashes = remaining
+            .split('')
+            .map((c) => c == ' ' ? ' ' : '_')
+            .join();
         spans.add(TextSpan(text: dashes, style: dashStyle));
       }
     }
@@ -403,7 +467,9 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     final cardBg = isDark
         ? AppColors.charcoal.withValues(alpha: 0.5)
         : Colors.white.withValues(alpha: 0.8);
-    final cardBorder = isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05);
+    final cardBorder = isDark
+        ? Colors.white10
+        : Colors.black.withValues(alpha: 0.05);
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -411,10 +477,12 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
         decoration: BoxDecoration(
           color: cardBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: cardBorder, width: 1),
+          border: Border.all(color: cardBorder),
           boxShadow: [
             BoxShadow(
-              color: isDark ? Colors.black26 : Colors.black.withValues(alpha: 0.03),
+              color: isDark
+                  ? Colors.black26
+                  : Colors.black.withValues(alpha: 0.03),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),
@@ -473,7 +541,11 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
               ),
             ),
             const SizedBox(height: 20),
-            Divider(color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+            Divider(
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.05),
+            ),
             const SizedBox(height: 12),
             // Try again link
             TextButton(
@@ -482,7 +554,9 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
                 _lastAttempts = 0;
                 _lastTypedLength = 0;
                 ref
-                    .read(typingPracticeControllerProvider(widget.args).notifier)
+                    .read(
+                      typingPracticeControllerProvider(widget.args).notifier,
+                    )
                     .tryAgain();
               },
               child: const Text(

@@ -247,17 +247,20 @@ class SettingsScreen extends ConsumerWidget {
                     ),
                     const SizedBox(height: 10),
                     Semantics(
-                      label: "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
-                      excludeSemantics: false,
+                      label:
+                          "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
                       child: ToggleTile(
                         icon: Icons.keyboard_rounded,
                         title: 'Vocabulary & Sentence Practice',
                         subtitle:
                             'Enable active recall typing practice for vocabulary words and sentences',
-                        value: ref.watch(typingPracticeSettingsProvider).enabled,
+                        value: ref
+                            .watch(typingPracticeSettingsProvider)
+                            .enabled,
                         isDark: isDark,
-                        onChanged: (value) =>
-                            ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+                        onChanged: (value) => ref
+                            .read(typingPracticeSettingsProvider.notifier)
+                            .setEnabled(value),
                       ),
                     ),
                   ],
@@ -384,8 +387,8 @@ class SettingsScreen extends ConsumerWidget {
             ),
             const SizedBox(height: 10),
             Semantics(
-              label: "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
-              excludeSemantics: false,
+              label:
+                  "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
               child: ToggleTile(
                 icon: Icons.keyboard_rounded,
                 title: 'Vocabulary & Sentence Practice',
@@ -393,8 +396,9 @@ class SettingsScreen extends ConsumerWidget {
                     'Enable active recall typing practice for vocabulary words and sentences',
                 value: ref.watch(typingPracticeSettingsProvider).enabled,
                 isDark: isDark,
-                onChanged: (value) =>
-                    ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+                onChanged: (value) => ref
+                    .read(typingPracticeSettingsProvider.notifier)
+                    .setEnabled(value),
               ),
             ),
           ],

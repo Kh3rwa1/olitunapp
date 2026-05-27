@@ -14,6 +14,7 @@ import 'widgets/next_best_action_card.dart';
 import 'widgets/today_mission_card.dart';
 import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
+import 'widgets/home_banners_carousel.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -61,6 +62,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _onRefresh() async {
     await ref.read(homePrefetchProvider.notifier).prefetch(forceRefresh: true);
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+    ref.invalidate(featuredBannersProvider);
   }
 
   @override
@@ -106,7 +108,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       children: [
         // (2) Header: Johar + user name only
         _buildHeader(userName: displayUserName, isDark: isDark),
-        const SizedBox(height: 24),
+        const SizedBox(height: 20),
+
+        // (2b) Featured banners carousel — hidden when empty
+        HomeBannersCarousel(isDark: isDark),
+        const SizedBox(height: 20),
 
         // (3) TodayAffirmationCard - the hero with more vertical breathing room
         const Padding(

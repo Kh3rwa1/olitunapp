@@ -342,18 +342,21 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     // 2. Track Analytics
     unawaited(
-      _ref?.read(learningAnalyticsServiceProvider).track(
-        LearningAnalyticsEvents.practiceCompleted,
-        source: 'typing_practice',
-        sourceId: contentId,
-        metadata: {
-          'contentType': contentType,
-          'practiceMode': practiceMode,
-          'attempts': attempts,
-          'withHint': withHint,
-          'starsAwarded': starsAwarded,
-        },
-      ) ?? Future.value(),
+      _ref
+              ?.read(learningAnalyticsServiceProvider)
+              .track(
+                LearningAnalyticsEvents.practiceCompleted,
+                source: 'typing_practice',
+                sourceId: contentId,
+                metadata: {
+                  'contentType': contentType,
+                  'practiceMode': practiceMode,
+                  'attempts': attempts,
+                  'withHint': withHint,
+                  'starsAwarded': starsAwarded,
+                },
+              ) ??
+          Future.value(),
     );
 
     // 3. Increment streak and save stats

@@ -85,15 +85,15 @@ class TypingPracticeController
     extends AutoDisposeFamilyNotifier<TypingPracticeState, TypingPracticeArgs> {
   @override
   TypingPracticeState build(TypingPracticeArgs arg) {
-    final hasDigits = arg.target.runes.any((r) =>
-        (r >= 0x1C50 && r <= 0x1C59) || (r >= 0x30 && r <= 0x39));
+    final hasDigits = arg.target.runes.any(
+      (r) => (r >= 0x1C50 && r <= 0x1C59) || (r >= 0x30 && r <= 0x39),
+    );
     return TypingPracticeState(
       phase: TypingPhase.idle,
       typedSoFar: '',
       attemptsTotal: 0,
       wrongAtPosition: 0,
       withHint: false,
-      hasAwardedStars: false,
       needsDigits: hasDigits,
     );
   }
@@ -128,10 +128,7 @@ class TypingPracticeController
         withHint: state.withHint || showHint,
       );
     } else {
-      state = state.copyWith(
-        typedSoFar: newTyped,
-        wrongAtPosition: 0,
-      );
+      state = state.copyWith(typedSoFar: newTyped, wrongAtPosition: 0);
 
       if (comparison.isComplete) {
         _onComplete();
@@ -149,10 +146,7 @@ class TypingPracticeController
 
   void revealAndContinue() {
     if (state.phase != TypingPhase.typing) return;
-    state = state.copyWith(
-      typedSoFar: arg.target,
-      withHint: true,
-    );
+    state = state.copyWith(typedSoFar: arg.target, withHint: true);
     _onComplete();
   }
 
@@ -178,7 +172,9 @@ class TypingPracticeController
     if (!state.hasAwardedStars) {
       state = state.copyWith(hasAwardedStars: true);
 
-      ref.read(userStatsProvider.notifier).recordPracticeCompletion(
+      ref
+          .read(userStatsProvider.notifier)
+          .recordPracticeCompletion(
             contentId: arg.itemKey,
             contentType: arg.contentType,
             practiceMode: 'typing',
@@ -191,6 +187,8 @@ class TypingPracticeController
 }
 
 final typingPracticeControllerProvider = NotifierProvider.family
-    .autoDispose<TypingPracticeController, TypingPracticeState, TypingPracticeArgs>(
-  TypingPracticeController.new,
-);
+    .autoDispose<
+      TypingPracticeController,
+      TypingPracticeState,
+      TypingPracticeArgs
+    >(TypingPracticeController.new);

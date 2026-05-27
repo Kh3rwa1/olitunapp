@@ -8,16 +8,15 @@ import '../../../../shared/providers/local_settings_provider.dart';
 class TypingCompleteCelebration extends ConsumerStatefulWidget {
   final String targetText;
 
-  const TypingCompleteCelebration({
-    super.key,
-    required this.targetText,
-  });
+  const TypingCompleteCelebration({super.key, required this.targetText});
 
   @override
-  ConsumerState<TypingCompleteCelebration> createState() => _TypingCompleteCelebrationState();
+  ConsumerState<TypingCompleteCelebration> createState() =>
+      _TypingCompleteCelebrationState();
 }
 
-class _TypingCompleteCelebrationState extends ConsumerState<TypingCompleteCelebration>
+class _TypingCompleteCelebrationState
+    extends ConsumerState<TypingCompleteCelebration>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller;
   late final Animation<double> _scaleAnimation;
@@ -170,10 +169,7 @@ class _ConfettiPainter extends CustomPainter {
   final List<_ConfettiParticle> particles;
   final double progress;
 
-  _ConfettiPainter({
-    required this.particles,
-    required this.progress,
-  });
+  _ConfettiPainter({required this.particles, required this.progress});
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -190,7 +186,9 @@ class _ConfettiPainter extends CustomPainter {
       // Calculate radial displacement
       final distance = p.speed * progress;
       final dx = cos(p.angle) * distance;
-      final dy = sin(p.angle) * distance + (progress * progress * 80); // add subtle gravity drift
+      final dy =
+          sin(p.angle) * distance +
+          (progress * progress * 80); // add subtle gravity drift
 
       final pos = center + Offset(dx, dy);
       final currentSize = p.size * scale;
@@ -203,7 +201,11 @@ class _ConfettiPainter extends CustomPainter {
 
       // Draw random shapes (squares or diamonds)
       canvas.drawRect(
-        Rect.fromCenter(center: Offset.zero, width: currentSize, height: currentSize),
+        Rect.fromCenter(
+          center: Offset.zero,
+          width: currentSize,
+          height: currentSize,
+        ),
         paint,
       );
       canvas.restore();

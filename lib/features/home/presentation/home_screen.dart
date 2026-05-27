@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/api/appwrite_client.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
@@ -61,6 +62,41 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   Future<void> _onRefresh() async {
     await ref.read(homePrefetchProvider.notifier).prefetch(forceRefresh: true);
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
+  }
+
+  /// Sends a low-level connectivity ping to the configured Appwrite endpoint
+  /// and surfaces the result in a SnackBar. Useful for verifying the SDK is
+  /// wired up correctly against the right endpoint / project ID.
+  Future<void> _sendAppwritePing() async {
+    final messenger = ScaffoldMessenger.of(context);
+    messenger.showSnackBar(
+      const SnackBar(
+        content: Text('Pinging Appwrite...'),
+        duration: Duration(seconds: 1),
+      ),
+    );
+    try {
+      await client.ping();
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Appwrite ping successful'),
+            backgroundColor: AppColors.success,
+          ),
+        );
+    } catch (e) {
+      if (!mounted) return;
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          SnackBar(
+            content: Text('Appwrite ping failed: $e'),
+            backgroundColor: AppColors.error,
+          ),
+        );
+    }
   }
 
   @override
@@ -235,6 +271,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ),
             ),
           ],
+        ),
+
+        // Appwrite SDK connectivity check — verifies the Flutter app can
+        // reach the configured Appwrite endpoint and project.
+        Padding(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Center(
+            child: OutlinedButton.icon(
+              key: const Key('home_appwrite_ping_button'),
+              onPressed: _sendAppwritePing,
+              icon: const Icon(Icons.network_check),
+              label: const Text('Send a ping'),
+            ),
+          ),
         ),
 
         SizedBox(height: isDesktop ? 32 : 120),

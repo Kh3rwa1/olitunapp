@@ -670,17 +670,20 @@ class _SyncedAudioPlayerWidget extends ConsumerWidget {
 
     return StreamBuilder<PlayerState>(
       stream: player.playerStateStream,
+      initialData: player.playerState,
       builder: (context, snapshot) {
         final playerState = snapshot.data;
         final playing = playerState?.playing ?? false;
 
         return StreamBuilder<Duration?>(
           stream: player.durationStream,
+          initialData: player.duration,
           builder: (context, durationSnapshot) {
             final duration = durationSnapshot.data ?? Duration.zero;
 
             return StreamBuilder<Duration>(
               stream: player.positionStream,
+              initialData: player.position,
               builder: (context, positionSnapshot) {
                 var position = positionSnapshot.data ?? Duration.zero;
                 if (position > duration) {
@@ -901,17 +904,20 @@ class _LyricsTabState extends ConsumerState<_LyricsTab> {
           // Timeline Player Bar
           StreamBuilder<PlayerState>(
             stream: player.playerStateStream,
+            initialData: player.playerState,
             builder: (context, snapshot) {
               final playerState = snapshot.data;
               final playing = playerState?.playing ?? false;
 
               return StreamBuilder<Duration?>(
                 stream: player.durationStream,
+                initialData: player.duration,
                 builder: (context, durationSnapshot) {
                   final duration = durationSnapshot.data ?? Duration.zero;
 
                   return StreamBuilder<Duration>(
                     stream: player.positionStream,
+                    initialData: player.position,
                     builder: (context, positionSnapshot) {
                       var position = positionSnapshot.data ?? Duration.zero;
                       if (position > duration) position = duration;

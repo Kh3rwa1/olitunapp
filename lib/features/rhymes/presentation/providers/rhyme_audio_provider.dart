@@ -51,6 +51,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
   int _lastSyncedProgressPercent = -1;
 
   RhymeAudioNotifier({Ref? ref}) : _ref = ref, super(const RhymeAudioState()) {
+    _player.setWebCrossOrigin(WebCrossOrigin.anonymous);
     _playerStateSub = _player.playerStateStream.listen(
       (playerState) {
         if (!mounted) return;

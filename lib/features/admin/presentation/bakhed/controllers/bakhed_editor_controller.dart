@@ -862,6 +862,7 @@ final bakhedAudioPlayerProvider = Provider.autoDispose.family<AudioPlayer, Strin
   bakhedId,
 ) {
   final player = AudioPlayer();
+  player.setWebCrossOrigin(WebCrossOrigin.anonymous);
 
   // Listen to the audioUrl changes in the editor state.
   // This ensures the player dynamically loads the audio URL when it becomes available

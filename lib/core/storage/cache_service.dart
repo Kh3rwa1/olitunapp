@@ -57,19 +57,58 @@ class CacheService {
   /// Lazily-opened, long-lived box handle.
   static Box? _box;
 
+  /// Active future for opening the box to prevent concurrent open race conditions.
+  static Future<Box>? _openBoxFuture;
+
   static bool get isOpen => _box != null && _box!.isOpen;
 
   @visibleForTesting
-  static void resetForTesting() => _box = null;
+  static void resetForTesting() {
+    _box = null;
+    _openBoxFuture = null;
+  }
 
   static Future<Box> _getBox() async {
     if (_box != null && _box!.isOpen) return _box!;
-    _box = await Hive.openBox(_boxName);
-    return _box!;
+    if (_openBoxFuture != null) return _openBoxFuture!;
+
+    _openBoxFuture = () async {
+      try {
+        final box = await Hive.openBox(_boxName);
+        _box = box;
+        return box;
+      } catch (e) {
+        AppLogger.debug('[Cache] Failed to open Hive box: $e');
+        _box = null;
+        rethrow;
+      } finally {
+        _openBoxFuture = null;
+      }
+    }();
+
+    return _openBoxFuture!;
+  }
+
+  /// Reset the box handle if a connection or invalid state error is detected,
+  /// so that subsequent calls attempt a fresh open.
+  static void _handleCacheError(Object error) {
+    AppLogger.debug('[Cache] Database error occurred: $error');
+    final errStr = error.toString().toLowerCase();
+    if (errStr.contains('closing') ||
+        errStr.contains('invalidstateerror') ||
+        errStr.contains('databaseclosed') ||
+        errStr.contains('closed')) {
+      try {
+        if (_box != null) {
+          _box!.close();
+        }
+      } catch (_) {}
+      _box = null;
+    }
   }
 
   /// Write [data] under [key] with optional [ttl] (defaults to 24 h).
-  static Future<void> set(String key, dynamic data, {Duration? ttl}) async {
+  static Future<bool> set(String key, dynamic data, {Duration? ttl}) async {
     try {
       final box = await _getBox();
       final entry = CacheEntry(
@@ -79,9 +118,11 @@ class CacheService {
         ttlMs: (ttl ?? defaultTtl).inMilliseconds,
       );
       await box.put(key, jsonEncode(entry.toJson()));
+      return true;
     } catch (e) {
       AppLogger.debug('[Cache] write error ($key): $e');
-      rethrow;
+      _handleCacheError(e);
+      return false;
     }
   }
 
@@ -106,6 +147,7 @@ class CacheService {
       return null;
     } catch (e) {
       AppLogger.debug('[Cache] read error ($key): $e');
+      _handleCacheError(e);
       return null;
     }
   }
@@ -128,6 +170,7 @@ class CacheService {
           .toList(growable: false);
     } catch (e) {
       AppLogger.debug('[Cache] read list error ($key): $e');
+      _handleCacheError(e);
       return null;
     }
   }
@@ -139,44 +182,67 @@ class CacheService {
       final raw = box.get(key);
       if (raw == null) return null;
       return _unwrap(raw as String, skipValidation: true);
-    } catch (_) {
+    } catch (e) {
+      _handleCacheError(e);
       return null;
     }
   }
 
-  static Future<void> delete(String key) async {
-    final box = await _getBox();
-    await box.delete(key);
+  static Future<bool> delete(String key) async {
+    try {
+      final box = await _getBox();
+      await box.delete(key);
+      return true;
+    } catch (e) {
+      AppLogger.debug('[Cache] delete error ($key): $e');
+      _handleCacheError(e);
+      return false;
+    }
   }
 
-  static Future<void> clear() async {
-    final box = await _getBox();
-    await box.clear();
+  static Future<bool> clear() async {
+    try {
+      final box = await _getBox();
+      await box.clear();
+      return true;
+    } catch (e) {
+      AppLogger.debug('[Cache] clear error: $e');
+      _handleCacheError(e);
+      return false;
+    }
   }
 
   /// Evict all entries whose TTL has expired or whose schema is stale.
   static Future<int> evictStale() async {
-    final box = await _getBox();
-    final keysToDelete = <dynamic>[];
-    for (final key in box.keys) {
-      try {
-        final raw = box.get(key);
-        if (raw == null) continue;
-        final entry = CacheEntry.fromJson(
-          jsonDecode(raw as String) as Map<String, dynamic>,
-        );
-        if (entry.isExpired || entry.isSchemaMismatch) {
+    try {
+      final box = await _getBox();
+      final keysToDelete = <dynamic>[];
+      for (final key in box.keys) {
+        try {
+          final raw = box.get(key);
+          if (raw == null) continue;
+          final entry = CacheEntry.fromJson(
+            jsonDecode(raw as String) as Map<String, dynamic>,
+          );
+          if (entry.isExpired || entry.isSchemaMismatch) {
+            keysToDelete.add(key);
+          }
+        } catch (_) {
           keysToDelete.add(key);
         }
-      } catch (_) {
-        keysToDelete.add(key);
       }
+      if (keysToDelete.isNotEmpty) {
+        await box.deleteAll(keysToDelete);
+      }
+      AppLogger.debug(
+        '[Cache] evictStale: removed ${keysToDelete.length} entries',
+      );
+      return keysToDelete.length;
+    } catch (e) {
+      AppLogger.debug('[Cache] evictStale error: $e');
+      _handleCacheError(e);
+      return 0;
     }
-    await box.deleteAll(keysToDelete);
-    AppLogger.debug(
-      '[Cache] evictStale: removed ${keysToDelete.length} entries',
-    );
-    return keysToDelete.length;
   }
 
   // ── Internal ──────────────────────────────────────────

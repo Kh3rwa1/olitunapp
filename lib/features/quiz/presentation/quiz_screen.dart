@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fpdart/fpdart.dart';
+import '../../../core/error/failures.dart';
+import '../../../shared/models/content_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
@@ -13,14 +16,51 @@ import 'widgets/quiz_question_card.dart';
 import 'widgets/quiz_feedback_panel.dart';
 import 'widgets/quiz_complete_screen.dart';
 
-class QuizScreen extends ConsumerWidget {
+class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
 
   const QuizScreen({super.key, required this.quizId});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final quizAsync = ref.watch(quizResultProvider(quizId));
+  ConsumerState<QuizScreen> createState() => _QuizScreenState();
+}
+
+class _QuizScreenState extends ConsumerState<QuizScreen> {
+  bool _started = false;
+
+  @override
+  Widget build(BuildContext context) {
+    ref.listen<AsyncValue<Either<Failure, QuizModel>>>(
+      quizResultProvider(widget.quizId),
+      (prev, next) {
+        if (_started) return;
+        next.whenData((result) {
+          result.fold((_) {}, (quiz) {
+            if (quiz.questions.isEmpty) return;
+            _started = true;
+            ref
+                .read(quizSessionNotifierProvider(widget.quizId).notifier)
+                .startQuiz(quiz);
+          });
+        });
+      },
+    );
+
+    final quizAsync = ref.watch(quizResultProvider(widget.quizId));
+
+    if (!_started) {
+      quizAsync.whenData((result) {
+        result.fold((_) {}, (quiz) {
+          if (quiz.questions.isEmpty) return;
+          _started = true;
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            ref
+                .read(quizSessionNotifierProvider(widget.quizId).notifier)
+                .startQuiz(quiz);
+          });
+        });
+      });
+    }
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return quizAsync.when(
@@ -33,14 +73,14 @@ class QuizScreen extends ConsumerWidget {
       error: (error, stack) => Scaffold(
         body: AppErrorState(
           message: 'Could not load the quiz.',
-          onRetry: () => ref.invalidate(quizResultProvider(quizId)),
+          onRetry: () => ref.invalidate(quizResultProvider(widget.quizId)),
         ),
       ),
       data: (quizResult) => quizResult.fold(
         (failure) => Scaffold(
           body: AppErrorState(
             message: failure.message,
-            onRetry: () => ref.invalidate(quizResultProvider(quizId)),
+            onRetry: () => ref.invalidate(quizResultProvider(widget.quizId)),
           ),
         ),
         (quiz) {
@@ -58,14 +98,7 @@ class QuizScreen extends ConsumerWidget {
             );
           }
 
-          final state = ref.watch(quizSessionNotifierProvider(quizId));
-          if (!state.hasStarted) {
-            WidgetsBinding.instance.addPostFrameCallback((_) {
-              ref
-                  .read(quizSessionNotifierProvider(quizId).notifier)
-                  .startQuiz(quiz);
-            });
-          }
+          final state = ref.watch(quizSessionNotifierProvider(widget.quizId));
           if (state.isQuizComplete) {
             return QuizCompleteScreen(
               score: state.score,
@@ -78,7 +111,7 @@ class QuizScreen extends ConsumerWidget {
           }
 
           final notifier = ref.read(
-            quizSessionNotifierProvider(quizId).notifier,
+            quizSessionNotifierProvider(widget.quizId).notifier,
           );
           final question = quiz.questions[state.currentQuestion];
           final totalQs = quiz.questions.length;

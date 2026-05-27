@@ -16,6 +16,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -23,6 +24,8 @@ import 'package:itun/shared/models/content_item.dart';
 class MockBakhedRepository extends Mock implements BakhedRepository {}
 
 class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+
+class MockMediaUploader extends Mock implements MediaUploader {}
 
 class FakeContentItem extends Fake implements ContentItem {}
 
@@ -86,6 +89,7 @@ void main() {
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
             appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
 
@@ -125,6 +129,7 @@ void main() {
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
             appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
 
@@ -155,6 +160,7 @@ void main() {
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
           appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
         ],
       );
 
@@ -197,6 +203,7 @@ void main() {
           overrides: [
             bakhedRepositoryProvider.overrideWithValue(mockRepository),
             appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
           ],
         );
 

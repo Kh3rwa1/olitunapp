@@ -324,6 +324,42 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     return stats.copyWith(lastActiveDate: today, currentStreak: newStreak);
   }
 
+  Future<void> recordPracticeCompletion({
+    required String contentId,
+    required String contentType,
+    required String practiceMode,
+    required int attempts,
+    required bool withHint,
+    required int starsAwarded,
+  }) async {
+    final current = state.valueOrNull;
+    if (current == null) return;
+
+    // 1. Award Stars
+    final updated = current.copyWith(
+      totalStars: current.totalStars + starsAwarded,
+    );
+
+    // 2. Track Analytics
+    unawaited(
+      _ref?.read(learningAnalyticsServiceProvider).track(
+        LearningAnalyticsEvents.practiceCompleted,
+        source: 'typing_practice',
+        sourceId: contentId,
+        metadata: {
+          'contentType': contentType,
+          'practiceMode': practiceMode,
+          'attempts': attempts,
+          'withHint': withHint,
+          'starsAwarded': starsAwarded,
+        },
+      ) ?? Future.value(),
+    );
+
+    // 3. Increment streak and save stats
+    await updateStats(_withStreakUpdate(updated));
+  }
+
   Future<void> recordDailyMissionsCompletedToday() async {
     final current = state.valueOrNull;
     if (current == null) return;

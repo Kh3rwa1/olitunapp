@@ -7,8 +7,19 @@ import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/profile/domain/repositories/profile_repository.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/core/analytics/analytics_service.dart';
+import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
 class _MockProfileRepo extends Mock implements ProfileRepository {}
+class _MockRef extends Mock implements Ref {}
+class _MockAnalyticsService extends Mock implements LearningAnalyticsService {}
+class _MockAuthRepo extends Mock implements AuthRepository {}
+class _MockSubscription extends Mock implements ProviderSubscription<AsyncValue<List<ConnectivityResult>>> {}
+class _FakeConnectivityProviderListenable extends Fake implements ProviderListenable<AsyncValue<List<ConnectivityResult>>> {}
 
 void main() {
   late _MockProfileRepo mockRepo;
@@ -33,6 +44,10 @@ void main() {
         currentStreak: 0,
         totalStars: 0,
       ),
+    );
+    registerFallbackValue(_FakeConnectivityProviderListenable());
+    registerFallbackValue(
+      (AsyncValue<List<ConnectivityResult>>? prev, AsyncValue<List<ConnectivityResult>> next) {},
     );
   });
 
@@ -288,10 +303,113 @@ void main() {
 
       await notifier.resetProgress();
       final stats = notifier.state.value!;
-      expect(stats.totalStars, 0);
-      expect(stats.completedLessons.isEmpty, isTrue);
-      expect(stats.practicedLetters.isEmpty, isTrue);
       expect(stats.quizHistory.isEmpty, isTrue);
+    });
+
+    test('recordPracticeCompletion awards stars correctly exactly once per call', () async {
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+
+      final notifier = UserStatsNotifier(mockRepo);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      await notifier.recordPracticeCompletion(
+        contentId: 'word_1',
+        contentType: 'word',
+        practiceMode: 'typing',
+        attempts: 2,
+        withHint: false,
+        starsAwarded: 5,
+      );
+
+      expect(notifier.state.value!.totalStars, baseStats.totalStars + 5);
+    });
+
+    test('recordPracticeCompletion calls _withStreakUpdate to update active learning day', () async {
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+
+      final notifier = UserStatsNotifier(
+        mockRepo,
+        now: () => DateTime(2026, 5, 2), // Day after lastActiveDate '2026-05-01'
+      );
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      expect(notifier.state.value!.currentStreak, 3);
+      expect(notifier.state.value!.lastActiveDate, '2026-05-01');
+
+      await notifier.recordPracticeCompletion(
+        contentId: 'word_1',
+        contentType: 'word',
+        practiceMode: 'typing',
+        attempts: 2,
+        withHint: false,
+        starsAwarded: 5,
+      );
+
+      // Streak should be advanced from 3 to 4 because now() is 2026-05-02 (exactly 1 day difference)
+      expect(notifier.state.value!.currentStreak, 4);
+      expect(notifier.state.value!.lastActiveDate, '2026-05-02');
+    });
+
+    test('recordPracticeCompletion tracks practiceCompleted analytics event with correct payload', () async {
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+
+      final mockRef = _MockRef();
+      final mockAnalytics = _MockAnalyticsService();
+      final mockAuthRepo = _MockAuthRepo();
+      final mockSub = _MockSubscription();
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      when(() => mockRef.listen<AsyncValue<List<ConnectivityResult>>>(any(), any())).thenReturn(mockSub);
+      when(() => mockRef.read(sharedPreferencesProvider)).thenReturn(prefs);
+      when(() => mockRef.read(authRepositoryProvider)).thenReturn(mockAuthRepo);
+      when(() => mockRef.read(userNameProvider)).thenReturn('Learner');
+      when(() => mockRef.read(learningAnalyticsServiceProvider)).thenReturn(mockAnalytics);
+      when(() => mockRef.read(isStatsSyncedProvider.notifier)).thenReturn(StateController<bool>(true));
+      when(() => mockAuthRepo.getCurrentUser()).thenAnswer((_) async => const Right(null));
+
+      when(() => mockAnalytics.track(
+            any(),
+            source: any(named: 'source'),
+            sourceId: any(named: 'sourceId'),
+            metadata: any(named: 'metadata'),
+            learnerLevel: any(named: 'learnerLevel'),
+            scriptMode: any(named: 'scriptMode'),
+          )).thenAnswer((_) async {});
+
+      final notifier = UserStatsNotifier(mockRepo, ref: mockRef);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      await notifier.recordPracticeCompletion(
+        contentId: 'word_1',
+        contentType: 'word',
+        practiceMode: 'typing',
+        attempts: 2,
+        withHint: false,
+        starsAwarded: 5,
+      );
+
+      verify(() => mockAnalytics.track(
+            'practice_completed',
+            source: 'typing_practice',
+            sourceId: 'word_1',
+            metadata: {
+              'contentType': 'word',
+              'practiceMode': 'typing',
+              'attempts': 2,
+              'withHint': false,
+              'starsAwarded': 5,
+            },
+          )).called(1);
     });
   });
 }

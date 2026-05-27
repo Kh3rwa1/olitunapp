@@ -28,6 +28,7 @@ class LearningAnalyticsEvents {
   static const streakMilestone = 'streak_milestone';
   static const dailyMissionCompleted = 'daily_mission_completed';
   static const letterPracticed = 'letter_practiced';
+  static const practiceCompleted = 'practice_completed';
 }
 
 class LearningAnalyticsService {

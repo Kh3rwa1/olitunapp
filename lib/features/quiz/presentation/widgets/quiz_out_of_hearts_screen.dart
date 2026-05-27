@@ -92,8 +92,9 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final qIdx = incorrectQuestionIndices[index];
-                      if (qIdx >= questions.length || qIdx < 0)
+                      if (qIdx >= questions.length || qIdx < 0) {
                         return const SizedBox.shrink();
+                      }
                       final q = questions[qIdx];
                       final correctAns = q.optionsLatin.length > q.correctIndex
                           ? q.optionsLatin[q.correctIndex]

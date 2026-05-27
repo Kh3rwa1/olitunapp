@@ -447,6 +447,11 @@ class _LessonBlockDetailScreenState
               ? textLatin.trim().characters.first
               : '');
 
+    final cardText = textOlChiki.isNotEmpty ? textOlChiki : textLatin;
+    final isLongText = cardText.length > 6 || cardText.contains(' ');
+    final isButtonLong = displayText.length > 15;
+    final buttonText = isButtonLong ? 'LISTEN' : displayText.toUpperCase();
+
     final animationUrl = _blockVisualMediaUrl(block);
     final isThisPlaying =
         _isAudioPlaying &&
@@ -669,251 +674,343 @@ class _LessonBlockDetailScreenState
                                   Platform.environment.containsKey(
                                     'FLUTTER_TEST',
                                   );
-                              Widget card = Container(
-                                width: 210,
-                                height: 210,
-                                decoration: BoxDecoration(
-                                  color: Colors.transparent,
-                                  borderRadius: BorderRadius.circular(36),
-                                ),
-                                child: Stack(
-                                  alignment: Alignment.center,
-                                  children: [
-                                    // Outer Glow Ring
-                                    Positioned.fill(
-                                      child: Container(
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            36,
-                                          ),
-                                          border: Border.all(
-                                            color: (isDark
-                                                ? Colors.white.withValues(
-                                                    alpha: 0.05,
-                                                  )
-                                                : accentColor.withValues(
-                                                    alpha: 0.15,
-                                                  )),
-                                            width: 2.0,
-                                          ),
-                                          boxShadow: [
-                                            BoxShadow(
-                                              color: accentColor.withValues(
-                                                alpha: isDark ? 0.15 : 0.2,
-                                              ),
-                                              blurRadius: 28,
-                                              offset: const Offset(0, 10),
+                              Widget content;
+                              if (isLongText) {
+                                content = Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 32,
+                                    vertical: 16,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        cardText,
+                                        textAlign: TextAlign.center,
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w900,
+                                          color: isDark
+                                              ? Colors.white
+                                              : accentColor,
+                                          height: 1.3,
+                                          shadows: [
+                                            Shadow(
+                                              color: isDark
+                                                  ? Colors.black.withValues(
+                                                      alpha: 0.3,
+                                                    )
+                                                  : accentColor.withValues(
+                                                      alpha: 0.15,
+                                                    ),
+                                              offset: const Offset(0, 2),
+                                              blurRadius: 4,
                                             ),
                                           ],
                                         ),
                                       ),
-                                    ),
-                                    // Glass body
-                                    Positioned.fill(
-                                      child: ClipRRect(
-                                        borderRadius: BorderRadius.circular(36),
-                                        child: BackdropFilter(
-                                          filter: ImageFilter.blur(
-                                            sigmaX: 16,
-                                            sigmaY: 16,
+                                      if (block.audioUrl != null &&
+                                          block.audioUrl!.isNotEmpty) ...[
+                                        const SizedBox(height: 16),
+                                        Container(
+                                          padding: const EdgeInsets.symmetric(
+                                            horizontal: 14,
+                                            vertical: 6,
                                           ),
-                                          child: Container(
-                                            decoration: BoxDecoration(
-                                              gradient: LinearGradient(
-                                                colors: isDark
-                                                    ? [
-                                                        Colors.white.withValues(
-                                                          alpha: 0.06,
-                                                        ),
-                                                        Colors.white.withValues(
-                                                          alpha: 0.02,
-                                                        ),
-                                                      ]
-                                                    : [
-                                                        Colors.white.withValues(
-                                                          alpha: 0.8,
-                                                        ),
-                                                        Colors.white.withValues(
-                                                          alpha: 0.45,
-                                                        ),
-                                                      ],
-                                                begin: Alignment.topLeft,
-                                                end: Alignment.bottomRight,
-                                              ),
-                                              borderRadius:
-                                                  BorderRadius.circular(36),
-                                              border: Border.all(
-                                                color: isDark
-                                                    ? Colors.white.withValues(
-                                                        alpha: 0.1,
-                                                      )
-                                                    : Colors.white.withValues(
-                                                        alpha: 0.6,
-                                                      ),
-                                                width: 1.5,
-                                              ),
+                                          decoration: BoxDecoration(
+                                            color: (isDark
+                                                ? Colors.white.withValues(
+                                                    alpha: 0.06,
+                                                  )
+                                                : accentColor.withValues(
+                                                    alpha: 0.06)),
+                                            borderRadius:
+                                                BorderRadius.circular(14),
+                                            border: Border.all(
+                                              color: (isDark
+                                                  ? Colors.white.withValues(
+                                                      alpha: 0.1,
+                                                    )
+                                                  : accentColor.withValues(
+                                                      alpha: 0.1)),
                                             ),
-                                            child: Stack(
-                                              alignment: Alignment.center,
-                                              children: [
-                                                // Subtle Watermark
-                                                CustomPaint(
-                                                  size: const Size(210, 210),
-                                                  painter: _WatermarkPainter(
-                                                    text: textOlChiki.isNotEmpty
+                                          ),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Icon(
+                                                Icons.volume_up_rounded,
+                                                color: isDark
+                                                    ? Colors.white70
+                                                    : accentColor,
+                                                size: 14,
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                'TAP TO HEAR',
+                                                style: TextStyle(
+                                                  fontSize: 10,
+                                                  fontWeight: FontWeight.w800,
+                                                  color: isDark
+                                                      ? Colors.white70
+                                                      : accentColor,
+                                                  letterSpacing: 1.2,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ],
+                                  ),
+                                );
+                              } else {
+                                content = Container(
+                                  width: 210,
+                                  height: 210,
+                                  decoration: BoxDecoration(
+                                    color: Colors.transparent,
+                                    borderRadius: BorderRadius.circular(36),
+                                  ),
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      // Outer Glow Ring
+                                      Positioned.fill(
+                                        child: Container(
+                                          decoration: BoxDecoration(
+                                            borderRadius: BorderRadius.circular(
+                                              36,
+                                            ),
+                                            border: Border.all(
+                                              color: (isDark
+                                                  ? Colors.white.withValues(
+                                                      alpha: 0.05,
+                                                    )
+                                                  : accentColor.withValues(
+                                                      alpha: 0.15,
+                                                    )),
+                                              width: 2.0,
+                                            ),
+                                            boxShadow: [
+                                              BoxShadow(
+                                                color: accentColor.withValues(
+                                                  alpha: isDark ? 0.15 : 0.2,
+                                                ),
+                                                blurRadius: 28,
+                                                offset: const Offset(0, 10),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      // Glass body
+                                      Positioned.fill(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(36),
+                                          child: BackdropFilter(
+                                            filter: ImageFilter.blur(
+                                              sigmaX: 16,
+                                              sigmaY: 16,
+                                            ),
+                                            child: Container(
+                                              decoration: BoxDecoration(
+                                                gradient: LinearGradient(
+                                                  colors: isDark
+                                                      ? [
+                                                          Colors.white.withValues(
+                                                            alpha: 0.06,
+                                                          ),
+                                                          Colors.white.withValues(
+                                                            alpha: 0.02,
+                                                          ),
+                                                        ]
+                                                      : [
+                                                          Colors.white.withValues(
+                                                            alpha: 0.8,
+                                                          ),
+                                                          Colors.white.withValues(
+                                                            alpha: 0.45,
+                                                          ),
+                                                        ],
+                                                  begin: Alignment.topLeft,
+                                                  end: Alignment.bottomRight,
+                                                ),
+                                                borderRadius:
+                                                    BorderRadius.circular(36),
+                                                border: Border.all(
+                                                  color: isDark
+                                                      ? Colors.white.withValues(
+                                                          alpha: 0.1,
+                                                        )
+                                                      : Colors.white.withValues(
+                                                          alpha: 0.6,
+                                                        ),
+                                                  width: 1.5,
+                                                ),
+                                              ),
+                                              child: Stack(
+                                                alignment: Alignment.center,
+                                                children: [
+                                                  // Subtle Watermark
+                                                  CustomPaint(
+                                                    size: const Size(210, 210),
+                                                    painter: _WatermarkPainter(
+                                                      text: textOlChiki.isNotEmpty
+                                                          ? textOlChiki
+                                                          : textLatin,
+                                                      style: TextStyle(
+                                                        fontSize: 160,
+                                                        fontWeight:
+                                                            FontWeight.w900,
+                                                        color:
+                                                            (isDark
+                                                                    ? Colors.white
+                                                                    : accentColor)
+                                                                .withValues(
+                                                                  alpha: 0.04,
+                                                                ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                  // Main Character Text
+                                                  Text(
+                                                    textOlChiki.isNotEmpty
                                                         ? textOlChiki
                                                         : textLatin,
                                                     style: TextStyle(
-                                                      fontSize: 160,
-                                                      fontWeight:
-                                                          FontWeight.w900,
-                                                      color:
-                                                          (isDark
-                                                                  ? Colors.white
-                                                                  : accentColor)
-                                                              .withValues(
-                                                                alpha: 0.04,
-                                                              ),
-                                                    ),
-                                                  ),
-                                                ),
-                                                // Main Character Text
-                                                Text(
-                                                  textOlChiki.isNotEmpty
-                                                      ? textOlChiki
-                                                      : textLatin,
-                                                  style: TextStyle(
-                                                    fontSize:
-                                                        (textOlChiki.isNotEmpty
-                                                                    ? textOlChiki
-                                                                    : textLatin)
-                                                                .length <
-                                                            3
-                                                        ? 84
-                                                        : 44,
-                                                    fontWeight: FontWeight.w900,
-                                                    color: isDark
-                                                        ? Colors.white
-                                                        : accentColor,
-                                                    shadows: [
-                                                      Shadow(
-                                                        color: isDark
-                                                            ? Colors.black
-                                                                  .withValues(
-                                                                    alpha: 0.3,
-                                                                  )
-                                                            : accentColor
-                                                                  .withValues(
-                                                                    alpha: 0.15,
-                                                                  ),
-                                                        offset: const Offset(
-                                                          0,
-                                                          3,
-                                                        ),
-                                                        blurRadius: 6,
-                                                      ),
-                                                    ],
-                                                  ),
-                                                ),
-                                                // Pulsing speaker icon
-                                                Positioned(
-                                                  top: 16,
-                                                  right: 16,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.all(6),
-                                                    decoration: BoxDecoration(
-                                                      color: (isDark
-                                                          ? Colors.white
-                                                                .withValues(
-                                                                  alpha: 0.08,
-                                                                )
-                                                          : accentColor
-                                                                .withValues(
-                                                                  alpha: 0.08,
-                                                                )),
-                                                      shape: BoxShape.circle,
-                                                      border: Border.all(
-                                                        color: (isDark
-                                                            ? Colors.white
-                                                                  .withValues(
-                                                                    alpha: 0.12,
-                                                                  )
-                                                            : accentColor
-                                                                  .withValues(
-                                                                    alpha: 0.12,
-                                                                  )),
-                                                      ),
-                                                    ),
-                                                    child: Icon(
-                                                      Icons.volume_up_rounded,
+                                                      fontSize:
+                                                          (textOlChiki.isNotEmpty
+                                                                      ? textOlChiki
+                                                                      : textLatin)
+                                                                  .length <
+                                                              3
+                                                          ? 84
+                                                          : 44,
+                                                      fontWeight: FontWeight.w900,
                                                       color: isDark
-                                                          ? Colors.white70
+                                                          ? Colors.white
                                                           : accentColor,
-                                                      size: 14,
+                                                      shadows: [
+                                                        Shadow(
+                                                          color: isDark
+                                                              ? Colors.black
+                                                                    .withValues(
+                                                                      alpha: 0.3,
+                                                                    )
+                                                              : accentColor
+                                                                    .withValues(
+                                                                      alpha: 0.15,
+                                                                    ),
+                                                          offset: const Offset(
+                                                            0,
+                                                            3,
+                                                          ),
+                                                          blurRadius: 6,
+                                                        ),
+                                                      ],
                                                     ),
                                                   ),
-                                                ),
-                                                // Tap to Hear Badge
-                                                Positioned(
-                                                  bottom: 16,
-                                                  child: Container(
-                                                    padding:
-                                                        const EdgeInsets.symmetric(
-                                                          horizontal: 14,
-                                                          vertical: 5,
-                                                        ),
-                                                    decoration: BoxDecoration(
-                                                      color: (isDark
-                                                          ? Colors.white
-                                                                .withValues(
-                                                                  alpha: 0.06,
-                                                                )
-                                                          : accentColor
-                                                                .withValues(
-                                                                  alpha: 0.06,
-                                                                )),
-                                                      borderRadius:
-                                                          BorderRadius.circular(
-                                                            14,
-                                                          ),
-                                                      border: Border.all(
+                                                  // Pulsing speaker icon
+                                                  Positioned(
+                                                    top: 16,
+                                                    right: 16,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.all(6),
+                                                      decoration: BoxDecoration(
                                                         color: (isDark
                                                             ? Colors.white
                                                                   .withValues(
-                                                                    alpha: 0.1,
+                                                                    alpha: 0.08,
                                                                   )
                                                             : accentColor
                                                                   .withValues(
-                                                                    alpha: 0.1,
+                                                                    alpha: 0.08,
                                                                   )),
+                                                        shape: BoxShape.circle,
+                                                        border: Border.all(
+                                                          color: (isDark
+                                                              ? Colors.white
+                                                                    .withValues(
+                                                                      alpha: 0.12,
+                                                                    )
+                                                              : accentColor
+                                                                    .withValues(
+                                                                      alpha: 0.12,
+                                                                    )),
+                                                        ),
                                                       ),
-                                                    ),
-                                                    child: Text(
-                                                      'TAP TO HEAR',
-                                                      style: TextStyle(
-                                                        fontSize: 9,
-                                                        fontWeight:
-                                                            FontWeight.w800,
+                                                      child: Icon(
+                                                        Icons.volume_up_rounded,
                                                         color: isDark
                                                             ? Colors.white70
                                                             : accentColor,
-                                                        letterSpacing: 1.2,
+                                                        size: 14,
                                                       ),
                                                     ),
                                                   ),
-                                                ),
-                                              ],
+                                                  // Tap to Hear Badge
+                                                  Positioned(
+                                                    bottom: 16,
+                                                    child: Container(
+                                                      padding:
+                                                          const EdgeInsets.symmetric(
+                                                            horizontal: 14,
+                                                            vertical: 5,
+                                                          ),
+                                                      decoration: BoxDecoration(
+                                                        color: (isDark
+                                                            ? Colors.white
+                                                                  .withValues(
+                                                                    alpha: 0.06,
+                                                                  )
+                                                            : accentColor
+                                                                  .withValues(
+                                                                    alpha: 0.06,
+                                                                  )),
+                                                        borderRadius:
+                                                            BorderRadius.circular(
+                                                              14,
+                                                            ),
+                                                        border: Border.all(
+                                                          color: (isDark
+                                                              ? Colors.white
+                                                                    .withValues(
+                                                                      alpha: 0.1,
+                                                                    )
+                                                              : accentColor
+                                                                    .withValues(
+                                                                      alpha: 0.1,
+                                                                    )),
+                                                        ),
+                                                      ),
+                                                      child: Text(
+                                                        'TAP TO HEAR',
+                                                        style: TextStyle(
+                                                          fontSize: 9,
+                                                          fontWeight:
+                                                              FontWeight.w800,
+                                                          color: isDark
+                                                              ? Colors.white70
+                                                              : accentColor,
+                                                          letterSpacing: 1.2,
+                                                        ),
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
                                             ),
                                           ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
-                              );
+                                    ],
+                                  ),
+                                );
+                              }
 
-                              card = card
+                              content = content
                                   .animate()
                                   .fade(
                                     duration: const Duration(milliseconds: 500),
@@ -926,7 +1023,7 @@ class _LessonBlockDetailScreenState
                                   );
 
                               if (!isTest) {
-                                card = card
+                                content = content
                                     .animate(
                                       onPlay: (controller) =>
                                           controller.repeat(reverse: true),
@@ -940,7 +1037,7 @@ class _LessonBlockDetailScreenState
                                       curve: Curves.easeInOut,
                                     );
                               }
-                              return card;
+                              return content;
                             }(),
                           ),
                           const SizedBox(height: 32),
@@ -961,13 +1058,17 @@ class _LessonBlockDetailScreenState
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Text(
-                                    displayText.toUpperCase(),
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w900,
-                                      color: Colors.white,
-                                      letterSpacing: 1.5,
+                                  Flexible(
+                                    child: Text(
+                                      buttonText.length > 15 ? 'LISTEN' : buttonText.toUpperCase(),
+                                      overflow: TextOverflow.ellipsis,
+                                      maxLines: 1,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w900,
+                                        color: Colors.white,
+                                        letterSpacing: 1.5,
+                                      ),
                                     ),
                                   ),
                                   if (block.audioUrl != null &&

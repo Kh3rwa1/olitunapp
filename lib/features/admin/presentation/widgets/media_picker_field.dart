@@ -65,6 +65,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final media = widget.value;
+    final hasMedia = media != null && media.url.trim().isNotEmpty;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -85,7 +86,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
           ),
           child: Padding(
             padding: const EdgeInsets.all(12.0),
-            child: media != null
+            child: hasMedia
                 ? Column(
                     children: [
                       // Active preview card
@@ -190,6 +191,9 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
   }
 
   Widget _buildPreview(BuildContext context, ContentMedia media) {
+    if (media.url.trim().isEmpty) {
+      return const SizedBox.shrink();
+    }
     switch (media.kind) {
       case ContentMediaKind.image:
       case ContentMediaKind.svg:

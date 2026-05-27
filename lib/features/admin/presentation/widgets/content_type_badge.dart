@@ -37,7 +37,7 @@ class ContentTypeBadge extends StatelessWidget {
     ContentBadgeType.words: Icons.menu_book_rounded,
     ContentBadgeType.sentences: Icons.chat_bubble_outline_rounded,
     ContentBadgeType.video: Icons.play_circle_outline_rounded,
-    ContentBadgeType.audio: Icons.music_note_rounded,
+    ContentBadgeType.audio: Icons.auto_stories_rounded,
     ContentBadgeType.quiz: Icons.quiz_rounded,
     ContentBadgeType.tracing: Icons.gesture_rounded,
     ContentBadgeType.typing: Icons.keyboard_alt_rounded,

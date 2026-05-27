@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/shared/providers/providers.dart';
@@ -126,8 +128,12 @@ class FakeHttpHeaders implements HttpHeaders {
 }
 
 void main() {
-  setUpAll(() {
+  late SharedPreferences prefs;
+
+  setUpAll(() async {
     HttpOverrides.global = MockHttpOverrides();
+    SharedPreferences.setMockInitialValues({});
+    prefs = await SharedPreferences.getInstance();
   });
 
   tearDownAll(() {
@@ -163,6 +169,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
           learnerLessonsProvider.overrideWithValue(const AsyncValue.loading()),
         ],
         child: const MaterialApp(
@@ -181,6 +188,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
           learnerLessonsProvider.overrideWithValue(
             const AsyncValue.error('Error loading', StackTrace.empty),
           ),
@@ -202,6 +210,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
           learnerLessonsProvider.overrideWithValue(const AsyncValue.data([])),
         ],
         child: const MaterialApp(
@@ -225,6 +234,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mockLessons),
             ),
@@ -293,6 +303,7 @@ void main() {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
             learnerLessonsProvider.overrideWithValue(
               AsyncValue.data(mediaLessons),
             ),

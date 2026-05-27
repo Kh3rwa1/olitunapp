@@ -813,7 +813,7 @@ class _ContentFormState extends ConsumerState<ContentForm> {
             ),
           ),
           const SizedBox(height: 16),
-          child,
+          Material(color: Colors.transparent, child: child),
         ],
       ),
     );

@@ -65,9 +65,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
             decoration: BoxDecoration(
               color: Colors.black.withValues(alpha: 0.15),
               shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
+              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
             ),
             child: ClipRRect(
               borderRadius: BorderRadius.circular(20),
@@ -94,18 +92,12 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: Colors.white.withValues(alpha: 0.15),
-        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 13,
-            color: Colors.white,
-          ),
+          Icon(icon, size: 13, color: Colors.white),
           const SizedBox(width: 5),
           Text(
             label,
@@ -190,7 +182,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
           color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9),
           shape: BoxShape.circle,
           border: Border.all(
-            color: isDark ? Colors.white.withValues(alpha: 0.08) : Colors.black.withValues(alpha: 0.06),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
             width: 1.5,
           ),
           boxShadow: isDark
@@ -289,15 +283,19 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
               flexibleSpace: LayoutBuilder(
                 builder: (context, constraints) {
                   final top = constraints.biggest.height;
-                  final isCollapsed = top <= kToolbarHeight + MediaQuery.of(context).padding.top;
-                  
+                  final isCollapsed =
+                      top <=
+                      kToolbarHeight + MediaQuery.of(context).padding.top;
+
                   return FlexibleSpaceBar(
                     centerTitle: true,
                     title: isCollapsed
                         ? Text(
                             category.titleLatin,
                             style: TextStyle(
-                              fontFamily: primaryLocalizedFontFamily(scriptMode),
+                              fontFamily: primaryLocalizedFontFamily(
+                                scriptMode,
+                              ),
                               color: Colors.white,
                               fontWeight: FontWeight.w800,
                               fontSize: 18,
@@ -312,9 +310,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                           )
                         : null,
                     background: Container(
-                      decoration: BoxDecoration(
-                        gradient: brandGradient,
-                      ),
+                      decoration: BoxDecoration(gradient: brandGradient),
                       child: Stack(
                         fit: StackFit.expand,
                         children: [
@@ -371,14 +367,18 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 Text(
                                   category.titleLatin,
                                   style: TextStyle(
-                                    fontFamily: primaryLocalizedFontFamily(scriptMode),
+                                    fontFamily: primaryLocalizedFontFamily(
+                                      scriptMode,
+                                    ),
                                     fontSize: 32,
                                     fontWeight: FontWeight.w900,
                                     color: Colors.white,
                                     letterSpacing: -0.8,
                                     shadows: [
                                       Shadow(
-                                        color: Colors.black.withValues(alpha: 0.12),
+                                        color: Colors.black.withValues(
+                                          alpha: 0.12,
+                                        ),
                                         offset: const Offset(0, 2),
                                         blurRadius: 4,
                                       ),
@@ -392,7 +392,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                     category.description!,
                                     style: TextStyle(
                                       fontSize: 13,
-                                      color: Colors.white.withValues(alpha: 0.9),
+                                      color: Colors.white.withValues(
+                                        alpha: 0.9,
+                                      ),
                                       fontWeight: FontWeight.w400,
                                       height: 1.35,
                                     ),
@@ -408,7 +410,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                     children: [
                                       _buildHeaderBadge(
                                         icon: Icons.menu_book_rounded,
-                                        label: '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
+                                        label:
+                                            '${category.totalLessons > 0 ? category.totalLessons : 5} Lessons',
                                       ),
                                       const SizedBox(width: 8),
                                       _buildHeaderBadge(
@@ -498,23 +501,23 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       );
 
                       return _buildTimelineItem(
-                        card: cardWidget,
-                        index: index,
-                        isFirst: index == 0,
-                        isLast: index == data.length - 1,
-                        isDark: isDark,
-                        isLocked: isLocked,
-                        themeColor: themeColor,
-                        gradient: brandGradient,
-                      )
-                      .animate()
-                      .fadeIn(delay: (index * 80).ms, duration: 400.ms)
-                      .slideY(
-                        begin: 0.08,
-                        end: 0,
-                        curve: MotionTokens.emphasized,
-                        duration: 450.ms,
-                      );
+                            card: cardWidget,
+                            index: index,
+                            isFirst: index == 0,
+                            isLast: index == data.length - 1,
+                            isDark: isDark,
+                            isLocked: isLocked,
+                            themeColor: themeColor,
+                            gradient: brandGradient,
+                          )
+                          .animate()
+                          .fadeIn(delay: (index * 80).ms, duration: 400.ms)
+                          .slideY(
+                            begin: 0.08,
+                            end: 0,
+                            curve: MotionTokens.emphasized,
+                            duration: 450.ms,
+                          );
                     }, childCount: data.length),
                   ),
                 );
@@ -885,11 +888,7 @@ class _LessonCard extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(
-            icon,
-            size: 11,
-            color: badgeColor,
-          ),
+          Icon(icon, size: 11, color: badgeColor),
           const SizedBox(width: 4),
           Text(
             label,
@@ -944,10 +943,14 @@ class _LessonCard extends StatelessWidget {
         width: 40,
         height: 40,
         decoration: BoxDecoration(
-          color: isDark ? Colors.white.withValues(alpha: 0.03) : const Color(0xFFE2E8F0),
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.03)
+              : const Color(0xFFE2E8F0),
           shape: BoxShape.circle,
           border: Border.all(
-            color: isDark ? Colors.white.withValues(alpha: 0.05) : const Color(0xFFCBD5E1),
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : const Color(0xFFCBD5E1),
           ),
         ),
         child: Center(
@@ -975,11 +978,7 @@ class _LessonCard extends StatelessWidget {
         ],
       ),
       child: const Center(
-        child: Icon(
-          Icons.play_arrow_rounded,
-          color: Colors.white,
-          size: 20,
-        ),
+        child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
       ),
     );
   }

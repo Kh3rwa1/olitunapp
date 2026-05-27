@@ -102,6 +102,7 @@ class QuizResultModel extends QuizResultEntity {
     required super.score,
     required super.totalQuestions,
     required super.completedAt,
+    super.failedNoHearts,
   });
 
   factory QuizResultModel.fromJson(Map<String, dynamic> json) {
@@ -119,6 +120,7 @@ class QuizResultModel extends QuizResultEntity {
       score: readInt('score'),
       totalQuestions: readInt('totalQuestions'),
       completedAt: json['completedAt'] ?? '',
+      failedNoHearts: json['failedNoHearts'] as bool?,
     );
   }
 
@@ -128,6 +130,7 @@ class QuizResultModel extends QuizResultEntity {
       'score': score,
       'totalQuestions': totalQuestions,
       'completedAt': completedAt,
+      'failedNoHearts': failedNoHearts,
     };
   }
 
@@ -137,6 +140,7 @@ class QuizResultModel extends QuizResultEntity {
       score: entity.score,
       totalQuestions: entity.totalQuestions,
       completedAt: entity.completedAt,
+      failedNoHearts: entity.failedNoHearts,
     );
   }
 }

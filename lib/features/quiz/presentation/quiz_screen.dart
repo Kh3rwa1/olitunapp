@@ -15,6 +15,7 @@ import 'widgets/quiz_progress_bar.dart';
 import 'widgets/quiz_question_card.dart';
 import 'widgets/quiz_feedback_panel.dart';
 import 'widgets/quiz_complete_screen.dart';
+import 'widgets/quiz_out_of_hearts_screen.dart';
 
 class QuizScreen extends ConsumerStatefulWidget {
   final String quizId;
@@ -107,6 +108,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               bonusStars: state.bonusStars,
               incorrectQuestionIndices: state.incorrectQuestionIndices,
               questions: quiz.questions,
+            );
+          }
+          if (state.isOutOfHearts) {
+            return QuizOutOfHeartsScreen(
+              score: state.score,
+              totalQuestions: quiz.questions.length,
+              bonusStars: state.bonusStars,
+              incorrectQuestionIndices: state.incorrectQuestionIndices,
+              questions: quiz.questions,
+              quizId: widget.quizId,
             );
           }
 

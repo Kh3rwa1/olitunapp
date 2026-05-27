@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../../../../core/analytics/analytics_service.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
@@ -24,6 +25,8 @@ class QuizSessionState {
   final bool hasStarted;
   final List<int> questionOrder;
   final List<List<int>> optionOrders;
+
+  bool get isOutOfHearts => hearts <= 0 && isAnswered;
 
   const QuizSessionState({
     this.currentQuestion = 0,
@@ -186,7 +189,7 @@ class QuizSessionNotifier
   }
 
   void selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
-    if (state.isAnswered) return;
+    if (state.isAnswered || state.hearts <= 0) return;
 
     final isCorrect = index == question.correctIndex;
     final scoredState = applyQuizAnswerResult(state, isCorrect: isCorrect);
@@ -232,6 +235,41 @@ class QuizSessionNotifier
     );
 
     state = scoredState.copyWith(selectedAnswer: index, isAnswered: true);
+
+    if (state.isOutOfHearts) {
+      _persistFailure(quiz);
+    }
+  }
+
+  Future<void> _persistFailure(QuizModel quiz) async {
+    try {
+      final statsNotifier = ref.read(userStatsProvider.notifier);
+      final completedAt = DateTime.now().toIso8601String();
+      await statsNotifier.saveQuizResult(
+        QuizResultEntity(
+          quizId: quiz.id,
+          score: state.score,
+          totalQuestions: quiz.questions.length,
+          completedAt: completedAt,
+          failedNoHearts: true,
+        ),
+      );
+      await statsNotifier.addStars((state.score * 5) + state.bonusStars);
+      
+      unawaited(
+        ref.read(learningAnalyticsServiceProvider).track(
+          'quizFailedNoHearts',
+          source: 'quiz_session',
+          sourceId: quiz.id,
+          metadata: {
+            'questionsAnswered': state.currentQuestion + 1,
+            'score': state.score,
+          },
+        ),
+      );
+    } catch (e, st) {
+      AppLogger.debug('Failed to persist quiz failure: $e\n$st');
+    }
   }
 
   bool get _shouldUseHaptics {
@@ -240,6 +278,7 @@ class QuizSessionNotifier
   }
 
   void nextQuestion(QuizModel quiz) {
+    if (state.isOutOfHearts) return;
     if (state.currentQuestion < quiz.questions.length - 1) {
       state = state.copyWith(
         currentQuestion: state.currentQuestion + 1,

@@ -14,6 +14,9 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
 import '../domain/entities/lesson_entity.dart';
 import 'widgets/full_bleed_hero_media.dart';
+import '../../practice/presentation/widgets/typing_practice_panel.dart';
+import '../../practice/presentation/providers/typing_practice_controller.dart';
+import '../../practice/data/typing_practice_settings.dart';
 
 class LessonBlockDetailScreen extends ConsumerStatefulWidget {
   final String lessonId;
@@ -202,7 +205,31 @@ class _LessonBlockDetailScreenState
                     controller: _pageController,
                     onPageChanged: _onPageChanged,
                     itemCount: contentBlocks.length,
-                    physics: const BouncingScrollPhysics(),
+                    physics: (() {
+                      final settings = ref.watch(typingPracticeSettingsProvider);
+                      final isCurrentEligible = settings.enabled &&
+                          (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
+                          currentBlock.type != 'rhyme' &&
+                          currentBlock.type != 'rhymes' &&
+                          currentBlock.textOlChiki != null &&
+                          currentBlock.textOlChiki!.isNotEmpty &&
+                          currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+                      if (isCurrentEligible) {
+                        final typingPracticeArgs = TypingPracticeArgs(
+                          itemKey: '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                          target: currentBlock.textOlChiki!,
+                          latin: currentBlock.textLatin ?? '',
+                          meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
+                          contentType: currentBlock.type,
+                        );
+                        final typingState = ref.watch(typingPracticeControllerProvider(typingPracticeArgs));
+                        if (typingState.phase != TypingPhase.idle) {
+                          return const NeverScrollableScrollPhysics();
+                        }
+                      }
+                      return const BouncingScrollPhysics();
+                    })(),
                     itemBuilder: (context, index) {
                       final block = contentBlocks[index];
                       final pageRawColor = block.data?['themeColor'] as String?;
@@ -223,20 +250,56 @@ class _LessonBlockDetailScreenState
                   top: MediaQuery.of(context).padding.top + 8,
                   left: 0,
                   right: 0,
-                  child: _buildTopNavBar(
-                    context,
-                    contentBlocks.length,
-                    safeIndex,
-                    blockThemeColor,
-                    isDark,
-                    currentBlock.audioUrl != null &&
-                        currentBlock.audioUrl!.isNotEmpty,
-                    () => _playAudio(
-                      currentBlock.audioUrl!,
-                      '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
-                    ),
-                    ValueKey<String>('audio_${lesson.id}_$safeIndex'),
-                  ),
+                  child: () {
+                    final settings = ref.watch(typingPracticeSettingsProvider);
+                    final isCurrentEligible = settings.enabled &&
+                        (currentBlock.type == 'word' || currentBlock.type == 'sentence') &&
+                        currentBlock.type != 'rhyme' &&
+                        currentBlock.type != 'rhymes' &&
+                        currentBlock.textOlChiki != null &&
+                        currentBlock.textOlChiki!.isNotEmpty &&
+                        currentBlock.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+                    final typingPracticeArgs = isCurrentEligible
+                        ? TypingPracticeArgs(
+                            itemKey: '${widget.lessonId}_${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                            target: currentBlock.textOlChiki!,
+                            latin: currentBlock.textLatin ?? '',
+                            meaning: (currentBlock.data?['pronunciation'] as String?) ?? '',
+                            contentType: currentBlock.type,
+                          )
+                        : null;
+
+                    final typingState = isCurrentEligible && typingPracticeArgs != null
+                        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
+                        : null;
+
+                    final isTypingActive = typingState != null && typingState.phase != TypingPhase.idle;
+
+                    return _buildTopNavBar(
+                      context,
+                      contentBlocks.length,
+                      safeIndex,
+                      blockThemeColor,
+                      isDark,
+                      currentBlock.audioUrl != null &&
+                          currentBlock.audioUrl!.isNotEmpty &&
+                          !isTypingActive,
+                      () => _playAudio(
+                        currentBlock.audioUrl!,
+                        '${currentBlock.textOlChiki ?? currentBlock.textLatin ?? currentBlock.type}_$safeIndex',
+                      ),
+                      ValueKey<String>('audio_${lesson.id}_$safeIndex'),
+                      backIcon: isTypingActive ? Icons.close_rounded : null,
+                      onBackPressed: isTypingActive
+                          ? () {
+                              ref
+                                  .read(typingPracticeControllerProvider(typingPracticeArgs!).notifier)
+                                  .tryAgain();
+                            }
+                          : null,
+                    );
+                  }(),
                 ),
               ],
             ),
@@ -355,16 +418,18 @@ class _LessonBlockDetailScreenState
     bool isDark,
     bool hasAudio,
     VoidCallback? onAudioPressed,
-    ValueKey<String>? audioKey,
-  ) {
+    ValueKey<String>? audioKey, {
+    VoidCallback? onBackPressed,
+    IconData? backIcon,
+  }) {
     final progress = (totalSteps > 0) ? (currentStep + 1) / totalSteps : 0.0;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Row(
         children: [
           _buildFloatingButton(
-            icon: Icons.arrow_back_rounded,
-            onPressed: () => context.canPop() ? context.pop() : context.go('/'),
+            icon: backIcon ?? Icons.arrow_back_rounded,
+            onPressed: onBackPressed ?? () => context.canPop() ? context.pop() : context.go('/'),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -434,6 +499,29 @@ class _LessonBlockDetailScreenState
     Color accentColor,
     bool isDark,
   ) {
+    final settings = ref.watch(typingPracticeSettingsProvider);
+    final bool isEligible = settings.enabled &&
+        (block.type == 'word' || block.type == 'sentence') &&
+        block.type != 'rhyme' &&
+        block.type != 'rhymes' &&
+        block.textOlChiki != null &&
+        block.textOlChiki!.isNotEmpty &&
+        block.textOlChiki!.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F);
+
+    final typingPracticeArgs = isEligible
+        ? TypingPracticeArgs(
+            itemKey: '${widget.lessonId}_${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+            target: block.textOlChiki!,
+            latin: block.textLatin ?? '',
+            meaning: (block.data?['pronunciation'] as String?) ?? '',
+            contentType: block.type,
+          )
+        : null;
+
+    final typingState = isEligible && typingPracticeArgs != null
+        ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
+        : null;
+
     final textOlChiki = block.textOlChiki ?? '';
     final textLatin = block.textLatin ?? '';
     final pron = block.data?['pronunciation'] as String?;
@@ -462,6 +550,27 @@ class _LessonBlockDetailScreenState
       builder: (context) {
         return LayoutBuilder(
           builder: (context, constraints) {
+            if (isEligible && typingState != null && typingState.phase != TypingPhase.idle) {
+              return SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                child: ConstrainedBox(
+                  constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      top: MediaQuery.of(context).padding.top + 80,
+                      left: 20,
+                      right: 20,
+                      bottom: 40,
+                    ),
+                    child: TypingPracticePanel(
+                      args: typingPracticeArgs!,
+                      audioUrl: block.audioUrl,
+                    ),
+                  ),
+                ),
+              );
+            }
+
             final topHeight = constraints.maxHeight * 0.44;
             final blendColor = isDark
                 ? const Color(0xFF0F1422)
@@ -1065,45 +1174,77 @@ class _LessonBlockDetailScreenState
                           Container(
                             constraints: const BoxConstraints(maxWidth: 320),
                             padding: const EdgeInsets.symmetric(horizontal: 24),
-                            child: _Tactile3DButton(
-                              color: accentColor,
-                              onPressed:
-                                  block.audioUrl != null &&
-                                      block.audioUrl!.isNotEmpty
-                                  ? () => _playAudio(
-                                      block.audioUrl!,
-                                      '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
-                                    )
-                                  : null,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Flexible(
-                                    child: Text(
-                                      buttonText.length > 15
-                                          ? 'LISTEN'
-                                          : buttonText.toUpperCase(),
-                                      overflow: TextOverflow.ellipsis,
-                                      maxLines: 1,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w900,
-                                        color: Colors.white,
-                                        letterSpacing: 1.5,
-                                      ),
+                            child: isEligible
+                                ? _Tactile3DButton(
+                                    color: AppColors.primary,
+                                    onPressed: () {
+                                      ref
+                                          .read(typingPracticeControllerProvider(typingPracticeArgs!).notifier)
+                                          .startPractice();
+                                    },
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        const Icon(
+                                          Icons.keyboard_outlined,
+                                          color: Colors.black,
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Flexible(
+                                          child: Text(
+                                            'PRACTICE TYPING',
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.black,
+                                              letterSpacing: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  )
+                                : _Tactile3DButton(
+                                    color: accentColor,
+                                    onPressed:
+                                        block.audioUrl != null &&
+                                            block.audioUrl!.isNotEmpty
+                                        ? () => _playAudio(
+                                            block.audioUrl!,
+                                            '${block.textOlChiki ?? block.textLatin ?? block.type}_$index',
+                                          )
+                                        : null,
+                                    child: Row(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: Text(
+                                            buttonText.length > 15
+                                                ? 'LISTEN'
+                                                : buttonText.toUpperCase(),
+                                            overflow: TextOverflow.ellipsis,
+                                            maxLines: 1,
+                                            style: const TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w900,
+                                              color: Colors.white,
+                                              letterSpacing: 1.5,
+                                            ),
+                                          ),
+                                        ),
+                                        if (block.audioUrl != null &&
+                                            block.audioUrl!.isNotEmpty) ...[
+                                          const SizedBox(width: 12),
+                                          SoundWaveIndicator(
+                                            color: Colors.white,
+                                            isPlaying: isThisPlaying,
+                                          ),
+                                        ],
+                                      ],
                                     ),
                                   ),
-                                  if (block.audioUrl != null &&
-                                      block.audioUrl!.isNotEmpty) ...[
-                                    const SizedBox(width: 12),
-                                    SoundWaveIndicator(
-                                      color: Colors.white,
-                                      isPlaying: isThisPlaying,
-                                    ),
-                                  ],
-                                ],
-                              ),
-                            ),
                           ),
                           if (pron != null && pron.isNotEmpty) ...[
                             const SizedBox(height: 32),

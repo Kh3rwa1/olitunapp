@@ -405,11 +405,15 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                             height: 60,
                                             decoration: BoxDecoration(
                                               color: AdminTokens.sunken(isDark),
-                                              borderRadius: BorderRadius.circular(
-                                                AdminTokens.radiusSm,
-                                              ),
+                                              borderRadius:
+                                                  BorderRadius.circular(
+                                                    AdminTokens.radiusSm,
+                                                  ),
                                               image:
-                                                  item.heroMedia?.url.isNotEmpty ==
+                                                  item
+                                                          .heroMedia
+                                                          ?.url
+                                                          .isNotEmpty ==
                                                       true
                                                   ? DecorationImage(
                                                       image: NetworkImage(
@@ -420,7 +424,10 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                                   : null,
                                             ),
                                             child:
-                                                item.heroMedia?.url.isNotEmpty ==
+                                                item
+                                                        .heroMedia
+                                                        ?.url
+                                                        .isNotEmpty ==
                                                     true
                                                 ? null
                                                 : const Icon(

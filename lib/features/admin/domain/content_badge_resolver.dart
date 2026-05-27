@@ -10,7 +10,7 @@ enum ContentBadgeType {
   quiz,
   tracing,
   typing,
-  lesson; // Generic fallback only
+  lesson, // Generic fallback only
 }
 
 /// A pure domain resolver to map ContentKind and parent category/block contexts
@@ -43,18 +43,21 @@ ContentBadgeType resolveBadgeType({
   final normalizedSlug = (categorySlug ?? '').toLowerCase().trim();
   final normalizedId = (categoryId ?? '').toLowerCase().trim();
 
-  final isLettersCat = normalizedId == 'cat_alphabets' ||
+  final isLettersCat =
+      normalizedId == 'cat_alphabets' ||
       normalizedSlug.contains('alphabet') ||
       normalizedSlug.contains('letter');
 
-  final isNumbersCat = normalizedId == 'cat_numbers' ||
-      normalizedSlug.contains('number');
+  final isNumbersCat =
+      normalizedId == 'cat_numbers' || normalizedSlug.contains('number');
 
-  final isWordsCat = normalizedId == 'cat_vocabulary' ||
+  final isWordsCat =
+      normalizedId == 'cat_vocabulary' ||
       normalizedSlug.contains('vocab') ||
       normalizedSlug.contains('word');
 
-  final isSentencesCat = normalizedId == 'cat_sentences' ||
+  final isSentencesCat =
+      normalizedId == 'cat_sentences' ||
       normalizedId == 'cat_greetings' ||
       normalizedSlug.contains('sentence') ||
       normalizedSlug.contains('greeting');
@@ -75,10 +78,12 @@ ContentBadgeType resolveBadgeType({
       return ContentBadgeType.audio;
     case ContentKind.lesson:
       if (isLettersCat || isNumbersCat) {
-        return ContentBadgeType.tracing; // Lessons on letters/numbers are tracing exercises
+        return ContentBadgeType
+            .tracing; // Lessons on letters/numbers are tracing exercises
       }
       if (isWordsCat || isSentencesCat) {
-        return ContentBadgeType.typing; // Lessons on words/sentences are typing exercises
+        return ContentBadgeType
+            .typing; // Lessons on words/sentences are typing exercises
       }
       return ContentBadgeType.lesson; // Generic fallback
   }

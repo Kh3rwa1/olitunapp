@@ -6,21 +6,32 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/admin/presentation/content/admin_content_list_screen.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/features/categories/domain/repositories/category_repository.dart';
-import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/providers.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:mocktail/mocktail.dart';
 
 class MockContentRepository extends Mock implements ContentRepository {}
 
-class MockCategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> with Mock implements CategoryNotifier {
-  MockCategoryNotifier() : super(const AsyncValue.data(<CategoryEntity>[
-    CategoryEntity(id: 'cat_1', titleOlChiki: 'ᱥᱟᱵᱟᱫᱽ', titleLatin: 'Vocabulary'),
-    CategoryEntity(id: 'cat_2', titleOlChiki: 'ᱟᱲᱟᱝ', titleLatin: 'Alphabets'),
-  ]));
+class MockCategoryNotifier
+    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
+    with Mock
+    implements CategoryNotifier {
+  MockCategoryNotifier()
+    : super(
+        const AsyncValue.data(<CategoryEntity>[
+          CategoryEntity(
+            id: 'cat_1',
+            titleOlChiki: 'ᱥᱟᱵᱟᱫᱽ',
+            titleLatin: 'Vocabulary',
+          ),
+          CategoryEntity(
+            id: 'cat_2',
+            titleOlChiki: 'ᱟᱲᱟᱝ',
+            titleLatin: 'Alphabets',
+          ),
+        ]),
+      );
 }
 
 void main() {
@@ -50,10 +61,9 @@ void main() {
       categoryId: 'cat_1',
       title: 'Sentence Row',
       titleOlChiki: 'ᱴᱮᱥᱴ ᱒',
-      subtitle: 'A clean metadata text-only card demonstrating responsive wrap layout',
+      subtitle:
+          'A clean metadata text-only card demonstrating responsive wrap layout',
       blocks: const [],
-      isPublished: false,
-      isPremium: false,
       updatedAt: DateTime.now(),
     ),
     ContentItem(
@@ -62,10 +72,10 @@ void main() {
       categoryId: 'cat_2',
       title: 'Tracing Lesson Row',
       titleOlChiki: 'ᱴᱮᱥᱴ ᱓',
-      subtitle: 'A card in active selection state with checkmark indicator highlighted',
+      subtitle:
+          'A card in active selection state with checkmark indicator highlighted',
       blocks: const [],
       isPublished: true,
-      isPremium: false,
       updatedAt: DateTime.now(),
     ),
   ];
@@ -85,7 +95,9 @@ void main() {
         ProviderScope(
           overrides: [
             isAuthenticatedProvider.overrideWith((ref) async => true),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier(),
+            ),
             contentListProvider.overrideWith((ref, arg) async {
               return mockItems;
             }),
@@ -121,7 +133,9 @@ void main() {
       }
     });
 
-    testWidgets('captures grid view baseline rendering with badges', (tester) async {
+    testWidgets('captures grid view baseline rendering with badges', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(1200, 1000);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -135,7 +149,9 @@ void main() {
         ProviderScope(
           overrides: [
             isAuthenticatedProvider.overrideWith((ref) async => true),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier(),
+            ),
             contentListProvider.overrideWith((ref, arg) async {
               return mockItems;
             }),

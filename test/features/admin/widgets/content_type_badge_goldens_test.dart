@@ -9,7 +9,9 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   group('ContentTypeBadge Golden Tests (Grouped Grids)', () {
-    testWidgets('renders all 10 badge types in light theme grid', (tester) async {
+    testWidgets('renders all 10 badge types in light theme grid', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(500, 300);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -29,7 +31,7 @@ void main() {
                   spacing: 16,
                   runSpacing: 16,
                   children: ContentBadgeType.values.map((type) {
-                    return ContentTypeBadge(type: type, size: 32);
+                    return ContentTypeBadge(type: type);
                   }).toList(),
                 ),
               ),
@@ -48,7 +50,9 @@ void main() {
       }
     });
 
-    testWidgets('renders all 10 badge types in dark theme grid', (tester) async {
+    testWidgets('renders all 10 badge types in dark theme grid', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(500, 300);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -68,7 +72,7 @@ void main() {
                   spacing: 16,
                   runSpacing: 16,
                   children: ContentBadgeType.values.map((type) {
-                    return ContentTypeBadge(type: type, size: 32);
+                    return ContentTypeBadge(type: type);
                   }).toList(),
                 ),
               ),
@@ -87,7 +91,9 @@ void main() {
       }
     });
 
-    testWidgets('renders overlaid badges with shadow ring on card thumbnail', (tester) async {
+    testWidgets('renders overlaid badges with shadow ring on card thumbnail', (
+      tester,
+    ) async {
       tester.view.physicalSize = const Size(400, 200);
       tester.view.devicePixelRatio = 1.0;
       addTearDown(() {
@@ -135,7 +141,10 @@ void main() {
                         width: 60,
                         height: 60,
                         color: const Color(0xFF152232),
-                        child: const Icon(Icons.video_library, color: Colors.white24),
+                        child: const Icon(
+                          Icons.video_library,
+                          color: Colors.white24,
+                        ),
                       ),
                       const Positioned(
                         bottom: -4,

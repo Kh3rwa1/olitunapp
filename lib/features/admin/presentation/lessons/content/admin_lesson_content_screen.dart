@@ -326,7 +326,7 @@ class _AdminLessonContentScreenState
 
     final categories = ref.watch(categoryNotifierProvider).value ?? [];
     CategoryEntity? category;
-    if (_contentItem != null && _contentItem!.categoryId != null) {
+    if (_contentItem != null && _contentItem!.categoryId.isNotEmpty) {
       for (final cat in categories) {
         if (cat.id == _contentItem!.categoryId) {
           category = cat;
@@ -441,8 +441,10 @@ class _AdminLessonContentScreenState
                                                 ),
                                                 onDelete: () =>
                                                     _removeBlock(index),
-                                                categoryId: _contentItem?.categoryId,
-                                                categorySlug: category?.titleLatin,
+                                                categoryId:
+                                                    _contentItem?.categoryId,
+                                                categorySlug:
+                                                    category?.titleLatin,
                                               ),
                                             ),
                                           );

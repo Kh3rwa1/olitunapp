@@ -36,33 +36,33 @@ void main() {
       expect(badgeWidget.type, equals(ContentBadgeType.audio));
     });
 
-    testWidgets('presentation block falls back to parent lesson tracing badge', (tester) async {
-      const block = LessonBlockEntity(
-        type: 'text',
-        textOlChiki: 'ᱴᱮᱥᱴ',
-      );
+    testWidgets(
+      'presentation block falls back to parent lesson tracing badge',
+      (tester) async {
+        const block = LessonBlockEntity(type: 'text', textOlChiki: 'ᱴᱮᱥᱴ');
 
-      await tester.pumpWidget(
-        MaterialApp(
-          home: Scaffold(
-            body: LessonBlockCard(
-              index: 1,
-              block: block,
-              isDark: false,
-              onEdit: () {},
-              onDelete: () {},
-              categoryId: 'cat_alphabets',
-              categorySlug: 'letters',
+        await tester.pumpWidget(
+          MaterialApp(
+            home: Scaffold(
+              body: LessonBlockCard(
+                index: 1,
+                block: block,
+                isDark: false,
+                onEdit: () {},
+                onDelete: () {},
+                categoryId: 'cat_alphabets',
+                categorySlug: 'letters',
+              ),
             ),
           ),
-        ),
-      );
+        );
 
-      final badgeFinder = find.byType(ContentTypeBadge);
-      expect(badgeFinder, findsOneWidget);
+        final badgeFinder = find.byType(ContentTypeBadge);
+        expect(badgeFinder, findsOneWidget);
 
-      final badgeWidget = tester.widget<ContentTypeBadge>(badgeFinder);
-      expect(badgeWidget.type, equals(ContentBadgeType.tracing));
-    });
+        final badgeWidget = tester.widget<ContentTypeBadge>(badgeFinder);
+        expect(badgeWidget.type, equals(ContentBadgeType.tracing));
+      },
+    );
   });
 }

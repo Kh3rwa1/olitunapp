@@ -77,7 +77,11 @@ class ContentTypeBadge extends StatelessWidget {
       label: 'Content type: $label',
       container: true,
       child: Container(
-        padding: padding ?? (showLabel ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4) : EdgeInsets.zero),
+        padding:
+            padding ??
+            (showLabel
+                ? const EdgeInsets.symmetric(horizontal: 8, vertical: 4)
+                : EdgeInsets.zero),
         width: showLabel ? null : size,
         height: size,
         decoration: BoxDecoration(
@@ -89,7 +93,7 @@ class ContentTypeBadge extends StatelessWidget {
                     color: Colors.black.withValues(alpha: 0.15),
                     blurRadius: 4,
                     offset: const Offset(0, 1),
-                  )
+                  ),
                 ]
               : null,
         ),
@@ -98,17 +102,10 @@ class ContentTypeBadge extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                icon,
-                color: color,
-                size: _iconSize,
-              ),
+              Icon(icon, color: color, size: _iconSize),
               if (showLabel) ...[
                 const SizedBox(width: 6),
-                Text(
-                  label,
-                  style: textStyle,
-                ),
+                Text(label, style: textStyle),
               ],
             ],
           ),

@@ -1113,8 +1113,11 @@ class _AdminContentListScreenState
         final isSelected = _selectedIds.contains(item.id);
 
         final categories = ref.read(categoryNotifierProvider).value ?? [];
+        final itemCategoryId = item.categoryId.isNotEmpty
+            ? item.categoryId
+            : null;
         final effectiveCategoryId =
-            item.categoryId ?? widget.categoryId ?? _selectedCategoryId;
+            itemCategoryId ?? widget.categoryId ?? _selectedCategoryId;
         CategoryEntity? category;
         if (effectiveCategoryId != null) {
           for (final cat in categories) {
@@ -1289,8 +1292,11 @@ class _AdminContentListScreenState
         final isSelected = _selectedIds.contains(item.id);
 
         final categories = ref.read(categoryNotifierProvider).value ?? [];
+        final itemCategoryId = item.categoryId.isNotEmpty
+            ? item.categoryId
+            : null;
         final effectiveCategoryId =
-            item.categoryId ?? widget.categoryId ?? _selectedCategoryId;
+            itemCategoryId ?? widget.categoryId ?? _selectedCategoryId;
         CategoryEntity? category;
         if (effectiveCategoryId != null) {
           for (final cat in categories) {
@@ -1328,9 +1334,11 @@ class _AdminContentListScreenState
             child: InkWell(
               onTap: () => _editItem(context, item),
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 24.5),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 24.5,
+                ),
                 child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     // Leading section
                     Row(
@@ -1354,18 +1362,19 @@ class _AdminContentListScreenState
                           ),
                         ),
                         const SizedBox(width: 8),
-                        ContentTypeBadge(
-                          type: badgeType,
-                          size: 32,
-                        ),
+                        ContentTypeBadge(type: badgeType),
                         const SizedBox(width: 8),
                         Container(
                           width: 52,
                           height: 52,
                           decoration: BoxDecoration(
                             color: AdminTokens.accentSoft(isDark),
-                            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                            border: Border.all(color: AdminTokens.border(isDark)),
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
+                            border: Border.all(
+                              color: AdminTokens.border(isDark),
+                            ),
                           ),
                           child:
                               item.heroMedia != null &&
@@ -1377,8 +1386,11 @@ class _AdminContentListScreenState
                                   child: Image.network(
                                     item.heroMedia!.url,
                                     fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(_icon, color: AdminTokens.accent),
+                                    errorBuilder:
+                                        (context, error, stackTrace) => Icon(
+                                          _icon,
+                                          color: AdminTokens.accent,
+                                        ),
                                   ),
                                 )
                               : Icon(_icon, color: AdminTokens.accent),
@@ -1386,7 +1398,7 @@ class _AdminContentListScreenState
                       ],
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Middle section: Title, Subtitle, Chips
                     Expanded(
                       child: Column(
@@ -1396,7 +1408,9 @@ class _AdminContentListScreenState
                             children: [
                               Text(
                                 item.title,
-                                style: AdminTokens.cardTitle(isDark).copyWith(fontSize: 16),
+                                style: AdminTokens.cardTitle(
+                                  isDark,
+                                ).copyWith(fontSize: 16),
                               ),
                               if (item.titleOlChiki != null) ...[
                                 const SizedBox(width: 8),
@@ -1405,13 +1419,16 @@ class _AdminContentListScreenState
                                   style: TextStyle(
                                     fontFamily: 'OlChiki',
                                     fontSize: 16,
-                                    color: isDark ? Colors.white60 : Colors.black54,
+                                    color: isDark
+                                        ? Colors.white60
+                                        : Colors.black54,
                                   ),
                                 ),
                               ],
                             ],
                           ),
-                          if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
+                          if (item.subtitle != null &&
+                              item.subtitle!.isNotEmpty) ...[
                             const SizedBox(height: 4),
                             Text(
                               item.subtitle!,
@@ -1428,7 +1445,9 @@ class _AdminContentListScreenState
                             children: [
                               if (_supportsPublished)
                                 _buildStatusChip(
-                                  label: item.isPublished ? 'Published' : 'Draft',
+                                  label: item.isPublished
+                                      ? 'Published'
+                                      : 'Draft',
                                   color: item.isPublished
                                       ? const Color(0xFF10B981)
                                       : Colors.grey,
@@ -1437,18 +1456,22 @@ class _AdminContentListScreenState
                               if (_supportsPremium)
                                 _buildStatusChip(
                                   label: item.isPremium ? 'Premium' : 'Free',
-                                  color: item.isPremium ? Colors.amber : Colors.blue,
+                                  color: item.isPremium
+                                      ? Colors.amber
+                                      : Colors.blue,
                                   isDark: isDark,
                                 ),
                               if (_supportsTags)
-                                ...item.tags.map((tag) => _buildChip('#$tag', isDark)),
+                                ...item.tags.map(
+                                  (tag) => _buildChip('#$tag', isDark),
+                                ),
                             ],
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(width: 16),
-                    
+
                     // Trailing actions section
                     Row(
                       mainAxisSize: MainAxisSize.min,

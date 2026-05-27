@@ -15,8 +15,17 @@ class QuizResultEntity extends Equatable {
     this.failedNoHearts,
   });
 
-  bool get isPassing => failedNoHearts != true && totalQuestions > 0 && (score / totalQuestions) >= 0.7;
+  bool get isPassing =>
+      failedNoHearts != true &&
+      totalQuestions > 0 &&
+      (score / totalQuestions) >= 0.7;
 
   @override
-  List<Object?> get props => [quizId, score, totalQuestions, completedAt, failedNoHearts];
+  List<Object?> get props => [
+    quizId,
+    score,
+    totalQuestions,
+    completedAt,
+    failedNoHearts,
+  ];
 }

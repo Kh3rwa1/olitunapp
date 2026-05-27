@@ -29,7 +29,9 @@ void main() {
     ),
   ];
 
-  testWidgets('QuizOutOfHeartsScreen renders sad state and triggers reset', (tester) async {
+  testWidgets('QuizOutOfHeartsScreen renders sad state and triggers reset', (
+    tester,
+  ) async {
     tester.view.physicalSize = const Size(450, 900);
     tester.view.devicePixelRatio = 1.0;
     addTearDown(() {
@@ -65,7 +67,10 @@ void main() {
     // Verify UI components render
     expect(find.text('Out of Hearts!'), findsOneWidget);
     expect(find.textContaining('You answered 2/5 correctly'), findsOneWidget);
-    expect(find.textContaining('earned 14 stars'), findsOneWidget); // 2 * 5 + 4 = 14
+    expect(
+      find.textContaining('earned 14 stars'),
+      findsOneWidget,
+    ); // 2 * 5 + 4 = 14
     expect(find.text('Try Again'), findsOneWidget);
     expect(find.text('Review Mistakes'), findsOneWidget);
     expect(find.text('Back to Quizzes'), findsOneWidget);
@@ -98,9 +103,7 @@ void main() {
             quizId: mockQuizId,
           ),
         ),
-        overrides: [
-          sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        ],
+        overrides: [sharedPreferencesProvider.overrideWithValue(mockPrefs)],
       ),
     );
 

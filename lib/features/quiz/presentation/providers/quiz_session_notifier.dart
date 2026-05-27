@@ -255,17 +255,19 @@ class QuizSessionNotifier
         ),
       );
       await statsNotifier.addStars((state.score * 5) + state.bonusStars);
-      
+
       unawaited(
-        ref.read(learningAnalyticsServiceProvider).track(
-          'quizFailedNoHearts',
-          source: 'quiz_session',
-          sourceId: quiz.id,
-          metadata: {
-            'questionsAnswered': state.currentQuestion + 1,
-            'score': state.score,
-          },
-        ),
+        ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              'quizFailedNoHearts',
+              source: 'quiz_session',
+              sourceId: quiz.id,
+              metadata: {
+                'questionsAnswered': state.currentQuestion + 1,
+                'score': state.score,
+              },
+            ),
       );
     } catch (e, st) {
       AppLogger.debug('Failed to persist quiz failure: $e\n$st');

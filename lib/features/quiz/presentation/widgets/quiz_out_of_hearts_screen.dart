@@ -92,15 +92,16 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                         const SizedBox(height: 16),
                     itemBuilder: (context, index) {
                       final qIdx = incorrectQuestionIndices[index];
-                      if (qIdx >= questions.length || qIdx < 0) return const SizedBox.shrink();
+                      if (qIdx >= questions.length || qIdx < 0)
+                        return const SizedBox.shrink();
                       final q = questions[qIdx];
                       final correctAns = q.optionsLatin.length > q.correctIndex
                           ? q.optionsLatin[q.correctIndex]
                           : '';
                       final correctAnsOlChiki =
                           q.optionsOlChiki.length > q.correctIndex
-                              ? q.optionsOlChiki[q.correctIndex]
-                              : '';
+                          ? q.optionsOlChiki[q.correctIndex]
+                          : '';
 
                       return Container(
                         padding: const EdgeInsets.all(16),
@@ -268,7 +269,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 ),
               ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
               const SizedBox(height: 32),
-              
+
               Text(
                 'Out of Hearts!',
                 style: TextStyle(
@@ -279,7 +280,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 ),
               ).animate().fadeIn(duration: 400.ms),
               const SizedBox(height: 12),
-              
+
               Text(
                 'You answered $score/$totalQuestions correctly and earned $totalStars stars so far. Keep practicing to build your strength!',
                 textAlign: TextAlign.center,
@@ -298,7 +299,9 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 height: 52,
                 child: ElevatedButton(
                   onPressed: () {
-                    ref.read(quizSessionNotifierProvider(quizId).notifier).reset();
+                    ref
+                        .read(quizSessionNotifierProvider(quizId).notifier)
+                        .reset();
                   },
                   style: ElevatedButton.styleFrom(
                     backgroundColor: AppColors.primary,
@@ -329,7 +332,10 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                     onPressed: showMistakesSheet,
                     style: OutlinedButton.styleFrom(
                       foregroundColor: AppColors.error,
-                      side: BorderSide(color: AppColors.error.withValues(alpha: 0.4), width: 2),
+                      side: BorderSide(
+                        color: AppColors.error.withValues(alpha: 0.4),
+                        width: 2,
+                      ),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
                       ),
@@ -361,10 +367,7 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                   ),
                   child: const Text(
                     'Back to Quizzes',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w800),
                   ),
                 ),
               ).animate().fadeIn(delay: 550.ms),

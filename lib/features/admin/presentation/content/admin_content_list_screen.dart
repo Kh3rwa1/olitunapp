@@ -15,6 +15,9 @@ import '../widgets/admin_page_header.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_form_widgets.dart';
 import '../widgets/content_form.dart';
+import '../../domain/content_badge_resolver.dart';
+import '../widgets/content_type_badge.dart';
+import '../../../categories/domain/entities/category_entity.dart';
 
 /// A unified, highly-polished content administration screen.
 /// Parameterized by [ContentKind] to manage Letters, Numbers, Words, Sentences, Lessons, and Rhymes.
@@ -1256,6 +1259,24 @@ class _AdminContentListScreenState
         final item = items[index];
         final isSelected = _selectedIds.contains(item.id);
 
+        final categories = ref.read(categoryNotifierProvider).value ?? [];
+        final effectiveCategoryId =
+            item.categoryId ?? widget.categoryId ?? _selectedCategoryId;
+        CategoryEntity? category;
+        if (effectiveCategoryId != null) {
+          for (final cat in categories) {
+            if (cat.id == effectiveCategoryId) {
+              category = cat;
+              break;
+            }
+          }
+        }
+        final badgeType = resolveBadgeType(
+          kind: item.kind,
+          categoryId: effectiveCategoryId,
+          categorySlug: category?.titleLatin,
+        );
+
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
@@ -1302,6 +1323,11 @@ class _AdminContentListScreenState
                               });
                             },
                           ),
+                        ),
+                        const SizedBox(width: 8),
+                        ContentTypeBadge(
+                          type: badgeType,
+                          size: 32,
                         ),
                         const SizedBox(width: 8),
                         Container(

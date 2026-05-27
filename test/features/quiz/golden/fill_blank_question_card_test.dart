@@ -12,7 +12,6 @@ void main() {
     promptLatin: 'Translate the sentence below',
     optionsLatin: ['o', 'a'],
     optionsOlChiki: ['ᱚ', 'ᱟ'],
-    correctIndex: 0,
     blankSentenceOlChiki: 'ᱱᱩᱭ ᱫᱚ ___ ᱠᱟᱱᱟᱭ᱾',
     blankSentenceLatin: 'This is O.',
     type: 'fill_blank',

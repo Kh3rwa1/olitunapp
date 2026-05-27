@@ -61,7 +61,6 @@ void main() {
         promptOlChiki: 'Q0',
         optionsLatin: ['A0', 'B0', 'C0'],
         optionsOlChiki: ['A0', 'B0', 'C0'],
-        correctIndex: 0,
       ),
     ],
   );

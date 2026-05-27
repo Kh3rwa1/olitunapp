@@ -5,7 +5,6 @@ import 'package:itun/features/home/presentation/providers/home_prefetch_provider
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/shared/providers/learner_content_providers.dart';
-import 'package:itun/shared/models/content_models.dart';
 
 class MockCategoryNotifier
     extends StateNotifier<AsyncValue<List<CategoryEntity>>>

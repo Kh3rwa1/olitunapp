@@ -67,7 +67,7 @@ class FakeAudioPlayerPlatform extends AudioPlayerPlatform {
         urlLoaded = source.id;
       }
     }
-    final duration = const Duration(seconds: 10);
+    const duration = Duration(seconds: 10);
     _eventController.add(
       PlaybackEventMessage(
         processingState: ProcessingStateMessage.ready,

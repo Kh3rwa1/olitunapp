@@ -11,6 +11,18 @@ import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/shared/models/content_item.dart';
 
+/// CANONICAL upload path for ALL audio/image/video media in the app.
+///
+/// - Uploads to Appwrite storage with read("any") permission.
+/// - For audio MIME types, probes duration synchronously via just_audio
+///   before returning. Result includes durationMs.
+/// - Reports upload state via MediaPickerField's onUploadStateChanged
+///   callback so editors can block Save during in-flight uploads.
+/// - DO NOT create parallel upload utilities — extend this instead.
+///
+/// See docs/storage.md for rationale on why the audio bucket has
+/// encryption: false (Range-request-to-disk-offset mapping requires
+/// it for HTML5 audio seek/duration to work correctly).
 class MediaUploader {
   final Client _client;
   final Storage _storage;

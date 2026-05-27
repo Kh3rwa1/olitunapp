@@ -496,14 +496,18 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> addStars(int count) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-    if (count <= 0) return;
+    try {
+      final current = state.valueOrNull;
+      if (current == null) return;
+      if (count <= 0) return;
 
-    final updated = _withStreakUpdate(
-      current.copyWith(totalStars: current.totalStars + count),
-    );
-    await updateStats(updated);
+      final updated = _withStreakUpdate(
+        current.copyWith(totalStars: current.totalStars + count),
+      );
+      await updateStats(updated);
+    } catch (e, st) {
+      AppLogger.debug('Failed to add stars: $e\n$st');
+    }
   }
 
   /// Marks a lesson as completed and updates:
@@ -563,49 +567,54 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> saveQuizResult(QuizResultEntity result) async {
-    final current = state.valueOrNull;
-    if (current == null) return;
-    if (result.quizId.trim().isEmpty || result.totalQuestions <= 0) return;
+    try {
+      final current = state.valueOrNull;
+      if (current == null) return;
+      if (result.quizId.trim().isEmpty || result.totalQuestions <= 0) return;
 
-    final sanitized = QuizResultEntity(
-      quizId: result.quizId.trim(),
-      score: result.score.clamp(0, result.totalQuestions),
-      totalQuestions: result.totalQuestions,
-      completedAt: result.completedAt.isNotEmpty
-          ? result.completedAt
-          : _now().toIso8601String(),
-    );
+      final sanitized = QuizResultEntity(
+        quizId: result.quizId.trim(),
+        score: result.score.clamp(0, result.totalQuestions),
+        totalQuestions: result.totalQuestions,
+        completedAt: result.completedAt.isNotEmpty
+            ? result.completedAt
+            : _now().toIso8601String(),
+        failedNoHearts: result.failedNoHearts,
+      );
 
-    final updatedHistory = Map<String, QuizResultEntity>.from(
-      current.quizHistory,
-    );
-    final key = updatedHistory.containsKey(sanitized.quizId)
-        ? '${sanitized.quizId}@${sanitized.completedAt}'
-        : sanitized.quizId;
-    updatedHistory[key] = sanitized;
+      final updatedHistory = Map<String, QuizResultEntity>.from(
+        current.quizHistory,
+      );
+      final key = updatedHistory.containsKey(sanitized.quizId)
+          ? '${sanitized.quizId}@${sanitized.completedAt}'
+          : sanitized.quizId;
+      updatedHistory[key] = sanitized;
 
-    final updated = _withStreakUpdate(
-      current.copyWith(quizHistory: updatedHistory),
-    );
-    await updateStats(updated);
-    unawaited(
-      _ref
-              ?.read(learningAnalyticsServiceProvider)
-              .track(
-                LearningAnalyticsEvents.quizCompleted,
-                source: 'quiz',
-                sourceId: sanitized.quizId,
-                learnerLevel: updated.learnerLevel,
-                metadata: {
-                  'score': sanitized.score,
-                  'totalQuestions': sanitized.totalQuestions,
-                  'percent': (sanitized.score / sanitized.totalQuestions * 100)
-                      .round(),
-                  'passed': sanitized.isPassing,
-                },
-              ) ??
-          Future.value(),
-    );
+      final updated = _withStreakUpdate(
+        current.copyWith(quizHistory: updatedHistory),
+      );
+      await updateStats(updated);
+      unawaited(
+        _ref
+                ?.read(learningAnalyticsServiceProvider)
+                .track(
+                  LearningAnalyticsEvents.quizCompleted,
+                  source: 'quiz',
+                  sourceId: sanitized.quizId,
+                  learnerLevel: updated.learnerLevel,
+                  metadata: {
+                    'score': sanitized.score,
+                    'totalQuestions': sanitized.totalQuestions,
+                    'percent': (sanitized.score / sanitized.totalQuestions * 100)
+                        .round(),
+                    'passed': sanitized.isPassing,
+                  },
+                ) ??
+            Future.value(),
+      );
+    } catch (e, st) {
+      AppLogger.debug('Failed to save quiz result: $e\n$st');
+    }
   }
 
   Future<void> resetProgress() async {

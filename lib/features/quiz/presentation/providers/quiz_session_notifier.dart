@@ -290,18 +290,22 @@ class QuizSessionNotifier
     } else {
       state = state.copyWith(isQuizComplete: true);
 
-      final statsNotifier = ref.read(userStatsProvider.notifier);
-      final completedAt = DateTime.now().toIso8601String();
-      statsNotifier.saveQuizResult(
-        QuizResultEntity(
-          quizId: quiz.id,
-          score: state.score,
-          totalQuestions: quiz.questions.length,
-          completedAt: completedAt,
-        ),
-      );
-      statsNotifier.addStars((state.score * 5) + state.bonusStars);
-      ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
+      try {
+        final statsNotifier = ref.read(userStatsProvider.notifier);
+        final completedAt = DateTime.now().toIso8601String();
+        statsNotifier.saveQuizResult(
+          QuizResultEntity(
+            quizId: quiz.id,
+            score: state.score,
+            totalQuestions: quiz.questions.length,
+            completedAt: completedAt,
+          ),
+        );
+        statsNotifier.addStars((state.score * 5) + state.bonusStars);
+        ref.read(quizTakenTodayProvider.notifier).setCompleted(true);
+      } catch (e, st) {
+        AppLogger.debug('Failed to finish quiz: $e\n$st');
+      }
     }
   }
 

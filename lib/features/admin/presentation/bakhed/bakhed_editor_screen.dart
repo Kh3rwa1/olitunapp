@@ -553,9 +553,10 @@ class _AudioTab extends ConsumerWidget {
                     notifier.updateAudio(
                       media?.url,
                       media?.fileId,
-                      media?.durationSeconds != null
-                          ? media!.durationSeconds! * 1000
-                          : null,
+                      media?.durationMs ??
+                          (media?.durationSeconds != null
+                              ? media!.durationSeconds! * 1000
+                              : null),
                     );
                     if (media?.url != null && media!.url.isNotEmpty) {
                       ref

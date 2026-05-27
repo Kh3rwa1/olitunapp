@@ -165,19 +165,8 @@ void main() {
         bakhedEditorControllerProvider(rhymeId).notifier,
       );
 
-      // Mock a slow upload (200ms)
-      when(() => mockRepository.uploadAudio(any(), any())).thenAnswer((
-        _,
-      ) async {
-        await Future.delayed(const Duration(milliseconds: 200));
-        return right({'url': audioUrl, 'fileId': audioFileId});
-      });
-
-      // Start upload — inflight counter goes to 1
-      final uploadFuture = notifier.uploadAndSetAudio(
-        Uint8List.fromList([0x49, 0x44, 0x33]),
-        'test.mp3',
-      );
+      // Start upload — set upload in progress
+      notifier.setUploadInProgress(true);
 
       // Try to save immediately — should be blocked
       notifier.markDirty();
@@ -187,8 +176,9 @@ void main() {
       // Server state should NOT have been updated
       expect(serverState.audioUrl, isNull);
 
-      // Wait for upload to complete
-      await uploadFuture;
+      // Complete upload and clear in-flight status
+      notifier.updateAudio(audioUrl, audioFileId, durationMs);
+      notifier.setUploadInProgress(false);
 
       // Now save should work
       final successResult = await notifier.save();

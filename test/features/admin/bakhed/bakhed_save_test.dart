@@ -312,7 +312,7 @@ void main() {
     // SaveResult.uploadInProgress if an upload is running.
     //
     test(
-      'FIX: save() returns uploadInProgress while uploadAndSetAudio is running',
+      'FIX: save() returns uploadInProgress while upload is running',
       () async {
         final rhyme = _makeRhyme();
 
@@ -322,22 +322,8 @@ void main() {
           bakhedEditorControllerProvider(rhyme.id).notifier,
         );
 
-        // Mock uploadAudio to take 200ms (simulating real network latency)
-        when(() => mockRepository.uploadAudio(any(), any())).thenAnswer((
-          _,
-        ) async {
-          await Future.delayed(const Duration(milliseconds: 200));
-          return right({
-            'url': 'https://cdn.example.com/uploaded.mp3',
-            'fileId': 'uploaded_file_id',
-          });
-        });
-
-        // Kick off upload — this sets _inflightUploads > 0
-        final uploadFuture = notifier.uploadAndSetAudio(
-          Uint8List.fromList([0x49, 0x44, 0x33]), // fake MP3 header
-          'test_audio.mp3',
-        );
+        // Simulate: MediaPickerField triggers upload
+        notifier.setUploadInProgress(true);
 
         // Immediately try to save — should be blocked
         notifier.markDirty();
@@ -355,8 +341,13 @@ void main() {
         // upsert should NOT have been called
         verifyNever(() => mockRepository.upsert(any()));
 
-        // Let the upload finish
-        await uploadFuture;
+        // Simulate upload completing and updating audio
+        notifier.updateAudio(
+          'https://cdn.example.com/uploaded.mp3',
+          'uploaded_file_id',
+          60000,
+        );
+        notifier.setUploadInProgress(false);
 
         // Now save should succeed with the correct audioUrl
         final result2 = await notifier.save();

@@ -87,7 +87,17 @@ class AppColors {
   static const quizCorrect = quizBadgeD,
       brandTextLight = C(0xFF007A45),
       brandTextDark = primaryLight,
-      textSecondaryDark = lightBorder;
+      textSecondaryDark = lightBorder,
+      badgeLetters = C(0xFF9C27B0),
+      badgeNumbers = C(0xFFFF9800),
+      badgeWords = C(0xFF2196F3),
+      badgeSentences = C(0xFF009688),
+      badgeVideo = C(0xFFF44336),
+      badgeAudio = primary,
+      badgeQuiz = C(0xFFFFC107),
+      badgeTracing = C(0xFF3F51B5),
+      badgeTyping = C(0xFF00BCD4),
+      badgeLesson = C(0xFF607D8B);
 
   static const categoryGradients = [
     premiumGreen,

@@ -175,15 +175,6 @@ class AdminSidebar extends ConsumerWidget {
                   isCompact: isCompact,
                 ),
                 AdminNavItem(
-                  icon: Icons.library_books_rounded,
-                  label: 'Bakhed Learning CMS',
-                  isSelected: location.startsWith('/admin/gamification/bakhed'),
-                  onTap: () =>
-                      _navigate(context, '/admin/gamification/bakhed/lyrics'),
-                  isCompact: isCompact,
-                  indent: !isCompact,
-                ),
-                AdminNavItem(
                   icon: Icons.quiz_rounded,
                   label: 'Quizzes',
                   isSelected: location == '/admin/quizzes',

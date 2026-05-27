@@ -1302,7 +1302,9 @@ class _AdminContentListScreenState
                     borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
                     border: Border.all(color: AdminTokens.border(isDark)),
                   ),
-                  child: item.heroMedia != null && item.heroMedia!.url.trim().isNotEmpty
+                  child:
+                      item.heroMedia != null &&
+                          item.heroMedia!.url.trim().isNotEmpty
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(
                             AdminTokens.radiusMd,

@@ -36,7 +36,6 @@ import '../../features/admin/presentation/quizzes/admin_quizzes_screen.dart';
 import '../../features/admin/presentation/numbers/admin_numbers_screen.dart';
 import '../../features/admin/presentation/words/admin_words_screen.dart';
 import '../../features/admin/presentation/sentences/admin_sentences_screen.dart';
-import '../../features/admin/presentation/rhymes/admin_rhymes_screen.dart';
 import '../../features/admin/presentation/admin_settings_screen.dart';
 import '../../features/admin/presentation/admin_media_screen.dart';
 import '../../features/admin/presentation/affirmations/admin_affirmations_screen.dart';
@@ -45,6 +44,8 @@ import '../../features/admin/presentation/binti_waitlist/admin_binti_waitlist_sc
 import '../../features/admin/presentation/access/admin_access_screen.dart';
 import '../../features/admin/presentation/analytics/admin_analytics_screen.dart';
 import '../../features/admin/presentation/gamification/admin_gamification_screen.dart';
+import '../../features/admin/presentation/bakhed/bakhed_hub_screen.dart';
+import '../../features/admin/presentation/bakhed/bakhed_editor_screen.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
 import 'route_names.dart';
 
@@ -430,9 +431,14 @@ final routerProvider = Provider<GoRouter>((ref) {
           ),
           adminRoute(
             path: '/admin/rhymes',
-            builder: (context, state) => AdminRhymesScreen(
+            builder: (context, state) => BakhedHubScreen(
               categoryId: state.uri.queryParameters['categoryId'],
             ),
+          ),
+          adminRoute(
+            path: '/admin/bakhed/editor/:id',
+            builder: (context, state) =>
+                BakhedEditorScreen(bakhedId: state.pathParameters['id'] ?? ''),
           ),
           adminRoute(
             path: '/admin/media',
@@ -466,21 +472,7 @@ final routerProvider = Provider<GoRouter>((ref) {
             builder: (context, state) =>
                 const AdminGamificationScreen(section: 'badges'),
           ),
-          adminRoute(
-            path: '/admin/gamification/bakhed/lyrics',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'bakhed_lyrics'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/bakhed/vocabulary',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'bakhed_vocabulary'),
-          ),
-          adminRoute(
-            path: '/admin/gamification/bakhed/cultural-notes',
-            builder: (context, state) =>
-                const AdminGamificationScreen(section: 'bakhed_notes'),
-          ),
+
           adminRoute(
             path: '/admin/gamification/config',
             builder: (context, state) =>

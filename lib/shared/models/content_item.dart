@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:equatable/equatable.dart';
 import 'package:itun/core/error/failures.dart';
+import 'package:itun/core/logging/app_logger.dart';
 
 // Exceptions
 class ContentValidationException implements Exception {
@@ -821,6 +822,9 @@ class ContentItem extends Equatable {
   final String? difficulty;
   final int? durationSeconds;
   final DateTime updatedAt;
+  final String? audioUrl;
+  final String? audioFileId;
+  final int? durationMs;
 
   const ContentItem({
     required this.id,
@@ -840,6 +844,9 @@ class ContentItem extends Equatable {
     this.difficulty,
     this.durationSeconds,
     required this.updatedAt,
+    this.audioUrl,
+    this.audioFileId,
+    this.durationMs,
   });
 
   static void validate(ContentKind kind, TracingConfig? tracing) {
@@ -850,6 +857,24 @@ class ContentItem extends Equatable {
         'Provide strokes in admin form or run the tracing template generator.',
       );
     }
+  }
+
+  String? get effectiveAudioUrl => audioUrl ?? _extractAudioFromBlocks(blocks);
+
+  static String? _extractAudioFromBlocks(List<ContentBlock> blocksList) {
+    for (final block in blocksList) {
+      if (block.type == 'audio' && block is AudioBlock) {
+        return block.media.url;
+      }
+    }
+    return null;
+  }
+
+  static String? _extractFileIdFromUrl(String? url) {
+    if (url == null || url.isEmpty) return null;
+    final regExp = RegExp(r'/files/([^/]+)/view');
+    final match = regExp.firstMatch(url);
+    return match?.group(1);
   }
 
   factory ContentItem.fromJson(
@@ -892,6 +917,18 @@ class ContentItem extends Equatable {
         }
       } else if (rawHeroMedia is Map<String, dynamic>) {
         parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);
+      }
+    }
+    if (parsedHeroMedia != null && parsedHeroMedia.fileId.isEmpty) {
+      final extId = _extractFileIdFromUrl(parsedHeroMedia.url);
+      if (extId != null && extId.isNotEmpty) {
+        parsedHeroMedia = ContentMedia(
+          url: parsedHeroMedia.url,
+          fileId: extId,
+          kind: parsedHeroMedia.kind,
+          posterUrl: parsedHeroMedia.posterUrl,
+          durationSeconds: parsedHeroMedia.durationSeconds,
+        );
       }
     }
 
@@ -1078,20 +1115,22 @@ class ContentItem extends Equatable {
           null) {
         legacyMediaUrl = firstString([json['imageUrl'], json['thumbnailUrl']]);
         legacyMediaKind = ContentMediaKind.image;
-      } else if (firstString([json['audioUrl']]) != null) {
+      } else if (firstString([json['audioUrl']]) != null &&
+          parsedKind != ContentKind.rhyme) {
         legacyMediaUrl = json['audioUrl'] as String;
         legacyMediaKind = ContentMediaKind.audio;
       }
       if (legacyMediaUrl != null && legacyMediaKind != null) {
+        final extId = _extractFileIdFromUrl(legacyMediaUrl);
         parsedHeroMedia = ContentMedia(
           url: legacyMediaUrl,
-          fileId: '',
+          fileId: extId ?? '',
           kind: legacyMediaKind,
         );
       }
     }
 
-    return ContentItem(
+    final parsedItem = ContentItem(
       id: docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '',
       kind: parsedKind,
       categoryId: parsedCategoryId,
@@ -1115,7 +1154,23 @@ class ContentItem extends Equatable {
       durationSeconds:
           json['duration_seconds'] as int? ?? json['durationSeconds'] as int?,
       updatedAt: parsedUpdatedAt,
+      audioUrl: json['audioUrl'] as String?,
+      audioFileId: (json['audioFileId'] as String? ?? '').isNotEmpty
+          ? json['audioFileId'] as String?
+          : _extractFileIdFromUrl(json['audioUrl'] as String?),
+      durationMs: json['durationMs'] as int?,
     );
+
+    if (parsedKind == ContentKind.rhyme && json['audioUrl'] == null) {
+      final hasAudioBlock = parsedBlocks.any((e) => e.type == 'audio');
+      if (hasAudioBlock) {
+        AppLogger.debug(
+          'Legacy audio block detected on rhyme ${parsedItem.id}',
+        );
+      }
+    }
+
+    return parsedItem;
   }
 
   Map<String, dynamic> toJson() {
@@ -1137,6 +1192,9 @@ class ContentItem extends Equatable {
       if (difficulty != null) 'difficulty': difficulty,
       if (durationSeconds != null) 'durationSeconds': durationSeconds,
       'updatedAt': updatedAt.toIso8601String(),
+      if (audioUrl != null) 'audioUrl': audioUrl,
+      if (audioFileId != null) 'audioFileId': audioFileId,
+      if (durationMs != null) 'durationMs': durationMs,
     };
   }
 
@@ -1146,10 +1204,9 @@ class ContentItem extends Equatable {
         kind == ContentKind.word ||
         kind == ContentKind.sentence ||
         kind == ContentKind.rhyme;
-    assert(
-      !requiresCategory || categoryId.isNotEmpty,
-      'ContentItem.toAppwrite(): categoryId must not be empty (kind=$kind, id=$id)',
-    );
+    if (requiresCategory && categoryId.isEmpty) {
+      AppLogger.debug('ContentItem $id saved without categoryId');
+    }
 
     final resolvedTitleOlChiki =
         (titleOlChiki == null || titleOlChiki!.trim().isEmpty)
@@ -1167,17 +1224,25 @@ class ContentItem extends Equatable {
             heroMedia?.kind == ContentMediaKind.svg
         ? heroMedia?.url
         : null;
-    final audioUrl = heroMedia?.kind == ContentMediaKind.audio
+    final legacyAudioUrl = heroMedia?.kind == ContentMediaKind.audio
         ? heroMedia?.url
         : null;
     final animationUrl = heroMedia?.kind == ContentMediaKind.lottie
         ? heroMedia?.url
         : null;
 
+    if (kind == ContentKind.rhyme &&
+        heroMedia?.kind == ContentMediaKind.audio &&
+        audioUrl != null) {
+      AppLogger.debug(
+        'WARNING: both heroMedia.kind == audio AND audioUrl are set on rhyme $id',
+      );
+    }
+
     switch (kind) {
       case ContentKind.lesson:
         return {
-          'categoryId': categoryId,
+          if (categoryId.isNotEmpty) 'categoryId': categoryId,
           'titleOlChiki': resolvedTitleOlChiki,
           'titleLatin': title,
           'level': 'beginner',
@@ -1204,7 +1269,7 @@ class ContentItem extends Equatable {
           'order': order,
           'isActive': isPublished,
           'exampleWordLatin': subtitle,
-          'audioUrl': audioUrl,
+          'audioUrl': legacyAudioUrl,
           'imageUrl': imageUrl,
           'animationUrl': animationUrl,
           'hero_media': encodedHeroMedia,
@@ -1220,7 +1285,7 @@ class ContentItem extends Equatable {
           'nameLatin': title,
           'order': order,
           'isActive': isPublished,
-          'audioUrl': audioUrl,
+          'audioUrl': legacyAudioUrl,
           'imageUrl': imageUrl,
           'animationUrl': animationUrl,
           'hero_media': encodedHeroMedia,
@@ -1233,10 +1298,10 @@ class ContentItem extends Equatable {
           'wordOlChiki': olChiki ?? resolvedTitleOlChiki,
           'wordLatin': title,
           'meaning': subtitle ?? '',
-          'category': categoryId,
+          if (categoryId.isNotEmpty) 'category': categoryId,
           'order': order,
           'isActive': isPublished,
-          'audioUrl': audioUrl,
+          'audioUrl': legacyAudioUrl,
           'imageUrl': imageUrl,
           'animationUrl': animationUrl,
           'hero_media': encodedHeroMedia,
@@ -1249,10 +1314,10 @@ class ContentItem extends Equatable {
           'sentenceOlChiki': olChiki ?? resolvedTitleOlChiki,
           'sentenceLatin': title,
           'meaning': subtitle ?? '',
-          'category': categoryId,
+          if (categoryId.isNotEmpty) 'category': categoryId,
           'order': order,
           'isActive': isPublished,
-          'audioUrl': audioUrl,
+          'audioUrl': legacyAudioUrl,
           'imageUrl': imageUrl,
           'animationUrl': animationUrl,
           'hero_media': encodedHeroMedia,
@@ -1261,20 +1326,28 @@ class ContentItem extends Equatable {
         };
 
       case ContentKind.rhyme:
+        final resolvedBlocks = blocks.where((e) => e.type != 'audio').toList();
+        final encodedBlocksForRhyme = jsonEncode(
+          resolvedBlocks.map((e) => e.toJson()).toList(),
+        );
         return {
           'titleOlChiki': resolvedTitleOlChiki,
           'titleLatin': title,
           'contentOlChiki': olChiki ?? '',
           'contentLatin': subtitle ?? '',
           'audioUrl': audioUrl,
-          'thumbnailUrl': imageUrl,
-          'categoryId': categoryId,
+          'audioFileId': audioFileId,
+          'durationMs': durationMs,
+          'thumbnailUrl': heroMedia?.kind == ContentMediaKind.image
+              ? heroMedia?.url
+              : null,
+          if (categoryId.isNotEmpty) 'categoryId': categoryId,
           'tags': tags,
           'difficulty': difficulty ?? 'beginner',
           'durationSeconds': durationSeconds ?? 0,
           'isPremium': isPremium,
           'hero_media': encodedHeroMedia,
-          'blocks': encodedBlocks,
+          'blocks': encodedBlocksForRhyme,
           'tracing': encodedTracing,
         };
     }
@@ -1298,6 +1371,9 @@ class ContentItem extends Equatable {
     String? difficulty,
     int? durationSeconds,
     DateTime? updatedAt,
+    String? audioUrl,
+    String? audioFileId,
+    int? durationMs,
   }) {
     return ContentItem(
       id: id ?? this.id,
@@ -1317,6 +1393,9 @@ class ContentItem extends Equatable {
       difficulty: difficulty ?? this.difficulty,
       durationSeconds: durationSeconds ?? this.durationSeconds,
       updatedAt: updatedAt ?? this.updatedAt,
+      audioUrl: audioUrl ?? this.audioUrl,
+      audioFileId: audioFileId ?? this.audioFileId,
+      durationMs: durationMs ?? this.durationMs,
     );
   }
 
@@ -1339,5 +1418,8 @@ class ContentItem extends Equatable {
     difficulty,
     durationSeconds,
     updatedAt,
+    audioUrl,
+    audioFileId,
+    durationMs,
   ];
 }

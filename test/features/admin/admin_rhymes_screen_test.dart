@@ -11,7 +11,6 @@ import 'package:itun/shared/providers/providers.dart';
 
 class MockContentRepository extends Mock implements ContentRepository {}
 
-
 void main() {
   testWidgets('AdminContentListScreen renders cleanly for Rhyme kind', (
     tester,
@@ -63,8 +62,9 @@ void main() {
       updatedAt: DateTime.now(),
     );
 
-    when(() => mockRepo.get(ContentKind.rhyme, 'rhyme_1'))
-        .thenAnswer((_) async => Right(item));
+    when(
+      () => mockRepo.get(ContentKind.rhyme, 'rhyme_1'),
+    ).thenAnswer((_) async => Right(item));
 
     await tester.pumpWidget(
       ProviderScope(
@@ -93,52 +93,60 @@ void main() {
     expect(find.text('Edit Rhymes & Stories'), findsOneWidget);
   });
 
-  testWidgets('Rhyme with empty heroMedia url renders and edits without crashing', (
-    tester,
-  ) async {
-    final mockRepo = MockContentRepository();
-    final item = ContentItem(
-      id: 'rhyme_1',
-      kind: ContentKind.rhyme,
-      categoryId: 'cat_1',
-      title: 'Test Rhyme',
-      titleOlChiki: 'ᱴᱮᱥᱴ ᱨᱟᱭᱤᱢ',
-      subtitle: 'A test rhyme',
-      heroMedia: const ContentMedia(url: '', fileId: '', kind: ContentMediaKind.image),
-      blocks: const [],
-      updatedAt: DateTime.now(),
-    );
-
-    when(() => mockRepo.get(ContentKind.rhyme, 'rhyme_1'))
-        .thenAnswer((_) async => Right(item));
-
-    await tester.pumpWidget(
-      ProviderScope(
-        overrides: [
-          contentListProvider.overrideWith((ref, arg) async {
-            return [item];
-          }),
-          categoryRepositoryProvider.overrideWithValue(
-            FakeCategoryRepository(),
-          ),
-          contentRepositoryProvider.overrideWithValue(mockRepo),
-        ],
-        child: const MaterialApp(
-          home: Scaffold(body: AdminContentListScreen(kind: ContentKind.rhyme)),
+  testWidgets(
+    'Rhyme with empty heroMedia url renders and edits without crashing',
+    (tester) async {
+      final mockRepo = MockContentRepository();
+      final item = ContentItem(
+        id: 'rhyme_1',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat_1',
+        title: 'Test Rhyme',
+        titleOlChiki: 'ᱴᱮᱥᱴ ᱨᱟᱭᱤᱢ',
+        subtitle: 'A test rhyme',
+        heroMedia: const ContentMedia(
+          url: '',
+          fileId: '',
+          kind: ContentMediaKind.image,
         ),
-      ),
-    );
+        blocks: const [],
+        updatedAt: DateTime.now(),
+      );
 
-    await tester.pumpAndSettle();
-    expect(find.text('Test Rhyme'), findsOneWidget);
+      when(
+        () => mockRepo.get(ContentKind.rhyme, 'rhyme_1'),
+      ).thenAnswer((_) async => Right(item));
 
-    final editButton = find.byIcon(Icons.edit_rounded);
-    expect(editButton, findsOneWidget);
-    await tester.tap(editButton);
-    await tester.pumpAndSettle();
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            contentListProvider.overrideWith((ref, arg) async {
+              return [item];
+            }),
+            categoryRepositoryProvider.overrideWithValue(
+              FakeCategoryRepository(),
+            ),
+            contentRepositoryProvider.overrideWithValue(mockRepo),
+          ],
+          child: const MaterialApp(
+            home: Scaffold(
+              body: AdminContentListScreen(kind: ContentKind.rhyme),
+            ),
+          ),
+        ),
+      );
 
-    expect(find.text('Edit Rhymes & Stories'), findsOneWidget);
-  });
+      await tester.pumpAndSettle();
+      expect(find.text('Test Rhyme'), findsOneWidget);
+
+      final editButton = find.byIcon(Icons.edit_rounded);
+      expect(editButton, findsOneWidget);
+      await tester.tap(editButton);
+      await tester.pumpAndSettle();
+
+      expect(find.text('Edit Rhymes & Stories'), findsOneWidget);
+    },
+  );
 }
 
 class FakeCategoryRepository implements CategoryRepository {

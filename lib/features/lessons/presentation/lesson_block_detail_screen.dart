@@ -723,16 +723,19 @@ class _LessonBlockDetailScreenState
                                                     alpha: 0.06,
                                                   )
                                                 : accentColor.withValues(
-                                                    alpha: 0.06)),
-                                            borderRadius:
-                                                BorderRadius.circular(14),
+                                                    alpha: 0.06,
+                                                  )),
+                                            borderRadius: BorderRadius.circular(
+                                              14,
+                                            ),
                                             border: Border.all(
                                               color: (isDark
                                                   ? Colors.white.withValues(
                                                       alpha: 0.1,
                                                     )
                                                   : accentColor.withValues(
-                                                      alpha: 0.1)),
+                                                      alpha: 0.1,
+                                                    )),
                                             ),
                                           ),
                                           child: Row(
@@ -807,7 +810,9 @@ class _LessonBlockDetailScreenState
                                       // Glass body
                                       Positioned.fill(
                                         child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(36),
+                                          borderRadius: BorderRadius.circular(
+                                            36,
+                                          ),
                                           child: BackdropFilter(
                                             filter: ImageFilter.blur(
                                               sigmaX: 16,
@@ -818,20 +823,24 @@ class _LessonBlockDetailScreenState
                                                 gradient: LinearGradient(
                                                   colors: isDark
                                                       ? [
-                                                          Colors.white.withValues(
-                                                            alpha: 0.06,
-                                                          ),
-                                                          Colors.white.withValues(
-                                                            alpha: 0.02,
-                                                          ),
+                                                          Colors.white
+                                                              .withValues(
+                                                                alpha: 0.06,
+                                                              ),
+                                                          Colors.white
+                                                              .withValues(
+                                                                alpha: 0.02,
+                                                              ),
                                                         ]
                                                       : [
-                                                          Colors.white.withValues(
-                                                            alpha: 0.8,
-                                                          ),
-                                                          Colors.white.withValues(
-                                                            alpha: 0.45,
-                                                          ),
+                                                          Colors.white
+                                                              .withValues(
+                                                                alpha: 0.8,
+                                                              ),
+                                                          Colors.white
+                                                              .withValues(
+                                                                alpha: 0.45,
+                                                              ),
                                                         ],
                                                   begin: Alignment.topLeft,
                                                   end: Alignment.bottomRight,
@@ -856,7 +865,8 @@ class _LessonBlockDetailScreenState
                                                   CustomPaint(
                                                     size: const Size(210, 210),
                                                     painter: _WatermarkPainter(
-                                                      text: textOlChiki.isNotEmpty
+                                                      text:
+                                                          textOlChiki.isNotEmpty
                                                           ? textOlChiki
                                                           : textLatin,
                                                       style: TextStyle(
@@ -865,7 +875,8 @@ class _LessonBlockDetailScreenState
                                                             FontWeight.w900,
                                                         color:
                                                             (isDark
-                                                                    ? Colors.white
+                                                                    ? Colors
+                                                                          .white
                                                                     : accentColor)
                                                                 .withValues(
                                                                   alpha: 0.04,
@@ -887,7 +898,8 @@ class _LessonBlockDetailScreenState
                                                               3
                                                           ? 84
                                                           : 44,
-                                                      fontWeight: FontWeight.w900,
+                                                      fontWeight:
+                                                          FontWeight.w900,
                                                       color: isDark
                                                           ? Colors.white
                                                           : accentColor,
@@ -896,11 +908,13 @@ class _LessonBlockDetailScreenState
                                                           color: isDark
                                                               ? Colors.black
                                                                     .withValues(
-                                                                      alpha: 0.3,
+                                                                      alpha:
+                                                                          0.3,
                                                                     )
                                                               : accentColor
                                                                     .withValues(
-                                                                      alpha: 0.15,
+                                                                      alpha:
+                                                                          0.15,
                                                                     ),
                                                           offset: const Offset(
                                                             0,
@@ -917,7 +931,9 @@ class _LessonBlockDetailScreenState
                                                     right: 16,
                                                     child: Container(
                                                       padding:
-                                                          const EdgeInsets.all(6),
+                                                          const EdgeInsets.all(
+                                                            6,
+                                                          ),
                                                       decoration: BoxDecoration(
                                                         color: (isDark
                                                             ? Colors.white
@@ -933,11 +949,13 @@ class _LessonBlockDetailScreenState
                                                           color: (isDark
                                                               ? Colors.white
                                                                     .withValues(
-                                                                      alpha: 0.12,
+                                                                      alpha:
+                                                                          0.12,
                                                                     )
                                                               : accentColor
                                                                     .withValues(
-                                                                      alpha: 0.12,
+                                                                      alpha:
+                                                                          0.12,
                                                                     )),
                                                         ),
                                                       ),
@@ -977,11 +995,13 @@ class _LessonBlockDetailScreenState
                                                           color: (isDark
                                                               ? Colors.white
                                                                     .withValues(
-                                                                      alpha: 0.1,
+                                                                      alpha:
+                                                                          0.1,
                                                                     )
                                                               : accentColor
                                                                     .withValues(
-                                                                      alpha: 0.1,
+                                                                      alpha:
+                                                                          0.1,
                                                                     )),
                                                         ),
                                                       ),
@@ -1060,7 +1080,9 @@ class _LessonBlockDetailScreenState
                                 children: [
                                   Flexible(
                                     child: Text(
-                                      buttonText.length > 15 ? 'LISTEN' : buttonText.toUpperCase(),
+                                      buttonText.length > 15
+                                          ? 'LISTEN'
+                                          : buttonText.toUpperCase(),
                                       overflow: TextOverflow.ellipsis,
                                       maxLines: 1,
                                       style: const TextStyle(

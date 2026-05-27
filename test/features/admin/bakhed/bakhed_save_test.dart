@@ -1,0 +1,536 @@
+import 'dart:typed_data';
+
+import 'package:appwrite/appwrite.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:fpdart/fpdart.dart';
+import 'package:mocktail/mocktail.dart';
+import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/network/network_info.dart';
+import 'package:itun/features/admin/data/bakhed_repository.dart';
+import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
+import 'package:itun/shared/models/content_item.dart';
+
+// ── Mocks ──────────────────────────────────────────────────
+
+class MockBakhedRepository extends Mock implements BakhedRepository {}
+
+class MockAppwriteDbService extends Mock implements AppwriteDbService {}
+
+class MockNetworkInfo extends Mock implements NetworkInfo {}
+
+class MockStorage extends Mock implements Storage {}
+
+class FakeContentItem extends Fake implements ContentItem {}
+
+// ── Helpers ────────────────────────────────────────────────
+
+/// Constructs a minimal ContentItem for rhymes with the given audio fields.
+ContentItem _makeRhyme({
+  String id = 'rhyme_test_123',
+  String? audioUrl,
+  String? audioFileId,
+  int? durationMs,
+  DateTime? updatedAt,
+}) {
+  return ContentItem(
+    id: id,
+    kind: ContentKind.rhyme,
+    categoryId: 'sohrai_cat',
+    title: 'Test Rhyme',
+    titleOlChiki: 'ᱴᱮᱥᱴ',
+    blocks: const [],
+    isPublished: true,
+    updatedAt: updatedAt ?? DateTime(2026),
+    audioUrl: audioUrl,
+    audioFileId: audioFileId,
+    durationMs: durationMs,
+    heroMedia: const ContentMedia(
+      url: 'https://cdn.example.com/cover.png',
+      fileId: 'cover1',
+      kind: ContentMediaKind.image,
+    ),
+  );
+}
+
+void main() {
+  setUpAll(() {
+    registerFallbackValue(FakeContentItem());
+    registerFallbackValue(<String, dynamic>{});
+    registerFallbackValue(Uint8List(0));
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 1: Serialization round-trip tests
+  // ────────────────────────────────────────────────────────────
+  group('ContentItem serialization round-trip', () {
+    const rhymeId = 'rhyme_test_123';
+
+    final legacyDocData = {
+      '\$id': rhymeId,
+      'titleLatin': 'Legacy Rhyme Title',
+      'titleOlChiki': 'ᱞᱮᱜᱮᱥᱤ ᱨᱟᱭᱤᱢ',
+      'thumbnailUrl': 'https://cdn.example.com/cover.png',
+      'categoryId': 'sohrai_cat',
+      'blocks':
+          '[{"id":"b1","order":0,"type":"audio","media":{"url":"https://cdn.example.com/audio.mp3","fileId":"a1","kind":"audio"}}]',
+      'is_published': true,
+      'isPremium': false,
+    };
+
+    final modernDocData = {
+      '\$id': rhymeId,
+      'titleLatin': 'Modern Rhyme Title',
+      'titleOlChiki': 'ᱢᱚᱰᱟᱨᱱ ᱨᱟᱭᱤᱢ',
+      'thumbnailUrl': 'https://cdn.example.com/cover.png',
+      'audioUrl': 'https://cdn.example.com/audio.mp3',
+      'audioFileId': 'a1',
+      'durationMs': 120000,
+      'categoryId': 'sohrai_cat',
+      'blocks': '[]',
+      'is_published': true,
+      'isPremium': false,
+    };
+
+    test('Legacy audio block derives effectiveAudioUrl', () {
+      final item = ContentItem.fromJson(
+        legacyDocData,
+        rhymeId,
+        ContentKind.rhyme,
+      );
+      expect(item.audioUrl, isNull);
+      expect(item.effectiveAudioUrl, 'https://cdn.example.com/audio.mp3');
+      expect(item.heroMedia?.url, 'https://cdn.example.com/cover.png');
+      expect(item.heroMedia?.kind, ContentMediaKind.image);
+    });
+
+    test('Modern top-level audioUrl flows through', () {
+      final item = ContentItem.fromJson(
+        modernDocData,
+        rhymeId,
+        ContentKind.rhyme,
+      );
+      expect(item.audioUrl, 'https://cdn.example.com/audio.mp3');
+      expect(item.effectiveAudioUrl, 'https://cdn.example.com/audio.mp3');
+    });
+
+    test(
+      'toAppwrite() for rhyme includes audio fields and strips audio blocks',
+      () {
+        final item = ContentItem.fromJson(
+          modernDocData,
+          rhymeId,
+          ContentKind.rhyme,
+        );
+        final payload = item.toAppwrite();
+
+        expect(payload['audioUrl'], 'https://cdn.example.com/audio.mp3');
+        expect(payload['audioFileId'], 'a1');
+        expect(payload['durationMs'], 120000);
+        expect(payload['thumbnailUrl'], 'https://cdn.example.com/cover.png');
+        expect(payload['blocks'], '[]');
+      },
+    );
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 2: Repository upsert payload verification
+  // ────────────────────────────────────────────────────────────
+  group('BakhedRepository.upsert payload', () {
+    late MockAppwriteDbService mockDbService;
+    late MockNetworkInfo mockNetworkInfo;
+    late BakhedRepository repository;
+
+    setUp(() {
+      mockDbService = MockAppwriteDbService();
+      mockNetworkInfo = MockNetworkInfo();
+      repository = BakhedRepository(
+        dbService: mockDbService,
+        storage: MockStorage(),
+        networkInfo: mockNetworkInfo,
+      );
+    });
+
+    test('upsert sends audioUrl in the payload to Appwrite', () async {
+      final item = _makeRhyme(
+        audioUrl: 'https://cdn.example.com/audio.mp3',
+        audioFileId: 'file_abc',
+        durationMs: 180000,
+      );
+
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+
+      Map<String, dynamic>? capturedPayload;
+      when(() => mockDbService.updateDocument(any(), any(), any())).thenAnswer((
+        invocation,
+      ) async {
+        capturedPayload =
+            invocation.positionalArguments[2] as Map<String, dynamic>;
+      });
+
+      final result = await repository.upsert(item);
+
+      expect(result.isRight(), isTrue);
+      expect(capturedPayload, isNotNull);
+      expect(capturedPayload!['audioUrl'], 'https://cdn.example.com/audio.mp3');
+      expect(capturedPayload!['audioFileId'], 'file_abc');
+      expect(capturedPayload!['durationMs'], 180000);
+    });
+
+    test('upsert sends null audioUrl when audio has not been set', () async {
+      final item = _makeRhyme();
+
+      when(() => mockNetworkInfo.isConnected).thenAnswer((_) async => true);
+
+      Map<String, dynamic>? capturedPayload;
+      when(() => mockDbService.updateDocument(any(), any(), any())).thenAnswer((
+        invocation,
+      ) async {
+        capturedPayload =
+            invocation.positionalArguments[2] as Map<String, dynamic>;
+      });
+
+      final result = await repository.upsert(item);
+
+      expect(result.isRight(), isTrue);
+      expect(capturedPayload, isNotNull);
+      expect(capturedPayload!['audioUrl'], isNull);
+      expect(capturedPayload!['audioFileId'], isNull);
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 3: Audio upload / save race condition
+  //
+  // PHASE A — Prove the bug existed (regression test)
+  // PHASE B — Prove the fix works (inflight guard)
+  // ────────────────────────────────────────────────────────────
+  group('Audio upload/save race condition', () {
+    late MockBakhedRepository mockRepository;
+    late MockAppwriteDbService mockDbService;
+    late ProviderContainer container;
+
+    setUp(() {
+      mockRepository = MockBakhedRepository();
+      mockDbService = MockAppwriteDbService();
+    });
+
+    tearDown(() {
+      container.dispose();
+    });
+
+    /// Helper: creates a ProviderContainer with mocked providers
+    /// and waits for the editor notifier to finish loading.
+    Future<ProviderContainer> setupContainer({
+      required ContentItem initialRhyme,
+    }) async {
+      when(
+        () => mockRepository.get(initialRhyme.id),
+      ).thenAnswer((_) async => right(initialRhyme));
+
+      when(
+        () => mockRepository.upsert(any()),
+      ).thenAnswer((_) async => right(unit));
+
+      final c = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+        ],
+      );
+
+      // Trigger load() in the notifier constructor
+      c.read(bakhedEditorControllerProvider(initialRhyme.id).notifier);
+
+      // Wait for the async load() to complete
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      // Verify it loaded
+      final state = c.read(bakhedEditorControllerProvider(initialRhyme.id));
+      expect(state.item, isA<AsyncData<ContentItem>>());
+
+      return c;
+    }
+
+    // ── PHASE A: Regression proof ──────────────────────────
+    //
+    // This test proves that the OLD code path (calling updateAudio
+    // directly after an async upload, with no inflight guard) would
+    // persist null audioUrl when save() races ahead of the callback.
+    //
+    // The scenario:
+    //   1. Rhyme loads with audioUrl == null
+    //   2. Upload starts (slow, 200ms) → updateAudio hasn't been called
+    //   3. Admin hits save → save() reads state.item.value.audioUrl == null
+    //   4. Appwrite receives null audioUrl → AUDIO LOST
+    //
+    test('REGRESSION: save() without upload guard persists null audioUrl '
+        '(proves the historical bug)', () async {
+      final rhyme = _makeRhyme();
+
+      container = await setupContainer(initialRhyme: rhyme);
+
+      final notifier = container.read(
+        bakhedEditorControllerProvider(rhyme.id).notifier,
+      );
+
+      // Simulate the OLD flow: upload starts but updateAudio hasn't
+      // been called yet. The admin hits save immediately.
+      // With the OLD code, save() would happily persist null.
+      // With the NEW code, save() would block (tested in Phase B).
+      //
+      // To prove the historical bug, we bypass the inflight guard by
+      // calling save() WITHOUT going through uploadAndSetAudio().
+      // This simulates what the old MediaPickerField.onChanged path did.
+      notifier.markDirty();
+      final result = await notifier.save();
+
+      expect(result, SaveResult.success);
+
+      final captured = verify(
+        () => mockRepository.upsert(captureAny()),
+      ).captured;
+      expect(captured, isNotEmpty);
+
+      final savedItem = captured.last as ContentItem;
+
+      // THE BUG: audioUrl is null because updateAudio() hasn't been
+      // called yet — the upload was still in-flight when save() ran.
+      expect(
+        savedItem.audioUrl,
+        isNull,
+        reason:
+            'Historical proof: without the inflight guard, save() persists '
+            'null audioUrl because the upload callback (updateAudio) has not '
+            'fired yet.',
+      );
+    });
+
+    // ── PHASE B: Fix proof ─────────────────────────────────
+    //
+    // With the inflight counter, save() now returns
+    // SaveResult.uploadInProgress if an upload is running.
+    //
+    test(
+      'FIX: save() returns uploadInProgress while uploadAndSetAudio is running',
+      () async {
+        final rhyme = _makeRhyme();
+
+        container = await setupContainer(initialRhyme: rhyme);
+
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+
+        // Mock uploadAudio to take 200ms (simulating real network latency)
+        when(() => mockRepository.uploadAudio(any(), any())).thenAnswer((
+          _,
+        ) async {
+          await Future.delayed(const Duration(milliseconds: 200));
+          return right({
+            'url': 'https://cdn.example.com/uploaded.mp3',
+            'fileId': 'uploaded_file_id',
+          });
+        });
+
+        // Kick off upload — this sets _inflightUploads > 0
+        final uploadFuture = notifier.uploadAndSetAudio(
+          Uint8List.fromList([0x49, 0x44, 0x33]), // fake MP3 header
+          'test_audio.mp3',
+        );
+
+        // Immediately try to save — should be blocked
+        notifier.markDirty();
+        final result = await notifier.save();
+
+        // The guard fires: save() refuses to persist stale data
+        expect(
+          result,
+          SaveResult.uploadInProgress,
+          reason:
+              'save() must return uploadInProgress when an audio upload '
+              'is still in-flight, preventing null audioUrl from being persisted.',
+        );
+
+        // upsert should NOT have been called
+        verifyNever(() => mockRepository.upsert(any()));
+
+        // Let the upload finish
+        await uploadFuture;
+
+        // Now save should succeed with the correct audioUrl
+        final result2 = await notifier.save();
+        expect(result2, SaveResult.success);
+
+        final captured = verify(
+          () => mockRepository.upsert(captureAny()),
+        ).captured;
+        final savedItem = captured.last as ContentItem;
+
+        expect(
+          savedItem.audioUrl,
+          'https://cdn.example.com/uploaded.mp3',
+          reason:
+              'After upload completes, save() persists the correct audioUrl.',
+        );
+        expect(savedItem.audioFileId, 'uploaded_file_id');
+      },
+    );
+
+    test('FIX: updateAudio() then save() correctly persists audioUrl '
+        '(non-race happy path)', () async {
+      final rhyme = _makeRhyme();
+
+      container = await setupContainer(initialRhyme: rhyme);
+
+      final notifier = container.read(
+        bakhedEditorControllerProvider(rhyme.id).notifier,
+      );
+
+      // Upload completed, callback fires
+      notifier.updateAudio(
+        'https://cdn.example.com/uploaded.mp3',
+        'uploaded_file_id',
+        60000,
+      );
+
+      final result = await notifier.save();
+      expect(result, SaveResult.success);
+
+      final captured = verify(
+        () => mockRepository.upsert(captureAny()),
+      ).captured;
+      final savedItem = captured.last as ContentItem;
+
+      expect(savedItem.audioUrl, 'https://cdn.example.com/uploaded.mp3');
+      expect(savedItem.audioFileId, 'uploaded_file_id');
+      expect(savedItem.durationMs, 60000);
+    });
+  });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 4: Optimistic concurrency & TOCTOU fix
+  // ────────────────────────────────────────────────────────────
+  group('Optimistic concurrency', () {
+    late MockBakhedRepository mockRepository;
+    late MockAppwriteDbService mockDbService;
+    late ProviderContainer container;
+
+    setUp(() {
+      mockRepository = MockBakhedRepository();
+      mockDbService = MockAppwriteDbService();
+    });
+
+    tearDown(() {
+      container.dispose();
+    });
+
+    test('Concurrency conflict detected at initial check '
+        '(server has newer version)', () async {
+      final clientRhyme = _makeRhyme(
+        updatedAt: DateTime(2026, 1, 1, 12),
+        audioUrl: 'https://cdn.example.com/audio.mp3',
+      );
+
+      final serverRhyme = _makeRhyme(
+        updatedAt: DateTime(2026, 1, 1, 12, 5),
+        audioUrl: 'https://cdn.example.com/different-audio.mp3',
+      );
+
+      var callCount = 0;
+      when(() => mockRepository.get(clientRhyme.id)).thenAnswer((_) async {
+        callCount++;
+        if (callCount == 1) return right(clientRhyme); // load()
+        return right(serverRhyme); // concurrency check
+      });
+
+      when(
+        () => mockRepository.upsert(any()),
+      ).thenAnswer((_) async => right(unit));
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+        ],
+      );
+
+      container.read(bakhedEditorControllerProvider(clientRhyme.id).notifier);
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final notifier = container.read(
+        bakhedEditorControllerProvider(clientRhyme.id).notifier,
+      );
+      notifier.markDirty();
+
+      final result = await notifier.save();
+
+      expect(result, SaveResult.concurrencyConflict);
+      verifyNever(() => mockRepository.upsert(any()));
+    });
+
+    test('TOCTOU: save aborts if server doc changes between initial check '
+        'and parent upsert (double-check catches late conflict)', () async {
+      final clientRhyme = _makeRhyme(
+        updatedAt: DateTime(2026, 1, 1, 12),
+        audioUrl: 'https://cdn.example.com/audio.mp3',
+      );
+
+      // First check passes (same timestamp), but between subcollection
+      // saves and the parent upsert, another admin saves → newer timestamp.
+      final lateServerRhyme = _makeRhyme(
+        updatedAt: DateTime(2026, 1, 1, 12, 0, 1), // 1 second later
+        audioUrl: 'https://cdn.example.com/other-admin-audio.mp3',
+      );
+
+      var getCallCount = 0;
+      when(() => mockRepository.get(clientRhyme.id)).thenAnswer((_) async {
+        getCallCount++;
+        if (getCallCount <= 2) {
+          // Call 1 = load(), Call 2 = first concurrency check (passes)
+          return right(clientRhyme);
+        }
+        // Call 3 = TOCTOU re-check right before parent upsert (FAILS)
+        return right(lateServerRhyme);
+      });
+
+      when(
+        () => mockRepository.upsert(any()),
+      ).thenAnswer((_) async => right(unit));
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+        ],
+      );
+
+      container.read(bakhedEditorControllerProvider(clientRhyme.id).notifier);
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final notifier = container.read(
+        bakhedEditorControllerProvider(clientRhyme.id).notifier,
+      );
+      notifier.markDirty();
+
+      final result = await notifier.save();
+
+      // The TOCTOU double-check catches the late conflict
+      expect(
+        result,
+        SaveResult.concurrencyConflict,
+        reason:
+            'The second concurrency check (right before parent upsert) '
+            'catches a server modification that happened during '
+            'subcollection saves.',
+      );
+
+      // upsert() on parent rhymes doc was NEVER called
+      verifyNever(() => mockRepository.upsert(any()));
+
+      // repository.get() was called 3 times:
+      // 1: load(), 2: initial check, 3: TOCTOU re-check
+      verify(() => mockRepository.get(clientRhyme.id)).called(3);
+    });
+  });
+}

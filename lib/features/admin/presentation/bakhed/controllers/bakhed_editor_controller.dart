@@ -1,5 +1,3 @@
-import 'dart:typed_data';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:just_audio/just_audio.dart';
@@ -154,35 +152,6 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
 
   void markDirty() {
     state = state.copyWith(isDirty: true);
-  }
-
-  /// Uploads an audio file through the repository and sets the audio fields
-  /// on completion. While this future is in-flight, save() will return
-  /// SaveResult.uploadInProgress instead of persisting stale data.
-  Future<void> uploadAndSetAudio(Uint8List bytes, String filename) async {
-    setUploadInProgress(true);
-    state = state.copyWith(uploadProgress: 0.1);
-    try {
-      final result = await _repository.uploadAudio(bytes, filename);
-      result.fold(
-        (failure) {
-          state = state.copyWith(
-            errorMessage: failure.message,
-            uploadProgress: 0.0,
-          );
-        },
-        (uploadResult) {
-          updateAudio(
-            uploadResult['url'],
-            uploadResult['fileId'],
-            null, // duration resolved client-side after player loads
-          );
-          state = state.copyWith(uploadProgress: 0.0);
-        },
-      );
-    } finally {
-      setUploadInProgress(false);
-    }
   }
 
   Future<SaveResult> save() async {

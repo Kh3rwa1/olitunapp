@@ -1,4 +1,3 @@
-import 'dart:typed_data';
 import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -210,55 +209,6 @@ class BakhedRepository {
     } else {
       return left(const NetworkFailure());
     }
-  }
-
-  /// Upload an audio file to Appwrite storage bucket `audio`. Returns the URL.
-  Future<Either<Failure, Map<String, String>>> uploadAudio(
-    Uint8List bytes,
-    String filename,
-  ) async {
-    if (await _networkInfo.isConnected) {
-      try {
-        final fileId = ID.unique();
-        final timestamp = DateTime.now().millisecondsSinceEpoch;
-        final cleanFilename = 'bakhed-audio-$timestamp-$filename';
-
-        final response = await _storage.createFile(
-          bucketId: 'audio',
-          fileId: fileId,
-          file: InputFile.fromBytes(
-            bytes: bytes,
-            filename: cleanFilename,
-            contentType: 'audio/mpeg',
-          ),
-          permissions: [Permission.read(Role.any())],
-        );
-
-        final viewUrl = _dbService.getFileViewUrl('audio', response.$id);
-
-        return right({'url': viewUrl, 'fileId': response.$id});
-      } catch (e) {
-        return left(ServerFailure(message: 'Audio upload failed: $e'));
-      }
-    } else {
-      return left(const NetworkFailure());
-    }
-  }
-
-  /// Replace an existing audio file in storage bucket `audio`.
-  Future<Either<Failure, Map<String, String>>> replaceAudio(
-    String? oldFileId,
-    Uint8List bytes,
-    String filename,
-  ) async {
-    if (oldFileId != null && oldFileId.isNotEmpty) {
-      try {
-        await _storage.deleteFile(bucketId: 'audio', fileId: oldFileId);
-      } catch (_) {
-        // Ignore errors when deleting old file to avoid breaking replacement
-      }
-    }
-    return uploadAudio(bytes, filename);
   }
 }
 

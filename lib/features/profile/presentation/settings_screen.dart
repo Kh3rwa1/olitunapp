@@ -246,15 +246,19 @@ class SettingsScreen extends ConsumerWidget {
                       onChanged: (value) => toggleReduceVisualEffects(ref),
                     ),
                     const SizedBox(height: 10),
-                    ToggleTile(
-                      icon: Icons.keyboard_rounded,
-                      title: 'Vocabulary & Sentence Practice',
-                      subtitle:
-                          'Enable active recall typing practice for vocabulary words and sentences',
-                      value: ref.watch(typingPracticeSettingsProvider).enabled,
-                      isDark: isDark,
-                      onChanged: (value) =>
-                          ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+                    Semantics(
+                      label: "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
+                      excludeSemantics: false,
+                      child: ToggleTile(
+                        icon: Icons.keyboard_rounded,
+                        title: 'Vocabulary & Sentence Practice',
+                        subtitle:
+                            'Enable active recall typing practice for vocabulary words and sentences',
+                        value: ref.watch(typingPracticeSettingsProvider).enabled,
+                        isDark: isDark,
+                        onChanged: (value) =>
+                            ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+                      ),
                     ),
                   ],
                 ),
@@ -379,15 +383,19 @@ class SettingsScreen extends ConsumerWidget {
               onChanged: (value) => toggleReduceVisualEffects(ref),
             ),
             const SizedBox(height: 10),
-            ToggleTile(
-              icon: Icons.keyboard_rounded,
-              title: 'Vocabulary & Sentence Practice',
-              subtitle:
-                  'Enable active recall typing practice for vocabulary words and sentences',
-              value: ref.watch(typingPracticeSettingsProvider).enabled,
-              isDark: isDark,
-              onChanged: (value) =>
-                  ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+            Semantics(
+              label: "Toggle typing practice for vocabulary and sentences. When enabled, you'll type Ol Chiki characters to complete words and earn 5 stars.",
+              excludeSemantics: false,
+              child: ToggleTile(
+                icon: Icons.keyboard_rounded,
+                title: 'Vocabulary & Sentence Practice',
+                subtitle:
+                    'Enable active recall typing practice for vocabulary words and sentences',
+                value: ref.watch(typingPracticeSettingsProvider).enabled,
+                isDark: isDark,
+                onChanged: (value) =>
+                    ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+              ),
             ),
           ],
         ),

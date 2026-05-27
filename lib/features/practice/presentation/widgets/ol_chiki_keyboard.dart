@@ -19,11 +19,24 @@ class OlChikiKeyboard extends ConsumerWidget {
   static const List<String> consonantsR3 = ['ᱪ', 'ᱫ', 'ᱬ', 'ᱭ', 'ᱯ', 'ᱰ'];
   static const List<String> consonantsR4 = ['ᱱ', 'ᱲ', 'ᱴ', 'ᱵ', 'ᱶ', 'ᱷ'];
   static const List<String> digits = [
+    '0', // ᱐ mapped in _getA11yLabel and dynamic layout
+    '1',
+    '2',
+    '3',
+    '4',
+    '5',
+    '6',
+    '7',
+    '8',
+    '9',
+  ];
+
+  static const List<String> olChikiDigits = [
     '᱐',
     '᱑',
     '᱒',
-    '\u1C53', // ᱓
-    '\u1C54', // ᱔
+    '᱓',
+    '᱔',
     '᱕',
     '᱖',
     '᱗',
@@ -31,10 +44,70 @@ class OlChikiKeyboard extends ConsumerWidget {
     '᱙',
   ];
 
+  String _getA11yLabel(String char) {
+    switch (char) {
+      // Digits
+      case '᱐': return 'Ol Chiki digit zero';
+      case '᱑': return 'Ol Chiki digit one';
+      case '᱒': return 'Ol Chiki digit two';
+      case '᱓': return 'Ol Chiki digit three';
+      case '᱔': return 'Ol Chiki digit four';
+      case '᱕': return 'Ol Chiki digit five';
+      case '᱖': return 'Ol Chiki digit six';
+      case '᱗': return 'Ol Chiki digit seven';
+      case '᱘': return 'Ol Chiki digit eight';
+      case '᱙': return 'Ol Chiki digit nine';
+      // Vowels
+      case 'ᱚ': return 'Ol Chiki letter LA';
+      case 'ᱟ': return 'Ol Chiki letter LAA';
+      case 'ᱤ': return 'Ol Chiki letter LI';
+      case 'ᱩ': return 'Ol Chiki letter LU';
+      case 'ᱮ': return 'Ol Chiki letter LE';
+      case 'ᱳ': return 'Ol Chiki letter O';
+      // Consonants
+      case 'ᱛ': return 'Ol Chiki letter AT';
+      case 'ᱜ': return 'Ol Chiki letter AG';
+      case 'ᱝ': return 'Ol Chiki letter ANG';
+      case 'ᱞ': return 'Ol Chiki letter AL';
+      case 'ᱠ': return 'Ol Chiki letter AAK';
+      case 'ᱡ': return 'Ol Chiki letter AAJ';
+      case 'ᱢ': return 'Ol Chiki letter AAM';
+      case 'ᱣ': return 'Ol Chiki letter AAW';
+      case 'ᱥ': return 'Ol Chiki letter IS';
+      case 'ᱦ': return 'Ol Chiki letter IH';
+      case 'ᱧ': return 'Ol Chiki letter INY';
+      case 'ᱨ': return 'Ol Chiki letter IR';
+      case 'ᱪ': return 'Ol Chiki letter UC';
+      case 'ᱫ': return 'Ol Chiki letter UD';
+      case 'ᱬ': return 'Ol Chiki letter UNN';
+      case 'ᱭ': return 'Ol Chiki letter UY';
+      case 'ᱯ': return 'Ol Chiki letter EP';
+      case 'ᱰ': return 'Ol Chiki letter ED';
+      case 'ᱱ': return 'Ol Chiki letter EN';
+      case 'ᱲ': return 'Ol Chiki letter ERR';
+      case 'ᱴ': return 'Ol Chiki letter OT';
+      case 'ᱵ': return 'Ol Chiki letter OB';
+      case 'ᱶ': return 'Ol Chiki letter OV';
+      case 'ᱷ': return 'Ol Chiki letter OH';
+      // Modifiers & Punctuation
+      case 'ᱸ': return 'Ol Chiki MU TTUDDAG';
+      case 'ᱹ': return 'Ol Chiki GAAHLAA TTUDAAG';
+      case 'ᱺ': return 'Ol Chiki MU-GAAHLAA TTUDAAG';
+      case 'ᱻ': return 'Ol Chiki RELAA';
+      case 'ᱼ': return 'Ol Chiki PHAARKAA';
+      case 'ᱽ': return 'Ol Chiki AHAD';
+      case '᱾': return 'Ol Chiki punctuation MUCAAD';
+      case '᱿': return 'Ol Chiki punctuation DOUBLE MUCAAD';
+      default: return 'Ol Chiki character $char';
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final state = ref.watch(typingPracticeControllerProvider(args));
+    final needsDigits = ref.watch(
+      typingPracticeControllerProvider(args).select((s) => s.needsDigits),
+    );
 
     final keyboardBg = isDark
         ? Colors.black.withValues(alpha: 0.85)
@@ -58,10 +131,10 @@ class OlChikiKeyboard extends ConsumerWidget {
             AnimatedSize(
               duration: const Duration(milliseconds: 300),
               curve: Curves.easeInOut,
-              child: state.needsDigits
+              child: needsDigits
                   ? Padding(
                       padding: const EdgeInsets.only(bottom: 6),
-                      child: _buildKeyRow(context, ref, digits, isDigit: true),
+                      child: _buildKeyRow(context, ref, olChikiDigits, isDigit: true),
                     )
                   : const SizedBox.shrink(),
             ),
@@ -112,16 +185,16 @@ class OlChikiKeyboard extends ConsumerWidget {
     bool isDigit = false,
   }) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final keyColor = isDark
-        ? AppColors.charcoal
-        : Colors.white;
-    final textColor = isDark
-        ? AppColors.textPrimaryDark
-        : AppColors.textPrimaryLight;
+    final keyColor = isDark ? AppColors.charcoal : Colors.white;
+    final textColor =
+        isDark ? AppColors.textPrimaryDark : AppColors.textPrimaryLight;
+    final a11yLabel = _getA11yLabel(char);
 
     return Semantics(
-      label: 'Key $char',
+      label: a11yLabel,
+      hint: 'Double-tap to type',
       button: true,
+      excludeSemantics: true,
       child: ScaleButton(
         onPressed: () {
           ref
@@ -134,7 +207,9 @@ class OlChikiKeyboard extends ConsumerWidget {
             color: keyColor,
             borderRadius: BorderRadius.circular(8),
             border: Border.all(
-              color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+              color: isDark
+                  ? Colors.white10
+                  : Colors.black.withValues(alpha: 0.08),
               width: 1,
             ),
             boxShadow: [
@@ -164,9 +239,7 @@ class OlChikiKeyboard extends ConsumerWidget {
 
   Widget _buildActionRow(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final actionColor = isDark
-        ? Colors.grey.shade800
-        : Colors.grey.shade300;
+    final actionColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
     final actionTextColor = isDark ? Colors.white : Colors.black87;
 
     return Padding(
@@ -180,7 +253,9 @@ class OlChikiKeyboard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
               child: Semantics(
                 label: 'Backspace',
+                hint: 'Double-tap to delete last character',
                 button: true,
+                excludeSemantics: true,
                 child: ScaleButton(
                   onPressed: () {
                     ref
@@ -211,7 +286,9 @@ class OlChikiKeyboard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
               child: Semantics(
                 label: 'Space',
+                hint: 'Double-tap to type space',
                 button: true,
+                excludeSemantics: true,
                 child: ScaleButton(
                   onPressed: () {
                     ref
@@ -224,7 +301,9 @@ class OlChikiKeyboard extends ConsumerWidget {
                       color: isDark ? AppColors.charcoal : Colors.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                        color: isDark
+                            ? Colors.white10
+                            : Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                     alignment: Alignment.center,
@@ -248,8 +327,10 @@ class OlChikiKeyboard extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
               child: Semantics(
-                label: 'Danda punctuation',
+                label: 'Ol Chiki punctuation MUCAAD',
+                hint: 'Double-tap to type punctuation',
                 button: true,
+                excludeSemantics: true,
                 child: ScaleButton(
                   onPressed: () {
                     ref
@@ -262,7 +343,9 @@ class OlChikiKeyboard extends ConsumerWidget {
                       color: isDark ? AppColors.charcoal : Colors.white,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.08),
+                        color: isDark
+                            ? Colors.white10
+                            : Colors.black.withValues(alpha: 0.08),
                       ),
                     ),
                     alignment: Alignment.center,
@@ -287,15 +370,20 @@ class OlChikiKeyboard extends ConsumerWidget {
               padding: const EdgeInsets.symmetric(horizontal: 2.5),
               child: Semantics(
                 label: 'Done',
+                hint: 'Double-tap to complete practice',
                 button: true,
+                excludeSemantics: true,
                 child: ScaleButton(
                   onPressed: () {
-                    final controller = ref.read(typingPracticeControllerProvider(args).notifier);
-                    final state = ref.read(typingPracticeControllerProvider(args));
+                    final controller = ref.read(
+                      typingPracticeControllerProvider(args).notifier,
+                    );
+                    final state = ref.read(
+                      typingPracticeControllerProvider(args),
+                    );
                     if (state.phase == TypingPhase.complete) {
                       controller.markCelebrationDone();
                     } else {
-                      // Handled programmatically or soft close
                       FocusScope.of(context).unfocus();
                     }
                   },

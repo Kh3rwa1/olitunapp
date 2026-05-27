@@ -32,6 +32,7 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
   late final Animation<double> _shakeAnimation;
 
   int _lastAttempts = 0;
+  int _lastTypedLength = 0;
   bool _audioPlayedOnComplete = false;
 
   @override
@@ -86,12 +87,23 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
       _lastAttempts = state.attemptsTotal;
       if (state.wrongAtPosition > 0) {
         _triggerShake();
+        SemanticsService.announce('Incorrect, try again', TextDirection.ltr);
       }
+    }
+
+    // Announce correct keypress / character deletion
+    if (state.typedSoFar.length > _lastTypedLength) {
+      _lastTypedLength = state.typedSoFar.length;
+      SemanticsService.announce('Letter accepted', TextDirection.ltr);
+    } else if (state.typedSoFar.length < _lastTypedLength) {
+      _lastTypedLength = state.typedSoFar.length;
+      SemanticsService.announce('Letter deleted', TextDirection.ltr);
     }
 
     // Auto-play audio once on completion
     if (state.phase == TypingPhase.complete && !_audioPlayedOnComplete) {
       _audioPlayedOnComplete = true;
+      SemanticsService.announce('Practice complete, 5 stars earned', TextDirection.ltr);
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _playAudio();
       });
@@ -162,7 +174,9 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
           ),
         ),
         // On-screen custom keyboard
-        OlChikiKeyboard(args: widget.args),
+        RepaintBoundary(
+          child: OlChikiKeyboard(args: widget.args),
+        ),
       ],
     );
   }
@@ -465,6 +479,7 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
               onPressed: () {
                 _audioPlayedOnComplete = false;
                 _lastAttempts = 0;
+                _lastTypedLength = 0;
                 ref
                     .read(typingPracticeControllerProvider(widget.args).notifier)
                     .tryAgain();

@@ -200,7 +200,14 @@ class QuizSessionNotifier
         : state.currentQuestion;
 
     if (isCorrect) {
-      if (_shouldUseHaptics) HapticFeedback.lightImpact();
+      if (_shouldUseHaptics) {
+        HapticFeedback.lightImpact();
+        if (scoredState.comboStreak > 0 && scoredState.comboStreak % 5 == 0) {
+          Future.delayed(const Duration(milliseconds: 150), () {
+            HapticFeedback.mediumImpact();
+          });
+        }
+      }
     } else {
       ref
           .read(mistakeProvider.notifier)
@@ -243,6 +250,12 @@ class QuizSessionNotifier
   }
 
   Future<void> _persistFailure(QuizModel quiz) async {
+    if (_shouldUseHaptics) {
+      HapticFeedback.heavyImpact();
+      Future.delayed(const Duration(milliseconds: 200), () {
+        HapticFeedback.heavyImpact();
+      });
+    }
     try {
       final statsNotifier = ref.read(userStatsProvider.notifier);
       final completedAt = DateTime.now().toIso8601String();
@@ -292,6 +305,12 @@ class QuizSessionNotifier
       );
     } else {
       state = state.copyWith(isQuizComplete: true);
+      if (_shouldUseHaptics) {
+        HapticFeedback.mediumImpact();
+        Future.delayed(const Duration(milliseconds: 100), () {
+          HapticFeedback.heavyImpact();
+        });
+      }
 
       try {
         final statsNotifier = ref.read(userStatsProvider.notifier);

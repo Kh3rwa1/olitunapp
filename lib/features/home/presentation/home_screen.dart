@@ -74,8 +74,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Watch prefetch provider to trigger rebuilds or updates
     ref.watch(homePrefetchProvider);
 
-    final completedIds =
-        ref.watch(userStatsProvider).value?.completedLessons ?? {};
+    final statsAsync = ref.watch(userStatsProvider);
+    final completedIds = statsAsync.value?.completedLessons ?? {};
     final allLessons = ref.watch(learnerLessonsProvider).value ?? [];
     final nextLesson = continueLessonFor(
       lessons: allLessons,
@@ -115,14 +115,18 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
         const SizedBox(height: 24),
 
-        // (4) NextBestActionCard - single "continue learning" CTA
-        RepaintBoundary(
-          child: NextBestActionCard(nextLessonId: nextLesson?.id),
-        ),
-        const SizedBox(height: 24),
-
-        // (5) TodayMissionCard - daily missions strip
-        const RepaintBoundary(child: TodayMissionCard()),
+        // (4) NextBestActionCard & TodayMissionCard or Loading Skeleton
+        statsAsync.isLoading
+            ? _buildStatsSkeleton(isDark)
+            : Column(
+                children: [
+                  RepaintBoundary(
+                    child: NextBestActionCard(nextLessonId: nextLesson?.id),
+                  ),
+                  const SizedBox(height: 24),
+                  const RepaintBoundary(child: TodayMissionCard()),
+                ],
+              ),
         const SizedBox(height: 24),
 
         // (6) Guest CTA banner (thin, only if isGuest) - 48dp banner
@@ -224,10 +228,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   categories: categories,
                 );
               },
-              loading: () => const SizedBox(
-                height: 140,
-                child: Center(child: CircularProgressIndicator()),
-              ),
+              loading: () => _buildSkeletonGrid(isDark),
               error: (e, st) => AppErrorState(
                 message: 'Could not load learning paths',
                 onRetry: _onRefresh,
@@ -304,5 +305,61 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ),
       ],
     );
+  }
+
+  Widget _buildSkeletonGrid(bool isDark) {
+    return GridView.builder(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: ResponsiveLayout.isDesktop(context)
+            ? 4
+            : (ResponsiveLayout.isTablet(context) ? 3 : 2),
+        crossAxisSpacing: 16,
+        mainAxisSpacing: 16,
+        childAspectRatio: 1.3,
+      ),
+      itemCount: 4,
+      itemBuilder: (context, index) {
+        return Container(
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+         .fade(begin: 0.4, end: 0.8, duration: 800.ms);
+      },
+    );
+  }
+
+  Widget _buildStatsSkeleton(bool isDark) {
+    return Column(
+      children: [
+        Container(
+          height: 100,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+        const SizedBox(height: 24),
+        Container(
+          height: 60,
+          width: double.infinity,
+          decoration: BoxDecoration(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.05)
+                : Colors.black.withValues(alpha: 0.03),
+            borderRadius: BorderRadius.circular(20),
+          ),
+        ),
+      ],
+    ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+     .fade(begin: 0.4, end: 0.8, duration: 800.ms);
   }
 }

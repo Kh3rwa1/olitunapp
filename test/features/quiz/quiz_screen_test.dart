@@ -95,8 +95,8 @@ void main() {
 
     expect(find.text('Test Alphabet Quiz'), findsOneWidget);
     expect(find.text('3'), findsOneWidget);
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('x1'), findsOneWidget);
+    expect(find.text('0'), findsNothing);
+    expect(find.text('x1'), findsNothing);
     expect(find.text('Sound of this?'), findsOneWidget);
     expect(find.text('a'), findsOneWidget);
     expect(find.text('e'), findsOneWidget);

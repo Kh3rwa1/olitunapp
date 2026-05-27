@@ -423,11 +423,14 @@ class _QuizSessionHud extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final showCombo = state.comboStreak > 0;
+
     return Semantics(
       container: true,
       label: 'Quiz session stats',
-      value:
-          '${state.hearts} hearts, ${state.comboStreak} answer combo, ${state.comboMultiplier} times multiplier',
+      value: showCombo
+          ? '${state.hearts} hearts, ${state.comboStreak} answer combo, ${state.comboMultiplier} times multiplier'
+          : '${state.hearts} hearts',
       child: ExcludeSemantics(
         child: Row(
           children: [
@@ -439,24 +442,26 @@ class _QuizSessionHud extends StatelessWidget {
                 isDark: isDark,
               ),
             ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _HudChip(
-                icon: Icons.local_fire_department_rounded,
-                label: '${state.comboStreak}',
-                accent: AppColors.duoOrange,
-                isDark: isDark,
+            if (showCombo) ...[
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HudChip(
+                  icon: Icons.local_fire_department_rounded,
+                  label: '${state.comboStreak}',
+                  accent: AppColors.duoOrange,
+                  isDark: isDark,
+                ),
               ),
-            ),
-            const SizedBox(width: 10),
-            Expanded(
-              child: _HudChip(
-                icon: Icons.bolt_rounded,
-                label: 'x${state.comboMultiplier}',
-                accent: AppColors.duoYellow,
-                isDark: isDark,
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HudChip(
+                  icon: Icons.bolt_rounded,
+                  label: 'x${state.comboMultiplier}',
+                  accent: AppColors.duoYellow,
+                  isDark: isDark,
+                ),
               ),
-            ),
+            ],
           ],
         ),
       ),

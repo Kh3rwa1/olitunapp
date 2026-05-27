@@ -11,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'widgets/settings_widgets.dart';
+import '../../practice/data/typing_practice_settings.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -244,6 +245,17 @@ class SettingsScreen extends ConsumerWidget {
                       isDark: isDark,
                       onChanged: (value) => toggleReduceVisualEffects(ref),
                     ),
+                    const SizedBox(height: 10),
+                    ToggleTile(
+                      icon: Icons.keyboard_rounded,
+                      title: 'Vocabulary & Sentence Practice',
+                      subtitle:
+                          'Enable active recall typing practice for vocabulary words and sentences',
+                      value: ref.watch(typingPracticeSettingsProvider).enabled,
+                      isDark: isDark,
+                      onChanged: (value) =>
+                          ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
+                    ),
                   ],
                 ),
               ),
@@ -365,6 +377,17 @@ class SettingsScreen extends ConsumerWidget {
               value: reduceVisualEffects,
               isDark: isDark,
               onChanged: (value) => toggleReduceVisualEffects(ref),
+            ),
+            const SizedBox(height: 10),
+            ToggleTile(
+              icon: Icons.keyboard_rounded,
+              title: 'Vocabulary & Sentence Practice',
+              subtitle:
+                  'Enable active recall typing practice for vocabulary words and sentences',
+              value: ref.watch(typingPracticeSettingsProvider).enabled,
+              isDark: isDark,
+              onChanged: (value) =>
+                  ref.read(typingPracticeSettingsProvider.notifier).setEnabled(value),
             ),
           ],
         ),

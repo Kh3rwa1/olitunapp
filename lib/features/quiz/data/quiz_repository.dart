@@ -11,21 +11,20 @@ class QuizRepository {
   QuizRepository(this._ref);
 
   Future<Either<Failure, QuizModel>> getQuiz(String quizId) async {
-    return quizFromState(quizId, _ref.read(quizzesProvider));
+    return quizFromState(quizId, _ref.read(quizzesByIdProvider));
   }
 
   Either<Failure, QuizModel> quizFromState(
     String quizId,
-    AsyncValue<List<QuizModel>> quizzesAsync,
+    AsyncValue<Map<String, QuizModel>> quizzesMapAsync,
   ) {
-    return quizzesAsync.when(
+    return quizzesMapAsync.when(
       loading: () =>
           const Left(CacheFailure(message: 'Quizzes are still loading.')),
       error: (error, _) => Left(_failureFromQuizLoad(error)),
-      data: (quizzes) {
-        for (final quiz in quizzes) {
-          if (quiz.id == quizId) return Right(quiz);
-        }
+      data: (quizzesMap) {
+        final quiz = quizzesMap[quizId];
+        if (quiz != null) return Right(quiz);
 
         return Left(
           ServerFailure(message: 'Quiz "$quizId" was not found.', code: 404),
@@ -58,11 +57,11 @@ final quizResultProvider =
       quizId,
     ) {
       final repo = ref.watch(quizRepositoryProvider);
-      final quizzesAsync = ref.watch(quizzesProvider);
+      final quizzesMapAsync = ref.watch(quizzesByIdProvider);
 
-      if (quizzesAsync.isLoading) {
+      if (quizzesMapAsync.isLoading) {
         return const AsyncValue.loading();
       }
 
-      return AsyncValue.data(repo.quizFromState(quizId, quizzesAsync));
+      return AsyncValue.data(repo.quizFromState(quizId, quizzesMapAsync));
     });

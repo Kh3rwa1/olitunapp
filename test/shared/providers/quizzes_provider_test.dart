@@ -538,5 +538,21 @@ void main() {
         );
       },
     );
+
+    test('quizzesByIdProvider returns a cached map for fast O(1) lookups', () async {
+      final container = createContainer(fakeDb);
+      addTearDown(container.dispose);
+
+      final quizzes = await waitForQuizzes(container);
+      expect(quizzes, isNotEmpty);
+
+      final quizzesMapAsync = container.read(quizzesByIdProvider);
+      expect(quizzesMapAsync.hasValue, isTrue);
+
+      final quizzesMap = quizzesMapAsync.value!;
+      for (final quiz in quizzes) {
+        expect(quizzesMap[quiz.id], equals(quiz));
+      }
+    });
   });
 }

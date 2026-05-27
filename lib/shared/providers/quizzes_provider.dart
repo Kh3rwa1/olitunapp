@@ -19,6 +19,12 @@ final quizzesProvider =
       return QuizzesNotifier(ref);
     });
 
+final quizzesByIdProvider = Provider<AsyncValue<Map<String, QuizModel>>>((ref) {
+  return ref.watch(quizzesProvider).whenData((list) {
+    return {for (final q in list) q.id: q};
+  });
+});
+
 class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   QuizzesNotifier(this.ref) : super(const AsyncValue.loading()) {
     _loadQuizzes();

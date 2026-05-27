@@ -480,9 +480,7 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
                   kind: ContentMediaKind.image,
                   value: item.heroMedia,
                   onRemove: notifier.markForDeletion,
-                  onChanged: (media) {
-                    notifier.updateThumbnail(media);
-                  },
+                  onChanged: notifier.updateThumbnail,
                 ),
               ],
             ),
@@ -537,7 +535,8 @@ class _AudioTab extends ConsumerWidget {
                   'Upload an MP3 play-along audio file. This will enable synchronized scrolling lyrics and word-by-word reading highlighting in the learner interface.',
                   style: TextStyle(fontSize: 13, color: Colors.grey),
                 ),
-                const SizedBox(height: 24),                 MediaPickerField(
+                const SizedBox(height: 24),
+                MediaPickerField(
                   label: 'Audio File (MP3)',
                   kind: ContentMediaKind.audio,
                   value: item.audioUrl != null && item.audioUrl!.isNotEmpty

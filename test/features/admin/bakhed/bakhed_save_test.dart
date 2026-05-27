@@ -657,10 +657,12 @@ void main() {
     Future<ProviderContainer> setupContainerWithMedia({
       required ContentItem initialRhyme,
     }) async {
-      when(() => mockRepository.get(initialRhyme.id))
-          .thenAnswer((_) async => right(initialRhyme));
-      when(() => mockRepository.upsert(any()))
-          .thenAnswer((_) async => right(unit));
+      when(
+        () => mockRepository.get(initialRhyme.id),
+      ).thenAnswer((_) async => right(initialRhyme));
+      when(
+        () => mockRepository.upsert(any()),
+      ).thenAnswer((_) async => right(unit));
 
       final c = ProviderContainer(
         overrides: [
@@ -683,135 +685,206 @@ void main() {
         bakhedEditorControllerProvider(rhyme.id).notifier,
       );
 
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, isEmpty);
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).isDirty, isFalse);
+      expect(
+        container
+            .read(bakhedEditorControllerProvider(rhyme.id))
+            .pendingDeletions,
+        isEmpty,
+      );
+      expect(
+        container.read(bakhedEditorControllerProvider(rhyme.id)).isDirty,
+        isFalse,
+      );
 
       notifier.markForDeletion('file_to_delete');
 
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, equals(['file_to_delete']));
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).isDirty, isTrue);
-    });
-
-    test('2. save() executes pending deletions after successful update', () async {
-      final rhyme = _makeRhyme(audioFileId: 'old_audio', audioUrl: 'https://example.com/old_audio.mp3');
-      container = await setupContainerWithMedia(initialRhyme: rhyme);
-
-      final notifier = container.read(
-        bakhedEditorControllerProvider(rhyme.id).notifier,
+      expect(
+        container
+            .read(bakhedEditorControllerProvider(rhyme.id))
+            .pendingDeletions,
+        equals(['file_to_delete']),
       );
-
-      when(() => mockMediaUploader.delete('old_audio'))
-          .thenAnswer((_) async => right(unit));
-
-      notifier.markForDeletion('old_audio');
-      notifier.updateAudio('https://example.com/new_audio.mp3', 'new_audio', 50000);
-
-      final result = await notifier.save();
-      expect(result, SaveResult.success);
-
-      // Verify repository updated doc
-      verify(() => mockRepository.upsert(any())).called(1);
-
-      // Wait a moment for background microtask to run
-      await Future.delayed(const Duration(milliseconds: 10));
-
-      // Verify media uploader delete called
-      verify(() => mockMediaUploader.delete('old_audio')).called(1);
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, isEmpty);
-    });
-
-    test('3. save() does NOT execute deletions if document update fails', () async {
-      final rhyme = _makeRhyme(audioFileId: 'old_audio', audioUrl: 'https://example.com/old_audio.mp3');
-      container = await setupContainerWithMedia(initialRhyme: rhyme);
-
-      final notifier = container.read(
-        bakhedEditorControllerProvider(rhyme.id).notifier,
+      expect(
+        container.read(bakhedEditorControllerProvider(rhyme.id)).isDirty,
+        isTrue,
       );
-
-      // Make upsert fail
-      when(() => mockRepository.upsert(any()))
-          .thenAnswer((_) async => left(ServerFailure(message: 'Upsert failed')));
-
-      notifier.markForDeletion('old_audio');
-
-      final result = await notifier.save();
-      expect(result, SaveResult.failure);
-
-      // Wait a moment
-      await Future.delayed(const Duration(milliseconds: 10));
-
-      // Verify media uploader delete never called
-      verifyNever(() => mockMediaUploader.delete(any()));
-      // Pending deletions remain in state
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, equals(['old_audio']));
     });
 
-    test('4. Deletion errors during save are logged but do not fail the save', () async {
-      final rhyme = _makeRhyme(audioFileId: 'old_audio', audioUrl: 'https://example.com/old_audio.mp3');
-      container = await setupContainerWithMedia(initialRhyme: rhyme);
+    test(
+      '2. save() executes pending deletions after successful update',
+      () async {
+        final rhyme = _makeRhyme(
+          audioFileId: 'old_audio',
+          audioUrl: 'https://example.com/old_audio.mp3',
+        );
+        container = await setupContainerWithMedia(initialRhyme: rhyme);
 
-      final notifier = container.read(
-        bakhedEditorControllerProvider(rhyme.id).notifier,
-      );
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
 
-      // Make deletion fail
-      when(() => mockMediaUploader.delete('old_audio'))
-          .thenAnswer((_) async => left(ServerFailure(message: 'Appwrite deletion failed')));
+        when(
+          () => mockMediaUploader.delete('old_audio'),
+        ).thenAnswer((_) async => right(unit));
 
-      notifier.markForDeletion('old_audio');
-      notifier.updateAudio('https://example.com/new_audio.mp3', 'new_audio', 50000);
+        notifier.markForDeletion('old_audio');
+        notifier.updateAudio(
+          'https://example.com/new_audio.mp3',
+          'new_audio',
+          50000,
+        );
 
-      final result = await notifier.save();
-      expect(result, SaveResult.success);
+        final result = await notifier.save();
+        expect(result, SaveResult.success);
 
-      // Wait a moment
-      await Future.delayed(const Duration(milliseconds: 10));
+        // Verify repository updated doc
+        verify(() => mockRepository.upsert(any())).called(1);
 
-      // Verify media uploader delete was still called, and save succeeded
-      verify(() => mockMediaUploader.delete('old_audio')).called(1);
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, isEmpty);
-    });
+        // Wait a moment for background microtask to run
+        await Future.delayed(const Duration(milliseconds: 10));
 
-    test('5. Sequence: upload A -> remove A -> upload B -> save -> A is deleted, B referenced', () async {
-      final rhyme = _makeRhyme();
-      container = await setupContainerWithMedia(initialRhyme: rhyme);
+        // Verify media uploader delete called
+        verify(() => mockMediaUploader.delete('old_audio')).called(1);
+        expect(
+          container
+              .read(bakhedEditorControllerProvider(rhyme.id))
+              .pendingDeletions,
+          isEmpty,
+        );
+      },
+    );
 
-      final notifier = container.read(
-        bakhedEditorControllerProvider(rhyme.id).notifier,
-      );
+    test(
+      '3. save() does NOT execute deletions if document update fails',
+      () async {
+        final rhyme = _makeRhyme(
+          audioFileId: 'old_audio',
+          audioUrl: 'https://example.com/old_audio.mp3',
+        );
+        container = await setupContainerWithMedia(initialRhyme: rhyme);
 
-      when(() => mockMediaUploader.delete('file_a'))
-          .thenAnswer((_) async => right(unit));
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
 
-      // 1. Upload A
-      notifier.updateAudio('https://example.com/a.mp3', 'file_a', 10000);
+        // Make upsert fail
+        when(() => mockRepository.upsert(any())).thenAnswer(
+          (_) async => left(const ServerFailure(message: 'Upsert failed')),
+        );
 
-      // 2. Remove A (this calls markForDeletion('file_a') and sets audio to null in UI/controller)
-      notifier.markForDeletion('file_a');
-      notifier.updateAudio(null, null, null);
+        notifier.markForDeletion('old_audio');
 
-      // 3. Upload B
-      notifier.updateAudio('https://example.com/b.mp3', 'file_b', 20000);
+        final result = await notifier.save();
+        expect(result, SaveResult.failure);
 
-      // 4. Save
-      final result = await notifier.save();
-      expect(result, SaveResult.success);
+        // Wait a moment
+        await Future.delayed(const Duration(milliseconds: 10));
 
-      // Wait a moment for background microtask
-      await Future.delayed(const Duration(milliseconds: 10));
+        // Verify media uploader delete never called
+        verifyNever(() => mockMediaUploader.delete(any()));
+        // Pending deletions remain in state
+        expect(
+          container
+              .read(bakhedEditorControllerProvider(rhyme.id))
+              .pendingDeletions,
+          equals(['old_audio']),
+        );
+      },
+    );
 
-      // Verify file A was deleted
-      verify(() => mockMediaUploader.delete('file_a')).called(1);
-      // Verify file B was NOT deleted
-      verifyNever(() => mockMediaUploader.delete('file_b'));
+    test(
+      '4. Deletion errors during save are logged but do not fail the save',
+      () async {
+        final rhyme = _makeRhyme(
+          audioFileId: 'old_audio',
+          audioUrl: 'https://example.com/old_audio.mp3',
+        );
+        container = await setupContainerWithMedia(initialRhyme: rhyme);
 
-      // Verify database updated with B
-      final captured = verify(() => mockRepository.upsert(captureAny())).captured;
-      final savedItem = captured.last as ContentItem;
-      expect(savedItem.audioFileId, 'file_b');
-      expect(savedItem.audioUrl, 'https://example.com/b.mp3');
-      expect(savedItem.durationMs, 20000);
-      expect(container.read(bakhedEditorControllerProvider(rhyme.id)).pendingDeletions, isEmpty);
-    });
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+
+        // Make deletion fail
+        when(() => mockMediaUploader.delete('old_audio')).thenAnswer(
+          (_) async => left(const ServerFailure(message: 'Appwrite deletion failed')),
+        );
+
+        notifier.markForDeletion('old_audio');
+        notifier.updateAudio(
+          'https://example.com/new_audio.mp3',
+          'new_audio',
+          50000,
+        );
+
+        final result = await notifier.save();
+        expect(result, SaveResult.success);
+
+        // Wait a moment
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Verify media uploader delete was still called, and save succeeded
+        verify(() => mockMediaUploader.delete('old_audio')).called(1);
+        expect(
+          container
+              .read(bakhedEditorControllerProvider(rhyme.id))
+              .pendingDeletions,
+          isEmpty,
+        );
+      },
+    );
+
+    test(
+      '5. Sequence: upload A -> remove A -> upload B -> save -> A is deleted, B referenced',
+      () async {
+        final rhyme = _makeRhyme();
+        container = await setupContainerWithMedia(initialRhyme: rhyme);
+
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+
+        when(
+          () => mockMediaUploader.delete('file_a'),
+        ).thenAnswer((_) async => right(unit));
+
+        // 1. Upload A
+        notifier.updateAudio('https://example.com/a.mp3', 'file_a', 10000);
+
+        // 2. Remove A (this calls markForDeletion('file_a') and sets audio to null in UI/controller)
+        notifier.markForDeletion('file_a');
+        notifier.updateAudio(null, null, null);
+
+        // 3. Upload B
+        notifier.updateAudio('https://example.com/b.mp3', 'file_b', 20000);
+
+        // 4. Save
+        final result = await notifier.save();
+        expect(result, SaveResult.success);
+
+        // Wait a moment for background microtask
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        // Verify file A was deleted
+        verify(() => mockMediaUploader.delete('file_a')).called(1);
+        // Verify file B was NOT deleted
+        verifyNever(() => mockMediaUploader.delete('file_b'));
+
+        // Verify database updated with B
+        final captured = verify(
+          () => mockRepository.upsert(captureAny()),
+        ).captured;
+        final savedItem = captured.last as ContentItem;
+        expect(savedItem.audioFileId, 'file_b');
+        expect(savedItem.audioUrl, 'https://example.com/b.mp3');
+        expect(savedItem.durationMs, 20000);
+        expect(
+          container
+              .read(bakhedEditorControllerProvider(rhyme.id))
+              .pendingDeletions,
+          isEmpty,
+        );
+      },
+    );
   });
 }

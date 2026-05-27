@@ -91,12 +91,11 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       (failure) => state = state.copyWith(
         item: AsyncValue.error(failure, StackTrace.current),
       ),
-      (item) =>
-          state = state.copyWith(
-            item: AsyncValue.data(item),
-            isDirty: false,
-            pendingDeletions: const [],
-          ),
+      (item) => state = state.copyWith(
+        item: AsyncValue.data(item),
+        isDirty: false,
+        pendingDeletions: const [],
+      ),
     );
   }
 
@@ -139,7 +138,9 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
   void updateThumbnail(ContentMedia? media) {
     state.item.whenData((item) {
       final oldFileId = item.heroMedia?.fileId;
-      if (oldFileId != null && oldFileId.isNotEmpty && oldFileId != media?.fileId) {
+      if (oldFileId != null &&
+          oldFileId.isNotEmpty &&
+          oldFileId != media?.fileId) {
         markForDeletion(oldFileId);
       }
       state = state.copyWith(
@@ -766,7 +767,9 @@ class BakhedVocabularyEditorNotifier
 
   void removeItem(String id, int sortOrder) {
     final removedItem = state.currentItems.firstWhere(
-      (e) => (id.isNotEmpty && e.id == id) || (id.isEmpty && e.sortOrder == sortOrder),
+      (e) =>
+          (id.isNotEmpty && e.id == id) ||
+          (id.isEmpty && e.sortOrder == sortOrder),
       orElse: () => const BakhedVocabularyItem(
         id: '',
         olChiki: '',

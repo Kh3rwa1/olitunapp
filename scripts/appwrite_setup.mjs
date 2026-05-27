@@ -327,6 +327,8 @@ const collections = [
       { type: 'string', key: 'hero_media', size: 1000000, required: false },
       { type: 'string', key: 'blocks', size: 1000000, required: false },
       { type: 'string', key: 'tracing', size: 1000000, required: false },
+      { type: 'string', key: 'audioFileId', size: 64, required: false },
+      { type: 'integer', key: 'durationMs', required: false, min: 0, max: 3600000 },
     ],
     indexes: [
       { key: 'idx_category', type: 'key', attributes: ['categoryId'] },

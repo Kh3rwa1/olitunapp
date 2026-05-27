@@ -4,6 +4,9 @@ import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../../shared/widgets/lottie_display.dart';
 import '../../../../../../shared/widgets/animated_svg_display.dart';
+import '../../../../domain/content_badge_resolver.dart';
+import '../../../../presentation/widgets/content_type_badge.dart';
+import '../../../../../../../shared/models/content_item.dart';
 
 class LessonBlockCard extends StatelessWidget {
   final int index;
@@ -12,6 +15,9 @@ class LessonBlockCard extends StatelessWidget {
   final VoidCallback onEdit;
   final VoidCallback onDelete;
 
+  final String? categoryId;
+  final String? categorySlug;
+
   const LessonBlockCard({
     super.key,
     required this.index,
@@ -19,6 +25,8 @@ class LessonBlockCard extends StatelessWidget {
     required this.isDark,
     required this.onEdit,
     required this.onDelete,
+    this.categoryId,
+    this.categorySlug,
   });
 
   @override
@@ -111,6 +119,16 @@ class LessonBlockCard extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
             child: Row(
               children: [
+                ContentTypeBadge(
+                  type: resolveBadgeType(
+                    kind: ContentKind.lesson,
+                    categoryId: categoryId,
+                    categorySlug: categorySlug,
+                    blockType: block.type,
+                  ),
+                  size: 24,
+                ),
+                const SizedBox(width: 8),
                 // Block Type Chip
                 Container(
                   padding: const EdgeInsets.symmetric(

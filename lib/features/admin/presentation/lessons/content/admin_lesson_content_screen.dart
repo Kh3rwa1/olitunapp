@@ -14,6 +14,8 @@ import '../../../../lessons/presentation/widgets/dynamic_block_builder.dart';
 import 'controllers/block_reorder_controller.dart';
 import 'widgets/lesson_block_card.dart';
 import 'widgets/universal_block_sheet.dart';
+import '../../../../categories/presentation/providers/category_notifier.dart';
+import '../../../../categories/domain/entities/category_entity.dart';
 
 class AdminLessonContentScreen extends ConsumerStatefulWidget {
   final String lessonId;
@@ -322,6 +324,17 @@ class _AdminLessonContentScreenState
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isWide = MediaQuery.of(context).size.width > 1024;
 
+    final categories = ref.watch(categoryNotifierProvider).value ?? [];
+    CategoryEntity? category;
+    if (_contentItem != null && _contentItem!.categoryId != null) {
+      for (final cat in categories) {
+        if (cat.id == _contentItem!.categoryId) {
+          category = cat;
+          break;
+        }
+      }
+    }
+
     if (_isLoading) {
       return const Scaffold(
         backgroundColor: Colors.transparent,
@@ -428,6 +441,8 @@ class _AdminLessonContentScreenState
                                                 ),
                                                 onDelete: () =>
                                                     _removeBlock(index),
+                                                categoryId: _contentItem?.categoryId,
+                                                categorySlug: category?.titleLatin,
                                               ),
                                             ),
                                           );
@@ -495,6 +510,8 @@ class _AdminLessonContentScreenState
                                             existing: block,
                                           ),
                                           onDelete: () => _removeBlock(index),
+                                          categoryId: _contentItem?.categoryId,
+                                          categorySlug: category?.titleLatin,
                                         ),
                                       ),
                                     );

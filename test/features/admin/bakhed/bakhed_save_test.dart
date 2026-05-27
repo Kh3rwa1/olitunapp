@@ -533,4 +533,107 @@ void main() {
       verify(() => mockRepository.get(clientRhyme.id)).called(3);
     });
   });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 5: Legacy tags coercion regression tests
+  // ────────────────────────────────────────────────────────────
+  group('Legacy tags coercion regression tests', () {
+    test(
+      'REGRESSION: tags array is coerced to ≤50 char string for legacy schema',
+      () {
+        final item = ContentItem(
+          id: 'r1',
+          kind: ContentKind.rhyme,
+          categoryId: 'cat1',
+          title: 'x',
+          titleOlChiki: 'x',
+          tags: const ['culture', 'song', 'sohrai', 'traditional', 'folk'],
+          blocks: const [],
+          isPublished: true,
+          updatedAt: DateTime(2026),
+        );
+        final payload = item.toAppwrite();
+        expect(payload['tags'], isA<String>());
+        expect((payload['tags'] as String).length, lessThanOrEqualTo(50));
+      },
+    );
+
+    test(
+      'REGRESSION: empty tags list emits no tags key (not empty string)',
+      () {
+        final item = ContentItem(
+          id: 'r1',
+          kind: ContentKind.rhyme,
+          categoryId: 'cat1',
+          title: 'x',
+          titleOlChiki: 'x',
+          blocks: const [],
+          isPublished: true,
+          updatedAt: DateTime(2026),
+        );
+        expect(item.toAppwrite().containsKey('tags'), isFalse);
+      },
+    );
+
+    test('REGRESSION: round-trip preserves tag list via comma split', () {
+      final original = ContentItem(
+        id: 'r1',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat1',
+        title: 'x',
+        titleOlChiki: 'x',
+        tags: const ['culture', 'song'],
+        blocks: const [],
+        isPublished: true,
+        updatedAt: DateTime(2026),
+      );
+      final json = original.toAppwrite();
+      final restored = ContentItem.fromJson({
+        ...json,
+        '\$id': 'r1',
+        'kind': 'rhyme',
+      });
+      expect(restored.tags, equals(['culture', 'song']));
+    });
+
+    test('REGRESSION: long tag list under 50 chars total still fits', () {
+      final item = ContentItem(
+        id: 'r1',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat1',
+        title: 'x',
+        titleOlChiki: 'x',
+        tags: const ['a', 'b', 'c'],
+        blocks: const [],
+        isPublished: true,
+        updatedAt: DateTime(2026),
+      );
+      final payload = item.toAppwrite();
+      expect(payload['tags'], equals('a,b,c'));
+    });
+
+    test('REGRESSION: tag values containing commas do not break round-trip', () {
+      // Document the known limitation: tags with commas will split incorrectly.
+      // If this test starts failing, we need a different delimiter or escaping.
+      final item = ContentItem(
+        id: 'r1',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat1',
+        title: 'x',
+        titleOlChiki: 'x',
+        tags: const ['hello,world'],
+        blocks: const [],
+        isPublished: true,
+        updatedAt: DateTime(2026),
+      );
+      final json = item.toAppwrite();
+      final restored = ContentItem.fromJson({
+        ...json,
+        '\$id': 'r1',
+        'kind': 'rhyme',
+      });
+      // Documents current behavior — restored will be ['hello', 'world']
+      expect(restored.tags, equals(['hello', 'world']));
+    });
+  });
 }

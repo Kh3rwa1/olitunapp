@@ -877,6 +877,16 @@ class ContentItem extends Equatable {
     return match?.group(1);
   }
 
+  // Defensive: schema has `tags` as string(50), not array.
+  // Joining + clipping prevents row_invalid_structure 400 errors.
+  // TODO(phase-b): remove once tagsList array column is live.
+  static String? _coerceTagsToLegacyString(List<String>? tags) {
+    if (tags == null || tags.isEmpty) return null;
+    final joined = tags.where((t) => t.trim().isNotEmpty).join(',');
+    if (joined.isEmpty) return null;
+    return joined.length <= 50 ? joined : joined.substring(0, 50);
+  }
+
   factory ContentItem.fromJson(
     Map<String, dynamic> json, [
     String? docId,
@@ -1330,6 +1340,7 @@ class ContentItem extends Equatable {
         final encodedBlocksForRhyme = jsonEncode(
           resolvedBlocks.map((e) => e.toJson()).toList(),
         );
+        final tagsLegacy = _coerceTagsToLegacyString(tags);
         return {
           'titleOlChiki': resolvedTitleOlChiki,
           'titleLatin': title,
@@ -1342,7 +1353,8 @@ class ContentItem extends Equatable {
               ? heroMedia?.url
               : null,
           if (categoryId.isNotEmpty) 'categoryId': categoryId,
-          'tags': tags,
+          // ignore: use_null_aware_elements
+          if (tagsLegacy != null) 'tags': tagsLegacy,
           'difficulty': difficulty ?? 'beginner',
           'durationSeconds': durationSeconds ?? 0,
           'isPremium': isPremium,

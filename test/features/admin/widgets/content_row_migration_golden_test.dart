@@ -17,7 +17,10 @@ import 'package:mocktail/mocktail.dart';
 class MockContentRepository extends Mock implements ContentRepository {}
 
 class MockCategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> with Mock implements CategoryNotifier {
-  MockCategoryNotifier() : super(const AsyncValue.data(<CategoryEntity>[]));
+  MockCategoryNotifier() : super(const AsyncValue.data(<CategoryEntity>[
+    CategoryEntity(id: 'cat_1', titleOlChiki: 'ᱥᱟᱵᱟᱫᱽ', titleLatin: 'Vocabulary'),
+    CategoryEntity(id: 'cat_2', titleOlChiki: 'ᱟᱲᱟᱝ', titleLatin: 'Alphabets'),
+  ]));
 }
 
 void main() {
@@ -43,9 +46,9 @@ void main() {
     ),
     ContentItem(
       id: 'item_2',
-      kind: ContentKind.word,
+      kind: ContentKind.sentence,
       categoryId: 'cat_1',
-      title: 'Word without Thumbnail',
+      title: 'Sentence Row',
       titleOlChiki: 'ᱴᱮᱥᱴ ᱒',
       subtitle: 'A clean metadata text-only card demonstrating responsive wrap layout',
       blocks: const [],
@@ -55,9 +58,9 @@ void main() {
     ),
     ContentItem(
       id: 'item_3',
-      kind: ContentKind.word,
-      categoryId: 'cat_1',
-      title: 'Selected Word Row',
+      kind: ContentKind.lesson,
+      categoryId: 'cat_2',
+      title: 'Tracing Lesson Row',
       titleOlChiki: 'ᱴᱮᱥᱴ ᱓',
       subtitle: 'A card in active selection state with checkmark indicator highlighted',
       blocks: const [],
@@ -114,6 +117,48 @@ void main() {
         await expectLater(
           listViewFinder,
           matchesGoldenFile('../../../goldens/content_row_baseline.png'),
+        );
+      }
+    });
+
+    testWidgets('captures grid view baseline rendering with badges', (tester) async {
+      tester.view.physicalSize = const Size(1200, 1000);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(() {
+        tester.view.resetPhysicalSize();
+        tester.view.resetDevicePixelRatio();
+      });
+
+      final mockRepo = MockContentRepository();
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            isAuthenticatedProvider.overrideWith((ref) async => true),
+            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier()),
+            contentListProvider.overrideWith((ref, arg) async {
+              return mockItems;
+            }),
+            contentRepositoryProvider.overrideWithValue(mockRepo),
+          ],
+          child: const MaterialApp(
+            themeMode: ThemeMode.light,
+            home: Scaffold(
+              body: AdminContentListScreen(kind: ContentKind.letter),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      final gridViewFinder = find.byType(GridView);
+      expect(gridViewFinder, findsOneWidget);
+
+      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
+        await expectLater(
+          gridViewFinder,
+          matchesGoldenFile('../../../goldens/content_grid_badges.png'),
         );
       }
     });

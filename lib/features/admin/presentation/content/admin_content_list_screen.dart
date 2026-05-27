@@ -1112,6 +1112,24 @@ class _AdminContentListScreenState
         final item = items[index];
         final isSelected = _selectedIds.contains(item.id);
 
+        final categories = ref.read(categoryNotifierProvider).value ?? [];
+        final effectiveCategoryId =
+            item.categoryId ?? widget.categoryId ?? _selectedCategoryId;
+        CategoryEntity? category;
+        if (effectiveCategoryId != null) {
+          for (final cat in categories) {
+            if (cat.id == effectiveCategoryId) {
+              category = cat;
+              break;
+            }
+          }
+        }
+        final badgeType = resolveBadgeType(
+          kind: item.kind,
+          categoryId: effectiveCategoryId,
+          categorySlug: category?.titleLatin,
+        );
+
         return InkWell(
               onTap: () => _editItem(context, item),
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
@@ -1157,8 +1175,8 @@ class _AdminContentListScreenState
 
                     // Status Dots
                     Positioned(
-                      top: 8,
-                      right: 8,
+                      top: 13,
+                      right: 36,
                       child: Row(
                         children: [
                           if (_supportsPremium && item.isPremium)
@@ -1179,6 +1197,17 @@ class _AdminContentListScreenState
                             ),
                           ),
                         ],
+                      ),
+                    ),
+
+                    // Content Type Badge Overlay
+                    Positioned(
+                      top: 8,
+                      right: 8,
+                      child: ContentTypeBadge(
+                        type: badgeType,
+                        size: 24,
+                        hasShadowRing: true,
                       ),
                     ),
 

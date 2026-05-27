@@ -217,10 +217,13 @@ class _BakhedEditorScreenState extends ConsumerState<BakhedEditorScreen>
             Padding(
               padding: const EdgeInsets.only(right: 16.0),
               child: ElevatedButton.icon(
-                onPressed: (isDirty && !editorState.isSaving)
+                onPressed:
+                    (isDirty &&
+                        !editorState.isSaving &&
+                        !editorState.isUploading)
                     ? _handleSave
                     : null,
-                icon: editorState.isSaving
+                icon: (editorState.isSaving || editorState.isUploading)
                     ? const SizedBox(
                         width: 16,
                         height: 16,
@@ -234,9 +237,9 @@ class _BakhedEditorScreenState extends ConsumerState<BakhedEditorScreen>
                         color: Colors.white,
                         size: 18,
                       ),
-                label: const Text(
-                  'Save Changes',
-                  style: TextStyle(color: Colors.white),
+                label: Text(
+                  editorState.isUploading ? 'Uploading…' : 'Save Changes',
+                  style: const TextStyle(color: Colors.white),
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primary,
@@ -545,6 +548,7 @@ class _AudioTab extends ConsumerWidget {
                           kind: ContentMediaKind.audio,
                         )
                       : null,
+                  onUploadStateChanged: notifier.setUploadInProgress,
                   onChanged: (media) {
                     notifier.updateAudio(
                       media?.url,

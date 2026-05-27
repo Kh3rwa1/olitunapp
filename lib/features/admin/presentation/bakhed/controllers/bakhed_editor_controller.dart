@@ -21,6 +21,7 @@ class BakhedEditorState {
   final bool isSaving;
   final String? errorMessage;
   final double uploadProgress;
+  final bool isUploading;
 
   BakhedEditorState({
     required this.item,
@@ -28,6 +29,7 @@ class BakhedEditorState {
     this.isSaving = false,
     this.errorMessage,
     this.uploadProgress = 0.0,
+    this.isUploading = false,
   });
 
   BakhedEditorState copyWith({
@@ -36,6 +38,7 @@ class BakhedEditorState {
     bool? isSaving,
     String? errorMessage,
     double? uploadProgress,
+    bool? isUploading,
   }) {
     return BakhedEditorState(
       item: item ?? this.item,
@@ -43,6 +46,7 @@ class BakhedEditorState {
       isSaving: isSaving ?? this.isSaving,
       errorMessage: errorMessage ?? this.errorMessage,
       uploadProgress: uploadProgress ?? this.uploadProgress,
+      isUploading: isUploading ?? this.isUploading,
     );
   }
 }
@@ -52,10 +56,17 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
   final BakhedRepository _repository;
   final Ref _ref;
 
-  /// Tracks the number of audio uploads currently in flight.
-  /// save() will refuse to persist while this is > 0.
   int _inflightUploads = 0;
   bool get hasInflightUpload => _inflightUploads > 0;
+
+  void setUploadInProgress(bool inProgress) {
+    if (inProgress) {
+      _inflightUploads++;
+    } else {
+      _inflightUploads = _inflightUploads > 0 ? _inflightUploads - 1 : 0;
+    }
+    state = state.copyWith(isUploading: _inflightUploads > 0);
+  }
 
   BakhedEditorNotifier(this.bakhedId, this._repository, this._ref)
     : super(BakhedEditorState(item: const AsyncValue.loading())) {
@@ -149,7 +160,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
   /// on completion. While this future is in-flight, save() will return
   /// SaveResult.uploadInProgress instead of persisting stale data.
   Future<void> uploadAndSetAudio(Uint8List bytes, String filename) async {
-    _inflightUploads++;
+    setUploadInProgress(true);
     state = state.copyWith(uploadProgress: 0.1);
     try {
       final result = await _repository.uploadAudio(bytes, filename);
@@ -170,7 +181,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
         },
       );
     } finally {
-      _inflightUploads--;
+      setUploadInProgress(false);
     }
   }
 
@@ -190,10 +201,14 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     final ContentItem currentItem;
 
     // Dynamically resolve durationMs if it's null/zero but audio exists
-    if (initialItem.audioUrl != null && initialItem.audioUrl!.isNotEmpty && (initialItem.durationMs == null || initialItem.durationMs == 0)) {
+    if (initialItem.audioUrl != null &&
+        initialItem.audioUrl!.isNotEmpty &&
+        (initialItem.durationMs == null || initialItem.durationMs == 0)) {
       // Wait up to 1.5s for durationMs to be resolved and updated in the state by the player listener
       int elapsed = 0;
-      while (elapsed < 1500 && (state.item.value?.durationMs == null || state.item.value?.durationMs == 0)) {
+      while (elapsed < 1500 &&
+          (state.item.value?.durationMs == null ||
+              state.item.value?.durationMs == 0)) {
         await Future.delayed(const Duration(milliseconds: 100));
         elapsed += 100;
       }

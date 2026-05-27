@@ -10,6 +10,7 @@ class MediaPickerField extends ConsumerStatefulWidget {
   final ContentMediaKind kind;
   final ContentMedia? value;
   final ValueChanged<ContentMedia?> onChanged;
+  final ValueChanged<bool>? onUploadStateChanged;
 
   const MediaPickerField({
     super.key,
@@ -17,6 +18,7 @@ class MediaPickerField extends ConsumerStatefulWidget {
     required this.kind,
     this.value,
     required this.onChanged,
+    this.onUploadStateChanged,
   });
 
   @override
@@ -32,24 +34,31 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
       _isUploading = true;
       _error = null;
     });
+    widget.onUploadStateChanged?.call(true);
 
-    final uploader = ref.read(mediaUploaderProvider);
-    final res = await uploader.pickAndUpload(kind: widget.kind);
+    try {
+      final uploader = ref.read(mediaUploaderProvider);
+      final res = await uploader.pickAndUpload(kind: widget.kind);
 
-    if (mounted) {
-      setState(() {
-        _isUploading = false;
-      });
-      res.fold(
-        (failure) {
-          setState(() {
-            _error = failure.message;
-          });
-        },
-        (media) {
-          widget.onChanged(media);
-        },
-      );
+      if (mounted) {
+        res.fold(
+          (failure) {
+            setState(() {
+              _error = failure.message;
+            });
+          },
+          (media) {
+            widget.onChanged(media);
+          },
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isUploading = false;
+        });
+      }
+      widget.onUploadStateChanged?.call(false);
     }
   }
 

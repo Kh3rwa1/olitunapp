@@ -199,5 +199,56 @@ void main() {
 
       container.dispose();
     });
+
+    test(
+      'Real MediaPickerField upload in progress blocks save (production race fix)',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            bakhedRepositoryProvider.overrideWithValue(mockRepository),
+            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          ],
+        );
+
+        container.read(bakhedEditorControllerProvider(rhymeId).notifier);
+        await Future.delayed(const Duration(milliseconds: 50));
+
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhymeId).notifier,
+        );
+
+        // 1. Simulate MediaPickerField triggering onUploadStateChanged(true)
+        notifier.setUploadInProgress(true);
+
+        // Verify the state is updated to isUploading: true
+        var state = container.read(bakhedEditorControllerProvider(rhymeId));
+        expect(state.isUploading, isTrue);
+
+        // 2. Try to save immediately — should be blocked
+        notifier.markDirty();
+        final blockedResult = await notifier.save();
+        expect(blockedResult, SaveResult.uploadInProgress);
+
+        // Server state should NOT have been updated
+        expect(serverState.audioUrl, isNull);
+
+        // 3. Simulate upload completing and updating state
+        notifier.updateAudio(audioUrl, audioFileId, durationMs);
+        notifier.setUploadInProgress(false);
+
+        // Verify the state is updated to isUploading: false
+        state = container.read(bakhedEditorControllerProvider(rhymeId));
+        expect(state.isUploading, isFalse);
+
+        // 4. Now save should work
+        final successResult = await notifier.save();
+        expect(successResult, SaveResult.success);
+
+        // Server state now has the audio
+        expect(serverState.audioUrl, audioUrl);
+
+        container.dispose();
+      },
+    );
   });
 }

@@ -198,24 +198,12 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     final initialItem = state.item.value;
     if (initialItem == null) return SaveResult.failure;
 
-    final ContentItem currentItem;
-
-    // Dynamically resolve durationMs if it's null/zero but audio exists
-    if (initialItem.audioUrl != null &&
-        initialItem.audioUrl!.isNotEmpty &&
-        (initialItem.durationMs == null || initialItem.durationMs == 0)) {
-      // Wait up to 1.5s for durationMs to be resolved and updated in the state by the player listener
-      int elapsed = 0;
-      while (elapsed < 1500 &&
-          (state.item.value?.durationMs == null ||
-              state.item.value?.durationMs == 0)) {
-        await Future.delayed(const Duration(milliseconds: 100));
-        elapsed += 100;
-      }
-      currentItem = state.item.value ?? initialItem;
-    } else {
-      currentItem = initialItem;
-    }
+    // Audio duration is probed synchronously by MediaUploader before the
+    // MediaPickerField.onChanged callback fires, so durationMs is already
+    // in state by the time the user can click Save. If durationMs is still
+    // null here, the probe failed — proceed with save, the deferred player
+    // listener will backfill on first playback as a fallback.
+    final currentItem = initialItem;
 
     state = BakhedEditorState(
       item: state.item,

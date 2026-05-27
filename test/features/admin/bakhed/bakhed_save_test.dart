@@ -807,7 +807,8 @@ void main() {
 
         // Make deletion fail
         when(() => mockMediaUploader.delete('old_audio')).thenAnswer(
-          (_) async => left(const ServerFailure(message: 'Appwrite deletion failed')),
+          (_) async =>
+              left(const ServerFailure(message: 'Appwrite deletion failed')),
         );
 
         notifier.markForDeletion('old_audio');

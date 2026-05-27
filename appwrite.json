@@ -360,7 +360,7 @@
         "aac"
       ],
       "compression": "none",
-      "encryption": true,
+      "encryption": false,
       "antivirus": true
     },
     {

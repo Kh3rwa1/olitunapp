@@ -51,6 +51,7 @@ class MediaUploader {
         bucketId: bucketId,
         fileId: ID.unique(),
         file: inputFile,
+        permissions: [Permission.read(Role.any())],
       );
 
       final viewUrl = _constructViewUrl(bucketId, uploaded.$id);

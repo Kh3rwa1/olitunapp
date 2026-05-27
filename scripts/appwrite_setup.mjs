@@ -321,6 +321,7 @@ const collections = [
       { type: 'string', key: 'category', size: 50, required: false },
       { type: 'string', key: 'categoryId', size: 36, required: false },
       { type: 'string', key: 'tags', size: 50, required: false, array: true },
+      { type: 'string', key: 'tagsList', size: 64, required: false, array: true },
       { type: 'string', key: 'difficulty', size: 10, required: false, default: 'easy' },
       { type: 'integer', key: 'durationSeconds', required: false, default: 0 },
       { type: 'boolean', key: 'isPremium', required: false, default: false },

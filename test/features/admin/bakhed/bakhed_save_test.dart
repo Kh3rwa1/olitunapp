@@ -613,8 +613,7 @@ void main() {
     });
 
     test('REGRESSION: tag values containing commas do not break round-trip', () {
-      // Document the known limitation: tags with commas will split incorrectly.
-      // If this test starts failing, we need a different delimiter or escaping.
+      // Phase B tagsList preserves commas cleanly
       final item = ContentItem(
         id: 'r1',
         kind: ContentKind.rhyme,
@@ -632,8 +631,8 @@ void main() {
         '\$id': 'r1',
         'kind': 'rhyme',
       });
-      // Documents current behavior — restored will be ['hello', 'world']
-      expect(restored.tags, equals(['hello', 'world']));
+      // Documents new behavior — restored will preserve the comma as ['hello,world']
+      expect(restored.tags, equals(['hello,world']));
     });
   });
 }

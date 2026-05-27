@@ -994,24 +994,31 @@ class ContentItem extends Equatable {
       }
     }
 
-    final rawTags = json['tags'];
-    List<String> parsedTags = const [];
-    if (rawTags != null) {
+    // Prefer tagsList (array), fall back to legacy comma-joined tags.
+    final tagsListRaw = json['tagsList'];
+    List<String> parsedTags;
+    if (tagsListRaw is List) {
+      parsedTags = tagsListRaw
+          .cast<String>()
+          .where((t) => t.trim().isNotEmpty)
+          .toList();
+    } else {
+      final rawTags = json['tags'];
       if (rawTags is List<dynamic>) {
         parsedTags = rawTags.map((e) => e.toString()).toList();
-      } else if (rawTags is String) {
-        if (rawTags.isNotEmpty) {
-          try {
-            final decoded = jsonDecode(rawTags) as List<dynamic>;
-            parsedTags = decoded.map((e) => e.toString()).toList();
-          } catch (_) {
-            parsedTags = rawTags
-                .split(',')
-                .map((s) => s.trim())
-                .where((s) => s.isNotEmpty)
-                .toList();
-          }
+      } else if (rawTags is String && rawTags.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(rawTags) as List<dynamic>;
+          parsedTags = decoded.map((e) => e.toString()).toList();
+        } catch (_) {
+          parsedTags = rawTags
+              .split(',')
+              .map((t) => t.trim())
+              .where((t) => t.isNotEmpty)
+              .toList();
         }
+      } else {
+        parsedTags = const [];
       }
     }
 
@@ -1341,6 +1348,7 @@ class ContentItem extends Equatable {
           resolvedBlocks.map((e) => e.toJson()).toList(),
         );
         final tagsLegacy = _coerceTagsToLegacyString(tags);
+        final tagsArray = tags.where((t) => t.trim().isNotEmpty).toList();
         return {
           'titleOlChiki': resolvedTitleOlChiki,
           'titleLatin': title,
@@ -1355,6 +1363,8 @@ class ContentItem extends Equatable {
           if (categoryId.isNotEmpty) 'categoryId': categoryId,
           // ignore: use_null_aware_elements
           if (tagsLegacy != null) 'tags': tagsLegacy,
+          // ignore: use_null_aware_elements
+          if (tagsArray.isNotEmpty) 'tagsList': tagsArray,
           'difficulty': difficulty ?? 'beginner',
           'durationSeconds': durationSeconds ?? 0,
           'isPremium': isPremium,

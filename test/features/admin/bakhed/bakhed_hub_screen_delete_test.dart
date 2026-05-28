@@ -33,14 +33,18 @@ void main() {
         updatedAt: DateTime(2026),
       );
 
-      when(() => mockRepo.getLyrics('rhyme_1'))
-          .thenAnswer((_) async => right(const []));
-      when(() => mockRepo.getVocabulary('rhyme_1'))
-          .thenAnswer((_) async => right(const []));
-      when(() => mockRepo.getCulturalNotes('rhyme_1'))
-          .thenAnswer((_) async => right(const []));
-      when(() => mockRepo.delete('rhyme_1'))
-          .thenAnswer((_) async => right(unit));
+      when(
+        () => mockRepo.getLyrics('rhyme_1'),
+      ).thenAnswer((_) async => right(const []));
+      when(
+        () => mockRepo.getVocabulary('rhyme_1'),
+      ).thenAnswer((_) async => right(const []));
+      when(
+        () => mockRepo.getCulturalNotes('rhyme_1'),
+      ).thenAnswer((_) async => right(const []));
+      when(
+        () => mockRepo.delete('rhyme_1'),
+      ).thenAnswer((_) async => right(unit));
 
       await tester.pumpWidget(
         ProviderScope(
@@ -75,11 +79,16 @@ void main() {
       // Click delete button
       await tester.tap(deleteBtn);
       await tester.pump(); // Start fetching child counts (loading dialog shown)
-      await tester.pump(const Duration(milliseconds: 100)); // Complete async fetches
+      await tester.pump(
+        const Duration(milliseconds: 100),
+      ); // Complete async fetches
       await tester.pumpAndSettle(); // Settle transition dialogs
 
       // Verify the confirmation dialog is visible
-      expect(find.textContaining('Are you sure you want to permanently delete'), findsOneWidget);
+      expect(
+        find.textContaining('Are you sure you want to permanently delete'),
+        findsOneWidget,
+      );
 
       // Click the Delete button inside dialog
       final confirmDeleteBtn = find.descendant(

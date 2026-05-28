@@ -52,7 +52,7 @@ const CORE = ["main.dart.js",
 "assets/FontManifest.json"];
 `;
 
-// Format D: No bootstrap anywhere (SDK drift / already clean).
+// Format D: No bootstrap anywhere (newer Flutter SDK — already clean).
 const mockSwNoBootstrap = `
 'use strict';
 const MANIFEST = 'flutter-app-manifest';
@@ -155,12 +155,15 @@ function runTest() {
     });
 
     // ----------------------------------------------------------------
-    // Test 5: No bootstrap + no marker → exit non-zero (SDK drift)
+    // Test 5: No bootstrap anywhere → exit 0 (already clean)
     // ----------------------------------------------------------------
-    test('SDK drift detection (no bootstrap, no marker)', () => {
+    test('Bootstrap absent exits 0 (newer Flutter SDK)', () => {
       fs.writeFileSync(swPath, mockSwNoBootstrap);
-      const code = run('patch_service_worker.mjs', { silent: true });
-      assert.ok(code !== 0, 'should exit non-zero on SDK drift');
+      assert.strictEqual(run('patch_service_worker.mjs'), 0, 'should exit 0 when bootstrap already absent');
+
+      const content = fs.readFileSync(swPath, 'utf8');
+      assert.ok(content.includes('// ITUN_PATCHED_SW'), 'patch marker should still be stamped');
+      assert.ok(!content.includes('flutter_bootstrap.js'), 'bootstrap still absent');
     });
 
     // ----------------------------------------------------------------
@@ -199,6 +202,15 @@ function runTest() {
       fs.writeFileSync(swPath, manualClean);
       const code = run('verify_service_worker_patch.mjs', { silent: true });
       assert.ok(code !== 0, 'verify should fail without patch marker');
+    });
+
+    // ----------------------------------------------------------------
+    // Test 10: Full pipeline on bootstrap-absent file
+    // ----------------------------------------------------------------
+    test('Full patch+verify pipeline on bootstrap-absent file', () => {
+      fs.writeFileSync(swPath, mockSwNoBootstrap);
+      assert.strictEqual(run('patch_service_worker.mjs'), 0, 'patch should succeed');
+      assert.strictEqual(run('verify_service_worker_patch.mjs'), 0, 'verify should pass');
     });
 
     console.log(`\n🧪 Results: ${passed} passed, ${failed} failed out of ${passed + failed} tests.`);

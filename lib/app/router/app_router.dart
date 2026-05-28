@@ -15,6 +15,7 @@ import '../../features/lessons/presentation/category_lessons_screen.dart';
 import '../../features/lessons/presentation/lesson_block_detail_screen.dart';
 import '../../features/lessons/presentation/practice/practice_screen.dart';
 import '../../features/content/presentation/content_detail_screen.dart';
+import '../../features/learn/presentation/screens/content_grid_screen.dart';
 import '../../shared/models/content_item.dart';
 
 import '../../features/quiz/presentation/quiz_list_screen.dart';
@@ -344,6 +345,28 @@ final routerProvider = Provider<GoRouter>((ref) {
           letterName: state.pathParameters['name'] ?? '',
           startInTrace: state.uri.queryParameters['mode'] == 'trace',
         ),
+      ),
+      _drillRoute(
+        path: '/letter/standalone/:subcategoryId',
+        child: (_, state) {
+          final pathParam = state.pathParameters['subcategoryId'];
+          final subcategoryId = pathParam == 'all' ? null : pathParam;
+          return ContentGridScreen(
+            kind: ContentKind.letter,
+            subcategoryId: subcategoryId,
+          );
+        },
+      ),
+      _drillRoute(
+        path: '/number/standalone/:subcategoryId',
+        child: (_, state) {
+          final pathParam = state.pathParameters['subcategoryId'];
+          final subcategoryId = pathParam == 'all' ? null : pathParam;
+          return ContentGridScreen(
+            kind: ContentKind.number,
+            subcategoryId: subcategoryId,
+          );
+        },
       ),
       _modalRoute(
         path: '/translate',

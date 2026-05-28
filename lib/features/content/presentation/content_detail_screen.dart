@@ -44,6 +44,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
   bool _isFinished = false;
   int _activeSubTab = 0; // 0 = Lyrics, 1 = Vocab, 2 = Cultural Notes
   late final ScrollController _lyricScrollController;
+  int _lastActiveIndex = -1;
 
   @override
   void initState() {
@@ -818,12 +819,16 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             top: -100,
             left: -100,
             right: -100,
-            child: Container(
-              height: 350,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: accentColor.withOpacity(0.12),
+            child: ClipOval(
+              child: BackdropFilter(
                 filter: ImageFilter.blur(sigmaX: 100, sigmaY: 100),
+                child: Container(
+                  height: 350,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: accentColor.withOpacity(0.12),
+                  ),
+                ),
               ),
             ),
           ),
@@ -991,7 +996,6 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       ),
                     ),
                     child: Slider(
-                      min: 0,
                       max: durationMs > 0 ? durationMs.toDouble() : 100.0,
                       value: positionMs.toDouble().clamp(
                         0.0,

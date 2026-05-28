@@ -147,7 +147,6 @@ void main() {
           id: 'r2',
           kind: ContentKind.rhyme,
           categoryId: 'cat_sohrai',
-          category: null,
           title: 'Title Latin',
           blocks: const [],
           updatedAt: now,

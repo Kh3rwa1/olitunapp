@@ -7,6 +7,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../widgets/media_picker_field.dart';
 import 'controllers/bakhed_editor_controller.dart';
+import 'widgets/bakhed_category_field.dart';
 
 class BakhedEditorScreen extends ConsumerStatefulWidget {
   final String bakhedId;
@@ -347,7 +348,6 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
     final notifier = ref.read(
       bakhedEditorControllerProvider(widget.bakhedId).notifier,
     );
-    final categoriesAsync = ref.watch(categoryNotifierProvider);
 
     return ListView(
       padding: const EdgeInsets.all(24.0),
@@ -404,38 +404,16 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
                 Row(
                   children: [
                     Expanded(
-                      child: categoriesAsync.when(
-                        data: (categories) {
-                          return DropdownButtonFormField<String>(
-                            initialValue:
-                                categories.any((c) => c.id == item.categoryId)
+                      child: BakhedCategoryField(
+                        initialValue: item.category ??
+                            (item.categoryId.isNotEmpty
                                 ? item.categoryId
-                                : null,
-                            decoration: InputDecoration(
-                              labelText: 'Category*',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(
-                                  AdminTokens.radiusSm,
-                                ),
-                              ),
-                            ),
-                            items: categories.map((c) {
-                              return DropdownMenuItem(
-                                value: c.id,
-                                child: Text(c.titleLatin),
-                              );
-                            }).toList(),
-                            onChanged: (val) {
-                              if (val != null) {
-                                notifier.updateCategoryId(val);
-                              }
-                            },
-                          );
-                        },
-                        loading: () =>
-                            const Center(child: CircularProgressIndicator()),
-                        error: (err, _) =>
-                            Text('Error loading categories: $err'),
+                                : null),
+                        onChanged: notifier.updateCategory,
+                        enabled: !ref.watch(
+                          bakhedEditorControllerProvider(widget.bakhedId)
+                              .select((s) => s.isSaving),
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),

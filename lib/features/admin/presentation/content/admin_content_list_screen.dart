@@ -1263,6 +1263,34 @@ class _AdminContentListScreenState
                               shape: BoxShape.circle,
                             ),
                           ),
+                          if (item.audioUrl == null || item.audioUrl!.isEmpty) ...[
+                            const SizedBox(width: 4),
+                            Tooltip(
+                              message: 'Audio Missing',
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.red,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ],
+                          if (item.tracing == null) ...[
+                            const SizedBox(width: 4),
+                            Tooltip(
+                              message: 'Trace Missing',
+                              child: Container(
+                                width: 8,
+                                height: 8,
+                                decoration: const BoxDecoration(
+                                  color: Colors.orange,
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),

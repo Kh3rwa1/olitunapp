@@ -856,6 +856,20 @@ class ContentItem extends Equatable {
     this.durationMs,
   });
 
+  factory ContentItem.empty({
+    required String id,
+    required ContentKind kind,
+  }) {
+    return ContentItem(
+      id: id,
+      kind: kind,
+      categoryId: '',
+      title: '',
+      blocks: const [],
+      updatedAt: DateTime.now(),
+    );
+  }
+
   static void validate(ContentKind kind, TracingConfig? tracing) {
     if ((kind == ContentKind.letter || kind == ContentKind.number) &&
         tracing == null) {

@@ -924,4 +924,135 @@ void main() {
       },
     );
   });
+
+  // ────────────────────────────────────────────────────────────
+  // Group 4: New Rhyme 404 Load & isNewDraft tests
+  // ────────────────────────────────────────────────────────────
+  group('New Rhyme 404 Load & isNewDraft', () {
+    late MockBakhedRepository mockRepository;
+    late MockAppwriteDbService mockDbService;
+    late ProviderContainer container;
+
+    setUp(() {
+      mockRepository = MockBakhedRepository();
+      mockDbService = MockAppwriteDbService();
+    });
+
+    tearDown(() {
+      container.dispose();
+    });
+
+    test('load() with 404 failure initializes empty ContentItem draft and isNewDraft: true', () async {
+      const draftId = 'new_rhyme_draft_123';
+      
+      when(() => mockRepository.get(draftId)).thenAnswer(
+        (_) async => left(const ServerFailure(message: 'document_not_found', code: 404)),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+        ],
+      );
+
+      container.read(bakhedEditorControllerProvider(draftId).notifier);
+      
+      // Wait for load()
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final state = container.read(bakhedEditorControllerProvider(draftId));
+      expect(state.item, isA<AsyncData<ContentItem>>());
+      expect(state.item.value, isNotNull);
+      expect(state.item.value!.id, draftId);
+      expect(state.item.value!.title, isEmpty);
+      expect(state.isNewDraft, isTrue);
+    });
+
+    test('load() with non-404 failure bubbles up error and sets isNewDraft: false', () async {
+      const draftId = 'broken_rhyme_123';
+      
+      when(() => mockRepository.get(draftId)).thenAnswer(
+        (_) async => left(const ServerFailure(message: 'Fatal connection error', code: 500)),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+        ],
+      );
+
+      container.read(bakhedEditorControllerProvider(draftId).notifier);
+      
+      // Wait for load()
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final state = container.read(bakhedEditorControllerProvider(draftId));
+      expect(state.item, isA<AsyncError>());
+      expect(state.isNewDraft, isFalse);
+    });
+
+    test('load() with success loads data and sets isNewDraft: false', () async {
+      final rhyme = _makeRhyme();
+      
+      when(() => mockRepository.get(rhyme.id)).thenAnswer(
+        (_) async => right(rhyme),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+        ],
+      );
+
+      container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
+      
+      // Wait for load()
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      final state = container.read(bakhedEditorControllerProvider(rhyme.id));
+      expect(state.item, isA<AsyncData<ContentItem>>());
+      expect(state.item.value!.title, 'Test Rhyme');
+      expect(state.isNewDraft, isFalse);
+    });
+
+    test('save() after successful draft load clears isNewDraft back to false', () async {
+      const draftId = 'new_rhyme_draft_123';
+      
+      when(() => mockRepository.get(draftId)).thenAnswer(
+        (_) async => left(const ServerFailure(message: 'document_not_found', code: 404)),
+      );
+      when(() => mockRepository.upsert(any())).thenAnswer(
+        (_) async => right(unit),
+      );
+
+      container = ProviderContainer(
+        overrides: [
+          bakhedRepositoryProvider.overrideWithValue(mockRepository),
+          appwriteDbServiceProvider.overrideWithValue(mockDbService),
+          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+        ],
+      );
+
+      final notifier = container.read(bakhedEditorControllerProvider(draftId).notifier);
+      
+      // Wait for load()
+      await Future.delayed(const Duration(milliseconds: 50));
+
+      var state = container.read(bakhedEditorControllerProvider(draftId));
+      expect(state.isNewDraft, isTrue);
+
+      notifier.markDirty();
+      final saveRes = await notifier.save();
+      expect(saveRes, SaveResult.success);
+
+      state = container.read(bakhedEditorControllerProvider(draftId));
+      expect(state.isNewDraft, isFalse);
+    });
+  });
 }

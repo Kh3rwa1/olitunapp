@@ -170,7 +170,9 @@ class _BakhedEditorScreenState extends ConsumerState<BakhedEditorScreen>
           backgroundColor: AdminTokens.raised(isDark),
           title: editorState.item.when(
             data: (item) => Text(
-              item.title.isNotEmpty ? 'Editing: ${item.title}' : 'New Rhyme',
+              editorState.isNewDraft && item.title.isEmpty
+                  ? 'New Rhyme'
+                  : 'Editing: ${item.title}',
               style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             loading: () => const Text('Loading Rhyme...'),

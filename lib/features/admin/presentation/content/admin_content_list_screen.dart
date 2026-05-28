@@ -387,34 +387,54 @@ class _AdminContentListScreenState
   }
 
   Future<void> _editItem(BuildContext context, ContentItem item) async {
+    BuildContext? loaderDialogContext;
+    bool isDialogPopped = false;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (ctx) {
+        // Capture the dialog context to prevent the race condition where fast async resolves pop the parent route.
+        loaderDialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
     );
+
+    // Yield control to the event loop to ensure the DialogRoute is pushed and registered before we pop it.
+    await Future.delayed(Duration.zero);
 
     final repo = ref.read(contentRepositoryProvider);
-    final res = await repo.get(widget.kind, item.id);
 
-    if (context.mounted) {
-      Navigator.pop(context); // close loader
+    try {
+      final res = await repo.get(widget.kind, item.id);
+
+      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+        isDialogPopped = true;
+        Navigator.of(loaderDialogContext!).pop();
+      }
+
+      res.fold(
+        (failure) {
+          if (context.mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to load item: ${failure.message}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        (fullyLoadedItem) {
+          _showFormSheet(context, fullyLoadedItem);
+        },
+      );
+    } finally {
+      // Guarantee dialog closure under any circumstances without double-popping
+      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+        isDialogPopped = true;
+        Navigator.of(loaderDialogContext!).pop();
+      }
     }
-
-    res.fold(
-      (failure) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Failed to load item: ${failure.message}'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      },
-      (fullyLoadedItem) {
-        _showFormSheet(context, fullyLoadedItem);
-      },
-    );
   }
 
   Future<void> _confirmDelete(BuildContext context, ContentItem item) async {

@@ -109,7 +109,7 @@ class MediaUploader {
       if (bucketId != null) {
         await _storage.deleteFile(bucketId: bucketId, fileId: fileId);
       } else {
-        final buckets = ['images', 'videos', 'audio', 'animations'];
+        final buckets = ['images', 'videos', 'audio', 'animations', 'cover_videos'];
         for (final bucket in buckets) {
           try {
             await _storage.deleteFile(bucketId: bucket, fileId: fileId);
@@ -201,7 +201,15 @@ class MediaUploader {
     if (kind == ContentMediaKind.lottie) {
       return ['json', 'lottie'];
     }
+    if (kind == ContentMediaKind.video) {
+      return ['mp4', 'webm', 'mov'];
+    }
     return null;
+  }
+
+  /// Exposed only for unit testing bucket routing.
+  String getBucketIdForTesting(ContentMediaKind kind, String filename) {
+    return _getBucketId(kind, filename);
   }
 
   String _getBucketId(ContentMediaKind kind, String filename) {
@@ -214,7 +222,7 @@ class MediaUploader {
       case ContentMediaKind.svg:
         return 'images';
       case ContentMediaKind.video:
-        return 'videos';
+        return 'cover_videos';
       case ContentMediaKind.audio:
         return 'audio';
       case ContentMediaKind.lottie:

@@ -956,8 +956,6 @@ class ContentItem extends Equatable {
         parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);
       }
     }
-    final coverMediaType = json['coverMediaType'] as String? ??
-        (parsedHeroMedia != null ? 'image' : null);
     if (parsedHeroMedia != null && parsedHeroMedia.fileId.isEmpty) {
       final extId = _extractFileIdFromUrl(parsedHeroMedia.url);
       if (extId != null && extId.isNotEmpty) {
@@ -1175,6 +1173,9 @@ class ContentItem extends Equatable {
         );
       }
     }
+
+    final coverMediaType = json['coverMediaType'] as String? ??
+        (parsedHeroMedia != null ? 'image' : null);
 
     final parsedItem = ContentItem(
       id: docId ?? json['\$id'] as String? ?? json['id'] as String? ?? '',

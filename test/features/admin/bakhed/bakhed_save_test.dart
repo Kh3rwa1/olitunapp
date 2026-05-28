@@ -1125,95 +1125,114 @@ void main() {
       container.dispose();
     });
 
-    test('updateCategory("Baha") updates state.item.value.category and sets isDirty: true', () async {
-      final rhyme = _makeRhyme(audioUrl: 'https://example.com/audio.mp3');
+    test(
+      'updateCategory("Baha") updates state.item.value.category and sets isDirty: true',
+      () async {
+        final rhyme = _makeRhyme(audioUrl: 'https://example.com/audio.mp3');
 
-      when(() => mockRepository.get(rhyme.id)).thenAnswer((_) async => right(rhyme));
+        when(
+          () => mockRepository.get(rhyme.id),
+        ).thenAnswer((_) async => right(rhyme));
 
-      container = ProviderContainer(
-        overrides: [
-          bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
-          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
-        ],
-      );
+        container = ProviderContainer(
+          overrides: [
+            bakhedRepositoryProvider.overrideWithValue(mockRepository),
+            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+          ],
+        );
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
-      await Future.delayed(const Duration(milliseconds: 50));
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      var state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.category, isNull);
-      expect(state.isDirty, isFalse);
+        var state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.category, isNull);
+        expect(state.isDirty, isFalse);
 
-      notifier.updateCategory("Baha");
+        notifier.updateCategory('Baha');
 
-      state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.category, "Baha");
-      expect(state.isDirty, isTrue);
-    });
+        state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.category, 'Baha');
+        expect(state.isDirty, isTrue);
+      },
+    );
 
-    test('updateCategory(null) clears the category and sets isDirty: true', () async {
-      final rhyme = ContentItem(
-        id: 'rhyme_test_123',
-        kind: ContentKind.rhyme,
-        categoryId: 'sohrai_cat',
-        category: 'Sohrai',
-        title: 'Test Rhyme',
-        blocks: const [],
-        updatedAt: DateTime(2026),
-      );
+    test(
+      'updateCategory(null) clears the category and sets isDirty: true',
+      () async {
+        final rhyme = ContentItem(
+          id: 'rhyme_test_123',
+          kind: ContentKind.rhyme,
+          categoryId: 'sohrai_cat',
+          category: 'Sohrai',
+          title: 'Test Rhyme',
+          blocks: const [],
+          updatedAt: DateTime(2026),
+        );
 
-      when(() => mockRepository.get(rhyme.id)).thenAnswer((_) async => right(rhyme));
+        when(
+          () => mockRepository.get(rhyme.id),
+        ).thenAnswer((_) async => right(rhyme));
 
-      container = ProviderContainer(
-        overrides: [
-          bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
-          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
-        ],
-      );
+        container = ProviderContainer(
+          overrides: [
+            bakhedRepositoryProvider.overrideWithValue(mockRepository),
+            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+          ],
+        );
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
-      await Future.delayed(const Duration(milliseconds: 50));
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      var state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.category, "Sohrai");
-      expect(state.isDirty, isFalse);
+        var state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.category, 'Sohrai');
+        expect(state.isDirty, isFalse);
 
-      notifier.updateCategory(null);
+        notifier.updateCategory(null);
 
-      state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.category, isNull);
-      expect(state.isDirty, isTrue);
-    });
+        state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.category, isNull);
+        expect(state.isDirty, isTrue);
+      },
+    );
 
-    test('Loading a rhyme with category and categoryId sets category in notifier state', () async {
-      final rhyme = ContentItem(
-        id: 'rhyme_test_123',
-        kind: ContentKind.rhyme,
-        categoryId: 'cat_sohrai',
-        category: 'Sohrai',
-        title: 'Test Rhyme',
-        blocks: const [],
-        updatedAt: DateTime(2026),
-      );
+    test(
+      'Loading a rhyme with category and categoryId sets category in notifier state',
+      () async {
+        final rhyme = ContentItem(
+          id: 'rhyme_test_123',
+          kind: ContentKind.rhyme,
+          categoryId: 'cat_sohrai',
+          category: 'Sohrai',
+          title: 'Test Rhyme',
+          blocks: const [],
+          updatedAt: DateTime(2026),
+        );
 
-      when(() => mockRepository.get(rhyme.id)).thenAnswer((_) async => right(rhyme));
+        when(
+          () => mockRepository.get(rhyme.id),
+        ).thenAnswer((_) async => right(rhyme));
 
-      container = ProviderContainer(
-        overrides: [
-          bakhedRepositoryProvider.overrideWithValue(mockRepository),
-          appwriteDbServiceProvider.overrideWithValue(mockDbService),
-          mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
-        ],
-      );
+        container = ProviderContainer(
+          overrides: [
+            bakhedRepositoryProvider.overrideWithValue(mockRepository),
+            appwriteDbServiceProvider.overrideWithValue(mockDbService),
+            mediaUploaderProvider.overrideWithValue(MockMediaUploader()),
+          ],
+        );
 
-      container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
-      await Future.delayed(const Duration(milliseconds: 50));
+        container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
+        await Future.delayed(const Duration(milliseconds: 50));
 
-      final state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.categoryId, 'cat_sohrai');
-      expect(state.item.value!.category, 'Sohrai');
-    });
+        final state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.categoryId, 'cat_sohrai');
+        expect(state.item.value!.category, 'Sohrai');
+      },
+    );
   });
 }

@@ -28,24 +28,17 @@ void main() {
         ),
       ],
       child: MaterialApp(
-        home: Scaffold(
-          body: SingleChildScrollView(
-            child: child,
-          ),
-        ),
+        home: Scaffold(body: SingleChildScrollView(child: child)),
       ),
     );
   }
 
   testWidgets('BakhedCategoryField renders with initial value', (tester) async {
     await tester.pumpWidget(
-      wrap(
-        BakhedCategoryField(
-          initialValue: 'Sohrai',
-          onChanged: (_) {},
-        ),
-        ['Sohrai', 'Baha'],
-      ),
+      wrap(BakhedCategoryField(initialValue: 'Sohrai', onChanged: (_) {}), [
+        'Sohrai',
+        'Baha',
+      ]),
     );
     expect(find.text('Sohrai'), findsOneWidget);
   });
@@ -54,13 +47,10 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      wrap(
-        BakhedCategoryField(
-          initialValue: '',
-          onChanged: (_) {},
-        ),
-        ['Sohrai', 'Baha'],
-      ),
+      wrap(BakhedCategoryField(initialValue: '', onChanged: (_) {}), [
+        'Sohrai',
+        'Baha',
+      ]),
     );
 
     // Tap the field to focus it
@@ -74,13 +64,10 @@ void main() {
 
   testWidgets('Typing Soh filters suggestions to Sohrai', (tester) async {
     await tester.pumpWidget(
-      wrap(
-        BakhedCategoryField(
-          initialValue: '',
-          onChanged: (_) {},
-        ),
-        ['Sohrai', 'Baha'],
-      ),
+      wrap(BakhedCategoryField(initialValue: '', onChanged: (_) {}), [
+        'Sohrai',
+        'Baha',
+      ]),
     );
 
     await tester.tap(find.byType(TextField));
@@ -128,13 +115,9 @@ void main() {
     tester,
   ) async {
     await tester.pumpWidget(
-      wrap(
-        BakhedCategoryField(
-          initialValue: '',
-          onChanged: (_) {},
-        ),
-        ['Sohrai'],
-      ),
+      wrap(BakhedCategoryField(initialValue: '', onChanged: (_) {}), [
+        'Sohrai',
+      ]),
     );
 
     await tester.tap(find.byType(TextField));

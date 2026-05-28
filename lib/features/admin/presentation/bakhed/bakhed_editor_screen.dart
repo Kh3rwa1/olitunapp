@@ -405,14 +405,16 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
                   children: [
                     Expanded(
                       child: BakhedCategoryField(
-                        initialValue: item.category ??
+                        initialValue:
+                            item.category ??
                             (item.categoryId.isNotEmpty
                                 ? item.categoryId
                                 : null),
                         onChanged: notifier.updateCategory,
                         enabled: !ref.watch(
-                          bakhedEditorControllerProvider(widget.bakhedId)
-                              .select((s) => s.isSaving),
+                          bakhedEditorControllerProvider(
+                            widget.bakhedId,
+                          ).select((s) => s.isSaving),
                         ),
                       ),
                     ),

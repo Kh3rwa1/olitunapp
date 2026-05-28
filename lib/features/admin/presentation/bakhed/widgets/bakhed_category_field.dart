@@ -17,7 +17,6 @@ class BakhedCategoryField extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
     final categoriesAsync = ref.watch(rhymeCategoriesProvider);
     final categories = categoriesAsync.maybeWhen(
       data: (list) => list.map((c) => c.nameLatin).toList(),
@@ -55,55 +54,51 @@ class BakhedCategoryField extends ConsumerWidget {
           onChanged(selection);
         }
       },
-      fieldViewBuilder: (
-        context,
-        textEditingController,
-        focusNode,
-        onFieldSubmitted,
-      ) {
-        return Focus(
-          onFocusChange: (hasFocus) {
-            if (!hasFocus) {
-              final text = textEditingController.text.trim();
-              if (text.isEmpty) {
-                onChanged(null);
-              } else {
-                onChanged(text);
-              }
-            }
+      fieldViewBuilder:
+          (context, textEditingController, focusNode, onFieldSubmitted) {
+            return Focus(
+              onFocusChange: (hasFocus) {
+                if (!hasFocus) {
+                  final text = textEditingController.text.trim();
+                  if (text.isEmpty) {
+                    onChanged(null);
+                  } else {
+                    onChanged(text);
+                  }
+                }
+              },
+              child: TextField(
+                controller: textEditingController,
+                focusNode: focusNode,
+                enabled: enabled,
+                onSubmitted: (val) {
+                  final text = val.trim();
+                  if (text.isEmpty) {
+                    onChanged(null);
+                  } else {
+                    onChanged(text);
+                  }
+                  onFieldSubmitted();
+                },
+                decoration: InputDecoration(
+                  labelText: 'Category',
+                  hintText: 'Enter category name (e.g. Sohrai)',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                  ),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: enabled
+                        ? () {
+                            textEditingController.clear();
+                            onChanged(null);
+                          }
+                        : null,
+                  ),
+                ),
+              ),
+            );
           },
-          child: TextField(
-            controller: textEditingController,
-            focusNode: focusNode,
-            enabled: enabled,
-            onSubmitted: (val) {
-              final text = val.trim();
-              if (text.isEmpty) {
-                onChanged(null);
-              } else {
-                onChanged(text);
-              }
-              onFieldSubmitted();
-            },
-            decoration: InputDecoration(
-              labelText: 'Category',
-              hintText: 'Enter category name (e.g. Sohrai)',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
-              ),
-              suffixIcon: IconButton(
-                icon: const Icon(Icons.clear),
-                onPressed: enabled
-                    ? () {
-                        textEditingController.clear();
-                        onChanged(null);
-                      }
-                    : null,
-              ),
-            ),
-          ),
-        );
-      },
       initialValue: TextEditingValue(text: initialValue ?? ''),
     );
   }

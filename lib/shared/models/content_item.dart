@@ -1442,7 +1442,9 @@ class ContentItem extends Equatable {
       audioUrl: audioUrl ?? this.audioUrl,
       audioFileId: audioFileId ?? this.audioFileId,
       durationMs: durationMs ?? this.durationMs,
-      category: category == const Object() ? this.category : (category as String?),
+      category: category == const Object()
+          ? this.category
+          : (category as String?),
     );
   }
 

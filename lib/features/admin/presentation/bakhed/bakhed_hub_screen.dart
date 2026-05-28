@@ -87,7 +87,9 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
   void initState() {
     super.initState();
     if (widget.categoryId != null) {
-      _selectedCategoryName = widget.categoryId == 'cat_sohrai' ? 'Sohrai' : widget.categoryId;
+      _selectedCategoryName = widget.categoryId == 'cat_sohrai'
+          ? 'Sohrai'
+          : widget.categoryId;
     }
   }
 
@@ -212,7 +214,6 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                 dropdownColor: AdminTokens.overlay(isDark),
                                 items: [
                                   DropdownMenuItem<String?>(
-                                    value: null,
                                     child: Text(
                                       'All Categories',
                                       style: TextStyle(

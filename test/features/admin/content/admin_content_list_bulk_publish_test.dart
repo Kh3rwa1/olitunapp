@@ -62,7 +62,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockRepo = MockContentRepository();
-      
+
       final lessonItem = ContentItem(
         id: 'lesson_1',
         kind: ContentKind.lesson,
@@ -72,12 +72,12 @@ void main() {
         subtitle: 'A test subcategory',
         blocks: const [],
         updatedAt: DateTime.now(),
-        isPublished: false,
       );
 
       // Return synchronously on upsert
-      when(() => mockRepo.upsert(any()))
-          .thenAnswer((_) async => Right(lessonItem));
+      when(
+        () => mockRepo.upsert(any()),
+      ).thenAnswer((_) async => Right(lessonItem));
 
       await tester.pumpWidget(
         ProviderScope(
@@ -91,11 +91,7 @@ void main() {
             contentRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: Navigator(
-                onGenerateRoute: _onGenerateRoute,
-              ),
-            ),
+            home: Scaffold(body: Navigator(onGenerateRoute: _onGenerateRoute)),
           ),
         ),
       );
@@ -121,8 +117,11 @@ void main() {
 
       // Let the DialogRoute and the Future.delayed yield
       await tester.pump(); // Starts showDialog push and async repo.upsert call
-      await tester.pump(Duration.zero); // Yields to Future.delayed(Duration.zero)
-      await tester.pumpAndSettle(); // Settles all route transitions (loader pop, sheet push)
+      await tester.pump(
+        Duration.zero,
+      ); // Yields to Future.delayed(Duration.zero)
+      await tester
+          .pumpAndSettle(); // Settles all route transitions (loader pop, sheet push)
 
       // Assertions
       // 1. Check if the parent screen is still in the widget tree (which guarantees it wasn't popped)
@@ -136,7 +135,8 @@ void main() {
 
 Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
   return MaterialPageRoute(
-    builder: (context) => const AdminContentListScreen(kind: ContentKind.lesson),
+    builder: (context) =>
+        const AdminContentListScreen(kind: ContentKind.lesson),
     settings: settings,
   );
 }

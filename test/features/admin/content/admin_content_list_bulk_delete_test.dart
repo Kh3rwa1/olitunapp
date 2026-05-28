@@ -49,7 +49,7 @@ void main() {
       addTearDown(tester.view.resetDevicePixelRatio);
 
       final mockRepo = MockContentRepository();
-      
+
       final lessonItem = ContentItem(
         id: 'lesson_1',
         kind: ContentKind.lesson,
@@ -62,8 +62,9 @@ void main() {
       );
 
       // Return synchronously on delete (fpdart Unit type representation)
-      when(() => mockRepo.delete(ContentKind.lesson, 'lesson_1'))
-          .thenAnswer((_) async => const Right(unit));
+      when(
+        () => mockRepo.delete(ContentKind.lesson, 'lesson_1'),
+      ).thenAnswer((_) async => const Right(unit));
 
       await tester.pumpWidget(
         ProviderScope(
@@ -77,11 +78,7 @@ void main() {
             contentRepositoryProvider.overrideWithValue(mockRepo),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: Navigator(
-                onGenerateRoute: _onGenerateRoute,
-              ),
-            ),
+            home: Scaffold(body: Navigator(onGenerateRoute: _onGenerateRoute)),
           ),
         ),
       );
@@ -117,8 +114,11 @@ void main() {
 
       // Let the DialogRoute and the Future.delayed yield
       await tester.pump(); // Starts showDialog push and async repo.delete call
-      await tester.pump(Duration.zero); // Yields to Future.delayed(Duration.zero)
-      await tester.pumpAndSettle(); // Settles all route transitions (loader pop, confirm pop)
+      await tester.pump(
+        Duration.zero,
+      ); // Yields to Future.delayed(Duration.zero)
+      await tester
+          .pumpAndSettle(); // Settles all route transitions (loader pop, confirm pop)
 
       // Assertions
       // 1. Check if the parent screen is still in the widget tree (which guarantees it wasn't popped)
@@ -132,7 +132,8 @@ void main() {
 
 Route<dynamic>? _onGenerateRoute(RouteSettings settings) {
   return MaterialPageRoute(
-    builder: (context) => const AdminContentListScreen(kind: ContentKind.lesson),
+    builder: (context) =>
+        const AdminContentListScreen(kind: ContentKind.lesson),
     settings: settings,
   );
 }

@@ -329,7 +329,9 @@ class _AdminContentListScreenState
       }
     } finally {
       // Guarantee dialog closure under any circumstances without double-popping
-      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+      if (loaderDialogContext != null &&
+          loaderDialogContext!.mounted &&
+          !isDialogPopped) {
         isDialogPopped = true;
         Navigator.of(loaderDialogContext!).pop();
       }
@@ -401,7 +403,9 @@ class _AdminContentListScreenState
       }
     } finally {
       // Guarantee dialog closure under any circumstances without double-popping
-      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+      if (loaderDialogContext != null &&
+          loaderDialogContext!.mounted &&
+          !isDialogPopped) {
         isDialogPopped = true;
         Navigator.of(loaderDialogContext!).pop();
       }
@@ -443,7 +447,9 @@ class _AdminContentListScreenState
     try {
       final res = await repo.get(widget.kind, item.id);
 
-      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+      if (loaderDialogContext != null &&
+          loaderDialogContext!.mounted &&
+          !isDialogPopped) {
         isDialogPopped = true;
         Navigator.of(loaderDialogContext!).pop();
       }
@@ -465,7 +471,9 @@ class _AdminContentListScreenState
       );
     } finally {
       // Guarantee dialog closure under any circumstances without double-popping
-      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+      if (loaderDialogContext != null &&
+          loaderDialogContext!.mounted &&
+          !isDialogPopped) {
         isDialogPopped = true;
         Navigator.of(loaderDialogContext!).pop();
       }

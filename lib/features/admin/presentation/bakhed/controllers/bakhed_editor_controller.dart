@@ -441,7 +441,21 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
           Future.microtask(() async {
             for (final fileId in deletions) {
               try {
-                final delRes = await uploader.delete(fileId);
+                final delRes = await uploader.deleteIfUnreferenced(
+                  fileId: fileId,
+                  checks: const [
+                    ReferenceCheck(
+                      databaseId: 'olitun_db',
+                      collectionId: 'rhymes',
+                      fieldNames: ['audioFileId'],
+                    ),
+                    ReferenceCheck(
+                      databaseId: 'olitun_db',
+                      collectionId: 'bakhed_vocabulary',
+                      fieldNames: ['audioFileId'],
+                    ),
+                  ],
+                );
                 delRes.fold(
                   (f) => AppLogger.debug(
                     'Failed to clean up pending media file $fileId during save commit: ${f.message}',

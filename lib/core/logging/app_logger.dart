@@ -14,6 +14,24 @@ class AppLogger {
     debugPrint(_format(message, name: name, fields: fields));
   }
 
+  static void warning(
+    String message, {
+    String? name,
+    Map<String, Object?> fields = const {},
+  }) {
+    if (!kDebugMode) return;
+    debugPrint(_format('[WARNING] $message', name: name, fields: fields));
+  }
+
+  static void error(
+    String message, {
+    String? name,
+    Map<String, Object?> fields = const {},
+  }) {
+    if (!kDebugMode) return;
+    debugPrint(_format('[ERROR] $message', name: name, fields: fields));
+  }
+
   @visibleForTesting
   static String formatForTesting(
     String message, {

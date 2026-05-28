@@ -63,6 +63,9 @@ void main() {
     registerFallbackValue(FakeContentItem());
     registerFallbackValue(<String, dynamic>{});
     registerFallbackValue(Uint8List(0));
+    registerFallbackValue(
+      const ReferenceCheck(databaseId: '', collectionId: '', fieldNames: []),
+    );
   });
 
   // ────────────────────────────────────────────────────────────
@@ -724,7 +727,10 @@ void main() {
         );
 
         when(
-          () => mockMediaUploader.delete('old_audio'),
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'old_audio',
+            checks: any(named: 'checks'),
+          ),
         ).thenAnswer((_) async => right(unit));
 
         notifier.markForDeletion('old_audio');
@@ -744,7 +750,12 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Verify media uploader delete called
-        verify(() => mockMediaUploader.delete('old_audio')).called(1);
+        verify(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'old_audio',
+            checks: any(named: 'checks'),
+          ),
+        ).called(1);
         expect(
           container
               .read(bakhedEditorControllerProvider(rhyme.id))
@@ -781,7 +792,12 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Verify media uploader delete never called
-        verifyNever(() => mockMediaUploader.delete(any()));
+        verifyNever(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: any(named: 'fileId'),
+            checks: any(named: 'checks'),
+          ),
+        );
         // Pending deletions remain in state
         expect(
           container
@@ -806,7 +822,12 @@ void main() {
         );
 
         // Make deletion fail
-        when(() => mockMediaUploader.delete('old_audio')).thenAnswer(
+        when(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'old_audio',
+            checks: any(named: 'checks'),
+          ),
+        ).thenAnswer(
           (_) async =>
               left(const ServerFailure(message: 'Appwrite deletion failed')),
         );
@@ -825,7 +846,12 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Verify media uploader delete was still called, and save succeeded
-        verify(() => mockMediaUploader.delete('old_audio')).called(1);
+        verify(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'old_audio',
+            checks: any(named: 'checks'),
+          ),
+        ).called(1);
         expect(
           container
               .read(bakhedEditorControllerProvider(rhyme.id))
@@ -867,9 +893,19 @@ void main() {
         await Future.delayed(const Duration(milliseconds: 10));
 
         // Verify file A was deleted
-        verify(() => mockMediaUploader.delete('file_a')).called(1);
+        verify(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'file_a',
+            checks: any(named: 'checks'),
+          ),
+        ).called(1);
         // Verify file B was NOT deleted
-        verifyNever(() => mockMediaUploader.delete('file_b'));
+        verifyNever(
+          () => mockMediaUploader.deleteIfUnreferenced(
+            fileId: 'file_b',
+            checks: any(named: 'checks'),
+          ),
+        );
 
         // Verify database updated with B
         final captured = verify(

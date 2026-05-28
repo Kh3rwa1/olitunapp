@@ -149,6 +149,17 @@
       "size": 64,
       "array": true,
       "required": false
+    },
+    {
+      "key": "coverMediaType",
+      "type": "string",
+      "size": null,
+      "array": false,
+      "required": false,
+      "elements": [
+        "image",
+        "video"
+      ]
     }
   ]
 }

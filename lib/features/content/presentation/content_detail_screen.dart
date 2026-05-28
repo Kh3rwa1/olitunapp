@@ -798,13 +798,16 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     Color accentColor,
   ) {
     final audioState = ref.watch(rhymeAudioProvider);
-    final isPlaying = audioState.playingRhymeId == item.id && audioState.isPlaying;
+    final isPlaying =
+        audioState.playingRhymeId == item.id && audioState.isPlaying;
 
     final durationMs = audioState.duration.inMilliseconds;
     final positionMs = audioState.position.inMilliseconds;
 
     // Fetch synced learning content
-    final learningContentAsync = ref.watch(bakhedLearningContentProvider(item.id));
+    final learningContentAsync = ref.watch(
+      bakhedLearningContentProvider(item.id),
+    );
 
     return Scaffold(
       backgroundColor: const Color(0xFF070B13), // Deep premium midnight black
@@ -824,24 +827,33 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               ),
             ),
           ),
-          
+
           SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 // Custom glassy top bar
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16.0,
+                    vertical: 8.0,
+                  ),
                   child: Row(
                     children: [
                       Container(
                         decoration: BoxDecoration(
                           color: Colors.white.withOpacity(0.06),
                           shape: BoxShape.circle,
-                          border: Border.all(color: Colors.white.withOpacity(0.1)),
+                          border: Border.all(
+                            color: Colors.white.withOpacity(0.1),
+                          ),
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Colors.white, size: 20),
+                          icon: const Icon(
+                            Icons.arrow_back_ios_new_rounded,
+                            color: Colors.white,
+                            size: 20,
+                          ),
                           onPressed: () {
                             HapticFeedback.lightImpact();
                             Navigator.maybePop(context);
@@ -863,7 +875,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                                 color: Colors.white,
                               ),
                             ),
-                            if (item.subtitle != null && item.subtitle!.isNotEmpty) ...[
+                            if (item.subtitle != null &&
+                                item.subtitle!.isNotEmpty) ...[
                               const SizedBox(height: 2),
                               Text(
                                 item.subtitle!,
@@ -882,9 +895,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Cover Art & Visualizer Panel
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -893,7 +906,10 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     child: Container(
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(28),
-                        border: Border.all(color: Colors.white.withOpacity(0.08), width: 1.5),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.08),
+                          width: 1.5,
+                        ),
                         boxShadow: [
                           BoxShadow(
                             color: accentColor.withOpacity(0.18),
@@ -908,22 +924,32 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                           fit: StackFit.expand,
                           children: [
                             // Thumbnail / Cover Art Image
-                            if (item.heroMedia?.url != null && item.heroMedia!.url.isNotEmpty)
+                            if (item.heroMedia?.url != null &&
+                                item.heroMedia!.url.isNotEmpty)
                               CachedNetworkImage(
                                 imageUrl: item.heroMedia!.url,
                                 fit: BoxFit.cover,
-                                placeholder: (context, url) => Container(color: Colors.black26),
+                                placeholder: (context, url) =>
+                                    Container(color: Colors.black26),
                                 errorWidget: (context, url, err) => Container(
                                   color: const Color(0xFF151C2A),
-                                  child: Icon(Icons.music_note_rounded, size: 64, color: accentColor),
+                                  child: Icon(
+                                    Icons.music_note_rounded,
+                                    size: 64,
+                                    color: accentColor,
+                                  ),
                                 ),
                               )
                             else
                               Container(
                                 color: const Color(0xFF151C2A),
-                                child: Icon(Icons.music_note_rounded, size: 64, color: accentColor),
+                                child: Icon(
+                                  Icons.music_note_rounded,
+                                  size: 64,
+                                  color: accentColor,
+                                ),
                               ),
-                            
+
                             // Visualizer Overlay
                             Positioned(
                               left: 0,
@@ -944,9 +970,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 24),
-                
+
                 // Audio Progress Section
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -957,20 +983,29 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       thumbColor: Colors.white,
                       trackHeight: 4,
                       overlayColor: accentColor.withOpacity(0.16),
-                      thumbShape: const RoundSliderThumbShape(enabledThumbRadius: 6),
-                      overlayShape: const RoundSliderOverlayShape(overlayRadius: 16),
+                      thumbShape: const RoundSliderThumbShape(
+                        enabledThumbRadius: 6,
+                      ),
+                      overlayShape: const RoundSliderOverlayShape(
+                        overlayRadius: 16,
+                      ),
                     ),
                     child: Slider(
                       min: 0,
                       max: durationMs > 0 ? durationMs.toDouble() : 100.0,
-                      value: positionMs.toDouble().clamp(0.0, durationMs > 0 ? durationMs.toDouble() : 100.0),
+                      value: positionMs.toDouble().clamp(
+                        0.0,
+                        durationMs > 0 ? durationMs.toDouble() : 100.0,
+                      ),
                       onChanged: (val) {
-                        ref.read(rhymeAudioProvider.notifier).seek(Duration(milliseconds: val.toInt()));
+                        ref
+                            .read(rhymeAudioProvider.notifier)
+                            .seek(Duration(milliseconds: val.toInt()));
                       },
                     ),
                   ),
                 ),
-                
+
                 // Timestamps Row
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -996,9 +1031,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 16),
-                
+
                 // Audio Playback Controls
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -1007,12 +1042,20 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     children: [
                       // Replay 10s
                       IconButton(
-                        icon: Icon(Icons.replay_10_rounded, color: Colors.white.withOpacity(0.8), size: 30),
+                        icon: Icon(
+                          Icons.replay_10_rounded,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 30,
+                        ),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           final pos = Duration(milliseconds: positionMs);
                           final target = pos - const Duration(seconds: 10);
-                          ref.read(rhymeAudioProvider.notifier).seek(target < Duration.zero ? Duration.zero : target);
+                          ref
+                              .read(rhymeAudioProvider.notifier)
+                              .seek(
+                                target < Duration.zero ? Duration.zero : target,
+                              );
                         },
                       ),
                       const SizedBox(width: 24),
@@ -1020,12 +1063,14 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       GestureDetector(
                         onTap: () {
                           HapticFeedback.mediumImpact();
-                          ref.read(rhymeAudioProvider.notifier).togglePlay(
-                            item.id,
-                            item.effectiveAudioUrl,
-                            title: item.title,
-                            artworkUrl: item.heroMedia?.url,
-                          );
+                          ref
+                              .read(rhymeAudioProvider.notifier)
+                              .togglePlay(
+                                item.id,
+                                item.effectiveAudioUrl,
+                                title: item.title,
+                                artworkUrl: item.heroMedia?.url,
+                              );
                         },
                         child: Container(
                           width: 68,
@@ -1042,7 +1087,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                             ],
                           ),
                           child: Icon(
-                            isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                            isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
                             size: 38,
                             color: const Color(0xFF0A0E15),
                           ),
@@ -1051,21 +1098,27 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       const SizedBox(width: 24),
                       // Forward 10s
                       IconButton(
-                        icon: Icon(Icons.forward_10_rounded, color: Colors.white.withOpacity(0.8), size: 30),
+                        icon: Icon(
+                          Icons.forward_10_rounded,
+                          color: Colors.white.withOpacity(0.8),
+                          size: 30,
+                        ),
                         onPressed: () {
                           HapticFeedback.lightImpact();
                           final pos = Duration(milliseconds: positionMs);
                           final dur = Duration(milliseconds: durationMs);
                           final target = pos + const Duration(seconds: 10);
-                          ref.read(rhymeAudioProvider.notifier).seek(target > dur ? dur : target);
+                          ref
+                              .read(rhymeAudioProvider.notifier)
+                              .seek(target > dur ? dur : target);
                         },
                       ),
                     ],
                   ),
                 ),
-                
+
                 const SizedBox(height: 28),
-                
+
                 // Glassy Learning Sub-Tabs Control
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -1079,16 +1132,34 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     ),
                     child: Row(
                       children: [
-                        Expanded(child: _buildSubTabButton(0, Icons.lyrics_rounded, 'Lyrics')),
-                        Expanded(child: _buildSubTabButton(1, Icons.menu_book_rounded, 'Vocabulary')),
-                        Expanded(child: _buildSubTabButton(2, Icons.auto_stories_rounded, 'Notes')),
+                        Expanded(
+                          child: _buildSubTabButton(
+                            0,
+                            Icons.lyrics_rounded,
+                            'Lyrics',
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildSubTabButton(
+                            1,
+                            Icons.menu_book_rounded,
+                            'Vocabulary',
+                          ),
+                        ),
+                        Expanded(
+                          child: _buildSubTabButton(
+                            2,
+                            Icons.auto_stories_rounded,
+                            'Notes',
+                          ),
+                        ),
                       ],
                     ),
                   ),
                 ),
-                
+
                 const SizedBox(height: 20),
-                
+
                 // Scrolling Content Panel
                 Expanded(
                   child: Container(
@@ -1104,10 +1175,18 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     ),
                     child: learningContentAsync.when(
                       data: (content) {
-                        return _buildActiveSubTabContent(content, item, isPlaying, positionMs, accentColor);
+                        return _buildActiveSubTabContent(
+                          content,
+                          item,
+                          isPlaying,
+                          positionMs,
+                          accentColor,
+                        );
                       },
                       loading: () => const Center(
-                        child: CircularProgressIndicator(color: AppColors.primary),
+                        child: CircularProgressIndicator(
+                          color: AppColors.primary,
+                        ),
                       ),
                       error: (err, _) => Center(
                         child: Padding(
@@ -1140,9 +1219,13 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       },
       child: Container(
         decoration: BoxDecoration(
-          color: isSelected ? Colors.white.withOpacity(0.08) : Colors.transparent,
+          color: isSelected
+              ? Colors.white.withOpacity(0.08)
+              : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
-          border: isSelected ? Border.all(color: Colors.white.withOpacity(0.12)) : null,
+          border: isSelected
+              ? Border.all(color: Colors.white.withOpacity(0.12))
+              : null,
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -1176,7 +1259,12 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
   ) {
     switch (_activeSubTab) {
       case 0:
-        return _buildSyncedLyrics(content.lyrics, item, positionMs, accentColor);
+        return _buildSyncedLyrics(
+          content.lyrics,
+          item,
+          positionMs,
+          accentColor,
+        );
       case 1:
         return _buildVocabularyList(content.vocabulary, accentColor);
       case 2:
@@ -1213,7 +1301,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                if (block.textOlChiki != null && block.textOlChiki!.isNotEmpty) ...[
+                if (block.textOlChiki != null &&
+                    block.textOlChiki!.isNotEmpty) ...[
                   Text(
                     block.textOlChiki!,
                     style: const TextStyle(
@@ -1265,7 +1354,10 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         if (_lyricScrollController.hasClients && activeIndex >= 0) {
           final targetOffset = (activeIndex * 105.0) - 100.0;
           _lyricScrollController.animateTo(
-            targetOffset.clamp(0.0, _lyricScrollController.position.maxScrollExtent),
+            targetOffset.clamp(
+              0.0,
+              _lyricScrollController.position.maxScrollExtent,
+            ),
             duration: const Duration(milliseconds: 350),
             curve: Curves.easeInOutCubic,
           );
@@ -1285,7 +1377,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         return GestureDetector(
           onTap: () {
             HapticFeedback.lightImpact();
-            ref.read(rhymeAudioProvider.notifier).seek(Duration(milliseconds: line.startMs));
+            ref
+                .read(rhymeAudioProvider.notifier)
+                .seek(Duration(milliseconds: line.startMs));
           },
           child: AnimatedOpacity(
             duration: const Duration(milliseconds: 250),
@@ -1295,9 +1389,13 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               margin: const EdgeInsets.only(bottom: 24.0),
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: isActive ? Colors.white.withOpacity(0.03) : Colors.transparent,
+                color: isActive
+                    ? Colors.white.withOpacity(0.03)
+                    : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
-                border: isActive ? Border.all(color: Colors.white.withOpacity(0.05)) : null,
+                border: isActive
+                    ? Border.all(color: Colors.white.withOpacity(0.05))
+                    : null,
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1340,7 +1438,10 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     );
   }
 
-  Widget _buildVocabularyList(List<BakhedVocabularyItem> vocabulary, Color accentColor) {
+  Widget _buildVocabularyList(
+    List<BakhedVocabularyItem> vocabulary,
+    Color accentColor,
+  ) {
     if (vocabulary.isEmpty) {
       return Center(
         child: Text(
@@ -1455,7 +1556,11 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             children: [
               Row(
                 children: [
-                  const Icon(Icons.bookmark_added_rounded, color: AppColors.primary, size: 22),
+                  const Icon(
+                    Icons.bookmark_added_rounded,
+                    color: AppColors.primary,
+                    size: 22,
+                  ),
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(

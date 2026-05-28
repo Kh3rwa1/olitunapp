@@ -1,11 +1,11 @@
 /**
- * Orphan Audio Cleanup Script
- * Scans Appwrite storage bucket for orphaned audio files and cleans them up.
+ * Orphan Media Cleanup Script
+ * Scans Appwrite storage buckets (audio, cover_videos) for orphaned files and cleans them up.
  * Uses Appwrite CLI for native, authenticated API requests.
  * Default mode is --dry-run. Pass --apply to actually delete files.
  *
  * Usage:
- *   node scripts/cleanup_orphaned_audio.mjs [--apply] [--dry-run]
+ *   node scripts/cleanup_orphaned_media.mjs [--apply] [--dry-run]
  */
 
 import { execSync } from 'child_process';
@@ -60,7 +60,7 @@ function extractFileIds(obj, set) {
 /**
  * Generic bucket-agnostic function to scan a bucket and clean up orphaned files.
  */
-async function cleanupBucket({ bucketId, collections }) {
+async function cleanupBucket({ bucketId, collections, customExtractFilter }) {
   console.log(`\n=============================================================`);
   console.log(`🧹 SCANNING BUCKET: [${bucketId}]`);
   console.log(`=============================================================`);
@@ -76,6 +76,11 @@ async function cleanupBucket({ bucketId, collections }) {
       const docs = res.documents || [];
 
       for (const doc of docs) {
+        // Apply custom doc filter if configured (e.g. coverMediaType === 'video' for cover_videos)
+        if (customExtractFilter && !customExtractFilter(doc)) {
+          continue;
+        }
+
         for (const field of col.fieldPaths) {
           const val = doc[field];
           if (!val) continue;
@@ -171,7 +176,7 @@ async function run() {
   console.log(`🚀 Starting Orphan Media Cleanup...`);
   console.log(`   Mode: ${DRY_RUN ? 'DRY RUN (Default)' : 'APPLY (Destructive Cleanup)'}`);
 
-  // Configured collections and field paths that contain audio file IDs/URLs
+  // 1. Audio Bucket Scan
   const audioCollections = [
     {
       collectionId: 'rhymes',
@@ -191,10 +196,23 @@ async function run() {
     }
   ];
 
-  // Execute cleanup audio-only for this sprint
   await cleanupBucket({
     bucketId: 'audio',
     collections: audioCollections
+  });
+
+  // 2. Cover Videos Bucket Scan
+  const coverVideoCollections = [
+    {
+      collectionId: 'rhymes',
+      fieldPaths: ['hero_media', 'heroMedia']
+    }
+  ];
+
+  await cleanupBucket({
+    bucketId: 'cover_videos',
+    collections: coverVideoCollections,
+    customExtractFilter: (doc) => doc.coverMediaType === 'video'
   });
 
   console.log('\n🎉 Cleanup process finished!');

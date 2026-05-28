@@ -48,6 +48,10 @@ During the Phase 2d audit, we discovered that:
 * **Varnish CDN Caching**: Appwrite's Varnish CDN caches files aggressively and may serve cached hits (up to the edge TTL) to returning clients even after a new deployment is successfully pushed.
 
 ### Mitigation Strategies in Play:
-1. **SW Caching Exclusion (Layer 1)**: By excluding the bootstrap file from the Service Worker cache manifest, the browser always requests the bootstrap script over the network.
-2. **Reference Guard (Layer 2)**: The server-side Appwrite DB Reference Guard intercepts any save operations, ensuring that even if a stale client attempts a media delete/swap, the actively referenced files are preserved.
-3. **Build SHA Mismatch Detector (Layer 3)**: A client-side polling mechanism detects if the local build's SHA is older than the server's. It locks destructive admin actions and displays a reload prompt.
+1. **SW Caching Exclusion (Layer 1)**: By excluding the bootstrap file from the Service Worker cache manifest during post-build assembly (`scripts/build_web.sh`), the browser always requests `flutter_bootstrap.js` over the network.
+2. **Reference Guard (Layer 2)**: The server-side Appwrite DB Reference Guard intercepts any CMS content saves or deletions, ensuring that even if a stale client attempts a media delete/swap, the actively referenced files are preserved.
+3. **Build SHA Mismatch Detector (Layer 3)**: A platform-safe client-side detector (with zero VM/AOT overhead via conditional imports) polls `/build-info.json` using cache-busting relative query strings (`?t=timestamp`) every 5 minutes.
+   - If a build version mismatch is detected (`stale`), a non-dismissible, responsive `MaterialBanner` is displayed at the top of the workspace.
+   - Any destructive actions inside `MediaPickerField` (removal or upload changes) are blocked, popping a modal alert dialog forcing a tab reload (`window.location.reload()`) to prevent storage orphaning.
+   - For other states (`match` or `unknown`), it fails open to prevent disrupting admin operations under offline or transient network drops.
+

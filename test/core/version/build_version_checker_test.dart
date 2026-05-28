@@ -1,3 +1,4 @@
+// ignore_for_file: deprecated_member_use, unnecessary_lambdas
 import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +6,8 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:itun/core/version/build_version_status.dart';
 import 'package:itun/core/version/build_version_checker.dart';
+import 'package:itun/core/version/build_version_checker_html.dart' as html_impl;
+import 'package:itun/core/version/build_version_checker_io.dart' as io_impl;
 
 void main() {
   group('compareSha logic tests', () {
@@ -41,60 +44,76 @@ void main() {
     });
   });
 
-  group('buildVersionStatusProvider stream tests', () {
-    test('non-web platforms kIsWeb=false short-circuits to match', () async {
-      final container = ProviderContainer();
+  group('buildVersionStatusProvider platform stream tests', () {
+    test('io_impl: non-web platforms short-circuit to match immediately', () async {
+      final container = ProviderContainer(
+        overrides: [
+          buildVersionStatusProvider.overrideWith((ref) => io_impl.getBuildVersionStream(ref)),
+        ],
+      );
       addTearDown(container.dispose);
 
-      container.read(buildVersionStatusProvider);
-      // Wait for stream value to emit
-      await Future.delayed(const Duration(milliseconds: 10));
-
-      final finalState = container.read(buildVersionStatusProvider);
-      expect(finalState.value, const BuildVersionMatch());
+      final status = await container.read(buildVersionStatusProvider.future);
+      expect(status, const BuildVersionMatch());
     });
 
-    test('successful fetch logic in MockClient environment', () async {
+    test('html_impl: successful fetch loops in MockClient environment', () async {
       final mockClient = MockClient((request) async {
-        // Confirm cache-busting query parameter is present in fetch request URL
         expect(request.url.queryParameters['t'], isNotNull);
-        return http.Response(json.encode({'sha': 'abc1234', 'builtAt': ''}), 200);
+        return http.Response(
+          json.encode({'sha': 'abc1234', 'builtAt': ''}),
+          200,
+          headers: {'content-type': 'application/json'},
+        );
       });
 
       await http.runWithClient(() async {
-        // Purely mock logic simulation
-        final status = compareSha('abc1234', 'abc1234');
-        expect(status, const BuildVersionMatch());
+        final container = ProviderContainer(
+          overrides: [
+            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
+          ],
+        );
+        addTearDown(container.dispose);
 
-        final staleStatus = compareSha('abc1234', 'def5678');
-        expect(staleStatus, const BuildVersionStale('def5678'));
+        // Skip the initial sync placeholder event, wait for the actual async fetch result
+        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
+        expect(status, const BuildVersionUnknown('local-dev')); // since client is 'unknown' by default
       }, () => mockClient);
     });
 
-    test('HTTP 500 error code is parsed as unknown fetch-failed', () async {
+    test('html_impl: HTTP 500 error is caught and parsed as unknown fetch-failed', () async {
       final mockClient = MockClient((request) async {
-        return http.Response('Server Error', 500);
+        return http.Response('Internal Server Error', 500, headers: {'content-type': 'text/html'});
       });
 
       await http.runWithClient(() async {
-        // Simulated HTTP 500 check
-        final response = await http.get(Uri.parse('http://localhost/build-info.json'));
-        expect(response.statusCode, 500);
+        final container = ProviderContainer(
+          overrides: [
+            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
+        expect(status, const BuildVersionUnknown('fetch-failed: 500'));
       }, () => mockClient);
     });
 
-    test('Malformed JSON throws parse error and is caught safely', () async {
+    test('html_impl: Malformed JSON parses unconditionally but handles FormatException safely', () async {
       final mockClient = MockClient((request) async {
-        return http.Response('{invalid-json}', 200);
+        return http.Response('{invalid-json}', 200, headers: {'content-type': 'text/html'});
       });
 
       await http.runWithClient(() async {
-        try {
-          json.decode('{invalid-json}');
-          fail('Should have thrown FormatException');
-        } catch (e) {
-          expect(e, isA<FormatException>());
-        }
+        final container = ProviderContainer(
+          overrides: [
+            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
+          ],
+        );
+        addTearDown(container.dispose);
+
+        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
+        expect(status, const BuildVersionUnknown('parse-failed'));
       }, () => mockClient);
     });
   });

@@ -47,11 +47,23 @@ During the Phase 2d audit, we discovered that:
 * **Caching Strategy**: The Appwrite CDN serves all static files with a default `cache-control: public, max-age=0, must-revalidate` header. 
 * **Varnish CDN Caching**: Appwrite's Varnish CDN caches files aggressively and may serve cached hits (up to the edge TTL) to returning clients even after a new deployment is successfully pushed.
 
-### Mitigation Strategies in Play:
-1. **SW Caching Exclusion (Layer 1)**: By excluding the bootstrap file from the Service Worker cache manifest during post-build assembly (`scripts/build_web.sh`), the browser always requests `flutter_bootstrap.js` over the network.
-2. **Reference Guard (Layer 2)**: The server-side Appwrite DB Reference Guard intercepts any CMS content saves or deletions, ensuring that even if a stale client attempts a media delete/swap, the actively referenced files are preserved.
-3. **Build SHA Mismatch Detector (Layer 3)**: A platform-safe client-side detector (with zero VM/AOT overhead via conditional imports) polls `/build-info.json` using cache-busting relative query strings (`?t=timestamp`) every 5 minutes.
-   - If a build version mismatch is detected (`stale`), a non-dismissible, responsive `MaterialBanner` is displayed at the top of the workspace.
-   - Any destructive actions inside `MediaPickerField` (removal or upload changes) are blocked, popping a modal alert dialog forcing a tab reload (`window.location.reload()`) to prevent storage orphaning.
-   - For other states (`match` or `unknown`), it fails open to prevent disrupting admin operations under offline or transient network drops.
+### Stale Client Defense Architecture
+
+To close the circular edge caching window completely, we implemented a robust **Three-Layer Caching Defense System**:
+
+| Layer | What it catches | Worst-case window | Failure mode |
+|---|---|---|---|
+| **Reference Guard (Server)** | All media orphan attempts | 0 ms (Immediate) | **Fail-Safe**: Refuses delete on query/reference match or database check failures |
+| **SW Caching Exclusion (Client)** | Cached bootstrap script | Per-resource cache hit | **Fail-Safe**: Bypasses service worker cache, forcing network fetch |
+| **SHA Mismatch Detector (Client UX)** | Stale code path in active browser tabs | 5 min (polling) + edge TTL | **Fail-Open**: Bypasses dialog warnings, allowing normal CMS operations |
+
+---
+
+## 4. Known Limitations & Follow-ups
+
+1. **Appwrite Sites Edge Cache TTL**: The Varnish static cache TTL is platform-controlled (typically ~3 minutes). We cannot inject custom `no-store` or `max-age` headers for static files.
+2. **Detection Latency Window**: The worst-case latency window for the stale banner warning to appear is `(Varnish Edge Propagation) + 5 minutes (periodic check polling interval)`.
+3. **Reference Guard is the Ultimate Safety**: Within the 5-minute polling window, if a stale client attempts a deletion, the server-side DB Reference Guard (Layer 1) catches and aborts the request, preventing orphans.
+4. **Legacy Form Callsites**: 6 standard content form callsites inside `content_form.dart` currently bypass deferred deletion state logic and still trigger immediate deletes. These have been explicitly marked with `// TODO(orphan-bug):` and are scheduled for refactoring during the next CMS standardization sprint.
+
 

@@ -58,7 +58,24 @@ User clicks upload in admin
 
 ---
 
+## 🛡️ Stale Client Defense Architecture
+
+To prevent storage orphans caused by stale browser caches or edge proxy invalidations, we operate a robust **Three-Layer Caching Defense System**:
+
+| Layer | What it catches | Worst-case window | Failure mode |
+|---|---|---|---|
+| **Reference Guard (Server)** | All media orphan attempts | 0 ms (Immediate) | **Fail-Safe**: Refuses delete on query/reference match or database check failures |
+| **SW Caching Exclusion (Client)** | Cached bootstrap script | Per-resource cache hit | **Fail-Safe**: Bypasses service worker cache, forcing network fetch |
+| **SHA Mismatch Detector (Client UX)** | Stale code path in active browser tabs | 5 min (polling) + edge TTL | **Fail-Open**: Bypasses dialog warnings, allowing normal CMS operations |
+
+For deployment contracts and edge cache timing constraints, see [docs/web_deployment.md](file:///Users/dulorai/olitun/olitunapp/docs/web_deployment.md).
+
+---
+
 ## 🧪 Testing and Verification
 
 - Unit tests for the synchronous duration prober reside in [media_uploader_duration_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/storage/media_uploader_duration_test.dart).
 - Test suites in `test/features/admin/bakhed/` simulate the canonical picker-controller flow using `notifier.setUploadInProgress` and `notifier.updateAudio` to verify race condition guards.
+- Stale client detector stream and HTTP mock tests reside in [build_version_checker_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/version/build_version_checker_test.dart).
+- Widget destructive actions guard and reload dialog verification reside in [media_picker_field_test.dart](file:///Users/dulorai/olitun/olitunapp/test/features/admin/widgets/media_picker_field_test.dart).
+

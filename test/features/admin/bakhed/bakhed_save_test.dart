@@ -139,6 +139,44 @@ void main() {
         expect(payload['blocks'], '[]');
       },
     );
+
+    test(
+      'toAppwrite() for new rhyme with category but empty categoryId writes category and omits categoryId',
+      () {
+        final item = ContentItem(
+          id: 'new_rhyme_1',
+          kind: ContentKind.rhyme,
+          categoryId: '',
+          category: 'Baha',
+          title: 'Title',
+          blocks: const [],
+          updatedAt: DateTime(2026),
+        );
+        final payload = item.toAppwrite();
+
+        expect(payload['category'], 'Baha');
+        expect(payload.containsKey('categoryId'), isFalse);
+      },
+    );
+
+    test(
+      'toAppwrite() for existing rhyme with both category and categoryId writes both fields',
+      () {
+        final item = ContentItem(
+          id: 'existing_rhyme_1',
+          kind: ContentKind.rhyme,
+          categoryId: 'cat_sohrai',
+          category: 'Sohrai',
+          title: 'Title',
+          blocks: const [],
+          updatedAt: DateTime(2026),
+        );
+        final payload = item.toAppwrite();
+
+        expect(payload['category'], 'Sohrai');
+        expect(payload['categoryId'], 'cat_sohrai');
+      },
+    );
   });
 
   // ────────────────────────────────────────────────────────────

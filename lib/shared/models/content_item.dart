@@ -833,6 +833,7 @@ class ContentItem extends Equatable {
   final String? audioFileId;
   final int? durationMs;
   final String? category;
+  final String? coverMediaType;
 
   const ContentItem({
     required this.id,
@@ -843,6 +844,7 @@ class ContentItem extends Equatable {
     this.subtitle,
     this.olChiki,
     this.heroMedia,
+    this.coverMediaType,
     required this.blocks,
     this.tracing,
     this.order = 0,
@@ -856,7 +858,12 @@ class ContentItem extends Equatable {
     this.audioFileId,
     this.durationMs,
     this.category,
-  });
+  }) : assert(
+          coverMediaType == null ||
+              coverMediaType == 'image' ||
+              coverMediaType == 'video',
+          'Invalid coverMediaType: $coverMediaType',
+        );
 
   factory ContentItem.empty({required String id, required ContentKind kind}) {
     return ContentItem(
@@ -949,6 +956,8 @@ class ContentItem extends Equatable {
         parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);
       }
     }
+    final coverMediaType = json['coverMediaType'] as String? ??
+        (parsedHeroMedia != null ? 'image' : null);
     if (parsedHeroMedia != null && parsedHeroMedia.fileId.isEmpty) {
       final extId = _extractFileIdFromUrl(parsedHeroMedia.url);
       if (extId != null && extId.isNotEmpty) {
@@ -1176,6 +1185,7 @@ class ContentItem extends Equatable {
       subtitle: resolvedSubtitle,
       olChiki: resolvedOlChiki,
       heroMedia: parsedHeroMedia,
+      coverMediaType: coverMediaType,
       blocks: parsedBlocks,
       tracing: parsedTracing,
       order: json['order'] as int? ?? 0,
@@ -1221,6 +1231,7 @@ class ContentItem extends Equatable {
       if (subtitle != null) 'subtitle': subtitle,
       if (olChiki != null) 'olChiki': olChiki,
       if (heroMedia != null) 'heroMedia': heroMedia!.toJson(),
+      if (coverMediaType != null) 'coverMediaType': coverMediaType,
       'blocks': blocks.map((e) => e.toJson()).toList(),
       if (tracing != null) 'tracing': tracing!.toJson(),
       'order': order,
@@ -1379,9 +1390,8 @@ class ContentItem extends Equatable {
           'audioUrl': audioUrl,
           'audioFileId': audioFileId,
           'durationMs': durationMs,
-          'thumbnailUrl': heroMedia?.kind == ContentMediaKind.image
-              ? heroMedia?.url
-              : null,
+          'thumbnailUrl': coverMediaType == 'image' ? heroMedia?.url : null,
+          'coverMediaType': coverMediaType,
           if (categoryId.isNotEmpty) 'categoryId': categoryId,
           if (category != null && category!.isNotEmpty) 'category': category,
           // ignore: use_null_aware_elements
@@ -1406,7 +1416,8 @@ class ContentItem extends Equatable {
     String? titleOlChiki,
     String? subtitle,
     String? olChiki,
-    ContentMedia? heroMedia,
+    Object? heroMedia = const Object(),
+    Object? coverMediaType = const Object(),
     List<ContentBlock>? blocks,
     TracingConfig? tracing,
     int? order,
@@ -1429,7 +1440,12 @@ class ContentItem extends Equatable {
       titleOlChiki: titleOlChiki ?? this.titleOlChiki,
       subtitle: subtitle ?? this.subtitle,
       olChiki: olChiki ?? this.olChiki,
-      heroMedia: heroMedia ?? this.heroMedia,
+      heroMedia: heroMedia == const Object()
+          ? this.heroMedia
+          : (heroMedia as ContentMedia?),
+      coverMediaType: coverMediaType == const Object()
+          ? this.coverMediaType
+          : (coverMediaType as String?),
       blocks: blocks ?? this.blocks,
       tracing: tracing ?? this.tracing,
       order: order ?? this.order,
@@ -1458,6 +1474,7 @@ class ContentItem extends Equatable {
     subtitle,
     olChiki,
     heroMedia,
+    coverMediaType,
     blocks,
     tracing,
     order,

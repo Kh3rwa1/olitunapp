@@ -111,23 +111,25 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
     final canonicalFileId = dataMedia?['fileId'] as String? ?? '';
 
     // Build the meta passthrough — everything in data EXCEPT keys we own
-    final meta = <String, dynamic>{
-      if (audioUrl != null && type != 'audio' && type != 'video') 'audioUrl': audioUrl,
-      ...?data,
-    }..removeWhere(
-        (k, _) => const {
-          'media',
-          'posterUrl',
-          'quizId',
-          'quizRefId',
-          'autoplay',
-          'durationSeconds',
-          'transcript',
-          'loop',
-          'style',
-          'id',
-        }.contains(k),
-      );
+    final meta =
+        <String, dynamic>{
+          if (audioUrl != null && type != 'audio' && type != 'video')
+            'audioUrl': audioUrl,
+          ...?data,
+        }..removeWhere(
+          (k, _) => const {
+            'media',
+            'posterUrl',
+            'quizId',
+            'quizRefId',
+            'autoplay',
+            'durationSeconds',
+            'transcript',
+            'loop',
+            'style',
+            'id',
+          }.contains(k),
+        );
 
     switch (type) {
       case 'text':

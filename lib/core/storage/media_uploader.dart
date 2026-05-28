@@ -53,7 +53,14 @@ class MediaUploader {
 
       final file = result.files.first;
       final validationRes = await validateFile(file, kind);
-      final failure = validationRes.fold((f) => f, (_) => null);
+      int? probedDurationMs;
+      final failure = validationRes.fold(
+        (f) => f,
+        (duration) {
+          probedDurationMs = duration;
+          return null;
+        },
+      );
       if (failure != null) {
         return left(failure);
       }
@@ -82,7 +89,7 @@ class MediaUploader {
         permissions: [Permission.read(Role.any())],
       );
 
-      int? durationMs;
+      int? durationMs = probedDurationMs;
       if (kind == ContentMediaKind.audio ||
           file.name.toLowerCase().endsWith('.mp3') ||
           file.name.toLowerCase().endsWith('.m4a') ||
@@ -302,8 +309,9 @@ class MediaUploader {
   Future<int?> Function(PlatformFile)? videoDurationProberOverride;
 
   /// Validates picked media files against size, mime, and duration rules.
-  Future<Either<Failure, Unit>> validateFile(PlatformFile file, ContentMediaKind kind) async {
+  Future<Either<Failure, int?>> validateFile(PlatformFile file, ContentMediaKind kind) async {
     try {
+      int? durationMs;
       if (kind == ContentMediaKind.video) {
         // 1. Size check
         if (file.size > 10485760) {
@@ -317,12 +325,12 @@ class MediaUploader {
         }
 
         // 3. Duration check
-        final durationMs = await _probeVideoDurationMs(file);
+        durationMs = await _probeVideoDurationMs(file);
         if (durationMs != null && durationMs > 300000) {
           throw const MediaValidationException('Video duration exceeds the 5 minutes limit');
         }
       }
-      return right(unit);
+      return right(durationMs);
     } on MediaValidationException catch (e) {
       return left(ValidationFailure(message: e.message));
     } catch (e) {

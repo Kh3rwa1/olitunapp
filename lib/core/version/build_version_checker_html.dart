@@ -22,9 +22,13 @@ Stream<BuildVersionStatus> getBuildVersionStream(Ref ref) {
       final contentType = response.headers['content-type'] ?? 'unknown';
 
       if (response.statusCode != 200) {
-        AppLogger.debug('Version check failed with status: ${response.statusCode}, Content-Type: $contentType');
+        AppLogger.debug(
+          'Version check failed with status: ${response.statusCode}, Content-Type: $contentType',
+        );
         if (!controller.isClosed) {
-          controller.add(BuildVersionUnknown('fetch-failed: ${response.statusCode}'));
+          controller.add(
+            BuildVersionUnknown('fetch-failed: ${response.statusCode}'),
+          );
         }
         return;
       }
@@ -34,7 +38,9 @@ Stream<BuildVersionStatus> getBuildVersionStream(Ref ref) {
       try {
         data = json.decode(response.body) as Map<String, dynamic>;
       } catch (e) {
-        AppLogger.debug('Version check JSON parse failed: $e. Content-Type: $contentType, Body: ${response.body}');
+        AppLogger.debug(
+          'Version check JSON parse failed: $e. Content-Type: $contentType, Body: ${response.body}',
+        );
         if (!controller.isClosed) {
           controller.add(const BuildVersionUnknown('parse-failed'));
         }
@@ -76,4 +82,3 @@ Stream<BuildVersionStatus> getBuildVersionStream(Ref ref) {
 
   return controller.stream;
 }
-

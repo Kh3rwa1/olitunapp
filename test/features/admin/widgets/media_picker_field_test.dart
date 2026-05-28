@@ -15,7 +15,9 @@ void main() {
   late MockMediaUploader mockMediaUploader;
 
   setUpAll(() {
-    registerFallbackValue(const ContentMedia(url: '', fileId: '', kind: ContentMediaKind.image));
+    registerFallbackValue(
+      const ContentMedia(url: '', fileId: '', kind: ContentMediaKind.image),
+    );
   });
 
   setUp(() {
@@ -42,17 +44,23 @@ void main() {
     );
   }
 
-  testWidgets('Allows deletion and upload when build version matches', (tester) async {
+  testWidgets('Allows deletion and upload when build version matches', (
+    tester,
+  ) async {
     ContentMedia? updatedValue;
     var changed = false;
 
-    when(() => mockMediaUploader.delete(any())).thenAnswer((_) async => const Right(unit));
+    when(
+      () => mockMediaUploader.delete(any()),
+    ).thenAnswer((_) async => const Right(unit));
 
     await tester.pumpWidget(
       createTestWidget(
         overrides: [
           mediaUploaderProvider.overrideWithValue(mockMediaUploader),
-          buildVersionStatusProvider.overrideWith((ref) => Stream.value(const BuildVersionMatch())),
+          buildVersionStatusProvider.overrideWith(
+            (ref) => Stream.value(const BuildVersionMatch()),
+          ),
         ],
         value: const ContentMedia(
           url: 'https://example.com/image.png',
@@ -84,44 +92,56 @@ void main() {
     verify(() => mockMediaUploader.delete('img123')).called(1);
   });
 
-  testWidgets('Blocks deletion and shows version mismatch dialog when build version is stale', (tester) async {
-    var changed = false;
-    when(() => mockMediaUploader.delete(any())).thenAnswer((_) async => const Right(unit));
+  testWidgets(
+    'Blocks deletion and shows version mismatch dialog when build version is stale',
+    (tester) async {
+      var changed = false;
+      when(
+        () => mockMediaUploader.delete(any()),
+      ).thenAnswer((_) async => const Right(unit));
 
-    await tester.pumpWidget(
-      createTestWidget(
-        overrides: [
-          mediaUploaderProvider.overrideWithValue(mockMediaUploader),
-          buildVersionStatusProvider.overrideWith((ref) => Stream.value(const BuildVersionStale('newsha123'))),
-        ],
-        value: const ContentMedia(
-          url: 'https://example.com/image.png',
-          fileId: 'img123',
-          kind: ContentMediaKind.image,
+      await tester.pumpWidget(
+        createTestWidget(
+          overrides: [
+            mediaUploaderProvider.overrideWithValue(mockMediaUploader),
+            buildVersionStatusProvider.overrideWith(
+              (ref) => Stream.value(const BuildVersionStale('newsha123')),
+            ),
+          ],
+          value: const ContentMedia(
+            url: 'https://example.com/image.png',
+            fileId: 'img123',
+            kind: ContentMediaKind.image,
+          ),
+          onChanged: (val) {
+            changed = true;
+          },
         ),
-        onChanged: (val) {
-          changed = true;
-        },
-      ),
-    );
+      );
 
-    // Wait for stream to emit initial value and settle
-    final element = tester.element(find.byType(MediaPickerField));
-    final container = ProviderScope.containerOf(element);
-    await container.read(buildVersionStatusProvider.future);
-    await tester.pump();
+      // Wait for stream to emit initial value and settle
+      final element = tester.element(find.byType(MediaPickerField));
+      final container = ProviderScope.containerOf(element);
+      await container.read(buildVersionStatusProvider.future);
+      await tester.pump();
 
-    // Click remove
-    await tester.tap(find.text('Remove'));
-    await tester.pump(const Duration(milliseconds: 50));
+      // Click remove
+      await tester.tap(find.text('Remove'));
+      await tester.pump(const Duration(milliseconds: 50));
 
-    // Verify dialog appeared
-    expect(find.text('Version Mismatch'), findsOneWidget);
-    expect(find.textContaining('This page is out of date. Reload before removing or replacing media'), findsOneWidget);
-    expect(find.text('Reload'), findsOneWidget);
+      // Verify dialog appeared
+      expect(find.text('Version Mismatch'), findsOneWidget);
+      expect(
+        find.textContaining(
+          'This page is out of date. Reload before removing or replacing media',
+        ),
+        findsOneWidget,
+      );
+      expect(find.text('Reload'), findsOneWidget);
 
-    // Verify callback was NOT called
-    expect(changed, isFalse);
-    verifyNever(() => mockMediaUploader.delete(any()));
-  });
+      // Verify callback was NOT called
+      expect(changed, isFalse);
+      verifyNever(() => mockMediaUploader.delete(any()));
+    },
+  );
 }

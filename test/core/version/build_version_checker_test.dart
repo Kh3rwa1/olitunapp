@@ -16,11 +16,17 @@ void main() {
     });
 
     test('stale: mismatched SHAs', () {
-      expect(compareSha('abc1234', 'def5678'), const BuildVersionStale('def5678'));
+      expect(
+        compareSha('abc1234', 'def5678'),
+        const BuildVersionStale('def5678'),
+      );
     });
 
     test('unknown client: unknown', () {
-      expect(compareSha('unknown', 'abc1234'), const BuildVersionUnknown('local-dev'));
+      expect(
+        compareSha('unknown', 'abc1234'),
+        const BuildVersionUnknown('local-dev'),
+      );
     });
 
     test('unknown client: empty', () {
@@ -28,34 +34,51 @@ void main() {
     });
 
     test('unknown client: null', () {
-      expect(compareSha(null, 'abc1234'), const BuildVersionUnknown('local-dev'));
+      expect(
+        compareSha(null, 'abc1234'),
+        const BuildVersionUnknown('local-dev'),
+      );
     });
 
     test('dirty client: tolerated', () {
-      expect(compareSha('abc1234-dirty', 'abc1234'), const BuildVersionUnknown('local-dev'));
+      expect(
+        compareSha('abc1234-dirty', 'abc1234'),
+        const BuildVersionUnknown('local-dev'),
+      );
     });
 
     test('null server: malformed', () {
-      expect(compareSha('abc1234', null), const BuildVersionUnknown('malformed-response'));
+      expect(
+        compareSha('abc1234', null),
+        const BuildVersionUnknown('malformed-response'),
+      );
     });
 
     test('empty server: malformed', () {
-      expect(compareSha('abc1234', ''), const BuildVersionUnknown('malformed-response'));
+      expect(
+        compareSha('abc1234', ''),
+        const BuildVersionUnknown('malformed-response'),
+      );
     });
   });
 
   group('buildVersionStatusProvider platform stream tests', () {
-    test('io_impl: non-web platforms short-circuit to match immediately', () async {
-      final container = ProviderContainer(
-        overrides: [
-          buildVersionStatusProvider.overrideWith((ref) => io_impl.getBuildVersionStream(ref)),
-        ],
-      );
-      addTearDown(container.dispose);
+    test(
+      'io_impl: non-web platforms short-circuit to match immediately',
+      () async {
+        final container = ProviderContainer(
+          overrides: [
+            buildVersionStatusProvider.overrideWith(
+              (ref) => io_impl.getBuildVersionStream(ref),
+            ),
+          ],
+        );
+        addTearDown(container.dispose);
 
-      final status = await container.read(buildVersionStatusProvider.future);
-      expect(status, const BuildVersionMatch());
-    });
+        final status = await container.read(buildVersionStatusProvider.future);
+        expect(status, const BuildVersionMatch());
+      },
+    );
 
     test('html_impl: successful fetch loops in MockClient environment', () async {
       final mockClient = MockClient((request) async {
@@ -70,51 +93,83 @@ void main() {
       await http.runWithClient(() async {
         final container = ProviderContainer(
           overrides: [
-            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
+            buildVersionStatusProvider.overrideWith(
+              (ref) => html_impl.getBuildVersionStream(ref),
+            ),
           ],
         );
         addTearDown(container.dispose);
 
         // Skip the initial sync placeholder event, wait for the actual async fetch result
-        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
-        expect(status, const BuildVersionUnknown('local-dev')); // since client is 'unknown' by default
+        final status = await container
+            .read(buildVersionStatusProvider.stream)
+            .skip(1)
+            .first;
+        expect(
+          status,
+          const BuildVersionUnknown('local-dev'),
+        ); // since client is 'unknown' by default
       }, () => mockClient);
     });
 
-    test('html_impl: HTTP 500 error is caught and parsed as unknown fetch-failed', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('Internal Server Error', 500, headers: {'content-type': 'text/html'});
-      });
+    test(
+      'html_impl: HTTP 500 error is caught and parsed as unknown fetch-failed',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(
+            'Internal Server Error',
+            500,
+            headers: {'content-type': 'text/html'},
+          );
+        });
 
-      await http.runWithClient(() async {
-        final container = ProviderContainer(
-          overrides: [
-            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
-          ],
-        );
-        addTearDown(container.dispose);
+        await http.runWithClient(() async {
+          final container = ProviderContainer(
+            overrides: [
+              buildVersionStatusProvider.overrideWith(
+                (ref) => html_impl.getBuildVersionStream(ref),
+              ),
+            ],
+          );
+          addTearDown(container.dispose);
 
-        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
-        expect(status, const BuildVersionUnknown('fetch-failed: 500'));
-      }, () => mockClient);
-    });
+          final status = await container
+              .read(buildVersionStatusProvider.stream)
+              .skip(1)
+              .first;
+          expect(status, const BuildVersionUnknown('fetch-failed: 500'));
+        }, () => mockClient);
+      },
+    );
 
-    test('html_impl: Malformed JSON parses unconditionally but handles FormatException safely', () async {
-      final mockClient = MockClient((request) async {
-        return http.Response('{invalid-json}', 200, headers: {'content-type': 'text/html'});
-      });
+    test(
+      'html_impl: Malformed JSON parses unconditionally but handles FormatException safely',
+      () async {
+        final mockClient = MockClient((request) async {
+          return http.Response(
+            '{invalid-json}',
+            200,
+            headers: {'content-type': 'text/html'},
+          );
+        });
 
-      await http.runWithClient(() async {
-        final container = ProviderContainer(
-          overrides: [
-            buildVersionStatusProvider.overrideWith((ref) => html_impl.getBuildVersionStream(ref)),
-          ],
-        );
-        addTearDown(container.dispose);
+        await http.runWithClient(() async {
+          final container = ProviderContainer(
+            overrides: [
+              buildVersionStatusProvider.overrideWith(
+                (ref) => html_impl.getBuildVersionStream(ref),
+              ),
+            ],
+          );
+          addTearDown(container.dispose);
 
-        final status = await container.read(buildVersionStatusProvider.stream).skip(1).first;
-        expect(status, const BuildVersionUnknown('parse-failed'));
-      }, () => mockClient);
-    });
+          final status = await container
+              .read(buildVersionStatusProvider.stream)
+              .skip(1)
+              .first;
+          expect(status, const BuildVersionUnknown('parse-failed'));
+        }, () => mockClient);
+      },
+    );
   });
 }

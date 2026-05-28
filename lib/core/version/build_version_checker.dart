@@ -22,9 +22,10 @@ BuildVersionStatus compareSha(String? clientSha, String? serverSha) {
   return BuildVersionStale(serverSha);
 }
 
-final buildVersionStatusProvider = StreamProvider<BuildVersionStatus>(platform.getBuildVersionStream);
+final buildVersionStatusProvider = StreamProvider<BuildVersionStatus>(
+  platform.getBuildVersionStream,
+);
 
 void reloadBrowser() {
   reload_impl.reloadBrowser();
 }
-

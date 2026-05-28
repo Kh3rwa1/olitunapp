@@ -96,7 +96,10 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       (failure) {
         if (failure is ServerFailure && failure.code == 404) {
           // 404 = new document, initialize empty draft
-          final draft = ContentItem.empty(id: bakhedId, kind: ContentKind.rhyme);
+          final draft = ContentItem.empty(
+            id: bakhedId,
+            kind: ContentKind.rhyme,
+          );
           state = state.copyWith(
             item: AsyncValue.data(draft),
             isDirty: false,

@@ -856,10 +856,7 @@ class ContentItem extends Equatable {
     this.durationMs,
   });
 
-  factory ContentItem.empty({
-    required String id,
-    required ContentKind kind,
-  }) {
+  factory ContentItem.empty({required String id, required ContentKind kind}) {
     return ContentItem(
       id: id,
       kind: kind,

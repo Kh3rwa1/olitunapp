@@ -367,29 +367,47 @@ class _AdminContentListScreenState
     if (confirm != true) return;
 
     if (!mounted) return;
+
+    BuildContext? loaderDialogContext;
+    bool isDialogPopped = false;
+
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (_) => const Center(child: CircularProgressIndicator()),
+      builder: (ctx) {
+        // Capture the dialog context to prevent the race condition where fast async resolves pop the parent route.
+        loaderDialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
     );
+
+    // Yield control to the event loop to ensure the DialogRoute is pushed and registered before we pop it.
+    await Future.delayed(Duration.zero);
 
     final repo = ref.read(contentRepositoryProvider);
     int successCount = 0;
 
-    // Concurrently delete items in batches of 5 to maximize speed safely
-    const batchSize = 5;
-    for (int i = 0; i < selectedItems.length; i += batchSize) {
-      final batch = selectedItems.skip(i).take(batchSize);
-      await Future.wait(
-        batch.map((item) async {
-          final res = await repo.delete(widget.kind, item.id);
-          res.fold((_) {}, (_) => successCount++);
-        }),
-      );
+    try {
+      // Concurrently delete items in batches of 5 to maximize speed safely
+      const batchSize = 5;
+      for (int i = 0; i < selectedItems.length; i += batchSize) {
+        final batch = selectedItems.skip(i).take(batchSize);
+        await Future.wait(
+          batch.map((item) async {
+            final res = await repo.delete(widget.kind, item.id);
+            res.fold((_) {}, (_) => successCount++);
+          }),
+        );
+      }
+    } finally {
+      // Guarantee dialog closure under any circumstances without double-popping
+      if (loaderDialogContext != null && loaderDialogContext!.mounted && !isDialogPopped) {
+        isDialogPopped = true;
+        Navigator.of(loaderDialogContext!).pop();
+      }
     }
 
     if (mounted) {
-      Navigator.pop(context); // Close loading dialog
       setState(() {
         _selectedIds.clear();
       });

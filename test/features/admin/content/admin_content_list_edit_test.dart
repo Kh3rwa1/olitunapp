@@ -111,6 +111,69 @@ void main() {
       expect(find.text('Edit Subcategories'), findsOneWidget);
     },
   );
+
+  testWidgets(
+    'AdminContentListScreen shows Audio Missing and Trace Missing indicators for missing fields',
+    (tester) async {
+      tester.view.physicalSize = const Size(1200, 800);
+      tester.view.devicePixelRatio = 1.0;
+      addTearDown(tester.view.resetPhysicalSize);
+      addTearDown(tester.view.resetDevicePixelRatio);
+
+      final mockRepo = MockContentRepository();
+
+      final letterItemMissingAll = ContentItem(
+        id: 'letter_missing',
+        kind: ContentKind.letter,
+        categoryId: 'cat_1',
+        title: 'Missing Letter',
+        olChiki: 'ᱚ',
+        blocks: const [],
+        updatedAt: DateTime.now(),
+        audioUrl: null, // Missing audio
+        tracing: null, // Missing tracing
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            contentListProvider.overrideWith((ref, arg) async {
+              return [letterItemMissingAll];
+            }),
+            categoryRepositoryProvider.overrideWithValue(
+              FakeCategoryRepository(),
+            ),
+            contentRepositoryProvider.overrideWithValue(mockRepo),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: Navigator(
+                onGenerateRoute: (settings) => MaterialPageRoute(
+                  builder: (context) =>
+                      const AdminContentListScreen(kind: ContentKind.letter),
+                  settings: settings,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify the item is in the list
+      expect(find.text('Missing Letter'), findsOneWidget);
+
+      // Verify the red "Audio Missing" Tooltip and orange "Trace Missing" Tooltip are present
+      expect(find.byType(Tooltip), findsAtLeast(2));
+      
+      final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip));
+      final tooltipMessages = tooltips.map((t) => t.message).toList();
+      
+      expect(tooltipMessages, contains('Audio Missing'));
+      expect(tooltipMessages, contains('Trace Missing'));
+    },
+  );
 }
 
 Route<dynamic>? _onGenerateRoute(RouteSettings settings) {

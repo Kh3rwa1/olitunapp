@@ -1,8 +1,9 @@
 // ignore_for_file: experimental_member_use
-
+import 'dart:io' show File;
 import 'dart:typed_data';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:just_audio/just_audio.dart';
+import 'package:video_player/video_player.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:file_picker/file_picker.dart';
@@ -13,6 +14,7 @@ import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/storage/video_web_helper.dart';
 
 /// CANONICAL upload path for ALL audio/image/video media in the app.
 ///
@@ -50,6 +52,12 @@ class MediaUploader {
       }
 
       final file = result.files.first;
+      final validationRes = await validateFile(file, kind);
+      final failure = validationRes.fold((f) => f, (_) => null);
+      if (failure != null) {
+        return left(failure);
+      }
+
       final bucketId = _getBucketId(kind, file.name);
       final filename = _storageFilename(file.name, folder);
 
@@ -287,6 +295,71 @@ class MediaUploader {
       return null;
     } finally {
       await probe.dispose();
+    }
+  }
+
+  /// Visible for testing to override video duration probing.
+  Future<int?> Function(PlatformFile)? videoDurationProberOverride;
+
+  /// Validates picked media files against size, mime, and duration rules.
+  Future<Either<Failure, Unit>> validateFile(PlatformFile file, ContentMediaKind kind) async {
+    try {
+      if (kind == ContentMediaKind.video) {
+        // 1. Size check
+        if (file.size > 10485760) {
+          throw const MediaValidationException('File size exceeds the 10 MB limit');
+        }
+
+        // 2. Mime / extension check
+        final ext = file.name.split('.').last.toLowerCase();
+        if (ext != 'mp4' && ext != 'webm' && ext != 'mov') {
+          throw MediaValidationException('Unsupported file format: .$ext. Only mp4, webm, and mov are allowed.');
+        }
+
+        // 3. Duration check
+        final durationMs = await _probeVideoDurationMs(file);
+        if (durationMs != null && durationMs > 300000) {
+          throw const MediaValidationException('Video duration exceeds the 5 minutes limit');
+        }
+      }
+      return right(unit);
+    } on MediaValidationException catch (e) {
+      return left(ValidationFailure(message: e.message));
+    } catch (e) {
+      return left(ValidationFailure(message: 'Validation failed: $e'));
+    }
+  }
+
+  Future<int?> _probeVideoDurationMs(PlatformFile file) async {
+    VideoPlayerController? controller;
+    try {
+      if (videoDurationProberOverride != null) {
+        return await videoDurationProberOverride!(file);
+      }
+
+      if (kIsWeb) {
+        if (file.bytes == null) return null;
+        final url = createObjectUrl(file.bytes!);
+        controller = VideoPlayerController.networkUrl(Uri.parse(url));
+        await controller.initialize().timeout(const Duration(seconds: 10));
+        revokeObjectUrl(url);
+      } else {
+        if (file.path == null) return null;
+        controller = VideoPlayerController.file(File(file.path!));
+        await controller.initialize().timeout(const Duration(seconds: 10));
+      }
+      return controller.value.duration.inMilliseconds;
+    } catch (e, st) {
+      AppLogger.warning(
+        'Video duration probe failed',
+        name: 'MediaUploader',
+        fields: {'error': e.toString(), 'stackTrace': st.toString()},
+      );
+      throw const MediaValidationException('Could not read video duration');
+    } finally {
+      if (controller != null) {
+        await controller.dispose();
+      }
     }
   }
 }

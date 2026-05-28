@@ -4,6 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/core/version/build_version_checker.dart';
+import 'package:itun/core/version/build_version_status.dart';
 
 class MediaPickerField extends ConsumerStatefulWidget {
   final String label;
@@ -31,7 +33,35 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
   bool _isUploading = false;
   String? _error;
 
+  bool _checkStale() {
+    final status = ref.read(buildVersionStatusProvider).value;
+    if (status is BuildVersionStale) {
+      showDialog(
+        context: context,
+        barrierDismissible: false,
+        builder: (context) => AlertDialog(
+          title: const Text('Version Mismatch'),
+          content: const Text(
+            'This page is out of date. Reload before removing or replacing media to prevent data loss.',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                reloadBrowser();
+              },
+              child: const Text('Reload'),
+            ),
+          ],
+        ),
+      );
+      return true;
+    }
+    return false;
+  }
+
   Future<void> _pickAndUpload() async {
+    if (_checkStale()) return;
     setState(() {
       _isUploading = true;
       _error = null;
@@ -70,6 +100,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
   }
 
   void _clearMedia() {
+    if (_checkStale()) return;
     if (widget.value != null && widget.value!.fileId.isNotEmpty) {
       if (widget.onRemove != null) {
         widget.onRemove!(widget.value!.fileId);

@@ -7,6 +7,7 @@ import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/providers/bakhed_content_provider.dart';
 import '../../../../../core/api/appwrite_db_service.dart';
 import 'package:itun/core/storage/media_uploader.dart';
+import 'package:itun/core/error/failures.dart';
 
 enum SaveResult { success, concurrencyConflict, uploadInProgress, failure }
 
@@ -22,6 +23,7 @@ class BakhedEditorState {
   final double uploadProgress;
   final bool isUploading;
   final List<String> pendingDeletions;
+  final bool isNewDraft;
 
   BakhedEditorState({
     required this.item,
@@ -31,6 +33,7 @@ class BakhedEditorState {
     this.uploadProgress = 0.0,
     this.isUploading = false,
     this.pendingDeletions = const [],
+    this.isNewDraft = false,
   });
 
   BakhedEditorState copyWith({
@@ -41,6 +44,7 @@ class BakhedEditorState {
     double? uploadProgress,
     bool? isUploading,
     List<String>? pendingDeletions,
+    bool? isNewDraft,
   }) {
     return BakhedEditorState(
       item: item ?? this.item,
@@ -50,6 +54,7 @@ class BakhedEditorState {
       uploadProgress: uploadProgress ?? this.uploadProgress,
       isUploading: isUploading ?? this.isUploading,
       pendingDeletions: pendingDeletions ?? this.pendingDeletions,
+      isNewDraft: isNewDraft ?? this.isNewDraft,
     );
   }
 }
@@ -88,12 +93,32 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     state = state.copyWith(item: const AsyncValue.loading());
     final res = await _repository.get(bakhedId);
     res.fold(
-      (failure) => state = state.copyWith(
-        item: AsyncValue.error(failure, StackTrace.current),
-      ),
+      (failure) {
+        if (failure is ServerFailure && failure.code == 404) {
+          // 404 = new document, initialize empty draft
+          final draft = ContentItem.empty(
+            id: bakhedId,
+            kind: ContentKind.rhyme,
+          );
+          state = state.copyWith(
+            item: AsyncValue.data(draft),
+            isDirty: false,
+            isNewDraft: true,
+            pendingDeletions: const [],
+          );
+          AppLogger.debug('Initialized new rhyme draft for id $bakhedId');
+        } else {
+          // Genuine load failure
+          state = state.copyWith(
+            item: AsyncValue.error(failure, StackTrace.current),
+            isNewDraft: false,
+          );
+        }
+      },
       (item) => state = state.copyWith(
         item: AsyncValue.data(item),
         isDirty: false,
+        isNewDraft: false,
         pendingDeletions: const [],
       ),
     );
@@ -433,6 +458,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
             ),
             isSaving: false,
             isDirty: false,
+            isNewDraft: false,
             pendingDeletions: const [],
           );
 
@@ -441,7 +467,21 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
           Future.microtask(() async {
             for (final fileId in deletions) {
               try {
-                final delRes = await uploader.delete(fileId);
+                final delRes = await uploader.deleteIfUnreferenced(
+                  fileId: fileId,
+                  checks: const [
+                    ReferenceCheck(
+                      databaseId: 'olitun_db',
+                      collectionId: 'rhymes',
+                      fieldNames: ['audioFileId'],
+                    ),
+                    ReferenceCheck(
+                      databaseId: 'olitun_db',
+                      collectionId: 'bakhed_vocabulary',
+                      fieldNames: ['audioFileId'],
+                    ),
+                  ],
+                );
                 delRes.fold(
                   (f) => AppLogger.debug(
                     'Failed to clean up pending media file $fileId during save commit: ${f.message}',

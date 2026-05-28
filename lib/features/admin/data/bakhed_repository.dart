@@ -49,6 +49,13 @@ class BakhedRepository {
         final data = await _dbService.getDocument('rhymes', id);
         final item = ContentItem.fromJson(data, id, ContentKind.rhyme);
         return right(item);
+      } on AppwriteException catch (e) {
+        return left(
+          ServerFailure(
+            message: 'Failed to fetch rhyme $id: ${e.message}',
+            code: e.code,
+          ),
+        );
       } catch (e) {
         return left(ServerFailure(message: 'Failed to fetch rhyme $id: $e'));
       }

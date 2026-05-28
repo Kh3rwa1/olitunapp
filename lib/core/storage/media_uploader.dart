@@ -12,6 +12,7 @@ import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/core/api/appwrite_db_service.dart';
 
 /// CANONICAL upload path for ALL audio/image/video media in the app.
 ///
@@ -28,8 +29,9 @@ import 'package:itun/shared/models/content_item.dart';
 class MediaUploader {
   final Client _client;
   final Storage _storage;
+  final AppwriteDbService? _dbService;
 
-  MediaUploader(this._client) : _storage = Storage(_client);
+  MediaUploader(this._client, [this._dbService]) : _storage = Storage(_client);
 
   /// Picks a file and uploads it to Appwrite Storage, returning `Either<Failure, ContentMedia>`.
   /// If [allowedExtensions] is provided, it filters the file picker.
@@ -118,6 +120,64 @@ class MediaUploader {
         }
       }
       return right(unit);
+    } catch (e) {
+      return left(ServerFailure(message: 'Storage deletion failed: $e'));
+    }
+  }
+
+  /// Deletes a file from Appwrite Storage ONLY if it is not actively referenced by any database documents.
+  /// Refuses deletion and logs a warning if references are found or if the query fails (fail-safe).
+  Future<Either<Failure, Unit>> deleteIfUnreferenced({
+    required String fileId,
+    required List<ReferenceCheck> checks,
+    String? bucketId,
+  }) async {
+    if (fileId.isEmpty) {
+      return right(unit);
+    }
+
+    if (_dbService == null) {
+      AppLogger.warning(
+        'Refusing to delete file $fileId: AppwriteDbService is not available',
+        name: 'MediaUploader',
+      );
+      return right(unit); // Fail-safe no-op success
+    }
+
+    try {
+      // 1. Perform reference checks across all provided collections
+      for (final check in checks) {
+        for (final field in check.fieldNames) {
+          try {
+            // Query documents where field equals fileId
+            final docs = await _dbService.listDocuments(
+              check.collectionId,
+              queries: [Query.equal(field, fileId), Query.limit(1)],
+              paginate: false, // We only need to find if at least one exists
+            );
+
+            if (docs.isNotEmpty) {
+              final docId =
+                  docs.first['id'] ?? docs.first['\$id'] ?? 'unknown_id';
+              AppLogger.warning(
+                'Refusing to delete actively-referenced file $fileId, referenced by ${check.collectionId}/$docId',
+                name: 'MediaUploader',
+              );
+              return right(unit); // Refuse deletion, return successful no-op
+            }
+          } catch (e) {
+            // Fail-safe: if any query fails, refuse deletion to protect references
+            AppLogger.error(
+              'Database reference check failed for collection ${check.collectionId}: $e. Refusing deletion as a fail-safe.',
+              name: 'MediaUploader',
+            );
+            return right(unit); // Refuse deletion, return successful no-op
+          }
+        }
+      }
+
+      // 2. If no references were found, proceed with deletion using the existing delete path
+      return await delete(fileId, bucketId);
     } catch (e) {
       return left(ServerFailure(message: 'Storage deletion failed: $e'));
     }
@@ -240,7 +300,20 @@ class _BytesAudioSource extends StreamAudioSource {
   }
 }
 
+class ReferenceCheck {
+  final String databaseId;
+  final String collectionId;
+  final List<String> fieldNames; // e.g., ['audioFileId', 'coverFileId']
+
+  const ReferenceCheck({
+    required this.databaseId,
+    required this.collectionId,
+    required this.fieldNames,
+  });
+}
+
 final mediaUploaderProvider = Provider<MediaUploader>((ref) {
   final authService = ref.watch(appwriteAuthServiceProvider);
-  return MediaUploader(authService.client);
+  final dbService = ref.watch(appwriteDbServiceProvider);
+  return MediaUploader(authService.client, dbService);
 });

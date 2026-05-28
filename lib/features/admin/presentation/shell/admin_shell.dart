@@ -4,6 +4,8 @@ import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../providers/admin_auth_provider.dart';
+import 'package:itun/core/version/build_version_checker.dart';
+import 'package:itun/core/version/build_version_status.dart';
 import 'widgets/admin_brand_mark.dart';
 import 'widgets/admin_sidebar.dart';
 import 'widgets/admin_top_bar.dart';
@@ -20,6 +22,9 @@ class AdminShell extends ConsumerWidget {
 
     final isDesktop = width > 1180;
     final isTablet = width > 760 && width <= 1180;
+
+    final versionStatus = ref.watch(buildVersionStatusProvider).value;
+    final isStale = versionStatus is BuildVersionStale;
 
     final adminAsync = ref.watch(adminAuthProvider);
     if (adminAsync.isLoading) {
@@ -85,6 +90,7 @@ class AdminShell extends ConsumerWidget {
                   child: Column(
                     children: [
                       AdminTopBar(isDark: isDark),
+                      if (isStale) _buildStaleBanner(context),
                       Expanded(
                         child: ClipRect(
                           child: Material(
@@ -135,7 +141,14 @@ class AdminShell extends ConsumerWidget {
       body: Stack(
         children: [
           _buildAmbientBackdrop(isDark),
-          Material(color: Colors.transparent, child: child),
+          Column(
+            children: [
+              if (isStale) _buildStaleBanner(context),
+              Expanded(
+                child: Material(color: Colors.transparent, child: child),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -170,6 +183,36 @@ class AdminShell extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildStaleBanner(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return MaterialBanner(
+      content: const Text(
+        'A new version of the admin panel is available. Reload to continue editing safely.',
+        style: TextStyle(fontWeight: FontWeight.bold),
+      ),
+      leading: const Icon(
+        Icons.warning_amber_rounded,
+        color: Colors.orange,
+        size: 28,
+      ),
+      backgroundColor: isDark
+          ? const Color(0xFF2D1A00)
+          : const Color(0xFFFFF3CD),
+      actions: [
+        TextButton(
+          onPressed: reloadBrowser,
+          child: Text(
+            'RELOAD',
+            style: TextStyle(
+              color: isDark ? const Color(0xFFFFB300) : const Color(0xFFB78103),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }

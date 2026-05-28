@@ -122,5 +122,37 @@ void main() {
       final rhyme3 = item3.toRhymeModel();
       expect(rhyme3.audioUrl, 'https://example.com/block_audio.mp3');
     });
+
+    test('toRhymeModel preserves category name instead of substituting document ID', () {
+      final now = DateTime.now();
+
+      // Case 1: given a ContentItem with category: "Sohrai", expect RhymeModel.category == "Sohrai"
+      final item1 = ContentItem(
+        id: 'r1',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat_sohrai',
+        category: 'Sohrai',
+        title: 'Title Latin',
+        blocks: const [],
+        updatedAt: now,
+      );
+      final rhyme1 = item1.toRhymeModel();
+      expect(rhyme1.categoryId, 'cat_sohrai');
+      expect(rhyme1.category, 'Sohrai');
+
+      // Case 2: given a ContentItem with category: null, expect RhymeModel.category == null
+      final item2 = ContentItem(
+        id: 'r2',
+        kind: ContentKind.rhyme,
+        categoryId: 'cat_sohrai',
+        category: null,
+        title: 'Title Latin',
+        blocks: const [],
+        updatedAt: now,
+      );
+      final rhyme2 = item2.toRhymeModel();
+      expect(rhyme2.categoryId, 'cat_sohrai');
+      expect(rhyme2.category, isNull);
+    });
   });
 }

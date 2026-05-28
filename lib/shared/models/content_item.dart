@@ -832,6 +832,7 @@ class ContentItem extends Equatable {
   final String? audioUrl;
   final String? audioFileId;
   final int? durationMs;
+  final String? category;
 
   const ContentItem({
     required this.id,
@@ -854,6 +855,7 @@ class ContentItem extends Equatable {
     this.audioUrl,
     this.audioFileId,
     this.durationMs,
+    this.category,
   });
 
   factory ContentItem.empty({required String id, required ContentKind kind}) {
@@ -1194,6 +1196,7 @@ class ContentItem extends Equatable {
           ? json['audioFileId'] as String?
           : _extractFileIdFromUrl(json['audioUrl'] as String?),
       durationMs: json['durationMs'] as int?,
+      category: json['category'] as String?,
     );
 
     if (parsedKind == ContentKind.rhyme && json['audioUrl'] == null) {
@@ -1230,6 +1233,7 @@ class ContentItem extends Equatable {
       if (audioUrl != null) 'audioUrl': audioUrl,
       if (audioFileId != null) 'audioFileId': audioFileId,
       if (durationMs != null) 'durationMs': durationMs,
+      if (category != null) 'category': category,
     };
   }
 
@@ -1379,6 +1383,7 @@ class ContentItem extends Equatable {
               ? heroMedia?.url
               : null,
           if (categoryId.isNotEmpty) 'categoryId': categoryId,
+          if (category != null && category!.isNotEmpty) 'category': category,
           // ignore: use_null_aware_elements
           if (tagsLegacy != null) 'tags': tagsLegacy,
           // ignore: use_null_aware_elements
@@ -1414,6 +1419,7 @@ class ContentItem extends Equatable {
     String? audioUrl,
     String? audioFileId,
     int? durationMs,
+    String? category,
   }) {
     return ContentItem(
       id: id ?? this.id,
@@ -1436,6 +1442,7 @@ class ContentItem extends Equatable {
       audioUrl: audioUrl ?? this.audioUrl,
       audioFileId: audioFileId ?? this.audioFileId,
       durationMs: durationMs ?? this.durationMs,
+      category: category ?? this.category,
     );
   }
 
@@ -1461,5 +1468,6 @@ class ContentItem extends Equatable {
     audioUrl,
     audioFileId,
     durationMs,
+    category,
   ];
 }

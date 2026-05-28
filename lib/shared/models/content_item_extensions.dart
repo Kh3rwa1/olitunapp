@@ -343,7 +343,7 @@ extension ContentItemToLegacy on ContentItem {
           (heroMedia?.kind == ContentMediaKind.image ? heroMedia?.url : null) ??
           firstImage,
       categoryId: categoryId,
-      category: categoryId,
+      category: category,
       tags: tags,
     );
   }

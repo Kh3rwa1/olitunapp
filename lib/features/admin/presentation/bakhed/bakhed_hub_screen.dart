@@ -676,26 +676,39 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
     WidgetRef ref,
     ContentItem rhyme,
   ) async {
+    BuildContext? countDialogContext;
     // Show a loading dialog while fetching subcollection counts
     showDialog(
       context: context,
       barrierDismissible: false,
-      builder: (context) => const Center(child: CircularProgressIndicator()),
+      builder: (ctx) {
+        countDialogContext = ctx;
+        return const Center(child: CircularProgressIndicator());
+      },
     );
+    // Yield execution to the event loop to allow the dialog route to build and assign context
+    await Future.delayed(Duration.zero);
 
-    final repo = ref.read(bakhedRepositoryProvider);
-    final lyricsRes = await repo.getLyrics(rhyme.id);
-    final vocabRes = await repo.getVocabulary(rhyme.id);
-    final notesRes = await repo.getCulturalNotes(rhyme.id);
+    int lyricsCount = 0;
+    int vocabCount = 0;
+    int notesCount = 0;
 
-    // Close loading indicator
-    if (context.mounted) {
-      Navigator.of(context).pop();
+    try {
+      final repo = ref.read(bakhedRepositoryProvider);
+      final lyricsRes = await repo.getLyrics(rhyme.id);
+      final vocabRes = await repo.getVocabulary(rhyme.id);
+      final notesRes = await repo.getCulturalNotes(rhyme.id);
+
+      lyricsCount = lyricsRes.fold((_) => 0, (l) => l.length);
+      vocabCount = vocabRes.fold((_) => 0, (v) => v.length);
+      notesCount = notesRes.fold((_) => 0, (n) => n.length);
+    } finally {
+      // Close the loading dialog using the captured dialogContext to avoid popping the parent route
+      if (countDialogContext != null && countDialogContext!.mounted) {
+        Navigator.of(countDialogContext!).pop();
+      }
     }
 
-    final lyricsCount = lyricsRes.fold((_) => 0, (l) => l.length);
-    final vocabCount = vocabRes.fold((_) => 0, (v) => v.length);
-    final notesCount = notesRes.fold((_) => 0, (n) => n.length);
     final totalChildCount = lyricsCount + vocabCount + notesCount;
 
     bool confirm = false;
@@ -703,126 +716,188 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
       confirm =
           await showDialog<bool>(
             context: context,
-            builder: (context) {
-              final textController = TextEditingController();
-              final isLarge = totalChildCount > 20;
-              return StatefulBuilder(
-                builder: (context, setState) {
-                  return AlertDialog(
-                    backgroundColor: AdminTokens.overlay(
-                      Theme.of(context).brightness == Brightness.dark,
-                    ),
-                    title: Text(
-                      'Delete Rhyme: ${rhyme.title}',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    content: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Are you sure you want to permanently delete this rhyme and all associated media? This action cannot be undone.',
-                        ),
-                        const SizedBox(height: 16),
-                        const Text(
-                          'Associated Subcollection Items to Cascade Delete:',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(height: 8),
-                        Text('• Lyrics Lines: $lyricsCount'),
-                        Text('• Vocabulary Words: $vocabCount'),
-                        Text('• Cultural Notes: $notesCount'),
-                        if (isLarge) ...[
-                          const SizedBox(height: 16),
-                          const Text(
-                            'This rhyme contains a large amount of learning content. Please type DELETE to confirm cascade deletion:',
-                            style: TextStyle(
-                              color: Colors.red,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: textController,
-                            decoration: const InputDecoration(
-                              hintText: 'DELETE',
-                              border: OutlineInputBorder(),
-                            ),
-                            onChanged: (_) {
-                              setState(() {});
-                            },
-                          ),
-                        ],
-                      ],
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text('Cancel'),
-                      ),
-                      ElevatedButton(
-                        onPressed:
-                            (!isLarge || textController.text.trim() == 'DELETE')
-                            ? () => Navigator.of(context).pop(true)
-                            : null,
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: Colors.red,
-                          foregroundColor: Colors.white,
-                        ),
-                        child: const Text('Delete'),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
+            builder: (context) => _DeleteConfirmationDialog(
+              rhyme: rhyme,
+              totalChildCount: totalChildCount,
+              lyricsCount: lyricsCount,
+              vocabCount: vocabCount,
+              notesCount: notesCount,
+            ),
           ) ??
           false;
     }
 
     if (confirm) {
+      BuildContext? deleteDialogContext;
+      bool isDeleteDialogPopped = false;
+
       // Show loading dialog for delete execution
       if (context.mounted) {
         showDialog(
           context: context,
           barrierDismissible: false,
-          builder: (context) =>
-              const Center(child: CircularProgressIndicator()),
+          builder: (ctx) {
+            deleteDialogContext = ctx;
+            return const Center(child: CircularProgressIndicator());
+          },
         );
+        // Yield execution to the event loop to allow the dialog route to build and assign context
+        await Future.delayed(Duration.zero);
       }
 
-      final deleteRes = await repo.delete(rhyme.id);
+      try {
+        final repo = ref.read(bakhedRepositoryProvider);
+        final deleteRes = await repo.delete(rhyme.id);
 
-      // Close loading dialog
-      if (context.mounted) {
-        Navigator.of(context).pop();
-      }
+        // Close loading dialog using the captured dialogContext to avoid popping the parent route
+        if (deleteDialogContext != null &&
+            deleteDialogContext!.mounted &&
+            !isDeleteDialogPopped) {
+          isDeleteDialogPopped = true;
+          Navigator.of(deleteDialogContext!).pop();
+        }
 
-      deleteRes.fold(
-        (failure) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('Delete failed: ${failure.message}'),
-                backgroundColor: Colors.red,
-              ),
-            );
-          }
-        },
-        (_) {
-          if (context.mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Rhyme and associated subcollection items deleted successfully.',
+        deleteRes.fold(
+          (failure) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Delete failed: ${failure.message}'),
+                  backgroundColor: Colors.red,
                 ),
-                backgroundColor: Colors.green,
-              ),
-            );
-            ref.invalidate(contentListProvider((ContentKind.rhyme, null)));
-          }
-        },
-      );
+              );
+            }
+          },
+          (_) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text(
+                    'Rhyme and associated subcollection items deleted successfully.',
+                  ),
+                  backgroundColor: Colors.green,
+                ),
+              );
+              ref.invalidate(contentListProvider((ContentKind.rhyme, null)));
+            }
+          },
+        );
+      } finally {
+        // Defensive cleanup: guarantee the dialog is popped if not already popped
+        if (deleteDialogContext != null &&
+            deleteDialogContext!.mounted &&
+            !isDeleteDialogPopped) {
+          isDeleteDialogPopped = true;
+          Navigator.of(deleteDialogContext!).pop();
+        }
+      }
     }
+  }
+}
+
+class _DeleteConfirmationDialog extends StatefulWidget {
+  final ContentItem rhyme;
+  final int totalChildCount;
+  final int lyricsCount;
+  final int vocabCount;
+  final int notesCount;
+
+  const _DeleteConfirmationDialog({
+    required this.rhyme,
+    required this.totalChildCount,
+    required this.lyricsCount,
+    required this.vocabCount,
+    required this.notesCount,
+  });
+
+  @override
+  State<_DeleteConfirmationDialog> createState() =>
+      __DeleteConfirmationDialogState();
+}
+
+class __DeleteConfirmationDialogState extends State<_DeleteConfirmationDialog> {
+  late final TextEditingController textController;
+
+  @override
+  void initState() {
+    super.initState();
+    textController = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isLarge = widget.totalChildCount > 20;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return AlertDialog(
+      backgroundColor: AdminTokens.overlay(isDark),
+      title: Text(
+        'Delete Rhyme: ${widget.rhyme.title}',
+        style: const TextStyle(fontWeight: FontWeight.bold),
+      ),
+      content: SingleChildScrollView(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Are you sure you want to permanently delete this rhyme and all associated media? This action cannot be undone.',
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              'Associated Subcollection Items to Cascade Delete:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            Text('• Lyrics Lines: ${widget.lyricsCount}'),
+            Text('• Vocabulary Words: ${widget.vocabCount}'),
+            Text('• Cultural Notes: ${widget.notesCount}'),
+            if (isLarge) ...[
+              const SizedBox(height: 16),
+              const Text(
+                'This rhyme contains a large amount of learning content. Please type DELETE to confirm cascade deletion:',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: textController,
+                decoration: const InputDecoration(
+                  hintText: 'DELETE',
+                  border: OutlineInputBorder(),
+                ),
+                onChanged: (_) {
+                  setState(() {});
+                },
+              ),
+            ],
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(false),
+          child: const Text('Cancel'),
+        ),
+        ElevatedButton(
+          onPressed: (!isLarge || textController.text.trim() == 'DELETE')
+              ? () => Navigator.of(context).pop(true)
+              : null,
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+          ),
+          child: const Text('Delete'),
+        ),
+      ],
+    );
   }
 }

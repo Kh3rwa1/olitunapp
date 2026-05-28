@@ -142,10 +142,20 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     });
   }
 
+  @Deprecated('Use updateCategory with the string name instead')
   void updateCategoryId(String categoryId) {
     state.item.whenData((item) {
       state = state.copyWith(
         item: AsyncValue.data(item.copyWith(categoryId: categoryId)),
+        isDirty: true,
+      );
+    });
+  }
+
+  void updateCategory(String? name) {
+    state.item.whenData((item) {
+      state = state.copyWith(
+        item: AsyncValue.data(item.copyWith(category: name)),
         isDirty: true,
       );
     });

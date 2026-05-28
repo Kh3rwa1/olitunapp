@@ -1419,7 +1419,7 @@ class ContentItem extends Equatable {
     String? audioUrl,
     String? audioFileId,
     int? durationMs,
-    String? category,
+    Object? category = const Object(),
   }) {
     return ContentItem(
       id: id ?? this.id,
@@ -1442,7 +1442,9 @@ class ContentItem extends Equatable {
       audioUrl: audioUrl ?? this.audioUrl,
       audioFileId: audioFileId ?? this.audioFileId,
       durationMs: durationMs ?? this.durationMs,
-      category: category ?? this.category,
+      category: category == const Object()
+          ? this.category
+          : (category as String?),
     );
   }
 

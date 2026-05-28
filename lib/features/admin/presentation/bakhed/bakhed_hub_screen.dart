@@ -79,7 +79,7 @@ class _AdminWaveformPainter extends CustomPainter {
 
 class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
   String _searchQuery = '';
-  String? _selectedCategoryId;
+  String? _selectedCategoryName;
   String _publishFilter = 'All'; // 'All', 'Published', 'Draft'
   bool _onlyHasAudio = false;
 
@@ -87,7 +87,9 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
   void initState() {
     super.initState();
     if (widget.categoryId != null) {
-      _selectedCategoryId = widget.categoryId;
+      _selectedCategoryName = widget.categoryId == 'cat_sohrai'
+          ? 'Sohrai'
+          : widget.categoryId;
     }
   }
 
@@ -95,7 +97,7 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final listAsync = ref.watch(contentListProvider((ContentKind.rhyme, null)));
-    final categoriesAsync = ref.watch(categoryNotifierProvider);
+    final categoriesAsync = ref.watch(rhymeCategoriesProvider);
 
     return Scaffold(
       backgroundColor: AdminTokens.base(isDark),
@@ -202,7 +204,7 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                             ),
                             child: DropdownButtonHideUnderline(
                               child: DropdownButton<String?>(
-                                value: _selectedCategoryId,
+                                value: _selectedCategoryName,
                                 hint: Text(
                                   'All Categories',
                                   style: TextStyle(
@@ -221,9 +223,9 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                   ),
                                   ...categories.map(
                                     (c) => DropdownMenuItem<String?>(
-                                      value: c.id,
+                                      value: c.nameLatin,
                                       child: Text(
-                                        c.titleLatin,
+                                        c.nameLatin,
                                         style: TextStyle(
                                           color: AdminTokens.textPrimary(
                                             isDark,
@@ -234,7 +236,7 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                   ),
                                 ],
                                 onChanged: (val) =>
-                                    setState(() => _selectedCategoryId = val),
+                                    setState(() => _selectedCategoryName = val),
                               ),
                             ),
                           );
@@ -315,8 +317,8 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                         if (!matchesTitle) return false;
                       }
 
-                      if (_selectedCategoryId != null &&
-                          item.categoryId != _selectedCategoryId) {
+                      if (_selectedCategoryName != null &&
+                          item.category != _selectedCategoryName) {
                         return false;
                       }
 
@@ -361,15 +363,22 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                             item.effectiveAudioUrl!.isNotEmpty;
 
                         // Find category name
-                        String categoryName = 'Unknown Category';
-                        categoriesAsync.whenData((cats) {
-                          final match = cats
-                              .where((c) => c.id == item.categoryId)
-                              .toList();
-                          if (match.isNotEmpty) {
-                            categoryName = match.first.titleLatin;
-                          }
-                        });
+                        String categoryName = item.category ?? '';
+                        if (categoryName.isEmpty) {
+                          categoriesAsync.whenData((cats) {
+                            final match = cats
+                                .where((c) => c.id == item.categoryId)
+                                .toList();
+                            if (match.isNotEmpty) {
+                              categoryName = match.first.nameLatin;
+                            }
+                          });
+                        }
+                        if (categoryName.isEmpty) {
+                          categoryName = item.categoryId.isNotEmpty
+                              ? item.categoryId
+                              : 'Unknown Category';
+                        }
 
                         return Card(
                           color: AdminTokens.raised(isDark),

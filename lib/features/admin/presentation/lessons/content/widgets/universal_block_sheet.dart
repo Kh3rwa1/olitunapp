@@ -153,6 +153,11 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
       if (_calloutVariant != null) 'calloutVariant': _calloutVariant,
       if (_themeColor != null) 'themeColor': _themeColor,
     };
+    if (_audioUrl != null && _audioUrl!.isNotEmpty && type != 'audio') {
+      data['audioUrl'] = _audioUrl;
+    } else {
+      data.remove('audioUrl');
+    }
     // Remove legacy keys we've now canonicalised
     for (final k in const [
       'mediaUrl',

@@ -12,6 +12,7 @@ extension ContentBlockToLegacy on ContentBlock {
         type: 'text',
         textLatin: self.textLatin ?? self.markdown,
         textOlChiki: self.textOlChiki,
+        audioUrl: self.meta['audioUrl'] as String?,
         data: blockData,
       );
     }
@@ -21,6 +22,7 @@ extension ContentBlockToLegacy on ContentBlock {
         type: self.media.kind == ContentMediaKind.svg ? 'svg' : 'image',
         textLatin: self.caption,
         imageUrl: self.media.url,
+        audioUrl: self.meta['audioUrl'] as String?,
         data: blockData,
       );
     }
@@ -55,6 +57,7 @@ extension ContentBlockToLegacy on ContentBlock {
       return LessonBlockEntity(
         type: 'lottie',
         imageUrl: self.media.url,
+        audioUrl: self.meta['audioUrl'] as String?,
         data: blockData,
       );
     }
@@ -67,7 +70,7 @@ extension ContentBlockToLegacy on ContentBlock {
         type: 'glyph',
         textOlChiki: self.olChiki,
         textLatin: self.latin,
-        audioUrl: self.audioUrl,
+        audioUrl: self.audioUrl ?? self.meta['audioUrl'] as String?,
         data: blockData,
       );
     }
@@ -76,6 +79,7 @@ extension ContentBlockToLegacy on ContentBlock {
       return LessonBlockEntity(
         type: 'callout',
         textLatin: self.text,
+        audioUrl: self.meta['audioUrl'] as String?,
         data: blockData,
       );
     }
@@ -83,7 +87,11 @@ extension ContentBlockToLegacy on ContentBlock {
       blockData.addAll(self.config.toJson());
       return LessonBlockEntity(type: 'tracing', data: blockData);
     }
-    return LessonBlockEntity(type: type, data: blockData);
+    return LessonBlockEntity(
+      type: type,
+      audioUrl: self.meta['audioUrl'] as String?,
+      data: blockData,
+    );
   }
 }
 
@@ -103,8 +111,10 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
     final canonicalFileId = dataMedia?['fileId'] as String? ?? '';
 
     // Build the meta passthrough — everything in data EXCEPT keys we own
-    final meta = <String, dynamic>{...?data}
-      ..removeWhere(
+    final meta = <String, dynamic>{
+      if (audioUrl != null && type != 'audio' && type != 'video') 'audioUrl': audioUrl,
+      ...?data,
+    }..removeWhere(
         (k, _) => const {
           'media',
           'posterUrl',

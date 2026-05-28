@@ -1,13 +1,13 @@
 // ignore_for_file: deprecated_member_use
-/// This collection stores categories for the Learn home tab only
-/// (Alphabets, Numbers, Vocabulary, Sentences, Greetings).
-///
-/// Bakhed (rhymes/stories) categories are NOT stored here — they live as
-/// string fields directly on rhyme documents in the `rhymes` collection.
-/// See `RhymeModel.category` and `rhymeCategoriesProvider`.
-///
-/// DO NOT add Bakhed-only categories to this collection. They will leak
-/// onto the Learn tab. The historical "Sohrai" leak was caused by this.
+// This collection stores categories for the Learn home tab only
+// (Alphabets, Numbers, Vocabulary, Sentences, Greetings).
+//
+// Bakhed (rhymes/stories) categories are NOT stored here — they live as
+// string fields directly on rhyme documents in the `rhymes` collection.
+// See `RhymeModel.category` and `rhymeCategoriesProvider`.
+//
+// DO NOT add Bakhed-only categories to this collection. They will leak
+// onto the Learn tab. The historical "Sohrai" leak was caused by this.
 import 'package:appwrite/appwrite.dart';
 import '../../../../core/api/appwrite_databases_pagination.dart';
 import '../../../../core/config/appwrite_config.dart';

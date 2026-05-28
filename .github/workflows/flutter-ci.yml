@@ -97,7 +97,18 @@ jobs:
 
       - name: Build web release
         run: |
-          flutter build web --release --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 --dart-define=APPWRITE_PROJECT_ID=ci --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
+          BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+          flutter build web --release \
+            --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
+            --dart-define=APPWRITE_PROJECT_ID=ci \
+            --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions \
+            --dart-define=BUILD_SHA=$BUILD_SHA \
+            --dart-define=BUILT_AT=$BUILT_AT
+          
+          mkdir -p build/web
+          echo "{\"sha\": \"$BUILD_SHA\", \"builtAt\": \"$BUILT_AT\"}" > build/web/build-info.json
+          
           node scripts/patch_service_worker.mjs
           node scripts/verify_service_worker_patch.mjs
 

@@ -17,6 +17,7 @@ import '../widgets/admin_form_widgets.dart';
 import '../widgets/content_form.dart';
 import '../../domain/content_badge_resolver.dart';
 import '../widgets/content_type_badge.dart';
+import '../widgets/cover_thumbnail.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 /// A unified, highly-polished content administration screen.
@@ -1376,24 +1377,17 @@ class _AdminContentListScreenState
                               color: AdminTokens.border(isDark),
                             ),
                           ),
-                          child:
-                              item.heroMedia != null &&
-                                  item.heroMedia!.url.trim().isNotEmpty
-                              ? ClipRRect(
-                                  borderRadius: BorderRadius.circular(
-                                    AdminTokens.radiusMd,
-                                  ),
-                                  child: Image.network(
-                                    item.heroMedia!.url,
-                                    fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) => Icon(
-                                          _icon,
-                                          color: AdminTokens.accent,
-                                        ),
-                                  ),
-                                )
-                              : Icon(_icon, color: AdminTokens.accent),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(
+                              AdminTokens.radiusMd,
+                            ),
+                            child: CoverThumbnail(
+                              media: item.heroMedia,
+                              coverMediaType: item.coverMediaType,
+                              fit: BoxFit.cover,
+                              fallback: Icon(_icon, color: AdminTokens.accent),
+                            ),
+                          ),
                         ),
                       ],
                     ),

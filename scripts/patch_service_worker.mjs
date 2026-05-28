@@ -10,38 +10,59 @@ if (!fs.existsSync(swPath)) {
 
 let content = fs.readFileSync(swPath, 'utf8');
 
-// Regex to find "flutter_bootstrap.js" entry inside RESOURCES map.
-// Matches "flutter_bootstrap.js" (or single quotes) followed by colon, hash, optional comma, and trailing whitespace.
-const regex = /["']flutter_bootstrap\.js["']\s*:\s*["'][a-f0-9]+["']\s*,?\s*/gi;
-
-if (!regex.test(content)) {
-  // Idempotency: if already patched and absent, exit zero.
-  if (!content.includes('flutter_bootstrap.js') && content.includes('// ITUN_PATCHED_SW')) {
-    console.log('Verification: flutter_bootstrap.js is already absent and patch marker is present. Exiting successfully.');
+// --- Idempotency check ---
+// If already patched, verify bootstrap is fully absent and exit clean.
+if (content.includes('// ITUN_PATCHED_SW')) {
+  const hasBootstrap = content.includes('flutter_bootstrap.js');
+  if (!hasBootstrap) {
+    console.log('Verification: patch marker present and flutter_bootstrap.js fully absent. Exiting successfully.');
     process.exit(0);
   }
-  console.error('Error: Could not find "flutter_bootstrap.js" entry in resources map matching the expected format (and no patch marker was found).');
+  // Marker present but bootstrap still found — fall through to re-patch.
+  console.log('Warning: patch marker present but flutter_bootstrap.js still found. Re-patching...');
+}
+
+let patched = false;
+
+// --- Target 1: RESOURCES hash map (older Flutter SDK) ---
+// Matches "flutter_bootstrap.js": "hash" with optional trailing comma and whitespace.
+const resourcesRegex = /["']flutter_bootstrap\.js["']\s*:\s*["'][a-f0-9]+["']\s*,?\s*/gi;
+if (resourcesRegex.test(content)) {
+  resourcesRegex.lastIndex = 0;
+  content = content.replace(resourcesRegex, '');
+  console.log('  - Removed flutter_bootstrap.js from RESOURCES map.');
+  patched = true;
+}
+
+// --- Target 2: CORE array (current Flutter SDK) ---
+// Matches "flutter_bootstrap.js" as an array element with optional trailing comma and whitespace/newline.
+const coreRegex = /["']flutter_bootstrap\.js["']\s*,?\s*\n?/g;
+if (coreRegex.test(content)) {
+  coreRegex.lastIndex = 0;
+  content = content.replace(coreRegex, '');
+  console.log('  - Removed flutter_bootstrap.js from CORE array.');
+  patched = true;
+}
+
+if (!patched) {
+  // flutter_bootstrap.js not found in either RESOURCES or CORE, and no patch marker — SDK drift.
+  console.error('Error: flutter_bootstrap.js not found in RESOURCES map or CORE array (and no patch marker was found).');
+  console.error('The Flutter SDK output format may have changed. Manual investigation required.');
   process.exit(1);
 }
 
-// Reset regex index because of test()
-regex.lastIndex = 0;
-
-// Log resource count details for visibility
-const matchesBefore = content.match(/"[^"]+"\s*:\s*"[^"]+"/g) || [];
-const countBefore = matchesBefore.length;
-
-// Remove the bootstrap resource and append the patch marker
-let patchedContent = content.replace(regex, '');
-if (!patchedContent.includes('// ITUN_PATCHED_SW')) {
-  patchedContent = patchedContent.trim() + '\n\n// ITUN_PATCHED_SW\n';
+// --- Append patch marker ---
+if (!content.includes('// ITUN_PATCHED_SW')) {
+  content = content.trim() + '\n\n// ITUN_PATCHED_SW\n';
 }
 
-const matchesAfter = patchedContent.match(/"[^"]+"\s*:\s*"[^"]+"/g) || [];
-const countAfter = matchesAfter.length;
+// --- Resource count reporting ---
+const resourceEntries = content.match(/"[^"]+"\s*:\s*"[^"]+"/g) || [];
+const coreEntries = content.match(/const\s+CORE\s*=\s*\[([^\]]*)\]/s);
+const coreItems = coreEntries ? coreEntries[1].match(/"[^"]+"/g) || [] : [];
 
-fs.writeFileSync(swPath, patchedContent, 'utf8');
-console.log(`Successfully patched service worker.`);
-console.log(`  - Resources count before: ${countBefore}`);
-console.log(`  - Resources count after:  ${countAfter}`);
+fs.writeFileSync(swPath, content, 'utf8');
+console.log('Successfully patched service worker.');
+console.log(`  - RESOURCES entries: ${resourceEntries.length}`);
+console.log(`  - CORE entries: ${coreItems.length}`);
 process.exit(0);

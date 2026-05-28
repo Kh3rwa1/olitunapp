@@ -88,6 +88,8 @@ void main() {
     final editButton = find.byIcon(Icons.edit_rounded);
     expect(editButton, findsOneWidget);
     await tester.tap(editButton);
+    await tester.pump();
+    await tester.pump(Duration.zero);
     await tester.pumpAndSettle();
 
     expect(find.text('Edit Rhymes & Stories'), findsOneWidget);
@@ -142,6 +144,8 @@ void main() {
       final editButton = find.byIcon(Icons.edit_rounded);
       expect(editButton, findsOneWidget);
       await tester.tap(editButton);
+      await tester.pump();
+      await tester.pump(Duration.zero);
       await tester.pumpAndSettle();
 
       expect(find.text('Edit Rhymes & Stories'), findsOneWidget);

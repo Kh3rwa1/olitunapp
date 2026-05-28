@@ -10,7 +10,7 @@ import '../widgets/admin_page_header.dart';
 import '../widgets/admin_empty_state.dart';
 import '../../domain/content_badge_resolver.dart';
 import '../widgets/content_type_badge.dart';
-import '../widgets/cover_thumbnail.dart';
+import '../../../../shared/widgets/cover_thumbnail.dart';
 
 class BakhedHubScreen extends ConsumerStatefulWidget {
   final String? categoryId;
@@ -429,7 +429,6 @@ class _BakhedHubScreenState extends ConsumerState<BakhedHubScreen> {
                                                 media: item.heroMedia,
                                                 coverMediaType:
                                                     item.coverMediaType,
-                                                fit: BoxFit.cover,
                                                 fallback: const Icon(
                                                   Icons.music_note_rounded,
                                                   color: AppColors.primary,

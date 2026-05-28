@@ -59,6 +59,11 @@ class _CoverThumbnailState extends State<CoverThumbnail> {
 
   @override
   void deactivate() {
+    // Defer pause to a microtask to avoid markNeedsBuild exceptions when
+    // the framework tears down the widget tree during disposal. Calling
+    // controller.pause() synchronously inside deactivate() would trigger
+    // a setState on the VideoPlayer's internal listener while the tree
+    // is already locked.
     final controller = _videoController;
     if (controller != null) {
       Future.microtask(controller.pause);

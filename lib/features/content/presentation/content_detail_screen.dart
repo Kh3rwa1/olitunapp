@@ -27,6 +27,7 @@ import 'package:itun/features/rhymes/presentation/providers/rhyme_audio_provider
 import 'package:itun/shared/providers/bakhed_content_provider.dart';
 import 'package:itun/features/rhymes/presentation/widgets/enchanted_visualizer.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/features/rhymes/presentation/widgets/cover_hero.dart';
 
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -928,25 +929,11 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            // Thumbnail / Cover Art Image
-                            if (item.heroMedia?.url != null &&
-                                item.heroMedia!.url.isNotEmpty)
-                              CachedNetworkImage(
-                                imageUrl: item.heroMedia!.url,
-                                fit: BoxFit.cover,
-                                placeholder: (context, url) =>
-                                    Container(color: Colors.black26),
-                                errorWidget: (context, url, err) => Container(
-                                  color: const Color(0xFF151C2A),
-                                  child: Icon(
-                                    Icons.music_note_rounded,
-                                    size: 64,
-                                    color: accentColor,
-                                  ),
-                                ),
-                              )
-                            else
-                              Container(
+                            // Thumbnail / Cover Art Image / Video Autoplay
+                            CoverHero(
+                              media: item.heroMedia,
+                              coverMediaType: item.coverMediaType,
+                              fallback: Container(
                                 color: const Color(0xFF151C2A),
                                 child: Icon(
                                   Icons.music_note_rounded,
@@ -954,6 +941,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                                   color: accentColor,
                                 ),
                               ),
+                            ),
 
                             // Visualizer Overlay
                             Positioned(

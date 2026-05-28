@@ -54,13 +54,10 @@ class MediaUploader {
       final file = result.files.first;
       final validationRes = await validateFile(file, kind);
       int? probedDurationMs;
-      final failure = validationRes.fold(
-        (f) => f,
-        (duration) {
-          probedDurationMs = duration;
-          return null;
-        },
-      );
+      final failure = validationRes.fold((f) => f, (duration) {
+        probedDurationMs = duration;
+        return null;
+      });
       if (failure != null) {
         return left(failure);
       }
@@ -124,7 +121,13 @@ class MediaUploader {
       if (bucketId != null) {
         await _storage.deleteFile(bucketId: bucketId, fileId: fileId);
       } else {
-        final buckets = ['images', 'videos', 'audio', 'animations', 'cover_videos'];
+        final buckets = [
+          'images',
+          'videos',
+          'audio',
+          'animations',
+          'cover_videos',
+        ];
         for (final bucket in buckets) {
           try {
             await _storage.deleteFile(bucketId: bucket, fileId: fileId);
@@ -309,25 +312,34 @@ class MediaUploader {
   Future<int?> Function(PlatformFile)? videoDurationProberOverride;
 
   /// Validates picked media files against size, mime, and duration rules.
-  Future<Either<Failure, int?>> validateFile(PlatformFile file, ContentMediaKind kind) async {
+  Future<Either<Failure, int?>> validateFile(
+    PlatformFile file,
+    ContentMediaKind kind,
+  ) async {
     try {
       int? durationMs;
       if (kind == ContentMediaKind.video) {
         // 1. Size check
         if (file.size > 10485760) {
-          throw const MediaValidationException('File size exceeds the 10 MB limit');
+          throw const MediaValidationException(
+            'File size exceeds the 10 MB limit',
+          );
         }
 
         // 2. Mime / extension check
         final ext = file.name.split('.').last.toLowerCase();
         if (ext != 'mp4' && ext != 'webm' && ext != 'mov') {
-          throw MediaValidationException('Unsupported file format: .$ext. Only mp4, webm, and mov are allowed.');
+          throw MediaValidationException(
+            'Unsupported file format: .$ext. Only mp4, webm, and mov are allowed.',
+          );
         }
 
         // 3. Duration check
         durationMs = await _probeVideoDurationMs(file);
         if (durationMs != null && durationMs > 300000) {
-          throw const MediaValidationException('Video duration exceeds the 5 minutes limit');
+          throw const MediaValidationException(
+            'Video duration exceeds the 5 minutes limit',
+          );
         }
       }
       return right(durationMs);

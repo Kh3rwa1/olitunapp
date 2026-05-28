@@ -859,11 +859,11 @@ class ContentItem extends Equatable {
     this.durationMs,
     this.category,
   }) : assert(
-          coverMediaType == null ||
-              coverMediaType == 'image' ||
-              coverMediaType == 'video',
-          'Invalid coverMediaType: $coverMediaType',
-        );
+         coverMediaType == null ||
+             coverMediaType == 'image' ||
+             coverMediaType == 'video',
+         'Invalid coverMediaType: $coverMediaType',
+       );
 
   factory ContentItem.empty({required String id, required ContentKind kind}) {
     return ContentItem(
@@ -1174,7 +1174,8 @@ class ContentItem extends Equatable {
       }
     }
 
-    final coverMediaType = json['coverMediaType'] as String? ??
+    final coverMediaType =
+        json['coverMediaType'] as String? ??
         (parsedHeroMedia != null ? 'image' : null);
 
     final parsedItem = ContentItem(

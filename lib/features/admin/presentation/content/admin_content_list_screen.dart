@@ -17,7 +17,7 @@ import '../widgets/admin_form_widgets.dart';
 import '../widgets/content_form.dart';
 import '../../domain/content_badge_resolver.dart';
 import '../widgets/content_type_badge.dart';
-import '../widgets/cover_thumbnail.dart';
+import '../../../../shared/widgets/cover_thumbnail.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 
 /// A unified, highly-polished content administration screen.
@@ -1384,7 +1384,6 @@ class _AdminContentListScreenState
                             child: CoverThumbnail(
                               media: item.heroMedia,
                               coverMediaType: item.coverMediaType,
-                              fit: BoxFit.cover,
                               fallback: Icon(_icon, color: AdminTokens.accent),
                             ),
                           ),

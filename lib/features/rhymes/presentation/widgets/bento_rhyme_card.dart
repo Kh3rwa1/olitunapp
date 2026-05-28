@@ -9,6 +9,7 @@ import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
+import '../../../../shared/widgets/cover_thumbnail.dart';
 import 'enchanted_visualizer.dart';
 
 import 'package:go_router/go_router.dart';
@@ -42,6 +43,10 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
     _iconBounceController.dispose();
     super.dispose();
   }
+
+  /// Whether the rhyme has a visual cover (image or video).
+  bool get _hasCover =>
+      widget.rhyme.heroMedia != null && widget.rhyme.heroMedia!.url.isNotEmpty;
 
   static const List<Color> _palette = [
     AppColors.duoBlue,
@@ -86,23 +91,20 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
             : Colors.white.withValues(alpha: 0.7),
         child: Stack(
           children: [
-            // Background Image
-            if (widget.rhyme.thumbnailUrl != null &&
-                widget.rhyme.thumbnailUrl!.isNotEmpty)
+            // Background Cover (image or video first-frame poster)
+            if (_hasCover)
               Positioned.fill(
                 child: ClipRRect(
                   borderRadius: BorderRadius.circular(32),
-                  child: Image.network(
-                    widget.rhyme.thumbnailUrl!,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) =>
-                        const SizedBox.shrink(),
+                  child: CoverThumbnail(
+                    media: widget.rhyme.heroMedia,
+                    coverMediaType: widget.rhyme.coverMediaType,
+                    fallback: const SizedBox.shrink(),
                   ),
                 ),
               ),
             // Dark/Light Overlay for readability
-            if (widget.rhyme.thumbnailUrl != null &&
-                widget.rhyme.thumbnailUrl!.isNotEmpty)
+            if (_hasCover)
               Positioned.fill(
                 child: Container(
                   decoration: BoxDecoration(
@@ -126,9 +128,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                 height: 60,
                 child: EnchantedVisualizer(
                   isPlaying: isPlaying,
-                  color:
-                      (widget.rhyme.thumbnailUrl != null &&
-                          widget.rhyme.thumbnailUrl!.isNotEmpty)
+                  color: _hasCover
                       ? Colors.white.withValues(alpha: 0.2)
                       : color.withValues(alpha: 0.2),
                 ),
@@ -145,20 +145,14 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                       Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color:
-                                  (widget.rhyme.thumbnailUrl != null &&
-                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
+                              color: _hasCover
                                   ? Colors.white.withValues(alpha: 0.2)
                                   : color.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               _getIconForCategory(widget.rhyme.category),
-                              color:
-                                  (widget.rhyme.thumbnailUrl != null &&
-                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
-                                  ? Colors.white
-                                  : color,
+                              color: _hasCover ? Colors.white : color,
                               size: 16,
                             ),
                           )
@@ -183,6 +177,9 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                                 widget.rhyme.id,
                                 widget.rhyme.audioUrl,
                                 title: primaryTitle,
+                                // Intentionally uses thumbnailUrl (null for video-cover
+                                // rhymes); audio notification falls back to generic icon.
+                                // See Phase 2e scope decision.
                                 artworkUrl: widget.rhyme.thumbnailUrl,
                               );
                         },
@@ -207,11 +204,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                                   ? Icons.pause_circle_filled_rounded
                                   : Icons.play_circle_fill_rounded,
                               key: ValueKey(isPlaying),
-                              color:
-                                  (widget.rhyme.thumbnailUrl != null &&
-                                      widget.rhyme.thumbnailUrl!.isNotEmpty)
-                                  ? Colors.white
-                                  : color,
+                              color: _hasCover ? Colors.white : color,
                               size: 28,
                             ),
                           ),
@@ -226,9 +219,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                           style: GoogleFonts.fredoka(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
-                            color:
-                                (widget.rhyme.thumbnailUrl != null &&
-                                    widget.rhyme.thumbnailUrl!.isNotEmpty)
+                            color: _hasCover
                                 ? Colors.white70
                                 : color.withValues(alpha: 0.8),
                             letterSpacing: 1,

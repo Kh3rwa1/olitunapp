@@ -8,6 +8,7 @@ import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/glass_card.dart';
 import '../../domain/rhyme_model.dart';
+import '../../../../shared/widgets/cover_thumbnail.dart';
 import 'enchanted_visualizer.dart';
 
 import 'package:go_router/go_router.dart';
@@ -40,6 +41,10 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
     _playPulseController.dispose();
     super.dispose();
   }
+
+  /// Whether the rhyme has a visual cover (image or video).
+  bool get _hasCover =>
+      widget.rhyme.heroMedia != null && widget.rhyme.heroMedia!.url.isNotEmpty;
 
   @override
   Widget build(BuildContext context) {
@@ -79,23 +84,20 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                 ),
                 child: Stack(
                   children: [
-                    // Background Image
-                    if (widget.rhyme.thumbnailUrl != null &&
-                        widget.rhyme.thumbnailUrl!.isNotEmpty)
+                    // Background Cover (image or video first-frame poster)
+                    if (_hasCover)
                       Positioned.fill(
                         child: ClipRRect(
                           borderRadius: BorderRadius.circular(40),
-                          child: Image.network(
-                            widget.rhyme.thumbnailUrl!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) =>
-                                const SizedBox.shrink(),
+                          child: CoverThumbnail(
+                            media: widget.rhyme.heroMedia,
+                            coverMediaType: widget.rhyme.coverMediaType,
+                            fallback: const SizedBox.shrink(),
                           ),
                         ),
                       ),
                     // Dark Gradient Overlay for Readability
-                    if (widget.rhyme.thumbnailUrl != null &&
-                        widget.rhyme.thumbnailUrl!.isNotEmpty)
+                    if (_hasCover)
                       Positioned.fill(
                         child: Container(
                           decoration: BoxDecoration(
@@ -217,6 +219,9 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                         widget.rhyme.id,
                                         widget.rhyme.audioUrl,
                                         title: primaryTitle,
+                                        // Intentionally uses thumbnailUrl (null for video-cover
+                                        // rhymes); audio notification falls back to generic icon.
+                                        // See Phase 2e scope decision.
                                         artworkUrl: widget.rhyme.thumbnailUrl,
                                       );
                                 },

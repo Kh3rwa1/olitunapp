@@ -60,7 +60,8 @@ class RhymeModel {
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           const [],
-      coverMediaType: _readString(json, 'coverMediaType') ??
+      coverMediaType:
+          _readString(json, 'coverMediaType') ??
           (parsedHeroMedia != null ? 'image' : null),
       heroMedia: parsedHeroMedia,
     );

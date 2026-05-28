@@ -180,10 +180,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       }
       state = state.copyWith(
         item: AsyncValue.data(
-          item.copyWith(
-            heroMedia: media,
-            coverMediaType: mediaType,
-          ),
+          item.copyWith(heroMedia: media, coverMediaType: mediaType),
         ),
         isDirty: true,
       );
@@ -198,10 +195,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       }
       state = state.copyWith(
         item: AsyncValue.data(
-          item.copyWith(
-            heroMedia: null,
-            coverMediaType: null,
-          ),
+          item.copyWith(heroMedia: null, coverMediaType: null),
         ),
         isDirty: true,
       );

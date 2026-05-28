@@ -1254,7 +1254,9 @@ void main() {
     });
 
     Future<void> setupEditor(ContentItem rhyme) async {
-      when(() => mockRepository.get(rhyme.id)).thenAnswer((_) async => right(rhyme));
+      when(
+        () => mockRepository.get(rhyme.id),
+      ).thenAnswer((_) async => right(rhyme));
       container = ProviderContainer(
         overrides: [
           bakhedRepositoryProvider.overrideWithValue(mockRepository),
@@ -1270,7 +1272,9 @@ void main() {
       final rhyme = _makeRhyme(); // starts with image cover1
       await setupEditor(rhyme);
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
+      final notifier = container.read(
+        bakhedEditorControllerProvider(rhyme.id).notifier,
+      );
       const newMedia = ContentMedia(
         url: 'https://cdn.example.com/new_image.png',
         fileId: 'img456',
@@ -1291,7 +1295,9 @@ void main() {
       final rhyme = _makeRhyme(); // starts with image cover1
       await setupEditor(rhyme);
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
+      final notifier = container.read(
+        bakhedEditorControllerProvider(rhyme.id).notifier,
+      );
       const videoMedia = ContentMedia(
         url: 'https://cdn.example.com/cover.mp4',
         fileId: 'vid789',
@@ -1308,40 +1314,50 @@ void main() {
       expect(state.pendingDeletions, contains('cover1'));
     });
 
-    test('clearCover clears cover media state and queues old cover file for deletion', () async {
-      final rhyme = _makeRhyme(); // starts with image cover1
-      await setupEditor(rhyme);
+    test(
+      'clearCover clears cover media state and queues old cover file for deletion',
+      () async {
+        final rhyme = _makeRhyme(); // starts with image cover1
+        await setupEditor(rhyme);
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
 
-      notifier.clearCover();
+        notifier.clearCover();
 
-      final state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.heroMedia, isNull);
-      expect(state.item.value!.coverMediaType, isNull);
-      expect(state.isDirty, isTrue);
-      expect(state.pendingDeletions, contains('cover1'));
-    });
+        final state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.heroMedia, isNull);
+        expect(state.item.value!.coverMediaType, isNull);
+        expect(state.isDirty, isTrue);
+        expect(state.pendingDeletions, contains('cover1'));
+      },
+    );
 
-    test('Deprecated updateThumbnail routes to updateCoverMedia with image type', () async {
-      final rhyme = _makeRhyme(); // starts with image cover1
-      await setupEditor(rhyme);
+    test(
+      'Deprecated updateThumbnail routes to updateCoverMedia with image type',
+      () async {
+        final rhyme = _makeRhyme(); // starts with image cover1
+        await setupEditor(rhyme);
 
-      final notifier = container.read(bakhedEditorControllerProvider(rhyme.id).notifier);
-      const newMedia = ContentMedia(
-        url: 'https://cdn.example.com/deprecated.png',
-        fileId: 'imgDep',
-        kind: ContentMediaKind.image,
-      );
+        final notifier = container.read(
+          bakhedEditorControllerProvider(rhyme.id).notifier,
+        );
+        const newMedia = ContentMedia(
+          url: 'https://cdn.example.com/deprecated.png',
+          fileId: 'imgDep',
+          kind: ContentMediaKind.image,
+        );
 
-      // ignore: deprecated_member_use_from_same_package
-      notifier.updateThumbnail(newMedia);
+        // ignore: deprecated_member_use_from_same_package
+        notifier.updateThumbnail(newMedia);
 
-      final state = container.read(bakhedEditorControllerProvider(rhyme.id));
-      expect(state.item.value!.heroMedia, newMedia);
-      expect(state.item.value!.coverMediaType, 'image');
-      expect(state.isDirty, isTrue);
-      expect(state.pendingDeletions, contains('cover1'));
-    });
+        final state = container.read(bakhedEditorControllerProvider(rhyme.id));
+        expect(state.item.value!.heroMedia, newMedia);
+        expect(state.item.value!.coverMediaType, 'image');
+        expect(state.isDirty, isTrue);
+        expect(state.pendingDeletions, contains('cover1'));
+      },
+    );
   });
 }

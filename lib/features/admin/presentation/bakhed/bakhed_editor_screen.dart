@@ -311,6 +311,9 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
   late final TextEditingController _subtitleController;
   late final TextEditingController _olChikiController;
 
+  int _selectedCoverTab = 0;
+  bool _hasInitializedFromState = false;
+
   @override
   void initState() {
     super.initState();
@@ -344,6 +347,11 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
       ).select((s) => s.item.value),
     );
     if (item == null) return const SizedBox();
+
+    if (!_hasInitializedFromState) {
+      _selectedCoverTab = item.coverMediaType == 'video' ? 1 : 0;
+      _hasInitializedFromState = true;
+    }
 
     final notifier = ref.read(
       bakhedEditorControllerProvider(widget.bakhedId).notifier,
@@ -457,19 +465,143 @@ class _BasicsTabState extends ConsumerState<_BasicsTab> {
                   style: AdminTokens.sectionTitle(isDark),
                 ),
                 const SizedBox(height: 20),
-                MediaPickerField(
-                  label: 'Cover Image (Thumbnail)',
-                  kind: ContentMediaKind.image,
-                  value: item.heroMedia,
-                  onRemove: notifier.markForDeletion,
-                  onChanged: notifier.updateThumbnail,
+                Text(
+                  'Cover Type',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    color: isDark ? Colors.grey[400] : Colors.grey[700],
+                  ),
                 ),
+                const SizedBox(height: 8),
+                SegmentedButton<int>(
+                  segments: const [
+                    ButtonSegment<int>(
+                      value: 0,
+                      label: Text('Image Cover'),
+                      icon: Icon(Icons.image_outlined),
+                    ),
+                    ButtonSegment<int>(
+                      value: 1,
+                      label: Text('Video Loop Cover'),
+                      icon: Icon(Icons.play_circle_outline),
+                    ),
+                  ],
+                  selected: {_selectedCoverTab},
+                  onSelectionChanged: (newSelection) {
+                    _handleTabChange(newSelection.first);
+                  },
+                  style: SegmentedButton.styleFrom(
+                    selectedBackgroundColor: AppColors.primary.withValues(
+                      alpha: 0.15,
+                    ),
+                    selectedForegroundColor: AppColors.primary,
+                    visualDensity: VisualDensity.comfortable,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                if (_selectedCoverTab == 0)
+                  MediaPickerField(
+                    label: 'Cover Image (Thumbnail)',
+                    kind: ContentMediaKind.image,
+                    value: item.coverMediaType == 'image'
+                        ? item.heroMedia
+                        : null,
+                    onRemove: notifier.markForDeletion,
+                    onChanged: (media) {
+                      if (media == null) {
+                        notifier.clearCover();
+                      } else {
+                        notifier.updateCoverMedia(media, 'image');
+                      }
+                    },
+                  )
+                else
+                  MediaPickerField(
+                    label: 'Cover Video Loop (Autoplay)',
+                    kind: ContentMediaKind.video,
+                    value: item.coverMediaType == 'video'
+                        ? item.heroMedia
+                        : null,
+                    onRemove: notifier.markForDeletion,
+                    onChanged: (media) {
+                      if (media == null) {
+                        notifier.clearCover();
+                      } else {
+                        notifier.updateCoverMedia(media, 'video');
+                      }
+                    },
+                  ),
               ],
             ),
           ),
         ),
       ],
     );
+  }
+
+  void _handleTabChange(int newTab) {
+    if (_selectedCoverTab == newTab) return;
+
+    final item = ref
+        .read(bakhedEditorControllerProvider(widget.bakhedId))
+        .item
+        .value;
+    final notifier = ref.read(
+      bakhedEditorControllerProvider(widget.bakhedId).notifier,
+    );
+
+    if (item == null) return;
+
+    if (item.heroMedia == null) {
+      setState(() {
+        _selectedCoverTab = newTab;
+      });
+      return;
+    }
+
+    final targetMediaType = newTab == 0 ? 'image' : 'video';
+    final currentMediaType = _selectedCoverTab == 0 ? 'image' : 'video';
+
+    late BuildContext dialogContext;
+    showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext ctx) {
+        dialogContext = ctx;
+        return AlertDialog(
+          title: const Text('Change Cover Media Type?'),
+          content: Text(
+            'Switching to a $targetMediaType cover will permanently delete your existing $currentMediaType cover. Are you sure you want to continue?',
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(dialogContext).pop(false);
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              style: TextButton.styleFrom(foregroundColor: Colors.red),
+              onPressed: () {
+                Navigator.of(dialogContext).pop(true);
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
+        );
+      },
+    ).then((confirmed) {
+      if (confirmed == true) {
+        notifier.clearCover();
+        setState(() {
+          _selectedCoverTab = newTab;
+        });
+      }
+    });
   }
 }
 

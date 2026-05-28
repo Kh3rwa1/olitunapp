@@ -484,6 +484,27 @@
             "compression": "none",
             "encryption": true,
             "antivirus": true
+        },
+        {
+            "$id": "cover_videos",
+            "$permissions": [
+                "read(\"any\")",
+                "create(\"team:admins\")",
+                "update(\"team:admins\")",
+                "delete(\"team:admins\")"
+            ],
+            "fileSecurity": false,
+            "name": "Cover Videos",
+            "enabled": true,
+            "maximumFileSize": 10485760,
+            "allowedFileExtensions": [
+                "mp4",
+                "webm",
+                "mov"
+            ],
+            "compression": "none",
+            "encryption": false,
+            "antivirus": true
         }
     ]
 }

@@ -30,3 +30,11 @@ class ValidationFailure extends Failure {
     this.fieldErrors = const {},
   });
 }
+
+class MediaValidationException implements Exception {
+  final String message;
+  const MediaValidationException(this.message);
+
+  @override
+  String toString() => 'MediaValidationException: $message';
+}

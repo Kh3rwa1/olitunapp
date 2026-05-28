@@ -156,5 +156,106 @@ void main() {
         expect(rhyme2.category, isNull);
       },
     );
+
+    test(
+      'parses coverMediaType: image and thumbnailUrl (backward compatibility)',
+      () {
+        final model = RhymeModel.fromJson({
+          'id': 'rhyme_image',
+          'titleOlChiki': 'ᱵᱟᱠᱷᱮᱫ',
+          'titleLatin': 'Bakhed',
+          'contentOlChiki': '',
+          'contentLatin': 'Story text',
+          'coverMediaType': 'image',
+          'thumbnailUrl': 'https://example.com/thumb.png',
+        });
+
+        expect(model.coverMediaType, 'image');
+        expect(model.thumbnailUrl, 'https://example.com/thumb.png');
+      },
+    );
+
+    test(
+      'parses coverMediaType: video and heroMedia JSON containing video URL',
+      () {
+        final model = RhymeModel.fromJson({
+          'id': 'rhyme_video',
+          'titleOlChiki': 'ᱵᱟᱠᱷᱮᱫ',
+          'titleLatin': 'Bakhed',
+          'contentOlChiki': '',
+          'contentLatin': 'Story text',
+          'coverMediaType': 'video',
+          'hero_media':
+              '{"url":"https://example.com/video.mp4","fileId":"vid123","kind":"video","durationMs":25000}',
+        });
+
+        expect(model.coverMediaType, 'video');
+        expect(model.heroMedia, isNotNull);
+        expect(model.heroMedia!.url, 'https://example.com/video.mp4');
+        expect(model.heroMedia!.kind, ContentMediaKind.video);
+        expect(model.heroMedia!.durationMs, 25000);
+      },
+    );
+
+    test(
+      'defaults coverMediaType to image if missing but heroMedia is present',
+      () {
+        final model = RhymeModel.fromJson({
+          'id': 'rhyme_compat',
+          'titleOlChiki': 'ᱵᱟᱠᱷᱮᱫ',
+          'titleLatin': 'Bakhed',
+          'contentOlChiki': '',
+          'contentLatin': 'Story text',
+          'hero_media':
+              '{"url":"https://example.com/image.png","fileId":"img123","kind":"image"}',
+        });
+
+        expect(model.coverMediaType, 'image');
+        expect(model.heroMedia, isNotNull);
+        expect(model.heroMedia!.url, 'https://example.com/image.png');
+        expect(model.heroMedia!.kind, ContentMediaKind.image);
+      },
+    );
+
+    test(
+      'round-trip serialization: video cover parses and serializes correctly',
+      () {
+        final now = DateTime.now();
+        final item = ContentItem(
+          id: 'r_roundtrip',
+          kind: ContentKind.rhyme,
+          categoryId: 'cat_sohrai',
+          title: 'Title Latin',
+          coverMediaType: 'video',
+          heroMedia: const ContentMedia(
+            url: 'https://example.com/video.mp4',
+            fileId: 'vid123',
+            kind: ContentMediaKind.video,
+            durationMs: 25000,
+          ),
+          blocks: const [],
+          updatedAt: now,
+        );
+
+        final appwriteJson = item.toAppwrite();
+        expect(appwriteJson['coverMediaType'], 'video');
+        expect(
+          appwriteJson['thumbnailUrl'],
+          isNull,
+        ); // video covers do not populate legacy thumbnailUrl
+        expect(appwriteJson['hero_media'], isNotNull);
+
+        final parsed = ContentItem.fromJson(
+          appwriteJson,
+          'r_roundtrip',
+          ContentKind.rhyme,
+        );
+        expect(parsed.coverMediaType, 'video');
+        expect(parsed.heroMedia, isNotNull);
+        expect(parsed.heroMedia!.url, 'https://example.com/video.mp4');
+        expect(parsed.heroMedia!.kind, ContentMediaKind.video);
+        expect(parsed.heroMedia!.durationMs, 25000);
+      },
+    );
   });
 }

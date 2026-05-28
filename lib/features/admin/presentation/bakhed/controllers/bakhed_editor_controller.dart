@@ -170,7 +170,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     });
   }
 
-  void updateThumbnail(ContentMedia? media) {
+  void updateCoverMedia(ContentMedia? media, String mediaType) {
     state.item.whenData((item) {
       final oldFileId = item.heroMedia?.fileId;
       if (oldFileId != null &&
@@ -179,10 +179,32 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
         markForDeletion(oldFileId);
       }
       state = state.copyWith(
-        item: AsyncValue.data(item.copyWith(heroMedia: media)),
+        item: AsyncValue.data(
+          item.copyWith(heroMedia: media, coverMediaType: mediaType),
+        ),
         isDirty: true,
       );
     });
+  }
+
+  void clearCover() {
+    state.item.whenData((item) {
+      final oldFileId = item.heroMedia?.fileId;
+      if (oldFileId != null && oldFileId.isNotEmpty) {
+        markForDeletion(oldFileId);
+      }
+      state = state.copyWith(
+        item: AsyncValue.data(
+          item.copyWith(heroMedia: null, coverMediaType: null),
+        ),
+        isDirty: true,
+      );
+    });
+  }
+
+  @Deprecated('Use updateCoverMedia with mediaType')
+  void updateThumbnail(ContentMedia? media) {
+    updateCoverMedia(media, 'image');
   }
 
   void updateAudio(String? url, String? fileId, int? durationMs) {

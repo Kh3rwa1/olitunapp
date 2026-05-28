@@ -345,6 +345,8 @@ extension ContentItemToLegacy on ContentItem {
       categoryId: categoryId,
       category: category,
       tags: tags,
+      coverMediaType: coverMediaType,
+      heroMedia: heroMedia,
     );
   }
 }

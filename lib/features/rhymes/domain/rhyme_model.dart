@@ -1,3 +1,6 @@
+import 'dart:convert';
+import 'package:itun/shared/models/content_item.dart';
+
 class RhymeModel {
   final String id;
   final String titleOlChiki;
@@ -9,6 +12,8 @@ class RhymeModel {
   final String? categoryId;
   final String? category;
   final List<String> tags;
+  final String? coverMediaType;
+  final ContentMedia? heroMedia;
 
   RhymeModel({
     required this.id,
@@ -21,9 +26,27 @@ class RhymeModel {
     this.categoryId,
     this.category,
     this.tags = const [],
+    this.coverMediaType,
+    this.heroMedia,
   });
 
   factory RhymeModel.fromJson(Map<String, dynamic> json) {
+    final rawHeroMedia = json['hero_media'] ?? json['heroMedia'];
+    ContentMedia? parsedHeroMedia;
+    if (rawHeroMedia != null) {
+      if (rawHeroMedia is String) {
+        if (rawHeroMedia.isNotEmpty) {
+          try {
+            parsedHeroMedia = ContentMedia.fromJson(
+              jsonDecode(rawHeroMedia) as Map<String, dynamic>,
+            );
+          } catch (_) {}
+        }
+      } else if (rawHeroMedia is Map<String, dynamic>) {
+        parsedHeroMedia = ContentMedia.fromJson(rawHeroMedia);
+      }
+    }
+
     return RhymeModel(
       id: _readString(json, 'id') ?? _readString(json, r'$id') ?? '',
       titleOlChiki: _readString(json, 'titleOlChiki') ?? '',
@@ -37,6 +60,10 @@ class RhymeModel {
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           const [],
+      coverMediaType:
+          _readString(json, 'coverMediaType') ??
+          (parsedHeroMedia != null ? 'image' : null),
+      heroMedia: parsedHeroMedia,
     );
   }
 
@@ -52,6 +79,8 @@ class RhymeModel {
       'categoryId': categoryId,
       'category': category,
       'tags': tags,
+      if (coverMediaType != null) 'coverMediaType': coverMediaType,
+      if (heroMedia != null) 'heroMedia': heroMedia!.toJson(),
     };
   }
 

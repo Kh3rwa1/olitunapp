@@ -72,10 +72,32 @@ For deployment contracts and edge cache timing constraints, see [docs/web_deploy
 
 ---
 
+## 🎬 Cover Media Bucket Strategy
+
+To support beautiful image and video covers for rhymes, we utilize a dual-bucket strategy:
+1. **Images Bucket (`images`):** Used for standard static image covers.
+2. **Cover Videos Bucket (`cover_videos`):** Dedicated to premium autoplaying loop video covers.
+
+### Bucket Configurations & Constraints
+
+| Bucket | Purpose | Max Size | Allowed Extensions | Permissions |
+|---|---|---|---|---|
+| **`images`** | Image covers, icons, static assets | 10 MB | `.jpg`, `.jpeg`, `.png`, `.webp`, `.gif` | `read("any")` / Admin write |
+| **`cover_videos`** | Autoplay video cover loops | 10 MB | `.mp4`, `.webm`, `.mov` | `read("any")` / Admin write |
+
+### Discriminator and Media Mapping
+All cover assignments are stored in the `rhymes` database collection under a single model property:
+- **`coverMediaType`:** Enum field (`"image"` or `"video"`) that designates the active cover type.
+- **`hero_media` / `heroMedia`:** A nested JSON object storing the media `url`, storage `fileId`, and media `kind` (`"image"` or `"video"`).
+- **`thumbnailUrl`:** Populated for image-cover rhymes. For video-cover rhymes, `thumbnailUrl` is intentionally set to `null` to avoid passing a video URL to standard background audio notification layouts (which expect static images and fall back to the generic app logo).
+
+---
+
 ## 🧪 Testing and Verification
 
 - Unit tests for the synchronous duration prober reside in [media_uploader_duration_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/storage/media_uploader_duration_test.dart).
 - Test suites in `test/features/admin/bakhed/` simulate the canonical picker-controller flow using `notifier.setUploadInProgress` and `notifier.updateAudio` to verify race condition guards.
 - Stale client detector stream and HTTP mock tests reside in [build_version_checker_test.dart](file:///Users/dulorai/olitun/olitunapp/test/core/version/build_version_checker_test.dart).
 - Widget destructive actions guard and reload dialog verification reside in [media_picker_field_test.dart](file:///Users/dulorai/olitun/olitunapp/test/features/admin/widgets/media_picker_field_test.dart).
+
 

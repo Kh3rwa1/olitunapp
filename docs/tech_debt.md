@@ -34,6 +34,13 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 *   **Status:** Scheduled tech debt.
 *   **Target Implementation Sprint:** **Sprint 14**.
 
+### 5. Legacy Client-Side Seeders (`AlphabetSeeder`, `NumberSeeder`, etc.)
+*   **Location:** `lib/shared/providers/seeders/`
+*   **Rationale:** Client-side seeders run inside the app and triggered duplicate writes with non-canonical IDs (e.g. `letter_a`, `n0`) on the production database.
+*   **Transition Path:** Completely deprecated in favor of server-side seeding (`appwrite_seed.mjs`). Gated locally with strict project ID guards to prevent execution on production.
+*   **Status:** Deprecated in Sprint 2.
+*   **Target Removal Sprint:** **Sprint 4**.
+
 ---
 
 ## 🛡️ Guidelines for Deprecating Code

@@ -4,6 +4,8 @@
  * Olitun Seed Data Import
  * Imports seed data (from seed_data.sql + schema.sql) into Appwrite collections.
  *
+ * IDEMPOTENT: safe to re-run, will not create duplicates.
+ *
  * Usage:
  *   APPWRITE_API_KEY=your_key node scripts/appwrite_seed.mjs
  */

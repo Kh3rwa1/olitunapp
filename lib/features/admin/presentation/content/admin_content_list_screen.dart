@@ -1198,13 +1198,7 @@ class _AdminContentListScreenState
         );
 
         return InkWell(
-              onTap: () {
-                if (widget.kind == ContentKind.lesson) {
-                  context.go('/admin/lessons/content/${item.id}');
-                } else {
-                  _editItem(context, item);
-                }
-              },
+              onTap: () => _editItem(context, item),
               borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
               child: AnimatedContainer(
                 duration: 200.ms,
@@ -1431,13 +1425,7 @@ class _AdminContentListScreenState
             borderRadius: BorderRadius.circular(AdminTokens.radiusLg),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
-              onTap: () {
-                if (widget.kind == ContentKind.lesson) {
-                  context.go('/admin/lessons/content/${item.id}');
-                } else {
-                  _editItem(context, item);
-                }
-              },
+              onTap: () => _editItem(context, item),
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,

@@ -469,4 +469,52 @@ void main() {
       expect(find.text('Interception Target Detail'), findsNothing);
     },
   );
+
+  testWidgets(
+    'Route /letter/:lessonId/:letterId successfully bypasses standalone route and mounts detail screen',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/letter/lesson_123/letter_a',
+        routes: [
+          GoRoute(
+            path: '/letter/standalone/:subcategoryId',
+            builder: (context, state) => ContentGridScreen(
+              kind: ContentKind.letter,
+              subcategoryId: state.pathParameters['subcategoryId'],
+            ),
+          ),
+          GoRoute(
+            path: '/letter/:lessonId/:letterId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Detail: ${state.pathParameters['lessonId']} - ${state.pathParameters['letterId']}',
+              ),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            contentListProvider((
+              ContentKind.letter,
+              'lesson_123',
+            )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify detail screen is rendered and NOT ContentGridScreen
+      expect(find.text('Detail: lesson_123 - letter_a'), findsOneWidget);
+      expect(find.byType(ContentGridScreen), findsNothing);
+    },
+  );
 }

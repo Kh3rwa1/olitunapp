@@ -500,9 +500,14 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                             : () {
                                 const alphabetCategoryIds = {
                                   'cat_alphabets_1778594017948',
+                                  'cat_alphabets',
+                                  'cat_letters',
+                                  'letters',
                                 };
                                 const numberCategoryIds = {
                                   'cat_numbers_1778594019015',
+                                  'cat_numbers',
+                                  'numbers',
                                 };
 
                                 final isAlphabet = alphabetCategoryIds.contains(

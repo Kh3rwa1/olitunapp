@@ -301,6 +301,32 @@ final routerProvider = Provider<GoRouter>((ref) {
           );
         },
       ),
+      // ORDER MATTERS: standalone routes MUST be declared before the
+      // /:lessonId/:letterId catch-all. GoRouter matches in declaration order,
+      // first match wins. Reordering this block will reintroduce the
+      // subcategory-fallback regression (see phase1_subcategory_fallback_regression_audit.md).
+      _drillRoute(
+        path: '/letter/standalone/:subcategoryId',
+        child: (_, state) {
+          final pathParam = state.pathParameters['subcategoryId'];
+          final subcategoryId = pathParam == 'all' ? null : pathParam;
+          return ContentGridScreen(
+            kind: ContentKind.letter,
+            subcategoryId: subcategoryId,
+          );
+        },
+      ),
+      _drillRoute(
+        path: '/number/standalone/:subcategoryId',
+        child: (_, state) {
+          final pathParam = state.pathParameters['subcategoryId'];
+          final subcategoryId = pathParam == 'all' ? null : pathParam;
+          return ContentGridScreen(
+            kind: ContentKind.number,
+            subcategoryId: subcategoryId,
+          );
+        },
+      ),
       GoRoute(
         path: '/letter/:lessonId/:letterId',
         redirect: (context, state) {
@@ -345,28 +371,6 @@ final routerProvider = Provider<GoRouter>((ref) {
           letterName: state.pathParameters['name'] ?? '',
           startInTrace: state.uri.queryParameters['mode'] == 'trace',
         ),
-      ),
-      _drillRoute(
-        path: '/letter/standalone/:subcategoryId',
-        child: (_, state) {
-          final pathParam = state.pathParameters['subcategoryId'];
-          final subcategoryId = pathParam == 'all' ? null : pathParam;
-          return ContentGridScreen(
-            kind: ContentKind.letter,
-            subcategoryId: subcategoryId,
-          );
-        },
-      ),
-      _drillRoute(
-        path: '/number/standalone/:subcategoryId',
-        child: (_, state) {
-          final pathParam = state.pathParameters['subcategoryId'];
-          final subcategoryId = pathParam == 'all' ? null : pathParam;
-          return ContentGridScreen(
-            kind: ContentKind.number,
-            subcategoryId: subcategoryId,
-          );
-        },
       ),
       _modalRoute(
         path: '/translate',

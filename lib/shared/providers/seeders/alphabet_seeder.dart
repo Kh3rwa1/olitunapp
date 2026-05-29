@@ -1,3 +1,4 @@
+// IDEMPOTENT: safe to re-run, will not create duplicates.
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
@@ -22,19 +23,20 @@ class AlphabetSeeder {
       ),
     );
 
+    // Seed letters using verified ground-truth canonical IDs and transliterations
     final letters = [
-      ['ᱚ', 'a'],
-      ['ᱛ', 'at'],
-      ['ᱜ', 'ag'],
-      ['ᱝ', 'ang'],
-      ['ᱞ', 'al'],
+      ['ᱚ', 'l_la', 'La (a)'],
+      ['ᱛ', 'l_at', 'At (t)'],
+      ['ᱜ', 'l_ag', 'Ag (g)'],
+      ['ᱝ', 'l_ang', 'Ang (ng)'],
+      ['ᱞ', 'l_al', 'Al (l)'],
     ];
     for (int i = 0; i < letters.length; i++) {
       await lettersNotifier.addLetter(
         LetterModel(
-          id: 'letter_${letters[i][1]}',
+          id: letters[i][1], // Ground-truth canonical ID (e.g. l_la)
           charOlChiki: letters[i][0],
-          transliterationLatin: letters[i][1],
+          transliterationLatin: letters[i][2],
           order: i,
         ),
       );

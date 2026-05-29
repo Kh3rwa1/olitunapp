@@ -4,6 +4,8 @@
  * Olitun Seed Data Import
  * Imports seed data (from seed_data.sql + schema.sql) into Appwrite collections.
  *
+ * IDEMPOTENT: safe to re-run, will not create duplicates.
+ *
  * Usage:
  *   APPWRITE_API_KEY=your_key node scripts/appwrite_seed.mjs
  */
@@ -116,15 +118,15 @@ const letters = [
 ];
 
 const numbers = [
-  { id: 'n_0', numeral: '᱐', value: 0, nameOlChiki: 'ᱥᱩᱱ', nameLatin: 'Sun', order: 0 },
-  { id: 'n_1', numeral: '᱑', value: 1, nameOlChiki: 'ᱢᱤᱛ', nameLatin: 'Mit', order: 1 },
+  { id: 'n_0', numeral: '᱐', value: 0, nameOlChiki: 'ᱥᱩᱱᱭᱟ', nameLatin: 'Sunya', order: 0 },
+  { id: 'n_1', numeral: '᱑', value: 1, nameOlChiki: 'ᱢᱤᱫ', nameLatin: 'Mit', order: 1 },
   { id: 'n_2', numeral: '᱒', value: 2, nameOlChiki: 'ᱵᱟᱨ', nameLatin: 'Bar', order: 2 },
-  { id: 'n_3', numeral: '᱓', value: 3, nameOlChiki: 'ᱯᱮ', nameLatin: 'Pe', order: 3 },
-  { id: 'n_4', numeral: '᱔', value: 4, nameOlChiki: 'ᱯᱚᱱ', nameLatin: 'Pon', order: 4 },
+  { id: 'n_3', numeral: '', value: 3, nameOlChiki: 'ᱯᱮ', nameLatin: 'Pe', order: 3 },
+  { id: 'n_4', numeral: '᱔', value: 4, nameOlChiki: 'ᱯᱩᱱ', nameLatin: 'Pun', order: 4 },
   { id: 'n_5', numeral: '᱕', value: 5, nameOlChiki: 'ᱢᱚᱬᱮ', nameLatin: 'Mone', order: 5 },
   { id: 'n_6', numeral: '᱖', value: 6, nameOlChiki: 'ᱛᱩᱨᱩᱭ', nameLatin: 'Turui', order: 6 },
   { id: 'n_7', numeral: '᱗', value: 7, nameOlChiki: 'ᱮᱭᱟᱭ', nameLatin: 'Eae', order: 7 },
-  { id: 'n_8', numeral: '᱘', value: 8, nameOlChiki: 'ᱤᱨᱟᱹᱞ', nameLatin: 'Irel', order: 8 },
+  { id: 'n_8', numeral: '᱘', value: 8, nameOlChiki: 'ᱤᱨᱟᱹᱞ', nameLatin: 'Iral', order: 8 },
   { id: 'n_9', numeral: '᱙', value: 9, nameOlChiki: 'ᱟᱨᱮ', nameLatin: 'Are', order: 9 },
 ];
 

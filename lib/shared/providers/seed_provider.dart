@@ -4,6 +4,7 @@ import '../../core/api/appwrite_db_service.dart';
 import '../../features/categories/data/models/category_model.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
 import '../../features/lessons/domain/entities/lesson_entity.dart';
+import '../../core/config/appwrite_config.dart';
 import 'providers.dart';
 import 'seeders/alphabet_seeder.dart';
 import 'seeders/greeting_seeder.dart';
@@ -13,6 +14,14 @@ import 'seeders/sentence_seeder.dart';
 import 'seeders/vocab_seeder.dart';
 
 Future<void> seedAppContent(WidgetRef ref) async {
+  // Block seeding on the production project to protect integrity
+  if (AppwriteConfig.projectId == '699495910038e39622c5') {
+    AppLogger.debug(
+      '🚫 Client-side seeding is disabled on the production Appwrite project.',
+    );
+    return;
+  }
+
   final categoriesNotifier = ref.read(categoryNotifierProvider.notifier);
 
   // Load existing categories so we can skip duplicates

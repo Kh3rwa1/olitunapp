@@ -165,7 +165,7 @@ void main() {
     final gridView = tester.widget<GridView>(find.byType(GridView));
     final delegate =
         gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
-    expect(delegate.crossAxisCount, equals(4));
+    expect(delegate.crossAxisCount, equals(3));
 
     // Now set screen width to tablet (e.g. 800 width)
     tester.view.physicalSize = const Size(800, 800);
@@ -176,7 +176,7 @@ void main() {
     final delegateTablet =
         gridViewTablet.gridDelegate
             as SliverGridDelegateWithFixedCrossAxisCount;
-    expect(delegateTablet.crossAxisCount, equals(6));
+    expect(delegateTablet.crossAxisCount, equals(4));
   });
 
   testWidgets(

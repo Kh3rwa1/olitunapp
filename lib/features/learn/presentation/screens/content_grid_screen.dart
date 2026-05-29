@@ -139,7 +139,7 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
           }
 
           final width = MediaQuery.of(context).size.width;
-          final int crossAxisCount = width >= 600 ? 6 : 4;
+          final int crossAxisCount = width >= 600 ? 4 : 3;
 
           return GridView.builder(
             padding: const EdgeInsets.all(16.0),

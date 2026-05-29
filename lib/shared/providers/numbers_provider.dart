@@ -17,16 +17,17 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
 
   final Ref ref;
 
+  // IDEMPOTENT: safe to re-run, will not create duplicates.
   static final List<NumberModel> _seedNumbers = [
     NumberModel(
-      id: 'n0',
+      id: 'n_0',
       numeral: '᱐',
       value: 0,
       nameOlChiki: 'ᱥᱩᱱᱭᱟ',
       nameLatin: 'Sunya',
     ),
     NumberModel(
-      id: 'n1',
+      id: 'n_1',
       numeral: '᱑',
       value: 1,
       nameOlChiki: 'ᱢᱤᱫ',
@@ -34,7 +35,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 1,
     ),
     NumberModel(
-      id: 'n2',
+      id: 'n_2',
       numeral: '᱒',
       value: 2,
       nameOlChiki: 'ᱵᱟᱨ',
@@ -42,7 +43,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 2,
     ),
     NumberModel(
-      id: 'n3',
+      id: 'n_3',
       numeral: '᱓',
       value: 3,
       nameOlChiki: 'ᱯᱮ',
@@ -50,7 +51,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 3,
     ),
     NumberModel(
-      id: 'n4',
+      id: 'n_4',
       numeral: '᱔',
       value: 4,
       nameOlChiki: 'ᱯᱩᱱ',
@@ -58,7 +59,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 4,
     ),
     NumberModel(
-      id: 'n5',
+      id: 'n_5',
       numeral: '᱕',
       value: 5,
       nameOlChiki: 'ᱢᱚᱬᱮ',
@@ -66,23 +67,23 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 5,
     ),
     NumberModel(
-      id: 'n6',
+      id: 'n_6',
       numeral: '᱖',
       value: 6,
       nameOlChiki: 'ᱛᱩᱨᱩᱭ',
-      nameLatin: 'Turuy',
+      nameLatin: 'Turui',
       order: 6,
     ),
     NumberModel(
-      id: 'n7',
+      id: 'n_7',
       numeral: '᱗',
       value: 7,
       nameOlChiki: 'ᱮᱭᱟᱭ',
-      nameLatin: 'Eyay',
+      nameLatin: 'Eae',
       order: 7,
     ),
     NumberModel(
-      id: 'n8',
+      id: 'n_8',
       numeral: '᱘',
       value: 8,
       nameOlChiki: 'ᱤᱨᱟᱹᱞ',
@@ -90,7 +91,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
       order: 8,
     ),
     NumberModel(
-      id: 'n9',
+      id: 'n_9',
       numeral: '᱙',
       value: 9,
       nameOlChiki: 'ᱟᱨᱮ',

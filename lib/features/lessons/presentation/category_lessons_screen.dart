@@ -497,7 +497,31 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                       PaywallBottomSheet(category: category),
                                 );
                               }
-                            : () => context.push('/lesson/${lesson.id}'),
+                            : () {
+                                final catId = category.id;
+                                final icon = category.iconName?.toLowerCase();
+                                final title = category.titleLatin.toLowerCase();
+                                final isAlphabet =
+                                    catId.startsWith('cat_alphabets') ||
+                                    icon == 'alphabet' ||
+                                    title.contains('alphabet');
+                                final isNumber =
+                                    catId.startsWith('cat_numbers') ||
+                                    icon == 'numbers' ||
+                                    title.contains('number');
+
+                                if (isAlphabet) {
+                                  context.push(
+                                    '/letter/standalone/${lesson.id}',
+                                  );
+                                } else if (isNumber) {
+                                  context.push(
+                                    '/number/standalone/${lesson.id}',
+                                  );
+                                } else {
+                                  context.push('/lesson/${lesson.id}');
+                                }
+                              },
                       );
 
                       return _buildTimelineItem(

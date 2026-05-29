@@ -112,6 +112,21 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
           ),
         ),
         centerTitle: true,
+        actions: [
+          if (widget.subcategoryId != null)
+            IconButton(
+              icon: Icon(
+                Icons.view_carousel_rounded,
+                color: isDark ? Colors.white : Colors.black87,
+              ),
+              tooltip: 'Study Cards',
+              onPressed: () {
+                // Grid is the primary view; Study Cards button provides access to the deeper per-block lesson experience.
+                // If audio for tiles is missing, users may prefer Study Cards as the default — consider revisiting after content production catches up.
+                context.push('/lesson/${widget.subcategoryId}');
+              },
+            ),
+        ],
       ),
       body: listAsync.when(
         data: (items) {

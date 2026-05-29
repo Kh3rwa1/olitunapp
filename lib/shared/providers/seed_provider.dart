@@ -16,7 +16,9 @@ import 'seeders/vocab_seeder.dart';
 Future<void> seedAppContent(WidgetRef ref) async {
   // Block seeding on the production project to protect integrity
   if (AppwriteConfig.projectId == '699495910038e39622c5') {
-    AppLogger.debug('🚫 Client-side seeding is disabled on the production Appwrite project.');
+    AppLogger.debug(
+      '🚫 Client-side seeding is disabled on the production Appwrite project.',
+    );
     return;
   }
 

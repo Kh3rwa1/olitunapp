@@ -230,14 +230,16 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ],
       ),
       child: Center(
-        child: child ?? Text(
-          '${index + 1}',
-          style: const TextStyle(
-            fontSize: 14,
-            fontWeight: FontWeight.w900,
-            color: Colors.white,
-          ),
-        ),
+        child:
+            child ??
+            Text(
+              '${index + 1}',
+              style: const TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w900,
+                color: Colors.white,
+              ),
+            ),
       ),
     );
   }
@@ -496,27 +498,28 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         );
 
                         return _buildTimelineItem(
-                          card: cardWidget,
-                          index: index,
-                          isFirst: true,
-                          isLast: totalCount == 1,
-                          isDark: isDark,
-                          isLocked: false,
-                          themeColor: themeColor,
-                          gradient: brandGradient,
-                          stepNodeChild: const Icon(
-                            Icons.grid_view_rounded,
-                            size: 16,
-                            color: Colors.white,
-                          ),
-                        ).animate()
-                         .fadeIn(delay: 0.ms, duration: 400.ms)
-                         .slideY(
-                           begin: 0.08,
-                           end: 0,
-                           curve: MotionTokens.emphasized,
-                           duration: 450.ms,
-                         );
+                              card: cardWidget,
+                              index: index,
+                              isFirst: true,
+                              isLast: totalCount == 1,
+                              isDark: isDark,
+                              isLocked: false,
+                              themeColor: themeColor,
+                              gradient: brandGradient,
+                              stepNodeChild: const Icon(
+                                Icons.grid_view_rounded,
+                                size: 16,
+                                color: Colors.white,
+                              ),
+                            )
+                            .animate()
+                            .fadeIn(delay: 0.ms, duration: 400.ms)
+                            .slideY(
+                              begin: 0.08,
+                              end: 0,
+                              curve: MotionTokens.emphasized,
+                              duration: 450.ms,
+                            );
                       }
 
                       final lessonIndex = hasBrowseAll ? index - 1 : index;
@@ -1093,9 +1096,7 @@ class _BrowseAllCard extends StatelessWidget {
         decoration: BoxDecoration(
           color: activeBgColor,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: activeBorderColor,
-          ),
+          border: Border.all(color: activeBorderColor),
           boxShadow: isDark
               ? null
               : [
@@ -1118,18 +1119,27 @@ class _BrowseAllCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 3,
+                    ),
                     decoration: BoxDecoration(
                       color: themeColor.withValues(alpha: isDark ? 0.15 : 0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: themeColor.withValues(alpha: isDark ? 0.3 : 0.15),
+                        color: themeColor.withValues(
+                          alpha: isDark ? 0.3 : 0.15,
+                        ),
                       ),
                     ),
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.grid_view_rounded, size: 11, color: themeColor),
+                        Icon(
+                          Icons.grid_view_rounded,
+                          size: 11,
+                          color: themeColor,
+                        ),
                         const SizedBox(width: 4),
                         Text(
                           'BROWSE VIEW',
@@ -1195,7 +1205,11 @@ class _BrowseAllCard extends StatelessWidget {
                 ],
               ),
               child: const Center(
-                child: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+                child: Icon(
+                  Icons.arrow_forward_rounded,
+                  color: Colors.white,
+                  size: 20,
+                ),
               ),
             ),
           ],

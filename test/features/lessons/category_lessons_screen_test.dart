@@ -12,8 +12,11 @@ import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
 
-class MockCategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> implements CategoryNotifier {
-  MockCategoryNotifier(List<CategoryEntity> initial) : super(AsyncValue.data(initial));
+class MockCategoryNotifier
+    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
+    implements CategoryNotifier {
+  MockCategoryNotifier(List<CategoryEntity> initial)
+    : super(AsyncValue.data(initial));
   @override
   Future<void> loadCategories() async {}
   @override
@@ -107,9 +110,15 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier([mockAlphabetCategory])),
-            lessonsByCategoryProvider('cat_alphabets').overrideWith((ref) => AsyncValue.data(mockLessons)),
-            purchasedCategoriesProvider.overrideWith((ref) => {'cat_alphabets'}),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier([mockAlphabetCategory]),
+            ),
+            lessonsByCategoryProvider(
+              'cat_alphabets',
+            ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+            purchasedCategoriesProvider.overrideWith(
+              (ref) => {'cat_alphabets'},
+            ),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
           child: MaterialApp.router(routerConfig: router),
@@ -120,7 +129,10 @@ void main() {
 
       // Assert that "Ol Chiki" Browse All card appears at the top
       expect(find.text('Ol Chiki'), findsOneWidget);
-      expect(find.text('Explore the complete grid dictionary of all letters'), findsOneWidget);
+      expect(
+        find.text('Explore the complete grid dictionary of all letters'),
+        findsOneWidget,
+      );
 
       // Assert that "Vowels I" lesson card appears below it
       expect(find.text('Vowels I'), findsOneWidget);
@@ -164,8 +176,12 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier([mockNumberCategory])),
-            lessonsByCategoryProvider('cat_numbers').overrideWith((ref) => AsyncValue.data(mockNumberLessons)),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier([mockNumberCategory]),
+            ),
+            lessonsByCategoryProvider(
+              'cat_numbers',
+            ).overrideWith((ref) => AsyncValue.data(mockNumberLessons)),
             purchasedCategoriesProvider.overrideWith((ref) => {'cat_numbers'}),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
@@ -177,7 +193,10 @@ void main() {
 
       // Assert that "Lekha" Browse All card appears at the top
       expect(find.text('Lekha'), findsOneWidget);
-      expect(find.text('Explore the complete grid dictionary of all numbers'), findsOneWidget);
+      expect(
+        find.text('Explore the complete grid dictionary of all numbers'),
+        findsOneWidget,
+      );
 
       // Tap the "Lekha" card
       await tester.tap(find.text('Lekha'));
@@ -226,9 +245,15 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
-            categoryNotifierProvider.overrideWith((ref) => MockCategoryNotifier([mockAlphabetCategory])),
-            lessonsByCategoryProvider('cat_alphabets').overrideWith((ref) => AsyncValue.data(mockLessons)),
-            purchasedCategoriesProvider.overrideWith((ref) => {'cat_alphabets'}),
+            categoryNotifierProvider.overrideWith(
+              (ref) => MockCategoryNotifier([mockAlphabetCategory]),
+            ),
+            lessonsByCategoryProvider(
+              'cat_alphabets',
+            ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+            purchasedCategoriesProvider.overrideWith(
+              (ref) => {'cat_alphabets'},
+            ),
             effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
           child: MaterialApp.router(routerConfig: router),

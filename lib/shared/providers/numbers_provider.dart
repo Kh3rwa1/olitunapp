@@ -17,7 +17,7 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
 
   final Ref ref;
 
-// IDEMPOTENT: safe to re-run, will not create duplicates.
+  // IDEMPOTENT: safe to re-run, will not create duplicates.
   static final List<NumberModel> _seedNumbers = [
     NumberModel(
       id: 'n_0',

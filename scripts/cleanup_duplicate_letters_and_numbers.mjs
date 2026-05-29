@@ -214,12 +214,42 @@ async function run() {
     process.exit(1);
   }
 
+  // 3. Identify and plan spelling corrections for keeper numbers against ground-truth standard names
+  const CANONICAL_NUMBERS = {
+    n_0: { nameLatin: 'Sunya', nameOlChiki: 'ᱥᱩᱱᱭᱟ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱐","latin":"Sunya","audioUrl":null}]' },
+    n_1: { nameLatin: 'Mit', nameOlChiki: 'ᱢᱤᱫ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱑","latin":"Mit","audioUrl":null}]' },
+    n_2: { nameLatin: 'Bar', nameOlChiki: 'ᱵᱟᱨ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱒","latin":"Bar","audioUrl":null}]' },
+    n_3: { nameLatin: 'Pe', nameOlChiki: 'ᱯᱮ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"","latin":"Pe","audioUrl":null}]' },
+    n_4: { nameLatin: 'Pun', nameOlChiki: 'ᱯᱩᱱ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱔","latin":"Pun","audioUrl":null}]' },
+    n_5: { nameLatin: 'Mone', nameOlChiki: 'ᱢᱚᱬᱮ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱕","latin":"Mone","audioUrl":null}]' },
+    n_6: { nameLatin: 'Turui', nameOlChiki: 'ᱛᱩᱨᱩᱭ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱖","latin":"Turui","audioUrl":null}]' },
+    n_7: { nameLatin: 'Eae', nameOlChiki: 'ᱮᱭᱟᱭ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱗","latin":"Eae","audioUrl":null}]' },
+    n_8: { nameLatin: 'Iral', nameOlChiki: 'ᱤᱨᱟᱹᱞ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱘","latin":"Iral","audioUrl":null}]' },
+    n_9: { nameLatin: 'Are', nameOlChiki: 'ᱟᱨᱮ', blocks: '[{"id":"glyph_block","order":0,"type":"glyph","olChiki":"᱙","latin":"Are","audioUrl":null}]' },
+  };
+
+  const numbersToUpdate = [];
+  for (const keeper of allNumbers) {
+    const canonical = CANONICAL_NUMBERS[keeper.$id];
+    if (canonical) {
+      const diffs = {};
+      for (const key of ['nameLatin', 'nameOlChiki', 'blocks']) {
+        if (canonical[key] !== keeper[key]) {
+          diffs[key] = { from: keeper[key], to: canonical[key] };
+        }
+      }
+      if (Object.keys(diffs).length > 0) {
+        numbersToUpdate.push({ keeperId: keeper.$id, diffs });
+      }
+    }
+  }
+
   if (lettersToDelete.length === 0 && numbersToDelete.length === 0) {
     console.log('✅ Collection is already clean! No deletions needed.');
     process.exit(0);
   }
 
-  // 3. Print Planned Deletions
+  // 4. Print Planned Deletions
   console.log('📋 Planned Deletions List:');
   for (const item of lettersToDelete) {
     console.log(`   - [letters] ID: ${item.doc.$id.padEnd(30)} Char: ${item.doc.charOlChiki || 'none'} (${(item.doc.transliterationLatin || 'none').padEnd(10)}) Reason: ${item.reason}`);
@@ -229,10 +259,21 @@ async function run() {
   }
   console.log();
 
-  // 4. Execution Mode
+  if (numbersToUpdate.length > 0) {
+    console.log('📝 Planned Spelling Corrections & Updates (migrating correct names to keepers):');
+    for (const item of numbersToUpdate) {
+      console.log(`   - [numbers] Keeper ID: ${item.keeperId}`);
+      for (const [key, val] of Object.entries(item.diffs)) {
+        console.log(`       * Update ${key}: "${val.from}" ➡️ "${val.to}"`);
+      }
+    }
+    console.log();
+  }
+
+  // 5. Execution Mode
   if (DRY_RUN) {
     console.log('💡 Dry-run completed successfully.');
-    console.log('   To perform deletions on the database, execute:');
+    console.log('   To perform updates and deletions on the database, execute:');
     console.log('   node scripts/cleanup_duplicate_letters_and_numbers.mjs --execute --confirm-prod');
   } else {
     // Generate pre-run backup log of all documents before deletion
@@ -260,7 +301,30 @@ async function run() {
     console.log('🔥 Commencing database mutations...');
     let successCount = 0;
     let failCount = 0;
+    let updateCount = 0;
 
+    // First, update keepers with spelling corrections
+    if (numbersToUpdate.length > 0) {
+      console.log('📝 Applying spelling corrections to keeper documents...');
+      for (const item of numbersToUpdate) {
+        try {
+          const payload = {};
+          for (const key of Object.keys(item.diffs)) {
+            payload[key] = item.diffs[key].to;
+          }
+          process.stdout.write(`   Updating keeper numbers/${item.keeperId}... `);
+          await api('PATCH', `/databases/${DATABASE_ID}/collections/numbers/documents/${item.keeperId}`, payload);
+          console.log('✅');
+          updateCount++;
+        } catch (e) {
+          console.log('❌');
+          console.error(`      Failed to update keeper: ${e.message}`);
+        }
+      }
+      console.log();
+    }
+
+    console.log('🗑️ Commencing deletions of legacy duplicates...');
     for (const item of lettersToDelete) {
       try {
         process.stdout.write(`   Deleting letters/${item.doc.$id}... `);
@@ -288,6 +352,7 @@ async function run() {
     }
 
     console.log(`\n🎉 Cleanup execution complete!`);
+    console.log(`   Updates: ${updateCount} keeper documents corrected.`);
     console.log(`   Deletions: ${successCount} successful, ${failCount} failed.`);
   }
 }

@@ -442,9 +442,8 @@ void main() {
           ),
           GoRoute(
             path: '/letter/:lessonId/:letterId',
-            builder: (context, state) => const Scaffold(
-              body: Text('Interception Target Detail'),
-            ),
+            builder: (context, state) =>
+                const Scaffold(body: Text('Interception Target Detail')),
           ),
         ],
       );

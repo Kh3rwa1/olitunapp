@@ -498,17 +498,19 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 );
                               }
                             : () {
-                                final catId = category.id;
-                                final icon = category.iconName?.toLowerCase();
-                                final title = category.titleLatin.toLowerCase();
-                                final isAlphabet =
-                                    catId.startsWith('cat_alphabets') ||
-                                    icon == 'alphabet' ||
-                                    title.contains('alphabet');
-                                final isNumber =
-                                    catId.startsWith('cat_numbers') ||
-                                    icon == 'numbers' ||
-                                    title.contains('number');
+                                const alphabetCategoryIds = {
+                                  'cat_alphabets_1778594017948',
+                                };
+                                const numberCategoryIds = {
+                                  'cat_numbers_1778594019015',
+                                };
+
+                                final isAlphabet = alphabetCategoryIds.contains(
+                                  category.id,
+                                );
+                                final isNumber = numberCategoryIds.contains(
+                                  category.id,
+                                );
 
                                 if (isAlphabet) {
                                   context.push(

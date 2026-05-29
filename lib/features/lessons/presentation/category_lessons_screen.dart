@@ -562,17 +562,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 );
                               }
                             : () {
-                                if (isAlphabet) {
-                                  context.push(
-                                    '/letter/standalone/${lesson.id}',
-                                  );
-                                } else if (isNumber) {
-                                  context.push(
-                                    '/number/standalone/${lesson.id}',
-                                  );
-                                } else {
-                                  context.push('/lesson/${lesson.id}');
-                                }
+                                context.push('/lesson/${lesson.id}');
                               },
                       );
 

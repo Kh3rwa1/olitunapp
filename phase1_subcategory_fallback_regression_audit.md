@@ -1,6 +1,6 @@
 # Phase 1 Audit: Subcategory Drilldown Fallback Regression
 
-This document provides a comprehensive root cause audit of the subcategory drilldown regression on the `diagnose/subcategory-grid-fallback-regression` branch.
+This document provides a comprehensive root cause audit of the subcategory drilldown regression on the `diagnose/subcategory-grid-fallback-regression` branch, including the Phase 1.5 product intent alignment.
 
 ---
 
@@ -216,12 +216,49 @@ When called with `(ContentKind.letter, "lesson_alphabet_1")`:
 
 ---
 
-## 7. Fix Path Recommendation
+## 7. Phase 1.5 — Product Intent Clarification & UX Alignment
 
-### Recommendation: **(i) Pure Routing Fix**
+### The Tension Identified
+Because letters and numbers are stored globally and lack database relationships to lessons, rendering a content grid for any tapped lesson/subcategory results in a visual redundancy—every subcategory click displays the exact same grid of all 30 letters or 10 numbers.
 
-Since letters and numbers are intended to be global lists, and `ContentRepository` correctly defaults to loading the full sets, a pure routing fix is completely sufficient. 
+### Product Resolution & Decision
+An interactive review and alignment session confirmed the following product direction:
+* **The Global List Behavior is Intentional (For Now):** For letters and numbers, displaying a unified, complete interactive overview grid is the preferred presentation strategy for modern tablet/phone learning layouts. 
+* **Swipe Deck as Deeper Access Path:** The deep per-lesson block layout (with detailed cards, tracing, and writing practice) remains easily accessible through a dedicated **"Study Cards" carousel action button** in the grid's AppBar.
+* **Granular Database Subcategorization Deferred:** Implementing real database relations (either lesson-to-letter joins or schema updates) is scheduled as post-MVP technical debt for a future Sprint.
 
-We can resolve the interception and routing mismatch cleanly by:
-1. Moving the standalone route declarations **above** the catch-all routes `/letter/:lessonId/:letterId` and `/number/:lessonId/:numberId` in `lib/app/router/app_router.dart`.
-2. Changing the pushed route parameter in `category_lessons_screen.dart` to `'all'` (e.g., `/letter/standalone/all`) instead of the lesson ID. This correctly leverages the existing segment mapping (`subcategoryId = pathParam == 'all' ? null : pathParam`), resolves category titles seamlessly, and avoids fragmenting cache keys under invalid IDs.
+---
+
+## 8. Fix Path Recommendation
+
+Based on the Phase 1.5 product decision, we recommend a **Pure Routing Fix** to restore Option A cleanly and safely:
+
+1. **Route Ordering Resolution:**
+   Swap the declaration order in `lib/app/router/app_router.dart` so that the standalone routes precede the catch-all routes:
+   ```dart
+   // Swap standalone routes above catch-alls
+   _drillRoute(
+     path: '/letter/standalone/:subcategoryId',
+     ...
+   ),
+   _drillRoute(
+     path: '/number/standalone/:subcategoryId',
+     ...
+   ),
+   GoRoute(
+     path: '/letter/:lessonId/:letterId',
+     ...
+   ),
+   GoRoute(
+     path: '/number/:lessonId/:numberId',
+     ...
+   ),
+   ```
+2. **Add Protection Comments:**
+   Annotate the route declarations in `app_router.dart` with a critical comment warning future developers that ordering is functionally significant, preventing GoRouter catch-all regressions during future cleanup:
+   ```dart
+   // ORDER MATTERS: Standalone grid routes MUST precede the :lessonId/:letterId catch-all
+   // wildcard patterns to avoid path pattern interception by GoRouter.
+   ```
+3. **Correct Navigation Parameters:**
+   Modify the navigation callbacks in `lib/features/lessons/presentation/category_lessons_screen.dart` to push `/letter/standalone/all` and `/number/standalone/all` (instead of using `lesson.id`). This aligns perfectly with `ContentGridScreen`'s category title resolutions and cache key mappings, preventing cached key segment fragmentation.

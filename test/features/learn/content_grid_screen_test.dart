@@ -367,4 +367,106 @@ void main() {
     // Verify screen popped and didStopAudio is true
     expect(mockAudio.didStopAudio, isTrue);
   });
+
+  testWidgets(
+    'ContentGridScreen shows Study Cards action button and navigates',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/grid/lesson_123',
+        routes: [
+          GoRoute(
+            path: '/grid/:subcategoryId',
+            builder: (context, state) => ContentGridScreen(
+              kind: ContentKind.letter,
+              subcategoryId: state.pathParameters['subcategoryId'],
+            ),
+          ),
+          GoRoute(
+            path: '/lesson/:lessonId',
+            builder: (context, state) {
+              return Scaffold(
+                body: Text(
+                  'Lesson Detail: ${state.pathParameters['lessonId']}',
+                ),
+              );
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            contentListProvider((
+              ContentKind.letter,
+              'lesson_123',
+            )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify Study Cards button is present
+      expect(find.byIcon(Icons.view_carousel_rounded), findsOneWidget);
+
+      // Tap Study Cards button
+      await tester.tap(find.byIcon(Icons.view_carousel_rounded));
+      await tester.pumpAndSettle();
+
+      // Verify navigation occurred to /lesson/lesson_123
+      expect(find.text('Lesson Detail: lesson_123'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'Route /letter/standalone/:subcategoryId successfully mounts ContentGridScreen (Scenario D protection)',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/letter/standalone/lesson_123',
+        routes: [
+          GoRoute(
+            path: '/letter/standalone/:subcategoryId',
+            builder: (context, state) => ContentGridScreen(
+              kind: ContentKind.letter,
+              subcategoryId: state.pathParameters['subcategoryId'],
+            ),
+          ),
+          GoRoute(
+            path: '/letter/:lessonId/:letterId',
+            builder: (context, state) => const Scaffold(
+              body: Text('Interception Target Detail'),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            contentListProvider((
+              ContentKind.letter,
+              'lesson_123',
+            )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify ContentGridScreen is rendered and NOT Interception Target Detail
+      expect(find.byType(ContentGridScreen), findsOneWidget);
+      expect(find.text('Interception Target Detail'), findsNothing);
+    },
+  );
 }

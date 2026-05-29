@@ -27,6 +27,13 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 *   **Status:** Active debt.
 *   **Target Cleanup Sprint:** **Sprint 3** (Next sprint).
 
+### 4. Per-subcategory Letter/Number Filtering (Universal Content System)
+*   **Goal:** Add a true subcategorization relation (`subcategoryId` / `categoryId`) to the `letters` and `numbers` databases in Appwrite, perform a database data backfill, and update `ContentRepository.list` queries to selectively filter these collections.
+*   **Rationale:** Tapping a subcategory under Alphabets or Numbers currently loads all items globally due to the database schema omitting a subcategory field. Proper modeling is scheduled for Sprint 14 to allow granular learning grid layouts per-lesson.
+*   **Audit Reference:** [phase1_subcategory_fallback_regression_audit.md](file:///Users/dulorai/olitun/olitunapp/phase1_subcategory_fallback_regression_audit.md)
+*   **Status:** Scheduled tech debt.
+*   **Target Implementation Sprint:** **Sprint 14**.
+
 ---
 
 ## 🛡️ Guidelines for Deprecating Code

@@ -244,8 +244,8 @@ async function run() {
     }
   }
 
-  if (lettersToDelete.length === 0 && numbersToDelete.length === 0) {
-    console.log('✅ Collection is already clean! No deletions needed.');
+  if (lettersToDelete.length === 0 && numbersToDelete.length === 0 && numbersToUpdate.length === 0) {
+    console.log('✅ Collection is already clean! No deletions or updates needed.');
     process.exit(0);
   }
 
@@ -313,7 +313,7 @@ async function run() {
             payload[key] = item.diffs[key].to;
           }
           process.stdout.write(`   Updating keeper numbers/${item.keeperId}... `);
-          await api('PATCH', `/databases/${DATABASE_ID}/collections/numbers/documents/${item.keeperId}`, payload);
+          await api('PATCH', `/databases/${DATABASE_ID}/collections/numbers/documents/${item.keeperId}`, { data: payload });
           console.log('✅');
           updateCount++;
         } catch (e) {

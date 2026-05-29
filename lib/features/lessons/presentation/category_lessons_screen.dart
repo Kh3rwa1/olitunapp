@@ -122,6 +122,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     required bool isLocked,
     required Color themeColor,
     required LinearGradient gradient,
+    Widget? stepNodeChild,
   }) {
     return IntrinsicHeight(
       child: Row(
@@ -148,6 +149,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       isDark: isDark,
                       isLocked: isLocked,
                       gradient: gradient,
+                      child: stepNodeChild,
                     ),
                   ),
                 ],
@@ -173,6 +175,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     required bool isDark,
     required bool isLocked,
     required LinearGradient gradient,
+    Widget? child,
   }) {
     if (isLocked) {
       return Container(
@@ -227,7 +230,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
         ],
       ),
       child: Center(
-        child: Text(
+        child: child ?? Text(
           '${index + 1}',
           style: const TextStyle(
             fontSize: 14,
@@ -452,15 +455,76 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 final isPremium = category.unlockMode != 'free';
                 final isUnlocked = purchasedCategories.contains(category.id);
 
+                const alphabetCategoryIds = {
+                  'cat_alphabets_1778594017948',
+                  'cat_alphabets',
+                  'cat_letters',
+                  'letters',
+                };
+                const numberCategoryIds = {
+                  'cat_numbers_1778594019015',
+                  'cat_numbers',
+                  'numbers',
+                };
+
+                final isAlphabet = alphabetCategoryIds.contains(category.id);
+                final isNumber = numberCategoryIds.contains(category.id);
+                final hasBrowseAll = isAlphabet || isNumber;
+                final totalCount = data.length + (hasBrowseAll ? 1 : 0);
+
                 return SliverPadding(
                   padding: const EdgeInsets.fromLTRB(16, 24, 16, 140),
                   sliver: SliverList(
                     delegate: SliverChildBuilderDelegate((context, index) {
-                      final lesson = data[index];
+                      if (hasBrowseAll && index == 0) {
+                        final cardWidget = _BrowseAllCard(
+                          label: isAlphabet ? 'Ol Chiki' : 'Lekha',
+                          olChikiLabel: isAlphabet ? 'ᱚᱞ ᱪᱤᱠᱤ' : 'ᱞᱮᱠᱷᱟ',
+                          description: isAlphabet
+                              ? 'Explore the complete grid dictionary of all letters'
+                              : 'Explore the complete grid dictionary of all numbers',
+                          onTap: () {
+                            if (isAlphabet) {
+                              context.push('/letter/standalone/all');
+                            } else {
+                              context.push('/number/standalone/all');
+                            }
+                          },
+                          isDark: isDark,
+                          gradient: brandGradient,
+                          themeColor: themeColor,
+                        );
+
+                        return _buildTimelineItem(
+                          card: cardWidget,
+                          index: index,
+                          isFirst: true,
+                          isLast: totalCount == 1,
+                          isDark: isDark,
+                          isLocked: false,
+                          themeColor: themeColor,
+                          gradient: brandGradient,
+                          stepNodeChild: const Icon(
+                            Icons.grid_view_rounded,
+                            size: 16,
+                            color: Colors.white,
+                          ),
+                        ).animate()
+                         .fadeIn(delay: 0.ms, duration: 400.ms)
+                         .slideY(
+                           begin: 0.08,
+                           end: 0,
+                           curve: MotionTokens.emphasized,
+                           duration: 450.ms,
+                         );
+                      }
+
+                      final lessonIndex = hasBrowseAll ? index - 1 : index;
+                      final lesson = data[lessonIndex];
                       final isLocked =
                           isPremium &&
                           !isUnlocked &&
-                          index >= category.previewLessonCount;
+                          lessonIndex >= category.previewLessonCount;
 
                       final primaryTitle = primaryLocalizedText(
                         olChiki: lesson.titleOlChiki,
@@ -479,14 +543,14 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         secondaryTitle: secondaryTitle ?? '',
                         scriptMode: scriptMode,
                         isDark: isDark,
-                        index: index,
+                        index: lessonIndex,
                         isLocked: isLocked,
                         gradient: brandGradient,
                         themeColor: themeColor,
                         showPreviewBadge:
                             isPremium &&
                             !isUnlocked &&
-                            index < category.previewLessonCount,
+                            lessonIndex < category.previewLessonCount,
                         onTap: isLocked
                             ? () {
                                 showModalBottomSheet(
@@ -498,25 +562,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 );
                               }
                             : () {
-                                const alphabetCategoryIds = {
-                                  'cat_alphabets_1778594017948',
-                                  'cat_alphabets',
-                                  'cat_letters',
-                                  'letters',
-                                };
-                                const numberCategoryIds = {
-                                  'cat_numbers_1778594019015',
-                                  'cat_numbers',
-                                  'numbers',
-                                };
-
-                                final isAlphabet = alphabetCategoryIds.contains(
-                                  category.id,
-                                );
-                                final isNumber = numberCategoryIds.contains(
-                                  category.id,
-                                );
-
                                 if (isAlphabet) {
                                   context.push(
                                     '/letter/standalone/${lesson.id}',
@@ -535,11 +580,19 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                             card: cardWidget,
                             index: index,
                             isFirst: index == 0,
-                            isLast: index == data.length - 1,
+                            isLast: index == totalCount - 1,
                             isDark: isDark,
                             isLocked: isLocked,
                             themeColor: themeColor,
                             gradient: brandGradient,
+                            stepNodeChild: Text(
+                              '${lessonIndex + 1}',
+                              style: const TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.w900,
+                                color: Colors.white,
+                              ),
+                            ),
                           )
                           .animate()
                           .fadeIn(delay: (index * 80).ms, duration: 400.ms)
@@ -549,7 +602,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                             curve: MotionTokens.emphasized,
                             duration: 450.ms,
                           );
-                    }, childCount: data.length),
+                    }, childCount: totalCount),
                   ),
                 );
               },
@@ -1010,6 +1063,153 @@ class _LessonCard extends StatelessWidget {
       ),
       child: const Center(
         child: Icon(Icons.play_arrow_rounded, color: Colors.white, size: 20),
+      ),
+    );
+  }
+}
+
+class _BrowseAllCard extends StatelessWidget {
+  final String label;
+  final String olChikiLabel;
+  final String description;
+  final VoidCallback onTap;
+  final bool isDark;
+  final LinearGradient gradient;
+  final Color themeColor;
+
+  const _BrowseAllCard({
+    required this.label,
+    required this.olChikiLabel,
+    required this.description,
+    required this.onTap,
+    required this.isDark,
+    required this.gradient,
+    required this.themeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final activeBgColor = isDark
+        ? const Color(0xFF0F172A).withValues(alpha: 0.6)
+        : Colors.white;
+    final activeBorderColor = isDark
+        ? Colors.white.withValues(alpha: 0.08)
+        : Colors.black.withValues(alpha: 0.04);
+
+    return PressableScale(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: activeBgColor,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: activeBorderColor,
+          ),
+          boxShadow: isDark
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 10,
+                    offset: const Offset(0, 4),
+                  ),
+                  BoxShadow(
+                    color: themeColor.withValues(alpha: 0.03),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+        ),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: themeColor.withValues(alpha: isDark ? 0.15 : 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: themeColor.withValues(alpha: isDark ? 0.3 : 0.15),
+                      ),
+                    ),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.grid_view_rounded, size: 11, color: themeColor),
+                        const SizedBox(width: 4),
+                        Text(
+                          'BROWSE VIEW',
+                          style: TextStyle(
+                            fontSize: 10,
+                            fontWeight: FontWeight.w800,
+                            color: themeColor,
+                            letterSpacing: 0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    label,
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      color: isDark ? Colors.white : Colors.black87,
+                      letterSpacing: -0.2,
+                    ),
+                  ),
+                  if (olChikiLabel.isNotEmpty) ...[
+                    const SizedBox(height: 3),
+                    Text(
+                      olChikiLabel,
+                      style: TextStyle(
+                        fontSize: 13,
+                        fontWeight: FontWeight.w500,
+                        fontFamily: 'OlChiki',
+                        color: isDark ? Colors.white54 : Colors.black45,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 8),
+                  Text(
+                    description,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white38 : Colors.black54,
+                      height: 1.25,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: gradient,
+                shape: BoxShape.circle,
+                boxShadow: [
+                  BoxShadow(
+                    color: themeColor.withValues(alpha: 0.35),
+                    blurRadius: 10,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+              ),
+              child: const Center(
+                child: Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 20),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

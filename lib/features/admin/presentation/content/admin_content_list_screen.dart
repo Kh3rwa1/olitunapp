@@ -1263,7 +1263,8 @@ class _AdminContentListScreenState
                               shape: BoxShape.circle,
                             ),
                           ),
-                          if (item.audioUrl == null || item.audioUrl!.isEmpty) ...[
+                          if (item.audioUrl == null ||
+                              item.audioUrl!.isEmpty) ...[
                             const SizedBox(width: 4),
                             Tooltip(
                               message: 'Audio Missing',

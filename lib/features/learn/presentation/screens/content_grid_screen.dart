@@ -18,11 +18,7 @@ class ContentGridScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
   final String? subcategoryId;
 
-  const ContentGridScreen({
-    super.key,
-    required this.kind,
-    this.subcategoryId,
-  });
+  const ContentGridScreen({super.key, required this.kind, this.subcategoryId});
 
   @override
   ConsumerState<ContentGridScreen> createState() => _ContentGridScreenState();
@@ -48,7 +44,8 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.inactive) {
       _audioService.stop();
     }
   }
@@ -85,10 +82,12 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
 
     final categoryTitle = category?.titleLatin;
 
-    final String defaultTitle =
-        widget.kind == ContentKind.letter ? 'Alphabets' : 'Numbers';
-    final String appBarTitle =
-        categoryTitle != null ? '$categoryTitle - $defaultTitle' : defaultTitle;
+    final String defaultTitle = widget.kind == ContentKind.letter
+        ? 'Alphabets'
+        : 'Numbers';
+    final String appBarTitle = categoryTitle != null
+        ? '$categoryTitle - $defaultTitle'
+        : defaultTitle;
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -119,7 +118,8 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
           if (items.isEmpty) {
             return AppEmptyState(
               title: 'No items found',
-              description: 'We couldn\'t find any ${widget.kind.name}s in this section.',
+              description:
+                  'We couldn\'t find any ${widget.kind.name}s in this section.',
             );
           }
 
@@ -147,7 +147,9 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
         error: (err, _) => AppErrorState(
           message: err.toString(),
           onRetry: () {
-            ref.invalidate(contentListProvider((widget.kind, widget.subcategoryId)));
+            ref.invalidate(
+              contentListProvider((widget.kind, widget.subcategoryId)),
+            );
           },
         ),
       ),
@@ -159,10 +161,7 @@ class _ContentGridTile extends ConsumerWidget {
   final ContentItem item;
   final VoidCallback onTap;
 
-  const _ContentGridTile({
-    required this.item,
-    required this.onTap,
-  });
+  const _ContentGridTile({required this.item, required this.onTap});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

@@ -130,8 +130,6 @@ void main() {
         olChiki: 'ᱚ',
         blocks: const [],
         updatedAt: DateTime.now(),
-        audioUrl: null, // Missing audio
-        tracing: null, // Missing tracing
       );
 
       await tester.pumpWidget(
@@ -166,10 +164,10 @@ void main() {
 
       // Verify the red "Audio Missing" Tooltip and orange "Trace Missing" Tooltip are present
       expect(find.byType(Tooltip), findsAtLeast(2));
-      
+
       final tooltips = tester.widgetList<Tooltip>(find.byType(Tooltip));
       final tooltipMessages = tooltips.map((t) => t.message).toList();
-      
+
       expect(tooltipMessages, contains('Audio Missing'));
       expect(tooltipMessages, contains('Trace Missing'));
     },

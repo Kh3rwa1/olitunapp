@@ -12,6 +12,7 @@ import 'package:itun/core/storage/hive_service.dart';
 
 class MockAudioService extends AudioService {
   String? lastPlayedUrl;
+  bool didStopAudio = false;
 
   @override
   Future<void> playUrl(String url) async {
@@ -19,7 +20,9 @@ class MockAudioService extends AudioService {
   }
 
   @override
-  Future<void> stop() async {}
+  Future<void> stop() async {
+    didStopAudio = true;
+  }
 }
 
 void main() {
@@ -30,10 +33,7 @@ void main() {
     title: 'A',
     olChiki: 'ᱚ',
     audioUrl: 'https://example.com/audio/a.mp3',
-    tracing: const TracingConfig(
-      glyph: 'ᱚ',
-      strokes: [],
-    ),
+    tracing: const TracingConfig(glyph: 'ᱚ', strokes: []),
     blocks: const [],
     updatedAt: DateTime(2026, 5, 25),
   );
@@ -56,14 +56,13 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          contentListProvider((ContentKind.letter, null)).overrideWith(
-            (ref) => Completer<List<ContentItem>>().future,
-          ),
+          contentListProvider((
+            ContentKind.letter,
+            null,
+          )).overrideWith((ref) => Completer<List<ContentItem>>().future),
         ],
         child: const MaterialApp(
-          home: ContentGridScreen(
-            kind: ContentKind.letter,
-          ),
+          home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
     );
@@ -79,14 +78,13 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          contentListProvider((ContentKind.letter, null)).overrideWith(
-            (ref) => [],
-          ),
+          contentListProvider((
+            ContentKind.letter,
+            null,
+          )).overrideWith((ref) => []),
         ],
         child: const MaterialApp(
-          home: ContentGridScreen(
-            kind: ContentKind.letter,
-          ),
+          home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
     );
@@ -96,7 +94,9 @@ void main() {
     expect(find.text('No items found'), findsOneWidget);
   });
 
-  testWidgets('ContentGridScreen shows error state and supports retry', (tester) async {
+  testWidgets('ContentGridScreen shows error state and supports retry', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     int callCount = 0;
@@ -105,20 +105,16 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          contentListProvider((ContentKind.letter, null)).overrideWith(
-            (ref) {
-              callCount++;
-              if (callCount == 1) {
-                throw Exception('Database connection error');
-              }
-              return [mockLetterItemSilentNoTracing];
-            },
-          ),
+          contentListProvider((ContentKind.letter, null)).overrideWith((ref) {
+            callCount++;
+            if (callCount == 1) {
+              throw Exception('Database connection error');
+            }
+            return [mockLetterItemSilentNoTracing];
+          }),
         ],
         child: const MaterialApp(
-          home: ContentGridScreen(
-            kind: ContentKind.letter,
-          ),
+          home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
     );
@@ -135,7 +131,9 @@ void main() {
     expect(callCount, equals(2));
   });
 
-  testWidgets('ContentGridScreen renders responsive grid columns', (tester) async {
+  testWidgets('ContentGridScreen renders responsive grid columns', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
 
@@ -151,14 +149,13 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
-          contentListProvider((ContentKind.letter, null)).overrideWith(
-            (ref) => [mockLetterItemSilentNoTracing],
-          ),
+          contentListProvider((
+            ContentKind.letter,
+            null,
+          )).overrideWith((ref) => [mockLetterItemSilentNoTracing]),
         ],
         child: const MaterialApp(
-          home: ContentGridScreen(
-            kind: ContentKind.letter,
-          ),
+          home: ContentGridScreen(kind: ContentKind.letter),
         ),
       ),
     );
@@ -166,7 +163,8 @@ void main() {
     await tester.pumpAndSettle();
 
     final gridView = tester.widget<GridView>(find.byType(GridView));
-    final delegate = gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    final delegate =
+        gridView.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
     expect(delegate.crossAxisCount, equals(4));
 
     // Now set screen width to tablet (e.g. 800 width)
@@ -175,31 +173,159 @@ void main() {
     await tester.pumpAndSettle();
 
     final gridViewTablet = tester.widget<GridView>(find.byType(GridView));
-    final delegateTablet = gridViewTablet.gridDelegate as SliverGridDelegateWithFixedCrossAxisCount;
+    final delegateTablet =
+        gridViewTablet.gridDelegate
+            as SliverGridDelegateWithFixedCrossAxisCount;
     expect(delegateTablet.crossAxisCount, equals(6));
   });
 
-  testWidgets('ContentGridScreen triggers audio playback and conditional trace icon', (tester) async {
+  testWidgets(
+    'ContentGridScreen triggers audio playback and conditional trace icon',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+      final mockAudio = MockAudioService();
+
+      final router = GoRouter(
+        initialLocation: '/grid',
+        routes: [
+          GoRoute(
+            path: '/grid',
+            builder: (context, state) =>
+                const ContentGridScreen(kind: ContentKind.letter),
+          ),
+          GoRoute(
+            path: '/practice/:char/:name',
+            builder: (context, state) {
+              return Scaffold(
+                body: Text(
+                  'Practice char: ${state.pathParameters['char']}, name: ${state.pathParameters['name']}, mode: ${state.uri.queryParameters['mode']}',
+                ),
+              );
+            },
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            audioServiceProvider.overrideWithValue(mockAudio),
+            contentListProvider((ContentKind.letter, null)).overrideWith(
+              (ref) => [
+                mockLetterItemWithAudioAndTracing,
+                mockLetterItemSilentNoTracing,
+              ],
+            ),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Verify both items render
+      expect(find.text('A'), findsOneWidget);
+      expect(find.text('B'), findsOneWidget);
+
+      // Verify trace icon is present only for item 1
+      // The trace icon uses Icons.gesture_rounded
+      expect(find.byIcon(Icons.gesture_rounded), findsOneWidget);
+
+      // Tap tile 2 (silent, no tracing)
+      await tester.tap(find.text('B'));
+      await tester.pump();
+
+      // Verify no audio played for item 2
+      expect(mockAudio.lastPlayedUrl, isNull);
+
+      // Tap tile 1 body (not the trace icon)
+      await tester.tap(find.text('A'));
+      await tester.pump();
+
+      // Verify audio played
+      expect(
+        mockAudio.lastPlayedUrl,
+        equals('https://example.com/audio/a.mp3'),
+      );
+
+      // Reset last played URL
+      mockAudio.lastPlayedUrl = null;
+
+      // Tap the trace icon of tile 1
+      await tester.tap(find.byIcon(Icons.gesture_rounded));
+      await tester.pumpAndSettle();
+
+      // Verify navigated to practice screen with correct params
+      expect(
+        find.textContaining('Practice char: ᱚ, name: A, mode: trace'),
+        findsOneWidget,
+      );
+
+      // Verify audio did NOT play when tapping the trace icon (HitTestBehavior.opaque nested consumption)
+      expect(mockAudio.lastPlayedUrl, isNull);
+    },
+  );
+
+  testWidgets('ContentGridScreen stops audio when app goes to background', (
+    tester,
+  ) async {
+    SharedPreferences.setMockInitialValues({});
+    final prefs = await SharedPreferences.getInstance();
+    final mockAudio = MockAudioService();
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
+          audioServiceProvider.overrideWithValue(mockAudio),
+          contentListProvider((
+            ContentKind.letter,
+            null,
+          )).overrideWith((ref) => [mockLetterItemWithAudioAndTracing]),
+        ],
+        child: const MaterialApp(
+          home: ContentGridScreen(kind: ContentKind.letter),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    // Tap tile 1 to trigger audio
+    await tester.tap(find.text('A'));
+    await tester.pump();
+    expect(mockAudio.lastPlayedUrl, equals('https://example.com/audio/a.mp3'));
+
+    // Trigger app backgrounding
+    expect(mockAudio.didStopAudio, isFalse);
+    tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
+    await tester.pump();
+
+    // Verify audio stopped
+    expect(mockAudio.didStopAudio, isTrue);
+  });
+
+  testWidgets('ContentGridScreen stops audio when screen is popped', (
+    tester,
+  ) async {
     SharedPreferences.setMockInitialValues({});
     final prefs = await SharedPreferences.getInstance();
     final mockAudio = MockAudioService();
 
     final router = GoRouter(
-      initialLocation: '/grid',
+      initialLocation: '/other',
       routes: [
         GoRoute(
           path: '/grid',
-          builder: (context, state) => const ContentGridScreen(
-            kind: ContentKind.letter,
-          ),
+          builder: (context, state) =>
+              const ContentGridScreen(kind: ContentKind.letter),
         ),
         GoRoute(
-          path: '/practice/:char/:name',
-          builder: (context, state) {
-            return Scaffold(
-              body: Text('Practice char: ${state.pathParameters['char']}, name: ${state.pathParameters['name']}, mode: ${state.uri.queryParameters['mode']}'),
-            );
-          },
+          path: '/other',
+          builder: (context, state) =>
+              const Scaffold(body: Text('Other Screen')),
         ),
       ],
     );
@@ -209,54 +335,36 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
           audioServiceProvider.overrideWithValue(mockAudio),
-          contentListProvider((ContentKind.letter, null)).overrideWith(
-            (ref) => [
-              mockLetterItemWithAudioAndTracing,
-              mockLetterItemSilentNoTracing,
-            ],
-          ),
+          contentListProvider((
+            ContentKind.letter,
+            null,
+          )).overrideWith((ref) => [mockLetterItemWithAudioAndTracing]),
         ],
-        child: MaterialApp.router(
-          routerConfig: router,
-        ),
+        child: MaterialApp.router(routerConfig: router),
       ),
     );
 
     await tester.pumpAndSettle();
+    expect(find.text('Other Screen'), findsOneWidget);
 
-    // Verify both items render
-    expect(find.text('A'), findsOneWidget);
-    expect(find.text('B'), findsOneWidget);
-
-    // Verify trace icon is present only for item 1
-    // The trace icon uses Icons.gesture_rounded
-    expect(find.byIcon(Icons.gesture_rounded), findsOneWidget);
-
-    // Tap tile 2 (silent, no tracing)
-    await tester.tap(find.text('B'));
-    await tester.pump();
-
-    // Verify no audio played for item 2
-    expect(mockAudio.lastPlayedUrl, isNull);
-
-    // Tap tile 1 body (not the trace icon)
-    await tester.tap(find.text('A'));
-    await tester.pump();
-
-    // Verify audio played
-    expect(mockAudio.lastPlayedUrl, equals('https://example.com/audio/a.mp3'));
-
-    // Reset last played URL
-    mockAudio.lastPlayedUrl = null;
-
-    // Tap the trace icon of tile 1
-    await tester.tap(find.byIcon(Icons.gesture_rounded));
+    // Navigate to grid screen
+    router.push('/grid');
     await tester.pumpAndSettle();
 
-    // Verify navigated to practice screen with correct params
-    expect(find.textContaining('Practice char: ᱚ, name: A, mode: trace'), findsOneWidget);
+    // Tap tile 1 to trigger audio
+    await tester.tap(find.text('A'));
+    await tester.pump();
+    expect(mockAudio.lastPlayedUrl, equals('https://example.com/audio/a.mp3'));
 
-    // Verify audio did NOT play when tapping the trace icon (HitTestBehavior.opaque nested consumption)
-    expect(mockAudio.lastPlayedUrl, isNull);
+    // Verify didStopAudio is false initially
+    expect(mockAudio.didStopAudio, isFalse);
+
+    // Pop the screen
+    final context = tester.element(find.byType(ContentGridScreen));
+    context.pop();
+    await tester.pumpAndSettle();
+
+    // Verify screen popped and didStopAudio is true
+    expect(mockAudio.didStopAudio, isTrue);
   });
 }

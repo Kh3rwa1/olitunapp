@@ -34,22 +34,19 @@ class MockCategoryNotifier
 }
 
 void main() {
-  final mockAlphabetCategory = const CategoryEntity(
+  const mockAlphabetCategory = CategoryEntity(
     id: 'cat_alphabets',
     titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
     titleLatin: 'Alphabets',
-    gradientPreset: 'skyBlue',
     totalLessons: 1,
-    unlockMode: 'free',
   );
 
-  final mockNumberCategory = const CategoryEntity(
+  const mockNumberCategory = CategoryEntity(
     id: 'cat_numbers',
     titleOlChiki: 'ᱞᱮᱠᱷᱟ',
     titleLatin: 'Numbers',
     gradientPreset: 'peach',
     totalLessons: 1,
-    unlockMode: 'free',
   );
 
   final mockLessons = [
@@ -58,7 +55,6 @@ void main() {
       categoryId: 'cat_alphabets',
       titleOlChiki: 'Vowels I',
       titleLatin: 'Vowels I',
-      level: 'beginner',
     ),
   ];
 
@@ -68,7 +64,6 @@ void main() {
       categoryId: 'cat_numbers',
       titleOlChiki: 'Lekha 1',
       titleLatin: 'Numbers 1-5',
-      level: 'beginner',
     ),
   ];
 

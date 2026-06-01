@@ -237,8 +237,10 @@ class AppwriteAuthService {
             '&scopes[]=${Uri.encodeComponent("profile")}';
         redirectToUrl(oauthUrl);
       } else {
-        final successLink = 'appwrite-callback-${AppwriteConfig.projectId}://success';
-        final failureLink = 'appwrite-callback-${AppwriteConfig.projectId}://failure';
+        final successLink =
+            'appwrite-callback-${AppwriteConfig.projectId}://success';
+        final failureLink =
+            'appwrite-callback-${AppwriteConfig.projectId}://failure';
         await _account.createOAuth2Token(
           provider: OAuthProvider.google,
           success: successLink,

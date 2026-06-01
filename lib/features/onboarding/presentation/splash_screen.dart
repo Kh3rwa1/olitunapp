@@ -34,13 +34,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)
       if (kIsWeb) {
         final uri = Uri.base;
-        var userId = uri.queryParameters['userId'] ?? uri.queryParameters['key'];
+        var userId =
+            uri.queryParameters['userId'] ?? uri.queryParameters['key'];
         var secret = uri.queryParameters['secret'];
 
         if (userId == null || secret == null) {
           try {
             final routerState = GoRouterState.of(context);
-            userId ??= routerState.uri.queryParameters['userId'] ??
+            userId ??=
+                routerState.uri.queryParameters['userId'] ??
                 routerState.uri.queryParameters['key'];
             secret ??= routerState.uri.queryParameters['secret'];
           } catch (e) {
@@ -55,7 +57,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
           if (success) {
-            AppLogger.debug('Splash: OAuth token exchange succeeded, navigating to /');
+            AppLogger.debug(
+              'Splash: OAuth token exchange succeeded, navigating to /',
+            );
             ref.read(onboardingProvider.notifier).completeOnboarding();
             ref.invalidate(isAuthenticatedProvider);
             targetLocation = '/';
@@ -76,7 +80,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
           );
           isLoggedIn = isLoggedInResult.getOrElse((_) => false);
         } catch (_) {
-          AppLogger.debug('Splash: auth check timed out, treating as logged out');
+          AppLogger.debug(
+            'Splash: auth check timed out, treating as logged out',
+          );
         }
         AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');
 
@@ -134,7 +140,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     ? [
                         const Color(0xFF030712), // Deepest dark slate/black
                         const Color(0xFF0F172A), // Slate Navy
-                        const Color(0xFF052014), // Subtle dark emerald hint matching brand green
+                        const Color(
+                          0xFF052014,
+                        ), // Subtle dark emerald hint matching brand green
                       ]
                     : [
                         const Color(0xFFF8FAF9), // Pristine light grey
@@ -196,22 +204,41 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                   return Positioned(
                     left: letter.x * constraints.maxWidth,
                     top: letter.y * constraints.maxHeight,
-                    child: Transform.rotate(
-                      angle: letter.rotation,
-                      child: Text(
-                        letter.char,
-                        style: TextStyle(
-                          fontFamily: 'OlChiki',
-                          fontSize: letter.size,
-                          color: (isDark ? Colors.white : const Color(0xFF00C767))
-                              .withValues(alpha: isDark ? 0.05 : 0.04),
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    )
-                        .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                        .fade(begin: 0.3, end: 1.0, duration: 4.seconds, delay: letter.delay)
-                        .scaleXY(begin: 0.9, end: 1.1, duration: 4.seconds, curve: Curves.easeInOut),
+                    child:
+                        Transform.rotate(
+                              angle: letter.rotation,
+                              child: Text(
+                                letter.char,
+                                style: TextStyle(
+                                  fontFamily: 'OlChiki',
+                                  fontSize: letter.size,
+                                  color:
+                                      (isDark
+                                              ? Colors.white
+                                              : const Color(0xFF00C767))
+                                          .withValues(
+                                            alpha: isDark ? 0.05 : 0.04,
+                                          ),
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            )
+                            .animate(
+                              onPlay: (controller) =>
+                                  controller.repeat(reverse: true),
+                            )
+                            .fade(
+                              begin: 0.3,
+                              end: 1.0,
+                              duration: 4.seconds,
+                              delay: letter.delay,
+                            )
+                            .scaleXY(
+                              begin: 0.9,
+                              end: 1.1,
+                              duration: 4.seconds,
+                              curve: Curves.easeInOut,
+                            ),
                   );
                 }),
 
@@ -222,50 +249,58 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                     children: [
                       // Double-layered premium card layout (Glass outer ring + solid branding card)
                       Container(
-                        width: 154,
-                        height: 154,
-                        decoration: BoxDecoration(
-                          color: isDark 
-                              ? const Color(0xFF1E293B).withValues(alpha: 0.2) 
-                              : Colors.white.withValues(alpha: 0.4),
-                          borderRadius: BorderRadius.circular(44),
-                          border: Border.all(
-                            color: AppColors.primary.withValues(alpha: isDark ? 0.25 : 0.15),
-                            width: 2,
-                          ),
-                          boxShadow: [
-                            BoxShadow(
-                              color: AppColors.primary.withValues(alpha: isDark ? 0.2 : 0.1),
-                              blurRadius: 30,
-                              spreadRadius: 2,
-                              offset: const Offset(0, 8),
-                            ),
-                          ],
-                        ),
-                        child: Center(
-                          child: Container(
-                            width: 112,
-                            height: 112,
+                            width: 154,
+                            height: 154,
                             decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(28),
+                              color: isDark
+                                  ? const Color(
+                                      0xFF1E293B,
+                                    ).withValues(alpha: 0.2)
+                                  : Colors.white.withValues(alpha: 0.4),
+                              borderRadius: BorderRadius.circular(44),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(
+                                  alpha: isDark ? 0.25 : 0.15,
+                                ),
+                                width: 2,
+                              ),
                               boxShadow: [
                                 BoxShadow(
-                                  color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
-                                  blurRadius: 16,
-                                  offset: const Offset(0, 6),
+                                  color: AppColors.primary.withValues(
+                                    alpha: isDark ? 0.2 : 0.1,
+                                  ),
+                                  blurRadius: 30,
+                                  spreadRadius: 2,
+                                  offset: const Offset(0, 8),
                                 ),
                               ],
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(28),
-                              child: Image.asset(
-                                'assets/icons/olitun_logo.png',
-                                fit: BoxFit.cover,
+                            child: Center(
+                              child: Container(
+                                width: 112,
+                                height: 112,
+                                decoration: BoxDecoration(
+                                  borderRadius: BorderRadius.circular(28),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black.withValues(
+                                        alpha: isDark ? 0.4 : 0.08,
+                                      ),
+                                      blurRadius: 16,
+                                      offset: const Offset(0, 6),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(28),
+                                  child: Image.asset(
+                                    'assets/icons/olitun_logo.png',
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
                               ),
                             ),
-                          ),
-                        ),
-                      )
+                          )
                           .animate()
                           .scale(
                             duration: 1000.ms,
@@ -274,50 +309,79 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                             end: const Offset(1, 1),
                           )
                           .fadeIn(duration: 800.ms)
-                          .shimmer(delay: 1200.ms, duration: 1800.ms, color: AppColors.primaryLight.withValues(alpha: 0.35))
-                          .animate(onPlay: (controller) => controller.repeat(reverse: true))
-                          .scaleXY(begin: 1.0, end: 1.03, duration: 2500.ms, curve: Curves.easeInOut),
+                          .shimmer(
+                            delay: 1200.ms,
+                            duration: 1800.ms,
+                            color: AppColors.primaryLight.withValues(
+                              alpha: 0.35,
+                            ),
+                          )
+                          .animate(
+                            onPlay: (controller) =>
+                                controller.repeat(reverse: true),
+                          )
+                          .scaleXY(
+                            begin: 1.0,
+                            end: 1.03,
+                            duration: 2500.ms,
+                            curve: Curves.easeInOut,
+                          ),
 
                       const SizedBox(height: 48),
 
                       // Brand App Name with premium linear ShaderMask gradient
                       ShaderMask(
-                        shaderCallback: (bounds) => LinearGradient(
-                          colors: isDark
-                              ? [Colors.white, AppColors.primaryLight]
-                              : [const Color(0xFF0F172A), AppColors.primaryDark],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ).createShader(bounds),
-                        child: const Text(
-                          'OLITUN',
-                          style: TextStyle(
-                            fontSize: 38,
-                            fontWeight: FontWeight.w900,
-                            letterSpacing: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      )
+                            shaderCallback: (bounds) => LinearGradient(
+                              colors: isDark
+                                  ? [Colors.white, AppColors.primaryLight]
+                                  : [
+                                      const Color(0xFF0F172A),
+                                      AppColors.primaryDark,
+                                    ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ).createShader(bounds),
+                            child: const Text(
+                              'OLITUN',
+                              style: TextStyle(
+                                fontSize: 38,
+                                fontWeight: FontWeight.w900,
+                                letterSpacing: 12,
+                                color: Colors.white,
+                              ),
+                            ),
+                          )
                           .animate()
                           .fadeIn(delay: 400.ms, duration: 600.ms)
-                          .slideY(begin: 0.3, end: 0, curve: Curves.easeOutCubic, duration: 600.ms),
+                          .slideY(
+                            begin: 0.3,
+                            end: 0,
+                            curve: Curves.easeOutCubic,
+                            duration: 600.ms,
+                          ),
 
                       const SizedBox(height: 12),
 
                       // Premium Subtitle
                       Text(
-                        'LEARN OL CHIKI',
-                        style: TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 4,
-                          color: isDark ? Colors.white.withValues(alpha: 0.4) : Colors.black45,
-                        ),
-                      )
+                            'LEARN OL CHIKI',
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 4,
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.4)
+                                  : Colors.black45,
+                            ),
+                          )
                           .animate()
                           .fadeIn(delay: 700.ms, duration: 600.ms)
-                          .slideY(begin: 0.2, end: 0, curve: Curves.easeOutCubic, duration: 600.ms),
+                          .slideY(
+                            begin: 0.2,
+                            end: 0,
+                            curve: Curves.easeOutCubic,
+                            duration: 600.ms,
+                          ),
 
                       const SizedBox(height: 72),
 
@@ -345,7 +409,9 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                 style: TextStyle(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
-                                  color: isDark ? Colors.white.withValues(alpha: 0.45) : Colors.black54,
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.45)
+                                      : Colors.black54,
                                   letterSpacing: 0.5,
                                 ),
                               ),
@@ -357,7 +423,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                     width: 180,
                                     height: 3,
                                     decoration: BoxDecoration(
-                                      color: isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05),
+                                      color: isDark
+                                          ? Colors.white10
+                                          : Colors.black.withValues(
+                                              alpha: 0.05,
+                                            ),
                                       borderRadius: BorderRadius.circular(10),
                                     ),
                                   ),
@@ -366,12 +436,17 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                     height: 3,
                                     decoration: BoxDecoration(
                                       gradient: const LinearGradient(
-                                        colors: [AppColors.primary, AppColors.primaryLight],
+                                        colors: [
+                                          AppColors.primary,
+                                          AppColors.primaryLight,
+                                        ],
                                       ),
                                       borderRadius: BorderRadius.circular(10),
                                       boxShadow: [
                                         BoxShadow(
-                                          color: AppColors.primary.withValues(alpha: 0.4),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.4,
+                                          ),
                                           blurRadius: 8,
                                           spreadRadius: 1,
                                         ),
@@ -416,13 +491,68 @@ class _BackgroundLetter {
 }
 
 final List<_BackgroundLetter> _bgLetters = [
-  const _BackgroundLetter(char: 'ᱚ', x: 0.08, y: 0.15, size: 40, rotation: 0.2, delay: Duration(milliseconds: 100)),
-  const _BackgroundLetter(char: 'ᱛ', x: 0.85, y: 0.12, size: 36, rotation: -0.3, delay: Duration(milliseconds: 300)),
-  const _BackgroundLetter(char: 'ᱜ', x: 0.12, y: 0.45, size: 28, rotation: 0.4, delay: Duration(milliseconds: 500)),
-  const _BackgroundLetter(char: 'ᱝ', x: 0.82, y: 0.42, size: 32, rotation: -0.15, delay: Duration(milliseconds: 200)),
-  const _BackgroundLetter(char: 'ᱞ', x: 0.10, y: 0.72, size: 38, rotation: -0.25, delay: Duration(milliseconds: 600)),
-  const _BackgroundLetter(char: 'ᱟ', x: 0.88, y: 0.75, size: 44, rotation: 0.35, delay: Duration(milliseconds: 400)),
-  const _BackgroundLetter(char: 'ᱠ', x: 0.48, y: 0.10, size: 30, rotation: -0.1, delay: Duration(milliseconds: 750)),
-  const _BackgroundLetter(char: 'ᱡ', x: 0.52, y: 0.86, size: 34, rotation: 0.25, delay: Duration(milliseconds: 800)),
+  const _BackgroundLetter(
+    char: 'ᱚ',
+    x: 0.08,
+    y: 0.15,
+    size: 40,
+    rotation: 0.2,
+    delay: Duration(milliseconds: 100),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱛ',
+    x: 0.85,
+    y: 0.12,
+    size: 36,
+    rotation: -0.3,
+    delay: Duration(milliseconds: 300),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱜ',
+    x: 0.12,
+    y: 0.45,
+    size: 28,
+    rotation: 0.4,
+    delay: Duration(milliseconds: 500),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱝ',
+    x: 0.82,
+    y: 0.42,
+    size: 32,
+    rotation: -0.15,
+    delay: Duration(milliseconds: 200),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱞ',
+    x: 0.10,
+    y: 0.72,
+    size: 38,
+    rotation: -0.25,
+    delay: Duration(milliseconds: 600),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱟ',
+    x: 0.88,
+    y: 0.75,
+    size: 44,
+    rotation: 0.35,
+    delay: Duration(milliseconds: 400),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱠ',
+    x: 0.48,
+    y: 0.10,
+    size: 30,
+    rotation: -0.1,
+    delay: Duration(milliseconds: 750),
+  ),
+  const _BackgroundLetter(
+    char: 'ᱡ',
+    x: 0.52,
+    y: 0.86,
+    size: 34,
+    rotation: 0.25,
+    delay: Duration(milliseconds: 800),
+  ),
 ];
-

@@ -32,7 +32,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   }
 
   Future<void> _onRefresh() async {
-    ref.invalidate(contentListProvider((ContentKind.lesson, widget.categoryId)));
+    ref.invalidate(
+      contentListProvider((ContentKind.lesson, widget.categoryId)),
+    );
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
   }
 
@@ -634,7 +636,10 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       TextButton.icon(
                         onPressed: () {
                           ref.invalidate(
-                            contentListProvider((ContentKind.lesson, widget.categoryId)),
+                            contentListProvider((
+                              ContentKind.lesson,
+                              widget.categoryId,
+                            )),
                           );
                           ref.invalidate(
                             contentListProvider((ContentKind.lesson, null)),

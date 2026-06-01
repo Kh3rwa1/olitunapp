@@ -12,9 +12,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/features/main/presentation/main_shell/main_shell_screen.dart';
 import 'package:itun/features/auth/domain/repositories/auth_repository.dart';
-import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
-import 'package:itun/shared/providers/gamification_content_provider.dart';
 
 class MockAuthRepository extends Mock implements AuthRepository {}
 
@@ -39,11 +37,9 @@ void main() {
     'Guest mode / Skip Login flow renders successfully without throwing',
     (tester) async {
       final mockAuthRepo = MockAuthRepository();
+      when(mockAuthRepo.isLoggedIn).thenAnswer((_) async => const Right(false));
       when(
-        () => mockAuthRepo.isLoggedIn(),
-      ).thenAnswer((_) async => const Right(false));
-      when(
-        () => mockAuthRepo.getCurrentUser(),
+        mockAuthRepo.getCurrentUser,
       ).thenAnswer((_) async => const Right(null));
 
       final prefs = await SharedPreferences.getInstance();

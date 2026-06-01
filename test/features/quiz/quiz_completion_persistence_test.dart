@@ -137,7 +137,7 @@ void main() {
         notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
 
         // Complete the quiz
-        notifier.nextQuestion(mockQuiz);
+        await notifier.nextQuestion(mockQuiz);
 
         final state = container.read(
           quizSessionNotifierProvider('test_quiz_id'),
@@ -145,15 +145,17 @@ void main() {
         expect(state.isQuizComplete, isTrue);
 
         // Verify we saved result and added stars
-        verify(() => mockUserStats.saveQuizResult(any())).called(1);
-        verify(() => mockUserStats.addStars((1 * 5) + 0)).called(1);
+        verifyInOrder([
+          () => mockUserStats.saveQuizResult(any()),
+          () => mockUserStats.addStars((1 * 5) + 0),
+        ]);
         verify(() => mockQuizTakenToday.setCompleted(true)).called(1);
       },
     );
 
     test(
       'Completion handles exceptions thrown by userStatsProvider gracefully',
-      () {
+      () async {
         // Configure mockUserStats to throw an exception when saving quiz result
         when(
           () => mockUserStats.saveQuizResult(any()),
@@ -169,7 +171,7 @@ void main() {
 
         // Trigger nextQuestion which completes the quiz and persists.
         // This should run without throwing because we wrapped it in a try-catch.
-        expect(() => notifier.nextQuestion(mockQuiz), returnsNormally);
+        await expectLater(notifier.nextQuestion(mockQuiz), completes);
 
         final state = container.read(
           quizSessionNotifierProvider('test_quiz_id'),

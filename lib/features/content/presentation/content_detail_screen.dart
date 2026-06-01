@@ -1,4 +1,5 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:async';
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -12,13 +13,15 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/core/audio/audio_service.dart';
-import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/shared/widgets/content_hero.dart';
 import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
+import 'package:itun/features/quiz/domain/lesson_quiz_recommender.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
+import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
@@ -627,7 +630,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
           height: 52,
           child: ElevatedButton.icon(
             onPressed: _isTracingCompleted
-                ? () => _onCompleteContent(item)
+                ? () => unawaited(_onCompleteContent(item))
                 : null,
             style: ElevatedButton.styleFrom(
               backgroundColor: accentColor,
@@ -656,15 +659,19 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     );
   }
 
-  void _onCompleteContent(ContentItem item) {
+  Future<void> _onCompleteContent(ContentItem item) async {
+    if (_isFinished) return;
+
+    final recommendation = _recommendedQuizFor(item);
+
     // 1. Award stars
-    ref.read(userStatsProvider.notifier).addStars(25);
+    await ref.read(userStatsProvider.notifier).addStars(25);
 
     // 2. Set completed today
     ref.read(lessonCompletedTodayProvider.notifier).setCompleted(true);
 
     // 3. Set lesson completed (for analytics and progress)
-    ref
+    await ref
         .read(userStatsProvider.notifier)
         .completeLesson(
           item.id,
@@ -673,22 +680,38 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         );
 
     // 4. Trigger celebration
+    if (!mounted) return;
     setState(() {
       _isFinished = true;
     });
 
-    // 5. Show premium celebration sheet
-    _showCompletionSheet(context, item);
+    // 5. Show premium celebration sheet with a quiz CTA when available.
+    _showCompletionSheet(context, item, recommendation: recommendation);
   }
 
-  void _showCompletionSheet(BuildContext context, ContentItem item) {
+  LessonQuizRecommendation? _recommendedQuizFor(ContentItem item) {
+    final quizzes =
+        ref.read(quizzesProvider).valueOrNull ?? const <QuizModel>[];
+    return LessonQuizRecommender.recommend(
+      lesson: item,
+      quizzes: quizzes,
+      stats: ref.read(userStatsProvider).valueOrNull,
+    );
+  }
+
+  void _showCompletionSheet(
+    BuildContext context,
+    ContentItem item, {
+    LessonQuizRecommendation? recommendation,
+  }) {
     showModalBottomSheet(
       context: context,
       isDismissible: false,
       enableDrag: false,
       backgroundColor: Colors.transparent,
-      builder: (context) {
-        final isDark = Theme.of(context).brightness == Brightness.dark;
+      builder: (sheetContext) {
+        final isDark = Theme.of(sheetContext).brightness == Brightness.dark;
+        final recommendedQuiz = recommendation?.quiz;
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           decoration: BoxDecoration(
@@ -721,7 +744,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               ),
               const SizedBox(height: 24),
               Text(
-                'Practice Complete!',
+                recommendedQuiz == null
+                    ? 'Practice Complete!'
+                    : 'Ready for a Quiz?',
                 style: TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
@@ -730,31 +755,79 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const Text(
-                'Superb! You finished this module successfully.',
+              Text(
+                recommendedQuiz == null
+                    ? 'Superb! You finished this module successfully.'
+                    : recommendation!.isRetake
+                    ? 'Nice work. Retake "${recommendedQuiz.title ?? 'this quiz'}" now to sharpen your score.'
+                    : 'Great finish. Start "${recommendedQuiz.title ?? 'this quiz'}" now while the lesson is fresh.',
                 textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 15),
+                style: const TextStyle(fontSize: 15),
               ),
+              if (recommendation != null) ...[
+                const SizedBox(height: 10),
+                Text(
+                  recommendation.reason,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: isDark ? Colors.white54 : Colors.black45,
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
+              if (recommendedQuiz != null) ...[
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () {
+                      Navigator.pop(sheetContext);
+                      context.push('/quiz/${recommendedQuiz.id}');
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.primary,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    icon: const Icon(Icons.quiz_rounded),
+                    label: const Text(
+                      'Start Quiz',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
               SizedBox(
                 width: double.infinity,
                 height: 52,
-                child: ElevatedButton(
+                child: OutlinedButton(
                   onPressed: () {
                     // Close sheet and go back
-                    Navigator.pop(context); // close sheet
+                    Navigator.pop(sheetContext); // close sheet
                     Navigator.maybePop(this.context); // close detail screen
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    foregroundColor: Colors.white,
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: isDark ? Colors.white : Colors.black87,
+                    side: BorderSide(
+                      color: isDark ? Colors.white24 : Colors.black12,
+                    ),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16),
                     ),
                   ),
-                  child: const Text(
-                    'Back to Lessons',
-                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                  child: Text(
+                    recommendedQuiz == null ? 'Back to Lessons' : 'Maybe Later',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

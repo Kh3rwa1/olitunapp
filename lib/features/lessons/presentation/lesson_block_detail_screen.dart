@@ -12,6 +12,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
+import '../../../shared/models/content/quiz_model.dart';
+import '../../quiz/data/quiz_repository.dart';
 import '../domain/entities/lesson_entity.dart';
 import 'widgets/full_bleed_hero_media.dart';
 import '../../practice/presentation/widgets/typing_practice_panel.dart';
@@ -39,6 +41,7 @@ class _LessonBlockDetailScreenState
   int _currentIndex = 0;
   bool _isAudioPlaying = false;
   String? _playingId;
+  final Set<int> _dismissedQuizBlockIndices = {};
 
   @override
   void initState() {
@@ -149,7 +152,19 @@ class _LessonBlockDetailScreenState
           );
         }
 
-        final contentBlocks = lesson.blocks;
+        final rawBlocks = lesson.blocks;
+        final hasAuthoredQuiz = rawBlocks.any((b) => b.type == 'quiz');
+        final contentBlocks = hasAuthoredQuiz
+            ? rawBlocks
+            : [
+                ...rawBlocks,
+                LessonBlockEntity(
+                  type: 'quiz',
+                  textOlChiki: '',
+                  textLatin: '',
+                  data: {'quizId': 'dynamic_quiz_${lesson.id}'},
+                ),
+              ];
 
         if (contentBlocks.isEmpty) {
           return Scaffold(
@@ -254,6 +269,7 @@ class _LessonBlockDetailScreenState
                         index,
                         pageThemeColor,
                         isDark,
+                        lesson,
                       );
                     },
                   ),
@@ -531,7 +547,66 @@ class _LessonBlockDetailScreenState
     int index,
     Color accentColor,
     bool isDark,
+    LessonEntity lesson,
   ) {
+    if (block.type == 'quiz') {
+      final quizId =
+          block.data?['quizId'] as String? ??
+          block.data?['quizRefId'] as String? ??
+          '';
+      if (quizId.isEmpty || _dismissedQuizBlockIndices.contains(index)) {
+        return const SizedBox.shrink();
+      }
+
+      if (quizId.startsWith('dynamic_quiz_')) {
+        final quiz = ref.watch(dynamicLessonQuizProvider(lesson));
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return _buildQuizBlockCTA(
+              context,
+              quizId,
+              quiz,
+              accentColor,
+              isDark,
+              constraints.maxHeight,
+              index,
+            );
+          },
+        );
+      }
+
+      return ref
+          .watch(quizzesByIdProvider)
+          .when(
+            loading: () => const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24.0),
+                child: CircularProgressIndicator(strokeWidth: 3),
+              ),
+            ),
+            error: (err, _) => const SizedBox.shrink(),
+            data: (quizzesMap) {
+              if (!quizzesMap.containsKey(quizId)) {
+                return const SizedBox.shrink();
+              }
+              final quiz = quizzesMap[quizId]!;
+              return LayoutBuilder(
+                builder: (context, constraints) {
+                  return _buildQuizBlockCTA(
+                    context,
+                    quizId,
+                    quiz,
+                    accentColor,
+                    isDark,
+                    constraints.maxHeight,
+                    index,
+                  );
+                },
+              );
+            },
+          );
+    }
+
     final settings = ref.watch(typingPracticeSettingsProvider);
     final bool isEligible =
         settings.enabled &&
@@ -1375,6 +1450,130 @@ class _LessonBlockDetailScreenState
           },
         );
       },
+    );
+  }
+
+  Widget _buildQuizBlockCTA(
+    BuildContext context,
+    String quizId,
+    QuizModel quiz,
+    Color accentColor,
+    bool isDark,
+    double maxHeight,
+    int index,
+  ) {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: ConstrainedBox(
+        constraints: BoxConstraints(minHeight: maxHeight),
+        child: Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+            child: _buildGlassCard(
+              themeColor: accentColor,
+              isDark: isDark,
+              radius: 28,
+              padding: 24,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  // Celebration Icon Header
+                  Container(
+                    width: 72,
+                    height: 72,
+                    decoration: BoxDecoration(
+                      color: accentColor.withValues(alpha: 0.15),
+                      shape: BoxShape.circle,
+                      border: Border.all(
+                        color: accentColor.withValues(alpha: 0.3),
+                        width: 2,
+                      ),
+                    ),
+                    child: Icon(
+                      Icons.emoji_events_rounded,
+                      color: accentColor,
+                      size: 38,
+                    ),
+                  ).animate().scale(
+                    duration: 400.ms,
+                    curve: Curves.easeOutBack,
+                  ),
+                  const SizedBox(height: 24),
+                  // Title / Prompt
+                  Text(
+                    'Ready to test yourself?',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w900,
+                      color: isDark ? Colors.white : const Color(0xFF1E293B),
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    'Great job! Take "${quiz.title ?? 'the quiz'}" now to test your knowledge.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: isDark ? Colors.white70 : const Color(0xFF64748B),
+                      height: 1.4,
+                    ),
+                  ),
+                  const SizedBox(height: 32),
+                  // Action buttons
+                  _Tactile3DButton(
+                    color: accentColor,
+                    onPressed: () {
+                      context.push('/quiz/$quizId');
+                    },
+                    child: Text(
+                      'TAKE THE QUIZ',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w900,
+                        color:
+                            ThemeData.estimateBrightnessForColor(accentColor) ==
+                                Brightness.light
+                            ? Colors.black
+                            : Colors.white,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextButton(
+                    onPressed: () {
+                      setState(() {
+                        _dismissedQuizBlockIndices.add(index);
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 12,
+                        horizontal: 24,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                    ),
+                    child: Text(
+                      'Skip for now',
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w700,
+                        color: isDark
+                            ? Colors.white70
+                            : const Color(0xFF64748B),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

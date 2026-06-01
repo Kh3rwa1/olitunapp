@@ -3,7 +3,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../core/error/failures.dart';
 import '../../../shared/models/content_models.dart';
-import '../../../shared/providers/quizzes_provider.dart';
+import '../../../shared/providers/providers.dart';
+import '../../lessons/domain/entities/lesson_entity.dart';
+import '../domain/lesson_quiz_generator.dart';
 
 class QuizRepository {
   final Ref _ref;
@@ -51,11 +53,39 @@ class QuizRepository {
 
 final quizRepositoryProvider = Provider(QuizRepository.new);
 
+final dynamicLessonQuizProvider = Provider.family<QuizModel, LessonEntity>((
+  ref,
+  lesson,
+) {
+  return LessonQuizGenerator.generate(lesson);
+});
+
 final quizResultProvider =
     Provider.family<AsyncValue<Either<Failure, QuizModel>>, String>((
       ref,
       quizId,
     ) {
+      if (quizId.startsWith('dynamic_quiz_')) {
+        final lessonId = quizId.substring('dynamic_quiz_'.length);
+        final lessonsAsync = ref.watch(learnerLessonsProvider);
+
+        if (lessonsAsync.isLoading) {
+          return const AsyncValue.loading();
+        }
+
+        final lessons = lessonsAsync.valueOrNull ?? [];
+        final lesson = lessons.where((l) => l.id == lessonId).firstOrNull;
+
+        if (lesson == null) {
+          return const AsyncValue.data(
+            Left(ServerFailure(message: 'Lesson not found.')),
+          );
+        }
+
+        final dynamicQuiz = LessonQuizGenerator.generate(lesson);
+        return AsyncValue.data(Right(dynamicQuiz));
+      }
+
       final repo = ref.watch(quizRepositoryProvider);
       final quizzesMapAsync = ref.watch(quizzesByIdProvider);
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Olitun native splash screen with logo -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Match the Flutter splash surface to avoid a color flash before first frame. -->
-    <item android:drawable="@color/splash_background" />
+    <!-- Match the Flutter splash surface gradient to avoid a color flash. -->
+    <item android:drawable="@drawable/splash_gradient" />
     
     <!-- Centered logo -->
     <item>

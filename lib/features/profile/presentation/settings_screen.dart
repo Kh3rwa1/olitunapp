@@ -458,6 +458,14 @@ class SettingsScreen extends ConsumerWidget {
           isDark: isDark,
           onTap: () => context.go('/terms'),
         ),
+        const SizedBox(height: 10),
+        SettingTile(
+          icon: Icons.admin_panel_settings_rounded,
+          title: 'Admin Portal',
+          subtitle: 'Manage lesson contents and authored quizzes',
+          isDark: isDark,
+          onTap: () => context.go('/admin'),
+        ),
       ],
     );
   }

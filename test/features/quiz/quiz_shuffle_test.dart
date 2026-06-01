@@ -187,8 +187,61 @@ void main() {
   );
 
   test(
-    'Answer all questions correctly using displayedQuestion, assert score == totalQuestions',
+    'displayedQuestion uses the option order for the shuffled original question',
     () {
+      int? testSeed;
+      for (int seed = 0; seed < 1000; seed++) {
+        final order = [0, 1, 2]..shuffle(Random(seed));
+        if (order.first == 2) {
+          testSeed = seed;
+          break;
+        }
+      }
+      expect(testSeed, isNotNull);
+
+      final mixedQuiz = QuizModel(
+        id: 'mixed_shuffle_quiz',
+        questions: [
+          QuizQuestion(
+            promptOlChiki: 'Q0',
+            optionsLatin: ['A0', 'B0'],
+            optionsOlChiki: ['A0', 'B0'],
+            correctIndex: 1,
+          ),
+          QuizQuestion(
+            promptOlChiki: 'Q1',
+            optionsLatin: ['A1', 'B1', 'C1', 'D1'],
+            optionsOlChiki: ['A1', 'B1', 'C1', 'D1'],
+            correctIndex: 3,
+          ),
+          QuizQuestion(
+            promptOlChiki: 'Q2',
+            optionsLatin: ['A2', 'B2', 'C2'],
+            optionsOlChiki: ['A2', 'B2', 'C2'],
+            correctIndex: 2,
+          ),
+        ],
+      );
+
+      final notifier = container.read(
+        quizSessionNotifierProvider('mixed_shuffle_quiz').notifier,
+      );
+      notifier.startQuiz(mixedQuiz, testRng: Random(testSeed!));
+
+      final state = container.read(
+        quizSessionNotifierProvider('mixed_shuffle_quiz'),
+      );
+      expect(state.questionOrder.first, 2);
+
+      final displayedQ = notifier.displayedQuestion(mixedQuiz);
+      expect(displayedQ.optionsLatin, hasLength(3));
+      expect(displayedQ.optionsLatin[displayedQ.correctIndex], 'C2');
+    },
+  );
+
+  test(
+    'Answer all questions correctly using displayedQuestion, assert score == totalQuestions',
+    () async {
       final notifier = container.read(
         quizSessionNotifierProvider('shuffle_quiz').notifier,
       );
@@ -197,7 +250,7 @@ void main() {
       for (int i = 0; i < mockQuiz.questions.length; i++) {
         final displayedQ = notifier.displayedQuestion(mockQuiz);
         notifier.selectAnswer(displayedQ.correctIndex, displayedQ, mockQuiz);
-        notifier.nextQuestion(mockQuiz);
+        await notifier.nextQuestion(mockQuiz);
       }
 
       final state = container.read(quizSessionNotifierProvider('shuffle_quiz'));
@@ -208,7 +261,7 @@ void main() {
 
   test(
     'Answer all wrong, assert incorrectQuestionIndices contains every original index exactly once',
-    () {
+    () async {
       final notifier = container.read(
         quizSessionNotifierProvider('shuffle_quiz').notifier,
       );
@@ -219,7 +272,7 @@ void main() {
         final wrongIdx =
             (displayedQ.correctIndex + 1) % displayedQ.optionsLatin.length;
         notifier.selectAnswer(wrongIdx, displayedQ, mockQuiz);
-        notifier.nextQuestion(mockQuiz);
+        await notifier.nextQuestion(mockQuiz);
       }
 
       final state = container.read(quizSessionNotifierProvider('shuffle_quiz'));

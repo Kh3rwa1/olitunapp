@@ -587,7 +587,8 @@ class _QuizBlock extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final quizRefId = block.data?['quizRefId'] as String?;
+    final quizRefId =
+        (block.data?['quizId'] ?? block.data?['quizRefId']) as String?;
     return ScaleButton(
       onPressed: () {
         if (quizRefId != null) {

@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -104,7 +105,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
             ref.read(onboardingProvider.notifier).completeOnboarding();
             targetLocation = '/welcome';
           } else {
-            targetLocation = '/welcome';
+            targetLocation = '/';
           }
         }
       }
@@ -112,9 +113,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       AppLogger.debug('Splash error during check: $e');
     }
 
-    // Enforce a minimum load time of 2.0s so the premium, smooth brand animations have time to breathe
+    // Enforce a minimum load time of 2.0s (or 0s in tests) so the premium, smooth brand animations have time to breathe
+    final isTesting =
+        !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
+    final minDuration = isTesting
+        ? Duration.zero
+        : const Duration(milliseconds: 2000);
     final elapsed = DateTime.now().difference(startTime);
-    final remaining = const Duration(milliseconds: 2000) - elapsed;
+    final remaining = minDuration - elapsed;
     if (remaining > Duration.zero) {
       await Future.delayed(remaining);
     }

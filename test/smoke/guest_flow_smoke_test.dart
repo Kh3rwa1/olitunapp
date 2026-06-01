@@ -1,3 +1,4 @@
+// Guest Flow Smoke Test - Optimized for AAA+ Premium Splash Screen and Test Isolation
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';

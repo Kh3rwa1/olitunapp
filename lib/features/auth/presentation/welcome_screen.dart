@@ -7,6 +7,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
 import '../presentation/providers/auth_providers.dart';
+import '../../onboarding/providers/onboarding_provider.dart';
 
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
@@ -371,8 +372,13 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
         (_) {
           if (mounted) {
             ref.invalidate(isAuthenticatedProvider);
+            final showOnboarding = ref.read(onboardingProvider);
             if (!kIsWeb) {
-              context.go('/');
+              if (showOnboarding) {
+                context.go('/onboarding');
+              } else {
+                context.go('/');
+              }
             }
           }
         },

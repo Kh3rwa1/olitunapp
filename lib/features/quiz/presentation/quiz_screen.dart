@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -128,6 +130,16 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           final question = notifier.displayedQuestion(quiz);
           final totalQs = quiz.questions.length;
           final isFillBlank = question.type == 'fill_blank';
+          final correctOptionOlChiki =
+              question.correctIndex >= 0 &&
+                  question.correctIndex < question.optionsOlChiki.length
+              ? question.optionsOlChiki[question.correctIndex]
+              : '';
+          final correctOptionLatin =
+              question.correctIndex >= 0 &&
+                  question.correctIndex < question.optionsLatin.length
+              ? question.optionsLatin[question.correctIndex]
+              : correctOptionOlChiki;
 
           Widget buildQuestionArea() {
             if (!isFillBlank) {
@@ -367,12 +379,10 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             bottomNavigationBar: state.isAnswered
                 ? QuizFeedbackPanel(
                     isCorrect: state.selectedAnswer == question.correctIndex,
-                    correctOptionOlChiki:
-                        question.optionsOlChiki[question.correctIndex],
-                    correctOptionLatin:
-                        question.optionsLatin[question.correctIndex],
+                    correctOptionOlChiki: correctOptionOlChiki,
+                    correctOptionLatin: correctOptionLatin,
                     explanation: question.explanation,
-                    onContinue: () => notifier.nextQuestion(quiz),
+                    onContinue: () => unawaited(notifier.nextQuestion(quiz)),
                   )
                 : null,
           );

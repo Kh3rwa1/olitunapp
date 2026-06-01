@@ -237,11 +237,12 @@ class AppwriteAuthService {
             '&scopes[]=${Uri.encodeComponent("profile")}';
         redirectToUrl(oauthUrl);
       } else {
-        final deepLink = 'appwrite-callback-${AppwriteConfig.projectId}://';
-        await _account.createOAuth2Session(
+        final successLink = 'appwrite-callback-${AppwriteConfig.projectId}://success';
+        final failureLink = 'appwrite-callback-${AppwriteConfig.projectId}://failure';
+        await _account.createOAuth2Token(
           provider: OAuthProvider.google,
-          success: deepLink,
-          failure: deepLink,
+          success: successLink,
+          failure: failureLink,
           scopes: ['email', 'profile'],
         );
       }

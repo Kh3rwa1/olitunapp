@@ -4,7 +4,6 @@
 *.pyc
 *.swp
 .DS_Store
-*.txt
 .atom/
 .atom/
 .build/
@@ -56,6 +55,8 @@ build_web_v*.zip
 *.keystore
 android/key.properties
 android/upload-keystore.jks
+android/app/upload_certificate.pem
+
 
 # Agent / AI
 .agent/

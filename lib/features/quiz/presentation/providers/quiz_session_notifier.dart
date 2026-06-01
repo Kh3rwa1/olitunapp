@@ -140,7 +140,8 @@ class QuizSessionNotifier
     final questionOrder = List<int>.generate(quiz.questions.length, (i) => i)
       ..shuffle(rng);
     final optionOrders = quiz.questions.map((q) {
-      return List<int>.generate(q.optionsLatin.length, (i) => i)..shuffle(rng);
+      return List<int>.generate(_questionOptionCount(q), (i) => i)
+        ..shuffle(rng);
     }).toList();
 
     state = state.copyWith(
@@ -174,13 +175,24 @@ class QuizSessionNotifier
     final origIdx = state.questionOrder[state.currentQuestion];
     final raw = quiz.questions[origIdx];
 
-    if (state.optionOrders.isEmpty ||
-        state.currentQuestion >= state.optionOrders.length) {
+    if (state.optionOrders.isEmpty || origIdx >= state.optionOrders.length) {
       return raw;
     }
-    final perm = state.optionOrders[state.currentQuestion];
-    final newOptionsLatin = perm.map((i) => raw.optionsLatin[i]).toList();
-    final newOptionsOlChiki = perm.map((i) => raw.optionsOlChiki[i]).toList();
+    final perm = state.optionOrders[origIdx];
+    final optionCount = _questionOptionCount(raw);
+    if (optionCount <= 0 ||
+        perm.length != optionCount ||
+        raw.correctIndex < 0 ||
+        raw.correctIndex >= optionCount) {
+      return raw;
+    }
+
+    final newOptionsLatin = raw.optionsLatin.length == optionCount
+        ? perm.map((i) => raw.optionsLatin[i]).toList()
+        : raw.optionsLatin;
+    final newOptionsOlChiki = raw.optionsOlChiki.length == optionCount
+        ? perm.map((i) => raw.optionsOlChiki[i]).toList()
+        : raw.optionsOlChiki;
     final newCorrectIndex = perm.indexOf(raw.correctIndex);
     return raw.copyWith(
       optionsLatin: newOptionsLatin,
@@ -300,7 +312,7 @@ class QuizSessionNotifier
         !ref.read(reduceVisualEffectsProvider);
   }
 
-  void nextQuestion(QuizModel quiz) {
+  Future<void> nextQuestion(QuizModel quiz) async {
     if (state.isOutOfHearts) return;
     if (state.currentQuestion < quiz.questions.length - 1) {
       state = state.copyWith(
@@ -321,7 +333,7 @@ class QuizSessionNotifier
       try {
         final statsNotifier = ref.read(userStatsProvider.notifier);
         final completedAt = DateTime.now().toIso8601String();
-        statsNotifier.saveQuizResult(
+        await statsNotifier.saveQuizResult(
           QuizResultEntity(
             quizId: quiz.id,
             score: state.score,
@@ -329,7 +341,7 @@ class QuizSessionNotifier
             completedAt: completedAt,
           ),
         );
-        statsNotifier.addStars(
+        await statsNotifier.addStars(
           QuizScoringRules.calculateStars(
             state.score,
             bonusStars: state.bonusStars,
@@ -344,6 +356,14 @@ class QuizSessionNotifier
 
   void reset() {
     state = const QuizSessionState();
+  }
+
+  int _questionOptionCount(QuizQuestion question) {
+    final latinCount = question.optionsLatin.length;
+    final olChikiCount = question.optionsOlChiki.length;
+    if (latinCount == olChikiCount) return latinCount;
+    if (question.type == 'fill_blank') return olChikiCount;
+    return latinCount;
   }
 }
 

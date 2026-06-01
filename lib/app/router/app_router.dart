@@ -187,7 +187,7 @@ final routerProvider = Provider<GoRouter>((ref) {
 
   return GoRouter(
     navigatorKey: _rootNavigatorKey,
-    initialLocation: '/',
+    initialLocation: '/splash',
     redirect: (context, state) {
       final hostRedirect = adminHostRedirectFor(Uri.base.host, state.uri.path);
       if (hostRedirect != null) return hostRedirect;

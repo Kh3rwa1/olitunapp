@@ -32,6 +32,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
   }
 
   Future<void> _onRefresh() async {
+    ref.invalidate(contentListProvider((ContentKind.lesson, widget.categoryId)));
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
   }
 
@@ -631,9 +632,14 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                       ),
                       const SizedBox(height: 20),
                       TextButton.icon(
-                        onPressed: () => ref.invalidate(
-                          contentListProvider((ContentKind.lesson, null)),
-                        ),
+                        onPressed: () {
+                          ref.invalidate(
+                            contentListProvider((ContentKind.lesson, widget.categoryId)),
+                          );
+                          ref.invalidate(
+                            contentListProvider((ContentKind.lesson, null)),
+                          );
+                        },
                         icon: const Icon(Icons.refresh_rounded),
                         label: const Text('Retry'),
                         style: TextButton.styleFrom(

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../../core/theme/admin_tokens.dart';
 import '../../../../../../core/theme/app_colors.dart';
 import '../../../../../../shared/utils/media_type_resolver.dart';
+import '../../../../../../shared/providers/providers.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
 
@@ -57,10 +58,23 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   bool _tracingEnabled = false;
   String? _themeColor;
   bool _advancedOpen = false;
+  bool _showCustomQuizIdInput = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      final currentValue = _quizRefCtrl.text.trim();
+      if (currentValue.isNotEmpty) {
+        final quizzes = ref.read(quizzesProvider).valueOrNull ?? [];
+        if (!quizzes.any((q) => q.id == currentValue)) {
+          setState(() {
+            _showCustomQuizIdInput = true;
+          });
+        }
+      }
+    });
     final b = widget.existing;
     if (b != null) {
       _olChikiCtrl.text = b.textOlChiki ?? '';
@@ -193,6 +207,7 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final inferred = _resolveType();
+    final quizzesAsync = ref.watch(quizzesProvider);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -327,10 +342,93 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                       onChanged: (_) => setState(() {}),
                     ),
                     const SizedBox(height: 16),
-                    AdminTextField(
-                      label: 'Quiz reference ID',
-                      controller: _quizRefCtrl,
-                      onChanged: (_) => setState(() {}),
+                    quizzesAsync.when(
+                      loading: () => const Center(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(vertical: 8.0),
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        ),
+                      ),
+                      error: (err, _) => Text(
+                        'Failed to load quizzes: $err',
+                        style: const TextStyle(color: Colors.red),
+                      ),
+                      data: (quizzesList) {
+                        final currentValue = _quizRefCtrl.text.trim();
+                        final inList = quizzesList.any(
+                          (q) => q.id == currentValue,
+                        );
+
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Quiz Invitation (Optional)',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: isDark ? Colors.white70 : Colors.black87,
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            DropdownButtonFormField<String>(
+                              initialValue: _showCustomQuizIdInput
+                                  ? '__custom__'
+                                  : (inList ? currentValue : ''),
+                              isExpanded: true,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 16,
+                                  vertical: 12,
+                                ),
+                              ),
+                              items: [
+                                const DropdownMenuItem<String>(
+                                  value: '',
+                                  child: Text('None / Clear Quiz'),
+                                ),
+                                for (final q in quizzesList)
+                                  DropdownMenuItem<String>(
+                                    value: q.id,
+                                    child: Text(
+                                      '${q.title ?? 'Untitled Quiz'} (${q.id})',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                const DropdownMenuItem<String>(
+                                  value: '__custom__',
+                                  child: Text('Custom ID (Manual Entry)...'),
+                                ),
+                              ],
+                              onChanged: (val) {
+                                if (val == '__custom__') {
+                                  setState(() {
+                                    _showCustomQuizIdInput = true;
+                                    _quizRefCtrl.clear();
+                                  });
+                                } else {
+                                  setState(() {
+                                    _showCustomQuizIdInput = false;
+                                    _quizRefCtrl.text = val ?? '';
+                                  });
+                                }
+                              },
+                            ),
+                            if (_showCustomQuizIdInput) ...[
+                              const SizedBox(height: 12),
+                              AdminTextField(
+                                label: 'Custom Quiz ID',
+                                controller: _quizRefCtrl,
+                                hint: 'Paste Appwrite Quiz ID here',
+                                onChanged: (_) => setState(() {}),
+                              ),
+                            ],
+                          ],
+                        );
+                      },
                     ),
                     const SizedBox(height: 16),
                     _CalloutPicker(

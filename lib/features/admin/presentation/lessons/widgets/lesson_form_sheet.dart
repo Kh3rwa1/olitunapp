@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:uuid/uuid.dart';
 import 'package:itun/features/admin/presentation/widgets/content_form.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/admin/presentation/widgets/common/admin_modal_sheet.dart';
@@ -81,43 +80,11 @@ class _LessonFormSheetState extends ConsumerState<LessonFormSheet> {
     ContentMedia? heroMedia,
     String? subtitle,
   }) {
-    final blocks = <ContentBlock>[];
-    for (int i = 0; i < l.blocks.length; i++) {
-      final b = l.blocks[i];
-      if (b.type == 'text') {
-        blocks.add(
-          TextBlock(
-            id: const Uuid().v4(),
-            order: i,
-            markdown: b.textLatin ?? '',
-          ),
-        );
-      } else if (b.type == 'image') {
-        blocks.add(
-          ImageBlock(
-            id: const Uuid().v4(),
-            order: i,
-            media: ContentMedia(
-              url: b.imageUrl ?? '',
-              fileId: '',
-              kind: ContentMediaKind.image,
-            ),
-          ),
-        );
-      } else if (b.type == 'audio') {
-        blocks.add(
-          AudioBlock(
-            id: const Uuid().v4(),
-            order: i,
-            media: ContentMedia(
-              url: b.audioUrl ?? '',
-              fileId: '',
-              kind: ContentMediaKind.audio,
-            ),
-          ),
-        );
-      }
-    }
+    final blocks = l.blocks
+        .asMap()
+        .entries
+        .map((e) => e.value.toContentBlock(e.key))
+        .toList();
 
     _initialItem = ContentItem(
       id: l.id,

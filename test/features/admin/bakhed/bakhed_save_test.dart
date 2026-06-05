@@ -1381,32 +1381,39 @@ void main() {
       expect(item.effectiveAudioUrl, 'https://cdn.example.com/glyph-audio.mp3');
     });
 
-    test('extracts audioUrl from GlyphBlock in ContentItem when top-level audioUrl is empty string', () {
-      const block = GlyphBlock(
-        id: 'b1',
-        order: 0,
-        olChiki: 'ᱚ',
-        latin: 'o',
-        audioUrl: 'https://cdn.example.com/glyph-audio.mp3',
-      );
-      final item = ContentItem(
-        id: 'o_letter',
-        kind: ContentKind.letter,
-        categoryId: 'cat_letters',
-        title: 'O',
-        audioUrl: '',
-        blocks: const [block],
-        updatedAt: DateTime(2026),
-      );
-      expect(item.effectiveAudioUrl, 'https://cdn.example.com/glyph-audio.mp3');
-    });
+    test(
+      'extracts audioUrl from GlyphBlock in ContentItem when top-level audioUrl is empty string',
+      () {
+        const block = GlyphBlock(
+          id: 'b1',
+          order: 0,
+          olChiki: 'ᱚ',
+          latin: 'o',
+          audioUrl: 'https://cdn.example.com/glyph-audio.mp3',
+        );
+        final item = ContentItem(
+          id: 'o_letter',
+          kind: ContentKind.letter,
+          categoryId: 'cat_letters',
+          title: 'O',
+          audioUrl: '',
+          blocks: const [block],
+          updatedAt: DateTime(2026),
+        );
+        expect(
+          item.effectiveAudioUrl,
+          'https://cdn.example.com/glyph-audio.mp3',
+        );
+      },
+    );
 
     test('LetterModel.fromJson parses blocks fallback for audioUrl', () {
       final json = {
         'id': 'o_letter',
         'charOlChiki': 'ᱚ',
         'transliterationLatin': 'O',
-        'blocks': '[{"id":"b1","order":0,"type":"glyph","olChiki":"ᱚ","latin":"o","audioUrl":"https://cdn.example.com/glyph-audio.mp3"}]',
+        'blocks':
+            '[{"id":"b1","order":0,"type":"glyph","olChiki":"ᱚ","latin":"o","audioUrl":"https://cdn.example.com/glyph-audio.mp3"}]',
         'order': 0,
         'isActive': true,
       };

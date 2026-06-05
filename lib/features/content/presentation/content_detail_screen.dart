@@ -554,7 +554,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                     icon: const Icon(Icons.volume_up_rounded),
                     color: AppColors.primary,
                     onPressed: () {
-                      ref.read(audioServiceProvider).playUrl(item.effectiveAudioUrl!);
+                      ref
+                          .read(audioServiceProvider)
+                          .playUrl(item.effectiveAudioUrl!);
                     },
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.primary.withOpacity(0.1),

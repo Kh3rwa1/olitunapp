@@ -1,14 +1,12 @@
-import 'dart:io';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/theme/admin_tokens.dart';
+import '../../../../core/utils/csv_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../widgets/admin_page_header.dart';
@@ -258,18 +256,10 @@ class _AdminContentListScreenState
     final filename = 'Olitun_${widget.kind.name}_Export.csv';
 
     try {
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$filename');
-      await file.writeAsString(csvContent, flush: true);
-
-      await SharePlus.instance.share(
-        ShareParams(
-          title: 'Olitun $filename',
-          subject: 'Olitun $_title Export',
-          text: 'Olitun $_title Export',
-          files: [XFile(file.path, mimeType: 'text/csv', name: filename)],
-          fileNameOverrides: [filename],
-        ),
+      await saveAndShareCsv(
+        csvContent: csvContent,
+        filename: filename,
+        shareSubject: 'Olitun $_title Export',
       );
     } catch (e) {
       if (mounted) {

@@ -51,13 +51,14 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
   }
 
   void _handleTilePlay(ContentItem item) {
-    if (item.audioUrl == null || item.audioUrl!.isEmpty) {
+    final audio = item.effectiveAudioUrl;
+    if (audio == null || audio.isEmpty) {
       // Fail-silently (no logs, no haptics, no-op)
       return;
     }
     try {
       HapticFeedback.lightImpact();
-      _audioService.playUrl(item.audioUrl!);
+      _audioService.playUrl(audio);
     } catch (e) {
       AppLogger.debug('Warning playing audio in grid tile: $e');
     }

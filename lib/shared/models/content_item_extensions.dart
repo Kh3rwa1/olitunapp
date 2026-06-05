@@ -252,7 +252,6 @@ extension LessonBlockEntityToContentBlock on LessonBlockEntity {
 
 extension ContentItemToLegacy on ContentItem {
   WordModel toWordModel() {
-    final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;
     final firstImage = blocks.whereType<ImageBlock>().firstOrNull?.media.url;
     final firstText = blocks.whereType<TextBlock>().firstOrNull?.markdown;
 
@@ -263,14 +262,13 @@ extension ContentItemToLegacy on ContentItem {
       meaning: subtitle ?? '',
       category: categoryId,
       order: order,
-      audioUrl: heroMedia?.url ?? firstAudio,
+      audioUrl: effectiveAudioUrl,
       imageUrl: heroMedia?.url ?? firstImage,
       themeColor: firstText,
     );
   }
 
   LetterModel toLetterModel() {
-    final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;
     final firstImage = blocks.whereType<ImageBlock>().firstOrNull?.media.url;
     final firstText = blocks.whereType<TextBlock>().firstOrNull?.markdown;
 
@@ -278,7 +276,7 @@ extension ContentItemToLegacy on ContentItem {
       id: id,
       charOlChiki: olChiki ?? titleOlChiki ?? '',
       transliterationLatin: title,
-      audioUrl: heroMedia?.url ?? firstAudio,
+      audioUrl: effectiveAudioUrl,
       imageUrl: heroMedia?.url ?? firstImage,
       order: order,
       themeColor: firstText,
@@ -286,7 +284,6 @@ extension ContentItemToLegacy on ContentItem {
   }
 
   NumberModel toNumberModel() {
-    final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;
     final firstImage = blocks.whereType<ImageBlock>().firstOrNull?.media.url;
     final firstText = blocks.whereType<TextBlock>().firstOrNull?.markdown;
     final parsedValue =
@@ -298,7 +295,7 @@ extension ContentItemToLegacy on ContentItem {
       value: parsedValue,
       nameOlChiki: titleOlChiki ?? '',
       nameLatin: title,
-      audioUrl: heroMedia?.url ?? firstAudio,
+      audioUrl: effectiveAudioUrl,
       imageUrl: heroMedia?.url ?? firstImage,
       order: order,
       themeColor: firstText,
@@ -306,7 +303,6 @@ extension ContentItemToLegacy on ContentItem {
   }
 
   SentenceModel toSentenceModel() {
-    final firstAudio = blocks.whereType<AudioBlock>().firstOrNull?.media.url;
     final firstImage = blocks.whereType<ImageBlock>().firstOrNull?.media.url;
     final firstText = blocks.whereType<TextBlock>().firstOrNull?.markdown;
 
@@ -317,7 +313,7 @@ extension ContentItemToLegacy on ContentItem {
       meaning: subtitle ?? '',
       category: categoryId,
       order: order,
-      audioUrl: heroMedia?.url ?? firstAudio,
+      audioUrl: effectiveAudioUrl,
       imageUrl: heroMedia?.url ?? firstImage,
       themeColor: firstText,
     );

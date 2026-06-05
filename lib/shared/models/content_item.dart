@@ -886,12 +886,22 @@ class ContentItem extends Equatable {
     }
   }
 
-  String? get effectiveAudioUrl => audioUrl ?? _extractAudioFromBlocks(blocks);
+  String? get effectiveAudioUrl {
+    if (audioUrl != null && audioUrl!.isNotEmpty) {
+      return audioUrl;
+    }
+    return _extractAudioFromBlocks(blocks);
+  }
 
   static String? _extractAudioFromBlocks(List<ContentBlock> blocksList) {
     for (final block in blocksList) {
       if (block.type == 'audio' && block is AudioBlock) {
         return block.media.url;
+      }
+      if (block.type == 'glyph' && block is GlyphBlock) {
+        if (block.audioUrl != null && block.audioUrl!.isNotEmpty) {
+          return block.audioUrl;
+        }
       }
     }
     return null;

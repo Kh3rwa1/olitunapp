@@ -8,6 +8,6 @@
   },
   "dependencies": {
     "@vitalets/google-translate-api": "^9.2.0",
-    "node-appwrite": "^25.1.0"
+    "node-appwrite": "^26.2.0"
   }
 }

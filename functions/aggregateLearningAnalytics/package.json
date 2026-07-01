@@ -9,6 +9,6 @@
     "test": "node --test test/*.test.js"
   },
   "dependencies": {
-    "node-appwrite": "24.1.0"
+    "node-appwrite": "26.2.0"
   }
 }

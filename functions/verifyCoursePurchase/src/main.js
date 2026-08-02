@@ -161,16 +161,29 @@ export default async ({ req, res, error }) => {
       return res.json({ ok: false, message: 'Currency mismatch; INR required' }, 400);
     }
 
-    // 7. Payment ID Replay Protection: Ensure payment ID is not associated with any other verified document
-    const existingPaymentDocs = await databases.listDocuments(databaseId, 'course_purchases', [
-      Query.equal('providerPaymentId', paymentId),
-      Query.limit(5)
-    ]);
-
-    for (const doc of existingPaymentDocs.documents) {
-      if (doc.$id !== purchaseId && doc.status === 'verified') {
-        error(`REPLAY ATTACK ATTEMPT: Payment ID ${paymentId} already used for purchase ${doc.$id}`);
-        return res.json({ ok: false, message: 'This payment ID has already been used to unlock a course' }, 409);
+    // 7. Atomic Payment ID Replay Protection
+    const claimId = stableId(`claim:${paymentId}`);
+    try {
+      await databases.createDocument(databaseId, 'payment_claims', claimId, {
+        paymentId,
+        userId,
+        categoryId,
+        claimedAt: now
+      });
+    } catch (claimErr) {
+      if (claimErr.code === 409) {
+        error(`ATOMIC REPLAY PROTECTION: Payment ID ${paymentId} already claimed.`);
+        return res.json({ ok: false, message: 'This payment ID has already been claimed by another purchase' }, 409);
+      }
+      // If collection doesn't exist yet, fallback to query check
+      const existingPaymentDocs = await databases.listDocuments(databaseId, 'course_purchases', [
+        Query.equal('providerPaymentId', paymentId),
+        Query.limit(5)
+      ]);
+      for (const doc of existingPaymentDocs.documents) {
+        if (doc.$id !== purchaseId && doc.status === 'verified') {
+          return res.json({ ok: false, message: 'This payment ID has already been used to unlock a course' }, 409);
+        }
       }
     }
 

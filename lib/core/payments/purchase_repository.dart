@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -13,20 +14,37 @@ class PurchaseRepository {
   static String _getCacheKey(String userId) =>
       'entitlements:production:$userId';
 
-  Future<Set<String>> fetchPurchasedCategoryIds(String userId) async {
+  /// Financial entitlement TTL: 5 minutes max
+  static const Duration entitlementTtl = Duration(minutes: 5);
+
+  Future<Set<String>> fetchPurchasedCategoryIds(
+    String userId, {
+    bool skipRevalidate = false,
+  }) async {
     if (userId.isEmpty) return {};
 
     final userCacheKey = _getCacheKey(userId);
 
-    // Attempt cache first (user-scoped)
+    // Attempt cache first for optimistic UI rendering
     final cached = await CacheService.get(
       userCacheKey,
       (json) => Set<String>.from(json['ids'] as List),
     );
+
     if (cached != null) {
+      if (!skipRevalidate) {
+        _triggerRevalidation(userId, userCacheKey, cached);
+      }
       return cached;
     }
 
+    return _fetchFromServer(userId, userCacheKey);
+  }
+
+  Future<Set<String>> _fetchFromServer(
+    String userId,
+    String userCacheKey,
+  ) async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
@@ -47,13 +65,61 @@ class PurchaseRepository {
           .where((id) => id.isNotEmpty)
           .toSet();
 
-      // Save user-scoped cache (1 day TTL)
-      await CacheService.set(userCacheKey, {'ids': categoryIds.toList()});
+      // Save user-scoped cache with 5 minute TTL
+      await CacheService.set(userCacheKey, {
+        'ids': categoryIds.toList(),
+      }, ttl: entitlementTtl);
       return categoryIds;
     } catch (e) {
       AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
       return {};
     }
+  }
+
+  void _triggerRevalidation(
+    String userId,
+    String userCacheKey,
+    Set<String> currentCached,
+  ) {
+    unawaited(
+      Future.microtask(() async {
+        try {
+          final db = ref.read(appwriteDbServiceProvider);
+          final result = await db.listDocuments(
+            'course_purchases',
+            queries: [
+              appwrite.Query.equal('userId', userId),
+              appwrite.Query.equal('status', 'verified'),
+            ],
+          );
+
+          final fresh = result
+              .map((doc) {
+                final raw = doc['categoryId'];
+                if (raw is String) return raw;
+                if (raw is Map)
+                  return (raw['\$id'] ?? raw['id'] ?? '') as String;
+                return '';
+              })
+              .where((id) => id.isNotEmpty)
+              .toSet();
+
+          if (fresh.length != currentCached.length ||
+              !fresh.containsAll(currentCached)) {
+            AppLogger.debug(
+              'SWR Revalidation: Entitlements changed for user $userId. Updating cache.',
+            );
+            await CacheService.set(userCacheKey, {
+              'ids': fresh.toList(),
+            }, ttl: entitlementTtl);
+          }
+        } catch (e) {
+          AppLogger.debug(
+            'SWR Revalidation background fetch failed for $userId: $e',
+          );
+        }
+      }),
+    );
   }
 
   Future<void> clearUserCache(String userId) async {

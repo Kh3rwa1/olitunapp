@@ -5,16 +5,25 @@ function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
 }
 
-function parseBody(req) {
+function parseRawAndJson(req) {
+  if (typeof req.bodyRaw === 'string' && req.bodyRaw.length > 0) {
+    try {
+      return { raw: req.bodyRaw, json: JSON.parse(req.bodyRaw) };
+    } catch (_) {
+      return { raw: req.bodyRaw, json: {} };
+    }
+  }
+  if (typeof req.body === 'string') {
+    try {
+      return { raw: req.body, json: JSON.parse(req.body) };
+    } catch (_) {
+      return { raw: req.body, json: {} };
+    }
+  }
   if (typeof req.body === 'object' && req.body !== null) {
     return { raw: JSON.stringify(req.body), json: req.body };
   }
-  const raw = String(req.body || '{}');
-  try {
-    return { raw, json: JSON.parse(raw) };
-  } catch (_) {
-    return { raw, json: {} };
-  }
+  return { raw: '{}', json: {} };
 }
 
 export default async ({ req, res, error }) => {
@@ -33,9 +42,9 @@ export default async ({ req, res, error }) => {
     return res.json({ ok: false, message: 'Missing webhook signature' }, 400);
   }
 
-  const { raw, json: payload } = parseBody(req);
+  const { raw, json: payload } = parseRawAndJson(req);
 
-  // 1. Verify Razorpay webhook HMAC signature
+  // 1. Verify Razorpay webhook HMAC signature using raw bytes
   const expectedSignature = createHmac('sha256', webhookSecret)
     .update(raw)
     .digest('hex');
@@ -45,7 +54,7 @@ export default async ({ req, res, error }) => {
     return res.json({ ok: false, message: 'Invalid webhook signature' }, 400);
   }
 
-  const event = payload.event;
+  const event = String(payload.event || '').trim();
   if (!event) {
     return res.json({ ok: false, message: 'Missing event in payload' }, 400);
   }
@@ -84,7 +93,7 @@ export default async ({ req, res, error }) => {
 
       const purchaseId = stableId(`${userId}:${categoryId}`);
 
-      // 2. Fetch pending purchase document from database
+      // Fetch pending purchase document
       let pendingPurchase;
       try {
         pendingPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
@@ -95,7 +104,7 @@ export default async ({ req, res, error }) => {
         throw err;
       }
 
-      // 3. Strict Order Binding Checks:
+      // Strict Order Binding Checks
       if (pendingPurchase.providerOrderId !== orderId) {
         return res.json({ ok: false, message: 'Order ID mismatch with pending ledger' }, 400);
       }
@@ -117,20 +126,22 @@ export default async ({ req, res, error }) => {
         return res.json({ ok: true, message: 'Already processed' });
       }
 
-      // 4. Payment ID Replay Protection: Check if this payment ID was already used elsewhere
-      const existingPaymentDocs = await databases.listDocuments(databaseId, 'course_purchases', [
-        Query.equal('providerPaymentId', paymentId),
-        Query.limit(5)
-      ]);
-
-      for (const doc of existingPaymentDocs.documents) {
-        if (doc.$id !== purchaseId && doc.status === 'verified') {
-          error(`REPLAY ATTACK: Payment ID ${paymentId} already used for purchase ${doc.$id}`);
-          return res.json({ ok: false, message: 'Payment ID already associated with another purchase' }, 409);
+      // Atomic Payment ID Replay Protection
+      const claimId = stableId(`claim:${paymentId}`);
+      try {
+        await databases.createDocument(databaseId, 'payment_claims', claimId, {
+          paymentId,
+          userId,
+          categoryId,
+          claimedAt: now
+        });
+      } catch (claimErr) {
+        if (claimErr.code === 409) {
+          error(`ATOMIC REPLAY ATTEMPT in webhook: Payment ID ${paymentId} already claimed`);
+          return res.json({ ok: false, message: 'Payment ID already claimed by another purchase' }, 409);
         }
       }
 
-      // 5. Update purchase to verified
       const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
       const documentPermissions = [
         `read("user:${userId}")`,
@@ -165,16 +176,27 @@ export default async ({ req, res, error }) => {
       if (userId && categoryId) {
         const purchaseId = stableId(`${userId}:${categoryId}`);
         try {
-          await databases.updateDocument(databaseId, 'course_purchases', purchaseId, {
-            status: 'failed',
-            failureReason: payment.error_description || 'Payment failed'
-          });
+          const pendingPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+
+          // DO NOT downgrade a verified or refunded purchase on a delayed payment.failed event!
+          if (pendingPurchase.providerOrderId === orderId &&
+              pendingPurchase.status !== 'verified' &&
+              pendingPurchase.status !== 'refunded') {
+            await databases.updateDocument(databaseId, 'course_purchases', purchaseId, {
+              status: 'failed',
+              failureReason: payment.error_description || 'Payment failed'
+            });
+          }
         } catch (_) {}
       }
       return res.json({ ok: true, message: 'Webhook payment.failed processed' });
 
-    } else if (event === 'refund.created' || event === 'payment.disputed') {
-      const entity = payload.payload?.refund?.entity || payload.payload?.payment?.entity || {};
+    } else if (
+      event === 'refund.created' ||
+      event.startsWith('payment.dispute.') ||
+      event === 'payment.disputed'
+    ) {
+      const entity = payload.payload?.refund?.entity || payload.payload?.dispute?.entity || payload.payload?.payment?.entity || {};
       const paymentId = String(entity.payment_id || entity.id || '').trim();
 
       if (paymentId) {
@@ -183,7 +205,10 @@ export default async ({ req, res, error }) => {
           Query.limit(5)
         ]);
 
-        const newStatus = event === 'refund.created' ? 'refunded' : 'disputed';
+        const newStatus = event === 'refund.created'
+          ? 'refunded'
+          : (event.includes('won') || event.includes('closed') ? 'verified' : 'disputed');
+
         for (const doc of matchingDocs.documents) {
           await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
             status: newStatus

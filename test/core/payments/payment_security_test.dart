@@ -41,8 +41,14 @@ void main() {
         'ids': ['cat_course_2'],
       });
 
-      final setA = await repo.fetchPurchasedCategoryIds(userA);
-      final setB = await repo.fetchPurchasedCategoryIds(userB);
+      final setA = await repo.fetchPurchasedCategoryIds(
+        userA,
+        skipRevalidate: true,
+      );
+      final setB = await repo.fetchPurchasedCategoryIds(
+        userB,
+        skipRevalidate: true,
+      );
 
       expect(setA, contains('cat_course_1'));
       expect(setA, isNot(contains('cat_course_2')));
@@ -72,7 +78,10 @@ void main() {
           'ids': ['cat_paid_course'],
         });
 
-        final activeCategories = await repo.fetchPurchasedCategoryIds(userId);
+        final activeCategories = await repo.fetchPurchasedCategoryIds(
+          userId,
+          skipRevalidate: true,
+        );
         expect(activeCategories, contains('cat_paid_course'));
 
         // On refund / dispute, cache is explicitly cleared / invalidated

@@ -93,6 +93,8 @@ async function run() {
     { id: 'bakhed_listening_progress', name: 'Bakhed Listening Progress' },
     { id: 'daily_affirmations', name: 'Daily Affirmations' },
     { id: 'course_purchases', name: 'Course Purchases' },
+    { id: 'payment_claims', name: 'Payment Claims' },
+    { id: 'refund_claims', name: 'Refund Claims' },
     { id: 'binti_guru_waitlist', name: 'Binti Guru Waitlist' }
   ];
 

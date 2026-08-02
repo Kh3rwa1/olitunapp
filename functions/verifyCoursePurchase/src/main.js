@@ -88,8 +88,20 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
         throw err;
       }
 
-      // Idempotency: if already verified for this exact purchase, return existing purchase
+      // Idempotency: if already verified for this exact purchase, check & repair corresponding claim before returning
       if (pendingPurchase.status === 'verified') {
+        if (pendingPurchase.providerPaymentId) {
+          const claimId = stableId(`claim:${pendingPurchase.providerPaymentId}`);
+          try {
+            const existingClaim = await databases.getDocument(databaseId, 'payment_claims', claimId);
+            if (existingClaim.status === 'claimed') {
+              await databases.updateDocument(databaseId, 'payment_claims', claimId, {
+                status: 'committed',
+                committedAt: now
+              });
+            }
+          } catch (_) {}
+        }
         return res.json({ ok: true, message: 'Purchase already verified', purchase: pendingPurchase });
       }
 

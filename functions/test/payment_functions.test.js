@@ -60,7 +60,6 @@ class SchemaAwareInMemDb {
     }
 
     if (!isUpdate) {
-      // Validate required attributes on document creation
       for (const attr of schema.attributes) {
         if (attr.required && (data[attr.key] === undefined || data[attr.key] === null)) {
           const err = new Error(`Schema validation error: required attribute '${attr.key}' is missing in '${col}'`);
@@ -70,7 +69,6 @@ class SchemaAwareInMemDb {
       }
     }
 
-    // Validate attribute types and size constraints
     for (const attr of schema.attributes) {
       const val = data[attr.key];
       if (val !== undefined && val !== null) {
@@ -163,6 +161,17 @@ class SchemaAwareInMemDb {
     return JSON.parse(JSON.stringify(updated));
   }
 
+  async deleteDocument(dbId, col, id) {
+    const table = this.collections.get(col);
+    if (!table || !table.has(id)) {
+      const err = new Error('Document not found');
+      err.code = 404;
+      throw err;
+    }
+    table.delete(id);
+    return true;
+  }
+
   async listDocuments(dbId, col, queries = []) {
     const table = this.collections.get(col) || new Map();
     const docs = Array.from(table.values());
@@ -205,10 +214,9 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;
   });
 
-  test('Schema-aware DB validates course_purchases required fields, types, and unique indexes', () => {
+  test('1. Schema-aware DB validates course_purchases required fields, types, and unique indexes', () => {
     const db = new SchemaAwareInMemDb();
 
-    // Valid document
     assert.doesNotThrow(() => {
       db.setDocument('course_purchases', 'p1', {
         userId: 'u1',
@@ -223,16 +231,13 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       });
     });
 
-    // Missing required field throws
     assert.throws(() => {
       db.setDocument('course_purchases', 'p2', {
         userId: 'u2',
-        // missing categoryId, provider, etc.
         status: 'verified'
       });
     }, /required attribute/);
 
-    // Unique index user_category_idx violation throws 409
     assert.throws(() => {
       db.setDocument('course_purchases', 'p3', {
         userId: 'u1',
@@ -248,7 +253,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     }, /Unique index violation/);
   });
 
-  test('verifyCoursePurchase full positive verification & claim state mutation', async () => {
+  test('2. verifyCoursePurchase full positive verification & claim state mutation', async () => {
     const db = new SchemaAwareInMemDb();
     const userId = 'user_Alice';
     const categoryId = 'cat_course_99';
@@ -322,73 +327,223 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(claimDoc.status, 'committed');
   });
 
-  test('razorpayWebhook handles concurrent refund webhooks without ledger corruption', async () => {
+  test('3. razorpayWebhook payment.captured processes atomically to committed claim', async () => {
     const db = new SchemaAwareInMemDb();
-    const userId = 'user_Concurrent';
-    const categoryId = 'cat_course_conc';
-    const paymentId = 'pay_RZP_conc';
+    const userId = 'user_Bob';
+    const categoryId = 'cat_course_bob';
+    const orderId = 'order_RZP_bob';
+    const paymentId = 'pay_RZP_bob';
     const purchaseId = stableId(`${userId}:${categoryId}`);
 
     db.setDocument('course_purchases', purchaseId, {
       userId,
       categoryId,
       provider: 'razorpay',
-      providerOrderId: 'order_conc',
-      providerPaymentId: paymentId,
-      expectedAmount: 500,
-      paidAmount: 500,
-      refundedAmountPaise: 0,
+      providerOrderId: orderId,
+      expectedAmount: 299,
+      paidAmount: 0,
       currency: 'INR',
-      status: 'verified',
+      status: 'created',
       createdAt: new Date().toISOString()
     });
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
-    // Webhook 1: partial refund ₹250 (25000 paise)
-    const payload1 = {
+    const payload = {
+      event: 'payment.captured',
+      payload: {
+        payment: {
+          entity: {
+            id: paymentId,
+            order_id: orderId,
+            amount: 29900,
+            currency: 'INR',
+            notes: { userId, categoryId }
+          }
+        }
+      }
+    };
+    const rawPayload = JSON.stringify(payload);
+    const signature = createHmac('sha256', webhookSecret).update(rawPayload).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': signature }, body: rawPayload, bodyRaw: rawPayload };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+
+    const claimId = stableId(`claim:${paymentId}`);
+    const claimDoc = await db.getDocument('olitun_db', 'payment_claims', claimId);
+    assert.equal(claimDoc.status, 'committed');
+  });
+
+  test('4. Idempotent retry repairs payment_claim if left in claimed state', async () => {
+    const db = new SchemaAwareInMemDb();
+    const userId = 'user_Repair';
+    const categoryId = 'cat_course_repair';
+    const paymentId = 'pay_RZP_repair';
+    const orderId = 'order_RZP_repair';
+    const purchaseId = stableId(`${userId}:${categoryId}`);
+    const claimId = stableId(`claim:${paymentId}`);
+
+    // Purchase is verified, but claim document was left in 'claimed' status
+    db.setDocument('course_purchases', purchaseId, {
+      userId, categoryId, provider: 'razorpay', providerOrderId: orderId, providerPaymentId: paymentId,
+      expectedAmount: 500, paidAmount: 500, currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+    });
+
+    db.setDocument('payment_claims', claimId, {
+      paymentId, purchaseId, providerOrderId: orderId, userId, categoryId, status: 'claimed', claimedAt: new Date().toISOString()
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const payload = {
+      event: 'payment.captured',
+      payload: {
+        payment: { entity: { id: paymentId, order_id: orderId, amount: 50000, currency: 'INR', notes: { userId, categoryId } } }
+      }
+    };
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.message, 'Already processed');
+
+    // Repaired to committed!
+    const claimDoc = await db.getDocument('olitun_db', 'payment_claims', claimId);
+    assert.equal(claimDoc.status, 'committed');
+  });
+
+  test('5. Per-payment atomic lock rejects concurrent refund execution on same payment with 503', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_lock_test';
+    const purchaseId = stableId('user_lock:cat_lock');
+
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'user_lock', categoryId: 'cat_lock', provider: 'razorpay', providerOrderId: 'order_lock',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
+      currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+    });
+
+    // Simulate active lock document created by concurrent refund handler
+    const paymentLockId = stableId(`lock:payment:${paymentId}`);
+    db.setDocument('refund_claims', paymentLockId, {
+      refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date().toISOString()
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const payload = {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 25000 } },
-        refund: { entity: { id: 'ref_conc_1', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: 'ref_different_99', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
       }
     };
-    const raw1 = JSON.stringify(payload1);
-    const sig1 = createHmac('sha256', webhookSecret).update(raw1).digest('hex');
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
 
-    // Webhook 2: full refund ₹500 (50000 paise)
-    const payload2 = {
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.ok, false);
+    assert.match(res.body.message, /Payment ledger update in progress/i);
+  });
+
+  test('6. refund.processed two-phase claim & interrupted recovery', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_recovery_11';
+    const refundId = 'ref_interrupted_11';
+    const purchaseId = stableId('u_rec:c_rec');
+
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'u_rec', categoryId: 'c_rec', provider: 'razorpay', providerOrderId: 'o_rec',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
+      currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+    });
+
+    const claimId = stableId(`refund:${refundId}`);
+    db.setDocument('refund_claims', claimId, {
+      refundId, paymentId, purchaseId, amountPaise: 50000, currency: 'INR',
+      status: 'claimed', claimedAt: new Date().toISOString()
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const payload = {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 50000 } },
-        refund: { entity: { id: 'ref_conc_2', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: refundId, payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
       }
     };
-    const raw2 = JSON.stringify(payload2);
-    const sig2 = createHmac('sha256', webhookSecret).update(raw2).digest('hex');
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
 
-    const req1 = { method: 'POST', headers: { 'x-razorpay-signature': sig1 }, body: raw1, bodyRaw: raw1 };
-    const req2 = { method: 'POST', headers: { 'x-razorpay-signature': sig2 }, body: raw2, bodyRaw: raw2 };
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
 
-    const res1 = createMockRes();
-    const res2 = createMockRes();
+    await handler({ req, res, error: createMockErrorLogger() });
 
-    // Execute concurrently!
-    await Promise.all([
-      handler({ req: req1, res: res1, error: createMockErrorLogger() }),
-      handler({ req: req2, res: res2, error: createMockErrorLogger() })
-    ]);
+    assert.equal(res.statusCode, 200);
 
-    assert.equal(res1.statusCode, 200);
-    assert.equal(res2.statusCode, 200);
+    const claimDoc = await db.getDocument('olitun_db', 'refund_claims', claimId);
+    assert.equal(claimDoc.status, 'committed');
 
-    const finalPurchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
-    assert.equal(finalPurchase.status, 'refunded');
-    assert.equal(finalPurchase.refundStatus, 'fully_refunded');
-    assert.equal(finalPurchase.refundedAmountPaise, 50000);
+    const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.status, 'refunded');
   });
 
-  test('razorpayWebhook rejects ambiguous matching payment IDs with 409 Conflict', async () => {
+  test('7. Monotonic non-decreasing calculation retains higher refund total on out-of-order delivery', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_ooo_1';
+    const purchaseId = stableId('u_ooo:c_ooo');
+
+    // Purchase already updated to ₹500 (50000 paise) refund total
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'u_ooo', categoryId: 'c_ooo', provider: 'razorpay', providerOrderId: 'o_ooo',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 50000,
+      currency: 'INR', status: 'refunded', refundStatus: 'fully_refunded', createdAt: new Date().toISOString()
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    // Out-of-order webhook carrying stale lower amount ₹250
+    const payload = {
+      event: 'refund.processed',
+      payload: {
+        payment: { entity: { id: paymentId, amount_refunded: 25000 } },
+        refund: { entity: { id: 'ref_stale_99', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+      }
+    };
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+
+    const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.refundedAmountPaise, 50000);
+    assert.equal(purchase.status, 'refunded');
+  });
+
+  test('8. razorpayWebhook rejects ambiguous matching payment IDs with 409 Conflict', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_duplicate_111';
 
@@ -424,58 +579,107 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Multiple purchase records match/i);
   });
 
-  test('razorpayWebhook dispute.won does NOT restore access to fully refunded purchases', async () => {
+  test('9. razorpayWebhook dispute.won does NOT restore access to fully refunded purchases', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_disputed_refunded_100';
     const purchaseId = stableId('user_dispute:cat_dispute');
 
     db.setDocument('course_purchases', purchaseId, {
-      userId: 'user_dispute',
-      categoryId: 'cat_dispute',
-      provider: 'razorpay',
-      providerOrderId: 'order_disp',
-      providerPaymentId: paymentId,
-      expectedAmount: 500,
-      paidAmount: 500,
-      refundedAmountPaise: 50000,
-      currency: 'INR',
-      status: 'refunded',
-      refundStatus: 'fully_refunded',
-      createdAt: new Date().toISOString()
+      userId: 'user_dispute', categoryId: 'cat_dispute', provider: 'razorpay', providerOrderId: 'order_disp',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 50000,
+      currency: 'INR', status: 'refunded', refundStatus: 'fully_refunded', createdAt: new Date().toISOString()
     });
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
     const disputeWonPayload = {
       event: 'payment.dispute.won',
-      payload: {
-        dispute: {
-          entity: {
-            id: 'disp_100',
-            payment_id: paymentId,
-            status: 'won'
-          }
-        }
-      }
+      payload: { dispute: { entity: { id: 'disp_100', payment_id: paymentId, status: 'won' } } }
     };
     const rawPayload = JSON.stringify(disputeWonPayload);
     const signature = createHmac('sha256', webhookSecret).update(rawPayload).digest('hex');
 
-    const req = {
-      method: 'POST',
-      headers: { 'x-razorpay-signature': signature },
-      body: rawPayload,
-      bodyRaw: rawPayload
-    };
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': signature }, body: rawPayload, bodyRaw: rawPayload };
     const res = createMockRes();
-    const error = createMockErrorLogger();
 
-    await handler({ req, res, error });
+    await handler({ req, res, error: createMockErrorLogger() });
 
     assert.equal(res.statusCode, 200);
 
     const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundStatus, 'fully_refunded');
+  });
+
+  test('10. refund.created acknowledges event without mutating entitlement', async () => {
+    const db = new SchemaAwareInMemDb();
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const payload = { event: 'refund.created', payload: { refund: { entity: { id: 'ref_created_1' } } } };
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+    assert.match(res.body.message, /acknowledged/i);
+  });
+
+  test('11. razorpayWebhook rejects invalid signature with HTTP 400', async () => {
+    const db = new SchemaAwareInMemDb();
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': 'bad_signature_12345' },
+      body: JSON.stringify({ event: 'payment.captured' }),
+      bodyRaw: JSON.stringify({ event: 'payment.captured' })
+    };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 400);
+    assert.equal(res.body.ok, false);
+    assert.match(res.body.message, /Invalid webhook signature/i);
+  });
+
+  test('12. Authoritative-total failure returns 503 fail closed', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_no_auth_total';
+    const purchaseId = stableId('u_fail:c_fail');
+
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'u_fail', categoryId: 'c_fail', provider: 'razorpay', providerOrderId: 'o_fail',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
+      currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+    });
+
+    const mockFetchFail = async () => ({ ok: false, status: 500, text: async () => 'Gateway Error' });
+
+    const handler = createRazorpayWebhookHandler({ databases: db, fetchImpl: mockFetchFail });
+
+    // Payload has amount_refunded = 0 and API call fails -> fails closed!
+    const payload = {
+      event: 'refund.processed',
+      payload: {
+        payment: { entity: { id: paymentId, amount_refunded: 0 } },
+        refund: { entity: { id: 'ref_no_total_1', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+      }
+    };
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 503);
+    assert.equal(res.body.ok, false);
+    assert.match(res.body.message, /Authoritative payment refund state unavailable/i);
   });
 });

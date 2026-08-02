@@ -132,6 +132,17 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         }
 
         if (pendingPurchase.status === 'verified' && pendingPurchase.providerPaymentId === paymentId) {
+          // Claim repair on idempotent retry
+          const claimId = stableId(`claim:${paymentId}`);
+          try {
+            const existingClaim = await databases.getDocument(databaseId, 'payment_claims', claimId);
+            if (existingClaim.status === 'claimed') {
+              await databases.updateDocument(databaseId, 'payment_claims', claimId, {
+                status: 'committed',
+                committedAt: now
+              });
+            }
+          } catch (_) {}
           return res.json({ ok: true, message: 'Already processed' });
         }
 
@@ -265,8 +276,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         const targetPurchaseDoc = matchingDocs.documents[0];
         const purchaseId = targetPurchaseDoc.$id;
 
-        // Exact Schema Match for refund_claims collection:
-        // refundId, paymentId, purchaseId, amountPaise, currency, status, claimedAt, committedAt, lastError
+        // 1. Two-phase Refund Claim creation in refund_claims collection (same-refund deduplication)
         const claimId = stableId(`refund:${refundId}`);
         const claimData = {
           refundId,
@@ -280,7 +290,6 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           lastError: ''
         };
 
-        // 1. Two-phase Refund Claim creation in refund_claims collection (atomic claim lock)
         try {
           await databases.createDocument(databaseId, 'refund_claims', claimId, claimData);
         } catch (claimErr) {
@@ -298,65 +307,99 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Authoritative Total Refund Calculation from Razorpay (FAIL CLOSED if unavailable)
-        const paymentEntity = payload.payload?.payment?.entity || {};
-        let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
+        // 2. Per-Payment Atomic Serialization Lock (across DIFFERENT refund IDs for the same paymentId)
+        const paymentLockId = stableId(`lock:payment:${paymentId}`);
+        let lockAcquired = false;
+        try {
+          await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
+            refundId: `lock:${paymentId}`,
+            paymentId,
+            purchaseId,
+            amountPaise: 0,
+            currency,
+            status: 'locked',
+            claimedAt: now,
+            committedAt: null,
+            lastError: ''
+          });
+          lockAcquired = true;
+        } catch (lockErr) {
+          if (lockErr.code === 409) {
+            error(`CONCURRENT REFUND CONFLICT for payment ${paymentId}. Returning 503 for Razorpay retry.`);
+            return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
+          }
+          error(`FAIL CLOSED in refund lock creation ${lockErr.code}: ${lockErr.message}`);
+          return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
+        }
 
-        if (authoritativeRefundPaise === 0) {
-          const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
-          const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
-          if (razorpaySecret && razorpayKeyId) {
-            try {
-              const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
-              const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
-                headers: { 'Authorization': authHeader }
-              });
-              if (paymentRes.ok) {
-                const fetchedPayment = await paymentRes.json();
-                authoritativeRefundPaise = Number(fetchedPayment.amount_refunded || 0);
+        try {
+          // 3. Authoritative Total Refund Calculation from Razorpay (FAIL CLOSED if unavailable)
+          const paymentEntity = payload.payload?.payment?.entity || {};
+          let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
+
+          if (authoritativeRefundPaise === 0) {
+            const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+            const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+            if (razorpaySecret && razorpayKeyId) {
+              try {
+                const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
+                const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+                  headers: { 'Authorization': authHeader }
+                });
+                if (paymentRes.ok) {
+                  const fetchedPayment = await paymentRes.json();
+                  authoritativeRefundPaise = Number(fetchedPayment.amount_refunded || 0);
+                }
+              } catch (fetchErr) {
+                error(`Authoritative payment fetch exception: ${fetchErr.message}`);
               }
-            } catch (fetchErr) {
-              error(`Authoritative payment fetch exception: ${fetchErr.message}`);
             }
           }
-        }
 
-        if (authoritativeRefundPaise <= 0) {
-          error(`Authoritative refund total for payment ${paymentId} could not be determined. Failing closed.`);
-          return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
-        }
+          if (authoritativeRefundPaise <= 0) {
+            error(`Authoritative refund total for payment ${paymentId} could not be determined. Failing closed.`);
+            return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
+          }
 
-        // 3. Update course_purchases ledger using authoritative total with re-fetch lock
-        let latestDoc = targetPurchaseDoc;
-        try {
-          latestDoc = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
-        } catch (_) {}
+          // 4. Update course_purchases ledger using authoritative total with re-fetch lock
+          let latestDoc = targetPurchaseDoc;
+          try {
+            latestDoc = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+          } catch (_) {}
 
-        const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
-        const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
+          const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
+          const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
 
-        // Monotonic non-decreasing calculation
-        const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
-        const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
+          // Monotonic non-decreasing calculation
+          const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
+          const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
 
-        await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
-          status: isFullyRefunded ? 'refunded' : 'verified',
-          refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-          refundedAmountPaise: finalRefundedPaise
-        });
-
-        // 4. Mark refund claim as committed after ledger update succeeds
-        try {
-          await databases.updateDocument(databaseId, 'refund_claims', claimId, {
-            status: 'committed',
-            committedAt: now
+          await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
+            status: isFullyRefunded ? 'refunded' : 'verified',
+            refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
+            refundedAmountPaise: finalRefundedPaise
           });
-        } catch (commitErr) {
-          error(`Failed to commit refund claim ${claimId}: ${commitErr.message}`);
-          return res.json({ ok: false, message: 'Failed to commit refund claim' }, 503);
-        }
 
-        return res.json({ ok: true, message: `Webhook refund.processed processed successfully` });
+          // 5. Mark refund claim as committed after ledger update succeeds
+          try {
+            await databases.updateDocument(databaseId, 'refund_claims', claimId, {
+              status: 'committed',
+              committedAt: now
+            });
+          } catch (commitErr) {
+            error(`Failed to commit refund claim ${claimId}: ${commitErr.message}`);
+            return res.json({ ok: false, message: 'Failed to commit refund claim' }, 503);
+          }
+
+          return res.json({ ok: true, message: `Webhook refund.processed processed successfully` });
+
+        } finally {
+          if (lockAcquired) {
+            try {
+              await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
+            } catch (_) {}
+          }
+        }
 
       } else if (event === 'refund.failed') {
         const refund = payload.payload?.refund?.entity || {};

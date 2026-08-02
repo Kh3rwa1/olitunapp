@@ -260,6 +260,46 @@
             ]
         },
         {
+            "$id": "createRazorpayOrder",
+            "name": "createRazorpayOrder",
+            "runtime": "node-22",
+            "path": "functions/createRazorpayOrder",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
+            "$id": "razorpayWebhook",
+            "name": "razorpayWebhook",
+            "runtime": "node-22",
+            "path": "functions/razorpayWebhook",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "any"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write"
+            ]
+        },
+        {
             "$id": "verifyCoursePurchase",
             "name": "verifyCoursePurchase",
             "runtime": "node-22",

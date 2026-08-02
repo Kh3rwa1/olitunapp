@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -9,6 +8,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/utils/oauth_sanitizer.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -28,7 +28,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _navigateToNext() async {
     AppLogger.debug('Splash: starting _navigateToNext');
-    final startTime = DateTime.now();
     String? targetLocation;
 
     try {
@@ -52,11 +51,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
 
         if (userId != null && secret != null) {
+          // Immediately scrub secret and token from browser location history BEFORE starting async network call
+          OAuthSanitizer.sanitizeUrlHistory();
+
           AppLogger.debug(
-            'Splash: Found OAuth token (userId: $userId), exchanging for session...',
+            'Splash: Found OAuth token, exchanging for session...',
           );
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
+
           if (success) {
             AppLogger.debug(
               'Splash: OAuth token exchange succeeded, navigating to /',
@@ -111,18 +114,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     } catch (e) {
       AppLogger.debug('Splash error during check: $e');
-    }
-
-    // Enforce a minimum load time of 2.0s (or 0s in tests) so the premium, smooth brand animations have time to breathe
-    final isTesting =
-        !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
-    final minDuration = isTesting
-        ? Duration.zero
-        : const Duration(milliseconds: 2000);
-    final elapsed = DateTime.now().difference(startTime);
-    final remaining = minDuration - elapsed;
-    if (remaining > Duration.zero) {
-      await Future.delayed(remaining);
     }
 
     if (mounted) {

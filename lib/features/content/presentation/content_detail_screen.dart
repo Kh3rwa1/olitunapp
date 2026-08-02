@@ -182,7 +182,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               padding: const EdgeInsets.only(top: 20),
               child: TypingPracticePanel(
                 args: typingPracticeArgs,
-                audioUrl: item.audioUrl,
+                audioUrl: item.effectiveAudioUrl,
               ),
             ),
           ),
@@ -549,12 +549,14 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             top: false,
             child: Row(
               children: [
-                if (item.audioUrl != null) ...[
+                if (item.effectiveAudioUrl != null) ...[
                   IconButton(
                     icon: const Icon(Icons.volume_up_rounded),
                     color: AppColors.primary,
                     onPressed: () {
-                      ref.read(audioServiceProvider).playUrl(item.audioUrl!);
+                      ref
+                          .read(audioServiceProvider)
+                          .playUrl(item.effectiveAudioUrl!);
                     },
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.primary.withOpacity(0.1),

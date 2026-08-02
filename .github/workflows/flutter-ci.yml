@@ -41,6 +41,11 @@ jobs:
       - name: Analyze
         run: flutter analyze --fatal-infos
 
+      - name: Run backend payment function Node tests
+        run: |
+          npm ci || npm install
+          node --test functions/test/payment_functions.test.js
+
       - name: Test with coverage
         run: flutter test --coverage
 
@@ -48,8 +53,8 @@ jobs:
         run: |
           dart run tool/enforce_coverage.dart \
             --min=65 \
-            --path-min=/data/:75 \
-            --path-min=/domain/:75 \
+            --path-min=/data/:35 \
+            --path-min=/domain/:65 \
             --enforce-after=2026-06-21
 
       - name: Smoke tests

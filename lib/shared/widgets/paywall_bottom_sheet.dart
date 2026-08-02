@@ -1,17 +1,15 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/payments/razorpay_service.dart';
+import '../../core/payments/purchase_repository.dart';
 import '../../core/reviews/review_service.dart';
 import '../../core/reviews/review_eligibility.dart';
-import '../../core/auth/appwrite_auth_service.dart';
 import '../providers/purchases_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
@@ -48,49 +46,58 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
     setState(() {
       _isLoading = true;
-      _statusMessage = 'Launching secure checkout...';
+      _statusMessage = 'Creating secure server order...';
     });
 
-    final razorpayKey = ref.read(razorpayKeyProvider);
+    final repo = ref.read(purchaseRepositoryProvider);
 
     try {
-      final result = await _razorpayService.startCheckout(
-        amountInr: widget.category.priceInr,
+      // 1. Create Razorpay order on server based on official category price
+      final orderResult = await repo.createRazorpayOrder(widget.category.id);
+      if (orderResult['ok'] != true) {
+        _showError(orderResult['message'] ?? 'Failed to create payment order');
+        return;
+      }
+
+      final orderId = orderResult['orderId'] as String;
+      final amountInPaise = (orderResult['amount'] as num).toInt();
+      final String razorpayKey =
+          (orderResult['keyId'] as String?) ?? ref.read(razorpayKeyProvider);
+
+      setState(() {
+        _statusMessage = 'Opening payment gateway...';
+      });
+
+      // 2. Launch Razorpay checkout bound to server order ID
+      final result = await _razorpayService.startCheckoutWithOrder(
+        orderId: orderId,
+        amountInPaise: amountInPaise,
         categoryId: widget.category.id,
         categoryTitle: widget.category.titleLatin,
         userId: user.id,
         userEmail: user.email,
-        userPhone:
-            '9999999999', // Prefill phone placeholder, Appwrite has no raw phone on UserEntity
+        userPhone: '9999999999',
         razorpayKey: razorpayKey,
       );
 
       if (result is PurchaseSuccess) {
         setState(() {
-          _statusMessage = 'Verifying payment...';
+          _statusMessage = 'Verifying payment with server...';
         });
 
-        // Call verifyCoursePurchase Appwrite Function
-        final client = ref.read(appwriteAuthServiceProvider).client;
-        final functions = appwrite.Functions(client);
-
-        final response = await functions.createExecution(
-          functionId: 'verifyCoursePurchase',
-          body: jsonEncode({
-            'unlockMethod': 'razorpay',
-            'categoryId': widget.category.id,
-            'razorpayPaymentId': result.paymentId,
-            'razorpayOrderId': result.orderId,
-            'razorpaySignature': result.signature,
-          }),
+        // 3. Verify payment signature & captured status on server
+        final verifyResult = await repo.verifyPurchase(
+          categoryId: widget.category.id,
+          paymentId: result.paymentId,
+          orderId: result.orderId,
+          signature: result.signature,
         );
 
-        final resBody = jsonDecode(response.responseBody);
-        if (resBody['ok'] == true) {
+        if (verifyResult['ok'] == true) {
           ref.invalidate(purchasedCategoriesProvider);
           _showSuccessOverlay('Course successfully unlocked!');
         } else {
-          _showError(resBody['message'] ?? 'Payment verification failed');
+          _showError(verifyResult['message'] ?? 'Payment verification failed');
         }
       } else if (result is PurchaseFailed) {
         _showError(result.message);
@@ -110,56 +117,34 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
   Future<void> _handleReviewUnlock() async {
     setState(() {
       _isLoading = true;
-      _statusMessage = 'Launching Google Play Review...';
+      _statusMessage = 'Opening Play Store...';
     });
 
     try {
       final reviewService = ref.read(reviewServiceProvider);
-      final result = await reviewService.requestReview();
+      await reviewService.requestReview();
+      await reviewService.openStoreListing();
 
-      // Proceed with verification regardless of exact outcome since requestReview is fire-and-forget
-      // on native platforms, and we fallback to store opening if not available.
-      if (result is ReviewCompleted ||
-          result is ReviewNotAvailable ||
-          result is ReviewFailed) {
-        if (result is ReviewNotAvailable || result is ReviewFailed) {
-          // Fallback to store listing if the native dialog is not supported/ready
-          setState(() {
-            _statusMessage = 'Redirecting to Play Store...';
-          });
-          await reviewService.openStoreListing();
-        }
+      setState(() {
+        _isLoading = false;
+        _statusMessage = null;
+      });
 
-        setState(() {
-          _statusMessage = 'Unlocking course...';
-        });
-
-        // Call verifyCoursePurchase Appwrite Function
-        final client = ref.read(appwriteAuthServiceProvider).client;
-        final functions = appwrite.Functions(client);
-
-        final response = await functions.createExecution(
-          functionId: 'verifyCoursePurchase',
-          body: jsonEncode({
-            'unlockMethod': 'play_store_review',
-            'categoryId': widget.category.id,
-          }),
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Thank you for rating Olitun! Play Store reviews are treated as voluntary feedback.',
+            ),
+          ),
         );
-
-        final resBody = jsonDecode(response.responseBody);
-        if (resBody['ok'] == true) {
-          ref.invalidate(purchasedCategoriesProvider);
-          ref.invalidate(hasUnlockedViaReviewProvider);
-          _showSuccessOverlay('Thank you for your feedback! Course unlocked.');
-        } else {
-          _showError(resBody['message'] ?? 'Failed to unlock via review');
-        }
-      } else if (result is ReviewAlreadyGiven) {
-        _showError('You have already unlocked a course via review.');
       }
     } catch (e) {
       AppLogger.debug('Review exception: $e');
-      _showError('Review verification failed: $e');
+      setState(() {
+        _isLoading = false;
+        _statusMessage = null;
+      });
     }
   }
 

@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
 import '../providers.dart';
+import '../../../core/api/appwrite_db_service.dart';
 
 class NumberSeeder {
   static Future<String> seed(
@@ -23,8 +24,13 @@ class NumberSeeder {
       ),
     );
 
-    // Seed numbers (0-9)
-    await numbersNotifier.seed();
+    final numbersRows = await ref
+        .read(appwriteDbServiceProvider)
+        .listDocuments('numbers');
+    if (numbersRows.isEmpty) {
+      // Seed numbers (0-9)
+      await numbersNotifier.seed();
+    }
 
     const olChikiNumerals = ['᱐', '᱑', '᱒', '᱓', '᱔', '᱕', '᱖', '᱗', '᱘', '᱙'];
     const latinLabels = [

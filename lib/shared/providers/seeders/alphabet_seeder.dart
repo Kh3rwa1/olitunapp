@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../features/categories/data/models/category_model.dart';
 import '../../../features/lessons/data/models/lesson_model.dart';
 import '../../models/content_models.dart' hide CategoryModel, LessonModel;
+import '../../../core/api/appwrite_db_service.dart';
 import '../providers.dart';
 
 class AlphabetSeeder {
@@ -23,23 +24,28 @@ class AlphabetSeeder {
       ),
     );
 
-    // Seed letters using verified ground-truth canonical IDs and transliterations
-    final letters = [
-      ['ᱚ', 'l_la', 'La (a)'],
-      ['ᱛ', 'l_at', 'At (t)'],
-      ['ᱜ', 'l_ag', 'Ag (g)'],
-      ['ᱝ', 'l_ang', 'Ang (ng)'],
-      ['ᱞ', 'l_al', 'Al (l)'],
-    ];
-    for (int i = 0; i < letters.length; i++) {
-      await lettersNotifier.addLetter(
-        LetterModel(
-          id: letters[i][1], // Ground-truth canonical ID (e.g. l_la)
-          charOlChiki: letters[i][0],
-          transliterationLatin: letters[i][2],
-          order: i,
-        ),
-      );
+    final lettersRows = await ref
+        .read(appwriteDbServiceProvider)
+        .listDocuments('letters');
+    if (lettersRows.isEmpty) {
+      // Seed letters using verified ground-truth canonical IDs and transliterations
+      final letters = [
+        ['ᱚ', 'l_la', 'La (a)'],
+        ['ᱛ', 'l_at', 'At (t)'],
+        ['ᱜ', 'l_ag', 'Ag (g)'],
+        ['ᱝ', 'l_ang', 'Ang (ng)'],
+        ['ᱞ', 'l_al', 'Al (l)'],
+      ];
+      for (int i = 0; i < letters.length; i++) {
+        await lettersNotifier.addLetter(
+          LetterModel(
+            id: letters[i][1], // Ground-truth canonical ID (e.g. l_la)
+            charOlChiki: letters[i][0],
+            transliterationLatin: letters[i][2],
+            order: i,
+          ),
+        );
+      }
     }
 
     final alphabetLessons = [

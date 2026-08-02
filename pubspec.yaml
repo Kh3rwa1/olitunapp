@@ -1,7 +1,7 @@
 name: itun
 description: Olitun - Premium Ol Chiki (Santali Script) Learning App
 publish_to: 'none'
-version: 1.1.1+16
+version: 1.1.1+19
 
 environment:
   sdk: ^3.9.0
@@ -69,6 +69,8 @@ dependencies:
   in_app_review: ^2.0.9
   url_launcher: ^6.3.2
 
+  flutter_web_plugins:
+    sdk: flutter
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -80,6 +82,8 @@ dev_dependencies:
   json_serializable: ^6.9.4
   mocktail: ^1.0.4
 
+  just_audio_platform_interface: any
+  video_player_platform_interface: any
 flutter:
   generate: true
   uses-material-design: true

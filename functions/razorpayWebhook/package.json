@@ -1,0 +1,10 @@
+{
+  "name": "razorpayWebhook",
+  "version": "1.0.0",
+  "description": "Appwrite function handling Razorpay signed webhooks for asynchronous settlement, refunds, and dispute management",
+  "main": "src/main.js",
+  "type": "module",
+  "dependencies": {
+    "node-appwrite": "^14.0.0"
+  }
+}

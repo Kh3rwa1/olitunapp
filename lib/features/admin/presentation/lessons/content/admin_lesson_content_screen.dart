@@ -1,7 +1,9 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import '../../../../../core/utils/csv_helper.dart';
 
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_item.dart';
@@ -309,6 +311,93 @@ class _AdminLessonContentScreenState
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
     );
+  }
+
+  Future<void> _exportBlocksToCsv() async {
+    const csvHeader =
+        'Index,Block Type,Block ID,Markdown/Text,Ol Chiki,Latin,Media URL,Caption/Transcript,Meta JSON\n';
+
+    final csvRows = _blocks
+        .asMap()
+        .entries
+        .map((entry) {
+          final index = entry.key;
+          final entity = entry.value;
+          final block = entity.toContentBlock(index);
+
+          String markdownText = '';
+          String olChiki = '';
+          String latin = '';
+          String mediaUrl = '';
+          String captionTranscript = '';
+
+          if (block is TextBlock) {
+            markdownText = block.markdown;
+            olChiki = block.textOlChiki ?? '';
+            latin = block.textLatin ?? '';
+          } else if (block is ImageBlock) {
+            mediaUrl = block.media.url;
+            captionTranscript = block.caption ?? '';
+          } else if (block is VideoBlock) {
+            mediaUrl = block.media.url;
+          } else if (block is AudioBlock) {
+            mediaUrl = block.media.url;
+            captionTranscript = block.transcript ?? '';
+          } else if (block is LottieBlock) {
+            mediaUrl = block.media.url;
+          } else if (block is QuizBlock) {
+            markdownText = 'Quiz ID: ${block.quizId}';
+          } else if (block is GlyphBlock) {
+            olChiki = block.olChiki;
+            latin = block.latin;
+            mediaUrl = block.audioUrl ?? '';
+          } else if (block is CalloutBlock) {
+            markdownText = block.text;
+            latin = block.variant.name;
+          } else if (block is TracingBlock) {
+            olChiki = block.config.glyph;
+          }
+
+          final metaStr = block.meta.isNotEmpty ? jsonEncode(block.meta) : '';
+
+          return <String>[
+                (index + 1).toString(),
+                block.type,
+                block.id,
+                markdownText,
+                olChiki,
+                latin,
+                mediaUrl,
+                captionTranscript,
+                metaStr,
+              ]
+              .map((val) {
+                final escaped = val.replaceAll('"', '""');
+                return '"$escaped"';
+              })
+              .join(',');
+        })
+        .join('\n');
+
+    final csvFilename =
+        'Olitun_Lesson_${_lesson?.titleLatin ?? widget.lessonId}_Blocks_Export.csv';
+
+    try {
+      await saveAndShareCsv(
+        csvContent: csvHeader + csvRows,
+        filename: csvFilename,
+        shareSubject: 'Olitun Lesson ${_lesson?.titleLatin} Blocks Export',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to export CSV: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
   }
 
   void _moveBlock(int oldIndex, int newIndex) {
@@ -1049,6 +1138,48 @@ class _AdminLessonContentScreenState
                             ],
                           ),
                         ),
+                      const SizedBox(width: 10),
+                      ScaleButton(
+                        onPressed: _exportBlocksToCsv,
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
+                          ),
+                          decoration: BoxDecoration(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.08)
+                                : Colors.black.withValues(alpha: 0.04),
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                              color: isDark
+                                  ? Colors.white.withValues(alpha: 0.1)
+                                  : Colors.black.withValues(alpha: 0.06),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                Icons.download_rounded,
+                                size: 18,
+                                color: isDark ? Colors.white70 : Colors.black54,
+                              ),
+                              const SizedBox(width: 6),
+                              Text(
+                                'CSV Export',
+                                style: TextStyle(
+                                  color: isDark
+                                      ? Colors.white70
+                                      : Colors.black54,
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
                     ],
                   )
                 : Column(
@@ -1226,6 +1357,50 @@ class _AdminLessonContentScreenState
                                 ],
                               ),
                             ),
+                          const SizedBox(width: 10),
+                          ScaleButton(
+                            onPressed: _exportBlocksToCsv,
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 16,
+                                vertical: 8,
+                              ),
+                              decoration: BoxDecoration(
+                                color: isDark
+                                    ? Colors.white.withValues(alpha: 0.08)
+                                    : Colors.black.withValues(alpha: 0.04),
+                                borderRadius: BorderRadius.circular(10),
+                                border: Border.all(
+                                  color: isDark
+                                      ? Colors.white.withValues(alpha: 0.1)
+                                      : Colors.black.withValues(alpha: 0.06),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(
+                                    Icons.download_rounded,
+                                    size: 16,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    'CSV Export',
+                                    style: TextStyle(
+                                      color: isDark
+                                          ? Colors.white70
+                                          : Colors.black54,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
                         ],
                       ),
                     ],

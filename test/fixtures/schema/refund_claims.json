@@ -1,0 +1,67 @@
+{
+  "collectionId": "refund_claims",
+  "attributes": [
+    {
+      "key": "refundId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "paymentId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "purchaseId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "amountPaise",
+      "type": "integer",
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "currency",
+      "type": "string",
+      "size": 10,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "claimedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "committedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "lastError",
+      "type": "string",
+      "size": 512,
+      "array": false,
+      "required": false
+    }
+  ]
+}

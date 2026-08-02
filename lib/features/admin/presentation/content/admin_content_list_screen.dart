@@ -1,14 +1,13 @@
-import 'dart:io';
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/theme/admin_tokens.dart';
+import '../../../../core/utils/csv_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../widgets/admin_page_header.dart';
@@ -228,24 +227,97 @@ class _AdminContentListScreenState
   }
 
   Future<void> _exportToCsv(List<ContentItem> items) async {
-    const csvHeader =
-        'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Updated At\n';
+    final isSentence = widget.kind == ContentKind.sentence;
+    final isLessonOrRhyme =
+        widget.kind == ContentKind.lesson || widget.kind == ContentKind.rhyme;
+
+    final String csvHeader;
+    if (isSentence) {
+      csvHeader =
+          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Meaning Block,Usage Block,Audio Block URL,Audio Block Transcript,Blocks JSON,Updated At\n';
+    } else if (isLessonOrRhyme) {
+      csvHeader =
+          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Blocks JSON,Updated At\n';
+    } else {
+      csvHeader =
+          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Updated At\n';
+    }
+
     final csvRows = items
         .map((item) {
-          return [
-                item.id,
-                item.kind.name,
-                item.title,
-                item.titleOlChiki ?? '',
-                item.olChiki ?? '',
-                item.subtitle ?? '',
-                item.categoryId,
-                item.isPublished.toString(),
-                item.isPremium.toString(),
-                item.order.toString(),
-                item.tags.join('; '),
-                item.updatedAt.toIso8601String(),
-              ]
+          String meaningBlock = '';
+          String usageBlock = '';
+          String audioUrlBlock = '';
+          String audioTranscriptBlock = '';
+
+          if (isSentence) {
+            // Try fetching by block IDs first
+            for (final block in item.blocks) {
+              if (block is TextBlock) {
+                if (block.id == 'meaning') {
+                  meaningBlock = block.markdown;
+                } else if (block.id == 'usage') {
+                  usageBlock = block.markdown;
+                }
+              } else if (block is AudioBlock) {
+                if (block.id == 'pronunciation_audio') {
+                  audioUrlBlock = block.media.url;
+                  audioTranscriptBlock = block.transcript ?? '';
+                }
+              }
+            }
+            // Fallback to order if IDs not matches
+            if (meaningBlock.isEmpty) {
+              final textBlocks = item.blocks.whereType<TextBlock>().toList();
+              if (textBlocks.isNotEmpty) {
+                meaningBlock = textBlocks[0].markdown;
+                if (textBlocks.length > 1 && usageBlock.isEmpty) {
+                  usageBlock = textBlocks[1].markdown;
+                }
+              }
+            }
+            if (audioUrlBlock.isEmpty) {
+              final audioBlocks = item.blocks.whereType<AudioBlock>().toList();
+              if (audioBlocks.isNotEmpty) {
+                audioUrlBlock = audioBlocks[0].media.url;
+                audioTranscriptBlock = audioBlocks[0].transcript ?? '';
+              }
+            }
+          }
+
+          final row = [
+            item.id,
+            item.kind.name,
+            item.title,
+            item.titleOlChiki ?? '',
+            item.olChiki ?? '',
+            item.subtitle ?? '',
+            item.categoryId,
+            item.isPublished.toString(),
+            item.isPremium.toString(),
+            item.order.toString(),
+            item.tags.join('; '),
+          ];
+
+          if (isSentence) {
+            row.addAll([
+              meaningBlock,
+              usageBlock,
+              audioUrlBlock,
+              audioTranscriptBlock,
+            ]);
+          }
+
+          if (isSentence || isLessonOrRhyme) {
+            final blocksJson = jsonEncode(
+              item.blocks.map((e) => e.toJson()).toList(),
+            );
+            row.add(blocksJson);
+          }
+
+          row.add(item.updatedAt.toIso8601String());
+
+          return row
               .map((val) {
                 final escaped = val.replaceAll('"', '""');
                 return '"$escaped"';
@@ -258,18 +330,10 @@ class _AdminContentListScreenState
     final filename = 'Olitun_${widget.kind.name}_Export.csv';
 
     try {
-      final directory = await getTemporaryDirectory();
-      final file = File('${directory.path}/$filename');
-      await file.writeAsString(csvContent, flush: true);
-
-      await SharePlus.instance.share(
-        ShareParams(
-          title: 'Olitun $filename',
-          subject: 'Olitun $_title Export',
-          text: 'Olitun $_title Export',
-          files: [XFile(file.path, mimeType: 'text/csv', name: filename)],
-          fileNameOverrides: [filename],
-        ),
+      await saveAndShareCsv(
+        csvContent: csvContent,
+        filename: filename,
+        shareSubject: 'Olitun $_title Export',
       );
     } catch (e) {
       if (mounted) {
@@ -1263,8 +1327,8 @@ class _AdminContentListScreenState
                               shape: BoxShape.circle,
                             ),
                           ),
-                          if (item.audioUrl == null ||
-                              item.audioUrl!.isEmpty) ...[
+                          if (item.effectiveAudioUrl == null ||
+                              item.effectiveAudioUrl!.isEmpty) ...[
                             const SizedBox(width: 4),
                             Tooltip(
                               message: 'Audio Missing',

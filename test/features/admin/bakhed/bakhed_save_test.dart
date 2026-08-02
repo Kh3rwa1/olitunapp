@@ -9,7 +9,7 @@ import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/features/admin/data/bakhed_repository.dart';
 import 'package:itun/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart';
-import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/models/content_models.dart';
 
 import 'package:itun/core/storage/media_uploader.dart';
 import 'package:itun/core/error/failures.dart';
@@ -1359,5 +1359,66 @@ void main() {
         expect(state.pendingDeletions, contains('cover1'));
       },
     );
+  });
+
+  group('effectiveAudioUrl and LetterModel block audio parsing', () {
+    test('extracts audioUrl from GlyphBlock in ContentItem', () {
+      const block = GlyphBlock(
+        id: 'b1',
+        order: 0,
+        olChiki: 'ᱚ',
+        latin: 'o',
+        audioUrl: 'https://cdn.example.com/glyph-audio.mp3',
+      );
+      final item = ContentItem(
+        id: 'o_letter',
+        kind: ContentKind.letter,
+        categoryId: 'cat_letters',
+        title: 'O',
+        blocks: const [block],
+        updatedAt: DateTime(2026),
+      );
+      expect(item.effectiveAudioUrl, 'https://cdn.example.com/glyph-audio.mp3');
+    });
+
+    test(
+      'extracts audioUrl from GlyphBlock in ContentItem when top-level audioUrl is empty string',
+      () {
+        const block = GlyphBlock(
+          id: 'b1',
+          order: 0,
+          olChiki: 'ᱚ',
+          latin: 'o',
+          audioUrl: 'https://cdn.example.com/glyph-audio.mp3',
+        );
+        final item = ContentItem(
+          id: 'o_letter',
+          kind: ContentKind.letter,
+          categoryId: 'cat_letters',
+          title: 'O',
+          audioUrl: '',
+          blocks: const [block],
+          updatedAt: DateTime(2026),
+        );
+        expect(
+          item.effectiveAudioUrl,
+          'https://cdn.example.com/glyph-audio.mp3',
+        );
+      },
+    );
+
+    test('LetterModel.fromJson parses blocks fallback for audioUrl', () {
+      final json = {
+        'id': 'o_letter',
+        'charOlChiki': 'ᱚ',
+        'transliterationLatin': 'O',
+        'blocks':
+            '[{"id":"b1","order":0,"type":"glyph","olChiki":"ᱚ","latin":"o","audioUrl":"https://cdn.example.com/glyph-audio.mp3"}]',
+        'order': 0,
+        'isActive': true,
+      };
+      final letter = LetterModel.fromJson(json);
+      expect(letter.audioUrl, 'https://cdn.example.com/glyph-audio.mp3');
+    });
   });
 }

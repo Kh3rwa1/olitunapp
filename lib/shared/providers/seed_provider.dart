@@ -58,7 +58,17 @@ Future<void> seedAppContent(WidgetRef ref) async {
       .toSet();
 
   Future<void> addLessonIfNew(LessonEntity lesson) async {
-    if (!existingLessonIds.add(lesson.id)) return;
+    final exists = !existingLessonIds.add(lesson.id);
+    if (exists) {
+      if (lesson.id.startsWith('lesson_vocab_') ||
+          lesson.id.startsWith('lesson_sentences_')) {
+        AppLogger.debug(
+          '🔄 Updating existing vocab/sentence lesson: ${lesson.id}',
+        );
+        await ref.read(lessonNotifierProvider.notifier).updateLesson(lesson);
+      }
+      return;
+    }
     await ref.read(lessonNotifierProvider.notifier).addLesson(lesson);
   }
 

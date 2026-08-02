@@ -42,8 +42,10 @@ class RazorpayService {
     _razorpay.clear();
   }
 
-  Future<PurchaseResult> startCheckout({
-    required int amountInr,
+  /// Launch Razorpay checkout using server-generated order ID
+  Future<PurchaseResult> startCheckoutWithOrder({
+    required String orderId,
+    required int amountInPaise,
     required String categoryId,
     required String categoryTitle,
     required String userId,
@@ -61,14 +63,13 @@ class RazorpayService {
 
     final options = {
       'key': razorpayKey,
-      'amount': amountInr * 100, // amount in paisa
+      'order_id': orderId, // Bound to server-created Razorpay Order
+      'amount': amountInPaise,
       'name': 'Olitun App',
       'description': 'Unlock Course: $categoryTitle',
       'prefill': {'contact': userPhone, 'email': userEmail},
-      'notes': {'userId': userId, 'categoryId': categoryId},
-      'theme': {
-        'color': '#8B3A3A', // Terracotta primary
-      },
+      'notes': {'userId': userId, 'categoryId': categoryId, 'orderId': orderId},
+      'theme': {'color': '#8B3A3A'},
     };
 
     try {

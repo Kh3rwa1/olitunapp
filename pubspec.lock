@@ -598,7 +598,7 @@ packages:
     source: hosted
     version: "5.0.0"
   flutter_web_plugins:
-    dependency: transitive
+    dependency: "direct main"
     description: flutter
     source: sdk
     version: "0.0.0"
@@ -869,7 +869,7 @@ packages:
     source: hosted
     version: "0.0.1-beta.17"
   just_audio_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: just_audio_platform_interface
       sha256: "2532c8d6702528824445921c5ff10548b518b13f808c2e34c2fd54793b999a6a"
@@ -1602,7 +1602,7 @@ packages:
     source: hosted
     version: "2.8.9"
   video_player_platform_interface:
-    dependency: transitive
+    dependency: "direct dev"
     description:
       name: video_player_platform_interface
       sha256: "16eaed5268c571c31840dc58ef8da5f0cd4db2a98490c3b8f1cf70122546c6e0"

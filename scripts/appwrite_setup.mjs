@@ -911,7 +911,7 @@ async function main() {
 
   // 2. Create Collections + Attributes + Indexes
   for (const col of collections) {
-    console.log(`📋 Creating collection: ${col.name} (${col.id})`);
+    console.log(`📋 Ensuring collection: ${col.name} (${col.id})`);
     const permissions = permissionsForCollection(col.id);
     const docSecurity = col.documentSecurity || false;
     await api('POST', `/databases/${DATABASE_ID}/collections`, {
@@ -925,6 +925,7 @@ async function main() {
       documentSecurity: docSecurity,
       permissions,
     });
+    console.log(`  🔒 Permissions applied for ${col.id}: [${permissions.join(', ')}]`);
 
     // Create attributes
     for (const attr of col.attrs) {

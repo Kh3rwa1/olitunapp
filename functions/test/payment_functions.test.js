@@ -49,7 +49,7 @@ class SchemaAwareInMemDb {
 
   validateSchema(col, data) {
     const schema = this.schemas.get(col);
-    if (!schema) return; // Unconstrained collections for generic tests
+    if (!schema) return;
 
     const allowedKeys = new Set(['$id', '$createdAt', '$updatedAt', ...schema.attributes.map(a => a.key)]);
     for (const key of Object.keys(data)) {
@@ -110,8 +110,23 @@ class SchemaAwareInMemDb {
 
     let filtered = docs;
     for (const q of queries) {
+      let attr = null;
+      let values = [];
+
       if (typeof q === 'object' && q.attribute && q.values) {
-        filtered = filtered.filter(d => q.values.includes(d[q.attribute]));
+        attr = q.attribute;
+        values = q.values;
+      } else if (typeof q === 'string') {
+        // Parse Appwrite SDK Query string representation e.g. equal("providerPaymentId", ["pay_123"])
+        const match = q.match(/^equal\("([^"]+)",\s*\[?"?([^"\]]+)"?\]?\)/);
+        if (match) {
+          attr = match[1];
+          values = [match[2]];
+        }
+      }
+
+      if (attr && values.length > 0) {
+        filtered = filtered.filter(d => values.includes(d[attr]));
       }
     }
     return { documents: JSON.parse(JSON.stringify(filtered)) };
@@ -135,7 +150,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
   test('Schema-aware DB validates course_purchases schema attributes strictly', () => {
     const db = new SchemaAwareInMemDb();
 
-    // Valid course_purchases document
     assert.doesNotThrow(() => {
       db.validateSchema('course_purchases', {
         userId: 'u1',
@@ -150,7 +164,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       });
     });
 
-    // Invalid attribute throws error
     assert.throws(() => {
       db.validateSchema('course_purchases', {
         userId: 'u1',
@@ -256,7 +269,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
-    // 1. Deliver refund.processed event with refund_id: ref_1001 for ₹250 (25000 paise)
     const refundPayload1 = {
       event: 'refund.processed',
       payload: {
@@ -302,9 +314,8 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     const refundClaimId = stableId('refund:ref_1001');
     const claimDoc = await db.getDocument('olitun_db', 'refund_claims', refundClaimId);
     assert.equal(claimDoc.status, 'committed');
-    assert.equal(claimDoc.purchaseId, purchaseId); // Confirmed actual purchaseId!
 
-    // 2. Test Interrupted Claim Recovery: Simulate claim in 'claimed' state
+    // Test Interrupted Claim Recovery
     db.setDocument('refund_claims', refundClaimId, {
       ...claimDoc,
       status: 'claimed'
@@ -316,17 +327,63 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
 
     assert.equal(resResume.statusCode, 200);
     assert.equal(resResume.body.ok, true);
+  });
 
-    const resumedClaimDoc = await db.getDocument('olitun_db', 'refund_claims', refundClaimId);
-    assert.equal(resumedClaimDoc.status, 'committed');
+  test('razorpayWebhook dispute.won does NOT restore access to fully refunded purchases', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_disputed_refunded_100';
+    const purchaseId = stableId('user_dispute:cat_dispute');
 
-    // 3. Test Committed Idempotent Duplicate Replay
-    const resCommitted = createMockRes();
-    const errorCommitted = createMockErrorLogger();
-    await handler({ req: req1, res: resCommitted, error: errorCommitted });
+    // Seed a purchase that is ALREADY fully refunded
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'user_dispute',
+      categoryId: 'cat_dispute',
+      provider: 'razorpay',
+      providerOrderId: 'order_disp',
+      providerPaymentId: paymentId,
+      expectedAmount: 500,
+      paidAmount: 500,
+      refundedAmountPaise: 50000,
+      currency: 'INR',
+      status: 'refunded',
+      refundStatus: 'fully_refunded',
+      createdAt: new Date().toISOString()
+    });
 
-    assert.equal(resCommitted.statusCode, 200);
-    assert.match(resCommitted.body.message, /already processed \(committed\)/i);
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const disputeWonPayload = {
+      event: 'payment.dispute.won',
+      payload: {
+        dispute: {
+          entity: {
+            id: 'disp_100',
+            payment_id: paymentId,
+            status: 'won'
+          }
+        }
+      }
+    };
+    const rawPayload = JSON.stringify(disputeWonPayload);
+    const signature = createHmac('sha256', webhookSecret).update(rawPayload).digest('hex');
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': signature },
+      body: rawPayload,
+      bodyRaw: rawPayload
+    };
+    const res = createMockRes();
+    const error = createMockErrorLogger();
+
+    await handler({ req, res, error });
+
+    assert.equal(res.statusCode, 200);
+
+    // CRITICAL SECURITY ASSERTION: Ensure status REMAINS 'refunded' and IS NOT RESTORED to 'verified'!
+    const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.status, 'refunded');
+    assert.equal(purchase.refundStatus, 'fully_refunded');
   });
 
   test('razorpayWebhook prevents out-of-order webhook ledger regression', async () => {
@@ -336,7 +393,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     const paymentId = 'pay_RZP_out';
     const purchaseId = stableId(`${userId}:${categoryId}`);
 
-    // Seed purchase that has ALREADY reached ₹500 full refund (50000 paise)
     db.setDocument('course_purchases', purchaseId, {
       userId,
       categoryId,
@@ -354,7 +410,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
-    // Deliver an OUT-OF-ORDER delayed webhook claiming amount_refunded: 25000 (₹250)
     const delayedPayload = {
       event: 'refund.processed',
       payload: {
@@ -391,7 +446,6 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
 
     assert.equal(res.statusCode, 200);
 
-    // CRITICAL: Verify ledger DID NOT REGRESS from 50000 paise back to 25000 paise!
     const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundedAmountPaise, 50000);

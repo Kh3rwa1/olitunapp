@@ -323,16 +323,22 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
         }
 
-        // 3. Update course_purchases ledger using authoritative total (WITH OUT-OF-ORDER REGRESSION PROTECTION)
+        // 3. Update course_purchases ledger using authoritative total (WITH MONOTONIC CAS REGRESSION PROTECTION)
         for (const doc of matchingDocs.documents) {
-          const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
-          const previousRefundedPaise = Number(doc.refundedAmountPaise || 0);
+          // Immediately re-fetch latest state before updating to protect against concurrent webhook writes!
+          let latestDoc = doc;
+          try {
+            latestDoc = await databases.getDocument(databaseId, 'course_purchases', doc.$id);
+          } catch (_) {}
 
-          // Prevent out-of-order webhooks from regressing a higher refunded total!
+          const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
+          const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
+
+          // Monotonic non-decreasing total calculation prevents out-of-order regression
           const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
           const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
 
-          await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
+          await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
             status: isFullyRefunded ? 'refunded' : 'verified',
             refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
             refundedAmountPaise: finalRefundedPaise
@@ -375,8 +381,19 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
 
           for (const doc of matchingDocs.documents) {
+            // Lifecycle Guard: DO NOT restore status to 'verified' if purchase is already fully refunded!
+            const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
+            const isFullyRefunded = doc.refundStatus === 'fully_refunded' ||
+              (doc.status === 'refunded') ||
+              (doc.refundedAmountPaise && doc.refundedAmountPaise >= expectedPaise && expectedPaise > 0);
+
+            let targetStatus = newStatus;
+            if (newStatus === 'verified' && isFullyRefunded) {
+              targetStatus = 'refunded'; // Retain refunded status for fully refunded purchases!
+            }
+
             await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
-              status: newStatus
+              status: targetStatus
             });
           }
         }

@@ -312,12 +312,14 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Per-Payment Atomic Serialization Lock with Random Owner Token & Safe Stale Lock Takeover
+        // 2. Non-Destructive Versioned Monotonic Payment Lock with Atomic Ownership Verification
         const ownerToken = stableId(`${paymentId}:${refundId}:${Math.random()}:${Date.now()}`);
         const paymentLockId = stableId(`lock:payment:${paymentId}`);
         let lockAcquired = false;
+        let currentLockVersion = 1;
 
         try {
+          // First lock attempt: create non-deleted lock claim document
           await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
             refundId: `lock:${paymentId}`,
             paymentId,
@@ -327,39 +329,43 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             status: 'locked',
             claimedAt: now,
             committedAt: null,
-            lastError: ownerToken
+            lastError: `${ownerToken}|v:1`
           });
           lockAcquired = true;
+          currentLockVersion = 1;
         } catch (lockErr) {
           if (lockErr.code === 409) {
+            // Lock document exists. Check for unlocked state or expired TTL (> 30s)
             try {
               const existingLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
               const lockAgeMs = Date.now() - new Date(existingLock.claimedAt || 0).getTime();
+              const isExpired = lockAgeMs > LOCK_TTL_MS;
+              const isUnlocked = existingLock.status === 'unlocked';
 
-              if (lockAgeMs > LOCK_TTL_MS) {
-                error(`STALE LOCK DETECTED: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic takeover...`);
-                // Atomic Takeover Step 1: Delete stale lock document
-                try {
-                  await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
-                } catch (_) {}
+              if (isUnlocked || isExpired) {
+                if (isExpired) {
+                  error(`STALE LOCK DETECTED: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic versioned takeover...`);
+                }
 
-                // Atomic Takeover Step 2: Re-create lock with our unique ownerToken
-                try {
-                  await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
-                    refundId: `lock:${paymentId}`,
-                    paymentId,
-                    purchaseId,
-                    amountPaise: 0,
-                    currency,
-                    status: 'locked',
-                    claimedAt: now,
-                    committedAt: null,
-                    lastError: ownerToken
-                  });
+                const prevVersionMatch = String(existingLock.lastError || '').match(/\|v:(\d+)$/);
+                const prevVersion = prevVersionMatch ? parseInt(prevVersionMatch[1], 10) : 1;
+                const newVersion = prevVersion + 1;
+
+                // Non-destructive versioned update (no delete-recreate race!)
+                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
+                  status: 'locked',
+                  claimedAt: now,
+                  lastError: `${ownerToken}|v:${newVersion}`
+                });
+
+                // Immediately verify exclusive ownership and version match
+                const verifyLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
+                if (verifyLock.lastError === `${ownerToken}|v:${newVersion}`) {
                   lockAcquired = true;
-                  error(`STALE LOCK TAKEOVER WON: Payment lock ${paymentLockId} acquired by owner ${ownerToken}`);
-                } catch (_) {
-                  error(`STALE LOCK TAKEOVER LOST: Another worker acquired payment lock ${paymentLockId}`);
+                  currentLockVersion = newVersion;
+                  error(`LOCK ACQUIRED (v${newVersion}): Payment lock ${paymentLockId} won by owner ${ownerToken}`);
+                } else {
+                  error(`LOCK CONFLICT LOST (v${newVersion}): Another worker acquired lock ${paymentLockId}`);
                   return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
                 }
               } else {
@@ -441,12 +447,16 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           if (lockAcquired) {
             try {
               const currentLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
-              if (currentLock.lastError === ownerToken) {
-                await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
+              if (currentLock.lastError === `${ownerToken}|v:${currentLockVersion}`) {
+                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
+                  status: 'unlocked'
+                });
               } else {
-                error(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owned by ${currentLock.lastError}, not ${ownerToken}`);
+                error(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owned by ${currentLock.lastError}, not ${ownerToken}|v:${currentLockVersion}`);
               }
-            } catch (_) {}
+            } catch (relErr) {
+              error(`WARNING: Exception releasing lock ${paymentLockId}: ${relErr.message}`);
+            }
           }
         }
 

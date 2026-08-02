@@ -57,5 +57,12 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "paymentId_idx",
+      "type": "unique",
+      "attributes": ["paymentId"]
+    }
   ]
 }

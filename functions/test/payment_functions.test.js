@@ -548,8 +548,64 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(resConflict.statusCode, 503);
     assert.match(resConflict.body.message, /Payment ledger update in progress/i);
 
+    // Now test a stalled Worker 1 resuming execution past lock acquisition with targetEpoch = 1
+    const dbStalledWorker = new SchemaAwareInMemDb();
+    dbStalledWorker.setDocument('course_purchases', purchaseId, {
+      userId: 'u_fence', categoryId: 'c_fence', provider: 'razorpay', providerOrderId: 'o_fence',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 50000,
+      refundEpoch: 2, currency: 'INR', status: 'refunded', createdAt: new Date().toISOString()
+    });
+
+    const epoch1IdStalled = stableId(`lock:payment:${paymentId}:epoch:1`);
+    dbStalledWorker.setDocument('refund_claims', epoch1IdStalled, {
+      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date().toISOString(), lastError: 'worker1|epoch:1'
+    });
+
+    // Mock DB wrapper where lock discovery returns no higher locks (so targetEpoch = 1)
+    const dbMockStalled = {
+      ...dbStalledWorker,
+      listDocuments: async (dbId, col, queries) => {
+        if (col === 'refund_claims' && queries.some(q => typeof q === 'object' && q.attribute === 'refundId')) {
+          return { documents: [] }; // No higher locks found -> targetEpoch = 1
+        }
+        return dbStalledWorker.listDocuments(dbId, col, queries);
+      },
+      createDocument: async (dbId, col, id, data) => {
+        return { $id: id, ...data };
+      },
+      getDocument: async (dbId, col, id) => {
+        return dbStalledWorker.getDocument(dbId, col, id);
+      },
+      updateDocument: async (dbId, col, id, data) => {
+        return dbStalledWorker.updateDocument(dbId, col, id, data);
+      }
+    };
+
+    const handlerStalledWorker1 = createRazorpayWebhookHandler({ databases: dbMockStalled });
+    const payloadStalled = {
+      event: 'refund.processed',
+      payload: {
+        payment: { entity: { id: paymentId, amount_refunded: 25000 } },
+        refund: { entity: { id: 'ref_stale_w1', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+      }
+    };
+    const rawStalled = JSON.stringify(payloadStalled);
+    const sigStalled = createHmac('sha256', webhookSecret).update(rawStalled).digest('hex');
+    const resStalled = createMockRes();
+
+    await handlerStalledWorker1({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sigStalled }, body: rawStalled, bodyRaw: rawStalled },
+      res: resStalled,
+      error: createMockErrorLogger()
+    });
+
+    // Worker 1 is FENCED by defense-in-depth fencing guards! Responds HTTP 503 and leaves purchase ledger untouched at 50000 paise!
+    assert.equal(resStalled.statusCode, 503);
+    assert.match(resStalled.body.message, /Payment ledger update in progress|Stale epoch update prevented|Payment lock invalidated/i);
+
     // Purchase ledger remains protected at 50000 paise & refundEpoch 2
-    purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    purchase = await dbStalledWorker.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundedAmountPaise, 50000);
     assert.equal(purchase.refundEpoch, 2);

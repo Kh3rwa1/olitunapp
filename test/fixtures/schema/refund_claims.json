@@ -63,5 +63,17 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "refundId_idx",
+      "type": "unique",
+      "attributes": ["refundId"]
+    },
+    {
+      "key": "payment_refund_idx",
+      "type": "key",
+      "attributes": ["paymentId", "refundId"]
+    }
   ]
 }

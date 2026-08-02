@@ -107,6 +107,26 @@ async function run() {
     const attrsRes = await api('GET', `/databases/${DATABASE_ID}/collections/${colId}/attributes`);
     const rawAttributes = attrsRes.attributes || [];
 
+    // Fetch indexes
+    let mappedIndexes = [];
+    try {
+      const idxRes = await api('GET', `/databases/${DATABASE_ID}/collections/${colId}/indexes`);
+      const rawIndexes = idxRes.indexes || [];
+      mappedIndexes = rawIndexes.map(idx => {
+        const spec = {
+          key: idx.key,
+          type: idx.type,
+          attributes: idx.attributes || []
+        };
+        if (idx.orders && idx.orders.length > 0) {
+          spec.orders = idx.orders;
+        }
+        return spec;
+      });
+    } catch (idxErr) {
+      console.warn(`  ⚠️ Could not fetch indexes for ${colId}: ${idxErr.message}`);
+    }
+
     // Map attributes to clean spec
     const mappedAttributes = rawAttributes.map(attr => {
       const spec = {
@@ -138,6 +158,7 @@ async function run() {
     const output = {
       collectionId: colId,
       attributes: mappedAttributes,
+      indexes: mappedIndexes,
     };
 
     writeFileSync(fixturePath, JSON.stringify(output, null, 2), 'utf8');

@@ -2,9 +2,9 @@ import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
 import { createHmac, createHash } from 'crypto';
 
-import createRazorpayOrderHandler from '../createRazorpayOrder/src/main.js';
-import verifyCoursePurchaseHandler from '../verifyCoursePurchase/src/main.js';
-import razorpayWebhookHandler from '../razorpayWebhook/src/main.js';
+import { createOrderHandler } from '../createRazorpayOrder/src/main.js';
+import { createVerifyCoursePurchaseHandler } from '../verifyCoursePurchase/src/main.js';
+import { createRazorpayWebhookHandler } from '../razorpayWebhook/src/main.js';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -79,7 +79,6 @@ class InMemDb {
     const table = this.collections.get(col) || new Map();
     const docs = Array.from(table.values());
 
-    // Basic filter support for test queries
     let filtered = docs;
     for (const q of queries) {
       if (typeof q === 'object' && q.attribute && q.values) {
@@ -104,32 +103,36 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
     process.env.RAZORPAY_WEBHOOK_SECRET = webhookSecret;
   });
 
-  test('verifyCoursePurchase signature validation & order binding contract', async () => {
+  test('verifyCoursePurchase full positive verification & claim state mutation', async () => {
+    const db = new InMemDb();
     const userId = 'user_Alice';
     const categoryId = 'cat_course_99';
     const orderId = 'order_RZP_111';
     const paymentId = 'pay_RZP_222';
+    const purchaseId = stableId(`${userId}:${categoryId}`);
+
+    // Seed official category and pending purchase
+    db.setDocument('categories', categoryId, {
+      titleLatin: 'Santhali Grammar',
+      priceInr: 499,
+      unlockMode: 'paid_only'
+    });
+
+    db.setDocument('course_purchases', purchaseId, {
+      userId,
+      categoryId,
+      provider: 'razorpay',
+      providerOrderId: orderId,
+      expectedAmount: 499,
+      currency: 'INR',
+      status: 'created'
+    });
+
     const expectedSignature = createHmac('sha256', razorpaySecret)
       .update(`${orderId}|${paymentId}`)
       .digest('hex');
 
-    const req = {
-      method: 'POST',
-      headers: { 'x-appwrite-user-id': userId },
-      body: JSON.stringify({
-        unlockMethod: 'razorpay',
-        categoryId,
-        razorpayPaymentId: paymentId,
-        razorpayOrderId: orderId,
-        razorpaySignature: expectedSignature
-      })
-    };
-    const res = createMockRes();
-    const error = createMockErrorLogger();
-
-    // Mock Razorpay API fetch
-    const originalFetch = global.fetch;
-    global.fetch = async (url) => {
+    const mockFetch = async (url) => {
       if (url.includes(paymentId)) {
         return {
           ok: true,
@@ -146,51 +149,154 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
       return { ok: false, status: 404, text: async () => 'Not found' };
     };
 
-    try {
-      await verifyCoursePurchaseHandler({ req, res, error });
-    } finally {
-      global.fetch = originalFetch;
-    }
-
-    assert.notEqual(res.body.message, 'Invalid payment signature');
-    assert.notEqual(res.body.message, 'Unauthenticated');
-  });
-
-  test('razorpayWebhook validates HMAC signature with raw payload', async () => {
-    const payloadObj = {
-      event: 'payment.captured',
-      payload: {
-        payment: {
-          entity: {
-            id: 'pay_999',
-            order_id: 'order_999',
-            amount: 49900,
-            currency: 'INR',
-            notes: { userId: 'u1', categoryId: 'c1' }
-          }
-        }
-      }
-    };
-    const rawPayload = JSON.stringify(payloadObj);
-    const validSignature = createHmac('sha256', webhookSecret)
-      .update(rawPayload)
-      .digest('hex');
+    const handler = createVerifyCoursePurchaseHandler({ databases: db, fetchImpl: mockFetch });
 
     const req = {
       method: 'POST',
-      headers: { 'x-razorpay-signature': validSignature },
-      body: rawPayload,
-      bodyRaw: rawPayload
+      headers: { 'x-appwrite-user-id': userId },
+      body: JSON.stringify({
+        unlockMethod: 'razorpay',
+        categoryId,
+        razorpayPaymentId: paymentId,
+        razorpayOrderId: orderId,
+        razorpaySignature: expectedSignature
+      })
     };
     const res = createMockRes();
     const error = createMockErrorLogger();
 
-    await razorpayWebhookHandler({ req, res, error });
+    await handler({ req, res, error });
 
-    assert.notEqual(res.body.message, 'Invalid webhook signature');
+    // Assert exact HTTP response
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.equal(res.body.purchase.status, 'verified');
+    assert.equal(res.body.purchase.providerPaymentId, paymentId);
+
+    // Assert database state mutation for ledger
+    const updatedPurchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(updatedPurchase.status, 'verified');
+    assert.equal(updatedPurchase.providerPaymentId, paymentId);
+
+    // Assert database state mutation for claim
+    const claimId = stableId(`claim:${paymentId}`);
+    const claimDoc = await db.getDocument('olitun_db', 'payment_claims', claimId);
+    assert.equal(claimDoc.status, 'committed');
+    assert.equal(claimDoc.userId, userId);
+  });
+
+  test('razorpayWebhook atomic refund deduplication (prevents double-counting)', async () => {
+    const db = new InMemDb();
+    const userId = 'user_Bob';
+    const categoryId = 'cat_course_500';
+    const paymentId = 'pay_RZP_500';
+    const purchaseId = stableId(`${userId}:${categoryId}`);
+
+    // Seed verified purchase priced at ₹500 (50,000 paise)
+    db.setDocument('course_purchases', purchaseId, {
+      userId,
+      categoryId,
+      provider: 'razorpay',
+      providerOrderId: 'order_500',
+      providerPaymentId: paymentId,
+      expectedAmount: 500,
+      refundedAmountPaise: 0,
+      currency: 'INR',
+      status: 'verified'
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    // 1. Deliver refund.created event with refund_id: ref_1001 for ₹250 (25000 paise)
+    const refundPayload1 = {
+      event: 'refund.created',
+      payload: {
+        refund: {
+          entity: {
+            id: 'ref_1001',
+            payment_id: paymentId,
+            amount: 25000,
+            currency: 'INR'
+          }
+        }
+      }
+    };
+    const rawPayload1 = JSON.stringify(refundPayload1);
+    const signature1 = createHmac('sha256', webhookSecret).update(rawPayload1).digest('hex');
+
+    const req1 = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': signature1 },
+      body: rawPayload1,
+      bodyRaw: rawPayload1
+    };
+    const res1 = createMockRes();
+    const error1 = createMockErrorLogger();
+
+    await handler({ req: req1, res: res1, error: error1 });
+
+    assert.equal(res1.statusCode, 200);
+    assert.equal(res1.body.ok, true);
+
+    // Verify database state: status remains 'verified', refundStatus = 'partially_refunded', refundedAmountPaise = 25000
+    let purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchaseState.status, 'verified');
+    assert.equal(purchaseState.refundStatus, 'partially_refunded');
+    assert.equal(purchaseState.refundedAmountPaise, 25000);
+
+    // 2. REPLAY DUPLICATE WEBHOOK with identical ref_1001!
+    const res2 = createMockRes();
+    const error2 = createMockErrorLogger();
+    await handler({ req: req1, res: res2, error: error2 });
+
+    assert.equal(res2.statusCode, 200);
+    assert.equal(res2.body.ok, true);
+    assert.match(res2.body.message, /already processed/i);
+
+    // CRITICAL: Ensure refundedAmountPaise DID NOT DOUBLE-COUNT to 50000!
+    purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchaseState.status, 'verified');
+    assert.equal(purchaseState.refundedAmountPaise, 25000);
+
+    // 3. Deliver second DISTINCT refund webhook ref_1002 for remaining ₹250 (25000 paise)
+    const refundPayload2 = {
+      event: 'refund.created',
+      payload: {
+        refund: {
+          entity: {
+            id: 'ref_1002',
+            payment_id: paymentId,
+            amount: 25000,
+            currency: 'INR'
+          }
+        }
+      }
+    };
+    const rawPayload2 = JSON.stringify(refundPayload2);
+    const signature2 = createHmac('sha256', webhookSecret).update(rawPayload2).digest('hex');
+
+    const req3 = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': signature2 },
+      body: rawPayload2,
+      bodyRaw: rawPayload2
+    };
+    const res3 = createMockRes();
+    const error3 = createMockErrorLogger();
+
+    await handler({ req: req3, res: res3, error: error3 });
+
+    assert.equal(res3.statusCode, 200);
+
+    // Verify cumulative refund reached 100% (50000 paise), revoking entitlement to 'refunded'
+    purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchaseState.status, 'refunded');
+    assert.equal(purchaseState.refundStatus, 'fully_refunded');
+    assert.equal(purchaseState.refundedAmountPaise, 50000);
   });
 
   test('razorpayWebhook rejects invalid signature', async () => {
+    const handler = createRazorpayWebhookHandler({ databases: new InMemDb() });
     const req = {
       method: 'POST',
       headers: { 'x-razorpay-signature': 'bad_sig_0000000' },
@@ -200,7 +306,7 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
     const res = createMockRes();
     const error = createMockErrorLogger();
 
-    await razorpayWebhookHandler({ req, res, error });
+    await handler({ req, res, error });
 
     assert.equal(res.statusCode, 400);
     assert.equal(res.body.ok, false);
@@ -232,22 +338,5 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
 
     assert.equal(claimId1, claimId2);
     assert.equal(claimId1.length, 32);
-  });
-
-  test('Cumulative partial refund logic', () => {
-    const expectedPaise = 50000; // ₹500
-    let previousRefundPaise = 0;
-
-    // Refund 1: ₹250
-    let inc1 = 25000;
-    previousRefundPaise += inc1;
-    let isFullyRefunded1 = previousRefundPaise >= expectedPaise;
-    assert.equal(isFullyRefunded1, false, '₹250 refund on ₹500 is partial');
-
-    // Refund 2: ₹250
-    let inc2 = 25000;
-    previousRefundPaise += inc2;
-    let isFullyRefunded2 = previousRefundPaise >= expectedPaise;
-    assert.equal(isFullyRefunded2, true, 'Cumulative ₹500 refund on ₹500 price is full refund');
   });
 });

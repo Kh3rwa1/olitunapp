@@ -1,4 +1,3 @@
-import 'dart:io' show Platform;
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
@@ -29,7 +28,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
   Future<void> _navigateToNext() async {
     AppLogger.debug('Splash: starting _navigateToNext');
-    final startTime = DateTime.now();
     String? targetLocation;
 
     try {
@@ -53,13 +51,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
         }
 
         if (userId != null && secret != null) {
+          // Immediately scrub secret and token from browser location history BEFORE starting async network call
+          OAuthSanitizer.sanitizeUrlHistory();
+
           AppLogger.debug(
             'Splash: Found OAuth token, exchanging for session...',
           );
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
-          // Sanitize URL history immediately to scrub secrets from browser history & location
-          OAuthSanitizer.sanitizeUrlHistory();
 
           if (success) {
             AppLogger.debug(

@@ -909,12 +909,16 @@ class _LessonBlockDetailScreenState
                                         cardText,
                                         textAlign: TextAlign.center,
                                         style: TextStyle(
-                                          fontSize: textOlChiki.isNotEmpty ? 36 : 28,
+                                          fontSize: textOlChiki.isNotEmpty
+                                              ? 36
+                                              : 28,
                                           fontWeight: FontWeight.w900,
                                           color: isDark
                                               ? Colors.white
                                               : accentColor,
-                                          fontFamily: textOlChiki.isNotEmpty ? 'OlChiki' : null,
+                                          fontFamily: textOlChiki.isNotEmpty
+                                              ? 'OlChiki'
+                                              : null,
                                           height: 1.3,
                                           shadows: [
                                             Shadow(

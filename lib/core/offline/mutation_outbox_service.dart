@@ -1,4 +1,3 @@
-import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
@@ -31,19 +30,20 @@ class PendingMutation {
   }) : nextRetryAt = nextRetryAt ?? DateTime.now();
 
   Map<String, dynamic> toJson() => {
-        'operationId': operationId,
-        'userId': userId,
-        'operationType': operationType,
-        'entityId': entityId,
-        'payload': payload,
-        'createdAt': createdAt.toIso8601String(),
-        'attemptCount': attemptCount,
-        'nextRetryAt': nextRetryAt.toIso8601String(),
-        'status': status.name,
-        'lastError': lastError,
-      };
+    'operationId': operationId,
+    'userId': userId,
+    'operationType': operationType,
+    'entityId': entityId,
+    'payload': payload,
+    'createdAt': createdAt.toIso8601String(),
+    'attemptCount': attemptCount,
+    'nextRetryAt': nextRetryAt.toIso8601String(),
+    'status': status.name,
+    'lastError': lastError,
+  };
 
-  factory PendingMutation.fromJson(Map<String, dynamic> json) => PendingMutation(
+  factory PendingMutation.fromJson(Map<String, dynamic> json) =>
+      PendingMutation(
         operationId: json['operationId'] as String,
         userId: json['userId'] as String,
         operationType: json['operationType'] as String,
@@ -75,11 +75,12 @@ class MutationOutboxService {
     existing.removeWhere((m) => m.operationId == mutation.operationId);
     existing.add(mutation);
 
-    await CacheService.set(
-      key,
-      {'mutations': existing.map((m) => m.toJson()).toList()},
+    await CacheService.set(key, {
+      'mutations': existing.map((m) => m.toJson()).toList(),
+    });
+    AppLogger.debug(
+      'Outbox: Enqueued operation ${mutation.operationId} for user ${mutation.userId}',
     );
-    AppLogger.debug('Outbox: Enqueued operation ${mutation.operationId} for user ${mutation.userId}');
   }
 
   /// Get pending operations for a user
@@ -90,7 +91,11 @@ class MutationOutboxService {
     final data = await CacheService.get(
       key,
       (json) => (json['mutations'] as List)
-          .map((item) => PendingMutation.fromJson(Map<String, dynamic>.from(item as Map)))
+          .map(
+            (item) => PendingMutation.fromJson(
+              Map<String, dynamic>.from(item as Map),
+            ),
+          )
           .toList(),
     );
 
@@ -98,7 +103,11 @@ class MutationOutboxService {
   }
 
   /// Record retry attempt with exponential backoff
-  Future<void> recordAttemptFailed(String userId, String operationId, String error) async {
+  Future<void> recordAttemptFailed(
+    String userId,
+    String operationId,
+    String error,
+  ) async {
     final list = await getPendingMutations(userId);
     final index = list.indexWhere((m) => m.operationId == operationId);
 
@@ -109,15 +118,21 @@ class MutationOutboxService {
 
       if (mutation.attemptCount >= maxRetryAttempts) {
         mutation.status = MutationStatus.deadLetter;
-        AppLogger.debug('Outbox: Operation $operationId moved to dead-letter state after $maxRetryAttempts attempts');
+        AppLogger.debug(
+          'Outbox: Operation $operationId moved to dead-letter state after $maxRetryAttempts attempts',
+        );
       } else {
         mutation.status = MutationStatus.failed;
         // Exponential backoff: 2^attemptCount seconds
         final backoffSeconds = 1 << mutation.attemptCount;
-        mutation.nextRetryAt = DateTime.now().add(Duration(seconds: backoffSeconds));
+        mutation.nextRetryAt = DateTime.now().add(
+          Duration(seconds: backoffSeconds),
+        );
       }
 
-      await CacheService.set(_getKey(userId), {'mutations': list.map((m) => m.toJson()).toList()});
+      await CacheService.set(_getKey(userId), {
+        'mutations': list.map((m) => m.toJson()).toList(),
+      });
     }
   }
 
@@ -125,7 +140,9 @@ class MutationOutboxService {
   Future<void> markCompleted(String userId, String operationId) async {
     final list = await getPendingMutations(userId);
     list.removeWhere((m) => m.operationId == operationId);
-    await CacheService.set(_getKey(userId), {'mutations': list.map((m) => m.toJson()).toList()});
+    await CacheService.set(_getKey(userId), {
+      'mutations': list.map((m) => m.toJson()).toList(),
+    });
   }
 
   /// Purge/isolate queue on account logout

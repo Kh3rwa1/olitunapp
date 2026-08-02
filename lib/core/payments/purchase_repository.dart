@@ -10,7 +10,8 @@ class PurchaseRepository {
   final Ref ref;
   PurchaseRepository(this.ref);
 
-  static String _getCacheKey(String userId) => 'entitlements:production:$userId';
+  static String _getCacheKey(String userId) =>
+      'entitlements:production:$userId';
 
   Future<Set<String>> fetchPurchasedCategoryIds(String userId) async {
     if (userId.isEmpty) return {};

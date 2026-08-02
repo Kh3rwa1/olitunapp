@@ -56,7 +56,7 @@ class AdminPurchasesNotifier
 
       // Clear purchase cache so user loses access
       final repo = ref.read(purchaseRepositoryProvider);
-      await repo.clearCache();
+      await repo.clearAllCaches();
 
       // Reload purchases
       await loadPurchases();

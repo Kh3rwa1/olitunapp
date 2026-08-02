@@ -12,7 +12,13 @@ class OAuthSanitizer {
   }
 
   static bool isAllowedRedirect(String path) {
-    const allowlist = {'/', '/welcome', '/onboarding', '/categories', '/profile'};
+    const allowlist = {
+      '/',
+      '/welcome',
+      '/onboarding',
+      '/categories',
+      '/profile',
+    };
     final cleanPath = path.split('?').first;
     return allowlist.contains(cleanPath);
   }

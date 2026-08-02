@@ -1,17 +1,15 @@
-import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:appwrite/appwrite.dart' as appwrite;
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/logging/app_logger.dart';
 import '../../core/payments/razorpay_service.dart';
+import '../../core/payments/purchase_repository.dart';
 import '../../core/reviews/review_service.dart';
 import '../../core/reviews/review_eligibility.dart';
-import '../../core/auth/appwrite_auth_service.dart';
 import '../providers/purchases_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
@@ -63,7 +61,8 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
       final orderId = orderResult['orderId'] as String;
       final amountInPaise = (orderResult['amount'] as num).toInt();
-      final keyId = (orderResult['keyId'] as String?) ?? ref.read(razorpayKeyProvider);
+      final String razorpayKey =
+          (orderResult['keyId'] as String?) ?? ref.read(razorpayKeyProvider);
 
       setState(() {
         _statusMessage = 'Opening payment gateway...';
@@ -78,7 +77,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
         userId: user.id,
         userEmail: user.email,
         userPhone: '9999999999',
-        razorpayKey: keyId,
+        razorpayKey: razorpayKey,
       );
 
       if (result is PurchaseSuccess) {
@@ -134,7 +133,9 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Thank you for rating Olitun! Play Store reviews are treated as voluntary feedback.'),
+            content: Text(
+              'Thank you for rating Olitun! Play Store reviews are treated as voluntary feedback.',
+            ),
           ),
         );
       }

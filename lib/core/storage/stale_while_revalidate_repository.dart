@@ -18,11 +18,7 @@ class SWRResult<T> {
   final SWRState state;
   final String? error;
 
-  const SWRResult({
-    this.data,
-    required this.state,
-    this.error,
-  });
+  const SWRResult({this.data, required this.state, this.error});
 
   bool get hasData => data != null;
 }
@@ -49,31 +45,20 @@ class StaleWhileRevalidateRepository {
     }
 
     if (cachedData != null) {
-      yield SWRResult<T>(
-        data: cachedData,
-        state: SWRState.cached,
-      );
+      yield SWRResult<T>(data: cachedData, state: SWRState.cached);
     } else {
-      yield SWRResult<T>(
-        state: SWRState.loadingNoCache,
-      );
+      yield SWRResult<T>(state: SWRState.loadingNoCache);
     }
 
     try {
       if (cachedData != null) {
-        yield SWRResult<T>(
-          data: cachedData,
-          state: SWRState.refreshing,
-        );
+        yield SWRResult<T>(data: cachedData, state: SWRState.refreshing);
       }
 
       final freshData = await fetchRemote();
       await CacheService.set(cacheKey, toJson(freshData));
 
-      yield SWRResult<T>(
-        data: freshData,
-        state: SWRState.fresh,
-      );
+      yield SWRResult<T>(data: freshData, state: SWRState.fresh);
     } catch (e) {
       AppLogger.debug('SWR: Remote fetch failed for key $cacheKey: $e');
 
@@ -84,10 +69,7 @@ class StaleWhileRevalidateRepository {
           error: e.toString(),
         );
       } else {
-        yield SWRResult<T>(
-          state: SWRState.fatalError,
-          error: e.toString(),
-        );
+        yield SWRResult<T>(state: SWRState.fatalError, error: e.toString());
       }
     }
   }

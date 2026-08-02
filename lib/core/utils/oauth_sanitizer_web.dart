@@ -1,5 +1,4 @@
-// ignore: avoid_web_libraries_in_flutter
-import 'dart:html' as html;
+import 'package:web/web.dart' as web;
 
 void sanitizeWebHistory() {
   try {
@@ -15,7 +14,11 @@ void sanitizeWebHistory() {
         path: uri.path,
         fragment: uri.fragment,
       );
-      html.window.history.replaceState(null, html.document.title, cleanedUri.toString());
+      web.window.history.replaceState(
+        null,
+        web.document.title,
+        cleanedUri.toString(),
+      );
     }
   } catch (_) {
     // Ignore history replace state exceptions on unsupported browser environments

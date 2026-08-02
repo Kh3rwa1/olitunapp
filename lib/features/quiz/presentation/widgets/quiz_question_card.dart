@@ -11,7 +11,9 @@ class QuizQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isLongPrompt = question.promptOlChiki.length > 12 || question.promptOlChiki.contains(' ');
+    final isLongPrompt =
+        question.promptOlChiki.length > 12 ||
+        question.promptOlChiki.contains(' ');
 
     Widget promptWidget = Text(
       question.promptOlChiki,
@@ -26,10 +28,7 @@ class QuizQuestionCard extends StatelessWidget {
     );
 
     if (!isLongPrompt) {
-      promptWidget = FittedBox(
-        fit: BoxFit.scaleDown,
-        child: promptWidget,
-      );
+      promptWidget = FittedBox(fit: BoxFit.scaleDown, child: promptWidget);
     }
 
     return Semantics(

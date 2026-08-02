@@ -1,5 +1,5 @@
 import { createHmac, createHash } from 'crypto';
-import { Client, Databases } from 'node-appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -66,32 +66,23 @@ export default async ({ req, res, error }) => {
   const now = new Date().toISOString();
 
   try {
-    // 1. Fetch official category from database
-    let category;
+    // 1. Fetch pending purchase ledger entry by purchaseId (exact userId:categoryId)
+    let pendingPurchase;
     try {
-      category = await databases.getDocument(databaseId, 'categories', categoryId);
+      pendingPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
     } catch (err) {
-      return res.json({ ok: false, message: 'Category not found' }, 404);
-    }
-
-    const unlockMode = category.unlockMode || 'free';
-    if (unlockMode === 'free') {
-      return res.json({ ok: false, message: 'Category is already free' }, 400);
-    }
-
-    const expectedAmount = category.priceInr || 0;
-
-    // 2. Check existing purchase status (idempotency)
-    try {
-      const existing = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
-      if (existing.status === 'verified') {
-        return res.json({ ok: true, message: 'Already verified', purchase: existing });
+      if (err.code === 404) {
+        return res.json({ ok: false, message: 'No pending purchase order found for this category. Please initiate order first.' }, 404);
       }
-    } catch (_) {
-      // Proceed
+      throw err;
     }
 
-    // 3. Extract Razorpay payment details from client
+    // Idempotency: if already verified for this exact purchase, return existing purchase
+    if (pendingPurchase.status === 'verified') {
+      return res.json({ ok: true, message: 'Purchase already verified', purchase: pendingPurchase });
+    }
+
+    // 2. Extract submitted Razorpay payment details
     const paymentId = text(body.razorpayPaymentId, 255);
     const orderId = text(body.razorpayOrderId, 255);
     const signature = text(body.razorpaySignature, 512);
@@ -100,11 +91,16 @@ export default async ({ req, res, error }) => {
       return res.json({ ok: false, message: 'Missing Razorpay details' }, 400);
     }
 
+    // 3. Order binding check between client submitted order ID & stored order ID
+    if (pendingPurchase.providerOrderId !== orderId) {
+      return res.json({ ok: false, message: 'Submitted order ID does not match the pending order stored for this course' }, 400);
+    }
+
     const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
     const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
 
-    if (!razorpaySecret) {
-      error('RAZORPAY_KEY_SECRET env variable not set');
+    if (!razorpaySecret || !razorpayKeyId) {
+      error('RAZORPAY_KEY_SECRET or RAZORPAY_KEY_ID env variable missing');
       return res.json({ ok: false, message: 'Server payment configuration missing' }, 500);
     }
 
@@ -117,37 +113,68 @@ export default async ({ req, res, error }) => {
       return res.json({ ok: false, message: 'Invalid payment signature' }, 400);
     }
 
-    // 5. Query Razorpay API if credentials available to confirm payment captured & amount match
-    let actualPaidAmount = expectedAmount;
-    if (razorpayKeyId && razorpaySecret) {
-      try {
-        const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
-        const paymentRes = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
-          headers: { 'Authorization': authHeader }
-        });
+    // 5. Mandatory Razorpay API verification (FAIL CLOSED if API call fails or status != 200)
+    let paymentData;
+    try {
+      const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
+      const paymentRes = await fetch(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+        headers: { 'Authorization': authHeader }
+      });
 
-        if (paymentRes.ok) {
-          const paymentData = await paymentRes.json();
-          // Razorpay amount is in paise
-          const paidInr = Math.floor((paymentData.amount || 0) / 100);
-          actualPaidAmount = paidInr;
+      if (!paymentRes.ok) {
+        const errBody = await paymentRes.text();
+        error(`Razorpay API payment fetch failed (HTTP ${paymentRes.status}): ${errBody}`);
+        return res.json({ ok: false, message: `Payment verification failed with payment gateway (HTTP ${paymentRes.status})` }, 400);
+      }
 
-          if (paymentData.status !== 'captured' && paymentData.status !== 'authorized') {
-            return res.json({ ok: false, message: `Payment not captured: ${paymentData.status}` }, 400);
-          }
+      paymentData = await paymentRes.json();
+    } catch (e) {
+      error(`Network exception calling Razorpay API: ${e.message}`);
+      // FAIL CLOSED: Never grant entitlement on API error/timeout
+      return res.json({ ok: false, message: `Payment gateway verification failed due to network error: ${e.message}` }, 502);
+    }
 
-          if (paidInr < expectedAmount) {
-            return res.json({
-              ok: false,
-              message: `Paid amount (₹${paidInr}) is less than required category price (₹${expectedAmount})`
-            }, 400);
-          }
-        }
-      } catch (e) {
-        error(`Failed to verify payment details with Razorpay API: ${e.message}`);
+    // 6. Strict Field Validation against Razorpay Payment Object:
+    // Only accept 'captured' status (reject 'authorized' unless settled)
+    if (paymentData.status !== 'captured') {
+      return res.json({ ok: false, message: `Payment status is '${paymentData.status}', not 'captured'. Access denied.` }, 400);
+    }
+
+    // Verify order_id on payment object matches stored order_id
+    if (paymentData.order_id !== pendingPurchase.providerOrderId) {
+      return res.json({ ok: false, message: 'Payment gateway order ID does not match stored order ID' }, 400);
+    }
+
+    // Verify exact amount in paise (integer comparison)
+    const expectedAmountPaise = Math.round((pendingPurchase.expectedAmount || 0) * 100);
+    const actualAmountPaise = Number(paymentData.amount || 0);
+
+    if (actualAmountPaise !== expectedAmountPaise) {
+      return res.json({
+        ok: false,
+        message: `Paid amount (${actualAmountPaise} paise) does not match required category price (${expectedAmountPaise} paise)`
+      }, 400);
+    }
+
+    // Verify currency is INR
+    if (paymentData.currency !== 'INR' || pendingPurchase.currency !== 'INR') {
+      return res.json({ ok: false, message: 'Currency mismatch; INR required' }, 400);
+    }
+
+    // 7. Payment ID Replay Protection: Ensure payment ID is not associated with any other verified document
+    const existingPaymentDocs = await databases.listDocuments(databaseId, 'course_purchases', [
+      Query.equal('providerPaymentId', paymentId),
+      Query.limit(5)
+    ]);
+
+    for (const doc of existingPaymentDocs.documents) {
+      if (doc.$id !== purchaseId && doc.status === 'verified') {
+        error(`REPLAY ATTACK ATTEMPT: Payment ID ${paymentId} already used for purchase ${doc.$id}`);
+        return res.json({ ok: false, message: 'This payment ID has already been used to unlock a course' }, 409);
       }
     }
 
+    // 8. Atomically update purchase ledger to verified
     const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
     const documentPermissions = [
       `read("user:${userId}")`,
@@ -156,41 +183,28 @@ export default async ({ req, res, error }) => {
       `delete("team:${adminTeamId}")`
     ];
 
-    // 6. Record verified purchase ledger document
     const verifiedLedger = {
       userId,
       categoryId,
       provider: 'razorpay',
       providerOrderId: orderId,
       providerPaymentId: paymentId,
-      expectedAmount: expectedAmount,
-      paidAmount: actualPaidAmount,
+      expectedAmount: pendingPurchase.expectedAmount,
+      paidAmount: Math.round(actualAmountPaise / 100),
       currency: 'INR',
       status: 'verified',
-      purchasedAt: now,
       paidAt: now,
       verifiedAt: now,
       failureReason: ''
     };
 
-    let purchase;
-    try {
-      purchase = await databases.updateDocument(
-        databaseId,
-        'course_purchases',
-        purchaseId,
-        verifiedLedger,
-        documentPermissions
-      );
-    } catch (_) {
-      purchase = await databases.createDocument(
-        databaseId,
-        'course_purchases',
-        purchaseId,
-        verifiedLedger,
-        documentPermissions
-      );
-    }
+    const purchase = await databases.updateDocument(
+      databaseId,
+      'course_purchases',
+      purchaseId,
+      verifiedLedger,
+      documentPermissions
+    );
 
     return res.json({ ok: true, message: 'Purchase verified successfully', purchase });
 

@@ -69,9 +69,7 @@ class RazorpayService {
       'description': 'Unlock Course: $categoryTitle',
       'prefill': {'contact': userPhone, 'email': userEmail},
       'notes': {'userId': userId, 'categoryId': categoryId, 'orderId': orderId},
-      'theme': {
-        'color': '#8B3A3A',
-      },
+      'theme': {'color': '#8B3A3A'},
     };
 
     try {

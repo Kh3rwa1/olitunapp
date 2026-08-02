@@ -45,42 +45,45 @@ void main() {
       await outbox.clearQueueForUser(userA);
     });
 
-    test('Clearing user queue removes only targeted user outbox data', () async {
-      const userA = 'user_A_789';
-      const userB = 'user_B_789';
+    test(
+      'Clearing user queue removes only targeted user outbox data',
+      () async {
+        const userA = 'user_A_789';
+        const userB = 'user_B_789';
 
-      await outbox.enqueueMutation(
-        PendingMutation(
-          operationId: 'op_a',
-          userId: userA,
-          operationType: 'quiz',
-          entityId: 'q1',
-          payload: {},
-          createdAt: DateTime.now(),
-        ),
-      );
+        await outbox.enqueueMutation(
+          PendingMutation(
+            operationId: 'op_a',
+            userId: userA,
+            operationType: 'quiz',
+            entityId: 'q1',
+            payload: {},
+            createdAt: DateTime.now(),
+          ),
+        );
 
-      await outbox.enqueueMutation(
-        PendingMutation(
-          operationId: 'op_b',
-          userId: userB,
-          operationType: 'quiz',
-          entityId: 'q2',
-          payload: {},
-          createdAt: DateTime.now(),
-        ),
-      );
+        await outbox.enqueueMutation(
+          PendingMutation(
+            operationId: 'op_b',
+            userId: userB,
+            operationType: 'quiz',
+            entityId: 'q2',
+            payload: {},
+            createdAt: DateTime.now(),
+          ),
+        );
 
-      await outbox.clearQueueForUser(userA);
+        await outbox.clearQueueForUser(userA);
 
-      final listA = await outbox.getPendingMutations(userA);
-      final listB = await outbox.getPendingMutations(userB);
+        final listA = await outbox.getPendingMutations(userA);
+        final listB = await outbox.getPendingMutations(userB);
 
-      expect(listA, isEmpty);
-      expect(listB.length, equals(1));
+        expect(listA, isEmpty);
+        expect(listB.length, equals(1));
 
-      // Cleanup
-      await outbox.clearQueueForUser(userB);
-    });
+        // Cleanup
+        await outbox.clearQueueForUser(userB);
+      },
+    );
   });
 }

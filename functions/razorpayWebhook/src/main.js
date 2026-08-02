@@ -159,7 +159,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
                 if (existingClaim.status === 'committed') {
                   return res.json({ ok: true, message: 'Payment already processed (committed)' });
                 }
-                // status is 'claimed' (previous attempt failed before commit); resume processing safely
+                // status is 'claimed'; resume processing safely
               } else {
                 error(`ATOMIC REPLAY ATTEMPT in webhook: Payment ID ${paymentId} already claimed by user ${existingClaim.userId}`);
                 return res.json({ ok: false, message: 'Payment ID already claimed by another purchase' }, 409);
@@ -204,6 +204,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           });
         } catch (commitErr) {
           error(`Failed to commit payment claim ${claimId}: ${commitErr.message}`);
+          return res.json({ ok: false, message: 'Failed to commit payment claim' }, 503);
         }
 
         return res.json({ ok: true, message: 'Webhook payment.captured processed' });
@@ -232,121 +233,127 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         }
         return res.json({ ok: true, message: 'Webhook payment.failed processed' });
 
-      } else if (event === 'refund.processed' || event === 'refund.created') {
+      } else if (event === 'refund.created') {
+        const refund = payload.payload?.refund?.entity || {};
+        const refundId = String(refund.id || '').trim();
+        return res.json({ ok: true, message: `Refund ${refundId} created acknowledged; awaiting refund.processed` });
+
+      } else if (event === 'refund.processed') {
         const refund = payload.payload?.refund?.entity || {};
         const refundId = String(refund.id || '').trim();
         const paymentId = String(refund.payment_id || '').trim();
-        const refundStatus = String(refund.status || '').trim();
         const incrementalRefundPaise = Number(refund.amount || 0);
+        const currency = String(refund.currency || 'INR').trim();
 
-        // Align event lifecycle: only act on processed refunds or created refunds that are marked processed
-        if (event === 'refund.created' && refundStatus !== 'processed' && refundStatus !== '') {
-          return res.json({ ok: true, message: `Refund ${refundId} created with status '${refundStatus}'; awaiting refund.processed` });
+        if (!refundId || !paymentId) {
+          return res.json({ ok: false, message: 'Missing refundId or paymentId in payload' }, 400);
         }
 
-        if (refundId && paymentId) {
-          const claimId = stableId(`refund:${refundId}`);
-          const claimData = {
-            refundId,
-            paymentId,
-            purchaseId: refundId,
-            providerOrderId: 'refund',
-            userId: 'system',
-            categoryId: 'refund',
-            amountPaise: incrementalRefundPaise,
-            currency: String(refund.currency || 'INR').trim(),
-            status: 'claimed',
-            claimedAt: now,
-            committedAt: null
-          };
+        // Find matching course purchase document to populate purchaseId
+        const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
+          Query.equal('providerPaymentId', paymentId),
+          Query.limit(5)
+        ]);
 
-          // 1. Two-phase Refund Claim creation (try refund_claims, fallback to payment_claims)
-          let targetCollection = 'refund_claims';
-          try {
-            await databases.createDocument(databaseId, targetCollection, claimId, claimData);
-          } catch (claimErr) {
-            if (claimErr.code === 404) {
-              // Fallback to payment_claims if refund_claims collection is not created yet
-              targetCollection = 'payment_claims';
-              try {
-                await databases.createDocument(databaseId, targetCollection, claimId, claimData);
-              } catch (fallbackErr) {
-                if (fallbackErr.code === 409) {
-                  return handleRefundConflict(databases, databaseId, targetCollection, claimId, refundId, res);
-                }
-                error(`FAIL CLOSED in refund webhook: Claim creation error ${fallbackErr.code}: ${fallbackErr.message}`);
-                return res.json({ ok: false, message: 'Claim service unavailable for refund' }, 503);
-              }
-            } else if (claimErr.code === 409) {
-              return handleRefundConflict(databases, databaseId, targetCollection, claimId, refundId, res);
-            } else {
-              error(`FAIL CLOSED in refund webhook: Claim creation error ${claimErr.code}: ${claimErr.message}`);
-              return res.json({ ok: false, message: 'Claim service unavailable for refund' }, 503);
+        if (matchingDocs.documents.length === 0) {
+          return res.json({ ok: false, message: 'No course purchase found for this payment ID' }, 404);
+        }
+
+        const targetPurchaseDoc = matchingDocs.documents[0];
+        const purchaseId = targetPurchaseDoc.$id;
+
+        // Exact Schema Match for refund_claims collection:
+        // refundId, paymentId, purchaseId, amountPaise, currency, status, claimedAt, committedAt, lastError
+        const claimId = stableId(`refund:${refundId}`);
+        const claimData = {
+          refundId,
+          paymentId,
+          purchaseId,
+          amountPaise: incrementalRefundPaise,
+          currency,
+          status: 'claimed',
+          claimedAt: now,
+          committedAt: null,
+          lastError: ''
+        };
+
+        // 1. Two-phase Refund Claim creation in refund_claims collection
+        try {
+          await databases.createDocument(databaseId, 'refund_claims', claimId, claimData);
+        } catch (claimErr) {
+          if (claimErr.code === 409) {
+            const conflictRes = await handleRefundConflict(
+              databases, databaseId, claimId, paymentId, refundId, incrementalRefundPaise, currency, res
+            );
+            if (conflictRes.action !== 'RESUME') {
+              return conflictRes.res;
             }
-          }
-
-          // 2. Authoritative Total Refund Calculation (prevents concurrent race lost updates)
-          const paymentEntity = payload.payload?.payment?.entity || {};
-          let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
-
-          if (authoritativeRefundPaise === 0) {
-            // Fetch authoritative payment object from Razorpay REST API
-            const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
-            const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
-            if (razorpaySecret && razorpayKeyId) {
-              try {
-                const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
-                const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
-                  headers: { 'Authorization': authHeader }
-                });
-                if (paymentRes.ok) {
-                  const fetchedPayment = await paymentRes.json();
-                  authoritativeRefundPaise = Number(fetchedPayment.amount_refunded || 0);
-                }
-              } catch (fetchErr) {
-                error(`Authoritative payment fetch exception: ${fetchErr.message}`);
-              }
-            }
-          }
-
-          const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
-            Query.equal('providerPaymentId', paymentId),
-            Query.limit(5)
-          ]);
-
-          for (const doc of matchingDocs.documents) {
-            const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
-            const previousRefundPaise = Number(doc.refundedAmountPaise || 0);
-            const effectiveRefundPaise = authoritativeRefundPaise > 0
-              ? authoritativeRefundPaise
-              : (previousRefundPaise + incrementalRefundPaise);
-
-            const isFullyRefunded = effectiveRefundPaise >= expectedPaise || expectedPaise === 0;
-
-            await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
-              status: isFullyRefunded ? 'refunded' : 'verified',
-              refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-              refundedAmountPaise: effectiveRefundPaise
-            });
-          }
-
-          // 3. Mark claim as committed after ledger update succeeds
-          try {
-            await databases.updateDocument(databaseId, targetCollection, claimId, {
-              status: 'committed',
-              committedAt: now
-            });
-          } catch (commitErr) {
-            error(`Failed to commit refund claim ${claimId}: ${commitErr.message}`);
+            // Processing resumed for interrupted 'claimed' refund!
+          } else {
+            error(`FAIL CLOSED in refund webhook: Claim creation error ${claimErr.code}: ${claimErr.message}`);
+            return res.json({ ok: false, message: 'Refund claim service unavailable' }, 503);
           }
         }
-        return res.json({ ok: true, message: `Webhook ${event} processed successfully` });
+
+        // 2. Authoritative Total Refund Calculation from Razorpay (FAIL CLOSED if unavailable)
+        const paymentEntity = payload.payload?.payment?.entity || {};
+        let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
+
+        if (authoritativeRefundPaise === 0) {
+          // Fetch authoritative payment object from Razorpay REST API
+          const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+          const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+          if (razorpaySecret && razorpayKeyId) {
+            try {
+              const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
+              const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+                headers: { 'Authorization': authHeader }
+              });
+              if (paymentRes.ok) {
+                const fetchedPayment = await paymentRes.json();
+                authoritativeRefundPaise = Number(fetchedPayment.amount_refunded || 0);
+              }
+            } catch (fetchErr) {
+              error(`Authoritative payment fetch exception: ${fetchErr.message}`);
+            }
+          }
+        }
+
+        if (authoritativeRefundPaise <= 0) {
+          error(`Authoritative refund total for payment ${paymentId} could not be determined. Failing closed.`);
+          return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
+        }
+
+        // 3. Update course_purchases ledger using authoritative total
+        for (const doc of matchingDocs.documents) {
+          const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
+          const isFullyRefunded = authoritativeRefundPaise >= expectedPaise || expectedPaise === 0;
+
+          await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
+            status: isFullyRefunded ? 'refunded' : 'verified',
+            refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
+            refundedAmountPaise: authoritativeRefundPaise
+          });
+        }
+
+        // 4. Mark refund claim as committed after ledger update succeeds
+        try {
+          await databases.updateDocument(databaseId, 'refund_claims', claimId, {
+            status: 'committed',
+            committedAt: now
+          });
+        } catch (commitErr) {
+          error(`Failed to commit refund claim ${claimId}: ${commitErr.message}`);
+          return res.json({ ok: false, message: 'Failed to commit refund claim' }, 503);
+        }
+
+        return res.json({ ok: true, message: `Webhook refund.processed processed successfully` });
 
       } else if (event === 'refund.failed') {
         const refund = payload.payload?.refund?.entity || {};
         const refundId = String(refund.id || '').trim();
         error(`Webhook refund.failed received for refund ${refundId}`);
-        return res.json({ ok: true, message: `Refund ${refundId} failed; logged without increasing refund count` });
+        return res.json({ ok: true, message: `Refund ${refundId} failed; recorded without mutating entitlement` });
 
       } else if (event.startsWith('payment.dispute.')) {
         const dispute = payload.payload?.dispute?.entity || {};
@@ -383,16 +390,35 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
   };
 }
 
-async function handleRefundConflict(databases, databaseId, collection, claimId, refundId, res) {
+async function handleRefundConflict(databases, databaseId, claimId, paymentId, refundId, amountPaise, currency, res) {
   try {
-    const existingClaim = await databases.getDocument(databaseId, collection, claimId);
-    if (existingClaim.status === 'committed') {
-      return res.json({ ok: true, message: `Refund ${refundId} already processed (committed)` });
+    const existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
+
+    // Validate ownership metadata
+    if (existingClaim.paymentId !== paymentId ||
+        existingClaim.refundId !== refundId ||
+        existingClaim.amountPaise !== amountPaise ||
+        existingClaim.currency !== currency) {
+      return {
+        action: 'REPLAY',
+        res: res.json({ ok: false, message: 'Refund claim ownership mismatch' }, 409)
+      };
     }
-    // Claim status is 'claimed' (previous attempt was interrupted before commit); allow safe resume
-    return null;
+
+    if (existingClaim.status === 'committed') {
+      return {
+        action: 'DONE',
+        res: res.json({ ok: true, message: `Refund ${refundId} already processed (committed)` })
+      };
+    }
+
+    // Status is 'claimed' (interrupted previous attempt); return RESUME to allow caller to finish ledger update
+    return { action: 'RESUME', existingClaim };
   } catch (err) {
-    return res.json({ ok: false, message: 'Failed to inspect existing refund claim' }, 503);
+    return {
+      action: 'ERROR',
+      res: res.json({ ok: false, message: 'Failed to inspect existing refund claim' }, 503)
+    };
   }
 }
 

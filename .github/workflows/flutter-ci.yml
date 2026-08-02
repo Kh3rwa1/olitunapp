@@ -55,6 +55,11 @@ jobs:
       - name: Smoke tests
         run: flutter test test/smoke
 
+      - name: Run backend payment function Node tests
+        run: |
+          npm ci || npm install
+          node --test functions/test/payment_functions.test.js
+
       - name: Detect Appwrite schema drift
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}

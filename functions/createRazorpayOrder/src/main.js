@@ -65,7 +65,10 @@ export default async ({ req, res, error }) => {
     try {
       category = await databases.getDocument(databaseId, 'categories', categoryId);
     } catch (err) {
-      return res.json({ ok: false, message: 'Category not found' }, 404);
+      if (err.code === 404) {
+        return res.json({ ok: false, message: 'Category not found' }, 404);
+      }
+      throw err;
     }
 
     const unlockMode = category.unlockMode || 'free';
@@ -84,8 +87,10 @@ export default async ({ req, res, error }) => {
       if (existing.status === 'verified') {
         return res.json({ ok: false, message: 'Category already unlocked', purchase: existing });
       }
-    } catch (_) {
-      // Document does not exist yet, proceed
+    } catch (err) {
+      if (err.code !== 404) {
+        throw err;
+      }
     }
 
     // 3. Create Razorpay order via Razorpay REST API
@@ -150,14 +155,18 @@ export default async ({ req, res, error }) => {
         ledgerData,
         documentPermissions
       );
-    } catch (_) {
-      await databases.createDocument(
-        databaseId,
-        'course_purchases',
-        purchaseId,
-        ledgerData,
-        documentPermissions
-      );
+    } catch (err) {
+      if (err.code === 404) {
+        await databases.createDocument(
+          databaseId,
+          'course_purchases',
+          purchaseId,
+          ledgerData,
+          documentPermissions
+        );
+      } else {
+        throw err;
+      }
     }
 
     return res.json({

@@ -1,5 +1,5 @@
 import { createHmac, createHash } from 'crypto';
-import { Client, Databases, Query } from 'node-appwrite';
+import { Client, Databases } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -161,33 +161,47 @@ export default async ({ req, res, error }) => {
       return res.json({ ok: false, message: 'Currency mismatch; INR required' }, 400);
     }
 
-    // 7. Atomic Payment ID Replay Protection
+    // 7. Atomic Payment ID Replay Protection & Safe Recovery
     const claimId = stableId(`claim:${paymentId}`);
+    let isRetry = false;
     try {
       await databases.createDocument(databaseId, 'payment_claims', claimId, {
         paymentId,
+        purchaseId,
+        providerOrderId: orderId,
         userId,
         categoryId,
-        claimedAt: now
+        status: 'claimed',
+        claimedAt: now,
+        committedAt: null
       });
     } catch (claimErr) {
       if (claimErr.code === 409) {
-        error(`ATOMIC REPLAY PROTECTION: Payment ID ${paymentId} already claimed.`);
-        return res.json({ ok: false, message: 'This payment ID has already been claimed by another purchase' }, 409);
-      }
-      // If collection doesn't exist yet, fallback to query check
-      const existingPaymentDocs = await databases.listDocuments(databaseId, 'course_purchases', [
-        Query.equal('providerPaymentId', paymentId),
-        Query.limit(5)
-      ]);
-      for (const doc of existingPaymentDocs.documents) {
-        if (doc.$id !== purchaseId && doc.status === 'verified') {
-          return res.json({ ok: false, message: 'This payment ID has already been used to unlock a course' }, 409);
+        // Safe Recovery Check: Fetch existing claim to verify ownership
+        try {
+          const existingClaim = await databases.getDocument(databaseId, 'payment_claims', claimId);
+          if (existingClaim.paymentId === paymentId &&
+              existingClaim.userId === userId &&
+              existingClaim.categoryId === categoryId &&
+              existingClaim.providerOrderId === orderId) {
+            // Same user & transaction retrying safely after partial failure
+            isRetry = true;
+          } else {
+            error(`REPLAY ATTACK: Payment ID ${paymentId} claimed by user ${existingClaim.userId}`);
+            return res.json({ ok: false, message: 'This payment ID has already been claimed by another purchase' }, 409);
+          }
+        } catch (fetchClaimErr) {
+          error(`Failed to fetch existing claim: ${fetchClaimErr.message}`);
+          return res.json({ ok: false, message: 'Payment claim verification failed. Verification aborted.' }, 503);
         }
+      } else {
+        // FAIL CLOSED on database/schema/network errors (NO silent fallback)
+        error(`FAIL CLOSED: Claim creation failed with non-409 code ${claimErr.code}: ${claimErr.message}`);
+        return res.json({ ok: false, message: 'Payment claim service unavailable. Verification aborted.' }, 503);
       }
     }
 
-    // 8. Atomically update purchase ledger to verified
+    // 8. Update purchase ledger to verified
     const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
     const documentPermissions = [
       `read("user:${userId}")`,
@@ -219,7 +233,21 @@ export default async ({ req, res, error }) => {
       documentPermissions
     );
 
-    return res.json({ ok: true, message: 'Purchase verified successfully', purchase });
+    // 9. Update claim status to committed
+    try {
+      await databases.updateDocument(databaseId, 'payment_claims', claimId, {
+        status: 'committed',
+        committedAt: now
+      });
+    } catch (_) {
+      // Non-fatal if claim update timestamp fails after purchase is already verified
+    }
+
+    return res.json({
+      ok: true,
+      message: isRetry ? 'Purchase verification completed (retry)' : 'Purchase verified successfully',
+      purchase
+    });
 
   } catch (err) {
     error(`verifyCoursePurchase failed: ${err.message}`);

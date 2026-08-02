@@ -97,8 +97,9 @@ class PurchaseRepository {
               .map((doc) {
                 final raw = doc['categoryId'];
                 if (raw is String) return raw;
-                if (raw is Map)
+                if (raw is Map) {
                   return (raw['\$id'] ?? raw['id'] ?? '') as String;
+                }
                 return '';
               })
               .where((id) => id.isNotEmpty)

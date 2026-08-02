@@ -1,0 +1,12 @@
+{
+  "name": "olitunapp-root",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test:backend": "node --test functions/test/payment_functions.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "^14.1.0"
+  }
+}

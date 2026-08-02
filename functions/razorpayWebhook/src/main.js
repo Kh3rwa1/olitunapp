@@ -126,19 +126,40 @@ export default async ({ req, res, error }) => {
         return res.json({ ok: true, message: 'Already processed' });
       }
 
-      // Atomic Payment ID Replay Protection
+      // Atomic Payment ID Replay Protection & Safe Recovery
       const claimId = stableId(`claim:${paymentId}`);
       try {
         await databases.createDocument(databaseId, 'payment_claims', claimId, {
           paymentId,
+          purchaseId,
+          providerOrderId: orderId,
           userId,
           categoryId,
-          claimedAt: now
+          status: 'claimed',
+          claimedAt: now,
+          committedAt: null
         });
       } catch (claimErr) {
         if (claimErr.code === 409) {
-          error(`ATOMIC REPLAY ATTEMPT in webhook: Payment ID ${paymentId} already claimed`);
-          return res.json({ ok: false, message: 'Payment ID already claimed by another purchase' }, 409);
+          try {
+            const existingClaim = await databases.getDocument(databaseId, 'payment_claims', claimId);
+            if (existingClaim.paymentId === paymentId &&
+                existingClaim.userId === userId &&
+                existingClaim.categoryId === categoryId &&
+                existingClaim.providerOrderId === orderId) {
+              // Safe idempotent retry for same transaction
+            } else {
+              error(`ATOMIC REPLAY ATTEMPT in webhook: Payment ID ${paymentId} already claimed by user ${existingClaim.userId}`);
+              return res.json({ ok: false, message: 'Payment ID already claimed by another purchase' }, 409);
+            }
+          } catch (fetchClaimErr) {
+            error(`Failed to fetch claim doc in webhook: ${fetchClaimErr.message}`);
+            return res.json({ ok: false, message: 'Claim verification failed' }, 503);
+          }
+        } else {
+          // FAIL CLOSED: Do not continue if claim service has database/schema error
+          error(`FAIL CLOSED in webhook: Claim creation error ${claimErr.code}: ${claimErr.message}`);
+          return res.json({ ok: false, message: 'Claim service unavailable' }, 503);
         }
       }
 
@@ -163,6 +184,13 @@ export default async ({ req, res, error }) => {
         },
         documentPermissions
       );
+
+      try {
+        await databases.updateDocument(databaseId, 'payment_claims', claimId, {
+          status: 'committed',
+          committedAt: now
+        });
+      } catch (_) {}
 
       return res.json({ ok: true, message: 'Webhook payment.captured processed' });
 
@@ -191,13 +219,10 @@ export default async ({ req, res, error }) => {
       }
       return res.json({ ok: true, message: 'Webhook payment.failed processed' });
 
-    } else if (
-      event === 'refund.created' ||
-      event.startsWith('payment.dispute.') ||
-      event === 'payment.disputed'
-    ) {
-      const entity = payload.payload?.refund?.entity || payload.payload?.dispute?.entity || payload.payload?.payment?.entity || {};
-      const paymentId = String(entity.payment_id || entity.id || '').trim();
+    } else if (event === 'refund.created') {
+      const refund = payload.payload?.refund?.entity || {};
+      const paymentId = String(refund.payment_id || '').trim();
+      const amountRefunded = Number(refund.amount || 0);
 
       if (paymentId) {
         const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
@@ -205,9 +230,32 @@ export default async ({ req, res, error }) => {
           Query.limit(5)
         ]);
 
-        const newStatus = event === 'refund.created'
-          ? 'refunded'
-          : (event.includes('won') || event.includes('closed') ? 'verified' : 'disputed');
+        for (const doc of matchingDocs.documents) {
+          const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
+          // Revoke entitlement if full refund; log if partial refund
+          const isFullRefund = amountRefunded >= expectedPaise || expectedPaise === 0;
+          await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
+            status: isFullRefund ? 'refunded' : 'partially_refunded'
+          });
+        }
+      }
+      return res.json({ ok: true, message: 'Webhook refund.created processed' });
+
+    } else if (event.startsWith('payment.dispute.')) {
+      const dispute = payload.payload?.dispute?.entity || {};
+      const paymentId = String(dispute.payment_id || '').trim();
+      const disputeStatus = String(dispute.status || '').trim();
+
+      if (paymentId) {
+        const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
+          Query.equal('providerPaymentId', paymentId),
+          Query.limit(5)
+        ]);
+
+        let newStatus = 'disputed';
+        if (event === 'payment.dispute.won' || (event === 'payment.dispute.closed' && disputeStatus === 'won')) {
+          newStatus = 'verified'; // Merchant won dispute; restore entitlement
+        }
 
         for (const doc of matchingDocs.documents) {
           await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {

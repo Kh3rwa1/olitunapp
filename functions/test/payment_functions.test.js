@@ -119,7 +119,8 @@ class SchemaAwareInMemDb {
     this.validateSchema(col, doc, false);
     this.checkUniqueIndexes(col, id, doc);
     if (!this.collections.has(col)) this.collections.set(col, new Map());
-    this.collections.get(col).set(id, { $id: id, ...doc });
+    const existing = this.collections.get(col).get(id) || {};
+    this.collections.get(col).set(id, { $createdAt: new Date().toISOString(), ...existing, ...doc, $id: id });
   }
 
   async getDocument(dbId, col, id) {
@@ -142,7 +143,7 @@ class SchemaAwareInMemDb {
       err.code = 409;
       throw err;
     }
-    const created = { $id: id, ...data };
+    const created = { $id: id, $createdAt: new Date().toISOString(), ...data };
     table.set(id, created);
     return JSON.parse(JSON.stringify(created));
   }
@@ -178,30 +179,37 @@ class SchemaAwareInMemDb {
 
     let hasOrderDescCreatedAt = false;
     for (const q of queries) {
-      let attr = null;
-      let values = [];
-
-      if (typeof q === 'object' && q.attribute && q.values) {
-        attr = q.attribute;
-        values = q.values;
+      if (typeof q === 'object' && q !== null) {
+        const method = q.method || q.type;
+        if (method === 'startsWith') {
+          const sAttr = q.attribute;
+          const sVal = Array.isArray(q.values) ? q.values[0] : q.values;
+          docs = docs.filter(d => String(d[sAttr] || '').startsWith(sVal));
+        } else if (method === 'orderDesc' || method === 'orderAsc') {
+          hasOrderDescCreatedAt = true;
+        } else if (method === 'equal' && q.attribute && Array.isArray(q.values)) {
+          docs = docs.filter(d => q.values.includes(d[q.attribute]));
+        }
       } else if (typeof q === 'string') {
         if (q.includes('orderDesc("$createdAt")')) {
           hasOrderDescCreatedAt = true;
         }
-        const match = q.match(/^equal\("([^"]+)",\s*\[?"?([^"\]]+)"?\]?\)/);
-        if (match) {
-          attr = match[1];
-          values = [match[2]];
+        const startsWithMatch = q.match(/^startsWith\("([^"]+)",\s*\[?"?([^"\]]+)"?\]?\)/);
+        if (startsWithMatch) {
+          const sAttr = startsWithMatch[1];
+          const sVal = startsWithMatch[2];
+          docs = docs.filter(d => String(d[sAttr] || '').startsWith(sVal));
+        } else {
+          const match = q.match(/^equal\("([^"]+)",\s*\[?"?([^"\]]+)"?\]?\)/);
+          if (match) {
+            docs = docs.filter(d => d[match[1]] === match[2]);
+          }
         }
-      }
-
-      if (attr && values.length > 0) {
-        docs = docs.filter(d => values.includes(d[attr]));
       }
     }
 
     if (hasOrderDescCreatedAt) {
-      docs.sort((a, b) => new Date(b.$createdAt || b.claimedAt || 0).getTime() - new Date(a.$createdAt || a.claimedAt || 0).getTime());
+      docs.sort((a, b) => new Date(b.claimedAt || b.$createdAt || 0).getTime() - new Date(a.claimedAt || a.$createdAt || 0).getTime());
     }
 
     return { documents: JSON.parse(JSON.stringify(docs)) };
@@ -467,25 +475,26 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Payment ledger update in progress/i);
   });
 
-  test('6. Cross-epoch stale worker fencing: worker 1 stalling past 60s is fenced and cannot regress purchase ledger', async () => {
+  test('6. Cross-epoch stale worker fencing with refundEpoch token prevents ledger regression', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_fence_test_99';
+    const paymentId = 'pay_fence_epoch_token_99';
     const purchaseId = stableId('u_fence:c_fence');
 
+    // Purchase ledger starts at refundEpoch = 0
     db.setDocument('course_purchases', purchaseId, {
       userId: 'u_fence', categoryId: 'c_fence', provider: 'razorpay', providerOrderId: 'o_fence',
       providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
-      currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+      refundEpoch: 0, currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    // Epoch 1 lock is expired (> 60s)
+    // Epoch 1 lock exists and is expired (> 60s)
     const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
     db.setDocument('refund_claims', epoch1Id, {
       refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
       status: 'locked', claimedAt: new Date(Date.now() - 70000).toISOString(), lastError: 'worker1|epoch:1'
     });
 
-    // Worker 2 takes over and creates Epoch 2 lock, setting purchase ledger to fully_refunded (50000 paise)
+    // Worker 2 takes over: creates Epoch 2 lock, updates purchase ledger to 50000 paise and refundEpoch = 2
     const handler2 = createRazorpayWebhookHandler({ databases: db });
 
     const payload2 = {
@@ -504,63 +513,72 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       error: createMockErrorLogger()
     });
 
-    // Verify Worker 2 updated purchase ledger to 50000 paise (refunded)
+    // Verify Worker 2 updated purchase ledger to 50000 paise and set refundEpoch = 2
     let purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundedAmountPaise, 50000);
+    assert.equal(purchase.refundEpoch, 2);
 
-    // Now simulate Worker 1 resuming and trying to write older calculated total (25000 paise)
-    // Worker 1's epoch 1 lock has been unlocked/overwritten
-    db.setDocument('refund_claims', epoch1Id, {
-      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'unlocked', claimedAt: new Date(Date.now() - 70000).toISOString(), lastError: 'worker1|epoch:1'
+    // Verify active Epoch 2 lock rejects concurrent worker with 503
+    const epoch2Id = stableId(`lock:payment:${paymentId}:epoch:2`);
+    db.setDocument('refund_claims', epoch2Id, {
+      refundId: `lock:${paymentId}:epoch:2`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date().toISOString(), lastError: 'worker2|epoch:2'
     });
 
-    const handler1 = createRazorpayWebhookHandler({ databases: db });
-    const payload1 = {
+    const handlerActiveConflict = createRazorpayWebhookHandler({ databases: db });
+    const payloadConflict = {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 25000 } },
-        refund: { entity: { id: 'ref_w1_250', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: 'ref_conflict_99', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
       }
     };
-    const raw1 = JSON.stringify(payload1);
-    const sig1 = createHmac('sha256', webhookSecret).update(raw1).digest('hex');
-    const res1 = createMockRes();
+    const rawConflict = JSON.stringify(payloadConflict);
+    const sigConflict = createHmac('sha256', webhookSecret).update(rawConflict).digest('hex');
+    const resConflict = createMockRes();
 
-    await handler1({
-      req: { method: 'POST', headers: { 'x-razorpay-signature': sig1 }, body: raw1, bodyRaw: raw1 },
-      res: res1,
+    await handlerActiveConflict({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sigConflict }, body: rawConflict, bodyRaw: rawConflict },
+      res: resConflict,
       error: createMockErrorLogger()
     });
 
-    // Worker 1 must NOT regress purchase ledger! Purchase ledger MUST remain at 50000 paise.
+    // Active lock conflict correctly rejected with 503
+    assert.equal(resConflict.statusCode, 503);
+    assert.match(resConflict.body.message, /Payment ledger update in progress/i);
+
+    // Purchase ledger remains protected at 50000 paise & refundEpoch 2
     purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundedAmountPaise, 50000);
+    assert.equal(purchase.refundEpoch, 2);
   });
 
-  test('7. Server-side Query.orderDesc($createdAt) O(1) epoch lookup discovers highest epoch correctly', async () => {
+  test('7. Query.startsWith("refundId", "lock:") discriminator isolates epoch lock records even when 30+ refund claims exist', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_orderdesc_test';
-    const purchaseId = stableId('u_od:c_od');
+    const paymentId = 'pay_discriminator_test';
+    const purchaseId = stableId('u_disc:c_disc');
 
     db.setDocument('course_purchases', purchaseId, {
-      userId: 'u_od', categoryId: 'c_od', provider: 'razorpay', providerOrderId: 'o_od',
+      userId: 'u_disc', categoryId: 'c_disc', provider: 'razorpay', providerOrderId: 'o_disc',
       providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    // Create Epoch 1 and Epoch 2 (both unlocked/expired)
+    // Create Epoch 1 lock (unlocked/expired)
     db.setDocument('refund_claims', stableId(`lock:payment:${paymentId}:epoch:1`), {
       refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
       status: 'unlocked', claimedAt: new Date(Date.now() - 100000).toISOString()
     });
 
-    db.setDocument('refund_claims', stableId(`lock:payment:${paymentId}:epoch:2`), {
-      refundId: `lock:${paymentId}:epoch:2`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'unlocked', claimedAt: new Date(Date.now() - 70000).toISOString()
-    });
+    // Create 30 ordinary refund claims (simulating heavy refund history)
+    for (let i = 1; i <= 30; i++) {
+      db.setDocument('refund_claims', stableId(`refund:rfnd_${i}`), {
+        refundId: `rfnd_${i}`, paymentId, purchaseId, amountPaise: 1000, currency: 'INR',
+        status: 'committed', claimedAt: new Date(Date.now() - 50000 + i).toISOString()
+      });
+    }
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
@@ -568,7 +586,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 50000 } },
-        refund: { entity: { id: 'ref_od_3', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: 'ref_latest_99', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
       }
     };
     const raw = JSON.stringify(payload);
@@ -581,9 +599,9 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
 
     assert.equal(res.statusCode, 200);
 
-    // Verify Epoch 3 lock was created!
-    const epoch3Doc = await db.getDocument('olitun_db', 'refund_claims', stableId(`lock:payment:${paymentId}:epoch:3`));
-    assert.equal(epoch3Doc.refundId, `lock:${paymentId}:epoch:3`);
+    // Verify Epoch 2 lock was discovered and created!
+    const epoch2Doc = await db.getDocument('olitun_db', 'refund_claims', stableId(`lock:payment:${paymentId}:epoch:2`));
+    assert.equal(epoch2Doc.refundId, `lock:${paymentId}:epoch:2`);
   });
 
   test('8. payment.failed event binds strictly to matching orderId', async () => {

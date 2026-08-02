@@ -313,9 +313,10 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Efficient O(1) Epoch Lookup with Server-Side Descending CreatedAt Sort
+        // 2. Query Discriminator: Filter ONLY payment lock records using Query.startsWith('refundId', 'lock:')
         const matchingLocks = await databases.listDocuments(databaseId, 'refund_claims', [
           Query.equal('paymentId', paymentId),
+          Query.startsWith('refundId', 'lock:'),
           Query.orderDesc('$createdAt'),
           Query.limit(20)
         ]);
@@ -329,9 +330,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             const ep = parseInt(match[1], 10);
             if (ep > highestEpoch) {
               highestEpoch = ep;
-              if (!activeLockDoc) {
-                activeLockDoc = doc;
-              }
+              activeLockDoc = doc;
             }
           }
         }
@@ -342,9 +341,6 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           if (isLocked && lockAgeMs <= LOCK_TTL_MS) {
             error(`CONCURRENT REFUND CONFLICT for payment ${paymentId} (epoch ${highestEpoch} active for ${lockAgeMs}ms). Returning 503 for Razorpay retry.`);
             return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
-          }
-          if (isLocked && lockAgeMs > LOCK_TTL_MS) {
-            error(`STALE LOCK DETECTED: Payment lock epoch ${highestEpoch} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic epoch takeover...`);
           }
         }
 
@@ -426,22 +422,25 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             return res.json({ ok: false, message: 'Payment lock invalidated' }, 503);
           }
 
+          // FENCING CHECK 2: Monotonic Epoch Fencing Token on course_purchases
+          const existingRefundEpoch = Number(latestDoc.refundEpoch || 0);
+          if (targetEpoch < existingRefundEpoch) {
+            error(`FENCING REJECTED: Target epoch ${targetEpoch} is older than stored ledger refundEpoch ${existingRefundEpoch}. Stale worker write prevented.`);
+            return res.json({ ok: false, message: 'Stale epoch update prevented' }, 503);
+          }
+
           const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
           const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
 
-          // FENCING CHECK 2: Monotonic non-decreasing calculation (ledger CANNOT regress)
+          // FENCING CHECK 3: Monotonic non-decreasing calculation (ledger CANNOT regress)
           const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
           const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
-
-          if (previousRefundedPaise > 0 && finalRefundedPaise < previousRefundedPaise) {
-            error(`FENCING REGRESSION PREVENTED: Attempted to write ${finalRefundedPaise} paise, but ledger already has ${previousRefundedPaise} paise.`);
-            return res.json({ ok: false, message: 'Stale refund update prevented' }, 503);
-          }
 
           await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
             status: isFullyRefunded ? 'refunded' : 'verified',
             refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-            refundedAmountPaise: finalRefundedPaise
+            refundedAmountPaise: finalRefundedPaise,
+            refundEpoch: targetEpoch
           });
 
           // 5. Mark refund claim as committed after ledger update succeeds

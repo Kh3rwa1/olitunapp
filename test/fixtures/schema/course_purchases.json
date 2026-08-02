@@ -104,6 +104,12 @@
       "required": false
     },
     {
+      "key": "refundEpoch",
+      "type": "integer",
+      "array": false,
+      "required": false
+    },
+    {
       "key": "unlockMethod",
       "type": "string",
       "size": 30,

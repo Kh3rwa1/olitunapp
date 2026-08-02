@@ -1,8 +1,15 @@
-import { createHmac, createHash } from 'crypto';
+import { createHmac, createHash, timingSafeEqual } from 'crypto';
 import { Client, Databases } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
+
+function safeCompare(a, b) {
+  const bufA = Buffer.from(String(a || ''));
+  const bufB = Buffer.from(String(b || ''));
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }
 
 function parseBody(req) {
@@ -104,12 +111,12 @@ export default async ({ req, res, error }) => {
       return res.json({ ok: false, message: 'Server payment configuration missing' }, 500);
     }
 
-    // 4. Verify Razorpay HMAC signature
+    // 4. Verify Razorpay HMAC signature (constant-time comparison)
     const expectedSignature = createHmac('sha256', razorpaySecret)
       .update(`${orderId}|${paymentId}`)
       .digest('hex');
 
-    if (expectedSignature !== signature) {
+    if (!safeCompare(expectedSignature, signature)) {
       return res.json({ ok: false, message: 'Invalid payment signature' }, 400);
     }
 

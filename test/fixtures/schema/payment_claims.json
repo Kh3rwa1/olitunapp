@@ -1,0 +1,61 @@
+{
+  "collectionId": "payment_claims",
+  "attributes": [
+    {
+      "key": "paymentId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "purchaseId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "providerOrderId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "userId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "categoryId",
+      "type": "string",
+      "size": 36,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "claimedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "committedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    }
+  ]
+}

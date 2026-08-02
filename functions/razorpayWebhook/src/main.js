@@ -1,8 +1,15 @@
-import { createHmac, createHash } from 'crypto';
+import { createHmac, createHash, timingSafeEqual } from 'crypto';
 import { Client, Databases, Query } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
+}
+
+function safeCompare(a, b) {
+  const bufA = Buffer.from(String(a || ''));
+  const bufB = Buffer.from(String(b || ''));
+  if (bufA.length !== bufB.length) return false;
+  return timingSafeEqual(bufA, bufB);
 }
 
 function parseRawAndJson(req) {
@@ -44,12 +51,12 @@ export default async ({ req, res, error }) => {
 
   const { raw, json: payload } = parseRawAndJson(req);
 
-  // 1. Verify Razorpay webhook HMAC signature using raw bytes
+  // 1. Verify Razorpay webhook HMAC signature using raw bytes & constant-time comparison
   const expectedSignature = createHmac('sha256', webhookSecret)
     .update(raw)
     .digest('hex');
 
-  if (expectedSignature !== signature) {
+  if (!safeCompare(expectedSignature, signature)) {
     error('Invalid webhook signature attempt');
     return res.json({ ok: false, message: 'Invalid webhook signature' }, 400);
   }
@@ -222,7 +229,7 @@ export default async ({ req, res, error }) => {
     } else if (event === 'refund.created') {
       const refund = payload.payload?.refund?.entity || {};
       const paymentId = String(refund.payment_id || '').trim();
-      const amountRefunded = Number(refund.amount || 0);
+      const incrementalRefundPaise = Number(refund.amount || 0);
 
       if (paymentId) {
         const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
@@ -232,10 +239,18 @@ export default async ({ req, res, error }) => {
 
         for (const doc of matchingDocs.documents) {
           const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
-          // Revoke entitlement if full refund; log if partial refund
-          const isFullRefund = amountRefunded >= expectedPaise || expectedPaise === 0;
+          const previousRefundPaise = Number(doc.refundedAmountPaise || 0);
+          const totalRefundPaise = previousRefundPaise + incrementalRefundPaise;
+          
+          // Cumulative Refund Policy:
+          // If total refunds >= 100% of price -> revoke entitlement (status: 'refunded')
+          // If partial refund -> retain entitlement access (status: 'verified', refundStatus: 'partially_refunded')
+          const isFullyRefunded = totalRefundPaise >= expectedPaise || expectedPaise === 0;
+
           await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
-            status: isFullRefund ? 'refunded' : 'partially_refunded'
+            status: isFullyRefunded ? 'refunded' : 'verified',
+            refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
+            refundedAmountPaise: totalRefundPaise
           });
         }
       }
@@ -252,9 +267,12 @@ export default async ({ req, res, error }) => {
           Query.limit(5)
         ]);
 
+        // Dispute Mapping Matrix:
+        // merchant won dispute -> status: 'verified' (access restored)
+        // all other dispute states -> status: 'disputed' (access revoked)
         let newStatus = 'disputed';
         if (event === 'payment.dispute.won' || (event === 'payment.dispute.closed' && disputeStatus === 'won')) {
-          newStatus = 'verified'; // Merchant won dispute; restore entitlement
+          newStatus = 'verified';
         }
 
         for (const doc of matchingDocs.documents) {

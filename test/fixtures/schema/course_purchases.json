@@ -16,20 +16,105 @@
       "required": true
     },
     {
-      "key": "unlockMethod",
+      "key": "provider",
       "type": "string",
       "size": 30,
       "array": false,
       "required": true
     },
     {
+      "key": "providerOrderId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "providerPaymentId",
+      "type": "string",
+      "size": 255,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "expectedAmount",
+      "type": "integer",
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "paidAmount",
+      "type": "integer",
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "currency",
+      "type": "string",
+      "size": 10,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "status",
+      "type": "string",
+      "size": 20,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "createdAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": true
+    },
+    {
+      "key": "paidAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "verifiedAt",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "failureReason",
+      "type": "string",
+      "size": 512,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "refundStatus",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "refundedAmountPaise",
+      "type": "integer",
+      "array": false,
+      "required": false
+    },
+    {
+      "key": "unlockMethod",
+      "type": "string",
+      "size": 30,
+      "array": false,
+      "required": false
+    },
+    {
       "key": "amountPaidInr",
       "type": "integer",
-      "size": null,
       "array": false,
-      "required": true,
-      "min": -9223372036854776000,
-      "max": 9223372036854776000
+      "required": false
     },
     {
       "key": "razorpayPaymentId",
@@ -46,46 +131,23 @@
       "required": false
     },
     {
-      "key": "razorpaySignature",
-      "type": "string",
-      "size": 512,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "reviewCompletedAt",
-      "type": "string",
-      "size": 30,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "reviewPlatform",
-      "type": "string",
-      "size": 20,
-      "array": false,
-      "required": false
-    },
-    {
-      "key": "status",
-      "type": "string",
-      "size": 20,
-      "array": false,
-      "required": false
-    },
-    {
       "key": "purchasedAt",
       "type": "string",
       "size": 30,
       "array": false,
-      "required": true
+      "required": false
+    }
+  ],
+  "indexes": [
+    {
+      "key": "providerPaymentId_idx",
+      "type": "key",
+      "attributes": ["providerPaymentId"]
     },
     {
-      "key": "verifiedAt",
-      "type": "string",
-      "size": 30,
-      "array": false,
-      "required": false
+      "key": "user_category_idx",
+      "type": "unique",
+      "attributes": ["userId", "categoryId"]
     }
   ]
 }

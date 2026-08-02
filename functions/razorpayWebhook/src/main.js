@@ -249,7 +249,6 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           return res.json({ ok: false, message: 'Missing refundId or paymentId in payload' }, 400);
         }
 
-        // Find matching course purchase document to populate purchaseId
         const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
           Query.equal('providerPaymentId', paymentId),
           Query.limit(5)
@@ -324,15 +323,19 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
         }
 
-        // 3. Update course_purchases ledger using authoritative total
+        // 3. Update course_purchases ledger using authoritative total (WITH OUT-OF-ORDER REGRESSION PROTECTION)
         for (const doc of matchingDocs.documents) {
           const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
-          const isFullyRefunded = authoritativeRefundPaise >= expectedPaise || expectedPaise === 0;
+          const previousRefundedPaise = Number(doc.refundedAmountPaise || 0);
+
+          // Prevent out-of-order webhooks from regressing a higher refunded total!
+          const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
+          const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
 
           await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
             status: isFullyRefunded ? 'refunded' : 'verified',
             refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-            refundedAmountPaise: authoritativeRefundPaise
+            refundedAmountPaise: finalRefundedPaise
           });
         }
 

@@ -71,6 +71,8 @@ const functionOnlyCollections = new Set([
   'rate_limits',
   'reward_events',
   'course_purchases',
+  'payment_claims',
+  'refund_claims',
 ]);
 
 const adminReadBackendWriteCollections = new Set([
@@ -761,7 +763,7 @@ const collections = [
       { type: 'integer', key: 'expectedAmount', required: true },
       { type: 'integer', key: 'paidAmount', required: true },
       { type: 'string', key: 'currency', size: 10, required: true },
-      { type: 'string', key: 'status', size: 20, required: true, default: 'pending' },
+      { type: 'string', key: 'status', size: 20, required: true },
       { type: 'string', key: 'createdAt', size: 30, required: true },
       { type: 'string', key: 'paidAt', size: 30, required: false },
       { type: 'string', key: 'failureReason', size: 512, required: false },

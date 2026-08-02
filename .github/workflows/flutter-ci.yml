@@ -78,7 +78,7 @@ jobs:
             exit 1
           fi
 
-      - name: Staging Appwrite smoke test
+      - name: Staging Appwrite connectivity ping
         env:
           STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
           STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}

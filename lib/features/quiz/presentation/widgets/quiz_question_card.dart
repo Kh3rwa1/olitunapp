@@ -11,6 +11,27 @@ class QuizQuestionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isLongPrompt = question.promptOlChiki.length > 12 || question.promptOlChiki.contains(' ');
+
+    Widget promptWidget = Text(
+      question.promptOlChiki,
+      style: TextStyle(
+        fontSize: isLongPrompt ? 32 : 48,
+        fontWeight: FontWeight.w900,
+        fontFamily: 'OlChiki',
+        color: Colors.white,
+        height: 1.3,
+      ),
+      textAlign: TextAlign.center,
+    );
+
+    if (!isLongPrompt) {
+      promptWidget = FittedBox(
+        fit: BoxFit.scaleDown,
+        child: promptWidget,
+      );
+    }
+
     return Semantics(
       key: const ValueKey('quiz-question-semantics'),
       container: true,
@@ -35,27 +56,16 @@ class QuizQuestionCard extends StatelessWidget {
           ),
           child: Column(
             children: [
-              FittedBox(
-                fit: BoxFit.scaleDown,
-                child: Text(
-                  question.promptOlChiki,
-                  style: const TextStyle(
-                    fontSize: 48,
-                    fontWeight: FontWeight.w900,
-                    fontFamily: 'OlChiki',
-                    color: Colors.white,
-                  ),
-                  textAlign: TextAlign.center,
-                ),
-              ),
+              promptWidget,
               if (question.promptLatin != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 12),
                   child: Text(
                     question.promptLatin!,
                     style: TextStyle(
-                      fontSize: 16,
-                      color: Colors.white.withValues(alpha: 0.9),
+                      fontSize: 13,
+                      fontWeight: FontWeight.w500,
+                      color: Colors.white.withValues(alpha: 0.7),
                     ),
                     textAlign: TextAlign.center,
                   ),

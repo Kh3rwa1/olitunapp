@@ -9,6 +9,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
 import '../../../core/auth/appwrite_auth_service.dart';
+import '../../../core/utils/oauth_sanitizer.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -53,10 +54,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
 
         if (userId != null && secret != null) {
           AppLogger.debug(
-            'Splash: Found OAuth token (userId: $userId), exchanging for session...',
+            'Splash: Found OAuth token, exchanging for session...',
           );
           final authService = ref.read(appwriteAuthServiceProvider);
           final success = await authService.exchangeOAuthToken(userId, secret);
+          // Sanitize URL history immediately to scrub secrets from browser history & location
+          OAuthSanitizer.sanitizeUrlHistory();
+
           if (success) {
             AppLogger.debug(
               'Splash: OAuth token exchange succeeded, navigating to /',
@@ -111,18 +115,6 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       }
     } catch (e) {
       AppLogger.debug('Splash error during check: $e');
-    }
-
-    // Enforce a minimum load time of 2.0s (or 0s in tests) so the premium, smooth brand animations have time to breathe
-    final isTesting =
-        !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
-    final minDuration = isTesting
-        ? Duration.zero
-        : const Duration(milliseconds: 2000);
-    final elapsed = DateTime.now().difference(startTime);
-    final remaining = minDuration - elapsed;
-    if (remaining > Duration.zero) {
-      await Future.delayed(remaining);
     }
 
     if (mounted) {

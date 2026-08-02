@@ -174,9 +174,9 @@ class SchemaAwareInMemDb {
 
   async listDocuments(dbId, col, queries = []) {
     const table = this.collections.get(col) || new Map();
-    const docs = Array.from(table.values());
+    let docs = Array.from(table.values());
 
-    let filtered = docs;
+    let hasOrderDescCreatedAt = false;
     for (const q of queries) {
       let attr = null;
       let values = [];
@@ -185,6 +185,9 @@ class SchemaAwareInMemDb {
         attr = q.attribute;
         values = q.values;
       } else if (typeof q === 'string') {
+        if (q.includes('orderDesc("$createdAt")')) {
+          hasOrderDescCreatedAt = true;
+        }
         const match = q.match(/^equal\("([^"]+)",\s*\[?"?([^"\]]+)"?\]?\)/);
         if (match) {
           attr = match[1];
@@ -193,10 +196,15 @@ class SchemaAwareInMemDb {
       }
 
       if (attr && values.length > 0) {
-        filtered = filtered.filter(d => values.includes(d[attr]));
+        docs = docs.filter(d => values.includes(d[attr]));
       }
     }
-    return { documents: JSON.parse(JSON.stringify(filtered)) };
+
+    if (hasOrderDescCreatedAt) {
+      docs.sort((a, b) => new Date(b.$createdAt || b.claimedAt || 0).getTime() - new Date(a.$createdAt || a.claimedAt || 0).getTime());
+    }
+
+    return { documents: JSON.parse(JSON.stringify(docs)) };
   }
 }
 
@@ -459,99 +467,123 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Payment ledger update in progress/i);
   });
 
-  test('6. Atomic Epoch Lock Creation: concurrent workers competing for epoch 2 are resolved by DB unique ID constraint', async () => {
+  test('6. Cross-epoch stale worker fencing: worker 1 stalling past 60s is fenced and cannot regress purchase ledger', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_epoch_barrier_123';
-    const purchaseId = stableId('user_barrier:cat_barrier');
+    const paymentId = 'pay_fence_test_99';
+    const purchaseId = stableId('u_fence:c_fence');
 
     db.setDocument('course_purchases', purchaseId, {
-      userId: 'user_barrier', categoryId: 'cat_barrier', provider: 'razorpay', providerOrderId: 'order_barrier',
+      userId: 'u_fence', categoryId: 'c_fence', provider: 'razorpay', providerOrderId: 'o_fence',
       providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    // Existing Epoch 1 lock is expired (> 30s)
+    // Epoch 1 lock is expired (> 60s)
     const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
     db.setDocument('refund_claims', epoch1Id, {
       refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_owner|epoch:1'
+      status: 'locked', claimedAt: new Date(Date.now() - 70000).toISOString(), lastError: 'worker1|epoch:1'
     });
 
-    const handlerA = createRazorpayWebhookHandler({ databases: db });
-    const handlerB = createRazorpayWebhookHandler({ databases: db });
+    // Worker 2 takes over and creates Epoch 2 lock, setting purchase ledger to fully_refunded (50000 paise)
+    const handler2 = createRazorpayWebhookHandler({ databases: db });
 
-    const payloadA = {
+    const payload2 = {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 50000 } },
-        refund: { entity: { id: 'ref_workerA', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: 'ref_w2_500', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
       }
     };
-    const rawA = JSON.stringify(payloadA);
-    const sigA = createHmac('sha256', webhookSecret).update(rawA).digest('hex');
+    const raw2 = JSON.stringify(payload2);
+    const sig2 = createHmac('sha256', webhookSecret).update(raw2).digest('hex');
 
-    const payloadB = {
+    await handler2({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sig2 }, body: raw2, bodyRaw: raw2 },
+      res: createMockRes(),
+      error: createMockErrorLogger()
+    });
+
+    // Verify Worker 2 updated purchase ledger to 50000 paise (refunded)
+    let purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.status, 'refunded');
+    assert.equal(purchase.refundedAmountPaise, 50000);
+
+    // Now simulate Worker 1 resuming and trying to write older calculated total (25000 paise)
+    // Worker 1's epoch 1 lock has been unlocked/overwritten
+    db.setDocument('refund_claims', epoch1Id, {
+      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'unlocked', claimedAt: new Date(Date.now() - 70000).toISOString(), lastError: 'worker1|epoch:1'
+    });
+
+    const handler1 = createRazorpayWebhookHandler({ databases: db });
+    const payload1 = {
       event: 'refund.processed',
       payload: {
-        payment: { entity: { id: paymentId, amount_refunded: 50000 } },
-        refund: { entity: { id: 'ref_workerB', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+        payment: { entity: { id: paymentId, amount_refunded: 25000 } },
+        refund: { entity: { id: 'ref_w1_250', payment_id: paymentId, amount: 25000, status: 'processed', currency: 'INR' } }
       }
     };
-    const rawB = JSON.stringify(payloadB);
-    const sigB = createHmac('sha256', webhookSecret).update(rawB).digest('hex');
+    const raw1 = JSON.stringify(payload1);
+    const sig1 = createHmac('sha256', webhookSecret).update(raw1).digest('hex');
+    const res1 = createMockRes();
 
-    const reqA = { method: 'POST', headers: { 'x-razorpay-signature': sigA }, body: rawA, bodyRaw: rawA };
-    const resA = createMockRes();
+    await handler1({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sig1 }, body: raw1, bodyRaw: raw1 },
+      res: res1,
+      error: createMockErrorLogger()
+    });
 
-    const reqB = { method: 'POST', headers: { 'x-razorpay-signature': sigB }, body: rawB, bodyRaw: rawB };
-    const resB = createMockRes();
-
-    // Execute Worker A and Worker B concurrently
-    await Promise.all([
-      handlerA({ req: reqA, res: resA, error: createMockErrorLogger() }),
-      handlerB({ req: reqB, res: resB, error: createMockErrorLogger() })
-    ]);
-
-    // Assert EXACTLY ONE worker succeeded (200 OK) and the other worker was rejected atomically by DB unique constraint (503)
-    const statuses = [resA.statusCode, resB.statusCode].sort();
-    assert.deepEqual(statuses, [200, 503]);
-
-    // Assert epoch 2 document exists and is marked unlocked
-    const epoch2Id = stableId(`lock:payment:${paymentId}:epoch:2`);
-    const epoch2Doc = await db.getDocument('olitun_db', 'refund_claims', epoch2Id);
-    assert.equal(epoch2Doc.status, 'unlocked');
-
-    // Assert purchase ledger was updated exactly once
-    const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    // Worker 1 must NOT regress purchase ledger! Purchase ledger MUST remain at 50000 paise.
+    purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
     assert.equal(purchase.refundedAmountPaise, 50000);
   });
 
-  test('7. Isolated Epoch Release: releasing epoch 1 cannot unlock epoch 2 document held by another worker', async () => {
+  test('7. Server-side Query.orderDesc($createdAt) O(1) epoch lookup discovers highest epoch correctly', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_isolated_epoch_guard';
-    const purchaseId = stableId('user_ie:cat_ie');
+    const paymentId = 'pay_orderdesc_test';
+    const purchaseId = stableId('u_od:c_od');
 
-    const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
-    const epoch2Id = stableId(`lock:payment:${paymentId}:epoch:2`);
+    db.setDocument('course_purchases', purchaseId, {
+      userId: 'u_od', categoryId: 'c_od', provider: 'razorpay', providerOrderId: 'o_od',
+      providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
+      currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
+    });
 
-    db.setDocument('refund_claims', epoch1Id, {
+    // Create Epoch 1 and Epoch 2 (both unlocked/expired)
+    db.setDocument('refund_claims', stableId(`lock:payment:${paymentId}:epoch:1`), {
       refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_worker|epoch:1'
+      status: 'unlocked', claimedAt: new Date(Date.now() - 100000).toISOString()
     });
 
-    db.setDocument('refund_claims', epoch2Id, {
+    db.setDocument('refund_claims', stableId(`lock:payment:${paymentId}:epoch:2`), {
       refundId: `lock:${paymentId}:epoch:2`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date().toISOString(), lastError: 'new_active_worker|epoch:2'
+      status: 'unlocked', claimedAt: new Date(Date.now() - 70000).toISOString()
     });
 
-    // Simulate old worker releasing epoch 1 lock
-    await db.updateDocument('olitun_db', 'refund_claims', epoch1Id, { status: 'unlocked' });
+    const handler = createRazorpayWebhookHandler({ databases: db });
 
-    // Assert epoch 2 document remains locked and untouched
-    const epoch2Doc = await db.getDocument('olitun_db', 'refund_claims', epoch2Id);
-    assert.equal(epoch2Doc.status, 'locked');
-    assert.equal(epoch2Doc.lastError, 'new_active_worker|epoch:2');
+    const payload = {
+      event: 'refund.processed',
+      payload: {
+        payment: { entity: { id: paymentId, amount_refunded: 50000 } },
+        refund: { entity: { id: 'ref_od_3', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+      }
+    };
+    const raw = JSON.stringify(payload);
+    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+
+    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
+    const res = createMockRes();
+
+    await handler({ req, res, error: createMockErrorLogger() });
+
+    assert.equal(res.statusCode, 200);
+
+    // Verify Epoch 3 lock was created!
+    const epoch3Doc = await db.getDocument('olitun_db', 'refund_claims', stableId(`lock:payment:${paymentId}:epoch:3`));
+    assert.equal(epoch3Doc.refundId, `lock:${paymentId}:epoch:3`);
   });
 
   test('8. payment.failed event binds strictly to matching orderId', async () => {

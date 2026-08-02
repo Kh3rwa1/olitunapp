@@ -33,7 +33,8 @@ function parseRawAndJson(req) {
   return { raw: '{}', json: {} };
 }
 
-const LOCK_TTL_MS = 30000; // 30 seconds crash-recovery TTL for payment locks
+// 60 seconds TTL: comfortably higher than maximum Appwrite Function execution timeout (15-30s max)
+const LOCK_TTL_MS = 60000;
 
 export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = fetch } = {}) {
   return async ({ req, res, error }) => {
@@ -312,11 +313,11 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. TRUE ATOMIC PRIMITIVE: Monotonic Epoch Lock Creation via Unique Document ID Constraint
+        // 2. Efficient O(1) Epoch Lookup with Server-Side Descending CreatedAt Sort
         const matchingLocks = await databases.listDocuments(databaseId, 'refund_claims', [
           Query.equal('paymentId', paymentId),
-          Query.equal('purchaseId', purchaseId),
-          Query.limit(100)
+          Query.orderDesc('$createdAt'),
+          Query.limit(20)
         ]);
 
         let highestEpoch = 0;
@@ -328,7 +329,9 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             const ep = parseInt(match[1], 10);
             if (ep > highestEpoch) {
               highestEpoch = ep;
-              activeLockDoc = doc;
+              if (!activeLockDoc) {
+                activeLockDoc = doc;
+              }
             }
           }
         }
@@ -405,18 +408,35 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
           }
 
-          // 4. Update course_purchases ledger using authoritative total with re-fetch lock
+          // 4. Update course_purchases ledger using authoritative total with FENCING & MONOTONIC PROTECTIONS
           let latestDoc = targetPurchaseDoc;
           try {
             latestDoc = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
           } catch (_) {}
 
+          // FENCING CHECK 1: Ensure our epoch lock document remains active and locked
+          try {
+            const currentEpochLock = await databases.getDocument(databaseId, 'refund_claims', epochLockId);
+            if (currentEpochLock.status !== 'locked') {
+              error(`FENCING REJECTED: Lock epoch ${targetEpoch} (${epochLockId}) status is ${currentEpochLock.status}`);
+              return res.json({ ok: false, message: 'Payment lock lease expired during processing' }, 503);
+            }
+          } catch (fetchLockErr) {
+            error(`FENCING REJECTED: Lock epoch ${targetEpoch} (${epochLockId}) missing or invalidated`);
+            return res.json({ ok: false, message: 'Payment lock invalidated' }, 503);
+          }
+
           const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
           const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
 
-          // Monotonic non-decreasing calculation
+          // FENCING CHECK 2: Monotonic non-decreasing calculation (ledger CANNOT regress)
           const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
           const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
+
+          if (previousRefundedPaise > 0 && finalRefundedPaise < previousRefundedPaise) {
+            error(`FENCING REGRESSION PREVENTED: Attempted to write ${finalRefundedPaise} paise, but ledger already has ${previousRefundedPaise} paise.`);
+            return res.json({ ok: false, message: 'Stale refund update prevented' }, 503);
+          }
 
           await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
             status: isFullyRefunded ? 'refunded' : 'verified',

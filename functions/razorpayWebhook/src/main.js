@@ -257,6 +257,10 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         if (matchingDocs.documents.length === 0) {
           return res.json({ ok: false, message: 'No course purchase found for this payment ID' }, 404);
         }
+        if (matchingDocs.documents.length > 1) {
+          error(`AMBIGUOUS PAYMENT ID: Found ${matchingDocs.documents.length} purchase records matching payment ID ${paymentId}`);
+          return res.json({ ok: false, message: 'Multiple purchase records match this payment ID' }, 409);
+        }
 
         const targetPurchaseDoc = matchingDocs.documents[0];
         const purchaseId = targetPurchaseDoc.$id;
@@ -276,13 +280,13 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           lastError: ''
         };
 
-        // 1. Two-phase Refund Claim creation in refund_claims collection
+        // 1. Two-phase Refund Claim creation in refund_claims collection (atomic claim lock)
         try {
           await databases.createDocument(databaseId, 'refund_claims', claimId, claimData);
         } catch (claimErr) {
           if (claimErr.code === 409) {
             const conflictRes = await handleRefundConflict(
-              databases, databaseId, claimId, paymentId, refundId, incrementalRefundPaise, currency, res
+              databases, databaseId, claimId, paymentId, refundId, purchaseId, incrementalRefundPaise, currency, res
             );
             if (conflictRes.action !== 'RESUME') {
               return conflictRes.res;
@@ -299,7 +303,6 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
 
         if (authoritativeRefundPaise === 0) {
-          // Fetch authoritative payment object from Razorpay REST API
           const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
           const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
           if (razorpaySecret && razorpayKeyId) {
@@ -323,27 +326,24 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           return res.json({ ok: false, message: 'Authoritative payment refund state unavailable' }, 503);
         }
 
-        // 3. Update course_purchases ledger using authoritative total (WITH MONOTONIC CAS REGRESSION PROTECTION)
-        for (const doc of matchingDocs.documents) {
-          // Immediately re-fetch latest state before updating to protect against concurrent webhook writes!
-          let latestDoc = doc;
-          try {
-            latestDoc = await databases.getDocument(databaseId, 'course_purchases', doc.$id);
-          } catch (_) {}
+        // 3. Update course_purchases ledger using authoritative total with re-fetch lock
+        let latestDoc = targetPurchaseDoc;
+        try {
+          latestDoc = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+        } catch (_) {}
 
-          const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
-          const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
+        const expectedPaise = Math.round((latestDoc.expectedAmount || 0) * 100);
+        const previousRefundedPaise = Number(latestDoc.refundedAmountPaise || 0);
 
-          // Monotonic non-decreasing total calculation prevents out-of-order regression
-          const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
-          const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
+        // Monotonic non-decreasing calculation
+        const finalRefundedPaise = Math.max(previousRefundedPaise, authoritativeRefundPaise);
+        const isFullyRefunded = finalRefundedPaise >= expectedPaise || expectedPaise === 0;
 
-          await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
-            status: isFullyRefunded ? 'refunded' : 'verified',
-            refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-            refundedAmountPaise: finalRefundedPaise
-          });
-        }
+        await databases.updateDocument(databaseId, 'course_purchases', latestDoc.$id, {
+          status: isFullyRefunded ? 'refunded' : 'verified',
+          refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
+          refundedAmountPaise: finalRefundedPaise
+        });
 
         // 4. Mark refund claim as committed after ledger update succeeds
         try {
@@ -375,13 +375,17 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             Query.limit(5)
           ]);
 
+          if (matchingDocs.documents.length > 1) {
+            error(`AMBIGUOUS PAYMENT ID: Found ${matchingDocs.documents.length} purchase records matching payment ID ${paymentId} during dispute`);
+            return res.json({ ok: false, message: 'Multiple purchase records match this payment ID' }, 409);
+          }
+
           let newStatus = 'disputed';
           if (event === 'payment.dispute.won' || (event === 'payment.dispute.closed' && disputeStatus === 'won')) {
             newStatus = 'verified';
           }
 
           for (const doc of matchingDocs.documents) {
-            // Lifecycle Guard: DO NOT restore status to 'verified' if purchase is already fully refunded!
             const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
             const isFullyRefunded = doc.refundStatus === 'fully_refunded' ||
               (doc.status === 'refunded') ||
@@ -389,7 +393,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
 
             let targetStatus = newStatus;
             if (newStatus === 'verified' && isFullyRefunded) {
-              targetStatus = 'refunded'; // Retain refunded status for fully refunded purchases!
+              targetStatus = 'refunded';
             }
 
             await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
@@ -410,13 +414,14 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
   };
 }
 
-async function handleRefundConflict(databases, databaseId, claimId, paymentId, refundId, amountPaise, currency, res) {
+async function handleRefundConflict(databases, databaseId, claimId, paymentId, refundId, purchaseId, amountPaise, currency, res) {
   try {
     const existingClaim = await databases.getDocument(databaseId, 'refund_claims', claimId);
 
-    // Validate ownership metadata
+    // Validate ownership metadata AND purchaseId!
     if (existingClaim.paymentId !== paymentId ||
         existingClaim.refundId !== refundId ||
+        existingClaim.purchaseId !== purchaseId ||
         existingClaim.amountPaise !== amountPaise ||
         existingClaim.currency !== currency) {
       return {
@@ -432,7 +437,6 @@ async function handleRefundConflict(databases, databaseId, claimId, paymentId, r
       };
     }
 
-    // Status is 'claimed' (interrupted previous attempt); return RESUME to allow caller to finish ledger update
     return { action: 'RESUME', existingClaim };
   } catch (err) {
     return {

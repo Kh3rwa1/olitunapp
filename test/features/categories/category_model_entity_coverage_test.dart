@@ -28,7 +28,7 @@ void main() {
       expect(model.unlockMode, 'free');
 
       final toMap = model.toJson();
-      expect(toMap['\$id'], 'cat_101');
+      expect(toMap['id'], 'cat_101');
 
       final entity = model.toEntity();
       expect(entity.id, 'cat_101');

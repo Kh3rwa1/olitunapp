@@ -312,16 +312,48 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Non-Destructive Versioned Monotonic Payment Lock with Atomic Ownership Verification
+        // 2. TRUE ATOMIC PRIMITIVE: Monotonic Epoch Lock Creation via Unique Document ID Constraint
+        const matchingLocks = await databases.listDocuments(databaseId, 'refund_claims', [
+          Query.equal('paymentId', paymentId),
+          Query.equal('purchaseId', purchaseId),
+          Query.limit(100)
+        ]);
+
+        let highestEpoch = 0;
+        let activeLockDoc = null;
+
+        for (const doc of matchingLocks.documents) {
+          const match = String(doc.refundId || '').match(/^lock:[^:]+:epoch:(\d+)$/);
+          if (match) {
+            const ep = parseInt(match[1], 10);
+            if (ep > highestEpoch) {
+              highestEpoch = ep;
+              activeLockDoc = doc;
+            }
+          }
+        }
+
+        if (activeLockDoc) {
+          const lockAgeMs = Date.now() - new Date(activeLockDoc.claimedAt || 0).getTime();
+          const isLocked = activeLockDoc.status === 'locked';
+          if (isLocked && lockAgeMs <= LOCK_TTL_MS) {
+            error(`CONCURRENT REFUND CONFLICT for payment ${paymentId} (epoch ${highestEpoch} active for ${lockAgeMs}ms). Returning 503 for Razorpay retry.`);
+            return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
+          }
+          if (isLocked && lockAgeMs > LOCK_TTL_MS) {
+            error(`STALE LOCK DETECTED: Payment lock epoch ${highestEpoch} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic epoch takeover...`);
+          }
+        }
+
+        const targetEpoch = highestEpoch + 1;
         const ownerToken = stableId(`${paymentId}:${refundId}:${Math.random()}:${Date.now()}`);
-        const paymentLockId = stableId(`lock:payment:${paymentId}`);
+        const epochLockId = stableId(`lock:payment:${paymentId}:epoch:${targetEpoch}`);
         let lockAcquired = false;
-        let currentLockVersion = 1;
 
         try {
-          // First lock attempt: create non-deleted lock claim document
-          await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
-            refundId: `lock:${paymentId}`,
+          // ATOMIC DATABASE PRIMITIVE: createDocument() with a unique ID is 100% ATOMIC at the Appwrite database engine level!
+          await databases.createDocument(databaseId, 'refund_claims', epochLockId, {
+            refundId: `lock:${paymentId}:epoch:${targetEpoch}`,
             paymentId,
             purchaseId,
             amountPaise: 0,
@@ -329,55 +361,17 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             status: 'locked',
             claimedAt: now,
             committedAt: null,
-            lastError: `${ownerToken}|v:1`
+            lastError: `${ownerToken}|epoch:${targetEpoch}`
           });
           lockAcquired = true;
-          currentLockVersion = 1;
+          error(`ATOMIC LOCK ACQUIRED: Created epoch ${targetEpoch} lock (${epochLockId}) for payment ${paymentId}`);
         } catch (lockErr) {
           if (lockErr.code === 409) {
-            // Lock document exists. Check for unlocked state or expired TTL (> 30s)
-            try {
-              const existingLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
-              const lockAgeMs = Date.now() - new Date(existingLock.claimedAt || 0).getTime();
-              const isExpired = lockAgeMs > LOCK_TTL_MS;
-              const isUnlocked = existingLock.status === 'unlocked';
-
-              if (isUnlocked || isExpired) {
-                if (isExpired) {
-                  error(`STALE LOCK DETECTED: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic versioned takeover...`);
-                }
-
-                const prevVersionMatch = String(existingLock.lastError || '').match(/\|v:(\d+)$/);
-                const prevVersion = prevVersionMatch ? parseInt(prevVersionMatch[1], 10) : 1;
-                const newVersion = prevVersion + 1;
-
-                // Non-destructive versioned update (no delete-recreate race!)
-                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
-                  status: 'locked',
-                  claimedAt: now,
-                  lastError: `${ownerToken}|v:${newVersion}`
-                });
-
-                // Immediately verify exclusive ownership and version match
-                const verifyLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
-                if (verifyLock.lastError === `${ownerToken}|v:${newVersion}`) {
-                  lockAcquired = true;
-                  currentLockVersion = newVersion;
-                  error(`LOCK ACQUIRED (v${newVersion}): Payment lock ${paymentLockId} won by owner ${ownerToken}`);
-                } else {
-                  error(`LOCK CONFLICT LOST (v${newVersion}): Another worker acquired lock ${paymentLockId}`);
-                  return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
-                }
-              } else {
-                error(`CONCURRENT REFUND CONFLICT for payment ${paymentId} (lock age: ${lockAgeMs}ms). Returning 503 for Razorpay retry.`);
-                return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
-              }
-            } catch (fetchLockErr) {
-              error(`Failed to inspect payment lock: ${fetchLockErr.message}`);
-              return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
-            }
+            // Another worker created this targetEpoch lock document FIRST! Takeover/acquisition LOST ATOMICALLY!
+            error(`ATOMIC LOCK CONFLICT LOST: Another worker created epoch ${targetEpoch} lock (${epochLockId})`);
+            return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
           } else {
-            error(`FAIL CLOSED in refund lock creation ${lockErr.code}: ${lockErr.message}`);
+            error(`FAIL CLOSED in epoch lock creation ${lockErr.code}: ${lockErr.message}`);
             return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
           }
         }
@@ -446,16 +440,12 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         } finally {
           if (lockAcquired) {
             try {
-              const currentLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
-              if (currentLock.lastError === `${ownerToken}|v:${currentLockVersion}`) {
-                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
-                  status: 'unlocked'
-                });
-              } else {
-                error(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owned by ${currentLock.lastError}, not ${ownerToken}|v:${currentLockVersion}`);
-              }
+              // Unlock our specific, unique epoch lock document
+              await databases.updateDocument(databaseId, 'refund_claims', epochLockId, {
+                status: 'unlocked'
+              });
             } catch (relErr) {
-              error(`WARNING: Exception releasing lock ${paymentLockId}: ${relErr.message}`);
+              error(`WARNING: Exception unlocking epoch ${targetEpoch} lock ${epochLockId}: ${relErr.message}`);
             }
           }
         }

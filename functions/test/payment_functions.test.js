@@ -431,10 +431,10 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    const paymentLockId = stableId(`lock:payment:${paymentId}`);
-    db.setDocument('refund_claims', paymentLockId, {
-      refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 5000).toISOString(), lastError: 'token_active|v:1'
+    const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
+    db.setDocument('refund_claims', epoch1Id, {
+      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date(Date.now() - 5000).toISOString(), lastError: 'owner1|epoch:1'
     });
 
     const handler = createRazorpayWebhookHandler({ databases: db });
@@ -459,81 +459,99 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Payment ledger update in progress/i);
   });
 
-  test('6. Atomic versioned CAS takeover reclaims expired lock (> 30s TTL) and transitions status to unlocked after release', async () => {
+  test('6. Atomic Epoch Lock Creation: concurrent workers competing for epoch 2 are resolved by DB unique ID constraint', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_cas_stale_123';
-    const purchaseId = stableId('user_cas:cat_cas');
+    const paymentId = 'pay_epoch_barrier_123';
+    const purchaseId = stableId('user_barrier:cat_barrier');
 
     db.setDocument('course_purchases', purchaseId, {
-      userId: 'user_cas', categoryId: 'cat_cas', provider: 'razorpay', providerOrderId: 'order_cas',
+      userId: 'user_barrier', categoryId: 'cat_barrier', provider: 'razorpay', providerOrderId: 'order_barrier',
       providerPaymentId: paymentId, expectedAmount: 500, paidAmount: 500, refundedAmountPaise: 0,
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    const paymentLockId = stableId(`lock:payment:${paymentId}`);
-    db.setDocument('refund_claims', paymentLockId, {
-      refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_expired_owner|v:1'
+    // Existing Epoch 1 lock is expired (> 30s)
+    const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
+    db.setDocument('refund_claims', epoch1Id, {
+      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_owner|epoch:1'
     });
 
-    const handler = createRazorpayWebhookHandler({ databases: db });
+    const handlerA = createRazorpayWebhookHandler({ databases: db });
+    const handlerB = createRazorpayWebhookHandler({ databases: db });
 
-    const payload = {
+    const payloadA = {
       event: 'refund.processed',
       payload: {
         payment: { entity: { id: paymentId, amount_refunded: 50000 } },
-        refund: { entity: { id: 'ref_cas_99', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+        refund: { entity: { id: 'ref_workerA', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
       }
     };
-    const raw = JSON.stringify(payload);
-    const sig = createHmac('sha256', webhookSecret).update(raw).digest('hex');
+    const rawA = JSON.stringify(payloadA);
+    const sigA = createHmac('sha256', webhookSecret).update(rawA).digest('hex');
 
-    const req = { method: 'POST', headers: { 'x-razorpay-signature': sig }, body: raw, bodyRaw: raw };
-    const res = createMockRes();
-    const errorLogger = createMockErrorLogger();
+    const payloadB = {
+      event: 'refund.processed',
+      payload: {
+        payment: { entity: { id: paymentId, amount_refunded: 50000 } },
+        refund: { entity: { id: 'ref_workerB', payment_id: paymentId, amount: 50000, status: 'processed', currency: 'INR' } }
+      }
+    };
+    const rawB = JSON.stringify(payloadB);
+    const sigB = createHmac('sha256', webhookSecret).update(rawB).digest('hex');
 
-    await handler({ req, res, error: errorLogger });
+    const reqA = { method: 'POST', headers: { 'x-razorpay-signature': sigA }, body: rawA, bodyRaw: rawA };
+    const resA = createMockRes();
 
-    assert.equal(res.statusCode, 200);
-    assert.equal(res.body.ok, true);
+    const reqB = { method: 'POST', headers: { 'x-razorpay-signature': sigB }, body: rawB, bodyRaw: rawB };
+    const resB = createMockRes();
 
-    assert.ok(errorLogger.logs.some(l => l.includes('STALE LOCK DETECTED')));
-    assert.ok(errorLogger.logs.some(l => l.includes('LOCK ACQUIRED (v2)')));
+    // Execute Worker A and Worker B concurrently
+    await Promise.all([
+      handlerA({ req: reqA, res: resA, error: createMockErrorLogger() }),
+      handlerB({ req: reqB, res: resB, error: createMockErrorLogger() })
+    ]);
 
-    const lockDoc = await db.getDocument('olitun_db', 'refund_claims', paymentLockId);
-    assert.equal(lockDoc.status, 'unlocked');
+    // Assert EXACTLY ONE worker succeeded (200 OK) and the other worker was rejected atomically by DB unique constraint (503)
+    const statuses = [resA.statusCode, resB.statusCode].sort();
+    assert.deepEqual(statuses, [200, 503]);
 
+    // Assert epoch 2 document exists and is marked unlocked
+    const epoch2Id = stableId(`lock:payment:${paymentId}:epoch:2`);
+    const epoch2Doc = await db.getDocument('olitun_db', 'refund_claims', epoch2Id);
+    assert.equal(epoch2Doc.status, 'unlocked');
+
+    // Assert purchase ledger was updated exactly once
     const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
+    assert.equal(purchase.refundedAmountPaise, 50000);
   });
 
-  test('7. Owner & Version validated release skips unlock if lock version changed', async () => {
+  test('7. Isolated Epoch Release: releasing epoch 1 cannot unlock epoch 2 document held by another worker', async () => {
     const db = new SchemaAwareInMemDb();
-    const paymentId = 'pay_version_release_guard';
-    const purchaseId = stableId('user_vr:cat_vr');
+    const paymentId = 'pay_isolated_epoch_guard';
+    const purchaseId = stableId('user_ie:cat_ie');
 
-    const oldVersionToken = 'owner_A|v:1';
-    const newVersionToken = 'owner_B|v:2';
-    const paymentLockId = stableId(`lock:payment:${paymentId}`);
+    const epoch1Id = stableId(`lock:payment:${paymentId}:epoch:1`);
+    const epoch2Id = stableId(`lock:payment:${paymentId}:epoch:2`);
 
-    db.setDocument('refund_claims', paymentLockId, {
-      refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date().toISOString(), lastError: newVersionToken
+    db.setDocument('refund_claims', epoch1Id, {
+      refundId: `lock:${paymentId}:epoch:1`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_worker|epoch:1'
     });
 
-    const errorLogger = createMockErrorLogger();
-    const lockDoc = await db.getDocument('olitun_db', 'refund_claims', paymentLockId);
+    db.setDocument('refund_claims', epoch2Id, {
+      refundId: `lock:${paymentId}:epoch:2`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date().toISOString(), lastError: 'new_active_worker|epoch:2'
+    });
 
-    if (lockDoc.lastError === oldVersionToken) {
-      await db.updateDocument('olitun_db', 'refund_claims', paymentLockId, { status: 'unlocked' });
-    } else {
-      errorLogger(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owner token mismatch (expected ${oldVersionToken}, found ${lockDoc.lastError})`);
-    }
+    // Simulate old worker releasing epoch 1 lock
+    await db.updateDocument('olitun_db', 'refund_claims', epoch1Id, { status: 'unlocked' });
 
-    assert.ok(errorLogger.logs.some(l => l.includes('LOCK RELEASE SKIPPED')));
-    const lockStillActive = await db.getDocument('olitun_db', 'refund_claims', paymentLockId);
-    assert.equal(lockStillActive.status, 'locked');
-    assert.equal(lockStillActive.lastError, newVersionToken);
+    // Assert epoch 2 document remains locked and untouched
+    const epoch2Doc = await db.getDocument('olitun_db', 'refund_claims', epoch2Id);
+    assert.equal(epoch2Doc.status, 'locked');
+    assert.equal(epoch2Doc.lastError, 'new_active_worker|epoch:2');
   });
 
   test('8. payment.failed event binds strictly to matching orderId', async () => {

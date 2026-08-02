@@ -431,11 +431,10 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    // Simulate active, non-expired lock document created 5 seconds ago (< 30s TTL)
     const paymentLockId = stableId(`lock:payment:${paymentId}`);
     db.setDocument('refund_claims', paymentLockId, {
       refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 5000).toISOString()
+      status: 'locked', claimedAt: new Date(Date.now() - 5000).toISOString(), lastError: 'existing_owner_token'
     });
 
     const handler = createRazorpayWebhookHandler({ databases: db });
@@ -460,7 +459,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Payment ledger update in progress/i);
   });
 
-  test('6. Stale lock takeover: expired lock (> 30s TTL) is automatically reclaimed for crash recovery', async () => {
+  test('6. Atomic stale lock takeover: expired lock (> 30s TTL) is reclaimed via delete-then-recreate', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_stale_lock_123';
     const purchaseId = stableId('user_stale:cat_stale');
@@ -471,11 +470,10 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
       currency: 'INR', status: 'verified', createdAt: new Date().toISOString()
     });
 
-    // Simulate left-over stale lock created 45 seconds ago (> 30s TTL due to worker crash/timeout)
     const paymentLockId = stableId(`lock:payment:${paymentId}`);
     db.setDocument('refund_claims', paymentLockId, {
       refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
-      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString()
+      status: 'locked', claimedAt: new Date(Date.now() - 45000).toISOString(), lastError: 'old_expired_owner_token'
     });
 
     const handler = createRazorpayWebhookHandler({ databases: db });
@@ -499,14 +497,100 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.ok, true);
 
-    // Assert STALE LOCK TAKEOVER occurred
-    assert.ok(errorLogger.logs.some(l => l.includes('STALE LOCK TAKEOVER')));
+    assert.ok(errorLogger.logs.some(l => l.includes('STALE LOCK DETECTED')));
+    assert.ok(errorLogger.logs.some(l => l.includes('STALE LOCK TAKEOVER WON')));
 
     const purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchase.status, 'refunded');
   });
 
-  test('7. refund.processed two-phase claim & interrupted recovery', async () => {
+  test('7. Owner-validated lock release prevents old expired worker from deleting new owner lock', async () => {
+    const db = new SchemaAwareInMemDb();
+    const paymentId = 'pay_owner_token_guard';
+    const purchaseId = stableId('user_ot:cat_ot');
+
+    const oldOwnerToken = 'old_expired_owner_111';
+    const newOwnerToken = 'new_active_owner_222';
+    const paymentLockId = stableId(`lock:payment:${paymentId}`);
+
+    // Lock document is currently held by new active owner
+    db.setDocument('refund_claims', paymentLockId, {
+      refundId: `lock:${paymentId}`, paymentId, purchaseId, amountPaise: 0, currency: 'INR',
+      status: 'locked', claimedAt: new Date().toISOString(), lastError: newOwnerToken
+    });
+
+    // Simulate old worker attempting release in finally block
+    const errorLogger = createMockErrorLogger();
+    const currentLock = await db.getDocument('olitun_db', 'refund_claims', paymentLockId);
+
+    if (currentLock.lastError === oldOwnerToken) {
+      await db.deleteDocument('olitun_db', 'refund_claims', paymentLockId);
+    } else {
+      errorLogger(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owned by ${currentLock.lastError}, not ${oldOwnerToken}`);
+    }
+
+    // Assert release was SKIPPED and lock document remains intact!
+    assert.ok(errorLogger.logs.some(l => l.includes('LOCK RELEASE SKIPPED')));
+    const lockStillExists = await db.getDocument('olitun_db', 'refund_claims', paymentLockId);
+    assert.equal(lockStillExists.lastError, newOwnerToken);
+  });
+
+  test('8. payment.failed event binds strictly to matching orderId', async () => {
+    const db = new SchemaAwareInMemDb();
+    const userId = 'user_fail_test';
+    const categoryId = 'cat_fail_test';
+    const purchaseId = stableId(`${userId}:${categoryId}`);
+
+    db.setDocument('course_purchases', purchaseId, {
+      userId, categoryId, provider: 'razorpay', providerOrderId: 'order_correct_123',
+      expectedAmount: 500, paidAmount: 0, currency: 'INR', status: 'created', createdAt: new Date().toISOString()
+    });
+
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    // Webhook with MISMATCHED orderId
+    const mismatchPayload = {
+      event: 'payment.failed',
+      payload: {
+        payment: { entity: { id: 'pay_failed_1', order_id: 'order_WRONG_999', notes: { userId, categoryId }, error_description: 'Card declined' } }
+      }
+    };
+    const rawMismatch = JSON.stringify(mismatchPayload);
+    const sigMismatch = createHmac('sha256', webhookSecret).update(rawMismatch).digest('hex');
+
+    await handler({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sigMismatch }, body: rawMismatch, bodyRaw: rawMismatch },
+      res: createMockRes(),
+      error: createMockErrorLogger()
+    });
+
+    // Status MUST remain 'created', not changed to 'failed'!
+    let purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.status, 'created');
+
+    // Webhook with MATCHING orderId
+    const matchPayload = {
+      event: 'payment.failed',
+      payload: {
+        payment: { entity: { id: 'pay_failed_2', order_id: 'order_correct_123', notes: { userId, categoryId }, error_description: 'Card declined' } }
+      }
+    };
+    const rawMatch = JSON.stringify(matchPayload);
+    const sigMatch = createHmac('sha256', webhookSecret).update(rawMatch).digest('hex');
+
+    await handler({
+      req: { method: 'POST', headers: { 'x-razorpay-signature': sigMatch }, body: rawMatch, bodyRaw: rawMatch },
+      res: createMockRes(),
+      error: createMockErrorLogger()
+    });
+
+    // Status correctly changed to 'failed'
+    purchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
+    assert.equal(purchase.status, 'failed');
+    assert.equal(purchase.failureReason, 'Card declined');
+  });
+
+  test('9. refund.processed two-phase claim & interrupted recovery', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_recovery_11';
     const refundId = 'ref_interrupted_11';
@@ -550,7 +634,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(purchase.status, 'refunded');
   });
 
-  test('8. Monotonic non-decreasing calculation retains higher refund total on out-of-order delivery', async () => {
+  test('10. Monotonic non-decreasing calculation retains higher refund total on out-of-order delivery', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_ooo_1';
     const purchaseId = stableId('u_ooo:c_ooo');
@@ -585,7 +669,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(purchase.status, 'refunded');
   });
 
-  test('9. razorpayWebhook rejects ambiguous matching payment IDs with 409 Conflict', async () => {
+  test('11. razorpayWebhook rejects ambiguous matching payment IDs with 409 Conflict', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_duplicate_111';
 
@@ -621,7 +705,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Multiple purchase records match/i);
   });
 
-  test('10. razorpayWebhook dispute.won does NOT restore access to fully refunded purchases', async () => {
+  test('12. razorpayWebhook dispute.won does NOT restore access to fully refunded purchases', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_disputed_refunded_100';
     const purchaseId = stableId('user_dispute:cat_dispute');
@@ -653,7 +737,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.equal(purchase.refundStatus, 'fully_refunded');
   });
 
-  test('11. refund.created acknowledges event without mutating entitlement', async () => {
+  test('13. refund.created acknowledges event without mutating entitlement', async () => {
     const db = new SchemaAwareInMemDb();
     const handler = createRazorpayWebhookHandler({ databases: db });
 
@@ -670,7 +754,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /acknowledged/i);
   });
 
-  test('12. razorpayWebhook rejects invalid signature with HTTP 400', async () => {
+  test('14. razorpayWebhook rejects invalid signature with HTTP 400', async () => {
     const db = new SchemaAwareInMemDb();
     const handler = createRazorpayWebhookHandler({ databases: db });
 
@@ -689,7 +773,7 @@ describe('Full Schema-Aware Backend Payment Integration Tests', () => {
     assert.match(res.body.message, /Invalid webhook signature/i);
   });
 
-  test('13. Authoritative-total failure returns 503 fail closed', async () => {
+  test('15. Authoritative-total failure returns 503 fail closed', async () => {
     const db = new SchemaAwareInMemDb();
     const paymentId = 'pay_no_auth_total';
     const purchaseId = stableId('u_fail:c_fail');

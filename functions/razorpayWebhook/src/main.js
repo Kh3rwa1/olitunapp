@@ -237,7 +237,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           try {
             const pendingPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
 
-            if (pendingPurchase.providerOrderId !== orderId &&
+            if (pendingPurchase.providerOrderId === orderId &&
                 pendingPurchase.status !== 'verified' &&
                 pendingPurchase.status !== 'refunded') {
               await databases.updateDocument(databaseId, 'course_purchases', purchaseId, {
@@ -312,9 +312,11 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Per-Payment Atomic Serialization Lock with Crash Recovery TTL & Stale Lock Takeover
+        // 2. Per-Payment Atomic Serialization Lock with Random Owner Token & Safe Stale Lock Takeover
+        const ownerToken = stableId(`${paymentId}:${refundId}:${Math.random()}:${Date.now()}`);
         const paymentLockId = stableId(`lock:payment:${paymentId}`);
         let lockAcquired = false;
+
         try {
           await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
             refundId: `lock:${paymentId}`,
@@ -325,7 +327,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
             status: 'locked',
             claimedAt: now,
             committedAt: null,
-            lastError: ''
+            lastError: ownerToken
           });
           lockAcquired = true;
         } catch (lockErr) {
@@ -335,12 +337,31 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
               const lockAgeMs = Date.now() - new Date(existingLock.claimedAt || 0).getTime();
 
               if (lockAgeMs > LOCK_TTL_MS) {
-                error(`STALE LOCK TAKEOVER: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Reclaiming lock.`);
-                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
-                  claimedAt: now,
-                  status: 'locked'
-                });
-                lockAcquired = true;
+                error(`STALE LOCK DETECTED: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Attempting atomic takeover...`);
+                // Atomic Takeover Step 1: Delete stale lock document
+                try {
+                  await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
+                } catch (_) {}
+
+                // Atomic Takeover Step 2: Re-create lock with our unique ownerToken
+                try {
+                  await databases.createDocument(databaseId, 'refund_claims', paymentLockId, {
+                    refundId: `lock:${paymentId}`,
+                    paymentId,
+                    purchaseId,
+                    amountPaise: 0,
+                    currency,
+                    status: 'locked',
+                    claimedAt: now,
+                    committedAt: null,
+                    lastError: ownerToken
+                  });
+                  lockAcquired = true;
+                  error(`STALE LOCK TAKEOVER WON: Payment lock ${paymentLockId} acquired by owner ${ownerToken}`);
+                } catch (_) {
+                  error(`STALE LOCK TAKEOVER LOST: Another worker acquired payment lock ${paymentLockId}`);
+                  return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
+                }
               } else {
                 error(`CONCURRENT REFUND CONFLICT for payment ${paymentId} (lock age: ${lockAgeMs}ms). Returning 503 for Razorpay retry.`);
                 return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
@@ -419,10 +440,13 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         } finally {
           if (lockAcquired) {
             try {
-              await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
-            } catch (deleteLockErr) {
-              error(`WARNING: Failed to delete payment lock ${paymentLockId}: ${deleteLockErr.message}`);
-            }
+              const currentLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
+              if (currentLock.lastError === ownerToken) {
+                await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
+              } else {
+                error(`LOCK RELEASE SKIPPED: Lock ${paymentLockId} owned by ${currentLock.lastError}, not ${ownerToken}`);
+              }
+            } catch (_) {}
           }
         }
 

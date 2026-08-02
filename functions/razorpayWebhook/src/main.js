@@ -33,6 +33,8 @@ function parseRawAndJson(req) {
   return { raw: '{}', json: {} };
 }
 
+const LOCK_TTL_MS = 30000; // 30 seconds crash-recovery TTL for payment locks
+
 export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = fetch } = {}) {
   return async ({ req, res, error }) => {
     if (req.method !== 'POST') {
@@ -142,7 +144,10 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
                 committedAt: now
               });
             }
-          } catch (_) {}
+          } catch (claimRepairErr) {
+            error(`Claim repair failed on retry for payment ${paymentId}: ${claimRepairErr.message}`);
+            return res.json({ ok: false, message: 'Payment claim repair failed. Retry shortly.' }, 503);
+          }
           return res.json({ ok: true, message: 'Already processed' });
         }
 
@@ -232,7 +237,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           try {
             const pendingPurchase = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
 
-            if (pendingPurchase.providerOrderId === orderId &&
+            if (pendingPurchase.providerOrderId !== orderId &&
                 pendingPurchase.status !== 'verified' &&
                 pendingPurchase.status !== 'refunded') {
               await databases.updateDocument(databaseId, 'course_purchases', purchaseId, {
@@ -307,7 +312,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           }
         }
 
-        // 2. Per-Payment Atomic Serialization Lock (across DIFFERENT refund IDs for the same paymentId)
+        // 2. Per-Payment Atomic Serialization Lock with Crash Recovery TTL & Stale Lock Takeover
         const paymentLockId = stableId(`lock:payment:${paymentId}`);
         let lockAcquired = false;
         try {
@@ -325,11 +330,29 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           lockAcquired = true;
         } catch (lockErr) {
           if (lockErr.code === 409) {
-            error(`CONCURRENT REFUND CONFLICT for payment ${paymentId}. Returning 503 for Razorpay retry.`);
-            return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
+            try {
+              const existingLock = await databases.getDocument(databaseId, 'refund_claims', paymentLockId);
+              const lockAgeMs = Date.now() - new Date(existingLock.claimedAt || 0).getTime();
+
+              if (lockAgeMs > LOCK_TTL_MS) {
+                error(`STALE LOCK TAKEOVER: Payment lock ${paymentLockId} is ${lockAgeMs}ms old (> ${LOCK_TTL_MS}ms). Reclaiming lock.`);
+                await databases.updateDocument(databaseId, 'refund_claims', paymentLockId, {
+                  claimedAt: now,
+                  status: 'locked'
+                });
+                lockAcquired = true;
+              } else {
+                error(`CONCURRENT REFUND CONFLICT for payment ${paymentId} (lock age: ${lockAgeMs}ms). Returning 503 for Razorpay retry.`);
+                return res.json({ ok: false, message: 'Payment ledger update in progress; retry' }, 503);
+              }
+            } catch (fetchLockErr) {
+              error(`Failed to inspect payment lock: ${fetchLockErr.message}`);
+              return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
+            }
+          } else {
+            error(`FAIL CLOSED in refund lock creation ${lockErr.code}: ${lockErr.message}`);
+            return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
           }
-          error(`FAIL CLOSED in refund lock creation ${lockErr.code}: ${lockErr.message}`);
-          return res.json({ ok: false, message: 'Refund lock service unavailable' }, 503);
         }
 
         try {
@@ -397,7 +420,9 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
           if (lockAcquired) {
             try {
               await databases.deleteDocument(databaseId, 'refund_claims', paymentLockId);
-            } catch (_) {}
+            } catch (deleteLockErr) {
+              error(`WARNING: Failed to delete payment lock ${paymentLockId}: ${deleteLockErr.message}`);
+            }
           }
         }
 

@@ -88,7 +88,7 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
         throw err;
       }
 
-      // Idempotency: if already verified for this exact purchase, check & repair corresponding claim before returning
+      // Idempotency: if already verified for this exact purchase, repair claim before returning success
       if (pendingPurchase.status === 'verified') {
         if (pendingPurchase.providerPaymentId) {
           const claimId = stableId(`claim:${pendingPurchase.providerPaymentId}`);
@@ -100,7 +100,10 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
                 committedAt: now
               });
             }
-          } catch (_) {}
+          } catch (claimRepairErr) {
+            error(`Claim repair failed on retry for payment ${pendingPurchase.providerPaymentId}: ${claimRepairErr.message}`);
+            return res.json({ ok: false, message: 'Payment claim repair failed' }, 503);
+          }
         }
         return res.json({ ok: true, message: 'Purchase already verified', purchase: pendingPurchase });
       }
@@ -254,7 +257,10 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
           status: 'committed',
           committedAt: now
         });
-      } catch (_) {}
+      } catch (commitErr) {
+        error(`Failed to commit payment claim ${claimId}: ${commitErr.message}`);
+        return res.json({ ok: false, message: 'Failed to commit payment claim' }, 503);
+      }
 
       return res.json({
         ok: true,

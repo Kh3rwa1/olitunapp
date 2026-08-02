@@ -11,16 +11,8 @@ void main() {
         titleLatin: 'Basic Letters',
         titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
         blocks: [
-          LessonBlockEntity(
-            type: 'letter',
-            textOlChiki: 'ᱚ',
-            textLatin: 'LA',
-          ),
-          LessonBlockEntity(
-            type: 'letter',
-            textOlChiki: 'ᱛ',
-            textLatin: 'AT',
-          ),
+          LessonBlockEntity(type: 'letter', textOlChiki: 'ᱚ', textLatin: 'LA'),
+          LessonBlockEntity(type: 'letter', textOlChiki: 'ᱛ', textLatin: 'AT'),
         ],
       );
 

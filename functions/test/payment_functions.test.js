@@ -111,7 +111,6 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
     const paymentId = 'pay_RZP_222';
     const purchaseId = stableId(`${userId}:${categoryId}`);
 
-    // Seed official category and pending purchase
     db.setDocument('categories', categoryId, {
       titleLatin: 'Santhali Grammar',
       priceInr: 499,
@@ -167,32 +166,28 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
 
     await handler({ req, res, error });
 
-    // Assert exact HTTP response
     assert.equal(res.statusCode, 200);
     assert.equal(res.body.ok, true);
     assert.equal(res.body.purchase.status, 'verified');
     assert.equal(res.body.purchase.providerPaymentId, paymentId);
 
-    // Assert database state mutation for ledger
     const updatedPurchase = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(updatedPurchase.status, 'verified');
     assert.equal(updatedPurchase.providerPaymentId, paymentId);
 
-    // Assert database state mutation for claim
     const claimId = stableId(`claim:${paymentId}`);
     const claimDoc = await db.getDocument('olitun_db', 'payment_claims', claimId);
     assert.equal(claimDoc.status, 'committed');
     assert.equal(claimDoc.userId, userId);
   });
 
-  test('razorpayWebhook atomic refund deduplication (prevents double-counting)', async () => {
+  test('razorpayWebhook atomic refund deduplication & authoritative total calculation', async () => {
     const db = new InMemDb();
     const userId = 'user_Bob';
     const categoryId = 'cat_course_500';
     const paymentId = 'pay_RZP_500';
     const purchaseId = stableId(`${userId}:${categoryId}`);
 
-    // Seed verified purchase priced at ₹500 (50,000 paise)
     db.setDocument('course_purchases', purchaseId, {
       userId,
       categoryId,
@@ -207,15 +202,22 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
 
     const handler = createRazorpayWebhookHandler({ databases: db });
 
-    // 1. Deliver refund.created event with refund_id: ref_1001 for ₹250 (25000 paise)
+    // 1. Deliver refund.processed event with refund_id: ref_1001 for ₹250 (25000 paise)
     const refundPayload1 = {
-      event: 'refund.created',
+      event: 'refund.processed',
       payload: {
+        payment: {
+          entity: {
+            id: paymentId,
+            amount_refunded: 25000
+          }
+        },
         refund: {
           entity: {
             id: 'ref_1001',
             payment_id: paymentId,
             amount: 25000,
+            status: 'processed',
             currency: 'INR'
           }
         }
@@ -238,11 +240,15 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
     assert.equal(res1.statusCode, 200);
     assert.equal(res1.body.ok, true);
 
-    // Verify database state: status remains 'verified', refundStatus = 'partially_refunded', refundedAmountPaise = 25000
     let purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchaseState.status, 'verified');
     assert.equal(purchaseState.refundStatus, 'partially_refunded');
     assert.equal(purchaseState.refundedAmountPaise, 25000);
+
+    // Verify refund claim was committed
+    const refundClaimId = stableId('refund:ref_1001');
+    const claimDoc = await db.getDocument('olitun_db', 'refund_claims', refundClaimId);
+    assert.equal(claimDoc.status, 'committed');
 
     // 2. REPLAY DUPLICATE WEBHOOK with identical ref_1001!
     const res2 = createMockRes();
@@ -253,20 +259,26 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
     assert.equal(res2.body.ok, true);
     assert.match(res2.body.message, /already processed/i);
 
-    // CRITICAL: Ensure refundedAmountPaise DID NOT DOUBLE-COUNT to 50000!
     purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchaseState.status, 'verified');
     assert.equal(purchaseState.refundedAmountPaise, 25000);
 
-    // 3. Deliver second DISTINCT refund webhook ref_1002 for remaining ₹250 (25000 paise)
+    // 3. Deliver second DISTINCT refund webhook ref_1002 for remaining ₹250 (total amount_refunded = 50000)
     const refundPayload2 = {
-      event: 'refund.created',
+      event: 'refund.processed',
       payload: {
+        payment: {
+          entity: {
+            id: paymentId,
+            amount_refunded: 50000
+          }
+        },
         refund: {
           entity: {
             id: 'ref_1002',
             payment_id: paymentId,
             amount: 25000,
+            status: 'processed',
             currency: 'INR'
           }
         }
@@ -288,11 +300,44 @@ describe('Full In-Memory Mocked Backend Payment Integration Tests', () => {
 
     assert.equal(res3.statusCode, 200);
 
-    // Verify cumulative refund reached 100% (50000 paise), revoking entitlement to 'refunded'
     purchaseState = await db.getDocument('olitun_db', 'course_purchases', purchaseId);
     assert.equal(purchaseState.status, 'refunded');
     assert.equal(purchaseState.refundStatus, 'fully_refunded');
     assert.equal(purchaseState.refundedAmountPaise, 50000);
+  });
+
+  test('razorpayWebhook handles refund.failed without incrementing refund amount', async () => {
+    const db = new InMemDb();
+    const handler = createRazorpayWebhookHandler({ databases: db });
+
+    const failedPayload = {
+      event: 'refund.failed',
+      payload: {
+        refund: {
+          entity: {
+            id: 'ref_failed_999',
+            payment_id: 'pay_failed_999',
+            amount: 25000
+          }
+        }
+      }
+    };
+    const rawPayload = JSON.stringify(failedPayload);
+    const signature = createHmac('sha256', webhookSecret).update(rawPayload).digest('hex');
+
+    const req = {
+      method: 'POST',
+      headers: { 'x-razorpay-signature': signature },
+      body: rawPayload,
+      bodyRaw: rawPayload
+    };
+    const res = createMockRes();
+    const error = createMockErrorLogger();
+
+    await handler({ req, res, error });
+
+    assert.equal(res.statusCode, 200);
+    assert.match(res.body.message, /failed/i);
   });
 
   test('razorpayWebhook rejects invalid signature', async () => {

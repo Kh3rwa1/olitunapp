@@ -33,7 +33,7 @@ function parseRawAndJson(req) {
   return { raw: '{}', json: {} };
 }
 
-export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
+export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = fetch } = {}) {
   return async ({ req, res, error }) => {
     if (req.method !== 'POST') {
       return res.json({ ok: false, message: 'Method not allowed' }, 405);
@@ -135,7 +135,7 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
           return res.json({ ok: true, message: 'Already processed' });
         }
 
-        // Atomic Payment ID Replay Protection & Safe Recovery
+        // Two-phase Payment Claim: claimed -> update ledger -> committed
         const claimId = stableId(`claim:${paymentId}`);
         try {
           await databases.createDocument(databaseId, 'payment_claims', claimId, {
@@ -156,7 +156,10 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
                   existingClaim.userId === userId &&
                   existingClaim.categoryId === categoryId &&
                   existingClaim.providerOrderId === orderId) {
-                // Safe idempotent retry for same transaction
+                if (existingClaim.status === 'committed') {
+                  return res.json({ ok: true, message: 'Payment already processed (committed)' });
+                }
+                // status is 'claimed' (previous attempt failed before commit); resume processing safely
               } else {
                 error(`ATOMIC REPLAY ATTEMPT in webhook: Payment ID ${paymentId} already claimed by user ${existingClaim.userId}`);
                 return res.json({ ok: false, message: 'Payment ID already claimed by another purchase' }, 409);
@@ -193,12 +196,15 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
           documentPermissions
         );
 
+        // Transition claim status to committed after ledger update succeeds
         try {
           await databases.updateDocument(databaseId, 'payment_claims', claimId, {
             status: 'committed',
             committedAt: now
           });
-        } catch (_) {}
+        } catch (commitErr) {
+          error(`Failed to commit payment claim ${claimId}: ${commitErr.message}`);
+        }
 
         return res.json({ ok: true, message: 'Webhook payment.captured processed' });
 
@@ -226,33 +232,81 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
         }
         return res.json({ ok: true, message: 'Webhook payment.failed processed' });
 
-      } else if (event === 'refund.created') {
+      } else if (event === 'refund.processed' || event === 'refund.created') {
         const refund = payload.payload?.refund?.entity || {};
         const refundId = String(refund.id || '').trim();
         const paymentId = String(refund.payment_id || '').trim();
+        const refundStatus = String(refund.status || '').trim();
         const incrementalRefundPaise = Number(refund.amount || 0);
 
+        // Align event lifecycle: only act on processed refunds or created refunds that are marked processed
+        if (event === 'refund.created' && refundStatus !== 'processed' && refundStatus !== '') {
+          return res.json({ ok: true, message: `Refund ${refundId} created with status '${refundStatus}'; awaiting refund.processed` });
+        }
+
         if (refundId && paymentId) {
-          // Atomic Refund Deduplication: sha256("refund:" + refundId)
           const claimId = stableId(`refund:${refundId}`);
+          const claimData = {
+            refundId,
+            paymentId,
+            purchaseId: refundId,
+            providerOrderId: 'refund',
+            userId: 'system',
+            categoryId: 'refund',
+            amountPaise: incrementalRefundPaise,
+            currency: String(refund.currency || 'INR').trim(),
+            status: 'claimed',
+            claimedAt: now,
+            committedAt: null
+          };
+
+          // 1. Two-phase Refund Claim creation (try refund_claims, fallback to payment_claims)
+          let targetCollection = 'refund_claims';
           try {
-            await databases.createDocument(databaseId, 'payment_claims', claimId, {
-              paymentId,
-              purchaseId: refundId,
-              providerOrderId: 'refund',
-              userId: 'system',
-              categoryId: 'refund',
-              status: 'committed',
-              claimedAt: now,
-              committedAt: now
-            });
+            await databases.createDocument(databaseId, targetCollection, claimId, claimData);
           } catch (claimErr) {
-            if (claimErr.code === 409) {
-              // Safe Idempotency: Refund ID already processed!
-              return res.json({ ok: true, message: `Refund ${refundId} already processed (idempotent)` });
+            if (claimErr.code === 404) {
+              // Fallback to payment_claims if refund_claims collection is not created yet
+              targetCollection = 'payment_claims';
+              try {
+                await databases.createDocument(databaseId, targetCollection, claimId, claimData);
+              } catch (fallbackErr) {
+                if (fallbackErr.code === 409) {
+                  return handleRefundConflict(databases, databaseId, targetCollection, claimId, refundId, res);
+                }
+                error(`FAIL CLOSED in refund webhook: Claim creation error ${fallbackErr.code}: ${fallbackErr.message}`);
+                return res.json({ ok: false, message: 'Claim service unavailable for refund' }, 503);
+              }
+            } else if (claimErr.code === 409) {
+              return handleRefundConflict(databases, databaseId, targetCollection, claimId, refundId, res);
+            } else {
+              error(`FAIL CLOSED in refund webhook: Claim creation error ${claimErr.code}: ${claimErr.message}`);
+              return res.json({ ok: false, message: 'Claim service unavailable for refund' }, 503);
             }
-            error(`FAIL CLOSED in refund webhook: Claim creation error ${claimErr.code}: ${claimErr.message}`);
-            return res.json({ ok: false, message: 'Claim service unavailable for refund' }, 503);
+          }
+
+          // 2. Authoritative Total Refund Calculation (prevents concurrent race lost updates)
+          const paymentEntity = payload.payload?.payment?.entity || {};
+          let authoritativeRefundPaise = Number(paymentEntity.amount_refunded || 0);
+
+          if (authoritativeRefundPaise === 0) {
+            // Fetch authoritative payment object from Razorpay REST API
+            const razorpaySecret = process.env.RAZORPAY_KEY_SECRET;
+            const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
+            if (razorpaySecret && razorpayKeyId) {
+              try {
+                const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpaySecret}`).toString('base64');
+                const paymentRes = await fetchImpl(`https://api.razorpay.com/v1/payments/${paymentId}`, {
+                  headers: { 'Authorization': authHeader }
+                });
+                if (paymentRes.ok) {
+                  const fetchedPayment = await paymentRes.json();
+                  authoritativeRefundPaise = Number(fetchedPayment.amount_refunded || 0);
+                }
+              } catch (fetchErr) {
+                error(`Authoritative payment fetch exception: ${fetchErr.message}`);
+              }
+            }
           }
 
           const matchingDocs = await databases.listDocuments(databaseId, 'course_purchases', [
@@ -263,18 +317,36 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
           for (const doc of matchingDocs.documents) {
             const expectedPaise = Math.round((doc.expectedAmount || 0) * 100);
             const previousRefundPaise = Number(doc.refundedAmountPaise || 0);
-            const totalRefundPaise = previousRefundPaise + incrementalRefundPaise;
-            
-            const isFullyRefunded = totalRefundPaise >= expectedPaise || expectedPaise === 0;
+            const effectiveRefundPaise = authoritativeRefundPaise > 0
+              ? authoritativeRefundPaise
+              : (previousRefundPaise + incrementalRefundPaise);
+
+            const isFullyRefunded = effectiveRefundPaise >= expectedPaise || expectedPaise === 0;
 
             await databases.updateDocument(databaseId, 'course_purchases', doc.$id, {
               status: isFullyRefunded ? 'refunded' : 'verified',
               refundStatus: isFullyRefunded ? 'fully_refunded' : 'partially_refunded',
-              refundedAmountPaise: totalRefundPaise
+              refundedAmountPaise: effectiveRefundPaise
             });
           }
+
+          // 3. Mark claim as committed after ledger update succeeds
+          try {
+            await databases.updateDocument(databaseId, targetCollection, claimId, {
+              status: 'committed',
+              committedAt: now
+            });
+          } catch (commitErr) {
+            error(`Failed to commit refund claim ${claimId}: ${commitErr.message}`);
+          }
         }
-        return res.json({ ok: true, message: 'Webhook refund.created processed' });
+        return res.json({ ok: true, message: `Webhook ${event} processed successfully` });
+
+      } else if (event === 'refund.failed') {
+        const refund = payload.payload?.refund?.entity || {};
+        const refundId = String(refund.id || '').trim();
+        error(`Webhook refund.failed received for refund ${refundId}`);
+        return res.json({ ok: true, message: `Refund ${refundId} failed; logged without increasing refund count` });
 
       } else if (event.startsWith('payment.dispute.')) {
         const dispute = payload.payload?.dispute?.entity || {};
@@ -309,6 +381,19 @@ export function createRazorpayWebhookHandler({ databases: customDb } = {}) {
       return res.json({ ok: false, message: err.message }, 500);
     }
   };
+}
+
+async function handleRefundConflict(databases, databaseId, collection, claimId, refundId, res) {
+  try {
+    const existingClaim = await databases.getDocument(databaseId, collection, claimId);
+    if (existingClaim.status === 'committed') {
+      return res.json({ ok: true, message: `Refund ${refundId} already processed (committed)` });
+    }
+    // Claim status is 'claimed' (previous attempt was interrupted before commit); allow safe resume
+    return null;
+  } catch (err) {
+    return res.json({ ok: false, message: 'Failed to inspect existing refund claim' }, 503);
+  }
 }
 
 export default async (context) => createRazorpayWebhookHandler()(context);

@@ -153,8 +153,10 @@ async function run() {
     const output = {
       collectionId: colId,
       attributes: mappedAttributes,
-      indexes: mappedIndexes,
     };
+    if (mappedIndexes.length > 0) {
+      output.indexes = mappedIndexes;
+    }
 
     writeFileSync(fixturePath, JSON.stringify(output, null, 2), 'utf8');
     console.log(`  ✓ Wrote schema to: ${fixturePath}`);

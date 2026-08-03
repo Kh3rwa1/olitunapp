@@ -60,7 +60,6 @@
     {
       "key": "difficulty",
       "type": "string",
-      "size": null,
       "array": false,
       "required": false,
       "elements": [
@@ -72,7 +71,6 @@
     {
       "key": "durationSeconds",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -81,7 +79,6 @@
     {
       "key": "isPremium",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
@@ -137,7 +134,6 @@
     {
       "key": "durationMs",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 0,
@@ -153,7 +149,6 @@
     {
       "key": "coverMediaType",
       "type": "string",
-      "size": null,
       "array": false,
       "required": false,
       "elements": [

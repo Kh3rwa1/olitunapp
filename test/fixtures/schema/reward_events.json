@@ -32,7 +32,6 @@
     {
       "key": "starsAwarded",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 0,

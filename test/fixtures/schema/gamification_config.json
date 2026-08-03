@@ -11,7 +11,6 @@
     {
       "key": "weeklyCircleMaxMembers",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 1,
@@ -20,7 +19,6 @@
     {
       "key": "weeklyCircleMinActiveMembers",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 1,
@@ -29,7 +27,6 @@
     {
       "key": "bakhedCompletionThreshold",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 50,
@@ -38,7 +35,6 @@
     {
       "key": "streakShieldMax",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 0,
@@ -47,28 +43,24 @@
     {
       "key": "quickWinEnabled",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "weeklyCircleEnabled",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "badgesEnabled",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "mistakeReviewEnabled",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },

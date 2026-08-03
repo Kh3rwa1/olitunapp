@@ -46,7 +46,6 @@
     {
       "key": "orderIndex",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -55,14 +54,12 @@
     {
       "key": "isActive",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "totalLessons",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -85,7 +82,6 @@
     {
       "key": "order",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -101,7 +97,6 @@
     {
       "key": "priceInr",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -110,7 +105,6 @@
     {
       "key": "previewLessonCount",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,

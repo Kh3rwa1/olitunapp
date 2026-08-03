@@ -25,7 +25,6 @@
     {
       "key": "questionIndex",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -55,7 +54,6 @@
     {
       "key": "timesMissed",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -64,7 +62,6 @@
     {
       "key": "timesReviewed",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -73,7 +70,6 @@
     {
       "key": "isMastered",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },

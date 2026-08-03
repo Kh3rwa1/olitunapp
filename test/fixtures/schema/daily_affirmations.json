@@ -39,14 +39,12 @@
     {
       "key": "isPremium",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "order",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": true,
       "min": -9223372036854776000,

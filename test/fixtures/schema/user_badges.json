@@ -18,7 +18,6 @@
     {
       "key": "progress",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -27,7 +26,6 @@
     {
       "key": "target",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -36,7 +34,6 @@
     {
       "key": "isUnlocked",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },

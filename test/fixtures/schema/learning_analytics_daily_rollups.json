@@ -25,7 +25,6 @@
     {
       "key": "totalEvents",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -34,7 +33,6 @@
     {
       "key": "uniqueUsers",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,

@@ -39,7 +39,6 @@
     {
       "key": "isPublished",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     }

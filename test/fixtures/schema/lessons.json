@@ -25,7 +25,6 @@
     {
       "key": "level",
       "type": "string",
-      "size": null,
       "array": false,
       "required": false,
       "elements": [
@@ -37,7 +36,6 @@
     {
       "key": "orderIndex",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -46,14 +44,12 @@
     {
       "key": "isActive",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "estimatedMinutes",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -76,7 +72,6 @@
     {
       "key": "isPremium",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
@@ -97,7 +92,6 @@
     {
       "key": "order",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,

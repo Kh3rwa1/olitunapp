@@ -53,7 +53,6 @@
     {
       "key": "circlePoints",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -62,7 +61,6 @@
     {
       "key": "starsThisWeek",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -71,7 +69,6 @@
     {
       "key": "lessonsCompleted",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -80,7 +77,6 @@
     {
       "key": "quizzesTaken",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -89,7 +85,6 @@
     {
       "key": "bakhedListened",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -98,7 +93,6 @@
     {
       "key": "missionDaysCompleted",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -107,7 +101,6 @@
     {
       "key": "mistakeReviewsCompleted",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -116,7 +109,6 @@
     {
       "key": "rank",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,

@@ -39,7 +39,6 @@
     {
       "key": "target",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 1,
@@ -48,7 +47,6 @@
     {
       "key": "rewardStars",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": 0,
@@ -71,14 +69,12 @@
     {
       "key": "isActive",
       "type": "boolean",
-      "size": null,
       "array": false,
       "required": false
     },
     {
       "key": "sortOrder",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,
@@ -87,7 +83,6 @@
     {
       "key": "version",
       "type": "integer",
-      "size": null,
       "array": false,
       "required": false,
       "min": -9223372036854776000,

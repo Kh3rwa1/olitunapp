@@ -60,9 +60,10 @@ async function run() {
     mkdirSync(schemaDir, { recursive: true });
   } catch (_) {}
 
-  // Use static list of 32 database collections to bypass list-collections pagination limits
+  // Complete list of database collections
   const collections = [
     { id: 'categories', name: 'Categories' },
+    { id: 'rhyme_subcategories', name: 'Rhyme Subcategories' },
     { id: 'lessons', name: 'Lessons' },
     { id: 'quizzes', name: 'Quizzes' },
     { id: 'letters', name: 'Letters' },
@@ -71,6 +72,10 @@ async function run() {
     { id: 'sentences', name: 'Sentences' },
     { id: 'rhymes', name: 'Rhymes' },
     { id: 'banners', name: 'Banners' },
+    { id: 'circle_events', name: 'Circle Events' },
+    { id: 'circle_members', name: 'Circle Members' },
+    { id: 'weekly_circles', name: 'Weekly Circles' },
+    { id: 'learning_circle_templates', name: 'Learning Circle Templates' },
     { id: 'translation_cache', name: 'Translation Cache' },
     { id: 'rate_limits', name: 'Translator Rate Limits' },
     { id: 'app_settings', name: 'App Settings' },
@@ -127,13 +132,15 @@ async function run() {
       const spec = {
         key: attr.key,
         type: attr.type,
-        size: attr.size || null,
-        array: attr.array || false,
-        required: attr.required || false,
       };
+      if (attr.size !== undefined && attr.size !== null) {
+        spec.size = attr.size;
+      }
+      spec.array = attr.array || false;
+      spec.required = attr.required || false;
       
       // Handle enum elements
-      if (attr.elements) {
+      if (attr.elements && attr.elements.length > 0) {
         spec.elements = attr.elements;
       }
       
@@ -145,7 +152,6 @@ async function run() {
         spec.max = attr.max;
       }
 
-      return spec;
     });
 
     // Write fixture JSON

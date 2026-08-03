@@ -78,5 +78,24 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_submitted",
+      "type": "key",
+      "attributes": [
+        "submittedAt"
+      ],
+      "orders": [
+        "DESC"
+      ]
+    },
+    {
+      "key": "idx_status",
+      "type": "key",
+      "attributes": [
+        "status"
+      ]
+    }
   ]
 }

@@ -47,5 +47,21 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_session_id",
+      "type": "unique",
+      "attributes": [
+        "sessionId"
+      ]
+    },
+    {
+      "key": "idx_session_user",
+      "type": "key",
+      "attributes": [
+        "userId"
+      ]
+    }
   ]
 }

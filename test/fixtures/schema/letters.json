@@ -124,5 +124,17 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_order",
+      "type": "key",
+      "attributes": [
+        "order"
+      ],
+      "orders": [
+        "ASC"
+      ]
+    }
   ]
 }

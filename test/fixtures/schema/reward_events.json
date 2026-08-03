@@ -59,5 +59,29 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_reward_event",
+      "type": "unique",
+      "attributes": [
+        "rewardEventId"
+      ]
+    },
+    {
+      "key": "idx_reward_user",
+      "type": "key",
+      "attributes": [
+        "userId"
+      ]
+    },
+    {
+      "key": "idx_reward_source",
+      "type": "key",
+      "attributes": [
+        "sourceType",
+        "sourceId"
+      ]
+    }
   ]
 }

@@ -29,5 +29,14 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_cache_key",
+      "type": "unique",
+      "attributes": [
+        "cacheKey"
+      ]
+    }
   ]
 }

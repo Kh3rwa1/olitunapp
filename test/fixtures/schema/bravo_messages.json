@@ -117,5 +117,23 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_trigger_status",
+      "type": "key",
+      "attributes": [
+        "trigger",
+        "status"
+      ]
+    },
+    {
+      "key": "idx_active_status",
+      "type": "key",
+      "attributes": [
+        "isActive",
+        "status"
+      ]
+    }
   ]
 }

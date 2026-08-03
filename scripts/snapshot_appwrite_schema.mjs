@@ -127,12 +127,10 @@ async function run() {
       const spec = {
         key: attr.key,
         type: attr.type,
+        size: attr.size || null,
+        array: attr.array || false,
+        required: attr.required || false,
       };
-      if (attr.size !== undefined && attr.size !== null) {
-        spec.size = attr.size;
-      }
-      spec.array = attr.array || false;
-      spec.required = attr.required || false;
       
       // Handle enum elements
       if (attr.elements) {

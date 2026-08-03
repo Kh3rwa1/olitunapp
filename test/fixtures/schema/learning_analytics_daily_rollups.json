@@ -61,5 +61,32 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_rollup_id",
+      "type": "unique",
+      "attributes": [
+        "rollupId"
+      ]
+    },
+    {
+      "key": "idx_rollup_date",
+      "type": "key",
+      "attributes": [
+        "dateKey"
+      ],
+      "orders": [
+        "DESC"
+      ]
+    },
+    {
+      "key": "idx_rollup_event_date",
+      "type": "key",
+      "attributes": [
+        "eventName",
+        "dateKey"
+      ]
+    }
   ]
 }

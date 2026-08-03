@@ -114,5 +114,32 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_badge_id",
+      "type": "unique",
+      "attributes": [
+        "badgeId"
+      ]
+    },
+    {
+      "key": "idx_category_status",
+      "type": "key",
+      "attributes": [
+        "category",
+        "status"
+      ]
+    },
+    {
+      "key": "idx_sort",
+      "type": "key",
+      "attributes": [
+        "sortOrder"
+      ],
+      "orders": [
+        "ASC"
+      ]
+    }
   ]
 }

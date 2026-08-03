@@ -146,14 +146,26 @@
   ],
   "indexes": [
     {
-      "key": "providerPaymentId_idx",
-      "type": "key",
-      "attributes": ["providerPaymentId"]
+      "key": "idx_user_category",
+      "type": "unique",
+      "attributes": [
+        "userId",
+        "categoryId"
+      ]
     },
     {
-      "key": "user_category_idx",
-      "type": "unique",
-      "attributes": ["userId", "categoryId"]
+      "key": "idx_user_id",
+      "type": "key",
+      "attributes": [
+        "userId"
+      ]
+    },
+    {
+      "key": "providerPaymentId_idx",
+      "type": "key",
+      "attributes": [
+        "providerPaymentId"
+      ]
     }
   ]
 }

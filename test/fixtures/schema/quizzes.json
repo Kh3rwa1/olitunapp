@@ -54,5 +54,24 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_category",
+      "type": "key",
+      "attributes": [
+        "categoryId"
+      ]
+    },
+    {
+      "key": "idx_order",
+      "type": "key",
+      "attributes": [
+        "order"
+      ],
+      "orders": [
+        "ASC"
+      ]
+    }
   ]
 }

@@ -87,5 +87,23 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_reward_trigger",
+      "type": "key",
+      "attributes": [
+        "trigger",
+        "status"
+      ]
+    },
+    {
+      "key": "idx_reward_active",
+      "type": "key",
+      "attributes": [
+        "isActive",
+        "status"
+      ]
+    }
   ]
 }

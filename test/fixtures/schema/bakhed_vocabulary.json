@@ -45,5 +45,19 @@
       "min": -9223372036854776000,
       "max": 9223372036854776000
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_bakhed_vocab",
+      "type": "key",
+      "attributes": [
+        "bakhedId",
+        "sortOrder"
+      ],
+      "orders": [
+        "ASC",
+        "ASC"
+      ]
+    }
   ]
 }

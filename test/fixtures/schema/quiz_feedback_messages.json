@@ -73,5 +73,23 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_feedback_type",
+      "type": "key",
+      "attributes": [
+        "type",
+        "status"
+      ]
+    },
+    {
+      "key": "idx_feedback_active",
+      "type": "key",
+      "attributes": [
+        "isActive",
+        "status"
+      ]
+    }
   ]
 }

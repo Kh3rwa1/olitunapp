@@ -68,12 +68,17 @@
     {
       "key": "refundId_idx",
       "type": "unique",
-      "attributes": ["refundId"]
+      "attributes": [
+        "refundId"
+      ]
     },
     {
       "key": "payment_refund_idx",
       "type": "key",
-      "attributes": ["paymentId", "refundId"]
+      "attributes": [
+        "paymentId",
+        "refundId"
+      ]
     }
   ]
 }

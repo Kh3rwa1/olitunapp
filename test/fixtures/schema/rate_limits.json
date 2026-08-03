@@ -26,5 +26,14 @@
       "min": -9223372036854776000,
       "max": 9223372036854776000
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_client_ip",
+      "type": "key",
+      "attributes": [
+        "clientIp"
+      ]
+    }
   ]
 }

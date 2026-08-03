@@ -123,5 +123,29 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_mission_id",
+      "type": "unique",
+      "attributes": [
+        "missionId"
+      ]
+    },
+    {
+      "key": "idx_mission_publish",
+      "type": "key",
+      "attributes": [
+        "status",
+        "isActive"
+      ]
+    },
+    {
+      "key": "idx_mission_type",
+      "type": "key",
+      "attributes": [
+        "type"
+      ]
+    }
   ]
 }

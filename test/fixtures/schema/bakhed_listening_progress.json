@@ -54,5 +54,23 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_bakhed_progress",
+      "type": "unique",
+      "attributes": [
+        "userId",
+        "bakhedId"
+      ]
+    },
+    {
+      "key": "idx_bakhed_completed",
+      "type": "key",
+      "attributes": [
+        "userId",
+        "completed80Percent"
+      ]
+    }
   ]
 }

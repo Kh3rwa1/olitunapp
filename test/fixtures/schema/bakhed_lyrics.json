@@ -56,5 +56,19 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_bakhed_lyric",
+      "type": "key",
+      "attributes": [
+        "bakhedId",
+        "lineIndex"
+      ],
+      "orders": [
+        "ASC",
+        "ASC"
+      ]
+    }
   ]
 }

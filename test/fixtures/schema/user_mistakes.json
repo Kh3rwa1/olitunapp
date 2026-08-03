@@ -98,5 +98,24 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_mistake_user_question",
+      "type": "unique",
+      "attributes": [
+        "userId",
+        "quizId",
+        "questionId"
+      ]
+    },
+    {
+      "key": "idx_mistake_user_mastered",
+      "type": "key",
+      "attributes": [
+        "userId",
+        "isMastered"
+      ]
+    }
   ]
 }

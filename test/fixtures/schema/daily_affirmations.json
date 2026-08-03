@@ -59,5 +59,25 @@
       "array": false,
       "required": true
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_order",
+      "type": "key",
+      "attributes": [
+        "order"
+      ],
+      "orders": [
+        "ASC"
+      ]
+    },
+    {
+      "key": "idx_category_published",
+      "type": "key",
+      "attributes": [
+        "category",
+        "publishedAt"
+      ]
+    }
   ]
 }

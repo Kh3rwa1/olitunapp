@@ -54,5 +54,23 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_user_badge",
+      "type": "unique",
+      "attributes": [
+        "userId",
+        "badgeId"
+      ]
+    },
+    {
+      "key": "idx_user_unlocked",
+      "type": "key",
+      "attributes": [
+        "userId",
+        "isUnlocked"
+      ]
+    }
   ]
 }

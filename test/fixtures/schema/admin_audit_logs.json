@@ -50,5 +50,32 @@
       "array": false,
       "required": false
     }
+  ],
+  "indexes": [
+    {
+      "key": "idx_audit_action",
+      "type": "key",
+      "attributes": [
+        "action"
+      ]
+    },
+    {
+      "key": "idx_audit_target",
+      "type": "key",
+      "attributes": [
+        "targetType",
+        "targetId"
+      ]
+    },
+    {
+      "key": "idx_audit_created",
+      "type": "key",
+      "attributes": [
+        "createdAt"
+      ],
+      "orders": [
+        "DESC"
+      ]
+    }
   ]
 }

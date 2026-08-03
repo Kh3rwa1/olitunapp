@@ -74,7 +74,8 @@ jobs:
           fi
           node scripts/snapshot_appwrite_schema.mjs
           if ! git diff --exit-code test/fixtures/schema/; then
-            echo "❌ Appwrite schema drift detected. Run snapshot locally and commit."
+            echo "❌ Appwrite schema drift detected! Complete git diff below:"
+            git --no-pager diff -- test/fixtures/schema/
             exit 1
           fi
 

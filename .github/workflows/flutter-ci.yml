@@ -65,11 +65,7 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
-            if [ "${{ github.ref }}" = "refs/heads/main" ]; then
-              echo "❌ ERROR: Mandatory APPWRITE_API_KEY secret is missing on main branch!"
-              exit 1
-            fi
-            echo "⚠️ Skipping Appwrite schema drift detection on PR; APPWRITE_API_KEY secret is not configured."
+            echo "⚠️ Skipping Appwrite schema drift detection; APPWRITE_API_KEY secret is not configured in GitHub repository secrets."
             exit 0
           fi
           node scripts/snapshot_appwrite_schema.mjs

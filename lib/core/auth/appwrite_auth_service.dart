@@ -14,6 +14,90 @@ import '../storage/hive_service.dart';
 import 'web_redirect.dart';
 
 @visibleForTesting
+bool isWebSessionValidTimestamp(
+  int? ts, {
+  Duration maxDuration = const Duration(hours: 24),
+  DateTime? nowOverride,
+}) {
+  if (ts == null || ts <= 0) return false;
+  final nowMs = (nowOverride ?? DateTime.now()).millisecondsSinceEpoch;
+  // Allow up to 1 minute clock skew into the future, otherwise treat as invalid
+  if (ts > nowMs + 60000) return false;
+  final ageMs = nowMs - ts;
+  if (ageMs > maxDuration.inMilliseconds) return false;
+  return true;
+}
+
+@visibleForTesting
+class AccountDeletionResult {
+  final bool isAuthDeleted;
+  final bool isFullSuccess;
+  final String? errorMessage;
+  final int statusCode;
+
+  const AccountDeletionResult({
+    required this.isAuthDeleted,
+    required this.isFullSuccess,
+    this.errorMessage,
+    required this.statusCode,
+  });
+}
+
+@visibleForTesting
+AccountDeletionResult parseAccountDeletionExecution({
+  required String status,
+  required int statusCode,
+  required String responseBody,
+}) {
+  final trimmedBody = responseBody.trim();
+  Map<String, dynamic>? responseData;
+  if (trimmedBody.isNotEmpty) {
+    try {
+      final decoded = jsonDecode(trimmedBody);
+      if (decoded is Map<String, dynamic>) {
+        responseData = decoded;
+      }
+    } catch (_) {}
+  }
+
+  final isAuthDeleted = responseData?['authDeleted'] == true;
+
+  if (status.toLowerCase() == 'failed' ||
+      statusCode < 200 ||
+      statusCode >= 300 ||
+      responseData == null ||
+      responseData['ok'] != true) {
+    if (isAuthDeleted) {
+      return AccountDeletionResult(
+        isAuthDeleted: true,
+        isFullSuccess: false,
+        errorMessage:
+            'Account deleted; final cleanup reconciliation is pending.',
+        statusCode: statusCode != 0 ? statusCode : 500,
+      );
+    }
+
+    final errCode =
+        responseData?['code']?.toString() ??
+        responseData?['message']?.toString() ??
+        'Account deletion failed on server';
+
+    return AccountDeletionResult(
+      isAuthDeleted: false,
+      isFullSuccess: false,
+      errorMessage: errCode,
+      statusCode: statusCode != 0 ? statusCode : 500,
+    );
+  }
+
+  return AccountDeletionResult(
+    isAuthDeleted: true,
+    isFullSuccess: true,
+    statusCode: statusCode != 0 ? statusCode : 200,
+  );
+}
+
+@visibleForTesting
 String googleOAuthUserMessage(String message) {
   final lowerMessage = message.toLowerCase();
   if (lowerMessage.contains('provider') &&
@@ -282,16 +366,8 @@ class AppwriteAuthService {
   static const String _webSessionTimestampKey = 'olitun_web_session_ts';
   static const Duration _maxWebSessionDuration = Duration(hours: 24);
 
-  bool _isWebSessionValid(int? ts) {
-    if (ts == null || ts <= 0) return false;
-    final now = DateTime.now().millisecondsSinceEpoch;
-    // Allow up to 1 minute clock skew into the future, otherwise treat as invalid
-    if (ts > now + 60000) return false;
-    final sessionTime = DateTime.fromMillisecondsSinceEpoch(ts);
-    final age = DateTime.now().difference(sessionTime);
-    if (age > _maxWebSessionDuration || age.isNegative) return false;
-    return true;
-  }
+  bool _isWebSessionValid(int? ts) =>
+      isWebSessionValidTimestamp(ts, _maxWebSessionDuration);
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
@@ -475,46 +551,25 @@ class AppwriteAuthService {
         functionId: 'delete-account',
       );
 
-      final trimmedBody = execution.responseBody.trim();
-      Map<String, dynamic>? responseData;
-      if (trimmedBody.isNotEmpty) {
-        try {
-          final decoded = jsonDecode(trimmedBody);
-          if (decoded is Map<String, dynamic>) {
-            responseData = decoded;
-          }
-        } catch (_) {}
-      }
+      final result = parseAccountDeletionExecution(
+        status: execution.status.toString(),
+        statusCode: execution.responseStatusCode,
+        responseBody: execution.responseBody,
+      );
 
-      final isAuthDeleted = responseData?['authDeleted'] == true;
-
-      // If execution status failed, status code is non-2xx, responseData is missing, or ok != true
-      if (execution.status.toString().toLowerCase() == 'failed' ||
-          execution.responseStatusCode < 200 ||
-          execution.responseStatusCode >= 300 ||
-          responseData == null ||
-          responseData['ok'] != true) {
-        // If server confirmed Auth user was deleted before state update error:
-        if (isAuthDeleted) {
+      if (!result.isFullSuccess) {
+        if (result.isAuthDeleted) {
           await _clearLocalSessionState();
           throw AppwriteException(
-            'Account deleted; final cleanup reconciliation is pending.',
-            execution.responseStatusCode != 0
-                ? execution.responseStatusCode
-                : 500,
+            result.errorMessage ??
+                'Account deleted; final cleanup reconciliation is pending.',
+            result.statusCode,
           );
         }
 
-        final errCode =
-            responseData?['code']?.toString() ??
-            responseData?['message']?.toString() ??
-            'Account deletion failed on server';
-
         throw AppwriteException(
-          errCode,
-          execution.responseStatusCode != 0
-              ? execution.responseStatusCode
-              : 500,
+          result.errorMessage ?? 'Account deletion failed on server',
+          result.statusCode,
         );
       }
 

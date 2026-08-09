@@ -67,15 +67,23 @@ Future<void> main() async {
           DeviceOrientation.portraitDown,
         ]);
 
-        await CrashReporting.init();
+        try {
+          await CrashReporting.init();
+        } catch (e) {
+          AppLogger.debug('Non-essential CrashReporting init failed: $e');
+        }
 
-        await JustAudioBackground.init(
-          androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
-          androidNotificationChannelName: 'Bakhed playback',
-          androidNotificationChannelDescription:
-              'Controls for long Bakhed audio playback',
-          androidNotificationOngoing: true,
-        );
+        try {
+          await JustAudioBackground.init(
+            androidNotificationChannelId: 'com.olitun.app.channel.bakhed',
+            androidNotificationChannelName: 'Bakhed playback',
+            androidNotificationChannelDescription:
+                'Controls for long Bakhed audio playback',
+            androidNotificationOngoing: true,
+          );
+        } catch (e) {
+          AppLogger.debug('Non-essential JustAudioBackground init failed: $e');
+        }
 
         runApp(
           ProviderScope(
@@ -88,35 +96,54 @@ Future<void> main() async {
         AppLogger.debug('Fatal initialization error: $e\n$stack');
         runApp(
           MaterialApp(
+            debugShowCheckedModeBanner: false,
             home: Scaffold(
-              backgroundColor: Colors.red.shade900,
+              backgroundColor: const Color(0xFF1E1E2C),
               body: SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.all(24.0),
-                  child: SingleChildScrollView(
+                child: Center(
+                  child: Padding(
+                    padding: const EdgeInsets.all(24.0),
                     child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         const Icon(
-                          Icons.error_outline,
-                          color: Colors.white,
-                          size: 48,
+                          Icons.warning_amber_rounded,
+                          color: Color(0xFFFFB74D),
+                          size: 64,
                         ),
                         const SizedBox(height: 16),
                         const Text(
-                          'Initialization Failed',
+                          'Unable to Start Application',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 24,
+                            fontSize: 22,
                             fontWeight: FontWeight.bold,
                           ),
+                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 16),
+                        const SizedBox(height: 12),
                         Text(
-                          e.toString(),
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
+                          kReleaseMode
+                              ? 'Olitun could not connect to necessary services. Please verify your internet connection and try again.'
+                              : e.toString(),
+                          style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.85),
+                            fontSize: 15,
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 24),
+                        ElevatedButton.icon(
+                          onPressed: main,
+                          icon: const Icon(Icons.refresh),
+                          label: const Text('Retry Startup'),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF6C5CE7),
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 24,
+                              vertical: 12,
+                            ),
                           ),
                         ),
                       ],

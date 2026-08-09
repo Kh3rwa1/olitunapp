@@ -44,8 +44,9 @@ class FakeAppwriteDbService implements AppwriteDbService {
   Future<void> createDocument(
     String collectionId,
     String documentId,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    List<String>? permissions,
+  }) async {
     createRequests++;
     quizzesData.add({...data, 'id': documentId});
   }
@@ -54,8 +55,9 @@ class FakeAppwriteDbService implements AppwriteDbService {
   Future<void> updateDocument(
     String collectionId,
     String documentId,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    List<String>? permissions,
+  }) async {
     updateRequests++;
     final index = quizzesData.indexWhere((doc) => doc['id'] == documentId);
     if (index >= 0) {

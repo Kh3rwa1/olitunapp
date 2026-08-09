@@ -162,12 +162,14 @@ class AppwriteDbService {
     return data;
   }
 
-  /// Create a document
+  /// Create a document with explicit permissions.
+  /// If [permissions] is omitted (null), collection-level default permissions apply.
   Future<void> createDocument(
     String collectionId,
     String documentId,
-    Map<String, dynamic> data,
-  ) async {
+    Map<String, dynamic> data, {
+    List<String>? permissions,
+  }) async {
     final connectivityResults = await Connectivity().checkConnectivity();
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
@@ -184,7 +186,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [Permission.read(Role.any())],
+            permissions: permissions,
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(
@@ -204,12 +206,64 @@ class AppwriteDbService {
     }
   }
 
-  /// Update a document
-  Future<void> updateDocument(
+  /// Create a public content row (readable by anyone).
+  Future<void> createPublicContent(
     String collectionId,
     String documentId,
     Map<String, dynamic> data,
-  ) async {
+  ) => createDocument(
+    collectionId,
+    documentId,
+    data,
+    permissions: [Permission.read(Role.any())],
+  );
+
+  /// Create an owner-private row (readable and writable only by the specified user).
+  Future<void> createOwnerPrivateRow(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+    String userId,
+  ) => createDocument(
+    collectionId,
+    documentId,
+    data,
+    permissions: [
+      Permission.read(Role.user(userId)),
+      Permission.write(Role.user(userId)),
+    ],
+  );
+
+  /// Create an admin-only row (readable and writable only by admin team members).
+  Future<void> createAdminOnlyRow(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+  ) => createDocument(
+    collectionId,
+    documentId,
+    data,
+    permissions: [
+      Permission.read(Role.team('admin')),
+      Permission.write(Role.team('admin')),
+    ],
+  );
+
+  /// Create a function-managed row (restricted access, written via server key).
+  Future<void> createFunctionManagedRow(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+  ) => createDocument(collectionId, documentId, data, permissions: const []);
+
+  /// Update a document.
+  /// If [permissions] is omitted (null), existing document permissions are preserved.
+  Future<void> updateDocument(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data, {
+    List<String>? permissions,
+  }) async {
     final connectivityResults = await Connectivity().checkConnectivity();
     if (connectivityResults.contains(ConnectivityResult.none)) {
       throw AppwriteException('No internet connection', 0, 'network_failure');
@@ -224,7 +278,7 @@ class AppwriteDbService {
             tableId: collectionId,
             rowId: documentId,
             data: payload,
-            permissions: [Permission.read(Role.any())],
+            permissions: permissions,
           )
           .timeout(_writeTimeout);
       CrashReporting.addAppwriteBreadcrumb(
@@ -243,6 +297,20 @@ class AppwriteDbService {
       rethrow;
     }
   }
+
+  /// Update document data while explicitly preserving existing permissions.
+  Future<void> updateDataPreservingPermissions(
+    String collectionId,
+    String documentId,
+    Map<String, dynamic> data,
+  ) => updateDocument(collectionId, documentId, data);
+
+  /// Explicitly update document permissions.
+  Future<void> updatePermissionsExplicitly(
+    String collectionId,
+    String documentId,
+    List<String> permissions,
+  ) => updateDocument(collectionId, documentId, {}, permissions: permissions);
 
   /// Delete a document
   Future<void> deleteDocument(String collectionId, String documentId) async {

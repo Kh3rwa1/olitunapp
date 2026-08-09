@@ -5,9 +5,9 @@
 - **Repository**: `https://github.com/Kh3rwa1/olitunapp`
 - **Working Branch**: `hardening/release-candidate-10-of-10`
 - **Starting SHA**: `203d727dbb75ea5efe590aba6048a023c6b55c9b`
-- **Final Candidate SHA**: `3d3fcdb466cfd51ff6becbf417a9d6b61da8c3d4`
+- **Final Candidate SHA**: `fbc297b132ee296349d04ddbc1bda864a2b80973`
 - **Pull Request**: `https://github.com/Kh3rwa1/olitunapp/pull/107`
-- **PR Head SHA**: `3d3fcdb466cfd51ff6becbf417a9d6b61da8c3d4`
+- **PR Head SHA**: `fbc297b132ee296349d04ddbc1bda864a2b80973`
 - **Timestamp**: August 9, 2026
 
 ---
@@ -25,21 +25,27 @@
 - Created unit test suite `scripts/staging_permission_test.test.mjs` (8/8 tests passing).
 
 ### C. Security Scan Workflow Execution
-- **Workflow Run**: `https://github.com/Kh3rwa1/olitunapp/actions/runs/31294233197`
+- **Workflow Run**: `https://github.com/Kh3rwa1/olitunapp/actions/runs/31294831716`
 - **Gitleaks Result**: `completed success` (0 leaks)
 - **OSV Vulnerability Scan Result**: `completed success` (0 vulnerabilities)
 - **CodeQL Analysis Result**: `completed success` (0 high-severity alerts)
 
 ---
 
-## Phase 2: Account-Deletion Fail-Closed State Machine
+## Phase 2: Account-Deletion Fail-Closed State Machine & Operational Recovery
 
-- Enforced explicit environment variable validation (`APPWRITE_ENDPOINT`, `APPWRITE_PROJECT_ID`, `APPWRITE_API_KEY`, `APPWRITE_DATABASE_ID`, `DELETION_HMAC_SECRET`). Removed default fallbacks (`|| 'olitun_db'`).
-- Implemented full state machine transition: `in_progress` -> `cleanup_complete` -> `auth_deleted` -> `completed`.
-- Added mandatory zero-record verification step prior to Auth user deletion.
-- Enforced loop-limit guards (max 50 iterations) across database collection, asset registry, and purchase anonymization loops.
-- Implemented privileged orphan recovery handler `reconcileOrphanedAuthDeletions` for interrupted post-Auth deletions.
-- Automated Test Suite: 11 tests passing in `functions/test/delete_account.test.js`.
+### A. Appwrite Scopes Hardening (`appwrite.json`)
+- Expanded `delete-account` function scopes in `appwrite.json` to:
+  `["users.write", "databases.read", "databases.write", "documents.read", "documents.write", "files.read", "files.write"]`.
+
+### B. Deployable Orphan Recovery Function (`functions/reconcileOrphanedDeletions`)
+- Created deployable serverless function entrypoint `functions/reconcileOrphanedDeletions/src/main.js` wrapping `reconcileOrphanedAuthDeletions()`.
+- Registered `reconcileOrphanedDeletions` function and cron schedule (`0 2 * * *`) in `appwrite.json` with required scopes (`users.read`, `databases.read`, `databases.write`, `documents.read`, `documents.write`).
+
+### C. Deletion State Machine & Double-Failure Recovery
+- Updated `reconcileOrphanedAuthDeletions()` to scan for both `cleanup_complete` and `auth_deleted` requests.
+- For `cleanup_complete` records, checks if the Auth user account is absent (returns 404). If absent, safely completes the stranded state transition (`cleanup_complete` -> `auth_deleted` -> `completed`).
+- Automated Test Suite: 13 unit tests passing in `functions/test/delete_account.test.js` (including tests for double post-Auth state update failures).
 
 ---
 
@@ -62,20 +68,20 @@
 
 ## Phase 5: CI Decoupling & Artifact Verification
 
-### Workflow Run Summary (`Flutter CI` Run #31294233175)
-- **Workflow URL**: `https://github.com/Kh3rwa1/olitunapp/actions/runs/31294233175`
+### Workflow Run Summary (`Flutter CI` Run #31294831720)
+- **Workflow URL**: `https://github.com/Kh3rwa1/olitunapp/actions/runs/31294831720`
 - **Code Formatting & Static Analysis**: `completed success`
 - **Flutter Unit, Widget & Coverage Tests**: `completed success` (652 tests passing)
-- **Node Serverless Function Tests**: `completed success` (33 tests passing)
+- **Node Serverless Function Tests**: `completed success` (35 tests passing)
 - **Appwrite Permission Invariants & Schema Drift**: `completed success`
 - **Web Release Build & Budget**: `completed success`
 - **Android APK Release Build & Budget**: `completed success`
 - **Verify Release Artifact Integrity**: `completed success`
 
 ### Generated Candidate Release Artifacts
-1. **`android-release-apk`**: Size = `40,582,323` bytes (40.6 MB), Created = `2026-08-09T04:23:12Z`
-2. **`web-release-build`**: Size = `17,751,764` bytes (17.8 MB), Created = `2026-08-09T04:18:46Z`
-3. **`coverage-report`**: Size = `67,033` bytes (67 KB), Created = `2026-08-09T04:20:19Z`
+1. **`android-release-apk`**: Size = `40,582,312` bytes (40.6 MB), Created = `2026-08-09T04:40:05Z`
+2. **`web-release-build`**: Size = `17,751,763` bytes (17.8 MB), Created = `2026-08-09T04:35:48Z`
+3. **`coverage-report`**: Size = `67,020` bytes (67 KB), Created = `2026-08-09T04:36:56Z`
 
 ---
 

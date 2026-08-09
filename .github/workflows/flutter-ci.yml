@@ -118,7 +118,7 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: |
-          git fetch origin "$BASE_REF" --depth=1 || true
+          git fetch origin "$BASE_REF" --depth=1 2>/dev/null || true
           git show "origin/$BASE_REF:tool/performance_budgets.json" > /tmp/base_performance_budgets.json || cp tool/performance_budgets.json /tmp/base_performance_budgets.json
       - name: Build Web Release
         run: |
@@ -165,7 +165,7 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: |
-          git fetch origin "$BASE_REF" --depth=1 || true
+          git fetch origin "$BASE_REF" --depth=1 2>/dev/null || true
           git show "origin/$BASE_REF:tool/performance_budgets.json" > /tmp/base_performance_budgets.json || cp tool/performance_budgets.json /tmp/base_performance_budgets.json
       - name: Build Android Release APK
         env:

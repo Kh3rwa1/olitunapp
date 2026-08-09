@@ -9,6 +9,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/logging/redaction_helper.dart';
 import '../config/appwrite_config.dart';
 import '../storage/hive_service.dart';
 import 'web_redirect.dart';
@@ -79,8 +80,10 @@ AccountDeletionResult parseAccountDeletionExecution({
   }
 
   final isAuthDeleted = responseData?['authDeleted'] == true;
+  final normalizedStatus = status.toLowerCase();
+  final isFailedStatus = normalizedStatus.contains('failed');
 
-  if (status.toLowerCase() == 'failed' ||
+  if (isFailedStatus ||
       statusCode < 200 ||
       statusCode >= 300 ||
       responseData == null ||
@@ -254,6 +257,8 @@ bool isTransientSessionValidationFailure(Object error) {
 
 class AppwriteAuthService {
   static const String _webSessionSecretKey = 'olitun_appwrite_session_secret';
+  static const String _webSessionTimestampKey = 'olitun_web_session_ts';
+  static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // Singleton pattern — one SDK Client shared across the app
   AppwriteAuthService._internal() {
@@ -264,7 +269,6 @@ class AppwriteAuthService {
     if (endpoint.isNotEmpty) {
       _client.setEndpoint(endpoint);
     } else {
-      // Use a safe placeholder to avoid synchronous AppwriteException during testing or guest mode
       _client.setEndpoint('https://localhost/v1');
     }
 
@@ -311,13 +315,21 @@ class AppwriteAuthService {
   Account get account => _account;
   Client get client => _client;
 
+  Future<SharedPreferences> _getPrefs() async =>
+      _prefsOverride ?? await SharedPreferences.getInstance();
+
+  bool get _isWeb => _isWebOverride ?? kIsWeb;
+
+  bool _isWebSessionValid(int? ts) =>
+      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
+
   /// Ping Appwrite backend to verify setup
   Future<void> ping() async {
     try {
       await _client.ping();
       AppLogger.debug('Appwrite: Ping successful ✅');
     } catch (e) {
-      AppLogger.debug('Appwrite: Ping failed ❌ $e');
+      AppLogger.debug('Appwrite: Ping failed ❌ ${RedactionHelper.sanitize(e.toString())}');
     }
   }
 
@@ -325,7 +337,7 @@ class AppwriteAuthService {
   Future<models.Session> signInAnonymously() async {
     AppLogger.debug('Appwrite: Creating anonymous session');
     final session = await _account.createAnonymousSession();
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setBool(_hasLocalSessionKey, true);
     return session;
   }
@@ -335,7 +347,7 @@ class AppwriteAuthService {
   /// Send OTP code to email. Returns userId needed for session creation.
   Future<models.Token> sendOtpCode(String email) async {
     final trimmedEmail = email.trim().toLowerCase();
-    AppLogger.debug('Appwrite: Sending OTP to $trimmedEmail');
+    AppLogger.debug('Appwrite: Sending OTP code');
     return await _account.createEmailToken(
       userId: ID.unique(),
       email: trimmedEmail,
@@ -347,16 +359,12 @@ class AppwriteAuthService {
     required String userId,
     required String secret,
   }) async {
-    AppLogger.debug('Appwrite: Verifying OTP for user $userId');
+    AppLogger.debug('Appwrite: Verifying OTP token');
     return await _account.createSession(userId: userId, secret: secret);
   }
 
   // ─── Google OAuth ───
 
-  /// Sign in with Google OAuth2
-  /// Uses the Appwrite SDK's built-in OAuth2 session flow on all platforms.
-  /// On mobile: opens a browser, then deep-links back via appwrite-callback-{projectId}.
-  /// On web: opens a popup, returns through /auth.html, then stores the session.
   Future<void> signInWithGoogle() async {
     AppLogger.debug('Appwrite: Starting Google OAuth');
 
@@ -385,7 +393,7 @@ class AppwriteAuthService {
       }
     } on AppwriteException catch (e) {
       AppLogger.debug(
-        'Appwrite OAuth RAW ERROR: message="${e.message}" code=${e.code} type="${e.type}"',
+        'Appwrite OAuth error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
       );
       throw AppwriteException(
         googleOAuthUserMessage(e.message ?? e.toString()),
@@ -409,29 +417,29 @@ class AppwriteAuthService {
       AppLogger.debug('Appwrite: OAuth session created ✅');
       return true;
     } catch (e) {
-      AppLogger.debug('Appwrite: Failed to create session from token: $e');
+      AppLogger.debug('Appwrite: Failed to create session from token');
       return false;
     }
   }
 
-  static const String _webSessionTimestampKey = 'olitun_web_session_ts';
-
-  Future<SharedPreferences> _getPrefs() async =>
-      _prefsOverride ?? await SharedPreferences.getInstance();
-
-  bool get _isWeb => _isWebOverride ?? kIsWeb;
-
-  bool _isWebSessionValid(int? ts) =>
-      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
-
   Future<void> _persistWebSession(String secret) async {
+    if (secret.isEmpty) {
+      await _clearLocalSessionState();
+      throw AppwriteException('Cannot persist empty session secret.');
+    }
     _client.setSession(secret);
-    final prefs = await _getPrefs();
-    await prefs.setString(_webSessionSecretKey, secret);
-    await prefs.setInt(
-      _webSessionTimestampKey,
-      (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-    );
+    try {
+      final prefs = await _getPrefs();
+      await prefs.setString(_webSessionSecretKey, secret);
+      await prefs.setInt(
+        _webSessionTimestampKey,
+        (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+      );
+      await prefs.setBool(_hasLocalSessionKey, true);
+    } catch (e) {
+      await _clearLocalSessionState();
+      throw AppwriteException('Failed to persist web session: ${RedactionHelper.sanitize(e.toString())}');
+    }
   }
 
   Future<void> _restoreWebSession() async {
@@ -440,55 +448,64 @@ class AppwriteAuthService {
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
-    if (secret != null && secret.isNotEmpty) {
-      if (!_isWebSessionValid(ts)) {
-        AppLogger.debug(
-          'Appwrite: Web session timestamp missing/expired/invalid; failing closed and clearing',
-        );
-        await _clearWebSession();
-        return;
-      }
-      _client.setSession(secret);
+    if (secret == null ||
+        secret.isEmpty ||
+        ts == null ||
+        !_isWebSessionValid(ts)) {
+      AppLogger.debug(
+        'Appwrite: Web session secret or timestamp invalid; failing closed and clearing',
+      );
+      await _clearLocalSessionState();
+      return;
     }
+    _client.setSession(secret);
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!_isWeb) return;
+    _client.setSession('');
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
-    if (secret != null && secret.isNotEmpty) {
-      if (!_isWebSessionValid(ts)) {
-        AppLogger.debug(
-          'Appwrite: Web session timestamp missing/expired/invalid in sync restore; failing closed and clearing',
-        );
-        unawaited(_clearWebSession());
-        return;
-      }
-      _client.setSession(secret);
-      AppLogger.debug('Appwrite: Web session restored synchronously ✅');
+    if (secret == null ||
+        secret.isEmpty ||
+        ts == null ||
+        !_isWebSessionValid(ts)) {
+      AppLogger.debug(
+        'Appwrite: Web session secret or timestamp invalid in sync restore; failing closed and clearing',
+      );
+      unawaited(_clearLocalSessionState());
+      return;
     }
-  }
-
-  Future<void> _clearWebSession() async {
-    _client.setSession('');
-    if (!_isWeb) return;
-    try {
-      final prefs = await _getPrefs();
-      await prefs.remove(_webSessionSecretKey);
-      await prefs.remove(_webSessionTimestampKey);
-    } catch (e) {
-      AppLogger.debug('Appwrite: Failed to clear web session keys: $e');
-    }
+    _client.setSession(secret);
+    AppLogger.debug('Appwrite: Web session restored synchronously ✅');
   }
 
   Future<void> _clearLocalSessionState() async {
-    final prefs = await _getPrefs();
-    await prefs.setBool(_hasLocalSessionKey, false);
-    await _clearWebSession();
+    _client.setSession('');
+    try {
+      final prefs = await _getPrefs();
+      try {
+        await prefs.setBool(_hasLocalSessionKey, false);
+      } catch (e) {
+        AppLogger.debug('Appwrite: Failed to clear local session flag: ${RedactionHelper.sanitize(e.toString())}');
+      }
+      try {
+        await prefs.remove(_webSessionSecretKey);
+      } catch (e) {
+        AppLogger.debug('Appwrite: Failed to remove session secret: ${RedactionHelper.sanitize(e.toString())}');
+      }
+      try {
+        await prefs.remove(_webSessionTimestampKey);
+      } catch (e) {
+        AppLogger.debug('Appwrite: Failed to remove session timestamp: ${RedactionHelper.sanitize(e.toString())}');
+      }
+    } catch (e) {
+      AppLogger.debug('Appwrite: Preference storage error: ${RedactionHelper.sanitize(e.toString())}');
+    } finally {
+      _client.setSession('');
+    }
   }
-
-  static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // ─── Session Management ───
 
@@ -506,18 +523,15 @@ class AppwriteAuthService {
     }
 
     try {
-      final session = await _account
+      await _account
           .getSession(sessionId: 'current')
           .timeout(const Duration(seconds: 3));
-      AppLogger.debug('Appwrite: Session active for user ${session.userId} ✅');
+      AppLogger.debug('Appwrite: Session active ✅');
       await prefs.setBool(_hasLocalSessionKey, true);
       return true;
     } catch (e) {
-      AppLogger.debug('Appwrite: isLoggedIn error: $e');
+      AppLogger.debug('Appwrite: isLoggedIn error: ${RedactionHelper.sanitize(e.toString())}');
 
-      // Only trust local state for clear network/timeout failures. Other
-      // Appwrite errors must fail closed so strange backend states do not keep
-      // an invalid session alive.
       final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
       if (hasLocal && isTransientSessionValidationFailure(e)) {
         AppLogger.debug(
@@ -526,12 +540,11 @@ class AppwriteAuthService {
         return true;
       }
 
-      // If it's a 401 (Unauthorized), the session is definitely gone.
       if (e is AppwriteException && e.code == 401) {
         AppLogger.debug(
           'Appwrite: Session expired (401). Clearing local flag.',
         );
-        await prefs.setBool(_hasLocalSessionKey, false);
+        await _clearLocalSessionState();
       }
 
       return false;
@@ -587,21 +600,16 @@ class AppwriteAuthService {
           .deleteSession(sessionId: 'current')
           .timeout(const Duration(seconds: 5));
     } catch (e) {
-      AppLogger.debug('Appwrite: Sign out error: $e');
+      AppLogger.debug('Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}');
     } finally {
       await _clearLocalSessionState();
     }
   }
 
   /// Permanently delete the user account from Appwrite and clear all local state.
-  ///
-  /// Calls the 'delete-account' Cloud Function to hard-delete the user record,
-  /// making it possible to sign in again with the same email or OAuth provider without
-  /// hitting a "user already exists" / session conflict.
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-      // Hard-delete the account using our Cloud Function
       final execution = await _functions.createExecution(
         functionId: 'delete-account',
       );
@@ -628,14 +636,13 @@ class AppwriteAuthService {
         );
       }
 
-      // Server confirmed full deletion success; clear local session state
       await _clearLocalSessionState();
     } on AppwriteException catch (e) {
-      AppLogger.error('Appwrite: deleteAccount error: $e');
+      AppLogger.error('Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}');
       rethrow;
     } catch (e) {
-      AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
-      throw AppwriteException('Account deletion failed: ${e.toString()}', 500);
+      AppLogger.error('Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}');
+      throw AppwriteException('Account deletion failed: ${RedactionHelper.sanitize(e.toString())}', 500);
     }
   }
 

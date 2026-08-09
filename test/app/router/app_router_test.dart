@@ -6,7 +6,10 @@ void main() {
     test('adminHostRedirectFor redirects admin host root to /admin', () {
       expect(adminHostRedirectFor('admin.olitun.in', '/'), '/admin');
       expect(adminHostRedirectFor('admin.olitun.in', '/admin'), isNull);
-      expect(adminHostRedirectFor('admin.olitun.in', '/admin/categories'), isNull);
+      expect(
+        adminHostRedirectFor('admin.olitun.in', '/admin/categories'),
+        isNull,
+      );
       expect(adminHostRedirectFor('olitun.in', '/'), isNull);
     });
 
@@ -22,11 +25,7 @@ void main() {
 
     test('fragmentRedirectFor rejects non-web or non-root paths', () {
       expect(
-        fragmentRedirectFor(
-          isWeb: false,
-          path: '/',
-          fragment: '/categories',
-        ),
+        fragmentRedirectFor(isWeb: false, path: '/', fragment: '/categories'),
         isNull,
       );
       expect(
@@ -55,10 +54,7 @@ void main() {
     });
 
     test('adminAccessRedirectFor allows authenticated admin users', () {
-      expect(
-        adminAccessRedirectFor(isAdmin: true, path: '/admin'),
-        isNull,
-      );
+      expect(adminAccessRedirectFor(isAdmin: true, path: '/admin'), isNull);
       expect(
         adminAccessRedirectFor(isAdmin: true, path: '/admin/categories'),
         isNull,

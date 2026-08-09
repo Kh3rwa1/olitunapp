@@ -25,9 +25,7 @@ class RedactionHelper {
     if (parts.length != 2 || parts[0].isEmpty) return '[REDACTED_EMAIL]';
     final name = parts[0];
     final domain = parts[1];
-    final redactedName = name.length > 1
-        ? '${name[0]}***'
-        : '***';
+    final redactedName = name.length > 1 ? '${name[0]}***' : '***';
     return '$redactedName@$domain';
   }
 

@@ -99,7 +99,9 @@ class AppwriteAuthService {
       await _client.ping();
       AppLogger.debug('Appwrite: Ping successful ✅');
     } catch (e) {
-      AppLogger.debug('Appwrite: Ping failed ❌ ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: Ping failed ❌ ${RedactionHelper.sanitize(e.toString())}',
+      );
     }
   }
 
@@ -209,7 +211,9 @@ class AppwriteAuthService {
       await prefs.setBool(_hasLocalSessionKey, true);
     } catch (e) {
       await _clearLocalSessionState();
-      throw AppwriteException('Failed to persist web session: ${RedactionHelper.sanitize(e.toString())}');
+      throw AppwriteException(
+        'Failed to persist web session: ${RedactionHelper.sanitize(e.toString())}',
+      );
     }
   }
 
@@ -259,20 +263,28 @@ class AppwriteAuthService {
       try {
         await prefs.setBool(_hasLocalSessionKey, false);
       } catch (e) {
-        AppLogger.debug('Appwrite: Failed to clear local session flag: ${RedactionHelper.sanitize(e.toString())}');
+        AppLogger.debug(
+          'Appwrite: Failed to clear local session flag: ${RedactionHelper.sanitize(e.toString())}',
+        );
       }
       try {
         await prefs.remove(_webSessionSecretKey);
       } catch (e) {
-        AppLogger.debug('Appwrite: Failed to remove session secret: ${RedactionHelper.sanitize(e.toString())}');
+        AppLogger.debug(
+          'Appwrite: Failed to remove session secret: ${RedactionHelper.sanitize(e.toString())}',
+        );
       }
       try {
         await prefs.remove(_webSessionTimestampKey);
       } catch (e) {
-        AppLogger.debug('Appwrite: Failed to remove session timestamp: ${RedactionHelper.sanitize(e.toString())}');
+        AppLogger.debug(
+          'Appwrite: Failed to remove session timestamp: ${RedactionHelper.sanitize(e.toString())}',
+        );
       }
     } catch (e) {
-      AppLogger.debug('Appwrite: Preference storage error: ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: Preference storage error: ${RedactionHelper.sanitize(e.toString())}',
+      );
     } finally {
       _client.setSession('');
     }
@@ -301,7 +313,9 @@ class AppwriteAuthService {
       await prefs.setBool(_hasLocalSessionKey, true);
       return true;
     } catch (e) {
-      AppLogger.debug('Appwrite: isLoggedIn error: ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: isLoggedIn error: ${RedactionHelper.sanitize(e.toString())}',
+      );
 
       final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
       // ignore: invalid_use_of_visible_for_testing_member
@@ -372,7 +386,9 @@ class AppwriteAuthService {
           .deleteSession(sessionId: 'current')
           .timeout(const Duration(seconds: 5));
     } catch (e) {
-      AppLogger.debug('Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}');
+      AppLogger.debug(
+        'Appwrite: Sign out error: ${RedactionHelper.sanitize(e.toString())}',
+      );
     } finally {
       await _clearLocalSessionState();
     }
@@ -411,11 +427,18 @@ class AppwriteAuthService {
 
       await _clearLocalSessionState();
     } on AppwriteException catch (e) {
-      AppLogger.error('Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}');
+      AppLogger.error(
+        'Appwrite: deleteAccount error: ${RedactionHelper.sanitize(e.message ?? e.toString())}',
+      );
       rethrow;
     } catch (e) {
-      AppLogger.error('Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}');
-      throw AppwriteException('Account deletion failed: ${RedactionHelper.sanitize(e.toString())}', 500);
+      AppLogger.error(
+        'Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}',
+      );
+      throw AppwriteException(
+        'Account deletion failed: ${RedactionHelper.sanitize(e.toString())}',
+        500,
+      );
     }
   }
 

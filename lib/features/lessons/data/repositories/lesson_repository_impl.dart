@@ -1,6 +1,7 @@
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
+import '../../../../core/logging/app_logger.dart';
 import '../../../../core/network/network_info.dart';
 import '../../../../core/observability/crash_reporting.dart';
 import '../../domain/entities/lesson_entity.dart';

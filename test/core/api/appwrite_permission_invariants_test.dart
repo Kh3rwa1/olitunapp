@@ -33,7 +33,7 @@ void main() {
     test(
       'createAdminOnlyRow restricts read and write strictly to configured admin team ID',
       () {
-        final adminTeam = AppwriteConfig.adminTeamId;
+        const adminTeam = AppwriteConfig.adminTeamId;
         final permissions = [
           Permission.read(Role.team(adminTeam)),
           Permission.write(Role.team(adminTeam)),

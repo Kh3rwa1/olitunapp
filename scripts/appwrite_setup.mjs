@@ -73,6 +73,9 @@ const functionOnlyCollections = new Set([
   'course_purchases',
   'payment_claims',
   'refund_claims',
+  'payment_attempts',
+  'deletion_requests',
+  'user_assets',
 ]);
 
 const adminReadBackendWriteCollections = new Set([
@@ -841,6 +844,65 @@ const collections = [
     indexes: [
       { key: 'idx_submitted', type: 'key', attributes: ['submittedAt'], orders: ['DESC'] },
       { key: 'idx_status', type: 'key', attributes: ['status'] },
+    ],
+  },
+  {
+    id: 'payment_attempts',
+    name: 'Payment Attempts',
+    documentSecurity: true,
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'categoryId', size: 36, required: true },
+      { type: 'string', key: 'idempotencyKey', size: 128, required: true },
+      { type: 'string', key: 'attemptId', size: 128, required: true },
+      { type: 'integer', key: 'expectedAmount', required: true },
+      { type: 'string', key: 'currency', size: 10, required: true },
+      { type: 'string', key: 'status', size: 30, required: true },
+      { type: 'string', key: 'provider', size: 30, required: false, default: 'razorpay' },
+      { type: 'string', key: 'providerOrderId', size: 255, required: false },
+      { type: 'string', key: 'providerReceipt', size: 255, required: false },
+      { type: 'string', key: 'leaseOwner', size: 100, required: false },
+      { type: 'string', key: 'leaseExpiresAt', size: 30, required: false },
+      { type: 'string', key: 'reconciliationStatus', size: 30, required: false, default: 'none' },
+      { type: 'string', key: 'createdAt', size: 30, required: true },
+      { type: 'string', key: 'updatedAt', size: 30, required: true },
+    ],
+    indexes: [
+      { key: 'idx_user_cat_idempotency', type: 'unique', attributes: ['userId', 'categoryId', 'idempotencyKey'] },
+      { key: 'idempotencyKey_idx', type: 'key', attributes: ['idempotencyKey'] },
+    ],
+  },
+  {
+    id: 'deletion_requests',
+    name: 'Deletion Requests',
+    documentSecurity: true,
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'pseudonymousId', size: 64, required: true },
+      { type: 'string', key: 'status', size: 30, required: true },
+      { type: 'integer', key: 'retryCount', required: false, default: 0 },
+      { type: 'string', key: 'lastError', size: 512, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: true },
+      { type: 'string', key: 'updatedAt', size: 30, required: true },
+    ],
+    indexes: [
+      { key: 'pseudonymousId_idx', type: 'unique', attributes: ['pseudonymousId'] },
+    ],
+  },
+  {
+    id: 'user_assets',
+    name: 'User Assets Registry',
+    documentSecurity: true,
+    attrs: [
+      { type: 'string', key: 'userId', size: 36, required: true },
+      { type: 'string', key: 'bucketId', size: 100, required: true },
+      { type: 'string', key: 'fileId', size: 100, required: true },
+      { type: 'string', key: 'purpose', size: 50, required: false },
+      { type: 'string', key: 'createdAt', size: 30, required: true },
+    ],
+    indexes: [
+      { key: 'idx_userId', type: 'key', attributes: ['userId'] },
+      { key: 'idx_user_file', type: 'unique', attributes: ['userId', 'bucketId', 'fileId'] },
     ],
   },
 ];

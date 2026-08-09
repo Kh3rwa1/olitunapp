@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/offline/mutation_outbox_service.dart';
 
 void main() {
-  group('PendingMutation Model Tests', () {
+  group('PendingMutation Model & Invariant Tests', () {
     test('serializes and deserializes cleanly with default status', () {
       final mutation = PendingMutation(
         operationId: 'op_1001',
@@ -27,26 +27,50 @@ void main() {
       expect(reconstructed.status, MutationStatus.pending);
     });
 
-    test('supports deadLetter status transition', () {
+    test(
+      'supports deadLetter status transition and max attempts threshold',
+      () {
+        final mutation = PendingMutation(
+          operationId: 'op_1002',
+          userId: 'user_42',
+          operationType: 'record_mistake',
+          entityId: 'mistake_12',
+          payload: {'mistake': 'incorrect_char'},
+          createdAt: DateTime.now(),
+          attemptCount: 5,
+          status: MutationStatus.deadLetter,
+          lastError: 'Server error 500',
+        );
+
+        final json = mutation.toJson();
+        expect(json['status'], 'deadLetter');
+        expect(json['attemptCount'], 5);
+
+        final reconstructed = PendingMutation.fromJson(json);
+        expect(reconstructed.status, MutationStatus.deadLetter);
+        expect(reconstructed.lastError, 'Server error 500');
+      },
+    );
+
+    test('PendingMutation supports retry backoff timestamp calculation', () {
+      final now = DateTime.now();
+      final retryTime = now.add(const Duration(seconds: 4));
+
       final mutation = PendingMutation(
-        operationId: 'op_1002',
+        operationId: 'op_1003',
         userId: 'user_42',
-        operationType: 'record_mistake',
-        entityId: 'mistake_12',
-        payload: {'mistake': 'incorrect_char'},
-        createdAt: DateTime.now(),
-        attemptCount: 5,
-        status: MutationStatus.deadLetter,
-        lastError: 'Server error 500',
+        operationType: 'quiz_submit',
+        entityId: 'quiz_1',
+        payload: {'score': 100},
+        createdAt: now,
+        attemptCount: 2,
+        nextRetryAt: retryTime,
+        status: MutationStatus.failed,
       );
 
-      final json = mutation.toJson();
-      expect(json['status'], 'deadLetter');
-      expect(json['attemptCount'], 5);
-
-      final reconstructed = PendingMutation.fromJson(json);
-      expect(reconstructed.status, MutationStatus.deadLetter);
-      expect(reconstructed.lastError, 'Server error 500');
+      expect(mutation.attemptCount, 2);
+      expect(mutation.status, MutationStatus.failed);
+      expect(mutation.nextRetryAt.isAfter(now), isTrue);
     });
   });
 }

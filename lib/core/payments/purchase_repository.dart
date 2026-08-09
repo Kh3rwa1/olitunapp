@@ -7,6 +7,36 @@ import '../auth/appwrite_auth_service.dart';
 import '../storage/cache_service.dart';
 import '../logging/app_logger.dart';
 
+enum EntitlementStatus {
+  verified,
+  cached,
+  staleCached,
+  unauthenticated,
+  permissionDenied,
+  networkUnavailable,
+  serverError,
+}
+
+class EntitlementResult {
+  final Set<String> categoryIds;
+  final EntitlementStatus status;
+  final String? sanitizedErrorMessage;
+  final bool isFromCache;
+
+  const EntitlementResult({
+    required this.categoryIds,
+    required this.status,
+    this.sanitizedErrorMessage,
+    this.isFromCache = false,
+  });
+
+  bool get hasData => categoryIds.isNotEmpty;
+  bool get isSuccess =>
+      status == EntitlementStatus.verified ||
+      status == EntitlementStatus.cached ||
+      status == EntitlementStatus.staleCached;
+}
+
 class PurchaseRepository {
   final Ref ref;
   PurchaseRepository(this.ref);
@@ -17,11 +47,18 @@ class PurchaseRepository {
   /// Financial entitlement TTL: 5 minutes max
   static const Duration entitlementTtl = Duration(minutes: 5);
 
-  Future<Set<String>> fetchPurchasedCategoryIds(
+  /// Fetch user course entitlements with typed result states and stale cache protection.
+  Future<EntitlementResult> fetchEntitlements(
     String userId, {
     bool skipRevalidate = false,
   }) async {
-    if (userId.isEmpty) return {};
+    if (userId.isEmpty) {
+      return const EntitlementResult(
+        categoryIds: {},
+        status: EntitlementStatus.unauthenticated,
+        sanitizedErrorMessage: 'User is not authenticated.',
+      );
+    }
 
     final userCacheKey = _getCacheKey(userId);
 
@@ -35,13 +72,29 @@ class PurchaseRepository {
       if (!skipRevalidate) {
         _triggerRevalidation(userId, userCacheKey, cached);
       }
-      return cached;
+      return EntitlementResult(
+        categoryIds: cached,
+        status: EntitlementStatus.cached,
+        isFromCache: true,
+      );
     }
 
     return _fetchFromServer(userId, userCacheKey);
   }
 
-  Future<Set<String>> _fetchFromServer(
+  /// Backward-compatible helper returning category IDs set.
+  Future<Set<String>> fetchPurchasedCategoryIds(
+    String userId, {
+    bool skipRevalidate = false,
+  }) async {
+    final result = await fetchEntitlements(
+      userId,
+      skipRevalidate: skipRevalidate,
+    );
+    return result.categoryIds;
+  }
+
+  Future<EntitlementResult> _fetchFromServer(
     String userId,
     String userCacheKey,
   ) async {
@@ -69,10 +122,59 @@ class PurchaseRepository {
       await CacheService.set(userCacheKey, {
         'ids': categoryIds.toList(),
       }, ttl: entitlementTtl);
-      return categoryIds;
+
+      return EntitlementResult(
+        categoryIds: categoryIds,
+        status: EntitlementStatus.verified,
+      );
     } catch (e) {
       AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
-      return {};
+
+      // Attempt to recover stale cache entry if server request fails
+      final staleCache = await CacheService.get(
+        userCacheKey,
+        (json) => Set<String>.from(json['ids'] as List),
+      );
+
+      if (staleCache != null && staleCache.isNotEmpty) {
+        return EntitlementResult(
+          categoryIds: staleCache,
+          status: EntitlementStatus.staleCached,
+          sanitizedErrorMessage:
+              'Unable to refresh purchases. Displaying cached entitlements.',
+          isFromCache: true,
+        );
+      }
+
+      final errorStr = e.toString().toLowerCase();
+      if (errorStr.contains('socketexception') ||
+          errorStr.contains('network') ||
+          errorStr.contains('connection')) {
+        return const EntitlementResult(
+          categoryIds: {},
+          status: EntitlementStatus.networkUnavailable,
+          sanitizedErrorMessage:
+              'Network connection unavailable. Please check your internet connection.',
+        );
+      }
+
+      if (errorStr.contains('401') ||
+          errorStr.contains('403') ||
+          errorStr.contains('unauthorized') ||
+          errorStr.contains('permission')) {
+        return const EntitlementResult(
+          categoryIds: {},
+          status: EntitlementStatus.permissionDenied,
+          sanitizedErrorMessage: 'Access denied to purchase records.',
+        );
+      }
+
+      return const EntitlementResult(
+        categoryIds: {},
+        status: EntitlementStatus.serverError,
+        sanitizedErrorMessage:
+            'Service temporarily unavailable. Please try again later.',
+      );
     }
   }
 
@@ -123,6 +225,7 @@ class PurchaseRepository {
     );
   }
 
+  /// Purge user-scoped cache upon logout or account change.
   Future<void> clearUserCache(String userId) async {
     if (userId.isNotEmpty) {
       await CacheService.delete(_getCacheKey(userId));
@@ -134,21 +237,33 @@ class PurchaseRepository {
   }
 
   /// Create Razorpay payment order on the server
-  Future<Map<String, dynamic>> createRazorpayOrder(String categoryId) async {
+  Future<Map<String, dynamic>> createRazorpayOrder(
+    String categoryId, {
+    String? idempotencyKey,
+  }) async {
     try {
       final client = ref.read(appwriteAuthServiceProvider).client;
       final functions = appwrite.Functions(client);
 
+      final payload = <String, dynamic>{
+        'categoryId': categoryId,
+        if (idempotencyKey != null && idempotencyKey.isNotEmpty)
+          'idempotencyKey': idempotencyKey,
+      };
+
       final response = await functions.createExecution(
         functionId: 'createRazorpayOrder',
-        body: jsonEncode({'categoryId': categoryId}),
+        body: jsonEncode(payload),
       );
 
       final resBody = jsonDecode(response.responseBody) as Map<String, dynamic>;
       return resBody;
     } catch (e) {
       AppLogger.debug('❌ createRazorpayOrder failed: $e');
-      return {'ok': false, 'message': 'Failed to create order: $e'};
+      return {
+        'ok': false,
+        'message': 'Failed to create payment order. Please try again.',
+      };
     }
   }
 
@@ -178,7 +293,10 @@ class PurchaseRepository {
       return resBody;
     } catch (e) {
       AppLogger.debug('❌ verifyPurchase failed: $e');
-      return {'ok': false, 'message': 'Failed to verify purchase: $e'};
+      return {
+        'ok': false,
+        'message': 'Failed to verify purchase. Please try again.',
+      };
     }
   }
 }

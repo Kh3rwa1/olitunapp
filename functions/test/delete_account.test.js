@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import deleteAccountHandler, { ERROR_CODES, reconcileOrphanedAuthDeletions } from '../delete-account/src/main.js';
+import deleteAccountHandler, { ERROR_CODES, reconcileOrphanedAuthDeletions, encryptUserId, decryptUserId } from '../delete-account/src/main.js';
 
 function createMockRes() {
   const res = {
@@ -74,21 +74,32 @@ class InMemDb {
     for (const q of queries) {
       let attr, flatVals;
       if (typeof q === 'string') {
-        const match = q.match(/^equal\("([^"]+)",\s*(.*)\)$/s);
-        if (match) {
-          attr = match[1];
-          const rawVal = match[2];
+        if (q.startsWith('{')) {
           try {
-            flatVals = JSON.parse(rawVal);
-          } catch (e) {
-            flatVals = [rawVal.replace(/^["'\s]+|["'\s]+$/g, '')];
+            const parsed = JSON.parse(q);
+            if (parsed.method === 'equal' && parsed.attribute) {
+              attr = parsed.attribute;
+              const vals = parsed.values !== undefined ? parsed.values : [parsed.value];
+              flatVals = Array.isArray(vals) ? vals.flat(Infinity) : [vals];
+            }
+          } catch (_) {}
+        } else {
+          const match = q.match(/^equal\("([^"]+)",\s*(.*)\)$/s);
+          if (match) {
+            attr = match[1];
+            const rawVal = match[2].trim();
+            try {
+              flatVals = JSON.parse(rawVal);
+            } catch (e) {
+              flatVals = rawVal.split(',').map(v => v.replace(/^["'\s[\]]+|["'\s[\]]+$/g, '')).filter(Boolean);
+            }
+            if (!Array.isArray(flatVals)) flatVals = [flatVals];
           }
-          if (!Array.isArray(flatVals)) flatVals = [flatVals];
         }
       } else if (q && (q.attribute || q.target) && (q.values !== undefined || q.value !== undefined)) {
         attr = q.attribute || q.target;
         const vals = q.values !== undefined ? q.values : [q.value];
-        flatVals = Array.isArray(vals) ? vals.flat() : [vals];
+        flatVals = Array.isArray(vals) ? vals.flat(Infinity) : [vals];
       }
 
       if (attr && flatVals) {
@@ -441,7 +452,7 @@ describe('delete-account fail-closed serverless function & sanitization suite', 
     const db = new InMemDb();
 
     db.collections.set('deletion_requests', new Map([
-      ['del_req_orphan1', { $id: 'del_req_orphan1', status: 'auth_deleted' }]
+      ['del_req_orphan1', { $id: 'del_req_orphan1', userId: 'u_orphan_10', status: 'auth_deleted' }]
     ]));
 
     const stats = await reconcileOrphanedAuthDeletions({
@@ -525,5 +536,298 @@ describe('delete-account fail-closed serverless function & sanitization suite', 
 
     const doc = db.collections.get('deletion_requests').get('del_req_stranded');
     assert.equal(doc.status, 'completed');
+  });
+
+  describe('Phase 4 — Account-Deletion Reconciliation & Encrypted Identity Test Suite', () => {
+    const hmacSecret = 'test_hmac_secret_32_bytes_long_key_12345';
+
+    test('P4-1: Encrypted recoverable Auth-user identifier encrypts and decrypts with key rotation support', () => {
+      const userId = 'usr_secret_123';
+      const encrypted = encryptUserId(userId, hmacSecret);
+      assert.ok(encrypted.includes('ct'));
+
+      const decrypted = decryptUserId(encrypted, hmacSecret);
+      assert.equal(decrypted, userId);
+
+      const oldSecret = 'old_secret_key_456';
+      const encryptedWithOld = encryptUserId(userId, oldSecret);
+      const rotatedDecrypted = decryptUserId(encryptedWithOld, hmacSecret, [oldSecret]);
+      assert.equal(rotatedDecrypted, userId);
+    });
+
+    test('P4-2: Crash before Auth deletion (cleanup_complete with Auth user present) deletes Auth user and completes', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_crash_before_auth_del';
+      users.users.add(userId);
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_pre_auth', { $id: 'del_req_pre_auth', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'cleanup_complete' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 1);
+      assert.equal(stats.failed, 0);
+      assert.equal(users.users.has(userId), false);
+
+      const doc = db.collections.get('deletion_requests').get('del_req_pre_auth');
+      assert.equal(doc.status, 'completed');
+    });
+
+    test('P4-3: Crash immediately after Auth deletion (Auth users.get returns 404) transitions auth_deleted to completed', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_already_deleted_auth';
+      // User is NOT in users set -> users.get(userId) returns 404
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_post_auth', { $id: 'del_req_post_auth', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'cleanup_complete' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 1);
+      assert.equal(stats.failed, 0);
+
+      const doc = db.collections.get('deletion_requests').get('del_req_post_auth');
+      assert.equal(doc.status, 'completed');
+    });
+
+    test('P4-4: Final state-write failure fails closed', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_state_write_fail';
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_fail_write', { $id: 'del_req_fail_write', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'auth_deleted' }]
+      ]));
+
+      db.updateDocument = async () => {
+        throw new Error('Database write error');
+      };
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 0);
+      assert.equal(stats.failed, 1);
+    });
+
+    test('P4-5: Auth users.get returns 401/403/429/500 fails closed without marking completed', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_auth_500_err';
+
+      users.get = async () => {
+        const err = new Error('Internal Appwrite Auth Server Error');
+        err.code = 500;
+        throw err;
+      };
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_500', { $id: 'del_req_500', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'cleanup_complete' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 0);
+      assert.equal(stats.failed, 1);
+
+      const doc = db.collections.get('deletion_requests').get('del_req_500');
+      assert.equal(doc.status, 'cleanup_complete');
+    });
+
+    test('P4-6: Malformed or missing recovery identity fails closed', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_malformed', { $id: 'del_req_malformed', userId: 'anonymized_deleted_user', encryptedUserId: 'invalid_json_str', status: 'cleanup_complete' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 0);
+      assert.equal(stats.failed, 1);
+
+      const doc = db.collections.get('deletion_requests').get('del_req_malformed');
+      assert.equal(doc.status, 'cleanup_complete');
+    });
+
+    test('P4-7: Duplicate reconciliation execution is idempotent and safe', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_idempotent_test';
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_idem', { $id: 'del_req_idem', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'cleanup_complete' }]
+      ]));
+
+      const firstStats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(firstStats.completed, 1);
+
+      const secondStats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(secondStats.scanned, 0);
+      assert.equal(secondStats.completed, 0);
+      assert.equal(secondStats.failed, 0);
+    });
+
+    test('P4-8: cleanup_complete with Auth user present where Auth delete fails, fails closed', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_del_fail_500';
+      users.users.add(userId);
+
+      users.delete = async () => {
+        const err = new Error('Auth server unavailable');
+        err.code = 500;
+        throw err;
+      };
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_auth_del_fail', { $id: 'del_req_auth_del_fail', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'cleanup_complete' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 0);
+      assert.equal(stats.failed, 1);
+    });
+
+    test('P4-9: auth_deleted to completed transition succeeds cleanly', async () => {
+      const db = new InMemDb();
+      const users = new InMemUsers();
+      const userId = 'u_auth_deleted_state';
+
+      const encrypted = encryptUserId(userId, hmacSecret);
+      db.collections.set('deletion_requests', new Map([
+        ['del_req_auth_deleted', { $id: 'del_req_auth_deleted', userId: 'anonymized_deleted_user', encryptedUserId: encrypted, status: 'auth_deleted' }]
+      ]));
+
+      const stats = await reconcileOrphanedAuthDeletions({
+        databases: db,
+        users,
+        databaseId: 'test_db',
+        hmacSecret,
+        log: () => {},
+        error: () => {}
+      });
+
+      assert.equal(stats.scanned, 1);
+      assert.equal(stats.completed, 1);
+      assert.equal(stats.failed, 0);
+      assert.equal(db.collections.get('deletion_requests').get('del_req_auth_deleted').status, 'completed');
+    });
+
+    test('P4-10: No PII stored in client-readable userId field or emitted in logs', async () => {
+      const db = new InMemDb();
+      const storage = new InMemStorage();
+      const users = new InMemUsers();
+
+      const rawUserId = 'raw_user_id_sensitive_99';
+      users.users.add(rawUserId);
+
+      const logs = [];
+      const req = { method: 'POST', headers: { 'x-appwrite-user-id': rawUserId } };
+      const res = createMockRes();
+
+      process.env.DELETION_HMAC_SECRET = hmacSecret;
+      process.env.APPWRITE_ENDPOINT = 'http://localhost/v1';
+      process.env.APPWRITE_PROJECT_ID = 'test_proj';
+      process.env.APPWRITE_FUNCTION_API_KEY = 'test_key';
+      process.env.APPWRITE_DATABASE_ID = 'test_db';
+
+      await deleteAccountHandler({
+        req,
+        res,
+        log: (msg) => logs.push(msg),
+        error: (msg) => logs.push(msg),
+        databases: db,
+        users,
+        storage,
+      });
+
+      assert.equal(res.statusCode, 200);
+
+      // Check stored document has anonymized sentinel for userId
+      const reqTable = db.collections.get('deletion_requests');
+      const doc = Array.from(reqTable.values())[0];
+      assert.equal(doc.userId, 'anonymized_deleted_user');
+      assert.notEqual(doc.userId, rawUserId);
+
+      // Verify no raw user ID present in logs
+      const combinedLogs = logs.join(' ');
+      assert.equal(combinedLogs.includes(rawUserId), false);
+    });
   });
 });

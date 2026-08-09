@@ -42,21 +42,77 @@ export const ERROR_CODES = {
   ITERATION_LIMIT_EXCEEDED: 'ITERATION_LIMIT_EXCEEDED',
 };
 
-function generatePseudonymousId(userId, hmacSecret) {
+function getDerivedKey(secret, salt = 'olitun_deletion_v1') {
+  if (!secret) {
+    throw new Error('DELETION_HMAC_SECRET environment variable is missing');
+  }
+  return crypto.pbkdf2Sync(secret, salt, 100000, 32, 'sha256');
+}
+
+export function generatePseudonymousId(userId, hmacSecret) {
   if (!hmacSecret) {
     throw new Error('DELETION_HMAC_SECRET environment variable is missing');
   }
   return crypto.createHmac('sha256', hmacSecret).update(userId).digest('hex').substring(0, 32);
 }
 
+export function encryptUserId(userId, hmacSecret) {
+  const key = getDerivedKey(hmacSecret);
+  const iv = crypto.randomBytes(12);
+  const cipher = crypto.createCipheriv('aes-256-gcm', key, iv);
+  const encrypted = Buffer.concat([cipher.update(userId, 'utf8'), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return JSON.stringify({
+    v: 1,
+    iv: iv.toString('hex'),
+    ct: encrypted.toString('hex'),
+    tag: authTag.toString('hex'),
+  });
+}
+
+export function decryptUserId(encryptedPayload, primarySecret, previousSecrets = []) {
+  if (!encryptedPayload) return null;
+  const secrets = [primarySecret, ...previousSecrets].filter(Boolean);
+  if (secrets.length === 0) return null;
+
+  let parsed;
+  try {
+    parsed = typeof encryptedPayload === 'string' ? JSON.parse(encryptedPayload) : encryptedPayload;
+  } catch (_) {
+    return null;
+  }
+
+  if (!parsed || !parsed.iv || !parsed.ct || !parsed.tag) return null;
+
+  for (const sec of secrets) {
+    try {
+      const key = getDerivedKey(sec);
+      const iv = Buffer.from(parsed.iv, 'hex');
+      const ct = Buffer.from(parsed.ct, 'hex');
+      const tag = Buffer.from(parsed.tag, 'hex');
+      const decipher = crypto.createDecipheriv('aes-256-gcm', key, iv);
+      decipher.setAuthTag(tag);
+      const decrypted = Buffer.concat([decipher.update(ct), decipher.final()]);
+      return decrypted.toString('utf8');
+    } catch (_) {
+      // Continue trying key rotation list
+    }
+  }
+
+  return null;
+}
+
 /**
  * Privileged administrative recovery path for interrupted post-Auth deletions.
- * Scans for deletion requests stuck in 'auth_deleted' status and transitions them to 'completed'.
+ * Scans for deletion requests stuck in 'cleanup_complete' or 'auth_deleted' status
+ * and safely completes them after independently verifying Auth user absence.
  */
 export async function reconcileOrphanedAuthDeletions({
   databases,
   users,
   databaseId,
+  hmacSecret = process.env.DELETION_HMAC_SECRET,
+  previousSecrets = process.env.DELETION_OLD_HMAC_SECRETS ? process.env.DELETION_OLD_HMAC_SECRETS.split(',') : [],
   log = console.log,
   error = console.error,
 }) {
@@ -75,40 +131,80 @@ export async function reconcileOrphanedAuthDeletions({
 
     for (const doc of orphans.documents) {
       try {
-        if (doc.status === 'cleanup_complete') {
+        let targetUserId = null;
+        if (doc.encryptedUserId) {
+          targetUserId = decryptUserId(doc.encryptedUserId, hmacSecret, previousSecrets);
+        }
+        if (!targetUserId && doc.userId && doc.userId !== ANONYMIZED_USER_ID) {
+          targetUserId = doc.userId;
+        }
+
+        if (!targetUserId) {
+          // Unrecoverable identity: fail closed, do not mark completed
+          stats.failed++;
+          error(`[${correlationId}] [ORPHAN_RECOVERY_FAILED] Unrecoverable Auth identity for request ${doc.$id}`);
+          continue;
+        }
+
+        let currentStatus = doc.status;
+
+        if (currentStatus === 'cleanup_complete') {
           let userExists = false;
-          if (users && doc.userId && doc.userId !== ANONYMIZED_USER_ID) {
+          let authError = null;
+
+          if (users) {
             try {
-              await users.get(doc.userId);
+              await users.get(targetUserId);
               userExists = true;
             } catch (uErr) {
               if (uErr.code === 404) {
                 userExists = false;
               } else {
                 userExists = true;
+                authError = uErr;
               }
             }
           }
 
-          if (userExists) {
-            // User still exists in Auth; cleanup_complete is not orphaned
+          if (authError) {
+            // Fail closed on non-404 Auth errors (401, 403, 429, 500, etc.)
+            stats.failed++;
+            error(`[${correlationId}] [ORPHAN_RECOVERY_FAILED] Auth status query error Code: ${ERROR_CODES.AUTH_DELETE_FAILED}`);
             continue;
           }
 
-          // User is absent from Auth; transition cleanup_complete -> auth_deleted
+          if (userExists) {
+            // User still present in Auth. Attempt server-side Auth deletion to repair interrupted deletion.
+            try {
+              if (users) {
+                await users.delete(targetUserId);
+              }
+            } catch (delErr) {
+              if (delErr.code !== 404) {
+                stats.failed++;
+                error(`[${correlationId}] [ORPHAN_RECOVERY_FAILED] Failed Auth user deletion Code: ${ERROR_CODES.AUTH_DELETE_FAILED}`);
+                continue;
+              }
+            }
+          }
+
+          // Auth user is now confirmed deleted or absent (404); transition cleanup_complete -> auth_deleted
           await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
             status: 'auth_deleted',
             updatedAt: new Date().toISOString(),
           });
+          currentStatus = 'auth_deleted';
         }
 
-        // Transition auth_deleted -> completed
-        await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
-          status: 'completed',
-          updatedAt: new Date().toISOString(),
-        });
-        stats.completed++;
-        log(`[${correlationId}] [ORPHAN_RECOVERY_SUCCESS] State transitioned to completed`);
+        if (currentStatus === 'auth_deleted') {
+          // Transition auth_deleted -> completed
+          await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
+            status: 'completed',
+            updatedAt: new Date().toISOString(),
+          });
+          stats.completed++;
+          log(`[${correlationId}] [ORPHAN_RECOVERY_SUCCESS] State transitioned to completed`);
+        }
       } catch (updateErr) {
         stats.failed++;
         error(`[${correlationId}] [ORPHAN_RECOVERY_FAILED] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
@@ -185,6 +281,7 @@ export default async ({
       }
       stateDoc = await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
         status: 'in_progress',
+        encryptedUserId: encryptUserId(userId, hmacSecret),
         retryCount: (stateDoc.retryCount || 0) + 1,
         updatedAt: new Date().toISOString(),
       });
@@ -193,6 +290,7 @@ export default async ({
         stateDoc = await databases.createDocument(databaseId, 'deletion_requests', requestId, {
           userId: ANONYMIZED_USER_ID,
           pseudonymousId: pseudoSubject,
+          encryptedUserId: encryptUserId(userId, hmacSecret),
           status: 'in_progress',
           retryCount: 1,
           lastError: null,

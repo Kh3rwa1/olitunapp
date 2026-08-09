@@ -8,10 +8,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
 
 class MockClient extends Mock implements Client {}
+
 class MockAccount extends Mock implements Account {}
+
 class MockFunctions extends Mock implements Functions {}
+
 class MockExecution extends Mock implements models.Execution {}
+
 class MockSession extends Mock implements models.Session {}
+
 class MockSharedPreferences extends Mock implements SharedPreferences {}
 
 void main() {
@@ -78,7 +83,8 @@ void main() {
 
     test('rejects redirects without a secret', () {
       expect(
-        () => parseWebOAuthCompletion('https://olitun.app/splash?userId=user_1'),
+        () =>
+            parseWebOAuthCompletion('https://olitun.app/splash?userId=user_1'),
         throwsA(
           isA<AppwriteException>().having(
             (error) => error.message,
@@ -173,23 +179,31 @@ void main() {
   });
 
   group('parseAccountDeletionExecution', () {
-    test('1. HTTP 500 with authDeleted: true returns authDeletedReconciliationPending', () {
-      final res = parseAccountDeletionExecution(
-        status: 'failed',
-        statusCode: 500,
-        responseBody: '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
-      );
-      expect(res.kind, AccountDeletionOutcomeKind.authDeletedReconciliationPending);
-      expect(res.isAuthDeleted, isTrue);
-      expect(res.isFullSuccess, isFalse);
-      expect(res.statusCode, 500);
-    });
+    test(
+      '1. HTTP 500 with authDeleted: true returns authDeletedReconciliationPending',
+      () {
+        final res = parseAccountDeletionExecution(
+          status: 'failed',
+          statusCode: 500,
+          responseBody:
+              '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
+        );
+        expect(
+          res.kind,
+          AccountDeletionOutcomeKind.authDeletedReconciliationPending,
+        );
+        expect(res.isAuthDeleted, isTrue);
+        expect(res.isFullSuccess, isFalse);
+        expect(res.statusCode, 500);
+      },
+    );
 
     test('2. HTTP 500 without authDeleted: true returns failed', () {
       final res = parseAccountDeletionExecution(
         status: 'failed',
         statusCode: 500,
-        responseBody: '{"ok":false,"authDeleted":false,"message":"Database error"}',
+        responseBody:
+            '{"ok":false,"authDeleted":false,"message":"Database error"}',
       );
       expect(res.kind, AccountDeletionOutcomeKind.failed);
       expect(res.isAuthDeleted, isFalse);
@@ -218,15 +232,18 @@ void main() {
       expect(res.isAuthDeleted, isFalse);
     });
 
-    test('5. Malformed JSON fails closed as malformed without leaking raw body', () {
-      final res = parseAccountDeletionExecution(
-        status: 'completed',
-        statusCode: 200,
-        responseBody: '<html>Internal Error</html>',
-      );
-      expect(res.kind, AccountDeletionOutcomeKind.malformed);
-      expect(res.errorMessage, isNot(contains('Internal Error')));
-    });
+    test(
+      '5. Malformed JSON fails closed as malformed without leaking raw body',
+      () {
+        final res = parseAccountDeletionExecution(
+          status: 'completed',
+          statusCode: 200,
+          responseBody: '<html>Internal Error</html>',
+        );
+        expect(res.kind, AccountDeletionOutcomeKind.malformed);
+        expect(res.errorMessage, isNot(contains('Internal Error')));
+      },
+    );
 
     test('6. Non-object JSON fails closed as malformed', () {
       final res = parseAccountDeletionExecution(
@@ -267,8 +284,9 @@ void main() {
         'olitun_has_local_session': true,
       });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+      when(
+        () => mockAccount.getSession(sessionId: 'current'),
+      ).thenThrow(AppwriteException('Unauthorized', 401));
 
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
@@ -289,8 +307,9 @@ void main() {
         'olitun_has_local_session': true,
       });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+      when(
+        () => mockAccount.getSession(sessionId: 'current'),
+      ).thenThrow(AppwriteException('Unauthorized', 401));
 
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
@@ -304,50 +323,58 @@ void main() {
       verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
     });
 
-    test('3. Secret with missing timestamp clears keys and calls setSession("")', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'some_secret',
-        'olitun_has_local_session': true,
-      });
+    test(
+      '3. Secret with missing timestamp clears keys and calls setSession("")',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'some_secret',
+          'olitun_has_local_session': true,
+        });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenThrow(AppwriteException('Unauthorized', 401));
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      final loggedIn = await service.isLoggedIn();
-      expect(loggedIn, isFalse);
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isFalse);
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
 
-      final prefs = await SharedPreferences.getInstance();
-      expect(prefs.containsKey('olitun_appwrite_session_secret'), isFalse);
-    });
+        final prefs = await SharedPreferences.getInstance();
+        expect(prefs.containsKey('olitun_appwrite_session_secret'), isFalse);
+      },
+    );
 
-    test('4. Timestamp with no secret clears state and calls setSession("")', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '4. Timestamp with no secret clears state and calls setSession("")',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
+          'olitun_has_local_session': true,
+        });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenThrow(AppwriteException('Unauthorized', 401));
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      final loggedIn = await service.isLoggedIn();
-      expect(loggedIn, isFalse);
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isFalse);
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
     test('5. Zero timestamp clears state and calls setSession("")', () async {
       SharedPreferences.setMockInitialValues({
@@ -356,8 +383,9 @@ void main() {
         'olitun_has_local_session': true,
       });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+      when(
+        () => mockAccount.getSession(sessionId: 'current'),
+      ).thenThrow(AppwriteException('Unauthorized', 401));
 
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
@@ -371,61 +399,74 @@ void main() {
       verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
     });
 
-    test('6. Negative timestamp clears state and calls setSession("")', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
-        'olitun_web_session_ts': -100,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '6. Negative timestamp clears state and calls setSession("")',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'valid_secret',
+          'olitun_web_session_ts': -100,
+          'olitun_has_local_session': true,
+        });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenThrow(AppwriteException('Unauthorized', 401));
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      final loggedIn = await service.isLoggedIn();
-      expect(loggedIn, isFalse);
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isFalse);
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
-    test('7. Expired timestamp (>24h) clears state and calls setSession("")', () async {
-      final expiredMs = DateTime.now().subtract(const Duration(hours: 25)).millisecondsSinceEpoch;
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
-        'olitun_web_session_ts': expiredMs,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '7. Expired timestamp (>24h) clears state and calls setSession("")',
+      () async {
+        final expiredMs = DateTime.now()
+            .subtract(const Duration(hours: 25))
+            .millisecondsSinceEpoch;
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'valid_secret',
+          'olitun_web_session_ts': expiredMs,
+          'olitun_has_local_session': true,
+        });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenThrow(AppwriteException('Unauthorized', 401));
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      final loggedIn = await service.isLoggedIn();
-      expect(loggedIn, isFalse);
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isFalse);
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
     test('8. Future timestamp beyond 1 min skew clears state', () async {
-      final futureMs = DateTime.now().add(const Duration(minutes: 5)).millisecondsSinceEpoch;
+      final futureMs = DateTime.now()
+          .add(const Duration(minutes: 5))
+          .millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
         'olitun_appwrite_session_secret': 'valid_secret',
         'olitun_web_session_ts': futureMs,
         'olitun_has_local_session': true,
       });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(AppwriteException('Unauthorized', 401));
+      when(
+        () => mockAccount.getSession(sessionId: 'current'),
+      ).thenThrow(AppwriteException('Unauthorized', 401));
 
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
@@ -441,12 +482,16 @@ void main() {
 
     test('9. Timestamp within 1 min future skew is accepted as valid', () {
       final now = DateTime.now();
-      final validSkewMs = now.add(const Duration(seconds: 30)).millisecondsSinceEpoch;
+      final validSkewMs = now
+          .add(const Duration(seconds: 30))
+          .millisecondsSinceEpoch;
       expect(isWebSessionValidTimestamp(validSkewMs, nowOverride: now), isTrue);
     });
 
     test('10. Valid session restores once and does not clear state', () async {
-      final validMs = DateTime.now().subtract(const Duration(hours: 2)).millisecondsSinceEpoch;
+      final validMs = DateTime.now()
+          .subtract(const Duration(hours: 2))
+          .millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
         'olitun_appwrite_session_secret': 'valid_secret',
         'olitun_web_session_ts': validMs,
@@ -455,8 +500,9 @@ void main() {
 
       final mockSession = MockSession();
       when(() => mockSession.userId).thenReturn('user-123');
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenAnswer((_) async => mockSession);
+      when(
+        () => mockAccount.getSession(sessionId: 'current'),
+      ).thenAnswer((_) async => mockSession);
 
       final service = AppwriteAuthService.forTesting(
         client: mockClient,
@@ -470,51 +516,64 @@ void main() {
       verify(() => mockClient.setSession('valid_secret')).called(1);
     });
 
-    test('11. Async restore and sync restore enforce identical validity policy', () async {
-      final validMs = DateTime.now().subtract(const Duration(hours: 1)).millisecondsSinceEpoch;
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'sync_secret',
-        'olitun_web_session_ts': validMs,
-      });
+    test(
+      '11. Async restore and sync restore enforce identical validity policy',
+      () async {
+        final validMs = DateTime.now()
+            .subtract(const Duration(hours: 1))
+            .millisecondsSinceEpoch;
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'sync_secret',
+          'olitun_web_session_ts': validMs,
+        });
 
-      final prefs = await SharedPreferences.getInstance();
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final prefs = await SharedPreferences.getInstance();
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      service.restoreWebSessionSync(prefs);
-      verify(() => mockClient.setSession('sync_secret')).called(1);
-    });
+        service.restoreWebSessionSync(prefs);
+        verify(() => mockClient.setSession('sync_secret')).called(1);
+      },
+    );
 
-    test('12. Rejected persisted session cannot be accepted during simulated network timeout', () async {
-      final expiredMs = DateTime.now().subtract(const Duration(hours: 30)).millisecondsSinceEpoch;
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'expired_secret',
-        'olitun_web_session_ts': expiredMs,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '12. Rejected persisted session cannot be accepted during simulated network timeout',
+      () async {
+        final expiredMs = DateTime.now()
+            .subtract(const Duration(hours: 30))
+            .millisecondsSinceEpoch;
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'expired_secret',
+          'olitun_web_session_ts': expiredMs,
+          'olitun_has_local_session': true,
+        });
 
-      when(() => mockAccount.getSession(sessionId: 'current'))
-          .thenThrow(TimeoutException('Network timeout'));
+        when(
+          () => mockAccount.getSession(sessionId: 'current'),
+        ).thenThrow(TimeoutException('Network timeout'));
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      final loggedIn = await service.isLoggedIn();
-      expect(loggedIn, isFalse);
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        final loggedIn = await service.isLoggedIn();
+        expect(loggedIn, isFalse);
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
     test('13. Preference setBool failure still clears SDK state', () async {
       final mockPrefs = MockSharedPreferences();
-      when(() => mockPrefs.setBool(any(), any())).thenThrow(Exception('Storage write error'));
+      when(
+        () => mockPrefs.setBool(any(), any()),
+      ).thenThrow(Exception('Storage write error'));
       when(() => mockPrefs.remove(any())).thenAnswer((_) async => true);
       when(() => mockPrefs.getString(any())).thenReturn(null);
       when(() => mockPrefs.getInt(any())).thenReturn(null);
@@ -531,112 +590,137 @@ void main() {
       verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
     });
 
-    test('14. Secret-removal failure still attempts timestamp and local-flag cleanup', () async {
-      final mockPrefs = MockSharedPreferences();
-      when(() => mockPrefs.setBool(any(), any())).thenAnswer((_) async => true);
-      when(() => mockPrefs.remove('olitun_appwrite_session_secret')).thenThrow(Exception('Disk read-only'));
-      when(() => mockPrefs.remove('olitun_web_session_ts')).thenAnswer((_) async => true);
-      when(() => mockPrefs.getString(any())).thenReturn(null);
+    test(
+      '14. Secret-removal failure still attempts timestamp and local-flag cleanup',
+      () async {
+        final mockPrefs = MockSharedPreferences();
+        when(
+          () => mockPrefs.setBool(any(), any()),
+        ).thenAnswer((_) async => true);
+        when(
+          () => mockPrefs.remove('olitun_appwrite_session_secret'),
+        ).thenThrow(Exception('Disk read-only'));
+        when(
+          () => mockPrefs.remove('olitun_web_session_ts'),
+        ).thenAnswer((_) async => true);
+        when(() => mockPrefs.getString(any())).thenReturn(null);
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        prefs: mockPrefs,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          prefs: mockPrefs,
+          isWebOverride: true,
+        );
 
-      await service.signOut();
-      verify(() => mockPrefs.remove('olitun_web_session_ts')).called(greaterThanOrEqualTo(1));
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        await service.signOut();
+        verify(
+          () => mockPrefs.remove('olitun_web_session_ts'),
+        ).called(greaterThanOrEqualTo(1));
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
-    test('15. deleteAccount HTTP 500 with authDeleted: true clears local session state and setSession("")', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
-        'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '15. deleteAccount HTTP 500 with authDeleted: true clears local session state and setSession("")',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'valid_secret',
+          'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
+          'olitun_has_local_session': true,
+        });
 
-      final mockExecution = MockExecution();
-      when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
-      when(() => mockExecution.responseStatusCode).thenReturn(500);
-      when(() => mockExecution.responseBody).thenReturn(
-        '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
-      );
+        final mockExecution = MockExecution();
+        when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
+        when(() => mockExecution.responseStatusCode).thenReturn(500);
+        when(() => mockExecution.responseBody).thenReturn(
+          '{"ok":false,"authDeleted":true,"message":"Reconciliation pending"}',
+        );
 
-      when(() => mockFunctions.createExecution(functionId: 'delete-account'))
-          .thenAnswer((_) async => mockExecution);
+        when(
+          () => mockFunctions.createExecution(functionId: 'delete-account'),
+        ).thenAnswer((_) async => mockExecution);
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      await expectLater(
-        service.deleteAccount,
-        throwsA(isA<AppwriteException>()),
-      );
+        await expectLater(
+          service.deleteAccount,
+          throwsA(isA<AppwriteException>()),
+        );
 
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
 
-    test('16. deleteAccount HTTP 500 without authDeleted: true preserves valid local state', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
-        'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '16. deleteAccount HTTP 500 without authDeleted: true preserves valid local state',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'valid_secret',
+          'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
+          'olitun_has_local_session': true,
+        });
 
-      final mockExecution = MockExecution();
-      when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
-      when(() => mockExecution.responseStatusCode).thenReturn(500);
-      when(() => mockExecution.responseBody).thenReturn(
-        '{"ok":false,"authDeleted":false,"message":"Server error"}',
-      );
+        final mockExecution = MockExecution();
+        when(() => mockExecution.status).thenReturn(ExecutionStatus.failed);
+        when(() => mockExecution.responseStatusCode).thenReturn(500);
+        when(() => mockExecution.responseBody).thenReturn(
+          '{"ok":false,"authDeleted":false,"message":"Server error"}',
+        );
 
-      when(() => mockFunctions.createExecution(functionId: 'delete-account'))
-          .thenAnswer((_) async => mockExecution);
+        when(
+          () => mockFunctions.createExecution(functionId: 'delete-account'),
+        ).thenAnswer((_) async => mockExecution);
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      await expectLater(
-        service.deleteAccount,
-        throwsA(isA<AppwriteException>()),
-      );
-    });
+        await expectLater(
+          service.deleteAccount,
+          throwsA(isA<AppwriteException>()),
+        );
+      },
+    );
 
-    test('17. deleteAccount HTTP 2xx with ok: true clears every session layer', () async {
-      SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
-        'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
-        'olitun_has_local_session': true,
-      });
+    test(
+      '17. deleteAccount HTTP 2xx with ok: true clears every session layer',
+      () async {
+        SharedPreferences.setMockInitialValues({
+          'olitun_appwrite_session_secret': 'valid_secret',
+          'olitun_web_session_ts': DateTime.now().millisecondsSinceEpoch,
+          'olitun_has_local_session': true,
+        });
 
-      final mockExecution = MockExecution();
-      when(() => mockExecution.status).thenReturn(ExecutionStatus.completed);
-      when(() => mockExecution.responseStatusCode).thenReturn(200);
-      when(() => mockExecution.responseBody).thenReturn('{"ok":true,"authDeleted":true}');
+        final mockExecution = MockExecution();
+        when(() => mockExecution.status).thenReturn(ExecutionStatus.completed);
+        when(() => mockExecution.responseStatusCode).thenReturn(200);
+        when(
+          () => mockExecution.responseBody,
+        ).thenReturn('{"ok":true,"authDeleted":true}');
 
-      when(() => mockFunctions.createExecution(functionId: 'delete-account'))
-          .thenAnswer((_) async => mockExecution);
+        when(
+          () => mockFunctions.createExecution(functionId: 'delete-account'),
+        ).thenAnswer((_) async => mockExecution);
 
-      final service = AppwriteAuthService.forTesting(
-        client: mockClient,
-        account: mockAccount,
-        functions: mockFunctions,
-        isWebOverride: true,
-      );
+        final service = AppwriteAuthService.forTesting(
+          client: mockClient,
+          account: mockAccount,
+          functions: mockFunctions,
+          isWebOverride: true,
+        );
 
-      await service.deleteAccount();
-      verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
-    });
+        await service.deleteAccount();
+        verify(() => mockClient.setSession('')).called(greaterThanOrEqualTo(1));
+      },
+    );
   });
 }

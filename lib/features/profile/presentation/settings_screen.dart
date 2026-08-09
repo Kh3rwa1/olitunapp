@@ -38,6 +38,7 @@ class SettingsScreen extends ConsumerWidget {
           Row(
             children: [
               IconButton(
+                tooltip: 'Go back',
                 icon: Icon(
                   Icons.arrow_back_rounded,
                   color: isDark ? Colors.white : Colors.black,
@@ -121,6 +122,7 @@ class SettingsScreen extends ConsumerWidget {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
+          tooltip: 'Go back',
           icon: Icon(
             Icons.arrow_back_rounded,
             color: isDark ? Colors.white : Colors.black,

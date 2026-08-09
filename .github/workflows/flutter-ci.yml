@@ -44,9 +44,10 @@ jobs:
       - name: Enforce coverage threshold
         run: |
           dart run tool/enforce_coverage.dart \
-            --min=65 \
-            --path-min=/data/:35 \
-            --path-min=/domain/:65 \
+            --min=70 \
+            --path-min=/data/:40 \
+            --path-min=/domain/:70 \
+            --path-min=/core/auth/:50 \
             --enforce-after=2026-06-21
       - name: Smoke tests
         run: flutter test test/smoke

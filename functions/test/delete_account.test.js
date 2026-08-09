@@ -488,6 +488,8 @@ describe('delete-account fail-closed serverless function & sanitization suite', 
     assert.equal(res.statusCode, 500);
     assert.equal(res.body.ok, false);
     assert.equal(res.body.code, 'state_update_failed');
+    assert.equal(res.body.authDeleted, true);
+    assert.equal(res.body.message, 'Account deleted; final cleanup reconciliation is pending.');
 
     // Auth user WAS successfully deleted!
     assert.equal(users.users.has(userId), false);

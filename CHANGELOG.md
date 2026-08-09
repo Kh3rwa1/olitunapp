@@ -10,6 +10,7 @@ and tags consistent.
 
 ### Features
 
+* **hardening:** raise whole app to 10/10 engineering standard with encrypted account-deletion recovery ([#118](https://github.com/Kh3rwa1/olitunapp/pull/118)) ([6dce98f](https://github.com/Kh3rwa1/olitunapp/commit/6dce98f39bc21eab4c20708a41151a517e34fb43))
 * **security,auth,ci:** complete 10/10 hardening, fail-closed auth, and release gates ([#116](https://github.com/Kh3rwa1/olitunapp/issues/116)) ([a3195d6](https://github.com/Kh3rwa1/olitunapp/commit/a3195d6e493f3d740a78e217ac4ad5e2effb4ab4))
 
 ## [1.2.2](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.1...olitun-v1.2.2) (2026-08-09)

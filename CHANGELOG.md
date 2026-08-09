@@ -5,6 +5,13 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.3.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.2...olitun-v1.3.0) (2026-08-09)
+
+
+### Features
+
+* **security,auth,ci:** complete 10/10 hardening, fail-closed auth, and release gates ([#116](https://github.com/Kh3rwa1/olitunapp/issues/116)) ([a3195d6](https://github.com/Kh3rwa1/olitunapp/commit/a3195d6e493f3d740a78e217ac4ad5e2effb4ab4))
+
 ## [1.2.2](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.1...olitun-v1.2.2) (2026-08-09)
 
 

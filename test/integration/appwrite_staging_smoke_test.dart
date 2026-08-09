@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:appwrite/appwrite.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 class _RealHttpOverrides extends HttpOverrides {
@@ -12,10 +13,20 @@ class _RealHttpOverrides extends HttpOverrides {
 }
 
 void main() {
+  TestWidgetsFlutterBinding.ensureInitialized();
+
   const endpoint = String.fromEnvironment('STAGING_APPWRITE_ENDPOINT');
   const projectId = String.fromEnvironment('STAGING_APPWRITE_PROJECT_ID');
 
   test('staging Appwrite endpoint responds to ping', () async {
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async {
+            return '.';
+          },
+        );
+
     HttpOverrides.global = _RealHttpOverrides();
 
     if (endpoint.isEmpty || projectId.isEmpty) {

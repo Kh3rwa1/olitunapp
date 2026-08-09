@@ -21,10 +21,12 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
   }
 
   Future<void> loadCategories() async {
+    if (!mounted) return;
     if (!state.hasValue) {
       state = const AsyncValue.loading();
     }
     final result = await _repository.getCategories();
+    if (!mounted) return;
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
@@ -56,6 +58,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> addCategory(CategoryEntity category) async {
     final result = await _repository.createCategory(category);
+    if (!mounted) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),
@@ -64,6 +67,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> updateCategory(CategoryEntity category) async {
     final result = await _repository.updateCategory(category);
+    if (!mounted) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),
@@ -72,6 +76,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> deleteCategory(String id) async {
     final result = await _repository.deleteCategory(id);
+    if (!mounted) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),

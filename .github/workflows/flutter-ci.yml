@@ -67,7 +67,7 @@ jobs:
         with:
           node-version: 20
           cache: 'npm'
-      - run: npm ci || npm install
+      - run: npm ci
       - name: Run backend Serverless Node tests
         run: npm run test:backend
 

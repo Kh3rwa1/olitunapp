@@ -97,9 +97,47 @@ void main() {
         (lessons) => expect(lessons.single.id, 'x'),
       );
     });
+    test('returns remote lessons even if cache writing fails', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(
+        () => remote.getLessons(),
+      ).thenAnswer((_) async => [_lesson('fresh')]);
+      when(
+        () => local.cacheLessons(any()),
+      ).thenThrow(CacheException(message: 'disk full'));
+
+      final result = await repo.getLessons();
+
+      expect(result.isRight(), isTrue);
+      result.match(
+        (_) => fail('should be right'),
+        (lessons) => expect(lessons.single.id, 'fresh'),
+      );
+    });
   });
 
   group('getLessonsByCategory', () {
+    test(
+      'returns remote category lessons even if cache writing fails',
+      () async {
+        when(() => network.isConnected).thenAnswer((_) async => true);
+        when(
+          () => remote.getLessonsByCategory(any()),
+        ).thenAnswer((_) async => [_lesson('fresh_cat')]);
+        when(
+          () => local.cacheLessons(any()),
+        ).thenThrow(CacheException(message: 'disk full'));
+
+        final result = await repo.getLessonsByCategory('cat');
+
+        expect(result.isRight(), isTrue);
+        result.match(
+          (_) => fail('should be right'),
+          (lessons) => expect(lessons.single.id, 'fresh_cat'),
+        );
+      },
+    );
+
     test(
       'returns NetworkFailure when offline AND local cache throws',
       () async {
@@ -210,5 +248,22 @@ void main() {
         );
       },
     );
+    test('returns remote lesson by id even if cache writing fails', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(
+        () => remote.getLessonById('1'),
+      ).thenAnswer((_) async => _lesson('fresh_1'));
+      when(
+        () => local.cacheLessons(any()),
+      ).thenThrow(CacheException(message: 'disk full'));
+
+      final result = await repo.getLessonById('1');
+
+      expect(result.isRight(), isTrue);
+      result.match(
+        (_) => fail('should be right'),
+        (lesson) => expect(lesson.id, 'fresh_1'),
+      );
+    });
   });
 }

@@ -30,14 +30,23 @@ bool isWebSessionValidTimestamp(
   return true;
 }
 
+enum AccountDeletionOutcomeKind {
+  completed,
+  authDeletedReconciliationPending,
+  failed,
+  malformed,
+}
+
 @visibleForTesting
 class AccountDeletionResult {
+  final AccountDeletionOutcomeKind kind;
   final bool isAuthDeleted;
   final bool isFullSuccess;
   final String? errorMessage;
   final int statusCode;
 
   const AccountDeletionResult({
+    required this.kind,
     required this.isAuthDeleted,
     required this.isFullSuccess,
     this.errorMessage,
@@ -53,13 +62,20 @@ AccountDeletionResult parseAccountDeletionExecution({
 }) {
   final trimmedBody = responseBody.trim();
   Map<String, dynamic>? responseData;
+  bool isMalformed = false;
   if (trimmedBody.isNotEmpty) {
     try {
       final decoded = jsonDecode(trimmedBody);
       if (decoded is Map<String, dynamic>) {
         responseData = decoded;
+      } else {
+        isMalformed = true;
       }
-    } catch (_) {}
+    } catch (_) {
+      isMalformed = true;
+    }
+  } else {
+    isMalformed = true;
   }
 
   final isAuthDeleted = responseData?['authDeleted'] == true;
@@ -68,13 +84,25 @@ AccountDeletionResult parseAccountDeletionExecution({
       statusCode < 200 ||
       statusCode >= 300 ||
       responseData == null ||
-      responseData['ok'] != true) {
+      responseData['ok'] != true ||
+      isMalformed) {
     if (isAuthDeleted) {
       return AccountDeletionResult(
+        kind: AccountDeletionOutcomeKind.authDeletedReconciliationPending,
         isAuthDeleted: true,
         isFullSuccess: false,
         errorMessage:
             'Account deleted; final cleanup reconciliation is pending.',
+        statusCode: statusCode != 0 ? statusCode : 500,
+      );
+    }
+
+    if (isMalformed) {
+      return AccountDeletionResult(
+        kind: AccountDeletionOutcomeKind.malformed,
+        isAuthDeleted: false,
+        isFullSuccess: false,
+        errorMessage: 'Account deletion failed: malformed response from server',
         statusCode: statusCode != 0 ? statusCode : 500,
       );
     }
@@ -85,6 +113,7 @@ AccountDeletionResult parseAccountDeletionExecution({
         'Account deletion failed on server';
 
     return AccountDeletionResult(
+      kind: AccountDeletionOutcomeKind.failed,
       isAuthDeleted: false,
       isFullSuccess: false,
       errorMessage: errCode,
@@ -93,6 +122,7 @@ AccountDeletionResult parseAccountDeletionExecution({
   }
 
   return AccountDeletionResult(
+    kind: AccountDeletionOutcomeKind.completed,
     isAuthDeleted: true,
     isFullSuccess: true,
     statusCode: statusCode != 0 ? statusCode : 200,
@@ -259,6 +289,25 @@ class AppwriteAuthService {
   late final Account _account;
   late final Functions _functions;
 
+  SharedPreferences? _prefsOverride;
+  DateTime Function()? _nowProvider;
+  bool? _isWebOverride;
+
+  @visibleForTesting
+  AppwriteAuthService.forTesting({
+    required Client client,
+    required Account account,
+    required Functions functions,
+    SharedPreferences? prefs,
+    DateTime Function()? nowProvider,
+    bool? isWebOverride,
+  }) : _client = client,
+       _account = account,
+       _functions = functions,
+       _prefsOverride = prefs,
+       _nowProvider = nowProvider,
+       _isWebOverride = isWebOverride;
+
   Account get account => _account;
   Client get client => _client;
 
@@ -367,21 +416,27 @@ class AppwriteAuthService {
 
   static const String _webSessionTimestampKey = 'olitun_web_session_ts';
 
-  bool _isWebSessionValid(int? ts) => isWebSessionValidTimestamp(ts);
+  Future<SharedPreferences> _getPrefs() async =>
+      _prefsOverride ?? await SharedPreferences.getInstance();
+
+  bool get _isWeb => _isWebOverride ?? kIsWeb;
+
+  bool _isWebSessionValid(int? ts) =>
+      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(_webSessionSecretKey, secret);
     await prefs.setInt(
       _webSessionTimestampKey,
-      DateTime.now().millisecondsSinceEpoch,
+      (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
     );
   }
 
   Future<void> _restoreWebSession() async {
-    if (!kIsWeb) return;
-    final prefs = await SharedPreferences.getInstance();
+    if (!_isWeb) return;
+    final prefs = await _getPrefs();
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
@@ -398,7 +453,7 @@ class AppwriteAuthService {
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
-    if (!kIsWeb) return;
+    if (!_isWeb) return;
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
@@ -417,9 +472,9 @@ class AppwriteAuthService {
 
   Future<void> _clearWebSession() async {
     _client.setSession('');
-    if (!kIsWeb) return;
+    if (!_isWeb) return;
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(_webSessionSecretKey);
       await prefs.remove(_webSessionTimestampKey);
     } catch (e) {
@@ -428,7 +483,7 @@ class AppwriteAuthService {
   }
 
   Future<void> _clearLocalSessionState() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setBool(_hasLocalSessionKey, false);
     await _clearWebSession();
   }
@@ -439,9 +494,9 @@ class AppwriteAuthService {
 
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
 
-    if (kIsWeb) {
+    if (_isWeb) {
       await _restoreWebSession();
     }
 

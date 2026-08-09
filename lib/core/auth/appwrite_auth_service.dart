@@ -460,10 +460,10 @@ class AppwriteAuthService {
       // Hard-delete the account using our Cloud Function
       final execution = await _functions.createExecution(functionId: 'delete-account');
       
-      if (execution.status == 'failed') {
+      if (execution.status.toString().toLowerCase() == 'failed') {
         throw AppwriteException(
-          message: 'Account deletion function execution failed on server',
-          code: 500,
+          'Account deletion function execution failed on server',
+          500,
         );
       }
 
@@ -474,16 +474,16 @@ class AppwriteAuthService {
           if (data['ok'] != true) {
             final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
             throw AppwriteException(
-              message: 'Server account deletion failed: $errCode',
-              code: 500,
+              'Server account deletion failed: $errCode',
+              500,
             );
           }
         } on FormatException {
           // If response body is not JSON, check status code
           if (execution.responseStatusCode >= 400) {
             throw AppwriteException(
-              message: 'Server returned error status ${execution.responseStatusCode}',
-              code: execution.responseStatusCode,
+              'Server returned error status ${execution.responseStatusCode}',
+              execution.responseStatusCode,
             );
           }
         }
@@ -497,8 +497,8 @@ class AppwriteAuthService {
     } catch (e) {
       AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
       throw AppwriteException(
-        message: 'Account deletion failed: ${e.toString()}',
-        code: 500,
+        'Account deletion failed: ${e.toString()}',
+        500,
       );
     }
   }

@@ -243,7 +243,7 @@ class LessonRepositoryImpl implements LessonRepository {
         final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
         return Right(seed);
       } catch (_) {
-        return const Left(CacheFailure());
+        return const Left(CacheFailure(message: 'Lesson not found in cache'));
       }
     }
   }

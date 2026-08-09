@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/config/appwrite_config.dart';
 
 void main() {
   group('Appwrite Permission Invariants Unit Test Suite', () {

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
@@ -48,8 +49,10 @@ class AppwriteDbService {
           rethrow;
         }
 
-        final delay = initialDelay * (attempt * attempt); // exponential backoff
-        await Future.delayed(delay);
+        final exponentialFactor = 1 << (attempt - 1);
+        final jitter = Random().nextDouble() * 0.2 + 0.9;
+        final delayMs = (initialDelay.inMilliseconds * exponentialFactor * jitter).round();
+        await Future.delayed(Duration(milliseconds: delayMs));
       }
     }
   }
@@ -234,6 +237,12 @@ class AppwriteDbService {
     ],
   );
 
+  /// Returns standard admin-only permissions constructed using [AppwriteConfig.adminTeamId].
+  static List<String> adminOnlyPermissions() => [
+    Permission.read(Role.team(AppwriteConfig.adminTeamId)),
+    Permission.write(Role.team(AppwriteConfig.adminTeamId)),
+  ];
+
   /// Create an admin-only row (readable and writable only by admin team members).
   Future<void> createAdminOnlyRow(
     String collectionId,
@@ -243,10 +252,7 @@ class AppwriteDbService {
     collectionId,
     documentId,
     data,
-    permissions: [
-      Permission.read(Role.team(AppwriteConfig.adminTeamId)),
-      Permission.write(Role.team(AppwriteConfig.adminTeamId)),
-    ],
+    permissions: adminOnlyPermissions(),
   );
 
   /// Create a function-managed row (restricted access, written via server key).

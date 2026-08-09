@@ -296,13 +296,16 @@ class AppwriteAuthService {
     final ts = prefs.getInt(_webSessionTimestampKey);
 
     if (secret != null && secret.isNotEmpty) {
-      if (ts != null) {
-        final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
-        if (age > _maxWebSessionDuration) {
-          AppLogger.debug('Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing');
-          await _clearWebSession();
-          return;
-        }
+      if (ts == null) {
+        AppLogger.debug('Appwrite: Web session missing timestamp; failing closed and clearing');
+        await _clearWebSession();
+        return;
+      }
+      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      if (age > _maxWebSessionDuration) {
+        AppLogger.debug('Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing');
+        await _clearWebSession();
+        return;
       }
       _client.setSession(secret);
     }
@@ -314,11 +317,12 @@ class AppwriteAuthService {
     final ts = prefs.getInt(_webSessionTimestampKey);
 
     if (secret != null && secret.isNotEmpty) {
-      if (ts != null) {
-        final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
-        if (age > _maxWebSessionDuration) {
-          return;
-        }
+      if (ts == null) {
+        return;
+      }
+      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      if (age > _maxWebSessionDuration) {
+        return;
       }
       _client.setSession(secret);
       AppLogger.debug('Appwrite: Web session restored synchronously ✅');
@@ -345,18 +349,6 @@ class AppwriteAuthService {
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    try {
-      final connectivityResults = await Connectivity().checkConnectivity();
-      if (connectivityResults.contains(ConnectivityResult.none)) {
-        final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-        AppLogger.debug(
-          'Appwrite: Device is offline. Returning cached session: $hasLocal',
-        );
-        return hasLocal;
-      }
-    } catch (e) {
-      AppLogger.debug('Appwrite: Error checking connectivity: $e');
-    }
 
     try {
       if (kIsWeb) {
@@ -460,33 +452,37 @@ class AppwriteAuthService {
       // Hard-delete the account using our Cloud Function
       final execution = await _functions.createExecution(functionId: 'delete-account');
       
-      if (execution.status.toString().toLowerCase() == 'failed') {
+      if (execution.status.toString().toLowerCase() == 'failed' ||
+          execution.responseStatusCode < 200 ||
+          execution.responseStatusCode >= 300) {
         throw AppwriteException(
-          'Account deletion function execution failed on server',
+          'Account deletion failed on server',
+          execution.responseStatusCode != 0 ? execution.responseStatusCode : 500,
+        );
+      }
+
+      final trimmedBody = execution.responseBody.trim();
+      if (trimmedBody.isEmpty) {
+        throw AppwriteException(
+          'Account deletion returned an empty response',
           500,
         );
       }
 
-      final responseBody = execution.responseBody;
-      if (responseBody.isNotEmpty) {
-        try {
-          final Map<String, dynamic> data = jsonDecode(responseBody) as Map<String, dynamic>;
-          if (data['ok'] != true) {
-            final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
-            throw AppwriteException(
-              'Server account deletion failed: $errCode',
-              500,
-            );
-          }
-        } on FormatException {
-          // If response body is not JSON, check status code
-          if (execution.responseStatusCode >= 400) {
-            throw AppwriteException(
-              'Server returned error status ${execution.responseStatusCode}',
-              execution.responseStatusCode,
-            );
-          }
+      try {
+        final Map<String, dynamic> data = jsonDecode(trimmedBody) as Map<String, dynamic>;
+        if (data['ok'] != true) {
+          final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
+          throw AppwriteException(
+            'Server account deletion failed: $errCode',
+            500,
+          );
         }
+      } on FormatException {
+        throw AppwriteException(
+          'Invalid response format from server account deletion',
+          500,
+        );
       }
 
       // Server confirmed deletion success; clear local session state

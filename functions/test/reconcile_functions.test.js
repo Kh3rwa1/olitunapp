@@ -18,7 +18,7 @@ function createMockRes() {
 
 describe('Reconciliation Serverless Function Wrappers Suite', () => {
   test('reconcilePaymentAttempts returns 500 when environment configuration is missing', async () => {
-    const origEnv = process.env.APPWRITE_FUNCTION_API_KEY;
+    const origKey = process.env.APPWRITE_FUNCTION_API_KEY;
     delete process.env.APPWRITE_FUNCTION_API_KEY;
     delete process.env.APPWRITE_API_KEY;
 
@@ -32,7 +32,7 @@ describe('Reconciliation Serverless Function Wrappers Suite', () => {
       error: () => {},
     });
 
-    if (origEnv) process.env.APPWRITE_FUNCTION_API_KEY = origEnv;
+    if (origKey) process.env.APPWRITE_FUNCTION_API_KEY = origKey;
 
     assert.equal(res.statusCode, 500);
     assert.equal(res.body.ok, false);
@@ -58,5 +58,49 @@ describe('Reconciliation Serverless Function Wrappers Suite', () => {
     assert.equal(res.statusCode, 500);
     assert.equal(res.body.ok, false);
     assert.equal(res.body.message, 'Server misconfiguration');
+  });
+
+  test('reconcilePaymentAttempts returns 200 and scans payment_attempts when env is configured', async () => {
+    const req = {};
+    const res = createMockRes();
+
+    // Mock environment vars for test execution
+    process.env.APPWRITE_FUNCTION_API_KEY = 'test_key';
+    process.env.APPWRITE_ENDPOINT = 'http://localhost/v1';
+    process.env.APPWRITE_PROJECT_ID = 'test_project';
+    process.env.APPWRITE_DATABASE_ID = 'test_db';
+
+    await reconcilePaymentAttemptsHandler({
+      req,
+      res,
+      log: () => {},
+      error: () => {},
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.ok(res.body.stats !== undefined);
+  });
+
+  test('reconcileOrphanedDeletions returns 200 and completes scan when env is configured', async () => {
+    const req = {};
+    const res = createMockRes();
+
+    process.env.APPWRITE_FUNCTION_API_KEY = 'test_key';
+    process.env.APPWRITE_ENDPOINT = 'http://localhost/v1';
+    process.env.APPWRITE_PROJECT_ID = 'test_project';
+    process.env.APPWRITE_DATABASE_ID = 'test_db';
+
+    await reconcileOrphanedDeletionsHandler({
+      req,
+      res,
+      log: () => {},
+      error: () => {},
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.ok(res.body.stats !== undefined);
+    assert.equal(typeof res.body.stats.scanned, 'number');
   });
 });

@@ -33,8 +33,11 @@ class LessonRepositoryImpl implements LessonRepository {
         final remoteLessons = await remoteDataSource.getLessons();
         await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } on ServerException catch (e) {
-        return _getCachedLessons(e.message, e.code);
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessons('Remote load failed, using local cache');
       }
     } else {
       return _getCachedLessons('No internet connection');
@@ -52,8 +55,14 @@ class LessonRepositoryImpl implements LessonRepository {
         );
         await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } on ServerException catch (e) {
-        return _getCachedLessonsByCategory(categoryId, e.message, e.code);
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessonsByCategory(
+          categoryId,
+          'Remote load failed, using local cache',
+        );
       }
     } else {
       return _getCachedLessonsByCategory(categoryId, 'No internet connection');

@@ -13,6 +13,122 @@ import '../config/appwrite_config.dart';
 import '../storage/hive_service.dart';
 import 'web_redirect.dart';
 
+/// Evaluates whether a stored web session timestamp is valid (non-null, positive,
+/// not older than maxDuration, and not implausibly in the future beyond 1 minute skew).
+@visibleForTesting
+bool isWebSessionValidTimestamp(
+  int? ts, {
+  Duration maxDuration = const Duration(hours: 24),
+  DateTime? nowOverride,
+}) {
+  if (ts == null || ts <= 0) return false;
+  final nowMs = (nowOverride ?? DateTime.now()).millisecondsSinceEpoch;
+  // Allow up to 1 minute clock skew into the future, otherwise treat as invalid
+  if (ts > nowMs + 60000) return false;
+  final ageMs = nowMs - ts;
+  if (ageMs > maxDuration.inMilliseconds) return false;
+  return true;
+}
+
+enum AccountDeletionOutcomeKind {
+  completed,
+  authDeletedReconciliationPending,
+  failed,
+  malformed,
+}
+
+@visibleForTesting
+class AccountDeletionResult {
+  final AccountDeletionOutcomeKind kind;
+  final bool isAuthDeleted;
+  final bool isFullSuccess;
+  final String? errorMessage;
+  final int statusCode;
+
+  const AccountDeletionResult({
+    required this.kind,
+    required this.isAuthDeleted,
+    required this.isFullSuccess,
+    this.errorMessage,
+    required this.statusCode,
+  });
+}
+
+@visibleForTesting
+AccountDeletionResult parseAccountDeletionExecution({
+  required String status,
+  required int statusCode,
+  required String responseBody,
+}) {
+  final trimmedBody = responseBody.trim();
+  Map<String, dynamic>? responseData;
+  bool isMalformed = false;
+  if (trimmedBody.isNotEmpty) {
+    try {
+      final decoded = jsonDecode(trimmedBody);
+      if (decoded is Map<String, dynamic>) {
+        responseData = decoded;
+      } else {
+        isMalformed = true;
+      }
+    } catch (_) {
+      isMalformed = true;
+    }
+  } else {
+    isMalformed = true;
+  }
+
+  final isAuthDeleted = responseData?['authDeleted'] == true;
+
+  if (status.toLowerCase() == 'failed' ||
+      statusCode < 200 ||
+      statusCode >= 300 ||
+      responseData == null ||
+      responseData['ok'] != true ||
+      isMalformed) {
+    if (isAuthDeleted) {
+      return AccountDeletionResult(
+        kind: AccountDeletionOutcomeKind.authDeletedReconciliationPending,
+        isAuthDeleted: true,
+        isFullSuccess: false,
+        errorMessage:
+            'Account deleted; final cleanup reconciliation is pending.',
+        statusCode: statusCode != 0 ? statusCode : 500,
+      );
+    }
+
+    if (isMalformed) {
+      return AccountDeletionResult(
+        kind: AccountDeletionOutcomeKind.malformed,
+        isAuthDeleted: false,
+        isFullSuccess: false,
+        errorMessage: 'Account deletion failed: malformed response from server',
+        statusCode: statusCode != 0 ? statusCode : 500,
+      );
+    }
+
+    final errCode =
+        responseData?['code']?.toString() ??
+        responseData?['message']?.toString() ??
+        'Account deletion failed on server';
+
+    return AccountDeletionResult(
+      kind: AccountDeletionOutcomeKind.failed,
+      isAuthDeleted: false,
+      isFullSuccess: false,
+      errorMessage: errCode,
+      statusCode: statusCode != 0 ? statusCode : 500,
+    );
+  }
+
+  return AccountDeletionResult(
+    kind: AccountDeletionOutcomeKind.completed,
+    isAuthDeleted: true,
+    isFullSuccess: true,
+    statusCode: statusCode != 0 ? statusCode : 200,
+  );
+}
+
 @visibleForTesting
 String googleOAuthUserMessage(String message) {
   final lowerMessage = message.toLowerCase();
@@ -173,6 +289,25 @@ class AppwriteAuthService {
   late final Account _account;
   late final Functions _functions;
 
+  SharedPreferences? _prefsOverride;
+  DateTime Function()? _nowProvider;
+  bool? _isWebOverride;
+
+  @visibleForTesting
+  AppwriteAuthService.forTesting({
+    required Client client,
+    required Account account,
+    required Functions functions,
+    SharedPreferences? prefs,
+    DateTime Function()? nowProvider,
+    bool? isWebOverride,
+  }) : _client = client,
+       _account = account,
+       _functions = functions,
+       _prefsOverride = prefs,
+       _nowProvider = nowProvider,
+       _isWebOverride = isWebOverride;
+
   Account get account => _account;
   Client get client => _client;
 
@@ -280,32 +415,28 @@ class AppwriteAuthService {
   }
 
   static const String _webSessionTimestampKey = 'olitun_web_session_ts';
-  static const Duration _maxWebSessionDuration = Duration(hours: 24);
 
-  bool _isWebSessionValid(int? ts) {
-    if (ts == null || ts <= 0) return false;
-    final now = DateTime.now().millisecondsSinceEpoch;
-    // Allow up to 1 minute clock skew into the future, otherwise treat as invalid
-    if (ts > now + 60000) return false;
-    final sessionTime = DateTime.fromMillisecondsSinceEpoch(ts);
-    final age = DateTime.now().difference(sessionTime);
-    if (age > _maxWebSessionDuration || age.isNegative) return false;
-    return true;
-  }
+  Future<SharedPreferences> _getPrefs() async =>
+      _prefsOverride ?? await SharedPreferences.getInstance();
+
+  bool get _isWeb => _isWebOverride ?? kIsWeb;
+
+  bool _isWebSessionValid(int? ts) =>
+      isWebSessionValidTimestamp(ts, nowOverride: _nowProvider?.call());
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setString(_webSessionSecretKey, secret);
     await prefs.setInt(
       _webSessionTimestampKey,
-      DateTime.now().millisecondsSinceEpoch,
+      (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
     );
   }
 
   Future<void> _restoreWebSession() async {
-    if (!kIsWeb) return;
-    final prefs = await SharedPreferences.getInstance();
+    if (!_isWeb) return;
+    final prefs = await _getPrefs();
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
@@ -322,7 +453,7 @@ class AppwriteAuthService {
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
-    if (!kIsWeb) return;
+    if (!_isWeb) return;
     final secret = prefs.getString(_webSessionSecretKey);
     final ts = prefs.getInt(_webSessionTimestampKey);
 
@@ -341,9 +472,9 @@ class AppwriteAuthService {
 
   Future<void> _clearWebSession() async {
     _client.setSession('');
-    if (!kIsWeb) return;
+    if (!_isWeb) return;
     try {
-      final prefs = await SharedPreferences.getInstance();
+      final prefs = await _getPrefs();
       await prefs.remove(_webSessionSecretKey);
       await prefs.remove(_webSessionTimestampKey);
     } catch (e) {
@@ -352,7 +483,7 @@ class AppwriteAuthService {
   }
 
   Future<void> _clearLocalSessionState() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
     await prefs.setBool(_hasLocalSessionKey, false);
     await _clearWebSession();
   }
@@ -363,9 +494,9 @@ class AppwriteAuthService {
 
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
+    final prefs = await _getPrefs();
 
-    if (kIsWeb) {
+    if (_isWeb) {
       await _restoreWebSession();
     }
 
@@ -475,46 +606,25 @@ class AppwriteAuthService {
         functionId: 'delete-account',
       );
 
-      final trimmedBody = execution.responseBody.trim();
-      Map<String, dynamic>? responseData;
-      if (trimmedBody.isNotEmpty) {
-        try {
-          final decoded = jsonDecode(trimmedBody);
-          if (decoded is Map<String, dynamic>) {
-            responseData = decoded;
-          }
-        } catch (_) {}
-      }
+      final result = parseAccountDeletionExecution(
+        status: execution.status.toString(),
+        statusCode: execution.responseStatusCode,
+        responseBody: execution.responseBody,
+      );
 
-      final isAuthDeleted = responseData?['authDeleted'] == true;
-
-      // If execution status failed, status code is non-2xx, responseData is missing, or ok != true
-      if (execution.status.toString().toLowerCase() == 'failed' ||
-          execution.responseStatusCode < 200 ||
-          execution.responseStatusCode >= 300 ||
-          responseData == null ||
-          responseData['ok'] != true) {
-        // If server confirmed Auth user was deleted before state update error:
-        if (isAuthDeleted) {
+      if (!result.isFullSuccess) {
+        if (result.isAuthDeleted) {
           await _clearLocalSessionState();
           throw AppwriteException(
-            'Account deleted; final cleanup reconciliation is pending.',
-            execution.responseStatusCode != 0
-                ? execution.responseStatusCode
-                : 500,
+            result.errorMessage ??
+                'Account deleted; final cleanup reconciliation is pending.',
+            result.statusCode,
           );
         }
 
-        final errCode =
-            responseData?['code']?.toString() ??
-            responseData?['message']?.toString() ??
-            'Account deletion failed on server';
-
         throw AppwriteException(
-          errCode,
-          execution.responseStatusCode != 0
-              ? execution.responseStatusCode
-              : 500,
+          result.errorMessage ?? 'Account deletion failed on server',
+          result.statusCode,
         );
       }
 

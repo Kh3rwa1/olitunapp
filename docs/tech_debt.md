@@ -41,6 +41,11 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 *   **Status:** Deprecated in Sprint 2.
 *   **Target Removal Sprint:** **Sprint 4**.
 
+### 6. Architectural File Scale & Storage Debt
+*   **Large Presentation Screens & Admin Panels:** Several presentation screens (e.g. `lib/features/admin/presentation/screens/admin_content_screen.dart`, `admin_rhymes_screen.dart`, `bakhed_editor_screen.dart`) exceed 500+ lines. Refactoring into decomposed modular sub-widgets is scheduled for **Sprint 5**.
+*   **Centralized App Router:** `lib/core/routing/app_router.dart` encapsulates all application route definitions, guards, and shell navigation in a single file. Modularizing into feature-scoped sub-routers is scheduled for **Sprint 5**.
+*   **Web Session Storage Exposure**: Web sessions store session credentials in browser `SharedPreferences` (localStorage). Exposure risk is mitigated by our 24-hour TTL fail-closed eviction policy (`_isWebSessionValidTimestamp`). Full Web Crypto API / HttpOnly cookie isolation for web sessions is tracked for **Sprint 6**.
+
 ---
 
 ## 🛡️ Guidelines for Deprecating Code

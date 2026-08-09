@@ -187,7 +187,7 @@ void main() {
     test(
       '9. Expired, negative, zero, and future timestamps clear session state',
       () async {
-        final now = DateTime(2026, 8, 9, 12, 0);
+        final now = DateTime(2026, 8, 9, 12);
 
         // Expired (> 24 hours ago)
         expect(
@@ -225,7 +225,7 @@ void main() {
     test(
       '10. Valid timestamp within 24 hours restores session normally',
       () async {
-        final now = DateTime(2026, 8, 9, 12, 0);
+        final now = DateTime(2026, 8, 9, 12);
         final validTs = now
             .subtract(const Duration(hours: 2))
             .millisecondsSinceEpoch;
@@ -296,7 +296,7 @@ void main() {
         );
 
         expect(
-          () => service.deleteAccount(),
+          service.deleteAccount,
           throwsA(
             isA<AppwriteException>().having(
               (e) => e.message,
@@ -342,10 +342,7 @@ void main() {
           isWebOverride: true,
         );
 
-        expect(
-          () => service.deleteAccount(),
-          throwsA(isA<AppwriteException>()),
-        );
+        expect(service.deleteAccount, throwsA(isA<AppwriteException>()));
 
         await Future.delayed(Duration.zero);
         expect(prefs.getBool('olitun_has_local_session'), isTrue);

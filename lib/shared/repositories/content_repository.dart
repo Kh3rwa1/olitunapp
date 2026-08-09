@@ -386,7 +386,6 @@ class ContentRepository {
               collectionId: collectionId,
               documentId: item.id,
               data: appwritePayload,
-              permissions: [Permission.read(Role.any())],
             );
             resultItem = ContentItem.fromJson(doc.data, doc.$id, item.kind);
           } else {

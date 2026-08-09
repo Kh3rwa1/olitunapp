@@ -108,7 +108,6 @@ class CategoryRemoteDataSourceImpl implements CategoryRemoteDataSource {
             collectionId: 'categories',
             documentId: category.id,
             data: data,
-            permissions: [Permission.read(Role.any())],
           )
           .timeout(_writeTimeout);
     } on AppwriteException catch (e) {

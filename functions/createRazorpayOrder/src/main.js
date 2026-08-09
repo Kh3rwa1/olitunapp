@@ -1,5 +1,5 @@
 import { createHash } from 'crypto';
-import { Client, Databases } from 'node-appwrite';
+import { Client, Databases, Query } from 'node-appwrite';
 
 function stableId(value) {
   return createHash('sha256').update(value).digest('hex').slice(0, 32);
@@ -18,7 +18,7 @@ function text(value, max = 255) {
 }
 
 export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = {}) {
-  return async ({ req, res, error }) => {
+  return async ({ req, res, error, log = () => {} }) => {
     if (req.method !== 'POST') {
       return res.json({ ok: false, message: 'Method not allowed' }, 405);
     }
@@ -28,8 +28,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       return res.json({ ok: false, message: 'Unauthenticated' }, 401);
     }
 
-    const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
-    const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
+    const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
+    const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
     const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
     const razorpayKeyId = process.env.RAZORPAY_KEY_ID;
     const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
@@ -46,9 +46,16 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
 
     const body = parseBody(req);
     const categoryId = text(body.categoryId, 36);
+    let idempotencyKey = text(body.idempotencyKey, 128);
 
     if (!categoryId) {
       return res.json({ ok: false, message: 'Missing categoryId' }, 400);
+    }
+
+    if (!idempotencyKey) {
+      idempotencyKey = stableId(`${userId}:${categoryId}:checkout_default`);
+    } else if (idempotencyKey.length < 8) {
+      return res.json({ ok: false, message: 'Invalid idempotencyKey length' }, 400);
     }
 
     let databases = customDb;
@@ -62,10 +69,23 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
 
     const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
     const purchaseId = stableId(`${userId}:${categoryId}`);
+    const attemptDocId = `att_${stableId(`${userId}:${categoryId}:${idempotencyKey}`)}`;
     const now = new Date().toISOString();
 
     try {
-      // 1. Fetch category from database to read official server price
+      // 1. Check if a verified purchase already exists
+      try {
+        const existing = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
+        if (existing.status === 'verified') {
+          return res.json({ ok: false, message: 'Category already unlocked', purchase: existing });
+        }
+      } catch (err) {
+        if (err.code !== 404) {
+          throw err;
+        }
+      }
+
+      // 2. Fetch category from database to read official server price
       let category;
       try {
         category = await databases.getDocument(databaseId, 'categories', categoryId);
@@ -86,47 +106,161 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
         return res.json({ ok: false, message: 'Invalid category price' }, 400);
       }
 
-      // 2. Check if a verified purchase already exists
+      // 3. Concurrency & Idempotency Reservation via payment_attempts
+      let attemptRecord = null;
       try {
-        const existing = await databases.getDocument(databaseId, 'course_purchases', purchaseId);
-        if (existing.status === 'verified') {
-          return res.json({ ok: false, message: 'Category already unlocked', purchase: existing });
-        }
-      } catch (err) {
-        if (err.code !== 404) {
-          throw err;
+        const leaseExpiresAt = new Date(Date.now() + 30000).toISOString();
+        attemptRecord = await databases.createDocument(
+          databaseId,
+          'payment_attempts',
+          attemptDocId,
+          {
+            userId,
+            categoryId,
+            idempotencyKey,
+            attemptId: attemptDocId,
+            expectedAmount,
+            currency: 'INR',
+            status: 'in_progress',
+            provider: 'razorpay',
+            providerOrderId: null,
+            providerReceipt: purchaseId,
+            leaseOwner: process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder',
+            leaseExpiresAt,
+            reconciliationStatus: 'none',
+            createdAt: now,
+            updatedAt: now,
+          },
+          [`read("user:${userId}")`]
+        );
+      } catch (createErr) {
+        if (createErr.code === 409 || createErr.message?.includes('already exists') || createErr.message?.includes('conflict')) {
+          try {
+            attemptRecord = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
+          } catch (getErr) {
+            throw getErr;
+          }
+
+          if (attemptRecord.providerOrderId) {
+            log(`Returning existing idempotency attempt for order ${attemptRecord.providerOrderId}`);
+            return res.json({
+              ok: true,
+              message: 'Razorpay order retrieved from existing attempt',
+              orderId: attemptRecord.providerOrderId,
+              amount: expectedAmount * 100,
+              currency: 'INR',
+              keyId: razorpayKeyId,
+              categoryId: categoryId,
+              categoryTitle: category.name || category.title || '',
+              isDuplicateRetry: true,
+            });
+          }
+
+          if (attemptRecord.reconciliationStatus === 'pending' || attemptRecord.status === 'reconciliation_required') {
+            return res.json({
+              ok: false,
+              code: 'reconciliation_required',
+              message: 'Order creation status is ambiguous due to gateway timeout. Reconciliation required.',
+            }, 504);
+          }
+
+          const leaseExpires = new Date(attemptRecord.leaseExpiresAt || 0).getTime();
+          if (attemptRecord.status === 'in_progress' && leaseExpires > Date.now()) {
+            return res.json({
+              ok: false,
+              code: 'in_progress',
+              message: 'Order creation is in progress by another request. Please retry shortly.',
+            }, 409);
+          }
+
+          return res.json({
+            ok: false,
+            code: 'reservation_conflict',
+            message: 'Order creation attempt reservation conflict. Please retry.',
+          }, 409);
+        } else {
+          throw createErr;
         }
       }
 
-      // 3. Create Razorpay order via Razorpay REST API
+      // 4. Create Razorpay order via Razorpay REST API
       const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
       const orderPayload = {
-        amount: expectedAmount * 100, // Razorpay amount in paise
+        amount: expectedAmount * 100,
         currency: 'INR',
         receipt: purchaseId,
         notes: {
           userId,
           categoryId,
+          idempotencyKey,
           categoryTitle: category.name || category.title || ''
         }
       };
 
-      const razorpayRes = await fetchImpl('https://api.razorpay.com/v1/orders', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': authHeader
-        },
-        body: JSON.stringify(orderPayload)
-      });
+      let razorpayRes;
+      try {
+        razorpayRes = await fetchImpl('https://api.razorpay.com/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify(orderPayload)
+        });
+      } catch (netErr) {
+        error(`[${attemptDocId}] Gateway network timeout or connection error`);
+        try {
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: 'reconciliation_required',
+            reconciliationStatus: 'pending',
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (_) {}
+
+        return res.json({
+          ok: false,
+          code: 'reconciliation_required',
+          message: 'Payment gateway connection timed out. Reconciliation required.',
+        }, 504);
+      }
 
       if (!razorpayRes.ok) {
-        const errText = await razorpayRes.text();
-        error(`Razorpay order creation failed: ${errText}`);
+        error(`[${attemptDocId}] Razorpay order creation request returned error status ${razorpayRes.status}`);
+        try {
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: 'failed',
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (_) {}
+
         return res.json({ ok: false, message: 'Failed to create order with payment gateway' }, 502);
       }
 
       const razorpayOrder = await razorpayRes.json();
+
+      // Update payment_attempts record with verified provider order ID
+      try {
+        await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+          status: 'created',
+          providerOrderId: razorpayOrder.id,
+          reconciliationStatus: 'none',
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (updateErr) {
+        error(`[${attemptDocId}] Failed to record providerOrderId in payment_attempts doc`);
+        // Flag for reconciliation rather than ignoring
+        try {
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: 'reconciliation_required',
+            reconciliationStatus: 'pending',
+            providerOrderId: razorpayOrder.id,
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (flagErr) {
+          error(`[${attemptDocId}] Failed flagging attempt for reconciliation`);
+        }
+      }
+
       const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
       const documentPermissions = [
         `read("user:${userId}")`,
@@ -135,7 +269,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
         `delete("team:${adminTeamId}")`
       ];
 
-      // 4. Create or update pending purchase ledger entry
+      // 5. Create or update pending purchase ledger entry
       const ledgerData = {
         userId,
         categoryId,
@@ -186,8 +320,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       });
 
     } catch (err) {
-      error(`createRazorpayOrder failed: ${err.message}`);
-      return res.json({ ok: false, message: err.message }, 500);
+      error('[createRazorpayOrder] Internal server error occurred');
+      return res.json({ ok: false, message: 'An internal server error occurred' }, 500);
     }
   };
 }

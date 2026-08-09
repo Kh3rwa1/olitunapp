@@ -19,21 +19,25 @@ Olitun is an educational app for learning Ol Chiki and related Santali learning 
 
 We use data to keep the learning experience working across sessions, sync approved educational content, protect admin areas, improve reliability, and respond to account or support requests.
 
-## Data Retention
+## Data Retention & Account Deletion
 
-Detailed learning analytics events are automatically pruned and deleted after 90 days. Aggregated anonymous daily rollups are retained for admin dashboard reporting.
+When you request account deletion from within the Olitun application, your account credentials, preferences, learning progress, mistake history, and personal media uploads are permanently removed. 
+
+For statutory tax, legal, and audit compliance, transaction ledgers (Razorpay order receipts) are retained in an anonymized format stripped of all personal identifiers (`anonymized_deleted_user`).
+
+Detailed raw analytics events are automatically pruned after 90 days, while aggregated anonymous daily rollups are retained for system diagnostics.
 
 ## Local And Offline Data
 
-Olitun keeps some progress and settings on the device for offline use. Clearing app storage, resetting progress, or deleting an account can remove local learning data.
+Olitun keeps progress and settings cached locally on your device for offline learning. Logging out or requesting account deletion purges private local cached data.
 
 ## Third-Party Services
 
-Olitun uses Appwrite for authentication, database, storage, and server functions. Optional crash reporting may use Sentry when configured. Translation requests are routed through the server-side translator function and may use an external translation provider.
+Olitun uses Appwrite for authentication, database, storage, and server functions. Optional crash reporting may use Sentry when configured. Payment transactions are processed securely via Razorpay.
 
 ## Your Choices
 
-You can reset local progress from settings, delete your account from the app, or contact the project owner for help with data access or removal.
+You can reset local progress from settings, initiate complete account deletion directly from the profile settings menu, or contact the project owner for assistance.
 
 ## Contact
 

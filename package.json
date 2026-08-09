@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:backend": "node --test functions/test/payment_functions.test.js"
+    "test:backend": "node --test functions/test/payment_functions.test.js functions/test/delete_account.test.js functions/test/create_razorpay_order.test.js"
   },
   "dependencies": {
     "node-appwrite": "^14.1.0"

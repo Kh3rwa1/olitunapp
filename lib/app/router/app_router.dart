@@ -75,7 +75,10 @@ String? fragmentRedirectFor({
   final hash = (initialHash != null && initialHash.isNotEmpty)
       ? initialHash
       : fragment;
-  if (hash.isNotEmpty && hash.startsWith('/')) {
+  if (hash.isNotEmpty &&
+      hash.startsWith('/') &&
+      !hash.startsWith('//') &&
+      !hash.startsWith('/\\')) {
     return hash;
   }
   return null;

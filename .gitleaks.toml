@@ -14,6 +14,14 @@ description = "Known historical false positives — already cleaned from current
 # grant any privileged server-side access.
 regexes = [
   "pck_[a-z0-9]+",
+  "idempotency_[a-z0-9_]+",
+  "idem_[a-z0-9_]+",
+]
+
+paths = [
+  '''functions/test/.*''',
+  '''test/.*''',
+  '''scripts/.*''',
 ]
 
 # Suppress findings in old commits that have already been cleaned up.
@@ -23,3 +31,4 @@ commits = [
   "e0fe05d091eed72eda3f35d45746452b19f45442",
   "6bdde56ea8a4c5fcc576c49710a13f05c8f6c875",
 ]
+

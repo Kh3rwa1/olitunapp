@@ -43,7 +43,41 @@
       "enabled": true,
       "logging": true,
       "scopes": [
-        "users.write"
+        "users.write",
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write",
+        "files.read",
+        "files.write"
+      ]
+    },
+    {
+      "id": "reconcileOrphanedDeletions",
+      "$id": "reconcileOrphanedDeletions",
+      "name": "reconcileOrphanedDeletions",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "0 2 * * *",
+      "timeout": 60,
+      "path": "functions/reconcileOrphanedDeletions",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "users.read",
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write"
       ]
     },
     {

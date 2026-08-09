@@ -72,10 +72,26 @@ class InMemDb {
     let docs = Array.from(table.values());
 
     for (const q of queries) {
-      if (q && (q.attribute || q.target) && (q.values !== undefined || q.value !== undefined)) {
-        const attr = q.attribute || q.target;
+      let attr, flatVals;
+      if (typeof q === 'string') {
+        const match = q.match(/^equal\("([^"]+)",\s*(.*)\)$/s);
+        if (match) {
+          attr = match[1];
+          const rawVal = match[2];
+          try {
+            flatVals = JSON.parse(rawVal);
+          } catch (e) {
+            flatVals = [rawVal.replace(/^["'\s]+|["'\s]+$/g, '')];
+          }
+          if (!Array.isArray(flatVals)) flatVals = [flatVals];
+        }
+      } else if (q && (q.attribute || q.target) && (q.values !== undefined || q.value !== undefined)) {
+        attr = q.attribute || q.target;
         const vals = q.values !== undefined ? q.values : [q.value];
-        const flatVals = Array.isArray(vals) ? vals.flat() : [vals];
+        flatVals = Array.isArray(vals) ? vals.flat() : [vals];
+      }
+
+      if (attr && flatVals) {
         docs = docs.filter(d => flatVals.includes(d[attr]));
       }
     }
@@ -102,6 +118,15 @@ class InMemStorage {
 class InMemUsers {
   constructor() {
     this.users = new Set();
+  }
+
+  async get(userId) {
+    if (!this.users.has(userId)) {
+      const err = new Error('User not found');
+      err.code = 404;
+      throw err;
+    }
+    return { $id: userId };
   }
 
   async delete(userId) {
@@ -431,6 +456,72 @@ describe('delete-account fail-closed serverless function & sanitization suite', 
     assert.equal(stats.failed, 0);
 
     const doc = db.collections.get('deletion_requests').get('del_req_orphan1');
+    assert.equal(doc.status, 'completed');
+  });
+
+  test('11. Double post-Auth state update failure leaves request in cleanup_complete while Auth is deleted', async () => {
+    const db = new InMemDb();
+    const storage = new InMemStorage();
+    const users = new InMemUsers();
+
+    const userId = 'u_del_post_auth_fail';
+    users.users.add(userId);
+
+    const origUpdate = db.updateDocument.bind(db);
+    db.updateDocument = async (dbId, col, id, data) => {
+      if (data.status === 'auth_deleted' || data.status === 'completed') {
+        const err = new Error('Database connection reset during post-Auth update');
+        throw err;
+      }
+      return origUpdate(dbId, col, id, data);
+    };
+
+    const req = { method: 'POST', headers: { 'x-appwrite-user-id': userId } };
+    const res = createMockRes();
+
+    await deleteAccountHandler({
+      req, res,
+      log: () => {}, error: () => {},
+      databases: db, users, storage
+    });
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.body.ok, false);
+    assert.equal(res.body.code, 'state_update_failed');
+
+    // Auth user WAS successfully deleted!
+    assert.equal(users.users.has(userId), false);
+
+    // Request is stranded in cleanup_complete state
+    const reqTable = db.collections.get('deletion_requests');
+    const reqDoc = Array.from(reqTable.values())[0];
+    assert.equal(reqDoc.status, 'cleanup_complete');
+  });
+
+  test('12. Privileged orphan recovery detects cleanup_complete request with deleted Auth user and recovers to completed', async () => {
+    const db = new InMemDb();
+    const users = new InMemUsers();
+
+    const userId = 'u_stranded_100';
+    // User is NOT added to users (simulating already deleted Auth account)
+
+    db.collections.set('deletion_requests', new Map([
+      ['del_req_stranded', { $id: 'del_req_stranded', userId, status: 'cleanup_complete' }]
+    ]));
+
+    const stats = await reconcileOrphanedAuthDeletions({
+      databases: db,
+      users,
+      databaseId: 'test_db_id',
+      log: () => {},
+      error: () => {}
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.completed, 1);
+    assert.equal(stats.failed, 0);
+
+    const doc = db.collections.get('deletion_requests').get('del_req_stranded');
     assert.equal(doc.status, 'completed');
   });
 });

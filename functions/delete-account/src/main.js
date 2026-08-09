@@ -55,18 +55,19 @@ function generatePseudonymousId(userId, hmacSecret) {
  */
 export async function reconcileOrphanedAuthDeletions({
   databases,
+  users,
   databaseId,
   log = console.log,
   error = console.error,
 }) {
   const correlationId = crypto.randomUUID();
-  log(`[${correlationId}] [ORPHAN_RECOVERY_START] Initiating scan for auth_deleted requests`);
+  log(`[${correlationId}] [ORPHAN_RECOVERY_START] Initiating scan for cleanup_complete & auth_deleted requests`);
 
   const stats = { scanned: 0, completed: 0, failed: 0 };
 
   try {
     const orphans = await databases.listDocuments(databaseId, 'deletion_requests', [
-      Query.equal('status', ['auth_deleted']),
+      Query.equal('status', ['cleanup_complete', 'auth_deleted']),
       Query.limit(50),
     ]);
 
@@ -74,6 +75,34 @@ export async function reconcileOrphanedAuthDeletions({
 
     for (const doc of orphans.documents) {
       try {
+        if (doc.status === 'cleanup_complete') {
+          let userExists = false;
+          if (users && doc.userId && doc.userId !== ANONYMIZED_USER_ID) {
+            try {
+              await users.get(doc.userId);
+              userExists = true;
+            } catch (uErr) {
+              if (uErr.code === 404) {
+                userExists = false;
+              } else {
+                userExists = true;
+              }
+            }
+          }
+
+          if (userExists) {
+            // User still exists in Auth; cleanup_complete is not orphaned
+            continue;
+          }
+
+          // User is absent from Auth; transition cleanup_complete -> auth_deleted
+          await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
+            status: 'auth_deleted',
+            updatedAt: new Date().toISOString(),
+          });
+        }
+
+        // Transition auth_deleted -> completed
         await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
           status: 'completed',
           updatedAt: new Date().toISOString(),

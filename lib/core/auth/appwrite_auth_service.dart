@@ -286,7 +286,10 @@ class AppwriteAuthService {
     _client.setSession(secret);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_webSessionSecretKey, secret);
-    await prefs.setInt(_webSessionTimestampKey, DateTime.now().millisecondsSinceEpoch);
+    await prefs.setInt(
+      _webSessionTimestampKey,
+      DateTime.now().millisecondsSinceEpoch,
+    );
   }
 
   Future<void> _restoreWebSession() async {
@@ -297,13 +300,19 @@ class AppwriteAuthService {
 
     if (secret != null && secret.isNotEmpty) {
       if (ts == null) {
-        AppLogger.debug('Appwrite: Web session missing timestamp; failing closed and clearing');
+        AppLogger.debug(
+          'Appwrite: Web session missing timestamp; failing closed and clearing',
+        );
         await _clearWebSession();
         return;
       }
-      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(ts),
+      );
       if (age > _maxWebSessionDuration) {
-        AppLogger.debug('Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing');
+        AppLogger.debug(
+          'Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing',
+        );
         await _clearWebSession();
         return;
       }
@@ -320,7 +329,9 @@ class AppwriteAuthService {
       if (ts == null) {
         return;
       }
-      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      final age = DateTime.now().difference(
+        DateTime.fromMillisecondsSinceEpoch(ts),
+      );
       if (age > _maxWebSessionDuration) {
         return;
       }
@@ -350,10 +361,16 @@ class AppwriteAuthService {
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
 
+    if (kIsWeb) {
+      await _restoreWebSession();
+    }
+
+    final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
+    if (!hasLocal) {
+      return false;
+    }
+
     try {
-      if (kIsWeb) {
-        await _restoreWebSession();
-      }
       final session = await _account
           .getSession(sessionId: 'current')
           .timeout(const Duration(seconds: 3));
@@ -450,14 +467,18 @@ class AppwriteAuthService {
     try {
       await _restoreWebSession();
       // Hard-delete the account using our Cloud Function
-      final execution = await _functions.createExecution(functionId: 'delete-account');
-      
+      final execution = await _functions.createExecution(
+        functionId: 'delete-account',
+      );
+
       if (execution.status.toString().toLowerCase() == 'failed' ||
           execution.responseStatusCode < 200 ||
           execution.responseStatusCode >= 300) {
         throw AppwriteException(
           'Account deletion failed on server',
-          execution.responseStatusCode != 0 ? execution.responseStatusCode : 500,
+          execution.responseStatusCode != 0
+              ? execution.responseStatusCode
+              : 500,
         );
       }
 
@@ -470,9 +491,13 @@ class AppwriteAuthService {
       }
 
       try {
-        final Map<String, dynamic> data = jsonDecode(trimmedBody) as Map<String, dynamic>;
+        final Map<String, dynamic> data =
+            jsonDecode(trimmedBody) as Map<String, dynamic>;
         if (data['ok'] != true) {
-          final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
+          final String errCode =
+              data['code']?.toString() ??
+              data['message']?.toString() ??
+              'deletion_failed';
           throw AppwriteException(
             'Server account deletion failed: $errCode',
             500,
@@ -492,10 +517,7 @@ class AppwriteAuthService {
       rethrow;
     } catch (e) {
       AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
-      throw AppwriteException(
-        'Account deletion failed: ${e.toString()}',
-        500,
-      );
+      throw AppwriteException('Account deletion failed: ${e.toString()}', 500);
     }
   }
 

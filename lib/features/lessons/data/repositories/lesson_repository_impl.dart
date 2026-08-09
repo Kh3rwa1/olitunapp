@@ -29,16 +29,26 @@ class LessonRepositoryImpl implements LessonRepository {
   @override
   Future<Either<Failure, List<LessonEntity>>> getLessons() async {
     if (await networkInfo.isConnected) {
+      final List<LessonModel> remoteLessons;
       try {
-        final remoteLessons = await remoteDataSource.getLessons();
-        await localDataSource.cacheLessons(remoteLessons);
-        return Right(remoteLessons.map((m) => m.toEntity()).toList());
+        remoteLessons = await remoteDataSource.getLessons();
       } catch (e, st) {
         if (e is ServerException) {
           _recordedServerFailure(e, st);
         }
         return _getCachedLessons('Remote load failed, using local cache');
       }
+
+      try {
+        await localDataSource.cacheLessons(remoteLessons);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache remote lessons: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(remoteLessons.map((m) => m.toEntity()).toList());
     } else {
       return _getCachedLessons('No internet connection');
     }
@@ -49,12 +59,9 @@ class LessonRepositoryImpl implements LessonRepository {
     String categoryId,
   ) async {
     if (await networkInfo.isConnected) {
+      final List<LessonModel> remoteLessons;
       try {
-        final remoteLessons = await remoteDataSource.getLessonsByCategory(
-          categoryId,
-        );
-        await localDataSource.cacheLessons(remoteLessons);
-        return Right(remoteLessons.map((m) => m.toEntity()).toList());
+        remoteLessons = await remoteDataSource.getLessonsByCategory(categoryId);
       } catch (e, st) {
         if (e is ServerException) {
           _recordedServerFailure(e, st);
@@ -64,6 +71,17 @@ class LessonRepositoryImpl implements LessonRepository {
           'Remote load failed, using local cache',
         );
       }
+
+      try {
+        await localDataSource.cacheLessons(remoteLessons);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache category lessons: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(remoteLessons.map((m) => m.toEntity()).toList());
     } else {
       return _getCachedLessonsByCategory(categoryId, 'No internet connection');
     }
@@ -165,9 +183,8 @@ class LessonRepositoryImpl implements LessonRepository {
   ];
 
   Future<Either<Failure, List<LessonEntity>>> _getCachedLessons(
-    String originalMessage, [
-    int? originalCode,
-  ]) async {
+    String originalMessage,
+  ) async {
     try {
       final cached = await localDataSource.getLessons();
       return Right(cached.map((m) => m.toEntity()).toList());
@@ -179,9 +196,8 @@ class LessonRepositoryImpl implements LessonRepository {
 
   Future<Either<Failure, List<LessonEntity>>> _getCachedLessonsByCategory(
     String categoryId,
-    String originalMessage, [
-    int? originalCode,
-  ]) async {
+    String originalMessage,
+  ) async {
     try {
       final cached = await localDataSource.getLessons();
       return Right(
@@ -227,16 +243,26 @@ class LessonRepositoryImpl implements LessonRepository {
   @override
   Future<Either<Failure, LessonEntity>> getLessonById(String id) async {
     if (await networkInfo.isConnected) {
+      final LessonModel result;
       try {
-        final result = await remoteDataSource.getLessonById(id);
-        await localDataSource.cacheLessons([result]);
-        return Right(result.toEntity());
+        result = await remoteDataSource.getLessonById(id);
       } catch (e, st) {
         if (e is ServerException) {
           _recordedServerFailure(e, st);
         }
         return _getCachedLessonById(id);
       }
+
+      try {
+        await localDataSource.cacheLessons([result]);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache lesson by id: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(result.toEntity());
     } else {
       return _getCachedLessonById(id);
     }

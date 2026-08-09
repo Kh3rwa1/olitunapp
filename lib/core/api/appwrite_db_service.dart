@@ -51,7 +51,8 @@ class AppwriteDbService {
 
         final exponentialFactor = 1 << (attempt - 1);
         final jitter = Random().nextDouble() * 0.2 + 0.9;
-        final delayMs = (initialDelay.inMilliseconds * exponentialFactor * jitter).round();
+        final delayMs =
+            (initialDelay.inMilliseconds * exponentialFactor * jitter).round();
         await Future.delayed(Duration(milliseconds: delayMs));
       }
     }

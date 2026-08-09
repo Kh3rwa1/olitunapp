@@ -489,7 +489,8 @@ export default async ({
         return res.json({
           ok: false,
           code: 'state_update_failed',
-          message: 'Auth user deleted but final state transition to completed failed. Queued for orphan recovery.',
+          authDeleted: true,
+          message: 'Account deleted; final cleanup reconciliation is pending.',
         }, 500);
       }
     }

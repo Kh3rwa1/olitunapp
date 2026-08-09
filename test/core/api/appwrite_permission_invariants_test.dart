@@ -38,9 +38,18 @@ void main() {
         const expectedTeam = AppwriteConfig.adminTeamId;
 
         expect(permissions, contains(Permission.read(Role.team(expectedTeam))));
-        expect(permissions, contains(Permission.write(Role.team(expectedTeam))));
-        expect(permissions, isNot(contains(Permission.read(Role.team('admin')))));
-        expect(permissions, isNot(contains(Permission.write(Role.team('admin')))));
+        expect(
+          permissions,
+          contains(Permission.write(Role.team(expectedTeam))),
+        );
+        expect(
+          permissions,
+          isNot(contains(Permission.read(Role.team('admin')))),
+        );
+        expect(
+          permissions,
+          isNot(contains(Permission.write(Role.team('admin')))),
+        );
         expect(permissions, isNot(contains(Permission.read(Role.any()))));
         expect(permissions, isNot(contains(Permission.write(Role.any()))));
       },

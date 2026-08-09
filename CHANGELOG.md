@@ -5,6 +5,13 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.2.2](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.1...olitun-v1.2.2) (2026-08-09)
+
+
+### Bug Fixes
+
+* **auth/ci:** complete auth service client tests, branch protection docs, and workflow cleanup ([#114](https://github.com/Kh3rwa1/olitunapp/issues/114)) ([2574735](https://github.com/Kh3rwa1/olitunapp/commit/25747355b8fae110ee8cb27763e1e812cf1abe51))
+
 ## [1.2.1](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.0...olitun-v1.2.1) (2026-08-09)
 
 

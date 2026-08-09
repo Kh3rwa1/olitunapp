@@ -5,6 +5,13 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.2.1](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.0...olitun-v1.2.1) (2026-08-09)
+
+
+### Bug Fixes
+
+* **hardening:** close final auth session and lesson cache gaps ([c6878f5](https://github.com/Kh3rwa1/olitunapp/commit/c6878f5ae4a70ef06024d05e2b55501721a33b9f))
+
 ## [1.2.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.1.1...olitun-v1.2.0) (2026-08-09)
 
 

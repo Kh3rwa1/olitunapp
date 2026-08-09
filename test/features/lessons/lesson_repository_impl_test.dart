@@ -158,4 +158,37 @@ void main() {
       },
     );
   });
+
+  group('getLessonById', () {
+    test('returns remote lesson and caches it when online', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(() => remote.getLessonById('1')).thenAnswer((_) async => _lesson('1'));
+      when(() => local.cacheLessons(any())).thenAnswer((_) async {});
+
+      final result = await repo.getLessonById('1');
+
+      expect(result.isRight(), isTrue);
+      result.match((_) => fail('should be right'), (lesson) => expect(lesson.id, '1'));
+    });
+
+    test('falls back to local cache when online remote call fails', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(() => remote.getLessonById('1')).thenThrow(ServerException(message: 'boom', code: 500));
+      when(() => local.getLessons()).thenAnswer((_) async => [_lesson('1')]);
+
+      final result = await repo.getLessonById('1');
+
+      result.match((_) => fail('should be right'), (lesson) => expect(lesson.id, '1'));
+    });
+
+    test('falls back to static seed lesson when remote and cache fail online', () async {
+      when(() => network.isConnected).thenAnswer((_) async => true);
+      when(() => remote.getLessonById('lesson_alphabet_0')).thenThrow(ServerException(message: 'boom', code: 500));
+      when(() => local.getLessons()).thenThrow(CacheException(message: 'no cache'));
+
+      final result = await repo.getLessonById('lesson_alphabet_0');
+
+      result.match((_) => fail('should be right'), (lesson) => expect(lesson.id, 'lesson_alphabet_0'));
+    });
+  });
 }

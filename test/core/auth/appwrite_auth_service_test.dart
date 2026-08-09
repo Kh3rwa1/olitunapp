@@ -212,7 +212,7 @@ void main() {
   });
 
   group('isWebSessionValidTimestamp', () {
-    final now = DateTime(2026, 8, 9, 12, 0, 0);
+    final now = DateTime(2026, 8, 9, 12);
 
     test('rejects null, zero, and negative timestamps', () {
       expect(isWebSessionValidTimestamp(null, nowOverride: now), isFalse);

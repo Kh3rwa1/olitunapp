@@ -28,19 +28,26 @@ class LessonRepositoryImpl implements LessonRepository {
 
   @override
   Future<Either<Failure, List<LessonEntity>>> getLessons() async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteLessons = await remoteDataSource.getLessons();
-        await localDataSource.cacheLessons(remoteLessons);
-        return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } catch (e, st) {
-        if (e is ServerException) {
-          _recordedServerFailure(e, st);
+    try {
+      final isOnline = await networkInfo.isConnected;
+      if (isOnline) {
+        try {
+          final remote = await remoteDataSource.getLessons();
+          try {
+            await localDataSource.cacheLessons(remote);
+          } catch (e) {
+            AppLogger.warning(
+              'LessonRepositoryImpl: Failed to cache lessons locally: $e',
+            );
+          }
+          return Right(remote.map((m) => m.toEntity()).toList());
+        } catch (e) {
+          return _getCachedLessons();
         }
-        return _getCachedLessons('Remote load failed, using local cache');
       }
-    } else {
-      return _getCachedLessons('No internet connection');
+      return _getCachedLessons();
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
     }
   }
 
@@ -48,24 +55,28 @@ class LessonRepositoryImpl implements LessonRepository {
   Future<Either<Failure, List<LessonEntity>>> getLessonsByCategory(
     String categoryId,
   ) async {
-    if (await networkInfo.isConnected) {
-      try {
-        final remoteLessons = await remoteDataSource.getLessonsByCategory(
-          categoryId,
-        );
-        await localDataSource.cacheLessons(remoteLessons);
-        return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } catch (e, st) {
-        if (e is ServerException) {
-          _recordedServerFailure(e, st);
+    try {
+      final isOnline = await networkInfo.isConnected;
+      if (isOnline) {
+        try {
+          final remote = await remoteDataSource.getLessonsByCategory(
+            categoryId,
+          );
+          try {
+            await localDataSource.cacheLessons(remote);
+          } catch (e) {
+            AppLogger.warning(
+              'LessonRepositoryImpl: Failed to cache lessons by category locally: $e',
+            );
+          }
+          return Right(remote.map((m) => m.toEntity()).toList());
+        } catch (e) {
+          return _getCachedLessonsByCategory(categoryId);
         }
-        return _getCachedLessonsByCategory(
-          categoryId,
-          'Remote load failed, using local cache',
-        );
       }
-    } else {
-      return _getCachedLessonsByCategory(categoryId, 'No internet connection');
+      return _getCachedLessonsByCategory(categoryId);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(message: e.message, code: e.code));
     }
   }
 
@@ -164,10 +175,7 @@ class LessonRepositoryImpl implements LessonRepository {
     ),
   ];
 
-  Future<Either<Failure, List<LessonEntity>>> _getCachedLessons(
-    String originalMessage, [
-    int? originalCode,
-  ]) async {
+  Future<Either<Failure, List<LessonEntity>>> _getCachedLessons() async {
     try {
       final cached = await localDataSource.getLessons();
       return Right(cached.map((m) => m.toEntity()).toList());
@@ -179,9 +187,7 @@ class LessonRepositoryImpl implements LessonRepository {
 
   Future<Either<Failure, List<LessonEntity>>> _getCachedLessonsByCategory(
     String categoryId,
-    String originalMessage, [
-    int? originalCode,
-  ]) async {
+  ) async {
     try {
       final cached = await localDataSource.getLessons();
       return Right(

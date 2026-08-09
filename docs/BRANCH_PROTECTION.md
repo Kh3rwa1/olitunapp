@@ -28,6 +28,7 @@ Navigate to **GitHub Repository Settings** -> **Branches** -> **Add branch prote
      - `Android APK Release Build & Budget`
      - `Verify Release Artifact Integrity`
      - `Secret Scanning (Gitleaks)`
+     - `OSV Vulnerability Scan`
      - `CodeQL Analysis`
 
 3. **Require conversation resolution before merging**: `Checked`
@@ -57,6 +58,7 @@ gh api \
   -f required_status_checks[contexts][]="Android APK Release Build & Budget" \
   -f required_status_checks[contexts][]="Verify Release Artifact Integrity" \
   -f required_status_checks[contexts][]="Secret Scanning (Gitleaks)" \
+  -f required_status_checks[contexts][]="OSV Vulnerability Scan" \
   -f required_status_checks[contexts][]="CodeQL Analysis" \
   -f enforce_admins=true \
   -f required_pull_request_reviews[required_approving_review_count]=1 \

@@ -6,10 +6,13 @@ import 'package:itun/core/storage/stale_while_revalidate_repository.dart';
 
 void main() {
   group('Production Readiness Invariant Smoke Suite', () {
-    test('AppwriteConfig exposes non-empty database and admin configuration', () {
-      expect(AppwriteConfig.databaseId, isNotEmpty);
-      expect(AppwriteConfig.adminTeamId, isNotEmpty);
-    });
+    test(
+      'AppwriteConfig exposes non-empty database and admin configuration',
+      () {
+        expect(AppwriteConfig.databaseId, isNotEmpty);
+        expect(AppwriteConfig.adminTeamId, isNotEmpty);
+      },
+    );
 
     test(
       'AppwriteDbService creates valid permission arrays for domain objects',

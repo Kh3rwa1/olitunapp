@@ -109,67 +109,84 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       // 3. Concurrency & Idempotency Reservation via payment_attempts
       let attemptRecord = null;
       try {
-        attemptRecord = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
-        
-        if (attemptRecord.providerOrderId) {
-          log(`Returning existing idempotency attempt for order ${attemptRecord.providerOrderId}`);
-          return res.json({
-            ok: true,
-            message: 'Razorpay order retrieved from existing attempt',
-            orderId: attemptRecord.providerOrderId,
-            amount: expectedAmount * 100,
+        const leaseExpiresAt = new Date(Date.now() + 30000).toISOString();
+        attemptRecord = await databases.createDocument(
+          databaseId,
+          'payment_attempts',
+          attemptDocId,
+          {
+            userId,
+            categoryId,
+            idempotencyKey,
+            attemptId: attemptDocId,
+            expectedAmount,
             currency: 'INR',
-            keyId: razorpayKeyId,
-            categoryId: categoryId,
-            categoryTitle: category.name || category.title || '',
-            isDuplicateRetry: true,
-          });
-        }
+            status: 'in_progress',
+            provider: 'razorpay',
+            providerOrderId: null,
+            providerReceipt: purchaseId,
+            leaseOwner: process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder',
+            leaseExpiresAt,
+            reconciliationStatus: 'none',
+            createdAt: now,
+            updatedAt: now,
+          },
+          [`read("user:${userId}")`]
+        );
+      } catch (createErr) {
+        if (createErr.code === 409 || createErr.message?.includes('already exists') || createErr.message?.includes('conflict')) {
+          try {
+            attemptRecord = await databases.getDocument(databaseId, 'payment_attempts', attemptDocId);
+          } catch (getErr) {
+            throw getErr;
+          }
 
-        if (attemptRecord.reconciliationStatus === 'pending') {
+          if (attemptRecord.providerOrderId) {
+            log(`Returning existing idempotency attempt for order ${attemptRecord.providerOrderId}`);
+            return res.json({
+              ok: true,
+              message: 'Razorpay order retrieved from existing attempt',
+              orderId: attemptRecord.providerOrderId,
+              amount: expectedAmount * 100,
+              currency: 'INR',
+              keyId: razorpayKeyId,
+              categoryId: categoryId,
+              categoryTitle: category.name || category.title || '',
+              isDuplicateRetry: true,
+            });
+          }
+
+          if (attemptRecord.reconciliationStatus === 'pending' || attemptRecord.status === 'reconciliation_required') {
+            return res.json({
+              ok: false,
+              code: 'reconciliation_required',
+              message: 'Order creation status is ambiguous due to gateway timeout. Reconciliation required.',
+            }, 504);
+          }
+
+          const leaseExpires = new Date(attemptRecord.leaseExpiresAt || 0).getTime();
+          if (attemptRecord.status === 'in_progress' && leaseExpires > Date.now()) {
+            return res.json({
+              ok: false,
+              code: 'in_progress',
+              message: 'Order creation is in progress by another request. Please retry shortly.',
+            }, 409);
+          }
+
           return res.json({
             ok: false,
-            code: 'reconciliation_required',
-            message: 'Order creation status is ambiguous due to gateway timeout. Reconciliation required.',
-          }, 504);
-        }
-      } catch (attErr) {
-        if (attErr.code === 404) {
-          try {
-            const leaseExpiresAt = new Date(Date.now() + 30000).toISOString();
-            attemptRecord = await databases.createDocument(
-              databaseId,
-              'payment_attempts',
-              attemptDocId,
-              {
-                userId,
-                categoryId,
-                idempotencyKey,
-                attemptId: attemptDocId,
-                expectedAmount,
-                currency: 'INR',
-                status: 'in_progress',
-                provider: 'razorpay',
-                providerOrderId: null,
-                providerReceipt: purchaseId,
-                leaseOwner: process.env.APPWRITE_FUNCTION_ID || 'createRazorpayOrder',
-                leaseExpiresAt,
-                reconciliationStatus: 'none',
-                createdAt: now,
-                updatedAt: now,
-              },
-              [] // Function-only permissions
-            );
-          } catch (createErr) {
-            log(`Note: Concurrency reservation attempt document conflict: ${createErr.message}`);
-          }
+            code: 'reservation_conflict',
+            message: 'Order creation attempt reservation conflict. Please retry.',
+          }, 409);
+        } else {
+          throw createErr;
         }
       }
 
       // 4. Create Razorpay order via Razorpay REST API
       const authHeader = 'Basic ' + Buffer.from(`${razorpayKeyId}:${razorpayKeySecret}`).toString('base64');
       const orderPayload = {
-        amount: expectedAmount * 100, // Razorpay amount in paise
+        amount: expectedAmount * 100,
         currency: 'INR',
         receipt: purchaseId,
         notes: {
@@ -291,8 +308,8 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       });
 
     } catch (err) {
-      error(`createRazorpayOrder failed: ${err.message}`);
-      return res.json({ ok: false, message: err.message }, 500);
+      error(`createRazorpayOrder failed: ${err.stack || err.message}`);
+      return res.json({ ok: false, message: 'An internal server error occurred' }, 500);
     }
   };
 }

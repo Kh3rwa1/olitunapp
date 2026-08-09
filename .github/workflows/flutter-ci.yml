@@ -68,15 +68,8 @@ jobs:
           node-version: 20
           cache: 'npm'
       - run: npm ci || npm install
-      - name: Run backend payment & deletion Node tests
-        run: |
-          node --test functions/test/payment_functions.test.js
-          node --test functions/test/delete_account.test.js
-          node --test functions/aggregateLearningAnalytics/test/main.test.js
-          node --test functions/translator/test/security.test.js
-          node --test functions/backupCollections/test/main.test.js
-          node --test functions/cleanupAnalyticsEvents/test/main.test.js
-          node --test functions/admin-maintenance/test/main.test.js
+      - name: Run backend Serverless Node tests
+        run: npm run test:backend
 
   permission-and-schema-tests:
     name: Appwrite Permission Invariants & Schema Drift
@@ -178,7 +171,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: |
-          flutter build apk --release \
+          flutter build apk --release --no-tree-shake-icons \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci \
             --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
@@ -190,3 +183,43 @@ jobs:
           name: android-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk
           retention-days: 14
+
+  artifact-verification:
+    name: Verify Release Artifact Integrity
+    runs-on: ubuntu-latest
+    needs: [flutter-unit-widget-tests, web-release-build, android-release-build]
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Coverage Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage/
+      - name: Download Web Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: web-release-build
+          path: artifacts/web/
+      - name: Download Android APK Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: android-release-apk
+          path: artifacts/apk/
+      - name: Verify Non-Empty Artifact Integrity
+        run: |
+          echo "Checking artifact file sizes..."
+          if [ ! -s coverage/lcov.info ]; then
+            echo "❌ FAIL: coverage/lcov.info artifact is missing or zero bytes!"
+            exit 1
+          fi
+          if [ ! -f artifacts/web/index.html ]; then
+            echo "❌ FAIL: artifacts/web/index.html is missing!"
+            exit 1
+          fi
+          APK_FILE=$(find artifacts/apk/ -name "*.apk" -type f | head -n 1)
+          if [ -z "$APK_FILE" ] || [ ! -s "$APK_FILE" ]; then
+            echo "❌ FAIL: Android APK artifact is missing or zero bytes!"
+            exit 1
+          fi
+          echo "✅ All release build artifacts downloaded and verified non-empty!"

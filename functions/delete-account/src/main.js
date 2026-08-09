@@ -48,10 +48,11 @@ export default async ({ req, res, log, error }) => {
 
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
   const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
-  const apiKey = process.env.APPWRITE_API_KEY;
+  const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
   const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
+  const hmacSecret = process.env.DELETION_HMAC_SECRET;
 
-  if (!endpoint || !projectId || !apiKey || !databaseId) {
+  if (!endpoint || !projectId || !apiKey || !databaseId || !hmacSecret) {
     error('Missing required environment variables for delete-account');
     return res.json({ ok: false, code: 'server_misconfiguration', message: 'Server configuration error' }, 500);
   }
@@ -65,14 +66,14 @@ export default async ({ req, res, log, error }) => {
   const databases = new Databases(client);
   const storage = new Storage(client);
 
-  const pseudoSubject = generatePseudonymousId(userId);
+  const pseudoSubject = crypto.createHmac('sha256', hmacSecret).update(userId).digest('hex').substring(0, 32);
   const requestId = `del_req_${pseudoSubject}`;
 
   log(`Starting account deletion for user: ${userId} (request: ${requestId})`);
 
   let stateDoc = null;
 
-  // Initialize or fetch state machine record
+  // Initialize or fetch state machine record (Mandatory state tracking)
   try {
     try {
       stateDoc = await databases.getDocument(databaseId, 'deletion_requests', requestId);
@@ -100,32 +101,36 @@ export default async ({ req, res, log, error }) => {
           updatedAt: new Date().toISOString(),
         });
       } else {
-        log(`Note: deletion_requests state collection query note: ${getErr.message}`);
+        throw getErr;
       }
     }
   } catch (stateErr) {
-    log(`Note: Continuing deletion workflow without state record: ${stateErr.message}`);
+    error(`Failed state machine initialization: ${stateErr.message}`);
+    return res.json({
+      ok: false,
+      code: 'deletion_failed',
+      message: 'Failed to record deletion state machine. Deletion aborted for safety.',
+    }, 500);
   }
 
   let cleanupSuccess = true;
   let lastFailureMessage = null;
 
   try {
-    // 1. Cursor-paginated purge of user database collections
+    // 1. Repeated page-1 purge of user database collections (without deleted cursor reference)
     for (const collectionId of USER_DATA_COLLECTIONS) {
       try {
-        let hasMore = true;
-        let lastId = null;
+        let iterations = 0;
+        const maxIterations = 50;
 
-        while (hasMore) {
-          const queries = [Query.equal('userId', userId), Query.limit(PAGE_LIMIT)];
-          if (lastId) {
-            queries.push(Query.cursorAfter(lastId));
-          }
+        while (iterations < maxIterations) {
+          iterations++;
+          const docs = await databases.listDocuments(databaseId, collectionId, [
+            Query.equal('userId', userId),
+            Query.limit(PAGE_LIMIT),
+          ]);
 
-          const docs = await databases.listDocuments(databaseId, collectionId, queries);
           if (docs.documents.length === 0) {
-            hasMore = false;
             break;
           }
 
@@ -139,32 +144,28 @@ export default async ({ req, res, log, error }) => {
                 lastFailureMessage = docErr.message;
               }
             }
-            lastId = doc.$id;
-          }
-
-          if (docs.documents.length < PAGE_LIMIT) {
-            hasMore = false;
           }
         }
       } catch (collErr) {
-        log(`Note: Collection ${collectionId} query note: ${collErr.message}`);
+        log(`Collection ${collectionId} query error: ${collErr.message}`);
+        cleanupSuccess = false;
+        lastFailureMessage = collErr.message;
       }
     }
 
-    // 2. Cursor-paginated file purge via user_assets registry
+    // 2. Repeated page-1 file purge via user_assets registry
     try {
-      let hasMoreFiles = true;
-      let lastFileDocId = null;
+      let fileIterations = 0;
+      const maxFileIterations = 50;
 
-      while (hasMoreFiles) {
-        const queries = [Query.equal('userId', userId), Query.limit(PAGE_LIMIT)];
-        if (lastFileDocId) {
-          queries.push(Query.cursorAfter(lastFileDocId));
-        }
+      while (fileIterations < maxFileIterations) {
+        fileIterations++;
+        const assets = await databases.listDocuments(databaseId, 'user_assets', [
+          Query.equal('userId', userId),
+          Query.limit(PAGE_LIMIT),
+        ]);
 
-        const assets = await databases.listDocuments(databaseId, 'user_assets', queries);
         if (assets.documents.length === 0) {
-          hasMoreFiles = false;
           break;
         }
 
@@ -174,6 +175,8 @@ export default async ({ req, res, log, error }) => {
           } catch (fileErr) {
             if (fileErr.code !== 404) {
               log(`Warning: Failed deleting file ${asset.fileId} in bucket ${asset.bucketId}: ${fileErr.message}`);
+              cleanupSuccess = false;
+              lastFailureMessage = fileErr.message;
             }
           }
 
@@ -182,38 +185,36 @@ export default async ({ req, res, log, error }) => {
           } catch (assetDocErr) {
             if (assetDocErr.code !== 404) {
               log(`Warning: Failed deleting asset registry doc ${asset.$id}: ${assetDocErr.message}`);
+              cleanupSuccess = false;
+              lastFailureMessage = assetDocErr.message;
             }
           }
-
-          lastFileDocId = asset.$id;
-        }
-
-        if (assets.documents.length < PAGE_LIMIT) {
-          hasMoreFiles = false;
         }
       }
     } catch (assetsErr) {
-      log(`Note: user_assets query note: ${assetsErr.message}`);
+      log(`user_assets query error: ${assetsErr.message}`);
+      cleanupSuccess = false;
+      lastFailureMessage = assetsErr.message;
     }
 
     // 3. Anonymize financial purchase records for tax/legal statutory compliance
     try {
-      let hasMorePurchases = true;
-      let lastPurchaseId = null;
+      let purchIterations = 0;
+      const maxPurchIterations = 50;
 
-      while (hasMorePurchases) {
-        const queries = [Query.equal('userId', userId), Query.limit(PAGE_LIMIT)];
-        if (lastPurchaseId) {
-          queries.push(Query.cursorAfter(lastPurchaseId));
-        }
+      while (purchIterations < maxPurchIterations) {
+        purchIterations++;
+        const purchases = await databases.listDocuments(databaseId, 'course_purchases', [
+          Query.equal('userId', userId),
+          Query.limit(PAGE_LIMIT),
+        ]);
 
-        const purchases = await databases.listDocuments(databaseId, 'course_purchases', queries);
-        if (purchases.documents.length === 0) {
-          hasMorePurchases = false;
+        const pendingAnonymization = purchases.documents.filter(p => p.userId === userId);
+        if (pendingAnonymization.length === 0) {
           break;
         }
 
-        for (const purchase of purchases.documents) {
+        for (const purchase of pendingAnonymization) {
           try {
             await databases.updateDocument(databaseId, 'course_purchases', purchase.$id, {
               userId: ANONYMIZED_USER_ID,
@@ -226,15 +227,12 @@ export default async ({ req, res, log, error }) => {
             cleanupSuccess = false;
             lastFailureMessage = anonErr.message;
           }
-          lastPurchaseId = purchase.$id;
-        }
-
-        if (purchases.documents.length < PAGE_LIMIT) {
-          hasMorePurchases = false;
         }
       }
     } catch (purchErr) {
-      log(`Note: course_purchases anonymization note: ${purchErr.message}`);
+      log(`course_purchases anonymization query error: ${purchErr.message}`);
+      cleanupSuccess = false;
+      lastFailureMessage = purchErr.message;
     }
 
     // Check if mandatory data cleanup succeeded before deleting Auth user

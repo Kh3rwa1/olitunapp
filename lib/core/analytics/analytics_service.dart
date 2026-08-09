@@ -118,7 +118,7 @@ class LearningAnalyticsService {
     await _writeOrQueue(eventId, payload);
   }
 
-  Future<void> flushPending() async {
+  Future<void> flushPending() => _synchronized(() async {
     final pending = _pendingEvents();
     if (pending.isEmpty) return;
 
@@ -135,7 +135,7 @@ class LearningAnalyticsService {
     }
 
     await _savePending(remaining);
-  }
+  });
 
   Future<void> _writeOrQueue(
     String eventId,
@@ -150,13 +150,30 @@ class LearningAnalyticsService {
     }
   }
 
-  Future<void> _queue(Map<String, dynamic> payload) async {
+  Future<void> _queue(Map<String, dynamic> payload) => _synchronized(() async {
     final pending = _pendingEvents();
     pending.add(payload);
     final bounded = pending.length > _maxPendingEvents
         ? pending.sublist(pending.length - _maxPendingEvents)
         : pending;
     await _savePending(bounded);
+  });
+
+  Future<void>? _operationQueue;
+
+  Future<T> _synchronized<T>(Future<T> Function() action) async {
+    final previous = _operationQueue;
+    final completer = Completer<void>();
+    _operationQueue = completer.future;
+
+    try {
+      if (previous != null) {
+        await previous.catchError((_) {});
+      }
+      return await action();
+    } finally {
+      completer.complete();
+    }
   }
 
   List<Map<String, dynamic>> _pendingEvents() {
@@ -224,10 +241,17 @@ class LearningAnalyticsService {
 
   static String _metadataJson(Map<String, dynamic> metadata) {
     final sanitized = _sanitizeMetadata(metadata);
-    final encoded = jsonEncode(sanitized);
-    return encoded.length <= _metadataMaxChars
-        ? encoded
-        : encoded.substring(0, _metadataMaxChars);
+    String encoded = jsonEncode(sanitized);
+    if (encoded.length > _metadataMaxChars) {
+      final pruned = Map<String, dynamic>.from(sanitized);
+      final keys = pruned.keys.toList();
+      for (final key in keys) {
+        if (encoded.length <= _metadataMaxChars) break;
+        pruned.remove(key);
+        encoded = jsonEncode(pruned);
+      }
+    }
+    return encoded;
   }
 
   static Map<String, dynamic> _sanitizeMetadata(Map<String, dynamic> input) {

@@ -279,17 +279,31 @@ class AppwriteAuthService {
     }
   }
 
+  static const String _webSessionTimestampKey = 'olitun_web_session_ts';
+  static const Duration _maxWebSessionDuration = Duration(hours: 24);
+
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_webSessionSecretKey, secret);
+    await prefs.setInt(_webSessionTimestampKey, DateTime.now().millisecondsSinceEpoch);
   }
 
   Future<void> _restoreWebSession() async {
     if (!kIsWeb) return;
     final prefs = await SharedPreferences.getInstance();
     final secret = prefs.getString(_webSessionSecretKey);
+    final ts = prefs.getInt(_webSessionTimestampKey);
+
     if (secret != null && secret.isNotEmpty) {
+      if (ts != null) {
+        final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+        if (age > _maxWebSessionDuration) {
+          AppLogger.debug('Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing');
+          await _clearWebSession();
+          return;
+        }
+      }
       _client.setSession(secret);
     }
   }
@@ -297,7 +311,15 @@ class AppwriteAuthService {
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!kIsWeb) return;
     final secret = prefs.getString(_webSessionSecretKey);
+    final ts = prefs.getInt(_webSessionTimestampKey);
+
     if (secret != null && secret.isNotEmpty) {
+      if (ts != null) {
+        final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+        if (age > _maxWebSessionDuration) {
+          return;
+        }
+      }
       _client.setSession(secret);
       AppLogger.debug('Appwrite: Web session restored synchronously ✅');
     }
@@ -307,6 +329,7 @@ class AppwriteAuthService {
     if (!kIsWeb) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_webSessionSecretKey);
+    await prefs.remove(_webSessionTimestampKey);
   }
 
   Future<void> _clearLocalSessionState() async {
@@ -434,17 +457,49 @@ class AppwriteAuthService {
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-      // Hard-delete the account using our Cloud Function so OAuth (Google)
-      // can create a fresh user record on the next sign-in without conflict.
-      await _functions.createExecution(functionId: 'delete-account');
-    } on AppwriteException catch (e) {
-      AppLogger.debug('Appwrite: deleteAccount error: $e');
-      // If delete fails, still try to clean up session
-      try {
-        await _account.deleteSession(sessionId: 'current');
-      } catch (_) {}
-    } finally {
+      // Hard-delete the account using our Cloud Function
+      final execution = await _functions.createExecution(functionId: 'delete-account');
+      
+      if (execution.status == 'failed') {
+        throw AppwriteException(
+          message: 'Account deletion function execution failed on server',
+          code: 500,
+        );
+      }
+
+      final responseBody = execution.responseBody;
+      if (responseBody.isNotEmpty) {
+        try {
+          final Map<String, dynamic> data = jsonDecode(responseBody) as Map<String, dynamic>;
+          if (data['ok'] != true) {
+            final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
+            throw AppwriteException(
+              message: 'Server account deletion failed: $errCode',
+              code: 500,
+            );
+          }
+        } on FormatException {
+          // If response body is not JSON, check status code
+          if (execution.responseStatusCode >= 400) {
+            throw AppwriteException(
+              message: 'Server returned error status ${execution.responseStatusCode}',
+              code: execution.responseStatusCode,
+            );
+          }
+        }
+      }
+
+      // Server confirmed deletion success; clear local session state
       await _clearLocalSessionState();
+    } on AppwriteException catch (e) {
+      AppLogger.error('Appwrite: deleteAccount error: $e');
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
+      throw AppwriteException(
+        message: 'Account deletion failed: ${e.toString()}',
+        code: 500,
+      );
     }
   }
 

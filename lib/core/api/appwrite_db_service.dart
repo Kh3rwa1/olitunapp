@@ -244,8 +244,8 @@ class AppwriteDbService {
     documentId,
     data,
     permissions: [
-      Permission.read(Role.team('admin')),
-      Permission.write(Role.team('admin')),
+      Permission.read(Role.team(AppwriteConfig.adminTeamId)),
+      Permission.write(Role.team(AppwriteConfig.adminTeamId)),
     ],
   );
 

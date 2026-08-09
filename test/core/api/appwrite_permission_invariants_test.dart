@@ -30,15 +30,16 @@ void main() {
     );
 
     test(
-      'createAdminOnlyRow restricts read and write strictly to admin team',
+      'createAdminOnlyRow restricts read and write strictly to configured admin team ID',
       () {
+        final adminTeam = AppwriteConfig.adminTeamId;
         final permissions = [
-          Permission.read(Role.team('admin')),
-          Permission.write(Role.team('admin')),
+          Permission.read(Role.team(adminTeam)),
+          Permission.write(Role.team(adminTeam)),
         ];
 
-        expect(permissions, contains(Permission.read(Role.team('admin'))));
-        expect(permissions, contains(Permission.write(Role.team('admin'))));
+        expect(permissions, contains(Permission.read(Role.team(adminTeam))));
+        expect(permissions, contains(Permission.write(Role.team(adminTeam))));
         expect(permissions, isNot(contains(Permission.read(Role.any()))));
         expect(permissions, isNot(contains(Permission.write(Role.any()))));
       },

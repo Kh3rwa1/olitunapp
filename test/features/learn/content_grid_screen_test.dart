@@ -9,6 +9,7 @@ import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
 class MockAudioService extends AudioService {
   String? lastPlayedUrl;
@@ -56,6 +57,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -78,6 +81,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -105,6 +110,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           contentListProvider((ContentKind.letter, null)).overrideWith((ref) {
             callCount++;
             if (callCount == 1) {
@@ -149,6 +156,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -211,6 +220,8 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
             audioServiceProvider.overrideWithValue(mockAudio),
             contentListProvider((ContentKind.letter, null)).overrideWith(
               (ref) => [
@@ -279,6 +290,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           audioServiceProvider.overrideWithValue(mockAudio),
           contentListProvider((
             ContentKind.letter,
@@ -334,6 +347,8 @@ void main() {
       ProviderScope(
         overrides: [
           sharedPreferencesProvider.overrideWithValue(prefs),
+          isAuthenticatedProvider.overrideWith((ref) async => false),
+          currentUserProvider.overrideWith((ref) async => null),
           audioServiceProvider.overrideWithValue(mockAudio),
           contentListProvider((
             ContentKind.letter,
@@ -401,6 +416,8 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',
@@ -452,6 +469,8 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',
@@ -500,6 +519,8 @@ void main() {
         ProviderScope(
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
+            isAuthenticatedProvider.overrideWith((ref) async => false),
+            currentUserProvider.overrideWith((ref) async => null),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',

@@ -279,17 +279,34 @@ class AppwriteAuthService {
     }
   }
 
+  static const String _webSessionTimestampKey = 'olitun_web_session_ts';
+  static const Duration _maxWebSessionDuration = Duration(hours: 24);
+
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_webSessionSecretKey, secret);
+    await prefs.setInt(_webSessionTimestampKey, DateTime.now().millisecondsSinceEpoch);
   }
 
   Future<void> _restoreWebSession() async {
     if (!kIsWeb) return;
     final prefs = await SharedPreferences.getInstance();
     final secret = prefs.getString(_webSessionSecretKey);
+    final ts = prefs.getInt(_webSessionTimestampKey);
+
     if (secret != null && secret.isNotEmpty) {
+      if (ts == null) {
+        AppLogger.debug('Appwrite: Web session missing timestamp; failing closed and clearing');
+        await _clearWebSession();
+        return;
+      }
+      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      if (age > _maxWebSessionDuration) {
+        AppLogger.debug('Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing');
+        await _clearWebSession();
+        return;
+      }
       _client.setSession(secret);
     }
   }
@@ -297,7 +314,16 @@ class AppwriteAuthService {
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!kIsWeb) return;
     final secret = prefs.getString(_webSessionSecretKey);
+    final ts = prefs.getInt(_webSessionTimestampKey);
+
     if (secret != null && secret.isNotEmpty) {
+      if (ts == null) {
+        return;
+      }
+      final age = DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts));
+      if (age > _maxWebSessionDuration) {
+        return;
+      }
       _client.setSession(secret);
       AppLogger.debug('Appwrite: Web session restored synchronously ✅');
     }
@@ -307,6 +333,7 @@ class AppwriteAuthService {
     if (!kIsWeb) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_webSessionSecretKey);
+    await prefs.remove(_webSessionTimestampKey);
   }
 
   Future<void> _clearLocalSessionState() async {
@@ -322,18 +349,6 @@ class AppwriteAuthService {
   /// Check if user has an active session
   Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
-    try {
-      final connectivityResults = await Connectivity().checkConnectivity();
-      if (connectivityResults.contains(ConnectivityResult.none)) {
-        final hasLocal = prefs.getBool(_hasLocalSessionKey) ?? false;
-        AppLogger.debug(
-          'Appwrite: Device is offline. Returning cached session: $hasLocal',
-        );
-        return hasLocal;
-      }
-    } catch (e) {
-      AppLogger.debug('Appwrite: Error checking connectivity: $e');
-    }
 
     try {
       if (kIsWeb) {
@@ -434,17 +449,53 @@ class AppwriteAuthService {
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-      // Hard-delete the account using our Cloud Function so OAuth (Google)
-      // can create a fresh user record on the next sign-in without conflict.
-      await _functions.createExecution(functionId: 'delete-account');
-    } on AppwriteException catch (e) {
-      AppLogger.debug('Appwrite: deleteAccount error: $e');
-      // If delete fails, still try to clean up session
+      // Hard-delete the account using our Cloud Function
+      final execution = await _functions.createExecution(functionId: 'delete-account');
+      
+      if (execution.status.toString().toLowerCase() == 'failed' ||
+          execution.responseStatusCode < 200 ||
+          execution.responseStatusCode >= 300) {
+        throw AppwriteException(
+          'Account deletion failed on server',
+          execution.responseStatusCode != 0 ? execution.responseStatusCode : 500,
+        );
+      }
+
+      final trimmedBody = execution.responseBody.trim();
+      if (trimmedBody.isEmpty) {
+        throw AppwriteException(
+          'Account deletion returned an empty response',
+          500,
+        );
+      }
+
       try {
-        await _account.deleteSession(sessionId: 'current');
-      } catch (_) {}
-    } finally {
+        final Map<String, dynamic> data = jsonDecode(trimmedBody) as Map<String, dynamic>;
+        if (data['ok'] != true) {
+          final String errCode = data['code']?.toString() ?? data['message']?.toString() ?? 'deletion_failed';
+          throw AppwriteException(
+            'Server account deletion failed: $errCode',
+            500,
+          );
+        }
+      } on FormatException {
+        throw AppwriteException(
+          'Invalid response format from server account deletion',
+          500,
+        );
+      }
+
+      // Server confirmed deletion success; clear local session state
       await _clearLocalSessionState();
+    } on AppwriteException catch (e) {
+      AppLogger.error('Appwrite: deleteAccount error: $e');
+      rethrow;
+    } catch (e) {
+      AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
+      throw AppwriteException(
+        'Account deletion failed: ${e.toString()}',
+        500,
+      );
     }
   }
 

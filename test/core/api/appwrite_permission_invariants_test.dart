@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:appwrite/appwrite.dart';
+import 'package:itun/core/api/appwrite_db_service.dart';
+import 'package:itun/core/config/appwrite_config.dart';
 
 void main() {
   group('Appwrite Permission Invariants Unit Test Suite', () {
@@ -30,15 +32,15 @@ void main() {
     );
 
     test(
-      'createAdminOnlyRow restricts read and write strictly to admin team',
+      'adminOnlyPermissions dynamically binds strictly to AppwriteConfig.adminTeamId',
       () {
-        final permissions = [
-          Permission.read(Role.team('admin')),
-          Permission.write(Role.team('admin')),
-        ];
+        final permissions = AppwriteDbService.adminOnlyPermissions();
+        const expectedTeam = AppwriteConfig.adminTeamId;
 
-        expect(permissions, contains(Permission.read(Role.team('admin'))));
-        expect(permissions, contains(Permission.write(Role.team('admin'))));
+        expect(permissions, contains(Permission.read(Role.team(expectedTeam))));
+        expect(permissions, contains(Permission.write(Role.team(expectedTeam))));
+        expect(permissions, isNot(contains(Permission.read(Role.team('admin')))));
+        expect(permissions, isNot(contains(Permission.write(Role.team('admin')))));
         expect(permissions, isNot(contains(Permission.read(Role.any()))));
         expect(permissions, isNot(contains(Permission.write(Role.any()))));
       },

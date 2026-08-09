@@ -33,8 +33,11 @@ class LessonRepositoryImpl implements LessonRepository {
         final remoteLessons = await remoteDataSource.getLessons();
         await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } on ServerException catch (e) {
-        return _getCachedLessons(e.message, e.code);
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessons('Remote load failed, using local cache');
       }
     } else {
       return _getCachedLessons('No internet connection');
@@ -52,8 +55,14 @@ class LessonRepositoryImpl implements LessonRepository {
         );
         await localDataSource.cacheLessons(remoteLessons);
         return Right(remoteLessons.map((m) => m.toEntity()).toList());
-      } on ServerException catch (e) {
-        return _getCachedLessonsByCategory(categoryId, e.message, e.code);
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessonsByCategory(
+          categoryId,
+          'Remote load failed, using local cache',
+        );
       }
     } else {
       return _getCachedLessonsByCategory(categoryId, 'No internet connection');
@@ -222,16 +231,28 @@ class LessonRepositoryImpl implements LessonRepository {
         final result = await remoteDataSource.getLessonById(id);
         await localDataSource.cacheLessons([result]);
         return Right(result.toEntity());
-      } on ServerException catch (e) {
-        return Left(_recordedServerFailure(e));
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessonById(id);
       }
     } else {
+      return _getCachedLessonById(id);
+    }
+  }
+
+  Future<Either<Failure, LessonEntity>> _getCachedLessonById(String id) async {
+    try {
+      final cached = await localDataSource.getLessons();
+      final lesson = cached.firstWhere((l) => l.id == id);
+      return Right(lesson.toEntity());
+    } catch (_) {
       try {
-        final cached = await localDataSource.getLessons();
-        final lesson = cached.firstWhere((l) => l.id == id);
-        return Right(lesson.toEntity());
+        final seed = _staticSeedLessons.firstWhere((l) => l.id == id);
+        return Right(seed);
       } catch (_) {
-        return const Left(NetworkFailure());
+        return const Left(CacheFailure(message: 'Lesson not found in cache'));
       }
     }
   }

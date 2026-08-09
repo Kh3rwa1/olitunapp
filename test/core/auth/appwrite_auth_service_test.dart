@@ -213,19 +213,18 @@ void main() {
 
   group('isWebSessionValidTimestamp', () {
     final now = DateTime(2026, 8, 9, 12, 0, 0);
-    const dur = Duration(hours: 24);
 
     test('rejects null, zero, and negative timestamps', () {
-      expect(isWebSessionValidTimestamp(null, dur, now), isFalse);
-      expect(isWebSessionValidTimestamp(0, dur, now), isFalse);
-      expect(isWebSessionValidTimestamp(-100, dur, now), isFalse);
+      expect(isWebSessionValidTimestamp(null, nowOverride: now), isFalse);
+      expect(isWebSessionValidTimestamp(0, nowOverride: now), isFalse);
+      expect(isWebSessionValidTimestamp(-100, nowOverride: now), isFalse);
     });
 
     test('rejects timestamps older than 24 hours', () {
       final oldTs = now
           .subtract(const Duration(hours: 25))
           .millisecondsSinceEpoch;
-      expect(isWebSessionValidTimestamp(oldTs, dur, now), isFalse);
+      expect(isWebSessionValidTimestamp(oldTs, nowOverride: now), isFalse);
     });
 
     test(
@@ -234,7 +233,7 @@ void main() {
         final futureTs = now
             .add(const Duration(minutes: 5))
             .millisecondsSinceEpoch;
-        expect(isWebSessionValidTimestamp(futureTs, dur, now), isFalse);
+        expect(isWebSessionValidTimestamp(futureTs, nowOverride: now), isFalse);
       },
     );
 
@@ -242,14 +241,17 @@ void main() {
       final nearFutureTs = now
           .add(const Duration(seconds: 30))
           .millisecondsSinceEpoch;
-      expect(isWebSessionValidTimestamp(nearFutureTs, dur, now), isTrue);
+      expect(
+        isWebSessionValidTimestamp(nearFutureTs, nowOverride: now),
+        isTrue,
+      );
     });
 
     test('accepts valid timestamps within the 24-hour window', () {
       final validTs = now
           .subtract(const Duration(hours: 2))
           .millisecondsSinceEpoch;
-      expect(isWebSessionValidTimestamp(validTs, dur, now), isTrue);
+      expect(isWebSessionValidTimestamp(validTs, nowOverride: now), isTrue);
     });
   });
 

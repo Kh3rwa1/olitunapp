@@ -366,8 +366,7 @@ class AppwriteAuthService {
   static const String _webSessionTimestampKey = 'olitun_web_session_ts';
   static const Duration _maxWebSessionDuration = Duration(hours: 24);
 
-  bool _isWebSessionValid(int? ts) =>
-      isWebSessionValidTimestamp(ts, _maxWebSessionDuration);
+  bool _isWebSessionValid(int? ts) => isWebSessionValidTimestamp(ts);
 
   Future<void> _persistWebSession(String secret) async {
     _client.setSession(secret);

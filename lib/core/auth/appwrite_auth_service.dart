@@ -13,6 +13,8 @@ import '../config/appwrite_config.dart';
 import '../storage/hive_service.dart';
 import 'web_redirect.dart';
 
+/// Evaluates whether a stored web session timestamp is valid (non-null, positive,
+/// not older than maxDuration, and not implausibly in the future beyond 1 minute skew).
 @visibleForTesting
 bool isWebSessionValidTimestamp(
   int? ts, {

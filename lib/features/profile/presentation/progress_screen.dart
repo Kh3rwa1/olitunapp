@@ -86,6 +86,7 @@ class ProgressScreen extends ConsumerWidget {
                   ),
                   actions: [
                     IconButton(
+                      tooltip: 'Settings',
                       icon: Icon(
                         Icons.settings_rounded,
                         color: isDark ? Colors.white70 : Colors.black54,

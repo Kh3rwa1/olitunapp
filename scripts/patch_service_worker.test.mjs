@@ -221,8 +221,10 @@ function runTest() {
     // Restore original SW file
     if (backupExists) {
       fs.writeFileSync(swPath, backupContent, 'utf8');
-    } else if (fs.existsSync(swPath)) {
-      fs.unlinkSync(swPath);
+    } else {
+      try {
+        fs.unlinkSync(swPath);
+      } catch (_) {}
     }
   }
 }

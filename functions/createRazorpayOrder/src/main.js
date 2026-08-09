@@ -247,7 +247,20 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           reconciliationStatus: 'none',
           updatedAt: new Date().toISOString(),
         });
-      } catch (_) {}
+      } catch (updateErr) {
+        error(`Failed to record providerOrderId ${razorpayOrder.id} in payment_attempts doc ${attemptDocId}: ${updateErr.message}`);
+        // Flag for reconciliation rather than ignoring
+        try {
+          await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
+            status: 'reconciliation_required',
+            reconciliationStatus: 'pending',
+            providerOrderId: razorpayOrder.id,
+            updatedAt: new Date().toISOString(),
+          });
+        } catch (flagErr) {
+          error(`Failed flagging attempt for reconciliation: ${flagErr.message}`);
+        }
+      }
 
       const adminTeamId = process.env.ADMIN_TEAM_ID || 'admins';
       const documentPermissions = [

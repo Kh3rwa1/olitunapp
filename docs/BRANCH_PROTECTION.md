@@ -26,6 +26,9 @@ Navigate to **GitHub Repository Settings** -> **Branches** -> **Add branch prote
      - `Appwrite Permission Invariants & Schema Drift`
      - `Web Release Build & Budget`
      - `Android APK Release Build & Budget`
+     - `Verify Release Artifact Integrity`
+     - `Secret Scanning (Gitleaks)`
+     - `CodeQL Analysis`
 
 3. **Require conversation resolution before merging**: `Checked`
 4. **Require signed commits**: `Checked` (Recommended)
@@ -52,6 +55,9 @@ gh api \
   -f required_status_checks[contexts][]="Appwrite Permission Invariants & Schema Drift" \
   -f required_status_checks[contexts][]="Web Release Build & Budget" \
   -f required_status_checks[contexts][]="Android APK Release Build & Budget" \
+  -f required_status_checks[contexts][]="Verify Release Artifact Integrity" \
+  -f required_status_checks[contexts][]="Secret Scanning (Gitleaks)" \
+  -f required_status_checks[contexts][]="CodeQL Analysis" \
   -f enforce_admins=true \
   -f required_pull_request_reviews[required_approving_review_count]=1 \
   -f required_pull_request_reviews[dismiss_stale_reviews]=true \

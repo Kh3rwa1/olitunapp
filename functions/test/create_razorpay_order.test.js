@@ -67,6 +67,22 @@ class InMemDb {
     table.set(id, updated);
     return JSON.parse(JSON.stringify(updated));
   }
+
+  async listDocuments(dbId, col, queries = []) {
+    const table = this.collections.get(col);
+    if (!table) return { documents: [], total: 0 };
+    let docs = Array.from(table.values());
+
+    for (const q of queries) {
+      if (q && (q.attribute || q.target) && (q.values !== undefined || q.value !== undefined)) {
+        const attr = q.attribute || q.target;
+        const vals = q.values !== undefined ? q.values : [q.value];
+        const flatVals = Array.isArray(vals) ? vals.flat() : [vals];
+        docs = docs.filter(d => flatVals.includes(d[attr]));
+      }
+    }
+    return { documents: JSON.parse(JSON.stringify(docs)), total: docs.length };
+  }
 }
 
 describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
@@ -113,7 +129,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     const req = {
       method: 'POST',
       headers: { 'x-appwrite-user-id': userId },
-      body: JSON.stringify({ categoryId, amount: 1, priceInr: 10, idempotencyKey: 'idempotency_spoof_1' })
+      body: JSON.stringify({ categoryId, amount: 1, priceInr: 10, idempotencyKey: 'key_test_spoof_1' })
     };
     const res = createMockRes();
     await handler({ req, res, error: createMockErrorLogger() });
@@ -226,7 +242,7 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     const req = {
       method: 'POST',
       headers: { 'x-appwrite-user-id': userId },
-      body: JSON.stringify({ categoryId, idempotencyKey: 'idem_bought_1' })
+      body: JSON.stringify({ categoryId, idempotencyKey: 'key_test_bought_1' })
     };
     const res = createMockRes();
     await handler({ req, res, error: createMockErrorLogger() });
@@ -261,4 +277,48 @@ describe('createRazorpayOrder Atomic Idempotency & Concurrency Suite', () => {
     assert.equal(res.body.ok, false);
     assert.equal(res.body.code, 'reconciliation_required');
   });
+
+  test('7. Payment reconciliation converts paid attempt to verified status and unlocks purchase', async () => {
+    const { reconcileStuckPaymentAttempts } = await import('../createRazorpayOrder/src/reconcile.js');
+    const db = new InMemDb();
+    const userId = 'u_rec';
+    const categoryId = 'cat_rec';
+    const attemptId = 'att_rec_1';
+
+    db.collections.set('payment_attempts', new Map([
+      [attemptId, {
+        $id: attemptId,
+        userId,
+        categoryId,
+        status: 'reconciliation_required',
+        providerOrderId: 'order_rzp_paid_123',
+        expectedAmount: 299,
+        reconciliationStatus: 'pending'
+      }]
+    ]));
+
+    const mockFetch = async () => ({
+      ok: true,
+      json: async () => ({ id: 'order_rzp_paid_123', status: 'paid', amount: 29900 })
+    });
+
+    const stats = await reconcileStuckPaymentAttempts({
+      databases: db,
+      databaseId: 'olitun_db',
+      fetchImpl: mockFetch,
+      razorpayKeyId: 'rzp_test_key',
+      razorpayKeySecret: 'rzp_test_secret',
+      log: () => {},
+      error: () => {}
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.reconciled, 1);
+    assert.equal(stats.failed, 0);
+
+    const updatedAttempt = db.collections.get('payment_attempts').get(attemptId);
+    assert.equal(updatedAttempt.status, 'verified');
+    assert.equal(updatedAttempt.reconciliationStatus, 'reconciled_paid');
+  });
 });
+

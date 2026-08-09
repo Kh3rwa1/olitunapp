@@ -3,12 +3,13 @@ import path from 'path';
 
 const swPath = path.resolve('build/web/flutter_service_worker.js');
 
-if (!fs.existsSync(swPath)) {
-  console.error(`Error: Service worker file not found at ${swPath}`);
+let content;
+try {
+  content = fs.readFileSync(swPath, 'utf8');
+} catch (err) {
+  console.error(`Error: Service worker file not found or unreadable at ${swPath}: ${err.message}`);
   process.exit(1);
 }
-
-let content = fs.readFileSync(swPath, 'utf8');
 
 // --- Idempotency check ---
 // If already patched, verify bootstrap is fully absent and exit clean.

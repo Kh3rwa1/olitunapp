@@ -6,14 +6,16 @@ import crypto from 'node:crypto';
  *
  * Security Requirements:
  * 1. Derives user identity strictly from trusted execution context (x-appwrite-user-id).
- * 2. Validates environment configuration without hardcoded 'main' fallbacks.
+ * 2. Validates environment configuration without hardcoded fallbacks.
  * 3. Uses a persistent deletion_requests state machine:
  *    requested -> in_progress -> cleanup_failed / cleanup_complete -> auth_deleted -> completed
- * 4. Paginates using cursors to delete all user records across collections.
- * 5. Uses user_assets registry for reliable storage asset deletion.
- * 6. Anonymizes statutory financial ledgers without retaining PII.
- * 7. Deletes Appwrite Auth account ONLY after cleanup_complete state is verified.
- * 8. Idempotent: safe for repeated execution and automatic retries.
+ * 4. Paginates using cursors/repeated page-1 to delete all user records across collections.
+ * 5. Enforces iteration guards and fails closed if limits are reached.
+ * 6. Uses user_assets registry for reliable storage asset deletion.
+ * 7. Anonymizes statutory financial ledgers without retaining PII.
+ * 8. Mandates zero-record verification before deleting Auth user account.
+ * 9. Deletes Appwrite Auth account ONLY after cleanup_complete state is verified.
+ * 10. Idempotent: safe for repeated execution and automatic retries.
  */
 
 const USER_DATA_COLLECTIONS = [
@@ -30,12 +32,15 @@ const USER_DATA_COLLECTIONS = [
 const ANONYMIZED_USER_ID = 'anonymized_deleted_user';
 const PAGE_LIMIT = 100;
 
-function generatePseudonymousId(userId) {
-  const secret = process.env.DELETION_HMAC_SECRET || 'olitun_privacy_hmac_secret_2026';
+function generatePseudonymousId(userId, hmacSecret) {
+  const secret = hmacSecret || process.env.DELETION_HMAC_SECRET;
+  if (!secret) {
+    throw new Error('DELETION_HMAC_SECRET environment variable is missing');
+  }
   return crypto.createHmac('sha256', secret).update(userId).digest('hex').substring(0, 32);
 }
 
-export default async ({ req, res, log, error }) => {
+export default async ({ req, res, log = console.log, error = console.error, databases: injectedDb, users: injectedUsers, storage: injectedStorage }) => {
   if (req.method !== 'POST') {
     return res.json({ ok: false, code: 'method_not_allowed', message: 'Only POST is allowed' }, 405);
   }
@@ -62,11 +67,11 @@ export default async ({ req, res, log, error }) => {
     .setProject(projectId)
     .setKey(apiKey);
 
-  const users = new Users(client);
-  const databases = new Databases(client);
-  const storage = new Storage(client);
+  const users = injectedUsers || new Users(client);
+  const databases = injectedDb || new Databases(client);
+  const storage = injectedStorage || new Storage(client);
 
-  const pseudoSubject = crypto.createHmac('sha256', hmacSecret).update(userId).digest('hex').substring(0, 32);
+  const pseudoSubject = generatePseudonymousId(userId, hmacSecret);
   const requestId = `del_req_${pseudoSubject}`;
 
   log(`Starting account deletion for user: ${userId} (request: ${requestId})`);
@@ -117,7 +122,7 @@ export default async ({ req, res, log, error }) => {
   let lastFailureMessage = null;
 
   try {
-    // 1. Repeated page-1 purge of user database collections (without deleted cursor reference)
+    // 1. Repeated page-1 purge of user database collections
     for (const collectionId of USER_DATA_COLLECTIONS) {
       try {
         let iterations = 0;
@@ -144,6 +149,18 @@ export default async ({ req, res, log, error }) => {
                 lastFailureMessage = docErr.message;
               }
             }
+          }
+        }
+
+        if (iterations >= maxIterations) {
+          const remaining = await databases.listDocuments(databaseId, collectionId, [
+            Query.equal('userId', userId),
+            Query.limit(1),
+          ]);
+          if (remaining.documents.length > 0) {
+            log(`Warning: Iteration limit reached for collection ${collectionId}`);
+            cleanupSuccess = false;
+            lastFailureMessage = `Iteration limit reached for collection ${collectionId}`;
           }
         }
       } catch (collErr) {
@@ -191,6 +208,18 @@ export default async ({ req, res, log, error }) => {
           }
         }
       }
+
+      if (fileIterations >= maxFileIterations) {
+        const remainingAssets = await databases.listDocuments(databaseId, 'user_assets', [
+          Query.equal('userId', userId),
+          Query.limit(1),
+        ]);
+        if (remainingAssets.documents.length > 0) {
+          log('Warning: Iteration limit reached for user_assets');
+          cleanupSuccess = false;
+          lastFailureMessage = 'Iteration limit reached for user_assets';
+        }
+      }
     } catch (assetsErr) {
       log(`user_assets query error: ${assetsErr.message}`);
       cleanupSuccess = false;
@@ -229,13 +258,69 @@ export default async ({ req, res, log, error }) => {
           }
         }
       }
+
+      if (purchIterations >= maxPurchIterations) {
+        const remainingPurchases = await databases.listDocuments(databaseId, 'course_purchases', [
+          Query.equal('userId', userId),
+          Query.limit(1),
+        ]);
+        const pending = remainingPurchases.documents.filter(p => p.userId === userId);
+        if (pending.length > 0) {
+          log('Warning: Iteration limit reached for course_purchases');
+          cleanupSuccess = false;
+          lastFailureMessage = 'Iteration limit reached for course_purchases';
+        }
+      }
     } catch (purchErr) {
       log(`course_purchases anonymization query error: ${purchErr.message}`);
       cleanupSuccess = false;
       lastFailureMessage = purchErr.message;
     }
 
-    // Check if mandatory data cleanup succeeded before deleting Auth user
+    // 4. Final Zero-Record Verification Check before Auth user deletion
+    if (cleanupSuccess) {
+      log(`Performing zero-record verification for user: ${userId}`);
+
+      for (const collectionId of USER_DATA_COLLECTIONS) {
+        const check = await databases.listDocuments(databaseId, collectionId, [
+          Query.equal('userId', userId),
+          Query.limit(1),
+        ]);
+        if (check.documents.length > 0) {
+          log(`Zero-record verification failed: remaining document in ${collectionId}`);
+          cleanupSuccess = false;
+          lastFailureMessage = `Zero-record verification failed for ${collectionId}`;
+          break;
+        }
+      }
+
+      if (cleanupSuccess) {
+        const assetCheck = await databases.listDocuments(databaseId, 'user_assets', [
+          Query.equal('userId', userId),
+          Query.limit(1),
+        ]);
+        if (assetCheck.documents.length > 0) {
+          log('Zero-record verification failed: remaining document in user_assets');
+          cleanupSuccess = false;
+          lastFailureMessage = 'Zero-record verification failed for user_assets';
+        }
+      }
+
+      if (cleanupSuccess) {
+        const purchCheck = await databases.listDocuments(databaseId, 'course_purchases', [
+          Query.equal('userId', userId),
+          Query.limit(1),
+        ]);
+        const unanonymized = purchCheck.documents.filter(p => p.userId === userId);
+        if (unanonymized.length > 0) {
+          log('Zero-record verification failed: unanonymized record in course_purchases');
+          cleanupSuccess = false;
+          lastFailureMessage = 'Zero-record verification failed for course_purchases';
+        }
+      }
+    }
+
+    // Check if mandatory data cleanup and zero-record verification succeeded
     if (!cleanupSuccess) {
       if (stateDoc) {
         try {
@@ -244,7 +329,9 @@ export default async ({ req, res, log, error }) => {
             lastError: lastFailureMessage || 'Partial cleanup failed',
             updatedAt: new Date().toISOString(),
           });
-        } catch (_) {}
+        } catch (failUpdateErr) {
+          error(`Failed state update to cleanup_failed: ${failUpdateErr.message}`);
+        }
       }
 
       return res.json({
@@ -261,10 +348,17 @@ export default async ({ req, res, log, error }) => {
           status: 'cleanup_complete',
           updatedAt: new Date().toISOString(),
         });
-      } catch (_) {}
+      } catch (stateUpdateErr) {
+        error(`Failed state update to cleanup_complete: ${stateUpdateErr.message}`);
+        return res.json({
+          ok: false,
+          code: 'deletion_failed',
+          message: 'Failed state machine transition to cleanup_complete. Auth deletion aborted.',
+        }, 500);
+      }
     }
 
-    // 4. Delete Appwrite Auth User account as final step
+    // 5. Delete Appwrite Auth User account as final step
     try {
       await users.delete(userId);
       log(`Appwrite Auth user ${userId} deleted successfully.`);
@@ -283,7 +377,14 @@ export default async ({ req, res, log, error }) => {
           status: 'completed',
           updatedAt: new Date().toISOString(),
         });
-      } catch (_) {}
+      } catch (completeErr) {
+        error(`Failed state update to completed: ${completeErr.message}`);
+        return res.json({
+          ok: false,
+          code: 'state_update_failed',
+          message: 'Auth user deleted but final state transition to completed failed.',
+        }, 500);
+      }
     }
 
     return res.json({
@@ -301,7 +402,9 @@ export default async ({ req, res, log, error }) => {
           lastError: err.message,
           updatedAt: new Date().toISOString(),
         });
-      } catch (_) {}
+      } catch (globalFailErr) {
+        error(`Failed state update in catch handler: ${globalFailErr.message}`);
+      }
     }
 
     return res.json({

@@ -208,7 +208,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           body: JSON.stringify(orderPayload)
         });
       } catch (netErr) {
-        error(`Gateway network error / timeout: ${netErr.message}`);
+        error(`[${attemptDocId}] Gateway network timeout or connection error`);
         try {
           await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
             status: 'reconciliation_required',
@@ -225,8 +225,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       }
 
       if (!razorpayRes.ok) {
-        const errText = await razorpayRes.text();
-        error(`Razorpay order creation failed: ${errText}`);
+        error(`[${attemptDocId}] Razorpay order creation request returned error status ${razorpayRes.status}`);
         try {
           await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
             status: 'failed',
@@ -248,7 +247,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
           updatedAt: new Date().toISOString(),
         });
       } catch (updateErr) {
-        error(`Failed to record providerOrderId ${razorpayOrder.id} in payment_attempts doc ${attemptDocId}: ${updateErr.message}`);
+        error(`[${attemptDocId}] Failed to record providerOrderId in payment_attempts doc`);
         // Flag for reconciliation rather than ignoring
         try {
           await databases.updateDocument(databaseId, 'payment_attempts', attemptDocId, {
@@ -258,7 +257,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
             updatedAt: new Date().toISOString(),
           });
         } catch (flagErr) {
-          error(`Failed flagging attempt for reconciliation: ${flagErr.message}`);
+          error(`[${attemptDocId}] Failed flagging attempt for reconciliation`);
         }
       }
 
@@ -321,7 +320,7 @@ export function createOrderHandler({ databases: customDb, fetchImpl = fetch } = 
       });
 
     } catch (err) {
-      error(`createRazorpayOrder failed: ${err.stack || err.message}`);
+      error('[createRazorpayOrder] Internal server error occurred');
       return res.json({ ok: false, message: 'An internal server error occurred' }, 500);
     }
   };

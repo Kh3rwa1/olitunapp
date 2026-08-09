@@ -4,18 +4,16 @@ import crypto from 'node:crypto';
 /**
  * Server-authoritative Account Deletion & PII Anonymization Function.
  *
- * Security Requirements:
+ * Security & Compliance Invariants:
  * 1. Derives user identity strictly from trusted execution context (x-appwrite-user-id).
- * 2. Validates environment configuration without hardcoded fallbacks.
- * 3. Uses a persistent deletion_requests state machine:
+ * 2. Mandates explicit environment configuration without fallbacks or defaults.
+ * 3. Enforces a durable deletion_requests state machine:
  *    requested -> in_progress -> cleanup_failed / cleanup_complete -> auth_deleted -> completed
- * 4. Paginates using cursors/repeated page-1 to delete all user records across collections.
- * 5. Enforces iteration guards and fails closed if limits are reached.
- * 6. Uses user_assets registry for reliable storage asset deletion.
- * 7. Anonymizes statutory financial ledgers without retaining PII.
- * 8. Mandates zero-record verification before deleting Auth user account.
- * 9. Deletes Appwrite Auth account ONLY after cleanup_complete state is verified.
- * 10. Idempotent: safe for repeated execution and automatic retries.
+ * 4. Structured logging using random non-user correlation IDs without raw PII or exception text.
+ * 5. Page-1 repeated fetch loops with iteration-limit guards.
+ * 6. Mandatory zero-record verification prior to Auth user deletion.
+ * 7. Privileged recovery path for interrupted post-Auth state transitions.
+ * 8. Idempotent execution safe for repeated calls and retries.
  */
 
 const USER_DATA_COLLECTIONS = [
@@ -32,33 +30,99 @@ const USER_DATA_COLLECTIONS = [
 const ANONYMIZED_USER_ID = 'anonymized_deleted_user';
 const PAGE_LIMIT = 100;
 
+export const ERROR_CODES = {
+  STATE_INITIALIZATION_FAILED: 'STATE_INITIALIZATION_FAILED',
+  COLLECTION_QUERY_FAILED: 'COLLECTION_QUERY_FAILED',
+  DOCUMENT_DELETE_FAILED: 'DOCUMENT_DELETE_FAILED',
+  STORAGE_DELETE_FAILED: 'STORAGE_DELETE_FAILED',
+  ANONYMIZATION_FAILED: 'ANONYMIZATION_FAILED',
+  VERIFICATION_FAILED: 'VERIFICATION_FAILED',
+  AUTH_DELETE_FAILED: 'AUTH_DELETE_FAILED',
+  STATE_TRANSITION_FAILED: 'STATE_TRANSITION_FAILED',
+  ITERATION_LIMIT_EXCEEDED: 'ITERATION_LIMIT_EXCEEDED',
+};
+
 function generatePseudonymousId(userId, hmacSecret) {
-  const secret = hmacSecret || process.env.DELETION_HMAC_SECRET;
-  if (!secret) {
+  if (!hmacSecret) {
     throw new Error('DELETION_HMAC_SECRET environment variable is missing');
   }
-  return crypto.createHmac('sha256', secret).update(userId).digest('hex').substring(0, 32);
+  return crypto.createHmac('sha256', hmacSecret).update(userId).digest('hex').substring(0, 32);
 }
 
-export default async ({ req, res, log = console.log, error = console.error, databases: injectedDb, users: injectedUsers, storage: injectedStorage }) => {
+/**
+ * Privileged administrative recovery path for interrupted post-Auth deletions.
+ * Scans for deletion requests stuck in 'auth_deleted' status and transitions them to 'completed'.
+ */
+export async function reconcileOrphanedAuthDeletions({
+  databases,
+  databaseId,
+  log = console.log,
+  error = console.error,
+}) {
+  const correlationId = crypto.randomUUID();
+  log(`[${correlationId}] [ORPHAN_RECOVERY_START] Initiating scan for auth_deleted requests`);
+
+  const stats = { scanned: 0, completed: 0, failed: 0 };
+
+  try {
+    const orphans = await databases.listDocuments(databaseId, 'deletion_requests', [
+      Query.equal('status', ['auth_deleted']),
+      Query.limit(50),
+    ]);
+
+    stats.scanned = orphans.documents.length;
+
+    for (const doc of orphans.documents) {
+      try {
+        await databases.updateDocument(databaseId, 'deletion_requests', doc.$id, {
+          status: 'completed',
+          updatedAt: new Date().toISOString(),
+        });
+        stats.completed++;
+        log(`[${correlationId}] [ORPHAN_RECOVERY_SUCCESS] State transitioned to completed`);
+      } catch (updateErr) {
+        stats.failed++;
+        error(`[${correlationId}] [ORPHAN_RECOVERY_FAILED] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
+      }
+    }
+  } catch (err) {
+    error(`[${correlationId}] [ORPHAN_RECOVERY_SCAN_FAILED] Code: ${ERROR_CODES.STATE_INITIALIZATION_FAILED}`);
+  }
+
+  return stats;
+}
+
+export default async ({
+  req,
+  res,
+  log = console.log,
+  error = console.error,
+  databases: injectedDb,
+  users: injectedUsers,
+  storage: injectedStorage,
+}) => {
+  const correlationId = crypto.randomUUID();
+
   if (req.method !== 'POST') {
+    log(`[${correlationId}] [REQUEST_REJECTED] Method not allowed`);
     return res.json({ ok: false, code: 'method_not_allowed', message: 'Only POST is allowed' }, 405);
   }
 
   // Strictly identify user from trusted Appwrite header
   const userId = req.headers['x-appwrite-user-id'] || process.env.APPWRITE_FUNCTION_USER_ID;
   if (!userId) {
+    log(`[${correlationId}] [REQUEST_REJECTED] Unauthenticated`);
     return res.json({ ok: false, code: 'unauthenticated', message: 'Authentication required' }, 401);
   }
 
   const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT || process.env.APPWRITE_ENDPOINT;
   const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID || process.env.APPWRITE_PROJECT_ID;
   const apiKey = process.env.APPWRITE_FUNCTION_API_KEY || process.env.APPWRITE_API_KEY;
-  const databaseId = process.env.APPWRITE_DATABASE_ID || 'olitun_db';
+  const databaseId = process.env.APPWRITE_DATABASE_ID;
   const hmacSecret = process.env.DELETION_HMAC_SECRET;
 
   if (!endpoint || !projectId || !apiKey || !databaseId || !hmacSecret) {
-    error('Missing required environment variables for delete-account');
+    error(`[${correlationId}] [CONFIG_ERROR] Missing required environment variables`);
     return res.json({ ok: false, code: 'server_misconfiguration', message: 'Server configuration error' }, 500);
   }
 
@@ -74,15 +138,16 @@ export default async ({ req, res, log = console.log, error = console.error, data
   const pseudoSubject = generatePseudonymousId(userId, hmacSecret);
   const requestId = `del_req_${pseudoSubject}`;
 
-  log(`Starting account deletion for user: ${userId} (request: ${requestId})`);
+  log(`[${correlationId}] [DELETION_STARTED] State machine initialized`);
 
   let stateDoc = null;
 
-  // Initialize or fetch state machine record (Mandatory state tracking)
+  // Initialize or fetch state machine record
   try {
     try {
       stateDoc = await databases.getDocument(databaseId, 'deletion_requests', requestId);
       if (stateDoc.status === 'completed') {
+        log(`[${correlationId}] [ALREADY_COMPLETED] Account deletion previously finished`);
         return res.json({
           ok: true,
           code: 'account_deleted',
@@ -110,7 +175,7 @@ export default async ({ req, res, log = console.log, error = console.error, data
       }
     }
   } catch (stateErr) {
-    error(`Failed state machine initialization: ${stateErr.message}`);
+    error(`[${correlationId}] [STATE_INIT_ERROR] Code: ${ERROR_CODES.STATE_INITIALIZATION_FAILED}`);
     return res.json({
       ok: false,
       code: 'deletion_failed',
@@ -119,10 +184,10 @@ export default async ({ req, res, log = console.log, error = console.error, data
   }
 
   let cleanupSuccess = true;
-  let lastFailureMessage = null;
+  let sanitizedErrorCode = null;
 
   try {
-    // 1. Repeated page-1 purge of user database collections
+    // 1. Purge database collections via page-1 repeated fetch
     for (const collectionId of USER_DATA_COLLECTIONS) {
       try {
         let iterations = 0;
@@ -144,9 +209,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
               await databases.deleteDocument(databaseId, collectionId, doc.$id);
             } catch (docErr) {
               if (docErr.code !== 404) {
-                log(`Warning: Failed to delete doc ${doc.$id} in ${collectionId}: ${docErr.message}`);
+                log(`[${correlationId}] [DOC_DELETE_WARN] Code: ${ERROR_CODES.DOCUMENT_DELETE_FAILED}`);
                 cleanupSuccess = false;
-                lastFailureMessage = docErr.message;
+                sanitizedErrorCode = ERROR_CODES.DOCUMENT_DELETE_FAILED;
               }
             }
           }
@@ -158,19 +223,19 @@ export default async ({ req, res, log = console.log, error = console.error, data
             Query.limit(1),
           ]);
           if (remaining.documents.length > 0) {
-            log(`Warning: Iteration limit reached for collection ${collectionId}`);
+            log(`[${correlationId}] [LIMIT_WARN] Code: ${ERROR_CODES.ITERATION_LIMIT_EXCEEDED}`);
             cleanupSuccess = false;
-            lastFailureMessage = `Iteration limit reached for collection ${collectionId}`;
+            sanitizedErrorCode = ERROR_CODES.ITERATION_LIMIT_EXCEEDED;
           }
         }
       } catch (collErr) {
-        log(`Collection ${collectionId} query error: ${collErr.message}`);
+        log(`[${correlationId}] [COLLECTION_QUERY_WARN] Code: ${ERROR_CODES.COLLECTION_QUERY_FAILED}`);
         cleanupSuccess = false;
-        lastFailureMessage = collErr.message;
+        sanitizedErrorCode = ERROR_CODES.COLLECTION_QUERY_FAILED;
       }
     }
 
-    // 2. Repeated page-1 file purge via user_assets registry
+    // 2. Purge files via user_assets registry
     try {
       let fileIterations = 0;
       const maxFileIterations = 50;
@@ -191,9 +256,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
             await storage.deleteFile(asset.bucketId, asset.fileId);
           } catch (fileErr) {
             if (fileErr.code !== 404) {
-              log(`Warning: Failed deleting file ${asset.fileId} in bucket ${asset.bucketId}: ${fileErr.message}`);
+              log(`[${correlationId}] [STORAGE_DELETE_WARN] Code: ${ERROR_CODES.STORAGE_DELETE_FAILED}`);
               cleanupSuccess = false;
-              lastFailureMessage = fileErr.message;
+              sanitizedErrorCode = ERROR_CODES.STORAGE_DELETE_FAILED;
             }
           }
 
@@ -201,9 +266,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
             await databases.deleteDocument(databaseId, 'user_assets', asset.$id);
           } catch (assetDocErr) {
             if (assetDocErr.code !== 404) {
-              log(`Warning: Failed deleting asset registry doc ${asset.$id}: ${assetDocErr.message}`);
+              log(`[${correlationId}] [ASSET_REGISTRY_WARN] Code: ${ERROR_CODES.DOCUMENT_DELETE_FAILED}`);
               cleanupSuccess = false;
-              lastFailureMessage = assetDocErr.message;
+              sanitizedErrorCode = ERROR_CODES.DOCUMENT_DELETE_FAILED;
             }
           }
         }
@@ -215,18 +280,18 @@ export default async ({ req, res, log = console.log, error = console.error, data
           Query.limit(1),
         ]);
         if (remainingAssets.documents.length > 0) {
-          log('Warning: Iteration limit reached for user_assets');
+          log(`[${correlationId}] [ASSET_LIMIT_WARN] Code: ${ERROR_CODES.ITERATION_LIMIT_EXCEEDED}`);
           cleanupSuccess = false;
-          lastFailureMessage = 'Iteration limit reached for user_assets';
+          sanitizedErrorCode = ERROR_CODES.ITERATION_LIMIT_EXCEEDED;
         }
       }
     } catch (assetsErr) {
-      log(`user_assets query error: ${assetsErr.message}`);
+      log(`[${correlationId}] [ASSETS_QUERY_WARN] Code: ${ERROR_CODES.COLLECTION_QUERY_FAILED}`);
       cleanupSuccess = false;
-      lastFailureMessage = assetsErr.message;
+      sanitizedErrorCode = ERROR_CODES.COLLECTION_QUERY_FAILED;
     }
 
-    // 3. Anonymize financial purchase records for tax/legal statutory compliance
+    // 3. Anonymize statutory financial purchase records
     try {
       let purchIterations = 0;
       const maxPurchIterations = 50;
@@ -252,9 +317,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
               pseudonymousId: pseudoSubject,
             });
           } catch (anonErr) {
-            log(`Warning: Failed to anonymize purchase ${purchase.$id}: ${anonErr.message}`);
+            log(`[${correlationId}] [ANONYMIZATION_WARN] Code: ${ERROR_CODES.ANONYMIZATION_FAILED}`);
             cleanupSuccess = false;
-            lastFailureMessage = anonErr.message;
+            sanitizedErrorCode = ERROR_CODES.ANONYMIZATION_FAILED;
           }
         }
       }
@@ -266,20 +331,20 @@ export default async ({ req, res, log = console.log, error = console.error, data
         ]);
         const pending = remainingPurchases.documents.filter(p => p.userId === userId);
         if (pending.length > 0) {
-          log('Warning: Iteration limit reached for course_purchases');
+          log(`[${correlationId}] [PURCH_LIMIT_WARN] Code: ${ERROR_CODES.ITERATION_LIMIT_EXCEEDED}`);
           cleanupSuccess = false;
-          lastFailureMessage = 'Iteration limit reached for course_purchases';
+          sanitizedErrorCode = ERROR_CODES.ITERATION_LIMIT_EXCEEDED;
         }
       }
     } catch (purchErr) {
-      log(`course_purchases anonymization query error: ${purchErr.message}`);
+      log(`[${correlationId}] [PURCH_QUERY_WARN] Code: ${ERROR_CODES.COLLECTION_QUERY_FAILED}`);
       cleanupSuccess = false;
-      lastFailureMessage = purchErr.message;
+      sanitizedErrorCode = ERROR_CODES.COLLECTION_QUERY_FAILED;
     }
 
-    // 4. Final Zero-Record Verification Check before Auth user deletion
+    // 4. Mandatory Zero-Record Verification Check before Auth account deletion
     if (cleanupSuccess) {
-      log(`Performing zero-record verification for user: ${userId}`);
+      log(`[${correlationId}] [VERIFICATION_START] Verifying zero remaining records`);
 
       for (const collectionId of USER_DATA_COLLECTIONS) {
         const check = await databases.listDocuments(databaseId, collectionId, [
@@ -287,9 +352,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
           Query.limit(1),
         ]);
         if (check.documents.length > 0) {
-          log(`Zero-record verification failed: remaining document in ${collectionId}`);
+          log(`[${correlationId}] [VERIFICATION_FAIL] Code: ${ERROR_CODES.VERIFICATION_FAILED}`);
           cleanupSuccess = false;
-          lastFailureMessage = `Zero-record verification failed for ${collectionId}`;
+          sanitizedErrorCode = ERROR_CODES.VERIFICATION_FAILED;
           break;
         }
       }
@@ -300,9 +365,9 @@ export default async ({ req, res, log = console.log, error = console.error, data
           Query.limit(1),
         ]);
         if (assetCheck.documents.length > 0) {
-          log('Zero-record verification failed: remaining document in user_assets');
+          log(`[${correlationId}] [VERIFICATION_FAIL_ASSET] Code: ${ERROR_CODES.VERIFICATION_FAILED}`);
           cleanupSuccess = false;
-          lastFailureMessage = 'Zero-record verification failed for user_assets';
+          sanitizedErrorCode = ERROR_CODES.VERIFICATION_FAILED;
         }
       }
 
@@ -313,24 +378,24 @@ export default async ({ req, res, log = console.log, error = console.error, data
         ]);
         const unanonymized = purchCheck.documents.filter(p => p.userId === userId);
         if (unanonymized.length > 0) {
-          log('Zero-record verification failed: unanonymized record in course_purchases');
+          log(`[${correlationId}] [VERIFICATION_FAIL_PURCH] Code: ${ERROR_CODES.VERIFICATION_FAILED}`);
           cleanupSuccess = false;
-          lastFailureMessage = 'Zero-record verification failed for course_purchases';
+          sanitizedErrorCode = ERROR_CODES.VERIFICATION_FAILED;
         }
       }
     }
 
-    // Check if mandatory data cleanup and zero-record verification succeeded
+    // Fail closed if cleanup or verification failed
     if (!cleanupSuccess) {
       if (stateDoc) {
         try {
           await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
             status: 'cleanup_failed',
-            lastError: lastFailureMessage || 'Partial cleanup failed',
+            lastError: sanitizedErrorCode || ERROR_CODES.VERIFICATION_FAILED,
             updatedAt: new Date().toISOString(),
           });
         } catch (failUpdateErr) {
-          error(`Failed state update to cleanup_failed: ${failUpdateErr.message}`);
+          error(`[${correlationId}] [STATE_UPDATE_FAIL] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
         }
       }
 
@@ -341,7 +406,7 @@ export default async ({ req, res, log = console.log, error = console.error, data
       }, 500);
     }
 
-    // Update state to cleanup_complete before deleting Auth account
+    // Update state to cleanup_complete before Auth user deletion
     if (stateDoc) {
       try {
         await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
@@ -349,7 +414,7 @@ export default async ({ req, res, log = console.log, error = console.error, data
           updatedAt: new Date().toISOString(),
         });
       } catch (stateUpdateErr) {
-        error(`Failed state update to cleanup_complete: ${stateUpdateErr.message}`);
+        error(`[${correlationId}] [STATE_COMPLETE_FAIL] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
         return res.json({
           ok: false,
           code: 'deletion_failed',
@@ -358,19 +423,32 @@ export default async ({ req, res, log = console.log, error = console.error, data
       }
     }
 
-    // 5. Delete Appwrite Auth User account as final step
+    // 5. Delete Appwrite Auth User Account as final structural step
     try {
       await users.delete(userId);
-      log(`Appwrite Auth user ${userId} deleted successfully.`);
+      log(`[${correlationId}] [AUTH_DELETE_SUCCESS] Auth user account removed`);
     } catch (userDeleteErr) {
       if (userDeleteErr.code === 404) {
-        log(`User ${userId} was already deleted from Appwrite Auth.`);
+        log(`[${correlationId}] [AUTH_DELETE_IDEMPOTENT] Auth user already absent`);
       } else {
+        error(`[${correlationId}] [AUTH_DELETE_ERROR] Code: ${ERROR_CODES.AUTH_DELETE_FAILED}`);
         throw userDeleteErr;
       }
     }
 
-    // Mark deletion state as completed
+    // Transition state: cleanup_complete -> auth_deleted
+    if (stateDoc) {
+      try {
+        await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
+          status: 'auth_deleted',
+          updatedAt: new Date().toISOString(),
+        });
+      } catch (authDelStateErr) {
+        error(`[${correlationId}] [STATE_AUTH_DEL_FAIL] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
+      }
+    }
+
+    // Transition state: auth_deleted -> completed
     if (stateDoc) {
       try {
         await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
@@ -378,32 +456,33 @@ export default async ({ req, res, log = console.log, error = console.error, data
           updatedAt: new Date().toISOString(),
         });
       } catch (completeErr) {
-        error(`Failed state update to completed: ${completeErr.message}`);
+        error(`[${correlationId}] [STATE_FINAL_FAIL] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
         return res.json({
           ok: false,
           code: 'state_update_failed',
-          message: 'Auth user deleted but final state transition to completed failed.',
+          message: 'Auth user deleted but final state transition to completed failed. Queued for orphan recovery.',
         }, 500);
       }
     }
 
+    log(`[${correlationId}] [DELETION_COMPLETED] Account deletion successfully finalized`);
     return res.json({
       ok: true,
       code: 'account_deleted',
       message: 'Account and associated personal data successfully deleted',
     });
   } catch (err) {
-    error(`Account deletion error for user ${userId}: ${err.message}`);
+    error(`[${correlationId}] [GLOBAL_CATCH] Code: ${sanitizedErrorCode || ERROR_CODES.STATE_TRANSITION_FAILED}`);
 
     if (stateDoc) {
       try {
         await databases.updateDocument(databaseId, 'deletion_requests', requestId, {
           status: 'cleanup_failed',
-          lastError: err.message,
+          lastError: sanitizedErrorCode || ERROR_CODES.STATE_TRANSITION_FAILED,
           updatedAt: new Date().toISOString(),
         });
       } catch (globalFailErr) {
-        error(`Failed state update in catch handler: ${globalFailErr.message}`);
+        error(`[${correlationId}] [GLOBAL_STATE_FAIL] Code: ${ERROR_CODES.STATE_TRANSITION_FAILED}`);
       }
     }
 

@@ -314,6 +314,31 @@
       ]
     },
     {
+      "id": "reconcilePaymentAttempts",
+      "$id": "reconcilePaymentAttempts",
+      "name": "reconcilePaymentAttempts",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "*/15 * * * *",
+      "timeout": 60,
+      "path": "functions/reconcilePaymentAttempts",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write"
+      ]
+    },
+    {
       "id": "createRazorpayOrder",
       "$id": "createRazorpayOrder",
       "name": "createRazorpayOrder",

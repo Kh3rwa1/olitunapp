@@ -148,15 +148,14 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
         });
 
         if (!paymentRes.ok) {
-          const errBody = await paymentRes.text();
-          error(`Razorpay API payment fetch failed (HTTP ${paymentRes.status}): ${errBody}`);
-          return res.json({ ok: false, message: `Payment verification failed with payment gateway (HTTP ${paymentRes.status})` }, 400);
+          error(`Razorpay API payment fetch failed (HTTP ${paymentRes.status})`);
+          return res.json({ ok: false, message: 'Payment verification failed with payment gateway' }, 400);
         }
 
         paymentData = await paymentRes.json();
       } catch (e) {
-        error(`Network exception calling Razorpay API: ${e.message}`);
-        return res.json({ ok: false, message: `Payment gateway verification failed due to network error: ${e.message}` }, 502);
+        error('Network exception calling Razorpay API');
+        return res.json({ ok: false, message: 'Payment gateway verification failed due to network error' }, 502);
       }
 
       // 6. Strict Field Validation against Razorpay Payment Object:
@@ -206,15 +205,15 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
                 existingClaim.providerOrderId === orderId) {
               isRetry = true;
             } else {
-              error(`REPLAY ATTACK: Payment ID ${paymentId} claimed by user ${existingClaim.userId}`);
+              error('Replay prevention: Payment ID already claimed by another purchase');
               return res.json({ ok: false, message: 'This payment ID has already been claimed by another purchase' }, 409);
             }
           } catch (fetchClaimErr) {
-            error(`Failed to fetch existing claim: ${fetchClaimErr.message}`);
+            error('Failed to fetch existing payment claim record');
             return res.json({ ok: false, message: 'Payment claim verification failed. Verification aborted.' }, 503);
           }
         } else {
-          error(`FAIL CLOSED: Claim creation failed with non-409 code ${claimErr.code}: ${claimErr.message}`);
+          error('Claim creation failed with non-409 error code');
           return res.json({ ok: false, message: 'Payment claim service unavailable. Verification aborted.' }, 503);
         }
       }
@@ -258,7 +257,7 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
           committedAt: now
         });
       } catch (commitErr) {
-        error(`Failed to commit payment claim ${claimId}: ${commitErr.message}`);
+        error('Failed to commit payment claim record');
         return res.json({ ok: false, message: 'Failed to commit payment claim' }, 503);
       }
 
@@ -269,8 +268,8 @@ export function createVerifyCoursePurchaseHandler({ databases: customDb, fetchIm
       });
 
     } catch (err) {
-      error(`verifyCoursePurchase failed: ${err.message}`);
-      return res.json({ ok: false, message: err.message }, 500);
+      error('[verifyCoursePurchase] Internal server error occurred');
+      return res.json({ ok: false, message: 'An internal server error occurred' }, 500);
     }
   };
 }

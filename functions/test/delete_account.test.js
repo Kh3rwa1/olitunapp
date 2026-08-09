@@ -1,6 +1,6 @@
 import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert/strict';
-import deleteAccountHandler from '../delete-account/src/main.js';
+import deleteAccountHandler, { ERROR_CODES, reconcileOrphanedAuthDeletions } from '../delete-account/src/main.js';
 
 function createMockRes() {
   const res = {
@@ -114,11 +114,12 @@ class InMemUsers {
   }
 }
 
-describe('delete-account fail-closed serverless function suite', () => {
+describe('delete-account fail-closed serverless function & sanitization suite', () => {
   beforeEach(() => {
     process.env.APPWRITE_FUNCTION_API_ENDPOINT = 'https://localhost/v1';
     process.env.APPWRITE_FUNCTION_PROJECT_ID = 'test_proj';
     process.env.APPWRITE_FUNCTION_API_KEY = 'test_key';
+    process.env.APPWRITE_DATABASE_ID = 'test_db_id';
     process.env.DELETION_HMAC_SECRET = 'test_hmac_secret_key_12345';
   });
 
@@ -164,7 +165,23 @@ describe('delete-account fail-closed serverless function suite', () => {
     assert.equal(res.body.code, 'server_misconfiguration');
   });
 
-  test('4. body userId spoofing is ignored in favor of trusted header userId', async () => {
+  test('4. returns 500 server_misconfiguration when APPWRITE_DATABASE_ID is missing', async () => {
+    const req = { method: 'POST', headers: { 'x-appwrite-user-id': 'user_test_123' } };
+    const res = createMockRes();
+
+    const origDb = process.env.APPWRITE_DATABASE_ID;
+    delete process.env.APPWRITE_DATABASE_ID;
+
+    await deleteAccountHandler({ req, res, log: () => {}, error: () => {} });
+
+    if (origDb) process.env.APPWRITE_DATABASE_ID = origDb;
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.body.ok, false);
+    assert.equal(res.body.code, 'server_misconfiguration');
+  });
+
+  test('5. body userId spoofing is ignored in favor of trusted header userId', async () => {
     const req = {
       method: 'POST',
       headers: { 'x-appwrite-user-id': 'real_authenticated_user_100' },
@@ -184,7 +201,7 @@ describe('delete-account fail-closed serverless function suite', () => {
     assert.equal(res.body.code, 'server_misconfiguration');
   });
 
-  test('5. End-to-end user account deletion purges collections, assets, anonymizes purchases, and deletes Auth user', async () => {
+  test('6. End-to-end user account deletion purges collections, assets, anonymizes purchases, and deletes Auth user', async () => {
     const db = new InMemDb();
     const storage = new InMemStorage();
     const users = new InMemUsers();
@@ -204,12 +221,16 @@ describe('delete-account fail-closed serverless function suite', () => {
       ['purch_1', { $id: 'purch_1', userId, amount: 499, userEmail: 'user@test.com' }]
     ]));
 
+    const logs = [];
+    const errors = [];
+
     const req = { method: 'POST', headers: { 'x-appwrite-user-id': userId } };
     const res = createMockRes();
 
     await deleteAccountHandler({
       req, res,
-      log: () => {}, error: () => {},
+      log: (msg) => logs.push(msg),
+      error: (msg) => errors.push(msg),
       databases: db, users, storage
     });
 
@@ -238,20 +259,53 @@ describe('delete-account fail-closed serverless function suite', () => {
     assert.equal(reqTable.size, 1);
     const reqDoc = Array.from(reqTable.values())[0];
     assert.equal(reqDoc.status, 'completed');
+
+    // ASSERTION: Logs contain NO clear-text user ID, email, doc ID, or file ID
+    const logString = logs.join('\n') + errors.join('\n');
+    assert.equal(logString.includes(userId), false, 'Log contains raw userId');
+    assert.equal(logString.includes('user@test.com'), false, 'Log contains raw email');
+    assert.equal(logString.includes('f_pic1'), false, 'Log contains raw fileId');
+    assert.equal(logString.includes('pref_1'), false, 'Log contains raw documentId');
   });
 
-  test('6. Zero-record verification failure prevents Auth user deletion', async () => {
+  test('7. Paginates and deletes more than 100 records across multiple repeated page-1 fetches', async () => {
     const db = new InMemDb();
     const storage = new InMemStorage();
     const users = new InMemUsers();
 
-    const userId = 'u_del_fail_verify';
+    const userId = 'u_bulk_150';
     users.users.add(userId);
 
-    // Mock a DB where deleteDocument fails silently to simulate leftover record
-    db.deleteDocument = async () => {
-      // simulate failure to delete document
-    };
+    const prefMap = new Map();
+    for (let i = 0; i < 150; i++) {
+      prefMap.set(`pref_${i}`, { $id: `pref_${i}`, userId, index: i });
+    }
+    db.collections.set('user_preferences', prefMap);
+
+    const req = { method: 'POST', headers: { 'x-appwrite-user-id': userId } };
+    const res = createMockRes();
+
+    await deleteAccountHandler({
+      req, res,
+      log: () => {}, error: () => {},
+      databases: db, users, storage
+    });
+
+    assert.equal(res.statusCode, 200);
+    assert.equal(res.body.ok, true);
+    assert.equal(db.collections.get('user_preferences').size, 0);
+  });
+
+  test('8. Iteration limit exhaustion prevents Auth user deletion and sets cleanup_failed state', async () => {
+    const db = new InMemDb();
+    const storage = new InMemStorage();
+    const users = new InMemUsers();
+
+    const userId = 'u_del_fail_limit';
+    users.users.add(userId);
+
+    // Mock DB deleteDocument to no-op so records persist across all 50 iterations
+    db.deleteDocument = async () => {};
 
     db.collections.set('user_preferences', new Map([
       ['pref_stubborn', { $id: 'pref_stubborn', userId, theme: 'light' }]
@@ -273,13 +327,58 @@ describe('delete-account fail-closed serverless function suite', () => {
     // Auth user must NOT be deleted!
     assert.equal(users.users.has(userId), true);
 
-    // Deletion request state must be cleanup_failed
+    // Deletion request state must be cleanup_failed with ITERATION_LIMIT_EXCEEDED
     const reqTable = db.collections.get('deletion_requests');
     const reqDoc = Array.from(reqTable.values())[0];
     assert.equal(reqDoc.status, 'cleanup_failed');
+    assert.equal(reqDoc.lastError, ERROR_CODES.ITERATION_LIMIT_EXCEEDED);
   });
 
-  test('7. State transition error during cleanup_complete aborts Auth user deletion', async () => {
+  test('9. Zero-record verification failure when document appears post-loop prevents Auth user deletion', async () => {
+    const db = new InMemDb();
+    const storage = new InMemStorage();
+    const users = new InMemUsers();
+
+    const userId = 'u_del_verify_fail';
+    users.users.add(userId);
+
+    // Track calls to listDocuments for user_preferences
+    let callCount = 0;
+    const origList = db.listDocuments.bind(db);
+    db.listDocuments = async (dbId, col, queries) => {
+      if (col === 'user_preferences') {
+        callCount++;
+        // On 1st call (during loop), return empty array so loop exits clean
+        if (callCount === 1) {
+          return { documents: [], total: 0 };
+        }
+        // On 2nd call (during zero-record verification), return a leftover document!
+        return { documents: [{ $id: 'ghost_doc', userId }], total: 1 };
+      }
+      return origList(dbId, col, queries);
+    };
+
+    const req = { method: 'POST', headers: { 'x-appwrite-user-id': userId } };
+    const res = createMockRes();
+
+    await deleteAccountHandler({
+      req, res,
+      log: () => {}, error: () => {},
+      databases: db, users, storage
+    });
+
+    assert.equal(res.statusCode, 500);
+    assert.equal(res.body.ok, false);
+
+    assert.equal(users.users.has(userId), true);
+
+    const reqTable = db.collections.get('deletion_requests');
+    const reqDoc = Array.from(reqTable.values())[0];
+    assert.equal(reqDoc.status, 'cleanup_failed');
+    assert.equal(reqDoc.lastError, ERROR_CODES.VERIFICATION_FAILED);
+  });
+
+  test('9. State transition error during cleanup_complete aborts Auth user deletion', async () => {
     const db = new InMemDb();
     const storage = new InMemStorage();
     const users = new InMemUsers();
@@ -287,7 +386,6 @@ describe('delete-account fail-closed serverless function suite', () => {
     const userId = 'u_del_state_err';
     users.users.add(userId);
 
-    // Override updateDocument to fail when status becomes cleanup_complete
     const origUpdate = db.updateDocument.bind(db);
     db.updateDocument = async (dbId, col, id, data) => {
       if (data.status === 'cleanup_complete') {
@@ -312,5 +410,27 @@ describe('delete-account fail-closed serverless function suite', () => {
 
     // Auth user must NOT be deleted!
     assert.equal(users.users.has(userId), true);
+  });
+
+  test('10. Privileged orphan recovery transitions auth_deleted request to completed', async () => {
+    const db = new InMemDb();
+
+    db.collections.set('deletion_requests', new Map([
+      ['del_req_orphan1', { $id: 'del_req_orphan1', status: 'auth_deleted' }]
+    ]));
+
+    const stats = await reconcileOrphanedAuthDeletions({
+      databases: db,
+      databaseId: 'test_db_id',
+      log: () => {},
+      error: () => {}
+    });
+
+    assert.equal(stats.scanned, 1);
+    assert.equal(stats.completed, 1);
+    assert.equal(stats.failed, 0);
+
+    const doc = db.collections.get('deletion_requests').get('del_req_orphan1');
+    assert.equal(doc.status, 'completed');
   });
 });

@@ -260,23 +260,14 @@ jobs:
             sleep 1
           done
 
-          TEST_FILES=(
-            "integration_test/auth_flow_test.dart"
-            "integration_test/legal_smoke_test.dart"
-            "integration_test/quiz_flow_test.dart"
-            "integration_test/journeys_integration_test.dart"
-          )
-
-          for test_file in "${TEST_FILES[@]}"; do
-            echo "----------------------------------------"
-            echo "Running $test_file on Chrome..."
-            echo "----------------------------------------"
-            flutter drive \
-              --driver=test_driver/integration_test.dart \
-              --target="$test_file" \
-              -d chrome \
-              --timeout=300
-          done
+          echo "----------------------------------------"
+          echo "Running Web Integration Test Suite on Chrome..."
+          echo "----------------------------------------"
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/all_tests.dart \
+            -d chrome \
+            --timeout=300
       - name: Upload ChromeDriver logs on failure
         if: failure()
         uses: actions/upload-artifact@v4

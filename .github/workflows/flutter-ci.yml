@@ -242,8 +242,12 @@ jobs:
           google-chrome --version || true
           chromedriver --version || true
 
-          # Start ChromeDriver with xvfb in background
-          xvfb-run --auto-servernum chromedriver --port=4444 > /tmp/chromedriver.log 2>&1 &
+          # Start Xvfb virtual display and export DISPLAY
+          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
+          export DISPLAY=:99
+
+          # Start ChromeDriver in background
+          chromedriver --port=4444 > /tmp/chromedriver.log 2>&1 &
           CHROMEDRIVER_PID=$!
           trap 'kill $CHROMEDRIVER_PID || true' EXIT
 

@@ -12,7 +12,9 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   group('Full Application User Journeys Integration Suite', () {
-    testWidgets('1. Auth Journey: Welcome -> Email Auth transition', (tester) async {
+    testWidgets('1. Auth Journey: Welcome -> Email Auth transition', (
+      tester,
+    ) async {
       final router = GoRouter(
         initialLocation: '/welcome',
         routes: [
@@ -46,83 +48,93 @@ void main() {
       expect(find.byType(EmailAuthScreen), findsOneWidget);
     });
 
-    testWidgets('2. Purchase Callback Journey: Handles callback parameters gracefully', (tester) async {
-      final router = GoRouter(
-        initialLocation: '/splash?purchase_status=success&category_id=cat_123',
-        routes: [
-          GoRoute(
-            path: '/splash',
-            builder: (context, state) => const SplashScreen(),
+    testWidgets(
+      '2. Purchase Callback Journey: Handles callback parameters gracefully',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation:
+              '/splash?purchase_status=success&category_id=cat_123',
+          routes: [
+            GoRoute(
+              path: '/splash',
+              builder: (context, state) => const SplashScreen(),
+            ),
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
           ),
-          GoRoute(
-            path: '/home',
-            builder: (context, state) => const HomeScreen(),
+        );
+
+        await tester.pumpAndSettle();
+        expect(find.byType(SplashScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '3. Offline Restart Journey: Initializing app offline loads cached state',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation: '/home',
+          routes: [
+            GoRoute(
+              path: '/home',
+              builder: (context, state) => const HomeScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
           ),
-        ],
-      );
+        );
 
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(
-            routerConfig: router,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
+        await tester.pumpAndSettle();
+        expect(find.byType(HomeScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '4. Account Deletion Journey: Renders deletion confirmation sheet options',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation: '/welcome',
+          routes: [
+            GoRoute(
+              path: '/welcome',
+              builder: (context, state) => const WelcomeScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
           ),
-        ),
-      );
+        );
 
-      await tester.pumpAndSettle();
-      expect(find.byType(SplashScreen), findsOneWidget);
-    });
-
-    testWidgets('3. Offline Restart Journey: Initializing app offline loads cached state', (tester) async {
-      final router = GoRouter(
-        initialLocation: '/home',
-        routes: [
-          GoRoute(
-            path: '/home',
-            builder: (context, state) => const HomeScreen(),
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(
-            routerConfig: router,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-      expect(find.byType(HomeScreen), findsOneWidget);
-    });
-
-    testWidgets('4. Account Deletion Journey: Renders deletion confirmation sheet options', (tester) async {
-      final router = GoRouter(
-        initialLocation: '/welcome',
-        routes: [
-          GoRoute(
-            path: '/welcome',
-            builder: (context, state) => const WelcomeScreen(),
-          ),
-        ],
-      );
-
-      await tester.pumpWidget(
-        ProviderScope(
-          child: MaterialApp.router(
-            routerConfig: router,
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
-          ),
-        ),
-      );
-
-      await tester.pumpAndSettle();
-      expect(find.byType(WelcomeScreen), findsOneWidget);
-    });
+        await tester.pumpAndSettle();
+        expect(find.byType(WelcomeScreen), findsOneWidget);
+      },
+    );
   });
 }

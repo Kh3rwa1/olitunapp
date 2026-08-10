@@ -57,7 +57,8 @@ class AppwriteConfig {
         'Build with: --dart-define=APPWRITE_PROJECT_ID=[your-project-id]\n',
       );
     }
-    if (const bool.fromEnvironment('REQUIRE_TRANSLATE_URL') && translateUrl.isEmpty) {
+    if (const bool.fromEnvironment('REQUIRE_TRANSLATE_URL') &&
+        translateUrl.isEmpty) {
       throw StateError(
         '\n\nTRANSLATE_URL is required.\n'
         'Build with: --dart-define=TRANSLATE_URL=[your-appwrite-function-url]\n',

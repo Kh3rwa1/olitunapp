@@ -17,12 +17,14 @@ class QuizBlockCTAWidget extends StatelessWidget {
     required double radius,
     required double padding,
     required Widget child,
-  }) buildGlassCard;
+  })
+  buildGlassCard;
   final Widget Function({
     required Color color,
     required VoidCallback onPressed,
     required Widget child,
-  }) buildTactileButton;
+  })
+  buildTactileButton;
 
   const QuizBlockCTAWidget({
     super.key,
@@ -108,9 +110,9 @@ class QuizBlockCTAWidget extends StatelessWidget {
                         fontWeight: FontWeight.w900,
                         color:
                             ThemeData.estimateBrightnessForColor(accentColor) ==
-                                    Brightness.light
-                                ? Colors.black
-                                : Colors.white,
+                                Brightness.light
+                            ? Colors.black
+                            : Colors.white,
                         letterSpacing: 1.5,
                       ),
                     ),
@@ -119,8 +121,9 @@ class QuizBlockCTAWidget extends StatelessWidget {
                   TextButton(
                     onPressed: onDismiss,
                     style: TextButton.styleFrom(
-                      foregroundColor:
-                          isDark ? Colors.white60 : const Color(0xFF64748B),
+                      foregroundColor: isDark
+                          ? Colors.white60
+                          : const Color(0xFF64748B),
                     ),
                     child: const Text(
                       'Skip for now',

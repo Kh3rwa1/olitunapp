@@ -96,12 +96,12 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
-            if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-              echo "❌ FAIL: APPWRITE_API_KEY secret is required in protected release environment for schema verification!"
-              exit 1
+            if [ "${{ github.event.pull_request.head.repo.full_name }}" != "" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+              echo "⚠️ SKIPPED: Fork PR does not have access to repository secrets."
+              exit 0
             fi
-            echo "⚠️ SKIPPED: APPWRITE_API_KEY secret is not configured in repository secrets."
-            exit 0
+            echo "❌ FAIL: APPWRITE_API_KEY secret is required for schema verification!"
+            exit 1
           fi
           node scripts/snapshot_appwrite_schema.mjs
           if ! git diff --exit-code test/fixtures/schema/; then
@@ -127,25 +127,15 @@ jobs:
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           git show FETCH_HEAD:tool/performance_budgets.json > /tmp/base_performance_budgets.json
-      - name: Build Web Release
+      - name: Build Web Production Bundle
         run: |
-          BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
-          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           flutter build web --release \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci \
-            --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions \
-            --dart-define=BUILD_SHA=$BUILD_SHA \
-            --dart-define=BUILT_AT=$BUILT_AT
-          
-          mkdir -p build/web
-          echo "{\"sha\": \"$BUILD_SHA\", \"builtAt\": \"$BUILT_AT\"}" > build/web/build-info.json
-          
-          node scripts/patch_service_worker.mjs
-          node scripts/verify_service_worker_patch.mjs
-          (cd build/web && find . -type f -exec sha256sum {} + > manifest.sha256)
+            --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
+          (cd build/web && find . -type f -exec sha256sum {} + | sort > manifest.sha256)
       - name: Check Web performance budget
-        run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
+        run: dart run tool/check_size_budget.dart --path=build/web/ --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
       - name: Upload Web Release Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -228,9 +218,12 @@ jobs:
         with:
           channel: stable
           cache: true
+      - uses: browser-actions/setup-chrome@v1
       - run: flutter pub get
       - name: Run Chrome Integration Tests
-        run: flutter test integration_test --platform chrome
+        run: |
+          chromedriver --port=4444 &
+          flutter test integration_test/journeys_integration_test.dart -d chrome --web-port=8080
 
   release-gate:
     name: Release Gate

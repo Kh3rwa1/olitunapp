@@ -23,7 +23,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    final targetLocation = await SplashController.determineInitialLocation(context, ref);
+    final targetLocation = await SplashController.determineInitialLocation(
+      context,
+      ref,
+    );
     if (!mounted || targetLocation == null) return;
     AppLogger.debug('Splash: Navigating to $targetLocation');
     context.go(targetLocation);

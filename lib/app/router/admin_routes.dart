@@ -29,12 +29,14 @@ List<RouteBase> buildAdminRoutes({
     required String path,
     String? name,
     required Widget Function(BuildContext, GoRouterState) child,
-  }) modalRoute,
+  })
+  modalRoute,
   required GoRoute Function({
     required String path,
     String? name,
     required Widget Function(BuildContext, GoRouterState) builder,
-  }) adminRoute,
+  })
+  adminRoute,
 }) {
   return [
     modalRoute(

@@ -32,9 +32,7 @@ void main() {
     await CacheService.clear();
     mockDb = MockAppwriteDbService();
     container = ProviderContainer(
-      overrides: [
-        appwriteDbServiceProvider.overrideWithValue(mockDb),
-      ],
+      overrides: [appwriteDbServiceProvider.overrideWithValue(mockDb)],
     );
   });
 
@@ -55,10 +53,18 @@ void main() {
 
       // 1. Initial successful server fetch returns verified entitlement
       when(
-        () => mockDb.listDocuments('course_purchases', queries: any(named: 'queries')),
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
       ).thenAnswer(
         (_) async => [
-          {'\$id': 'p1', 'categoryId': 'cat_ol_chiki', 'userId': userId, 'status': 'verified'},
+          {
+            '\$id': 'p1',
+            'categoryId': 'cat_ol_chiki',
+            'userId': userId,
+            'status': 'verified',
+          },
         ],
       );
 
@@ -70,10 +76,14 @@ void main() {
       const key = 'entitlements:production:$userId';
       await CacheService.set(
         key,
-        {'ids': ['cat_ol_chiki']},
+        {
+          'ids': ['cat_ol_chiki'],
+        },
         ttl: const Duration(milliseconds: 1), // 1ms TTL
       );
-      await Future<void>.delayed(const Duration(milliseconds: 50)); // wait for expiry
+      await Future<void>.delayed(
+        const Duration(milliseconds: 50),
+      ); // wait for expiry
 
       // Verify normal CacheService.get returns null because it expired
       final normalGet = await CacheService.get(
@@ -84,7 +94,10 @@ void main() {
 
       // 3. Device goes offline / server throws exception
       when(
-        () => mockDb.listDocuments('course_purchases', queries: any(named: 'queries')),
+        () => mockDb.listDocuments(
+          'course_purchases',
+          queries: any(named: 'queries'),
+        ),
       ).thenThrow(Exception('SocketException: Client error (offline)'));
 
       // 4. Fetch entitlements again -> recovers stale cache and returns staleCached status

@@ -218,21 +218,18 @@ class AppwriteAuthService {
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!_isWeb) return;
     _client.setSession('');
-    final secret = prefs.getString(SessionPersistence.webSessionSecretKey);
     final ts = prefs.getInt(SessionPersistence.webSessionTimestampKey);
+    final hasSession =
+        prefs.getBool(SessionPersistence.hasLocalSessionKey) ?? false;
 
-    if (secret == null ||
-        secret.isEmpty ||
-        ts == null ||
-        !_isWebSessionValid(ts)) {
+    if (!hasSession || ts == null || !_isWebSessionValid(ts)) {
       AppLogger.debug(
-        'Appwrite: Web session secret or timestamp invalid in sync restore; failing closed and clearing',
+        'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
       );
       unawaited(_clearLocalSessionState());
       return;
     }
-    _client.setSession(secret);
-    AppLogger.debug('Appwrite: Web session restored synchronously ✅');
+    AppLogger.debug('Appwrite: Web session validated synchronously ✅');
   }
 
   Future<void> _clearLocalSessionState() async {

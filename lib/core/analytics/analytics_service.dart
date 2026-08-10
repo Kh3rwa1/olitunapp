@@ -208,9 +208,7 @@ class LearningAnalyticsService {
     final isExpired =
         (nowMs - lastActivityMs) > _sessionInactivityTimeout.inMilliseconds;
 
-    if (existingSession != null &&
-        existingSession.isNotEmpty &&
-        !isExpired) {
+    if (existingSession != null && existingSession.isNotEmpty && !isExpired) {
       _prefs.setInt(_sessionLastActivityKey, nowMs);
       return existingSession;
     }

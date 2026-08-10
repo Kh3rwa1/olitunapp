@@ -376,10 +376,7 @@ final routerProvider = Provider<GoRouter>((ref) {
         child: (_, state) =>
             QuizScreen(quizId: state.pathParameters['quizId'] ?? ''),
       ),
-      ...buildAdminRoutes(
-        modalRoute: _modalRoute,
-        adminRoute: adminRoute,
-      ),
+      ...buildAdminRoutes(modalRoute: _modalRoute, adminRoute: adminRoute),
     ],
   );
 });

@@ -6,6 +6,12 @@
 # Use the default gitleaks config as a base
 useDefault = true
 
+[[rules]]
+id = "appwrite-session-secret"
+description = "Appwrite Session Secret or Cookie"
+regex = '''(?i)(appwrite[_-]?session[_-]?secret|a_session_[a-z0-9]+)\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{20,}['"]?'''
+keywords = ["appwrite_session_secret", "a_session_"]
+
 [allowlist]
 description = "Known historical false positives — already cleaned from current codebase"
 
@@ -18,12 +24,6 @@ regexes = [
   "idem_[a-z0-9_]+",
 ]
 
-paths = [
-  '''functions/test/.*''',
-  '''test/.*''',
-  '''scripts/.*''',
-]
-
 # Suppress findings in old commits that have already been cleaned up.
 # These files no longer exist in the current codebase.
 commits = [
@@ -31,4 +31,3 @@ commits = [
   "e0fe05d091eed72eda3f35d45746452b19f45442",
   "6bdde56ea8a4c5fcc576c49710a13f05c8f6c875",
 ]
-

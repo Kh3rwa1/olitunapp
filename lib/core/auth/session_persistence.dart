@@ -1,4 +1,5 @@
 import 'package:appwrite/appwrite.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../logging/app_logger.dart';
 import '../logging/redaction_helper.dart';
@@ -14,19 +15,32 @@ class SessionPersistence {
     required SharedPreferences prefs,
     required String secret,
     DateTime Function()? nowProvider,
+    bool? isWebOverride,
   }) async {
     if (secret.isEmpty) {
       await clearLocalSessionState(client: client, prefs: prefs);
       throw AppwriteException('Cannot persist empty session secret.');
     }
     client.setSession(secret);
+    final isWeb = isWebOverride ?? kIsWeb;
     try {
-      await prefs.setString(webSessionSecretKey, secret);
-      await prefs.setInt(
-        webSessionTimestampKey,
-        (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-      );
-      await prefs.setBool(hasLocalSessionKey, true);
+      if (isWeb) {
+        // On Web, NEVER store raw session secret in plain SharedPreferences (window.localStorage).
+        // Appwrite handles HTTP cookies (a_session_*). Store only validity metadata.
+        await prefs.remove(webSessionSecretKey);
+        await prefs.setInt(
+          webSessionTimestampKey,
+          (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+        );
+        await prefs.setBool(hasLocalSessionKey, true);
+      } else {
+        await prefs.setString(webSessionSecretKey, secret);
+        await prefs.setInt(
+          webSessionTimestampKey,
+          (nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
+        );
+        await prefs.setBool(hasLocalSessionKey, true);
+      }
     } catch (e) {
       await clearLocalSessionState(client: client, prefs: prefs);
       throw AppwriteException(
@@ -44,18 +58,23 @@ class SessionPersistence {
     if (!isWeb) return;
     final secret = prefs.getString(webSessionSecretKey);
     final ts = prefs.getInt(webSessionTimestampKey);
+    final hasSession = prefs.getBool(hasLocalSessionKey) ?? false;
 
-    if (secret == null ||
-        secret.isEmpty ||
+    // Purge legacy plain secret string if present on Web
+    if (secret != null && secret.isNotEmpty) {
+      await prefs.remove(webSessionSecretKey);
+    }
+
+    if (!hasSession ||
         ts == null ||
         !isWebSessionValidTimestamp(ts, nowOverride: nowProvider?.call())) {
       AppLogger.debug(
-        'Appwrite: Web session secret or timestamp invalid; failing closed and clearing',
+        'Appwrite: Web session timestamp invalid; failing closed and clearing',
       );
       await clearLocalSessionState(client: client, prefs: prefs);
       return;
     }
-    client.setSession(secret);
+    // On Web, session validation delegates to Appwrite cookie authentication via account.get()
   }
 
   static Future<void> clearLocalSessionState({

@@ -40,7 +40,9 @@ class CategoryHeaderBannerWidget extends StatelessWidget {
                   decoration: BoxDecoration(
                     color: Colors.black.withValues(alpha: 0.15),
                     shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                    border: Border.all(
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
                   ),
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(20),
@@ -105,11 +107,7 @@ class CategoryHeaderBannerWidget extends StatelessWidget {
                   ],
                   if (badges.isNotEmpty) ...[
                     const SizedBox(height: 14),
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: badges,
-                    ),
+                    Wrap(spacing: 8, runSpacing: 8, children: badges),
                   ],
                 ],
               ),

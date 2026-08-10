@@ -88,3 +88,16 @@ Production builds should keep this unset or false.
 The web application Content Security Policy is defined in `vercel.json`:
 - **`script-src`:** Restricted to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated to prevent XSS script injection. `'wasm-unsafe-eval'` is permitted strictly for Flutter Web WebAssembly module initialization.
 - **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com`. The Flutter Web engine dynamically mutates element inline styles (`flt-glass-pane`, layout metrics) and injects `<style>` blocks for text layout and Google Fonts rendering. `'unsafe-inline'` is retained narrowly for CSS styling as required by Flutter Web engine architecture.
+
+### Credential Revocation & Coordinated Git History Sanitization Protocol
+
+Whenever credential material (such as session secrets or cookie files) is exposed:
+1. **Server-Side Revocation (Immediate):**
+   - Compromised sessions or keys must be invalidated on the Appwrite backend immediately via Appwrite Admin Console or API. Removing files from current branch HEAD does not terminate active sessions on the server.
+2. **Coordinated Git History Sanitization:**
+   - Removing files from the latest commit does not purge historical Git commit objects.
+   - Run `git-filter-repo` across all branches and tags to completely scrub sensitive paths (e.g., `cookies.txt`):
+     ```bash
+     git-filter-repo --invert-paths --path cookies.txt
+     ```
+   - Coordinate force-pushes across all remotes and branches (`git push origin --force --all`).

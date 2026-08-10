@@ -254,8 +254,7 @@ jobs:
             flutter drive \
               --driver=test_driver/integration_test.dart \
               --target="$test_file" \
-              -d chrome \
-              --headless || exit 1
+              -d chrome
           done
 
   release-gate:

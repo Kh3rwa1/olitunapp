@@ -82,3 +82,9 @@ Self-signed Appwrite certificates are disabled by default. Only enable them for 
 ```
 
 Production builds should keep this unset or false.
+
+### Content Security Policy (CSP) & Web Engine Compatibility
+
+The web application Content Security Policy is defined in `vercel.json`:
+- **`script-src`:** Restricted to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated to prevent XSS script injection. `'wasm-unsafe-eval'` is permitted strictly for Flutter Web WebAssembly module initialization.
+- **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com`. The Flutter Web engine dynamically mutates element inline styles (`flt-glass-pane`, layout metrics) and injects `<style>` blocks for text layout and Google Fonts rendering. `'unsafe-inline'` is retained narrowly for CSS styling as required by Flutter Web engine architecture.

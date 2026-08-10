@@ -24,7 +24,7 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Format check
-        run: dart format --set-exit-if-changed .
+        run: dart format --output=none --set-exit-if-changed .
       - name: Verify Version Consistency
         run: dart run tool/verify_version_consistency.dart
       - name: Analyze
@@ -96,11 +96,12 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
-            if [ "${{ github.event.pull_request.head.repo.full_name }}" != "" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
-              echo "⚠️ SKIPPED: Fork PR does not have access to repository secrets."
+            if [ "${{ github.event_name }}" = "pull_request" ] && [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
+              echo "⚠️ SKIPPED: Fork PR (${{ github.event.pull_request.head.repo.full_name }}) does not have access to repository secrets."
               exit 0
             fi
-            echo "❌ FAIL: APPWRITE_API_KEY secret is required for schema verification!"
+            echo "❌ FAIL: Missing required repository secret APPWRITE_API_KEY!"
+            echo "👉 Action Required: Repository admin must configure APPWRITE_API_KEY in GitHub Repository Settings -> Secrets and variables -> Actions."
             exit 1
           fi
           node scripts/snapshot_appwrite_schema.mjs
@@ -127,15 +128,25 @@ jobs:
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_REF"
           git show FETCH_HEAD:tool/performance_budgets.json > /tmp/base_performance_budgets.json
-      - name: Build Web Production Bundle
+      - name: Build Web Release
         run: |
+          BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
+          BUILT_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
           flutter build web --release \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci \
-            --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
+            --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions \
+            --dart-define=BUILD_SHA=$BUILD_SHA \
+            --dart-define=BUILT_AT=$BUILT_AT
+          
+          mkdir -p build/web
+          echo "{\"sha\": \"$BUILD_SHA\", \"builtAt\": \"$BUILT_AT\"}" > build/web/build-info.json
+          
+          node scripts/patch_service_worker.mjs
+          node scripts/verify_service_worker_patch.mjs
           (cd build/web && find . -type f -exec sha256sum {} + | sort > manifest.sha256)
       - name: Check Web performance budget
-        run: dart run tool/check_size_budget.dart --path=build/web/ --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
+        run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
       - name: Upload Web Release Artifact
         uses: actions/upload-artifact@v4
         with:
@@ -211,7 +222,7 @@ jobs:
   integration-tests-chrome:
     name: Chrome Integration Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: subosito/flutter-action@v2
@@ -219,11 +230,33 @@ jobs:
           channel: stable
           cache: true
       - uses: browser-actions/setup-chrome@v1
+        with:
+          chrome-version: stable
       - run: flutter pub get
-      - name: Run Chrome Integration Tests
+      - name: Start ChromeDriver and Run Integration Tests
         run: |
           chromedriver --port=4444 &
-          flutter test integration_test/journeys_integration_test.dart -d chrome --web-port=8080
+          CHROMEDRIVER_PID=$!
+          trap 'kill $CHROMEDRIVER_PID || true' EXIT
+          sleep 3
+
+          TEST_FILES=(
+            "integration_test/auth_flow_test.dart"
+            "integration_test/legal_smoke_test.dart"
+            "integration_test/quiz_flow_test.dart"
+            "integration_test/journeys_integration_test.dart"
+          )
+
+          for test_file in "${TEST_FILES[@]}"; do
+            echo "----------------------------------------"
+            echo "Running $test_file on Chrome..."
+            echo "----------------------------------------"
+            flutter drive \
+              --driver=test_driver/integration_test.dart \
+              --target="$test_file" \
+              -d chrome \
+              --headless || exit 1
+          done
 
   release-gate:
     name: Release Gate

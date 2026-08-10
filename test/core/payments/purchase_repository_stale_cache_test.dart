@@ -5,16 +5,9 @@ import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:mocktail/mocktail.dart';
-import 'package:path_provider_platform_interface/path_provider_platform_interface.dart';
-import 'package:plugin_platform_interface/plugin_platform_interface.dart';
+import 'package:flutter/services.dart';
 
 class MockAppwriteDbService extends Mock implements AppwriteDbService {}
-
-class FakePathProviderPlatform extends PathProviderPlatform
-    with MockPlatformInterfaceMixin {
-  @override
-  Future<String?> getApplicationDocumentsPath() async => '.';
-}
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -23,7 +16,11 @@ void main() {
   late ProviderContainer container;
 
   setUpAll(() async {
-    PathProviderPlatform.instance = FakePathProviderPlatform();
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(
+          const MethodChannel('plugins.flutter.io/path_provider'),
+          (MethodCall methodCall) async => '.',
+        );
     Hive.init('./test_hive_cache_v3');
   });
 

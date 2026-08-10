@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test:backend": "node --test functions/test/*.test.js"
+    "test": "npm run test:backend && node scripts/test_gitleaks_rules.mjs",
+    "test:backend": "node --test functions/test/*.test.js && node scripts/test_gitleaks_rules.mjs"
   },
   "dependencies": {
     "node-appwrite": "^14.1.0"

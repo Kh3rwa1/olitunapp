@@ -13,11 +13,14 @@ regex = '''(?i)(appwrite[_-]?session[_-]?secret\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{1
 keywords = ["appwrite_session_secret", "a_session_"]
 
 [allowlist]
-description = "Known non-secret token prefixes"
-
-# The Stack Auth publishable key (pck_*) is a CLIENT-SIDE key intentionally
-# designed to be public, similar to a Stripe publishable key. It does not
-# grant any privileged server-side access.
+description = "Known non-secret token prefixes and build output paths"
+paths = [
+  '''^\.dart_tool/''',
+  '''^build/''',
+  '''^node_modules/''',
+  '''\.dill$''',
+  '''\.flat$''',
+]
 regexes = [
   "pck_[a-z0-9]+",
   "idempotency_[a-z0-9_]+",

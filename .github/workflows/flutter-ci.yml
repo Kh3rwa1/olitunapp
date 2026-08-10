@@ -235,10 +235,26 @@ jobs:
       - run: flutter pub get
       - name: Start ChromeDriver and Run Integration Tests
         run: |
-          chromedriver --port=4444 &
+          set -Eeuo pipefail
+
+          echo "=== Environment Info ==="
+          flutter --version
+          google-chrome --version || true
+          chromedriver --version || true
+
+          # Start ChromeDriver in background and capture PID
+          chromedriver --port=4444 > /tmp/chromedriver.log 2>&1 &
           CHROMEDRIVER_PID=$!
           trap 'kill $CHROMEDRIVER_PID || true' EXIT
-          sleep 3
+
+          echo "Waiting for ChromeDriver readiness on port 4444..."
+          for i in {1..30}; do
+            if nc -z localhost 4444 2>/dev/null || curl -s http://localhost:4444/status >/dev/null 2>&1; then
+              echo "✅ ChromeDriver is ready on port 4444."
+              break
+            fi
+            sleep 1
+          done
 
           TEST_FILES=(
             "integration_test/auth_flow_test.dart"
@@ -251,14 +267,19 @@ jobs:
             echo "----------------------------------------"
             echo "Running $test_file on Chrome..."
             echo "----------------------------------------"
-            xvfb-run --auto-servernum flutter drive \
+            flutter drive \
               --driver=test_driver/integration_test.dart \
               --target="$test_file" \
               -d chrome \
-              --web-browser-flag="--headless" \
-              --web-browser-flag="--no-sandbox" \
-              --web-browser-flag="--disable-gpu"
+              --timeout=300
           done
+      - name: Upload ChromeDriver logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chromedriver-logs
+          path: /tmp/chromedriver.log
+          retention-days: 7
 
   release-gate:
     name: Release Gate

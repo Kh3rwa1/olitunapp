@@ -131,7 +131,7 @@ class PurchaseRepository {
       AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
 
       // Attempt to recover stale cache entry if server request fails
-      final staleCache = await CacheService.get(
+      final staleCache = await CacheService.getIgnoringTtl(
         userCacheKey,
         (json) => Set<String>.from(json['ids'] as List),
       );

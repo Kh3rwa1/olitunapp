@@ -25,6 +25,8 @@ jobs:
       - run: flutter pub get
       - name: Format check
         run: dart format --set-exit-if-changed .
+      - name: Verify Version Consistency
+        run: dart run tool/verify_version_consistency.dart
       - name: Analyze
         run: flutter analyze --fatal-infos
 
@@ -94,6 +96,10 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
+            if [ "${{ github.ref }}" = "refs/heads/main" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+              echo "❌ FAIL: APPWRITE_API_KEY secret is required in protected release environment for schema verification!"
+              exit 1
+            fi
             echo "⚠️ SKIPPED: APPWRITE_API_KEY secret is not configured in repository secrets."
             exit 0
           fi
@@ -173,7 +179,7 @@ jobs:
         env:
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: |
-          flutter build apk --release --no-tree-shake-icons \
+          flutter build apk --release \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci \
             --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions
@@ -212,10 +218,24 @@ jobs:
       - name: Verify Non-Empty & Provenance Checksums
         run: bash scripts/verify_release_artifacts.sh "${{ github.sha }}"
 
+  integration-tests-chrome:
+    name: Chrome Integration Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - run: flutter pub get
+      - name: Run Chrome Integration Tests
+        run: flutter test integration_test --platform chrome
+
   release-gate:
     name: Release Gate
     runs-on: ubuntu-latest
-    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-release-build, android-release-build, artifact-verification]
+    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-release-build, android-release-build, integration-tests-chrome, artifact-verification]
     if: always()
     steps:
       - name: Check All Dependencies Succeeded
@@ -226,6 +246,7 @@ jobs:
              [ "${{ needs.permission-and-schema-tests.result }}" != "success" ] || \
              [ "${{ needs.web-release-build.result }}" != "success" ] || \
              [ "${{ needs.android-release-build.result }}" != "success" ] || \
+             [ "${{ needs.integration-tests-chrome.result }}" != "success" ] || \
              [ "${{ needs.artifact-verification.result }}" != "success" ]; then
             echo "❌ Release Gate: One or more required CI jobs failed or were skipped!"
             exit 1

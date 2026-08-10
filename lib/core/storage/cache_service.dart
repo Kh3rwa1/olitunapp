@@ -175,13 +175,39 @@ class CacheService {
     }
   }
 
+  /// Read a cached object even if expired (ignoring TTL), returning `null`
+  /// only when the entry is missing or written under a mismatched schema version.
+  static Future<T?> getIgnoringTtl<T>(
+    String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) async {
+    try {
+      final box = await _getBox();
+      final raw = box.get(key);
+      if (raw == null) return null;
+
+      final envelope = _unwrap(raw as String, ignoreTtl: true);
+      if (envelope == null) return null;
+
+      final innerData = envelope.data;
+      if (innerData is Map<String, dynamic>) {
+        return fromJson(innerData);
+      }
+      return null;
+    } catch (e) {
+      AppLogger.debug('[Cache] read ignoring TTL error ($key): $e');
+      _handleCacheError(e);
+      return null;
+    }
+  }
+
   /// Returns metadata about an entry without deserialising the payload.
   static Future<CacheEntry?> getMeta(String key) async {
     try {
       final box = await _getBox();
       final raw = box.get(key);
       if (raw == null) return null;
-      return _unwrap(raw as String, skipValidation: true);
+      return _unwrap(raw as String, ignoreTtl: true);
     } catch (e) {
       _handleCacheError(e);
       return null;
@@ -248,8 +274,8 @@ class CacheService {
   // ── Internal ──────────────────────────────────────────
 
   /// Parse a raw JSON string into a [CacheEntry], returning null if
-  /// the entry is expired or schema-mismatched.
-  static CacheEntry? _unwrap(String raw, {bool skipValidation = false}) {
+  /// schema-mismatched or (unless [ignoreTtl] is true) expired.
+  static CacheEntry? _unwrap(String raw, {bool ignoreTtl = false}) {
     final json = jsonDecode(raw);
 
     // Backwards compatibility: if it's not an envelope, skip.
@@ -258,7 +284,10 @@ class CacheService {
     }
 
     final entry = CacheEntry.fromJson(json);
-    if (!skipValidation && (entry.isExpired || entry.isSchemaMismatch)) {
+    if (entry.isSchemaMismatch) {
+      return null;
+    }
+    if (!ignoreTtl && entry.isExpired) {
       return null;
     }
     return entry;

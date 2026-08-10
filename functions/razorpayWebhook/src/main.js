@@ -127,7 +127,7 @@ export function createRazorpayWebhookHandler({ databases: customDb, fetchImpl = 
         if (pendingPurchase.categoryId !== categoryId) {
           return res.json({ ok: false, message: 'Category ID mismatch with pending ledger' }, 400);
         }
-        if ((pendingPurchase.expectedAmount * 100) !== amountPaise) {
+        if (Math.round((pendingPurchase.expectedAmount || 0) * 100) !== amountPaise) {
           return res.json({ ok: false, message: 'Exact amount in paise mismatch' }, 400);
         }
         if (pendingPurchase.currency !== 'INR' || currency !== 'INR') {

@@ -4,7 +4,6 @@ import 'package:appwrite/appwrite.dart';
 
 /// Evaluates whether a stored web session timestamp is valid (non-null, positive,
 /// not older than maxDuration, and not implausibly in the future beyond 1 minute skew).
-@visibleForTesting
 bool isWebSessionValidTimestamp(
   int? ts, {
   Duration maxDuration = const Duration(hours: 24),

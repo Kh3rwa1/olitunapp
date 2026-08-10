@@ -38,6 +38,9 @@ class AppwriteConfig {
   /// Razorpay public key ID used for checkout.
   static const String razorpayKeyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
+  /// Translate Appwrite Function URL.
+  static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+
   /// Validates required config. Call once at app startup, before any
   /// Appwrite client is constructed. Throws [StateError] with an actionable
   /// message if anything required is missing.
@@ -52,6 +55,12 @@ class AppwriteConfig {
       throw StateError(
         '\n\nAPPWRITE_PROJECT_ID is not set.\n'
         'Build with: --dart-define=APPWRITE_PROJECT_ID=[your-project-id]\n',
+      );
+    }
+    if (const bool.fromEnvironment('REQUIRE_TRANSLATE_URL') && translateUrl.isEmpty) {
+      throw StateError(
+        '\n\nTRANSLATE_URL is required.\n'
+        'Build with: --dart-define=TRANSLATE_URL=[your-appwrite-function-url]\n',
       );
     }
   }

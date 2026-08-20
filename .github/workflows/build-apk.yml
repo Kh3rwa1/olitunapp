@@ -61,15 +61,15 @@ jobs:
           TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
           ANDROID_EXPECTED_CERT_SHA256: ${{ secrets.ANDROID_EXPECTED_CERT_SHA256 }}
         run: |
+          if [ -z "$ANDROID_EXPECTED_CERT_SHA256" ]; then
+            echo "::error::ANDROID_EXPECTED_CERT_SHA256 secret is required for production release APK verification"
+            exit 1
+          fi
           flutter build apk --release \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
-          if [ -n "$ANDROID_EXPECTED_CERT_SHA256" ]; then
-            bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
-          else
-            apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
-          fi
+          bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
 
       - name: Cleanup Signing Material

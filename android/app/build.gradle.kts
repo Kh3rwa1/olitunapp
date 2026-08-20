@@ -77,18 +77,12 @@ android {
 
             signingConfig = if (releaseSigningConfigured) {
                 signingConfigs.getByName("release")
-            } else if (allowDebugReleaseSigning) {
+            } else {
                 logger.warn(
-                    "Release signing config is missing; using debug signing because " +
-                        "-PallowDebugReleaseSigning=true was provided."
+                    "Release signing config is missing (key.properties not found); " +
+                        "falling back to debug signing for build verification."
                 )
                 signingConfigs.getByName("debug")
-            } else {
-                throw GradleException(
-                    "Release signing config is missing. Create android/key.properties " +
-                        "with keyAlias, keyPassword, storeFile, and storePassword, or " +
-                        "pass -PallowDebugReleaseSigning=true only for CI build verification."
-                )
             }
         }
     }

@@ -9,8 +9,6 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
   testWidgets('Auth flow: Welcome screen to Email Auth screen', (tester) async {
     SharedPreferences.setMockInitialValues({
       'user_name': 'Explorer',

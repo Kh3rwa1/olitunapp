@@ -11,8 +11,6 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
   testWidgets('Quiz flow: Load quiz, answer questions, see completion', (
     tester,
   ) async {

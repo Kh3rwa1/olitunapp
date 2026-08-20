@@ -12,8 +12,6 @@ import 'package:itun/features/legal/presentation/legal_document_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
   group('Full Application User Journeys Integration Suite', () {
     setUp(() async {
       SharedPreferences.setMockInitialValues({

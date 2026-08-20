@@ -55,12 +55,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     // Prefetch core content and refresh categories using homePrefetchProvider
     // with staleness check to prevent redundant network hits.
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
       ref.read(homePrefetchProvider.notifier).prefetch();
     });
   }
 
   Future<void> _onRefresh() async {
     await ref.read(homePrefetchProvider.notifier).prefetch(forceRefresh: true);
+    if (!mounted) return;
     ref.invalidate(contentListProvider((ContentKind.lesson, null)));
     ref.invalidate(featuredBannersProvider);
   }

@@ -64,6 +64,9 @@ jobs:
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
+          apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
+          (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
+          rm -f android/app/upload-keystore.jks android/key.properties
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3

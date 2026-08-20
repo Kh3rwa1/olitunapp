@@ -105,9 +105,9 @@ void main() {
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Verify completion screen (using score and total)
+    // Verify completion screen (trophy and pass indicator)
     expect(find.byType(QuizCompleteScreen), findsOneWidget);
-    expect(find.text('100%'), findsOneWidget);
-    expect(find.text('2 / 2'), findsOneWidget);
+    expect(find.byIcon(Icons.emoji_events_rounded), findsOneWidget);
+    expect(find.text('Well Done!'), findsOneWidget);
   });
 }

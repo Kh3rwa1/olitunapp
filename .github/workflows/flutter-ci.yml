@@ -31,6 +31,10 @@ jobs:
         run: node scripts/verify_pinned_actions.mjs
       - name: Verify Signing Configuration Consistency
         run: node scripts/verify_signing_configuration.mjs
+      - name: Verify Node Dependency Alignment
+        run: node scripts/verify_node_dependency_alignment.mjs
+      - name: Unit Test Android Certificate Normalizer
+        run: node --test scripts/verify_android_signing_certificate.test.mjs
       - name: Analyze
         run: flutter analyze --fatal-infos
 
@@ -74,9 +78,14 @@ jobs:
         with:
           node-version: 22
           cache: 'npm'
-      - run: npm ci
-      - name: Run backend Serverless Node tests
+      - name: Install root dependencies
+        run: npm ci
+      - name: Install translator dependencies
+        run: npm ci --prefix functions/translator
+      - name: Run root backend tests
         run: npm run test:backend
+      - name: Run translator tests using translator package
+        run: npm test --prefix functions/translator
 
   permission-and-schema-tests:
     name: Appwrite Permission Invariants & Schema Drift
@@ -123,9 +132,12 @@ jobs:
       - run: flutter pub get
       - name: Launch Chromedriver and Run Web Journeys
         run: |
-          CHROME_MAJOR=$(google-chrome --version | awk '{print $3}' | cut -d. -f1)
-          npm install -g chromedriver@^$CHROME_MAJOR
-          chromedriver --port=4444 &
+          if [ -n "$CHROMEWEBDRIVER" ] && [ -f "$CHROMEWEBDRIVER/chromedriver" ]; then
+            $CHROMEWEBDRIVER/chromedriver --port=4444 &
+          else
+            CHROME_MAJOR=$(google-chrome --version | awk '{print $3}' | cut -d. -f1)
+            npx --yes chromedriver@^$CHROME_MAJOR --port=4444 &
+          fi
           sleep 3
           flutter drive \
             --driver=test_driver/integration_test.dart \
@@ -137,8 +149,7 @@ jobs:
   android-emulator-e2e:
     name: Android Emulator E2E Journeys
     runs-on: macos-13
-    timeout-minutes: 20
-    continue-on-error: true
+    timeout-minutes: 25
     env:
       ALLOW_DEBUG_RELEASE_SIGNING: "true"
       ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
@@ -286,7 +297,7 @@ jobs:
   release-gate:
     name: Release Gate
     runs-on: ubuntu-latest
-    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-integration-tests, web-release-build, android-release-build, artifact-verification]
+    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-integration-tests, android-emulator-e2e, web-release-build, android-release-build, artifact-verification]
     if: always()
     steps:
       - name: Check All Dependencies Succeeded
@@ -296,6 +307,7 @@ jobs:
              [ "${{ needs.node-backend-tests.result }}" != "success" ] || \
              [ "${{ needs.permission-and-schema-tests.result }}" != "success" ] || \
              [ "${{ needs.web-integration-tests.result }}" != "success" ] || \
+             [ "${{ needs.android-emulator-e2e.result }}" != "success" ] || \
              [ "${{ needs.web-release-build.result }}" != "success" ] || \
              [ "${{ needs.android-release-build.result }}" != "success" ] || \
              [ "${{ needs.artifact-verification.result }}" != "success" ]; then

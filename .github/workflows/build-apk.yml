@@ -59,14 +59,22 @@ jobs:
           APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
           APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
           TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
+          ANDROID_EXPECTED_CERT_SHA256: ${{ secrets.ANDROID_EXPECTED_CERT_SHA256 }}
         run: |
           flutter build apk --release \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
-          apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
+          if [ -n "$ANDROID_EXPECTED_CERT_SHA256" ]; then
+            bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
+          else
+            apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
+          fi
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
-          rm -f android/app/upload-keystore.jks android/key.properties
+
+      - name: Cleanup Signing Material
+        if: always()
+        run: rm -f android/app/upload-keystore.jks android/key.properties
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3

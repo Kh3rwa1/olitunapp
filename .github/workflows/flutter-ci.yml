@@ -132,10 +132,7 @@ jobs:
             --target=integration_test/all_tests.dart \
             -d web-server \
             --browser-name=chrome \
-            --headless \
-            --browser-flag="--no-sandbox" \
-            --browser-flag="--disable-dev-shm-usage" \
-            --browser-flag="--disable-gpu"
+            --headless
 
   android-emulator-e2e:
     name: Android Emulator E2E Journeys

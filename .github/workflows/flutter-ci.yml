@@ -121,8 +121,17 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Run Flutter Web Integration Journeys
-        run: xvfb-run -a flutter test integration_test/all_tests.dart -d chrome
+      - name: Launch Chromedriver and Run Web Journeys
+        run: |
+          npm install -g chromedriver
+          chromedriver --port=4444 &
+          sleep 3
+          flutter drive \
+            --driver=test_driver/integration_test.dart \
+            --target=integration_test/all_tests.dart \
+            -d web-server \
+            --browser-name=chrome \
+            --headless
 
   android-emulator-e2e:
     name: Android Emulator E2E Journeys

@@ -179,6 +179,7 @@ jobs:
           git show origin/"$BASE_REF":tool/performance_budgets.json > /tmp/base_performance_budgets.json 2>/dev/null || true
       - name: Build Android Release APK
         env:
+          ALLOW_DEBUG_RELEASE_SIGNING: "true"
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: |
           flutter build apk --release \

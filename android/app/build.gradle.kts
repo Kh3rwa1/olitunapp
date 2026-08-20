@@ -24,7 +24,11 @@ val releaseSigningConfigured = listOf(
 ).all { (keystoreProperties[it] as String?)?.isNotBlank() == true }
 
 val allowDebugReleaseSigning =
-    providers.gradleProperty("allowDebugReleaseSigning").orNull == "true"
+    providers.gradleProperty("allowDebugReleaseSigning").orNull == "true" ||
+    providers.environmentVariable("ALLOW_DEBUG_RELEASE_SIGNING").orNull == "true" ||
+    providers.environmentVariable("ORG_GRADLE_PROJECT_allowDebugReleaseSigning").orNull == "true" ||
+    System.getenv("ALLOW_DEBUG_RELEASE_SIGNING") == "true" ||
+    System.getenv("ORG_GRADLE_PROJECT_allowDebugReleaseSigning") == "true"
 
 android {
     namespace = "com.ol.itun"

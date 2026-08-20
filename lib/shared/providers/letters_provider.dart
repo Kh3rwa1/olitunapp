@@ -74,6 +74,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
   Future<void> _loadLetters() async {
     // 1. Try Cache
     final cached = await CacheService.getList(_cacheKey, LetterModel.fromJson);
+    if (!mounted) return;
     if (cached != null && cached.isNotEmpty) {
       state = AsyncValue.data(cached);
     }
@@ -85,6 +86,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         'letters',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       final list = data.map(LetterModel.fromJson).toList();
 
       if (list.isNotEmpty) {
@@ -98,6 +100,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       }
     } catch (e) {
       AppLogger.debug('❌ _loadLetters network FAILED: $e');
+      if (!mounted) return;
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_deduplicate(_seedLetters));
       }

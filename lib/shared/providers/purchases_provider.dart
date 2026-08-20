@@ -31,16 +31,19 @@ class AdminPurchasesNotifier
 
   Future<void> loadPurchases() async {
     try {
+      if (!mounted) return;
       state = const AsyncValue.loading();
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
         'course_purchases',
         queries: [Query.orderDesc('purchasedAt'), Query.limit(1000)],
       );
+      if (!mounted) return;
       final list = result.map(PurchaseModel.fromJson).toList();
       state = AsyncValue.data(list);
     } catch (e, stack) {
       AppLogger.debug('❌ loadPurchases failed: $e');
+      if (!mounted) return;
       state = AsyncValue.error(e, stack);
     }
   }

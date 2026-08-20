@@ -107,10 +107,12 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
         'numbers',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       state = AsyncValue.data(
         _deduplicate(data.map(NumberModel.fromJson).toList()),
       );
     } catch (e) {
+      if (!mounted) return;
       state = AsyncValue.data(_deduplicate(_seedNumbers));
     }
   }

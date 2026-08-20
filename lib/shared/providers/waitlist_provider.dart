@@ -39,16 +39,19 @@ class AdminWaitlistNotifier
 
   Future<void> loadWaitlist() async {
     try {
+      if (!mounted) return;
       state = const AsyncValue.loading();
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
         'binti_guru_waitlist',
         queries: [Query.orderDesc('submittedAt'), Query.limit(1000)],
       );
+      if (!mounted) return;
       final list = result.map(WaitlistModel.fromJson).toList();
       state = AsyncValue.data(list);
     } catch (e, stack) {
       AppLogger.debug('❌ loadWaitlist failed: $e');
+      if (!mounted) return;
       state = AsyncValue.error(e, stack);
     }
   }

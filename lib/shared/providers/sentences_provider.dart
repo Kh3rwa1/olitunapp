@@ -754,8 +754,10 @@ class SentencesNotifier extends StateNotifier<AsyncValue<List<SentenceModel>>> {
         'sentences',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       state = AsyncValue.data(data.map(SentenceModel.fromJson).toList());
     } catch (e) {
+      if (!mounted) return;
       state = AsyncValue.data(_seedSentences);
     }
   }

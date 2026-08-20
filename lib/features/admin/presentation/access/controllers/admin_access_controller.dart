@@ -51,14 +51,19 @@ class AdminAccessController extends StateNotifier<AdminAccessState> {
   final AppwriteAuthService _authService;
 
   Future<void> loadSummary() async {
+    if (!mounted) return;
     state = state.copyWith(isLoading: true, message: () => null);
     try {
       final data = await _authService.executeAdminAccess({'action': 'summary'});
+      if (!mounted) return;
       _applySummary(data);
     } catch (e) {
+      if (!mounted) return;
       state = state.copyWith(message: () => 'Could not load admin access: $e');
     } finally {
-      state = state.copyWith(isLoading: false);
+      if (mounted) {
+        state = state.copyWith(isLoading: false);
+      }
     }
   }
 

@@ -159,10 +159,10 @@ jobs:
           ALLOW_DEBUG_RELEASE_SIGNING: "true"
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         with:
-          api-level: 34
-          target: google_apis
+          api-level: 31
+          target: default
           arch: arm64-v8a
-          profile: pixel_6
+          emulator-options: -no-window -gpu swiftshader_indirect -no-snapshot -noaudio -no-boot-anim
           disable-animations: true
           script: flutter test integration_test/all_tests.dart
 

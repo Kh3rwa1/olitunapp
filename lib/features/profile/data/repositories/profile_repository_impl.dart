@@ -143,10 +143,11 @@ class ProfileRepositoryImpl implements ProfileRepository {
                 return Right(cloudStats);
               }
             } else {
-              if (localStats != null) {
+              final currentLocal = localStats;
+              if (currentLocal != null) {
                 final cloudUpdate = Map<String, dynamic>.from(cloudPrefs)
                   ..[_statsKey] = jsonEncode(
-                    UserStatsModel.fromEntity(localStats).toJson(),
+                    UserStatsModel.fromEntity(currentLocal).toJson(),
                   );
                 final cloudResult = await _authRepository.updateUserPrefs(
                   cloudUpdate,
@@ -156,7 +157,7 @@ class ProfileRepositoryImpl implements ProfileRepository {
                       await _prefs.setBool('is_stats_synced', false),
                   (_) async => await _prefs.setBool('is_stats_synced', true),
                 );
-                return Right(localStats);
+                return Right(currentLocal);
               }
             }
 

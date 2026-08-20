@@ -473,7 +473,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
         currentItem.copyWith(updatedAt: nextUpdatedAt),
       );
 
-      return upsertRes.fold(
+      final saveResult = upsertRes.fold<SaveResult>(
         (failure) {
           state = state.copyWith(
             isSaving: false,
@@ -553,6 +553,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
           return SaveResult.success;
         },
       );
+      return saveResult;
     } catch (e) {
       state = state.copyWith(isSaving: false, errorMessage: e.toString());
       return SaveResult.failure;

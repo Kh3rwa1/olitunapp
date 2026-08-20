@@ -6,6 +6,8 @@ import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/auth/presentation/email_auth_screen.dart';
 import 'package:itun/features/onboarding/presentation/splash_screen.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
+import 'package:itun/features/lessons/presentation/screens/lesson_list_screen.dart';
+import 'package:itun/features/legal/presentation/legal_document_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -114,6 +116,92 @@ void main() {
       (tester) async {
         final router = GoRouter(
           initialLocation: '/welcome',
+          routes: [
+            GoRoute(
+              path: '/welcome',
+              builder: (context, state) => const WelcomeScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        expect(find.byType(WelcomeScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '5. Lesson List Journey: Renders lesson navigation screen correctly',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation: '/lessons',
+          routes: [
+            GoRoute(
+              path: '/lessons',
+              builder: (context, state) => const LessonListScreen(),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        expect(find.byType(LessonListScreen), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '6. Legal & Privacy Navigation: Renders privacy and terms screens',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation: '/privacy',
+          routes: [
+            GoRoute(
+              path: '/privacy',
+              builder: (context, state) =>
+                  const LegalDocumentScreen(type: LegalDocumentType.privacy),
+            ),
+          ],
+        );
+
+        await tester.pumpWidget(
+          ProviderScope(
+            child: MaterialApp.router(
+              routerConfig: router,
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
+          ),
+        );
+
+        await tester.pumpAndSettle();
+        expect(find.text('Privacy Policy'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      '7. OAuth Callback Sanitization: Strips sensitive query params upon routing',
+      (tester) async {
+        final router = GoRouter(
+          initialLocation:
+              '/welcome?secret=sensitive_oauth_secret_123&code=auth_code_xyz',
           routes: [
             GoRoute(
               path: '/welcome',

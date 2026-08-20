@@ -86,7 +86,8 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(HomeScreen), findsOneWidget);
       },
     );
@@ -116,7 +117,8 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(HomeScreen), findsOneWidget);
       },
     );
@@ -146,7 +148,8 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(WelcomeScreen), findsOneWidget);
       },
     );
@@ -176,7 +179,8 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(LessonsScreen), findsOneWidget);
       },
     );
@@ -238,7 +242,8 @@ void main() {
           ),
         );
 
-        await tester.pumpAndSettle();
+        await tester.pump();
+        await tester.pump(const Duration(milliseconds: 300));
         expect(find.byType(WelcomeScreen), findsOneWidget);
       },
     );

@@ -18,7 +18,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -38,7 +38,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -56,7 +56,7 @@ jobs:
       - name: Smoke tests
         run: flutter test test/smoke
       - name: Upload Coverage Report
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65832a22e0940fb922 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
         with:
           name: coverage-report
           path: coverage/lcov.info
@@ -68,7 +68,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-node@39370e3970a6d050c480ffad4ff0ed4d3fdee5af # v4.1.0
+      - uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
         with:
           node-version: 22
           cache: 'npm'
@@ -82,7 +82,7 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -114,7 +114,7 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -148,7 +148,7 @@ jobs:
       - name: Check Web performance budget
         run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
       - name: Upload Web Release Artifact
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65832a22e0940fb922 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
         with:
           name: web-release-build
           path: build/web/
@@ -160,12 +160,12 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - uses: actions/setup-java@8df1039f92a3d349e4777c2c773f5b7a8d56b45a # v4.7.0
+      - uses: actions/setup-java@1dbac3c9e137b6d4d280bae1ae4e9902bb4ce1b9 # v4.7.0
         with:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
-      - uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+      - uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -193,7 +193,7 @@ jobs:
       - name: Check APK performance budget
         run: dart run tool/check_size_budget.dart --path=build/app/outputs/flutter-apk/app-release.apk --budget-key=apkReleaseBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
       - name: Upload APK Release Artifact
-        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65832a22e0940fb922 # v4.4.3
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
         with:
           name: android-release-apk
           path: build/app/outputs/flutter-apk/
@@ -207,17 +207,17 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - name: Download Coverage Artifact
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4.1.8
         with:
           name: coverage-report
           path: coverage/
       - name: Download Web Build Artifact
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4.1.8
         with:
           name: web-release-build
           path: artifacts/web/
       - name: Download Android APK Artifact
-        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4.1.8
+        uses: actions/download-artifact@484a0b528fb4d7bd804637ccb632e47a0e638317 # v4.1.8
         with:
           name: android-release-apk
           path: artifacts/apk/

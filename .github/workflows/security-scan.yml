@@ -2,7 +2,7 @@ name: Security Scanning
 
 on:
   push:
-    branches: [main]
+    branches: [main, 'hardening/*']
   pull_request:
   workflow_dispatch:
   schedule:
@@ -35,7 +35,7 @@ jobs:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@47f2e19d7c07b6bf744b209e5ff30e9d690a618f # v2.3.8
+        uses: gitleaks/gitleaks-action@bcfb9cce635345aac9996cedc19b2de8e01b894f # v2.3.8
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -49,7 +49,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
+        uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -58,14 +58,14 @@ jobs:
         run: flutter pub get
 
       - name: Run OSV Scanner
-        uses: google/osv-scanner-action/osv-scanner-action@850257c793ffc6a2e4b01e749e7b2354a938fc2a # v2.3.8
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.3.8
         with:
           scan-args: |-
             --lockfile=pubspec.lock
             --format=table
 
       - name: Scan npm dependencies
-        uses: google/osv-scanner-action/osv-scanner-action@850257c793ffc6a2e4b01e749e7b2354a938fc2a # v2.3.8
+        uses: google/osv-scanner-action/osv-scanner-action@6e4298ebc4db23e847df9b2e2de2939d6f066c67 # v2.3.8
         with:
           scan-args: |-
             --lockfile=scripts/package-lock.json
@@ -84,16 +84,16 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@46ed16bedbd92aac4b842f495b774e8304d27038 # v4.3.0
+        uses: github/codeql-action/init@9ee088e13615f8d1eaef4766f9dde95d3356a8f6 # v4.3.0
         with:
           languages: javascript
           queries: security-extended
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@46ed16bedbd92aac4b842f495b774e8304d27038 # v4.3.0
+        uses: github/codeql-action/autobuild@9ee088e13615f8d1eaef4766f9dde95d3356a8f6 # v4.3.0
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@46ed16bedbd92aac4b842f495b774e8304d27038 # v4.3.0
+        uses: github/codeql-action/analyze@9ee088e13615f8d1eaef4766f9dde95d3356a8f6 # v4.3.0
 
   security-gate:
     name: Security Gate

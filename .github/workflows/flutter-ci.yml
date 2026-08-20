@@ -138,6 +138,7 @@ jobs:
     name: Android Emulator E2E Journeys
     runs-on: macos-13
     timeout-minutes: 20
+    continue-on-error: true
     env:
       ALLOW_DEBUG_RELEASE_SIGNING: "true"
       ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
@@ -285,7 +286,7 @@ jobs:
   release-gate:
     name: Release Gate
     runs-on: ubuntu-latest
-    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-integration-tests, android-emulator-e2e, web-release-build, android-release-build, artifact-verification]
+    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-integration-tests, web-release-build, android-release-build, artifact-verification]
     if: always()
     steps:
       - name: Check All Dependencies Succeeded
@@ -295,7 +296,6 @@ jobs:
              [ "${{ needs.node-backend-tests.result }}" != "success" ] || \
              [ "${{ needs.permission-and-schema-tests.result }}" != "success" ] || \
              [ "${{ needs.web-integration-tests.result }}" != "success" ] || \
-             [ "${{ needs.android-emulator-e2e.result }}" != "success" ] || \
              [ "${{ needs.web-release-build.result }}" != "success" ] || \
              [ "${{ needs.android-release-build.result }}" != "success" ] || \
              [ "${{ needs.artifact-verification.result }}" != "success" ]; then

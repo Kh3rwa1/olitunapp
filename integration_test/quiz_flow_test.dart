@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
+import 'package:itun/features/quiz/presentation/widgets/quiz_complete_screen.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -101,9 +102,10 @@ void main() {
     // Tap Continue
     await tester.tap(find.text('Continue'));
     await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pump(const Duration(milliseconds: 600));
 
     // Verify completion screen (using score and total)
+    expect(find.byType(QuizCompleteScreen), findsOneWidget);
     expect(find.text('You scored 2 out of 2'), findsOneWidget);
   });
 }

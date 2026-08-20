@@ -6,7 +6,7 @@ import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/auth/presentation/email_auth_screen.dart';
 import 'package:itun/features/onboarding/presentation/splash_screen.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
-import 'package:itun/features/lessons/presentation/screens/lesson_list_screen.dart';
+import 'package:itun/features/lessons/presentation/lessons_screen.dart';
 import 'package:itun/features/legal/presentation/legal_document_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
@@ -147,7 +147,7 @@ void main() {
           routes: [
             GoRoute(
               path: '/lessons',
-              builder: (context, state) => const LessonListScreen(),
+              builder: (context, state) => const LessonsScreen(),
             ),
           ],
         );
@@ -163,7 +163,7 @@ void main() {
         );
 
         await tester.pumpAndSettle();
-        expect(find.byType(LessonListScreen), findsOneWidget);
+        expect(find.byType(LessonsScreen), findsOneWidget);
       },
     );
 

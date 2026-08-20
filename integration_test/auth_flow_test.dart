@@ -8,7 +8,7 @@ import 'package:itun/features/auth/presentation/email_auth_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Auth flow: Welcome screen to Email Auth screen', (tester) async {
     final router = GoRouter(

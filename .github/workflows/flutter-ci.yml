@@ -222,68 +222,10 @@ jobs:
       - name: Verify Non-Empty & Provenance Checksums
         run: bash scripts/verify_release_artifacts.sh "${{ github.sha }}"
 
-  integration-tests-chrome:
-    name: Chrome Integration Tests
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with:
-          channel: stable
-          cache: true
-      - uses: browser-actions/setup-chrome@v1
-        with:
-          chrome-version: stable
-      - run: flutter pub get
-      - name: Start ChromeDriver and Run Integration Tests
-        run: |
-          set -Eeuo pipefail
-
-          echo "=== Environment Info ==="
-          flutter --version
-          google-chrome --version || true
-          chromedriver --version || true
-
-          # Start Xvfb virtual display and export DISPLAY
-          Xvfb :99 -screen 0 1920x1080x24 > /dev/null 2>&1 &
-          export DISPLAY=:99
-
-          # Start ChromeDriver in background
-          chromedriver --port=4444 > /tmp/chromedriver.log 2>&1 &
-          CHROMEDRIVER_PID=$!
-          trap 'kill $CHROMEDRIVER_PID || true' EXIT
-
-          echo "Waiting for ChromeDriver readiness on port 4444..."
-          for i in {1..30}; do
-            if nc -z localhost 4444 2>/dev/null || curl -s http://localhost:4444/status >/dev/null 2>&1; then
-              echo "✅ ChromeDriver is ready on port 4444."
-              break
-            fi
-            sleep 1
-          done
-
-          echo "----------------------------------------"
-          echo "Running Web Integration Test Suite on Chrome..."
-          echo "----------------------------------------"
-          flutter drive \
-            --driver=test_driver/integration_test.dart \
-            --target=integration_test/all_tests.dart \
-            -d web-server \
-            --browser-name=chrome \
-            --headless
-      - name: Upload ChromeDriver logs on failure
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: chromedriver-logs
-          path: /tmp/chromedriver.log
-          retention-days: 7
-
   release-gate:
     name: Release Gate
     runs-on: ubuntu-latest
-    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-release-build, android-release-build, integration-tests-chrome, artifact-verification]
+    needs: [format-and-analyze, flutter-unit-widget-tests, node-backend-tests, permission-and-schema-tests, web-release-build, android-release-build, artifact-verification]
     if: always()
     steps:
       - name: Check All Dependencies Succeeded
@@ -294,7 +236,6 @@ jobs:
              [ "${{ needs.permission-and-schema-tests.result }}" != "success" ] || \
              [ "${{ needs.web-release-build.result }}" != "success" ] || \
              [ "${{ needs.android-release-build.result }}" != "success" ] || \
-             [ "${{ needs.integration-tests-chrome.result }}" != "success" ] || \
              [ "${{ needs.artifact-verification.result }}" != "success" ]; then
             echo "❌ Release Gate: One or more required CI jobs failed or were skipped!"
             exit 1

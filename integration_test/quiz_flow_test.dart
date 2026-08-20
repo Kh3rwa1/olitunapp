@@ -10,7 +10,7 @@ import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Quiz flow: Load quiz, answer questions, see completion', (
     tester,

@@ -132,11 +132,14 @@ jobs:
             --target=integration_test/all_tests.dart \
             -d web-server \
             --browser-name=chrome \
-            --headless
+            --headless \
+            --browser-flag="--no-sandbox" \
+            --browser-flag="--disable-dev-shm-usage" \
+            --browser-flag="--disable-gpu"
 
   android-emulator-e2e:
     name: Android Emulator E2E Journeys
-    runs-on: macos-13
+    runs-on: macos-latest
     timeout-minutes: 20
     env:
       ALLOW_DEBUG_RELEASE_SIGNING: "true"
@@ -159,9 +162,9 @@ jobs:
           ALLOW_DEBUG_RELEASE_SIGNING: "true"
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         with:
-          api-level: 29
-          target: default
-          arch: x86_64
+          api-level: 34
+          target: google_apis
+          arch: arm64-v8a
           profile: pixel_6
           disable-animations: true
           script: flutter test integration_test/all_tests.dart

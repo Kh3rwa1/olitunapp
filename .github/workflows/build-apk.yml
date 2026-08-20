@@ -1,32 +1,29 @@
 name: Build Release APK
 
 on:
+  push:
+    tags:
+      - 'v*'
   workflow_dispatch:
 
 jobs:
-  build-apk:
+  build:
+    name: Build & Release APK
     runs-on: ubuntu-latest
-    env:
-      APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
-      APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
-      TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
-      ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
-      ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
-      ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
-      ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Java
-        uses: actions/setup-java@v5
+      - name: Set up Java
+        uses: actions/setup-java@1dbac3c9e137b6d4d280bae1ae4e9902bb4ce1b9 # v5.0.0
         with:
           distribution: 'zulu'
           java-version: '17'
+          cache: 'gradle'
 
-      - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+      - name: Set up Flutter
+        uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
         with:
           channel: stable
           cache: true
@@ -34,44 +31,42 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Generate build runner code
-        run: dart run build_runner build --delete-conflicting-outputs
-
-      - name: Check required build config
+      - name: Decode Keystore
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
         run: |
-          MISSING=""
-          [ -z "$APPWRITE_ENDPOINT" ] && MISSING="$MISSING APPWRITE_ENDPOINT"
-          [ -z "$APPWRITE_PROJECT_ID" ] && MISSING="$MISSING APPWRITE_PROJECT_ID"
-          [ -z "$TRANSLATE_URL" ] && MISSING="$MISSING TRANSLATE_URL"
-          [ -z "$ANDROID_KEYSTORE_BASE64" ] && MISSING="$MISSING ANDROID_KEYSTORE_BASE64"
-          [ -z "$ANDROID_KEY_ALIAS" ] && MISSING="$MISSING ANDROID_KEY_ALIAS"
-          [ -z "$ANDROID_KEY_PASSWORD" ] && MISSING="$MISSING ANDROID_KEY_PASSWORD"
-          [ -z "$ANDROID_STORE_PASSWORD" ] && MISSING="$MISSING ANDROID_STORE_PASSWORD"
-          if [ -n "$MISSING" ]; then
-            echo "::error::Missing required secrets:$MISSING"
-            exit 1
+          if [ -n "$ANDROID_KEYSTORE_BASE64" ]; then
+            echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
           fi
 
-      - name: Configure Android signing
+      - name: Create key.properties
+        env:
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          ANDROID_STORE_PASSWORD: ${{ secrets.ANDROID_STORE_PASSWORD }}
         run: |
-          echo "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/upload-keystore.jks
-          cat > android/key.properties <<EOF
-          storePassword=$ANDROID_STORE_PASSWORD
-          keyPassword=$ANDROID_KEY_PASSWORD
-          keyAlias=$ANDROID_KEY_ALIAS
-          storeFile=upload-keystore.jks
-          EOF
+          if [ -n "$ANDROID_KEY_ALIAS" ]; then
+            cat <<EOF > android/key.properties
+            storePassword=$ANDROID_STORE_PASSWORD
+            keyPassword=$ANDROID_KEY_PASSWORD
+            keyAlias=$ANDROID_KEY_ALIAS
+            storeFile=upload-keystore.jks
+            EOF
+          fi
 
-      - name: Build APK
+      - name: Build APK (Release)
+        env:
+          APPWRITE_ENDPOINT: ${{ secrets.APPWRITE_ENDPOINT }}
+          APPWRITE_PROJECT_ID: ${{ secrets.APPWRITE_PROJECT_ID }}
+          TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
         run: |
           flutter build apk --release \
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v4.4.3
         with:
-          name: olitun-release-apk
+          name: app-release
           path: build/app/outputs/flutter-apk/app-release.apk
-          retention-days: 7

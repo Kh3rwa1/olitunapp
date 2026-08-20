@@ -144,6 +144,17 @@ class _MagicTranslateDialogState extends ConsumerState<MagicTranslateDialog> {
             ),
             const SizedBox(height: 12),
             Center(
+              child: Text(
+                'Translations are processed securely, cached via privacy hashes, and never linked to your profile.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 11,
+                  color: isDark ? Colors.white54 : Colors.black45,
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Center(
               child: TextButton(
                 onPressed: () => Navigator.pop(context),
                 child: Text(

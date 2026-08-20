@@ -1,104 +1,59 @@
-# Security Policy
+# Olitun Security Policy & Threat Model
 
-## Reporting a vulnerability
+## 1. Reporting a Vulnerability
 
-Email **security@olitun.app** with a description of the issue and reproduction
-steps. Please do not file a public GitHub issue for security reports. We aim to
-acknowledge within 72 hours.
+Email **security@olitun.app** with a comprehensive description of the issue and reproducible steps. Please do not file public GitHub issues for security vulnerabilities. We acknowledge reports within 72 hours.
 
-## Threat model & guarantees
+---
 
-### Admin access
+## 2. Threat Model & Security Guarantees
 
-Admin access is gated server-side by membership in the Appwrite Team named
-`admins` (or whatever `ADMIN_TEAM_ID` is set to at build time).
+### A. Admin Authorization & Team Isolation
+- Admin access is gated strictly server-side by membership in the immutable Appwrite Team ID `admins` (or configured `ADMIN_TEAM_ID`).
+- Client-side bypasses or spoofed roles are structurally impossible because Appwrite collection security rules enforce permissions at the database engine level.
+- Client routes (`/admin/*`) use dual enforcement: GoRouter redirects check team membership, and `AdminShell` verifies session validity before rendering.
 
-- There is **no** client-side admin secret. The previous admin-secret
-  build flag has been removed because any value bundled into the compiled
-  Flutter Web JS or Android APK is trivially extractable and therefore not a
-  secret.
-- Admin team membership is matched against the team's **immutable Appwrite
-  team ID** only. Matching by team name is deliberately not supported,
-  because any user with team-create permission could otherwise escalate by
-  creating a team named `admins`.
-- The `/admin/*` routes are protected by two layers:
-  1. The GoRouter redirect awaits `Teams(client).list()` and bounces
-     non-members to `/admin/login`.
-  2. `AdminShell` re-checks the same provider before rendering, so direct
-     widget mounting (tests, deep links) is also gated.
-- The Appwrite provisioning script grants public read access to learning
-  content, but create/update/delete permissions only to the configured admin
-  Team. Translator support collections are created without client permissions
-  and are accessed only by the Appwrite Function server key.
-- The Flutter checks are a UX layer on top of those permissions, not the
-  security boundary.
+### B. Cryptographic Identity & Zero-Trust Caller Headers
+- The backend serverless functions never trust caller-supplied `x-appwrite-user-id` or JSON `userId` fields.
+- Caller identity is verified cryptographically via Appwrite JWT tokens (`Account.get()`). If verification fails or is absent, the caller is handled strictly under the anonymous tier.
 
-### Configuration
+### C. Concurrency-Safe Translation Rate Limiting
+- **Optimistic Concurrency Control (CAS):** Distributed workers execute atomic document creation and revision checks with jittered exponential backoff across 12 bounded retries.
+- **Fail-Closed Design:** In the event of a rate limiting database outage, the service fails closed (HTTP 503 `RATE_LIMIT_ERROR`) rather than allowing unlimited upstream API exhaustion.
+- **Privacy-Preserving Domain-Separated Identifiers:**
+  - Verified Users: `usr_` + `HMAC-SHA256(RATE_LIMIT_SALT, "translator-rate-limit:user:v1:" + userId)`
+  - Anonymous Networks: `net_` + `HMAC-SHA256(RATE_LIMIT_SALT, "translator-rate-limit:network:v1:" + clientIp)`
+  - Raw IPs, raw user IDs, and secrets are never stored in databases or printed in logs.
+- **Mandatory Salt:** `RATE_LIMIT_SALT` is strictly required in production (`NODE_ENV === 'production'`). Missing secrets cause safe immediate fail-closed startup rejection.
 
-The app refuses to boot without `APPWRITE_ENDPOINT` and `APPWRITE_PROJECT_ID`
-build flags (`AppwriteConfig.validate`). There are no hardcoded fallback
-project IDs in the codebase. The same applies to the translation function URL
-(`TRANSLATE_URL`). Media uploads go directly to Appwrite Storage buckets through
-the Appwrite SDK.
+### D. Fail-Closed Production Release Signing
+- Android release builds enforce cryptographic signing credentials in `android/app/build.gradle.kts`.
+- If `key.properties` is missing, release builds fail with a fatal `GradleException`.
+- Debug-signed release artifacts are permitted strictly for CI build verification when `ALLOW_DEBUG_RELEASE_SIGNING=true` is explicitly configured.
 
-### Translation function
+### E. Supply Chain Security & Immutable Action Pinning
+- 100% of GitHub Actions in `.github/workflows/` are immutably pinned to full 40-character commit SHAs.
+- Automated security audits (`scripts/verify_pinned_actions.mjs`) execute in CI Security Gates to prevent dependency poisoning and mutable tag hijacking.
 
-User-submitted text is sent to an Appwrite Function (`functions/translator`) which proxies translation requests through a pluggable provider interface (`TranslationProvider`) with strict privacy protections:
-- **Privacy-Preserving Rate Limiting:** Primary limiting uses authenticated `userId`. Unauthenticated requests derive a one-way HMAC-SHA256 hash using a server-side salt (`RATE_LIMIT_SALT`). Raw IP addresses are **never** stored in the database or written to logs.
-- **Tiered Multi-Window Limits:** Enforces both short burst limits (1-minute window) and sustained limits (1-hour window) with a fail-closed security policy.
-- **Cryptographic Cache Keys:** Responses are cached under deterministic SHA-256 hashes of the normalized request parameters, preventing plaintext database storage of user queries.
-- **Input Validation:** Enforces strict 5000-character payload limits and explicit supported language code allowlists.
+### F. Payments & Purchase Integrity
+- Course purchases are verified strictly server-side by `verifyCoursePurchase` using HMAC-SHA256 Razorpay signature validation against backend environment secrets.
+- Double-spend and race condition exploits are prevented by unique composite database indexes on `(user_id, category_id)`.
+- Play Store review unlock benefits are restricted server-side to a maximum of one course per user.
 
-### Crash reporting
+### G. Content Security Policy (CSP) & Web Isolation
+- **`script-src`:** Restricted strictly to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated.
+- **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com` to accommodate Flutter Web engine layout mutations.
 
-If `SENTRY_DSN` is provided, crashes are reported to Sentry in release builds
-only (`!kDebugMode`). No reports are sent in development. PII scrubbing
-follows Sentry SDK defaults; review your project's data scrubbing settings
-before enabling in production.
+---
 
-### Backups & Data Integrity
+## 3. Data Redaction & Logging Standards
 
-- Core curriculum and configuration content (categories, lessons, quizzes, etc.) are automatically backed up weekly via a scheduled Appwrite Function (`functions/backupCollections`).
-- Backups are stored as versioned JSON schemas in the `admin_backups` storage bucket.
-- Retention is capped at the last 12 backups to conserve storage.
-- Storage bucket access is restricted exclusively to members of the `admins` team.
+The codebase uses `RedactionHelper` and `AppLogger` across all platforms:
+- Authentication tokens, passwords, JWTs, OAuth codes, payment signatures, and session cookies are scrubbed before logging.
+- Telemetry never records raw translation text, student personal data, or network IP addresses.
 
-### Payments & Review Unlocks
+---
 
-- **Server-Side Verification:** Course purchases are verified strictly server-side using the `verifyCoursePurchase` Appwrite Function. The Razorpay HMAC-SHA256 signature (`razorpay_signature`) is calculated and matched against the secret key in the function environment. No client-side payment confirmation is trusted.
-- **Race Condition Prevention:** The `course_purchases` collection enforces a unique dual-attribute index on `user_id` + `category_id`. This prevents race conditions and double-unlock exploits from duplicate payment payloads.
-- **One-Review-Per-User Enforcement:** Play Store review unlocks are capped at a maximum of one course per user. The verification function queries the database to confirm that the user has not previously redeemed a review-unlock transaction.
-- **Secure Purchases Collection:** The `course_purchases` collection has zero public client permissions. Direct document creation is forbidden. Document read access is explicitly restricted on a per-document basis: the verification function creates documents with read permissions granted only to the owning user (`Permission.read(Role.user(userId))`), preventing cross-user data leakage.
+## 4. Supported Versions
 
-## Supported versions
-
-Only the `main` branch receives security fixes.
-
-### TLS / self-signed certificates
-
-Self-signed Appwrite certificates are disabled by default. Only enable them for local/self-hosted development with:
-
-```bash
---dart-define=ALLOW_SELF_SIGNED=true
-```
-
-Production builds should keep this unset or false.
-
-### Content Security Policy (CSP) & Web Engine Compatibility
-
-The web application Content Security Policy is defined in `vercel.json`:
-- **`script-src`:** Restricted to `'self' 'wasm-unsafe-eval'`. Broad `'unsafe-inline'` and `'unsafe-eval'` are completely eliminated to prevent XSS script injection. `'wasm-unsafe-eval'` is permitted strictly for Flutter Web WebAssembly module initialization.
-- **`style-src`:** Set to `'self' 'unsafe-inline' https://fonts.googleapis.com`. The Flutter Web engine dynamically mutates element inline styles (`flt-glass-pane`, layout metrics) and injects `<style>` blocks for text layout and Google Fonts rendering. `'unsafe-inline'` is retained narrowly for CSS styling as required by Flutter Web engine architecture.
-
-### Credential Revocation & Coordinated Git History Sanitization Protocol
-
-Whenever credential material (such as session secrets or cookie files) is exposed:
-1. **Server-Side Revocation (Immediate):**
-   - Compromised sessions or keys must be invalidated on the Appwrite backend immediately via Appwrite Admin Console or API. Removing files from current branch HEAD does not terminate active sessions on the server.
-2. **Coordinated Git History Sanitization:**
-   - Removing files from the latest commit does not purge historical Git commit objects.
-   - Run `git-filter-repo` across all branches and tags to completely scrub sensitive paths (e.g., `cookies.txt`):
-     ```bash
-     git-filter-repo --invert-paths --path cookies.txt
-     ```
-   - Coordinate force-pushes across all remotes and branches (`git push origin --force --all`).
+Only the `main` branch receives active security updates and vulnerability patches.

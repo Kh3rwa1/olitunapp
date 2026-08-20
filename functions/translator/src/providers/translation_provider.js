@@ -7,6 +7,10 @@ export class BaseTranslationProvider {
 }
 
 export class VitaletsTranslationProvider extends BaseTranslationProvider {
+  get name() {
+    return 'vitalets';
+  }
+
   async translate({ text, from, to, timeoutMs = 8000 }) {
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -31,7 +35,11 @@ export class VitaletsTranslationProvider extends BaseTranslationProvider {
 export class GoogleCloudTranslationProvider extends BaseTranslationProvider {
   constructor(apiKey) {
     super();
-    this.apiKey = apiKey;
+    this.apiKey = typeof apiKey === 'object' ? apiKey?.apiKey : apiKey;
+  }
+
+  get name() {
+    return 'google_cloud';
   }
 
   async translate({ text, from, to, timeoutMs = 8000 }) {

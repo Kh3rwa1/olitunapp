@@ -98,15 +98,20 @@ void main() {
 
     // Tap matching option in QuizOptionTile
     await tester.tap(
-      find.descendant(
-        of: find.byType(QuizOptionTile),
-        matching: find.text(targetFirst),
+      find.ancestor(
+        of: find.text(targetFirst),
+        matching: find.byType(QuizOptionTile),
       ),
+      warnIfMissed: false,
     );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
     // Tap Continue
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.text('Continue'), warnIfMissed: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
     // Verify option tiles are present for Q2
@@ -114,15 +119,20 @@ void main() {
 
     // Tap matching option in QuizOptionTile for Q2
     await tester.tap(
-      find.descendant(
-        of: find.byType(QuizOptionTile),
-        matching: find.text(targetSecond),
+      find.ancestor(
+        of: find.text(targetSecond),
+        matching: find.byType(QuizOptionTile),
       ),
+      warnIfMissed: false,
     );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
     // Tap Continue
-    await tester.tap(find.text('Continue'));
+    await tester.tap(find.text('Continue'), warnIfMissed: false);
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
     await tester.pumpAndSettle();
 
     // Verify completion screen (trophy and pass indicator)

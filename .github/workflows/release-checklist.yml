@@ -30,6 +30,9 @@ jobs:
     name: "1. Environment Validation"
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
       - name: Check required secrets
         run: |
           MISSING=""
@@ -40,20 +43,26 @@ jobs:
           [ -z "$ANDROID_KEY_ALIAS" ] && MISSING="$MISSING ANDROID_KEY_ALIAS"
           [ -z "$ANDROID_KEY_PASSWORD" ] && MISSING="$MISSING ANDROID_KEY_PASSWORD"
           [ -z "$ANDROID_STORE_PASSWORD" ] && MISSING="$MISSING ANDROID_STORE_PASSWORD"
+          [ -z "$ANDROID_EXPECTED_CERT_SHA256" ] && MISSING="$MISSING ANDROID_EXPECTED_CERT_SHA256"
           if [ -n "$MISSING" ]; then
             echo "::error::Missing required secrets:$MISSING"
             exit 1
           fi
           echo "✅ All required environment variables are set."
 
-      - name: Validate version format
+      - name: Validate version format & consistency
         run: |
           VERSION="${{ github.event.inputs.version }}"
           if [[ ! "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+\+[0-9]+$ ]]; then
             echo "::error::Invalid version format: $VERSION. Expected: X.Y.Z+BUILD"
             exit 1
           fi
-          echo "✅ Version format is valid: $VERSION"
+          PUBSPEC_VERSION=$(grep -E '^version:' pubspec.yaml | awk '{print $2}')
+          if [ "$VERSION" != "$PUBSPEC_VERSION" ]; then
+            echo "::error::Input release version ($VERSION) does not match tested pubspec.yaml version ($PUBSPEC_VERSION). Update pubspec.yaml in a tested commit before running release tagging."
+            exit 1
+          fi
+          echo "✅ Version format and consistency verified: $VERSION"
 
   # Phase 2: Build + Tests
   build-test:
@@ -70,11 +79,6 @@ jobs:
           distribution: 'zulu'
           java-version: '17'
           cache: 'gradle'
-
-      - name: Bump version in pubspec.yaml
-        run: |
-          VERSION="${{ github.event.inputs.version }}"
-          sed -i -E "s/^version: .*/version: $VERSION/" pubspec.yaml
 
       - name: Setup Flutter
         uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
@@ -137,11 +141,7 @@ jobs:
             --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \
             --dart-define=APPWRITE_PROJECT_ID="$APPWRITE_PROJECT_ID" \
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
-          if [ -n "$ANDROID_EXPECTED_CERT_SHA256" ]; then
-            bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
-          else
-            apksigner verify --verbose --print-certs build/app/outputs/flutter-apk/app-release.apk
-          fi
+          bash scripts/verify_android_signing_certificate.sh build/app/outputs/flutter-apk/app-release.apk "$ANDROID_EXPECTED_CERT_SHA256"
           (cd build/app/outputs/flutter-apk && sha256sum app-release.apk > app-release.apk.sha256)
 
       - name: Cleanup Signing Material
@@ -215,24 +215,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup Java & Gradle Cache
-        uses: actions/setup-java@1dbac3c9e137b6d4d280bae1ae4e9902bb4ce1b9 # v5.0.0
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-          cache: 'gradle'
-
-      - name: Commit version bump and create release tag
+      - name: Tag release on verified commit
         run: |
           VERSION="${{ github.event.inputs.version }}"
-          sed -i -E "s/^version: .*/version: $VERSION/" pubspec.yaml
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git commit -a -m "chore(release): bump version to $VERSION" || true
-          git push origin HEAD
-          git tag "v$VERSION"
+          git tag "v$VERSION" "$GITHUB_SHA"
           git push origin "v$VERSION"
-          echo "✅ Tagged release: v$VERSION"
+          echo "✅ Successfully tagged verified commit $GITHUB_SHA as v$VERSION"
 
       - name: Generate release summary
         run: |

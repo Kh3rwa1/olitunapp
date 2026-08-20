@@ -121,23 +121,12 @@ jobs:
           channel: stable
           cache: true
       - run: flutter pub get
-      - name: Install and launch Chromedriver
-        run: |
-          sudo apt-get update && sudo apt-get install -y chromium-chromedriver
-          chromedriver --port=4444 &
-          sleep 2
       - name: Run Flutter Web Integration Journeys
-        run: |
-          flutter drive \
-            --driver=test_driver/integration_test.dart \
-            --target=integration_test/all_tests.dart \
-            -d web-server \
-            --browser-name=chrome \
-            --headless
+        run: flutter test integration_test/all_tests.dart -d chrome
 
   android-emulator-e2e:
     name: Android Emulator E2E Journeys
-    runs-on: ubuntu-latest
+    runs-on: macos-13
     timeout-minutes: 25
     env:
       ALLOW_DEBUG_RELEASE_SIGNING: "true"
@@ -160,8 +149,8 @@ jobs:
           ALLOW_DEBUG_RELEASE_SIGNING: "true"
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         with:
-          api-level: 34
-          target: google_apis
+          api-level: 31
+          target: default
           arch: x86_64
           profile: pixel_6
           disable-animations: true

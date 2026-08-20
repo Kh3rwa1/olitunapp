@@ -11,6 +11,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
+import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
+
 void main() {
   testWidgets('Quiz flow: Load quiz, answer questions, see completion', (
     tester,
@@ -81,22 +83,22 @@ void main() {
     // Verify Quiz title
     expect(find.text('Integration Quiz'), findsOneWidget);
 
-    // Verify first question
-    expect(find.text('O'), findsWidgets); // Prompt and Option
+    // Verify option tiles are present
+    expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
-    // Tap correct option (index 0 which is 'O')
-    await tester.tap(find.text('O').last);
+    // Tap correct option for Q1 (index 0)
+    await tester.tap(find.byType(QuizOptionTile).at(0));
     await tester.pumpAndSettle();
 
     // Tap Continue
     await tester.tap(find.text('Continue'));
     await tester.pumpAndSettle();
 
-    // Verify second question
-    expect(find.text('T'), findsWidgets);
+    // Verify option tiles are present for Q2
+    expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
-    // Tap correct option (index 1 which is 'T')
-    await tester.tap(find.text('T').last);
+    // Tap correct option for Q2 (index 1)
+    await tester.tap(find.byType(QuizOptionTile).at(1));
     await tester.pumpAndSettle();
 
     // Tap Continue
@@ -105,6 +107,7 @@ void main() {
 
     // Verify completion screen (using score and total)
     expect(find.byType(QuizCompleteScreen), findsOneWidget);
-    expect(find.text('You scored 2 out of 2'), findsOneWidget);
+    expect(find.text('100%'), findsOneWidget);
+    expect(find.text('2 / 2'), findsOneWidget);
   });
 }

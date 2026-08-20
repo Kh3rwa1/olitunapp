@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/auth/presentation/email_auth_screen.dart';
-import 'package:itun/features/onboarding/presentation/splash_screen.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
 import 'package:itun/features/lessons/presentation/lessons_screen.dart';
 import 'package:itun/features/legal/presentation/legal_document_screen.dart';
@@ -14,9 +15,20 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
 
   group('Full Application User Journeys Integration Suite', () {
+    setUp(() async {
+      SharedPreferences.setMockInitialValues({
+        'user_name': 'Explorer',
+        'user_avatar_emoji': '👶',
+        'user_avatar_color': 0,
+        'show_onboarding': false,
+        'app_language': 'en',
+      });
+    });
+
     testWidgets('1. Auth Journey: Welcome -> Email Auth transition', (
       tester,
     ) async {
+      final prefs = await SharedPreferences.getInstance();
       final router = GoRouter(
         initialLocation: '/welcome',
         routes: [
@@ -33,6 +45,7 @@ void main() {
 
       await tester.pumpWidget(
         ProviderScope(
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
           child: MaterialApp.router(
             routerConfig: router,
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -53,14 +66,10 @@ void main() {
     testWidgets(
       '2. Purchase Callback Journey: Handles callback parameters gracefully',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
-          initialLocation:
-              '/splash?purchase_status=success&category_id=cat_123',
+          initialLocation: '/home?purchase_status=success&category_id=cat_123',
           routes: [
-            GoRoute(
-              path: '/splash',
-              builder: (context, state) => const SplashScreen(),
-            ),
             GoRoute(
               path: '/home',
               builder: (context, state) => const HomeScreen(),
@@ -70,6 +79,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -79,13 +89,14 @@ void main() {
         );
 
         await tester.pumpAndSettle();
-        expect(find.byType(SplashScreen), findsOneWidget);
+        expect(find.byType(HomeScreen), findsOneWidget);
       },
     );
 
     testWidgets(
       '3. Offline Restart Journey: Initializing app offline loads cached state',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
           initialLocation: '/home',
           routes: [
@@ -98,6 +109,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -114,6 +126,7 @@ void main() {
     testWidgets(
       '4. Account Deletion Journey: Renders deletion confirmation sheet options',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
           initialLocation: '/welcome',
           routes: [
@@ -126,6 +139,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -142,6 +156,7 @@ void main() {
     testWidgets(
       '5. Lesson List Journey: Renders lesson navigation screen correctly',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
           initialLocation: '/lessons',
           routes: [
@@ -154,6 +169,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -170,6 +186,7 @@ void main() {
     testWidgets(
       '6. Legal & Privacy Navigation: Renders privacy and terms screens',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
           initialLocation: '/privacy',
           routes: [
@@ -183,6 +200,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -199,6 +217,7 @@ void main() {
     testWidgets(
       '7. OAuth Callback Sanitization: Strips sensitive query params upon routing',
       (tester) async {
+        final prefs = await SharedPreferences.getInstance();
         final router = GoRouter(
           initialLocation:
               '/welcome?secret=sensitive_oauth_secret_123&code=auth_code_xyz',
@@ -212,6 +231,7 @@ void main() {
 
         await tester.pumpWidget(
           ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
             child: MaterialApp.router(
               routerConfig: router,
               localizationsDelegates: AppLocalizations.localizationsDelegates,

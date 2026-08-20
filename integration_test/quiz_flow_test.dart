@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:itun/features/quiz/presentation/quiz_screen.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content_models.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
@@ -14,6 +16,14 @@ void main() {
   testWidgets('Quiz flow: Load quiz, answer questions, see completion', (
     tester,
   ) async {
+    SharedPreferences.setMockInitialValues({
+      'user_name': 'Explorer',
+      'user_avatar_emoji': '👶',
+      'user_avatar_color': 0,
+      'show_onboarding': false,
+    });
+    final prefs = await SharedPreferences.getInstance();
+
     final dummyQuiz = QuizModel(
       id: 'test_quiz_1',
       title: 'Integration Quiz',
@@ -54,6 +64,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          sharedPreferencesProvider.overrideWithValue(prefs),
           quizResultProvider(
             'test_quiz_1',
           ).overrideWith((ref) => AsyncValue.data(Right(dummyQuiz))),

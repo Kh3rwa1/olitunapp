@@ -269,12 +269,9 @@ jobs:
           flutter drive \
             --driver=test_driver/integration_test.dart \
             --target=integration_test/all_tests.dart \
-            -d chrome \
-            --web-browser-flag="--no-sandbox" \
-            --web-browser-flag="--disable-dev-shm-usage" \
-            --web-browser-flag="--disable-gpu" \
-            --web-browser-flag="--headless=new" \
-            --timeout=300
+            -d web-server \
+            --browser-name=chrome \
+            --headless
       - name: Upload ChromeDriver logs on failure
         if: failure()
         uses: actions/upload-artifact@v4

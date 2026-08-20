@@ -8,14 +8,16 @@ The Olitun translator backend (`functions/translator`) enforces strict multi-tie
 1. **Deterministic Window Partitioning:** Time windows are split into fixed deterministic epoch intervals:
    - **Minute Burst Window:** `Math.floor(now / 60000)`
    - **Hourly Sustained Window:** `Math.floor(now / 3600000)`
-2. **Deterministic Document IDs:** Document IDs are derived using SHA-256: `generateWindowDocId(prefix, identifier, windowIndex)`.
-3. **Optimistic Concurrency Control (OCC) / CAS:**
-   - Attempt 1: Call `createDocument(docId)` with count = 1.
-   - If document already exists (HTTP 409 Conflict): The worker reads the current counter document and revision.
-   - If count is below quota: Worker increments count with revision verification (`_expectedRevision`) and exponential jittered backoff across bounded retry attempts (up to 12 retries).
-   - If count meets or exceeds quota: Reject immediately with `burst_limit_exceeded` or `hourly_limit_exceeded` and calculated `retryAfterSeconds`.
-4. **Fail-Closed Safety:** If the rate limiting collection or database experiences an outage, requests fail closed with HTTP 503 `RATE_LIMIT_ERROR` to protect upstream translation quotas from abuse during database downtime.
-5. **Automated Pruning:** Expired rate limit windows carry an `expiresAt` timestamp and are systematically cleaned via `pruneExpiredRateLimits()`.
+2. **Deterministic Slot Reservation:**
+   - For a configured limit $L$, slots $1 \dots L$ have deterministic document IDs: `generateSlotDocId(prefix, identifier, windowIndex, slot)`.
+   - Each allowed request claims an available slot via `databases.createDocument(...)`.
+   - Primary key uniqueness on `documentId` guarantees that concurrent workers competing for the same slot receive `409 Conflict`, with exactly one winner per slot.
+   - If all slots $1 \dots L$ are occupied, the request is deterministically rejected with `burst_limit_exceeded` or `hourly_limit_exceeded` and calculated `retryAfterSeconds`.
+3. **Dual-Window Partial Accounting Rollback:**
+   - Minute burst limit is checked first; on success, hourly sustained limit is checked.
+   - If hourly quota is exhausted, the claimed minute slot is automatically rolled back to prevent burning burst quota on an rejected request.
+4. **Fail-Closed Safety:** If the rate limiting collection experiences an outage or storage error, requests fail closed with HTTP 503 `RATE_LIMIT_ERROR` to protect upstream translation providers from unmetered access during database downtime.
+5. **Automated Retention Pruning:** Expired rate limit window records are systematically cleaned via `pruneExpiredRateLimits()` using indexed `windowStart` queries.
 
 ---
 

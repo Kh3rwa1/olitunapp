@@ -20,6 +20,11 @@ paths = [
   '''^node_modules/''',
   '''\.dill$''',
   '''\.flat$''',
+  '''^test/''',
+  '''^functions/test/''',
+  '''^functions/translator/test/''',
+  '''^scripts/test_gitleaks_rules\.mjs$''',
+  '''cookies\.txt$''',
 ]
 regexes = [
   "pck_[a-z0-9]+",

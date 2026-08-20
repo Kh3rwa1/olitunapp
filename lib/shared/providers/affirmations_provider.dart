@@ -30,6 +30,7 @@ class AffirmationsNotifier
       _cacheKey,
       AffirmationModel.fromJson,
     );
+    if (!mounted) return;
     if (cached != null) {
       state = AsyncValue.data(cached);
     }
@@ -40,6 +41,7 @@ class AffirmationsNotifier
         'daily_affirmations',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       final affirmations = data.map(AffirmationModel.fromJson).toList();
       state = AsyncValue.data(affirmations);
       await CacheService.set(
@@ -48,6 +50,7 @@ class AffirmationsNotifier
       );
     } catch (e, stack) {
       AppLogger.debug('❌ load affirmations FAILED: $e');
+      if (!mounted) return;
       if (cached == null) {
         state = AsyncValue.error(e, stack);
       }

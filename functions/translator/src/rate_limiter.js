@@ -3,21 +3,28 @@ import { Query } from 'node-appwrite';
 
 export const WINDOW_HOUR_MS = 60 * 60 * 1000;
 export const WINDOW_MINUTE_MS = 60 * 1000;
-const MAX_CAS_RETRIES = 12;
 
 /**
- * Generates a valid Appwrite-compatible deterministic document ID (alphanumeric, max 36 chars)
+ * Generates an Appwrite-compatible deterministic slot document ID (alphanumeric, max 36 chars).
+ *
+ * @param {string} prefix - Window prefix ('m' or 'h')
+ * @param {string} identifier - Domain-separated HMAC rate limit identifier
+ * @param {number} windowIndex - Integer window bucket index
+ * @param {number} slot - 1-indexed slot number (1 .. limit)
+ * @returns {string} Deterministic document ID
  */
-export function generateWindowDocId(prefix, identifier, windowIndex) {
+export function generateSlotDocId(prefix, identifier, windowIndex, slot) {
   const hash = createHash('sha256')
-    .update(`${prefix}:${identifier}:${windowIndex}`)
+    .update(`${prefix}:${identifier}:${windowIndex}:${slot}`)
     .digest('hex')
     .slice(0, 28);
   return `${prefix}_${hash}`;
 }
 
 /**
- * Atomic/CAS-safe rate limit increment for a specific time window.
+ * Enforces a rate limit for a specific time window using atomic slot-reservation.
+ * Each allowed request reserves a unique slot document ID (1..limit).
+ * Relies on Appwrite's database-level primary key uniqueness constraint to guarantee atomicity.
  *
  * @param {Object} params
  * @param {Object} params.databases - Appwrite Databases service instance
@@ -26,9 +33,9 @@ export function generateWindowDocId(prefix, identifier, windowIndex) {
  * @param {string} params.identifier - Domain-separated HMAC rate limit identifier
  * @param {string} params.windowType - 'm' (minute) or 'h' (hour)
  * @param {number} params.windowMs - Duration of the window in ms
- * @param {number} params.limit - Maximum allowed requests in this window
+ * @param {number} params.limit - Maximum allowed requests in this window (positive integer)
  * @param {number} params.now - Current timestamp in ms
- * @returns {Promise<{ allowed: boolean, remaining: number, reason?: string, retryAfterSeconds?: number }>}
+ * @returns {Promise<{ allowed: boolean, remaining: number, slotDocId?: string, reason?: string, retryAfterSeconds?: number, error?: string }>}
  */
 export async function enforceWindowRateLimit({
   databases,
@@ -40,84 +47,74 @@ export async function enforceWindowRateLimit({
   limit,
   now = Date.now(),
 }) {
+  if (!Number.isInteger(limit) || limit <= 0) {
+    return {
+      allowed: false,
+      reason: 'rate_limit_storage_error',
+      error: 'Invalid rate limit configuration: limit must be a positive integer',
+    };
+  }
+
   const windowIndex = Math.floor(now / windowMs);
   const windowStart = windowIndex * windowMs;
   const windowEnd = windowStart + windowMs;
-  const docId = generateWindowDocId(windowType, identifier, windowIndex);
 
-  for (let attempt = 0; attempt < MAX_CAS_RETRIES; attempt++) {
+  for (let slot = 1; slot <= limit; slot++) {
+    const slotDocId = generateSlotDocId(windowType, identifier, windowIndex, slot);
     try {
-      // Attempt 1: Race-safe document creation with initial count = 1
-      await databases.createDocument(dbId, collectionId, docId, {
+      await databases.createDocument(dbId, collectionId, slotDocId, {
         clientIp: identifier,
-        count: 1,
+        count: slot,
         windowStart: windowStart,
-        expiresAt: windowEnd + WINDOW_HOUR_MS, // Retain for window duration + 1h buffer
-        _revision: 1,
       });
-      return { allowed: true, remaining: Math.max(0, limit - 1) };
-    } catch (createErr) {
+
+      // Slot claimed successfully
+      return {
+        allowed: true,
+        remaining: limit - slot,
+        slotDocId,
+      };
+    } catch (err) {
       const isConflict =
-        createErr?.code === 409 ||
-        createErr?.status === 409 ||
-        (createErr?.message && /already exists|duplicate|409/i.test(createErr.message));
+        err?.code === 409 ||
+        err?.status === 409 ||
+        (err?.message && /already exists|duplicate|409/i.test(err.message));
 
-      if (!isConflict) {
-        // Unknown database error -> fail closed
-        return {
-          allowed: false,
-          reason: 'rate_limit_storage_error',
-          error: createErr?.message || 'Database error during rate limit creation',
-        };
+      if (isConflict) {
+        // Slot is already occupied by a concurrent request -> try next slot
+        continue;
       }
 
-      // Document already exists for this window -> read and attempt CAS increment
-      try {
-        const doc = await databases.getDocument(dbId, collectionId, docId);
-        const currentCount = typeof doc?.count === 'number' ? doc.count : 1;
-        const currentRevision = typeof doc?._revision === 'number' ? doc._revision : 1;
-
-        if (currentCount >= limit) {
-          const retryAfterSeconds = Math.max(1, Math.ceil((windowEnd - now) / 1000));
-          return {
-            allowed: false,
-            reason: windowType === 'm' ? 'burst_limit_exceeded' : 'hourly_limit_exceeded',
-            retryAfterSeconds,
-          };
-        }
-
-        // Bounded optimistic update with revision CAS
-        const updated = await databases.updateDocument(dbId, collectionId, docId, {
-          count: currentCount + 1,
-          _revision: currentRevision + 1,
-          _expectedRevision: currentRevision,
-        });
-
-        const newCount = updated?.count ?? currentCount + 1;
-        return { allowed: true, remaining: Math.max(0, limit - newCount) };
-      } catch (updateErr) {
-        // Jittered backoff between retry attempts to alleviate high thundering herds
-        await new Promise((r) => setTimeout(r, Math.random() * 5 + 2));
-        if (attempt === MAX_CAS_RETRIES - 1) {
-          return {
-            allowed: false,
-            reason: 'rate_limit_storage_error',
-            error: updateErr?.message || 'Exceeded retry limit during concurrent rate limit update',
-          };
-        }
-      }
+      // Storage engine error -> fail closed immediately
+      return {
+        allowed: false,
+        reason: 'rate_limit_storage_error',
+        error: err?.message || 'Database error during rate limit slot reservation',
+      };
     }
   }
 
+  // All slots 1..limit are occupied
+  const retryAfterSeconds = Math.max(1, Math.ceil((windowEnd - now) / 1000));
   return {
     allowed: false,
-    reason: 'rate_limit_storage_error',
-    error: 'Max retries exhausted',
+    reason: windowType === 'm' ? 'burst_limit_exceeded' : 'hourly_limit_exceeded',
+    retryAfterSeconds,
   };
 }
 
 /**
  * Concurrency-safe rate limit checker enforcing both burst and sustained limits.
+ *
+ * @param {Object} params
+ * @param {Object} params.databases - Appwrite Databases service instance
+ * @param {string} [params.dbId='olitun_db'] - Database ID
+ * @param {string} [params.collectionId='rate_limits'] - Collection ID
+ * @param {string} params.identifier - Domain-separated HMAC rate limit identifier
+ * @param {boolean} [params.isAuth=false] - Whether caller identity is cryptographically verified
+ * @param {number} [params.now=Date.now()] - Current timestamp in ms
+ * @param {Object} [params.env=process.env] - Environment variables
+ * @returns {Promise<{ allowed: boolean, remaining?: number, reason?: string, retryAfterSeconds?: number, error?: string }>}
  */
 export async function checkRateLimit({
   databases,
@@ -129,21 +126,35 @@ export async function checkRateLimit({
   env = process.env,
 }) {
   if (!identifier || typeof identifier !== 'string' || identifier.trim().length === 0) {
-    return { allowed: false, reason: 'rate_limit_storage_error', error: 'Missing rate limit identifier' };
+    return {
+      allowed: false,
+      reason: 'rate_limit_storage_error',
+      error: 'Missing rate limit identifier',
+    };
   }
+
+  const isProduction = env.NODE_ENV === 'production';
 
   const sustainedLimit = parseInt(
     isAuth
-      ? (env.RATE_LIMIT_AUTH_PER_HOUR || '60')
-      : (env.RATE_LIMIT_ANON_PER_HOUR || '20'),
+      ? (env.RATE_LIMIT_AUTH_PER_HOUR || (isProduction ? '' : '60'))
+      : (env.RATE_LIMIT_ANON_PER_HOUR || (isProduction ? '' : '20')),
     10
   );
   const burstLimit = parseInt(
     isAuth
-      ? (env.RATE_LIMIT_AUTH_PER_MINUTE || '15')
-      : (env.RATE_LIMIT_ANON_PER_MINUTE || '5'),
+      ? (env.RATE_LIMIT_AUTH_PER_MINUTE || (isProduction ? '' : '15'))
+      : (env.RATE_LIMIT_ANON_PER_MINUTE || (isProduction ? '' : '5')),
     10
   );
+
+  if (isNaN(burstLimit) || burstLimit <= 0 || isNaN(sustainedLimit) || sustainedLimit <= 0) {
+    return {
+      allowed: false,
+      reason: 'rate_limit_storage_error',
+      error: 'Invalid or missing rate limit configuration values',
+    };
+  }
 
   try {
     // 1. Enforce burst limit (1-minute window)
@@ -175,6 +186,14 @@ export async function checkRateLimit({
     });
 
     if (!sustainedResult.allowed) {
+      // Partial accounting rollback: release the minute slot so hourly rejection doesn't consume burst quota
+      if (burstResult.slotDocId) {
+        try {
+          await databases.deleteDocument(dbId, collectionId, burstResult.slotDocId);
+        } catch (_) {
+          // Non-fatal rollback attempt
+        }
+      }
       return sustainedResult;
     }
 
@@ -183,7 +202,6 @@ export async function checkRateLimit({
       remaining: Math.min(burstResult.remaining, sustainedResult.remaining),
     };
   } catch (err) {
-    // Fail-closed policy for high security
     return {
       allowed: false,
       reason: 'rate_limit_storage_error',
@@ -193,32 +211,43 @@ export async function checkRateLimit({
 }
 
 /**
- * Automated retention cleanup for expired rate limit records.
+ * Retention cleanup for expired rate limit records.
+ *
+ * @param {Object} params
+ * @param {Object} params.databases - Appwrite Databases service instance
+ * @param {string} [params.dbId='olitun_db'] - Database ID
+ * @param {string} [params.collectionId='rate_limits'] - Collection ID
+ * @param {number} [params.now=Date.now()] - Current timestamp in ms
+ * @param {number} [params.retentionBufferMs=2 * WINDOW_HOUR_MS] - Retention buffer
+ * @returns {Promise<{ prunedCount: number }>}
  */
 export async function pruneExpiredRateLimits({
   databases,
   dbId = 'olitun_db',
   collectionId = 'rate_limits',
   now = Date.now(),
-  batchSize = 50,
+  retentionBufferMs = 2 * WINDOW_HOUR_MS,
 }) {
+  const expiryThreshold = now - retentionBufferMs;
+  let prunedCount = 0;
+
   try {
     const expiredDocs = await databases.listDocuments(dbId, collectionId, [
-      Query.lessThan('expiresAt', now),
-      Query.limit(batchSize),
+      Query.lessThan('windowStart', expiryThreshold),
+      Query.limit(100),
     ]);
 
-    let deletedCount = 0;
-    for (const doc of expiredDocs.documents || []) {
+    for (const doc of expiredDocs.documents) {
       try {
         await databases.deleteDocument(dbId, collectionId, doc.$id);
-        deletedCount++;
-      } catch {
-        // Individual delete failure ignored during background prune
+        prunedCount++;
+      } catch (_) {
+        // Continue cleaning other documents
       }
     }
-    return { success: true, deletedCount };
   } catch (err) {
-    return { success: false, error: err?.message || 'Prune failed' };
+    // Non-fatal background maintenance error
   }
+
+  return { prunedCount };
 }

@@ -90,8 +90,10 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
   }
 
   Future<void> load() async {
+    if (!mounted) return;
     state = state.copyWith(item: const AsyncValue.loading());
     final res = await _repository.get(bakhedId);
+    if (!mounted) return;
     res.fold(
       (failure) {
         if (failure is ServerFailure && failure.code == 404) {

@@ -181,8 +181,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> loadStats() async {
+    if (!mounted) return;
     state = const AsyncValue.loading();
     final result = await _repository.getUserStats();
+    if (!mounted) return;
     result.fold(
       (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (stats) {

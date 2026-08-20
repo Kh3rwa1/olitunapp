@@ -3387,8 +3387,10 @@ class WordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>> {
         'words',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       state = AsyncValue.data(data.map(WordModel.fromJson).toList());
     } catch (e) {
+      if (!mounted) return;
       state = AsyncValue.data(_seedWords);
     }
   }

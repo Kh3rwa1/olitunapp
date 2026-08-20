@@ -3,8 +3,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/legal/presentation/legal_document_screen.dart';
 
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-
   testWidgets('legal documents render for release smoke checks', (
     tester,
   ) async {

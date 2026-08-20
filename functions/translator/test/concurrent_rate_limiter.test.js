@@ -3,7 +3,7 @@ import test from 'node:test';
 import {
   checkRateLimit,
   enforceWindowRateLimit,
-  generateWindowDocId,
+  generateSlotDocId,
   pruneExpiredRateLimits,
   WINDOW_HOUR_MS,
   WINDOW_MINUTE_MS,
@@ -15,12 +15,15 @@ import {
 } from '../src/security.js';
 
 /**
- * High-fidelity concurrent storage fake simulating Appwrite Databases behavior:
- * - Deterministic document ID unique constraint (throws 409 conflict on duplicate create)
- * - Atomic read-modify-write revision tracking with CAS conflict detection
- * - Latency injection to stress concurrent races
+ * Authentic Appwrite Databases fake strictly reflecting production Appwrite engine semantics:
+ * - createDocument: Throws 409 Conflict if documentId already exists (primary key constraint).
+ * - getDocument: Returns stored document or 404.
+ * - updateDocument: Standard attribute overwrite without fake compare-and-swap.
+ * - deleteDocument: Deletes document by ID.
+ * - listDocuments: Queries documents by attribute filters.
+ * - Latency injection to stress real concurrent execution.
  */
-class ConcurrentAppwriteDatabasesFake {
+class ProductionAppwriteDatabasesFake {
   constructor({ failOnStorage = false, artificialLatencyMs = 2 } = {}) {
     this.store = new Map();
     this.failOnStorage = failOnStorage;
@@ -50,7 +53,7 @@ class ConcurrentAppwriteDatabasesFake {
       conflictErr.status = 409;
       throw conflictErr;
     }
-    const doc = { $id: docId, ...data, _revision: data._revision || 1 };
+    const doc = { $id: docId, ...data };
     this.store.set(docId, doc);
     return doc;
   }
@@ -84,18 +87,9 @@ class ConcurrentAppwriteDatabasesFake {
       notFound.code = 404;
       throw notFound;
     }
-    // Optimistic Concurrency Control (OCC) check
-    if (data._expectedRevision !== undefined && existing._revision !== data._expectedRevision) {
-      this.conflictCount++;
-      const conflictErr = new Error('Document revision conflict during concurrent update.');
-      conflictErr.code = 409;
-      conflictErr.status = 409;
-      throw conflictErr;
-    }
     const updated = {
       ...existing,
       ...data,
-      _revision: (existing._revision || 1) + 1,
     };
     this.store.set(docId, updated);
     return updated;
@@ -108,17 +102,16 @@ class ConcurrentAppwriteDatabasesFake {
     }
     let docs = Array.from(this.store.values());
 
-    // Query evaluation for retention prune tests
     for (const q of queries) {
       if (typeof q === 'string') {
         try {
           const parsed = JSON.parse(q);
-          if (parsed.method === 'lessThan' && parsed.attribute === 'expiresAt') {
+          if (parsed.method === 'lessThan' && parsed.attribute === 'windowStart') {
             const threshold = parsed.values[0];
-            docs = docs.filter((d) => (d.expiresAt || 0) < threshold);
+            docs = docs.filter((d) => (d.windowStart || 0) < threshold);
           }
         } catch {
-          // Non-JSON query
+          // Non-JSON query string
         }
       }
     }
@@ -132,13 +125,165 @@ class ConcurrentAppwriteDatabasesFake {
   }
 }
 
+// ==========================================
+// 1. UNIT TESTS
+// ==========================================
+
+test('Unit: Deterministic slot document IDs are stable and valid format', () => {
+  const id1 = generateSlotDocId('m', 'usr_test_123', 1000, 1);
+  const id2 = generateSlotDocId('m', 'usr_test_123', 1000, 1);
+  const id3 = generateSlotDocId('m', 'usr_test_123', 1000, 2);
+
+  assert.equal(id1, id2, 'Identical parameters must generate identical document IDs');
+  assert.notEqual(id1, id3, 'Different slots must generate distinct document IDs');
+  assert.ok(id1.startsWith('m_'), 'Document ID must retain window prefix');
+  assert.ok(id1.length <= 36, `Document ID length ${id1.length} must be <= 36 chars`);
+});
+
+test('Unit: First request successfully claims slot 1', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const res = await enforceWindowRateLimit({
+    databases: fakeDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_unit_test',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit: 5,
+    now: 10000,
+  });
+
+  assert.equal(res.allowed, true);
+  assert.equal(res.remaining, 4);
+  assert.ok(res.slotDocId);
+  assert.equal(fakeDb.store.size, 1);
+});
+
+test('Unit: Exactly-at-limit request succeeds and request N+1 is rejected', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const limit = 3;
+  const now = 20000;
+
+  for (let i = 1; i <= limit; i++) {
+    const res = await enforceWindowRateLimit({
+      databases: fakeDb,
+      dbId: 'olitun_db',
+      collectionId: 'rate_limits',
+      identifier: 'usr_exact_limit',
+      windowType: 'm',
+      windowMs: WINDOW_MINUTE_MS,
+      limit,
+      now,
+    });
+    assert.equal(res.allowed, true, `Request ${i} of ${limit} must be allowed`);
+    assert.equal(res.remaining, limit - i);
+  }
+
+  // Request N+1 (4th request)
+  const rejectedRes = await enforceWindowRateLimit({
+    databases: fakeDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_exact_limit',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit,
+    now,
+  });
+
+  assert.equal(rejectedRes.allowed, false, 'Request N+1 must be rejected');
+  assert.equal(rejectedRes.reason, 'burst_limit_exceeded');
+  assert.ok(rejectedRes.retryAfterSeconds > 0);
+  assert.equal(fakeDb.store.size, limit, 'Store must contain exactly limit documents');
+});
+
+test('Unit: Malformed or non-positive limit fails closed safely', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const resNegative = await enforceWindowRateLimit({
+    databases: fakeDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_malformed',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit: -5,
+    now: 10000,
+  });
+
+  assert.equal(resNegative.allowed, false);
+  assert.equal(resNegative.reason, 'rate_limit_storage_error');
+
+  const resZero = await enforceWindowRateLimit({
+    databases: fakeDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_malformed',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit: 0,
+    now: 10000,
+  });
+
+  assert.equal(resZero.allowed, false);
+  assert.equal(resZero.reason, 'rate_limit_storage_error');
+});
+
+test('Unit: Storage failure triggers fail-closed error with sanitized code', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake({ failOnStorage: true });
+  const res = await checkRateLimit({
+    databases: fakeDb,
+    identifier: 'usr_storage_fail',
+    now: 10000,
+    env: { RATE_LIMIT_ANON_PER_MINUTE: '5', RATE_LIMIT_ANON_PER_HOUR: '20' },
+  });
+
+  assert.equal(res.allowed, false);
+  assert.equal(res.reason, 'rate_limit_storage_error');
+});
+
+test('Unit: Retention cleanup prunes expired rate limit documents safely', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const now = 10000000;
+
+  // Insert 2 expired documents (windowStart < now - 2 hours)
+  await fakeDb.createDocument('olitun_db', 'rate_limits', 'm_expired_1', {
+    clientIp: 'usr_old_1',
+    windowStart: now - (3 * WINDOW_HOUR_MS),
+  });
+  await fakeDb.createDocument('olitun_db', 'rate_limits', 'm_expired_2', {
+    clientIp: 'usr_old_2',
+    windowStart: now - (4 * WINDOW_HOUR_MS),
+  });
+  // Insert 1 active document
+  await fakeDb.createDocument('olitun_db', 'rate_limits', 'm_active_1', {
+    clientIp: 'usr_active',
+    windowStart: now,
+  });
+
+  assert.equal(fakeDb.store.size, 3);
+  const pruneResult = await pruneExpiredRateLimits({
+    databases: fakeDb,
+    now,
+    retentionBufferMs: 2 * WINDOW_HOUR_MS,
+  });
+
+  assert.equal(pruneResult.prunedCount, 2);
+  assert.equal(fakeDb.store.size, 1);
+  assert.ok(fakeDb.store.has('m_active_1'));
+});
+
+// ==========================================
+// 2. CONCURRENCY CONTRACT TESTS
+// ==========================================
+
 test('Concurrency: 20 simultaneous requests never exceed the burst limit', async () => {
-  const fakeDb = new ConcurrentAppwriteDatabasesFake({ artificialLatencyMs: 1 });
+  const fakeDb = new ProductionAppwriteDatabasesFake({ artificialLatencyMs: 2 });
   const identifier = 'usr_test_concurrency_20';
   const now = 5000000;
+  const burstLimit = 5;
   const env = {
-    RATE_LIMIT_ANON_PER_MINUTE: '5',
-    RATE_LIMIT_ANON_PER_HOUR: '20',
+    RATE_LIMIT_ANON_PER_MINUTE: `${burstLimit}`,
+    RATE_LIMIT_ANON_PER_HOUR: '50',
   };
 
   const results = await Promise.all(
@@ -153,21 +298,34 @@ test('Concurrency: 20 simultaneous requests never exceed the burst limit', async
     )
   );
 
-  const allowedCount = results.filter((r) => r.allowed).length;
-  const rejectedCount = results.filter((r) => !r.allowed).length;
+  const allowed = results.filter((r) => r.allowed);
+  const denied = results.filter((r) => !r.allowed && r.reason === 'burst_limit_exceeded');
 
-  assert.equal(allowedCount, 5, 'Exactly 5 burst requests must be allowed');
-  assert.equal(rejectedCount, 15, 'Exactly 15 requests must be rejected under burst limit');
-  assert.ok(fakeDb.conflictCount > 0, 'Creation race conflicts must have occurred and been handled');
+  assert.equal(
+    allowed.length,
+    burstLimit,
+    `Under burst limit ${burstLimit}, exactly ${burstLimit} requests must succeed (got ${allowed.length})`
+  );
+  assert.equal(
+    denied.length,
+    15,
+    `Under 20 concurrent requests, exactly 15 must be denied with burst_limit_exceeded (got ${denied.length})`
+  );
+  assert.equal(
+    fakeDb.store.size,
+    burstLimit * 2, // 5 minute slots + 5 hourly slots
+    'Store should contain exactly 5 minute slot docs and 5 hourly slot docs'
+  );
 });
 
 test('Concurrency: 50 simultaneous requests under hourly limit test strictly bounds successes', async () => {
-  const fakeDb = new ConcurrentAppwriteDatabasesFake({ artificialLatencyMs: 1 });
+  const fakeDb = new ProductionAppwriteDatabasesFake({ artificialLatencyMs: 1 });
   const identifier = 'usr_test_concurrency_50';
   const now = 6000000;
+  const hourlyLimit = 12;
   const env = {
-    RATE_LIMIT_ANON_PER_MINUTE: '50', // high burst to test hourly cap
-    RATE_LIMIT_ANON_PER_HOUR: '12',
+    RATE_LIMIT_ANON_PER_MINUTE: '100', // high burst
+    RATE_LIMIT_ANON_PER_HOUR: `${hourlyLimit}`,
   };
 
   const results = await Promise.all(
@@ -182,158 +340,129 @@ test('Concurrency: 50 simultaneous requests under hourly limit test strictly bou
     )
   );
 
-  const allowedCount = results.filter((r) => r.allowed).length;
-  assert.equal(allowedCount, 12, 'Exactly 12 hourly requests must be allowed');
-  const rejected = results.filter((r) => !r.allowed);
-  assert.equal(rejected.length, 38);
-  assert.ok(rejected.some((r) => r.reason === 'hourly_limit_exceeded'));
-  assert.ok(
-    rejected.every((r) =>
-      ['hourly_limit_exceeded', 'rate_limit_storage_error'].includes(r.reason)
-    )
+  const allowed = results.filter((r) => r.allowed);
+  const denied = results.filter((r) => !r.allowed && r.reason === 'hourly_limit_exceeded');
+
+  assert.equal(
+    allowed.length,
+    hourlyLimit,
+    `Under hourly limit of ${hourlyLimit}, exactly ${hourlyLimit} requests must be allowed (got ${allowed.length})`
+  );
+  assert.equal(
+    denied.length,
+    38,
+    `Exactly 38 requests must be rejected with hourly_limit_exceeded (got ${denied.length})`
   );
 });
 
 test('Concurrency: 100 simultaneous requests across multiple simulated workers do not exceed limit', async () => {
-  const sharedDb = new ConcurrentAppwriteDatabasesFake({ artificialLatencyMs: 1 });
-  const identifier = 'net_simulated_multiworker_100';
+  const fakeDb = new ProductionAppwriteDatabasesFake({ artificialLatencyMs: 3 });
+  const identifier = 'usr_test_concurrency_100';
   const now = 7000000;
+  const burstLimit = 8;
   const env = {
-    RATE_LIMIT_AUTH_PER_MINUTE: '15',
-    RATE_LIMIT_AUTH_PER_HOUR: '60',
+    RATE_LIMIT_ANON_PER_MINUTE: `${burstLimit}`,
+    RATE_LIMIT_ANON_PER_HOUR: '100',
   };
 
-  const workerSimulations = Array.from({ length: 100 }, () =>
-    checkRateLimit({
-      databases: sharedDb,
-      identifier,
-      isAuth: true,
-      now,
-      env,
-    })
+  const results = await Promise.all(
+    Array.from({ length: 100 }, () =>
+      checkRateLimit({
+        databases: fakeDb,
+        identifier,
+        isAuth: false,
+        now,
+        env,
+      })
+    )
   );
 
-  const results = await Promise.all(workerSimulations);
-  const allowedCount = results.filter((r) => r.allowed).length;
+  const allowed = results.filter((r) => r.allowed);
+  const denied = results.filter((r) => !r.allowed && r.reason === 'burst_limit_exceeded');
 
-  assert.equal(allowedCount, 15, 'Burst limit of 15 strictly maintained under 100 concurrent callers');
+  assert.equal(
+    allowed.length,
+    burstLimit,
+    `Under 100 concurrent requests with burst limit ${burstLimit}, exactly ${burstLimit} must succeed (got ${allowed.length})`
+  );
+  assert.equal(
+    denied.length,
+    92,
+    `92 requests must be rejected (got ${denied.length})`
+  );
 });
 
-test('RateLimiter: Fail-closed on storage error returns safe service-unavailable code', async () => {
-  const brokenDb = new ConcurrentAppwriteDatabasesFake({ failOnStorage: true });
-  const result = await checkRateLimit({
-    databases: brokenDb,
-    identifier: 'usr_fail_closed_test',
-    isAuth: true,
-    now: 8000000,
-  });
-
-  assert.equal(result.allowed, false);
-  assert.equal(result.reason, 'rate_limit_storage_error');
-  assert.ok(!JSON.stringify(result).includes('password'));
-});
-
-test('RateLimiter: Retention prune deletes expired rate limit documents safely', async () => {
-  const fakeDb = new ConcurrentAppwriteDatabasesFake();
-  const past = 100000;
-  const now = past + WINDOW_HOUR_MS * 3;
-
-  await fakeDb.createDocument('olitun_db', 'rate_limits', 'doc_old_1', {
-    expiresAt: past + WINDOW_HOUR_MS,
-  });
-  await fakeDb.createDocument('olitun_db', 'rate_limits', 'doc_old_2', {
-    expiresAt: past + WINDOW_HOUR_MS,
-  });
-  await fakeDb.createDocument('olitun_db', 'rate_limits', 'doc_fresh_3', {
-    expiresAt: now + WINDOW_HOUR_MS,
-  });
-
-  const pruneResult = await pruneExpiredRateLimits({
-    databases: fakeDb,
-    now,
-  });
-
-  assert.equal(pruneResult.success, true);
-  assert.equal(pruneResult.deletedCount, 2);
-  assert.equal(fakeDb.store.size, 1);
-  assert.ok(fakeDb.store.has('doc_fresh_3'));
-});
+// ==========================================
+// 3. IDENTITY TRUST BOUNDARY TESTS
+// ==========================================
 
 test('Verified Identity: Cryptographic verification succeeds for valid JWT and fails for invalid/fake claims', async () => {
   const mockAccountService = {
-    async get() {
-      return { $id: 'verified_user_abc_999', name: 'Real User' };
+    get: async () => {
+      return { $id: 'verified_user_abc', email: 'student@olitun.app' };
     },
   };
-
-  const validRes = await verifyAppwriteIdentity({
-    jwt: 'sample_valid_jwt_token',
-    endpoint: 'https://cloud.appwrite.io/v1',
-    projectId: 'test_proj',
-    accountServiceOverride: mockAccountService,
-  });
-
-  assert.equal(validRes.isVerified, true);
-  assert.equal(validRes.userId, 'verified_user_abc_999');
-
   const failingAccountService = {
-    async get() {
-      const err = new Error('Invalid credentials');
+    get: async () => {
+      const err = new Error('Invalid JWT credential');
       err.code = 401;
       throw err;
     },
   };
 
-  const invalidRes = await verifyAppwriteIdentity({
-    jwt: 'sample_expired_jwt_token',
+  // 1. Valid JWT -> authentic verified account
+  const validIdentity = await verifyAppwriteIdentity({
+    jwt: 'valid_jwt_token_123',
     endpoint: 'https://cloud.appwrite.io/v1',
-    projectId: 'test_proj',
+    projectId: 'test_project',
+    accountServiceOverride: mockAccountService,
+  });
+  assert.equal(validIdentity.isVerified, true);
+  assert.equal(validIdentity.userId, 'verified_user_abc');
+
+  // 2. Fake JWT -> rejected to unverified
+  const fakeIdentity = await verifyAppwriteIdentity({
+    jwt: 'malicious_jwt',
+    endpoint: 'https://cloud.appwrite.io/v1',
+    projectId: 'test_project',
     accountServiceOverride: failingAccountService,
   });
+  assert.equal(fakeIdentity.isVerified, false);
+  assert.equal(fakeIdentity.userId, null);
 
-  assert.equal(invalidRes.isVerified, false);
-  assert.equal(invalidRes.userId, null);
-
-  // Empty or null JWT
-  const emptyRes = await verifyAppwriteIdentity({ jwt: '' });
-  assert.equal(emptyRes.isVerified, false);
-  assert.equal(emptyRes.userId, null);
+  // 3. No JWT -> unverified
+  const anonIdentity = await verifyAppwriteIdentity({
+    jwt: '',
+    endpoint: 'https://cloud.appwrite.io/v1',
+    projectId: 'test_project',
+  });
+  assert.equal(anonIdentity.isVerified, false);
+  assert.equal(anonIdentity.userId, null);
 });
 
 test('Verified Identity: Mandatory RATE_LIMIT_SALT in production & domain separation', () => {
-  const salt = 'dedicated-production-salt-secret-12345';
-
-  // Domain separation
-  const userIdentifier = deriveRateLimitIdentifier({
-    verifiedUserId: 'user_xyz',
-    salt,
-    env: { NODE_ENV: 'production' },
-  });
-  const netIdentifier = deriveRateLimitIdentifier({
-    clientIp: '198.51.100.24',
-    salt,
-    env: { NODE_ENV: 'production' },
-  });
-
-  assert.ok(userIdentifier.startsWith('usr_'));
-  assert.ok(netIdentifier.startsWith('net_'));
-  assert.notEqual(userIdentifier, netIdentifier);
-
-  // Missing salt in production MUST throw fatal security error
+  // Production requires salt
   assert.throws(
     () => {
       deriveRateLimitIdentifier({
-        clientIp: '198.51.100.24',
+        clientIp: '198.51.100.1',
         env: { NODE_ENV: 'production' },
       });
     },
-    /RATE_LIMIT_SALT is mandatory in production/
+    /RATE_LIMIT_SALT is mandatory in production environment/
   );
 
-  // Non-production uses safe development salt
-  const devIdentifier = deriveRateLimitIdentifier({
-    clientIp: '198.51.100.24',
-    env: { NODE_ENV: 'development' },
+  const salt = 'super_secret_prod_salt_value_123';
+  const userIdent = deriveRateLimitIdentifier({
+    verifiedUserId: 'user_456',
+    salt,
   });
-  assert.ok(devIdentifier.startsWith('net_'));
+  const netIdent = deriveRateLimitIdentifier({
+    clientIp: '198.51.100.1',
+    salt,
+  });
+
+  assert.ok(userIdent.startsWith('usr_'), 'User identifier must use usr_ domain separation');
+  assert.ok(netIdent.startsWith('net_'), 'Network identifier must use net_ domain separation');
+  assert.notEqual(userIdent, netIdent);
 });

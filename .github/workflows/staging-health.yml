@@ -7,11 +7,19 @@ on:
 
 jobs:
   staging-health:
+    name: Staging Health & Real Appwrite Concurrency
     runs-on: ubuntu-latest
+    timeout-minutes: 15
 
     steps:
-      - name: Checkout
+      - name: Checkout repository
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      - name: Setup Node.js
+        uses: actions/setup-node@ae0d4ed08881f17d1511386f5be3e62356acd4a6 # v4.1.0
+        with:
+          node-version: 22
+          cache: 'npm'
 
       - name: Setup Flutter
         uses: subosito/flutter-action@4cab68ce0f1c7c924f688bff4792e044f1aeb30c # v2.18.0
@@ -20,27 +28,42 @@ jobs:
           cache: true
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          npm ci
+          flutter pub get
 
-      - name: Staging Appwrite Ping
+      - name: Staging Appwrite Smoke Test
         env:
           STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
           STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
         run: |
           if [ -z "$STAGING_APPWRITE_ENDPOINT" ] || [ -z "$STAGING_APPWRITE_PROJECT_ID" ]; then
-            echo "❌ Staging environment secrets STAGING_APPWRITE_ENDPOINT or STAGING_APPWRITE_PROJECT_ID are missing."
+            echo "❌ ERROR: Mandatory staging credentials (STAGING_APPWRITE_ENDPOINT, STAGING_APPWRITE_PROJECT_ID) are missing."
             exit 1
           fi
           flutter test test/integration/appwrite_staging_smoke_test.dart \
             --dart-define=STAGING_APPWRITE_ENDPOINT="$STAGING_APPWRITE_ENDPOINT" \
             --dart-define=STAGING_APPWRITE_PROJECT_ID="$STAGING_APPWRITE_PROJECT_ID"
 
-      - name: Appwrite Schema Drift Detection
+      - name: Real Appwrite Staging Concurrency & Rate Limit Verification
+        env:
+          STAGING_APPWRITE_ENDPOINT: ${{ secrets.STAGING_APPWRITE_ENDPOINT }}
+          STAGING_APPWRITE_PROJECT_ID: ${{ secrets.STAGING_APPWRITE_PROJECT_ID }}
+          STAGING_APPWRITE_API_KEY: ${{ secrets.STAGING_APPWRITE_API_KEY }}
+          CI_STAGING_MANDATORY: "true"
+        run: |
+          if [ -z "$STAGING_APPWRITE_API_KEY" ]; then
+            echo "❌ ERROR: STAGING_APPWRITE_API_KEY secret is required for scheduled staging concurrency verification."
+            exit 1
+          fi
+          node --test functions/translator/test/appwrite_staging_concurrency.test.js
+
+      - name: Appwrite Schema Drift Detection (Optional Staging Audit)
         env:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
-            echo "⚠️ APPWRITE_API_KEY missing; skipping schema drift check."
+            echo "ℹ️ OPTIONAL: APPWRITE_API_KEY not configured; skipping optional schema snapshot comparison."
             exit 0
           fi
           node scripts/snapshot_appwrite_schema.mjs

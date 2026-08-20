@@ -33,6 +33,7 @@ class BannersNotifier
       _cacheKey,
       FeaturedBannerModel.fromJson,
     );
+    if (!mounted) return;
     if (cached != null) {
       state = AsyncValue.data(cached);
     }
@@ -43,6 +44,7 @@ class BannersNotifier
         'banners',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
+      if (!mounted) return;
       final banners = data.map(FeaturedBannerModel.fromJson).toList();
       state = AsyncValue.data(banners);
       await CacheService.set(
@@ -51,6 +53,7 @@ class BannersNotifier
       );
     } catch (e, stack) {
       AppLogger.debug('❌ load banners FAILED: $e');
+      if (!mounted) return;
       if (cached == null) {
         state = AsyncValue.error(e, stack);
       }

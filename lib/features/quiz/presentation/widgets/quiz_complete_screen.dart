@@ -13,12 +13,18 @@ import '../../domain/quiz_scoring_rules.dart';
 import 'mistake_review_card.dart';
 
 bool get _isTesting {
-  if (kIsWeb) return false;
   try {
-    return Platform.environment.containsKey('FLUTTER_TEST');
-  } catch (_) {
-    return false;
+    final binding = WidgetsBinding.instance.runtimeType.toString();
+    if (binding.contains('Test') || binding.contains('Integration')) {
+      return true;
+    }
+  } catch (_) {}
+  if (!kIsWeb) {
+    try {
+      if (Platform.environment.containsKey('FLUTTER_TEST')) return true;
+    } catch (_) {}
   }
+  return false;
 }
 
 class QuizCompleteScreen extends ConsumerWidget {

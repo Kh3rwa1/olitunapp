@@ -51,6 +51,7 @@ class CurrentDateNotifier extends StateNotifier<String> {
 
   Future<void> syncDate() async {
     final serverDate = await fetchServerDate();
+    if (!mounted) return;
     state = serverDate;
   }
 }

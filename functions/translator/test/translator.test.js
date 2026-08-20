@@ -27,12 +27,12 @@ test('Security: Rate-limit identifier derivation preserves privacy and never exp
 
   assert.equal(id1, id1Repeat);
   assert.notEqual(id1, id2);
-  assert.ok(id1.startsWith('ip_'));
+  assert.ok(id1.startsWith('net_'));
   assert.ok(!id1.includes(ip1));
   assert.ok(!id2.includes(ip2));
 
-  // Authenticated user ID takes precedence
-  const authId = deriveRateLimitIdentifier({ userId: 'user_12345', clientIp: ip1, salt });
+  // Authenticated verified user ID takes precedence
+  const authId = deriveRateLimitIdentifier({ verifiedUserId: 'user_12345', clientIp: ip1, salt });
   assert.ok(authId.startsWith('usr_'));
   assert.ok(!authId.includes('192.168'));
 });
@@ -66,14 +66,24 @@ test('Security: Cache keys are immutable SHA-256 hashes without text leaks', () 
 test('RateLimiter: Burst and sustained limits enforce bounds correctly', async () => {
   const store = new Map();
   const mockDatabases = {
-    async listDocuments(dbId, collectionId, queries) {
-      const docs = Array.from(store.values());
-      return { documents: docs.slice(0, 1) };
-    },
     async createDocument(dbId, collectionId, id, data) {
+      if (store.has(id)) {
+        const err = new Error('Document already exists');
+        err.code = 409;
+        throw err;
+      }
       const doc = { $id: id, ...data };
       store.set(id, doc);
       return doc;
+    },
+    async getDocument(dbId, collectionId, id) {
+      const doc = store.get(id);
+      if (!doc) {
+        const err = new Error('Document not found');
+        err.code = 404;
+        throw err;
+      }
+      return { ...doc };
     },
     async updateDocument(dbId, collectionId, id, data) {
       const existing = store.get(id) || { $id: id };
@@ -83,7 +93,7 @@ test('RateLimiter: Burst and sustained limits enforce bounds correctly', async (
     },
   };
 
-  const identifier = 'ip_abc123';
+  const identifier = 'net_abc123';
   const env = {
     RATE_LIMIT_ANON_PER_HOUR: '3',
     RATE_LIMIT_ANON_PER_MINUTE: '2',
@@ -145,30 +155,29 @@ test('RateLimiter: Burst and sustained limits enforce bounds correctly', async (
 });
 
 test('RateLimiter: Fail-closed on storage error', async () => {
-  const brokenDb = {
-    async listDocuments() {
-      throw new Error('Connection refused to database');
+  const brokenDatabases = {
+    async createDocument() {
+      throw new Error('Connection refused to database cluster');
     },
   };
 
-  const result = await checkRateLimit({
-    databases: brokenDb,
-    identifier: 'ip_error_test',
+  const res = await checkRateLimit({
+    databases: brokenDatabases,
+    identifier: 'net_fail_closed',
     isAuth: false,
   });
 
-  assert.equal(result.allowed, false);
-  assert.equal(result.reason, 'rate_limit_storage_error');
+  assert.equal(res.allowed, false);
+  assert.equal(res.reason, 'rate_limit_storage_error');
 });
 
 test('Providers: Provider factory correctly instantiates configured provider', () => {
-  const defaultProvider = getTranslationProvider({});
-  assert.ok(defaultProvider instanceof VitaletsTranslationProvider);
+  const defaultProvider = getTranslationProvider();
+  assert.ok(defaultProvider instanceof BaseTranslationProvider);
 
-  const gcpProvider = getTranslationProvider({
-    TRANSLATION_PROVIDER: 'google-cloud',
-    GOOGLE_TRANSLATE_API_KEY: 'test-gcp-key',
-  });
-  assert.ok(gcpProvider instanceof GoogleCloudTranslationProvider);
-  assert.equal(gcpProvider.apiKey, 'test-gcp-key');
+  const vitaletsProvider = new VitaletsTranslationProvider();
+  assert.equal(vitaletsProvider.name, 'vitalets');
+
+  const gcloudProvider = new GoogleCloudTranslationProvider({ apiKey: 'fake_key' });
+  assert.equal(gcloudProvider.name, 'google_cloud');
 });

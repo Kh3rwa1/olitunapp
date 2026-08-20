@@ -77,12 +77,18 @@ android {
 
             signingConfig = if (releaseSigningConfigured) {
                 signingConfigs.getByName("release")
-            } else {
+            } else if (allowDebugReleaseSigning) {
                 logger.warn(
                     "Release signing config is missing (key.properties not found); " +
-                        "falling back to debug signing for build verification."
+                        "explicit ALLOW_DEBUG_RELEASE_SIGNING enabled for CI build verification."
                 )
                 signingConfigs.getByName("debug")
+            } else {
+                throw GradleException(
+                    "Production release build failed: key.properties is missing or incomplete.\n" +
+                    "Production APK/AAB release builds must be cryptographically signed with release keystore credentials.\n" +
+                    "For CI/local build verification only, pass -PallowDebugReleaseSigning=true or set environment variable ALLOW_DEBUG_RELEASE_SIGNING=true."
+                )
             }
         }
     }

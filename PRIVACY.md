@@ -1,44 +1,56 @@
 # Olitun Privacy Policy
 
-Last updated: May 5, 2026
+**Last updated:** August 20, 2026
 
-Olitun is an educational app for learning Ol Chiki and related Santali learning content. This policy explains the data the app uses to provide account, progress, admin, and translation features.
+Olitun is an educational platform for learning Ol Chiki and Santali language and culture. This privacy policy transparently details how data is handled across our offline-first Flutter application, backend serverless functions, and persistence layers.
 
-## Data We Collect
+---
 
-- Account details needed for sign-in and session management.
-- Learning progress, stars, streaks, preferences (including selected learning goals), and settings.
-- Admin-created content such as lessons, quizzes, rhymes, daily affirmations, banners, and media.
-- Translation request text when the translator feature is used.
-- Technical diagnostics when crash reporting is enabled for production builds.
-- Payment identifiers (Razorpay transaction and order IDs) to verify course/category purchases. No credit card or sensitive financial information is ever processed or stored on Olitun servers.
-- Binti Guru booking/waitlist details (name, phone number, ceremony type, event date, city, and state) for matching users with local recitation experts.
-- App store feedback and review status to authorize course review-unlock benefits. Olitun does not collect or inspect the specific stars or review content (governed by the system-level in-app review API).
+## 1. Data Collection & Purpose
 
-## How We Use Data
+| Data Category | Purpose | Storage Location | Retention / Deletion Policy |
+| :--- | :--- | :--- | :--- |
+| **Account Credentials** | Sign-in, session maintenance, cross-device sync | Appwrite Auth | Purged immediately upon account deletion. |
+| **Learning Progress & Streaks** | Offline lesson tracking, quiz scores, mistake reviews | Local Hive Storage & Appwrite DB | Retained while active; wiped on account deletion or local cache clear. |
+| **Translation Requests** | English-to-Santali & multi-lingual translation | Appwrite Cache (`translation_cache`) | Keyed strictly by SHA-256 hash. Text is retained for 90 days for cache acceleration; never linked to user profiles. |
+| **Rate Limiting Telemetry** | Preventing DDoS & quota exhaustion | Appwrite DB (`rate_limits`) | Cryptographic HMAC hashes only (`usr_<hash>`, `net_<hash>`). Expired windows auto-pruned after 2 hours. |
+| **Payment Records** | Premium content purchases | Razorpay & Appwrite DB | Anonymized (`anonymized_deleted_user`) on account deletion for statutory audit & accounting records. |
+| **Binti Guru Waitlist** | Matching learners with cultural recitation experts | Appwrite DB | Deleted upon request or after booking completion. |
+| **Crash & Diagnostic Logs** | Error tracking and bug resolution | Local Logger & optional Sentry | Sanitized of all PII, tokens, and secrets via `RedactionHelper`. Raw telemetry purged after 90 days. |
 
-We use data to keep the learning experience working across sessions, sync approved educational content, protect admin areas, improve reliability, and respond to account or support requests.
+---
 
-## Data Retention & Account Deletion
+## 2. Translation Privacy & Cryptographic Cache
 
-When you request account deletion from within the Olitun application, your account credentials, preferences, learning progress, mistake history, and personal media uploads are permanently removed. 
+When you use the Olitun AI Translator:
+- Your query is processed over encrypted TLS by our serverless translation backend.
+- Cache entries are indexed using SHA-256 cryptographic hashes (`sha256(JSON.stringify({ from, to, text }))`).
+- Translation text is never associated with your user ID, name, email, or device identifier in analytics or application logs.
 
-For statutory tax, legal, and audit compliance, transaction ledgers (Razorpay order receipts) are retained in an anonymized format stripped of all personal identifiers (`anonymized_deleted_user`).
+---
 
-Detailed raw analytics events are automatically pruned after 90 days, while aggregated anonymous daily rollups are retained for system diagnostics.
+## 3. Rate Limiting Privacy & Network Safety
 
-## Local And Offline Data
+To protect backend translation infrastructure against abuse:
+- Rate limits are tracked using domain-separated HMAC-SHA256 digests (`translator-rate-limit:user:v1:` for verified users; `translator-rate-limit:network:v1:` for anonymous networks).
+- Raw IP addresses and raw user IDs are never stored in the rate limiting database or printed in server logs.
 
-Olitun keeps progress and settings cached locally on your device for offline learning. Logging out or requesting account deletion purges private local cached data.
+---
 
-## Third-Party Services
+## 4. Offline Storage & Local Data Ownership
 
-Olitun uses Appwrite for authentication, database, storage, and server functions. Optional crash reporting may use Sentry when configured. Payment transactions are processed securely via Razorpay.
+Olitun operates offline-first. All lesson progress, quiz attempts, and downloaded media reside locally on your device in secure Hive boxes. You can clear local data at any time from the app Settings or initiate permanent account deletion from your Profile.
 
-## Your Choices
+---
 
-You can reset local progress from settings, initiate complete account deletion directly from the profile settings menu, or contact the project owner for assistance.
+## 5. Account Deletion & Rights
 
-## Contact
+You have the unconditional right to delete your account:
+- Navigating to **Profile > Settings > Delete Account** permanently removes your account, personal data, progress history, and uploaded media.
+- For statutory tax and fiscal reporting compliance, payment receipts retain only anonymized order IDs.
 
-For privacy questions, contact the repository owner through the GitHub project.
+---
+
+## 6. Contact & Support
+
+For privacy inquiries or data removal requests, contact the project maintainers via the GitHub repository: https://github.com/Kh3rwa1/olitunapp

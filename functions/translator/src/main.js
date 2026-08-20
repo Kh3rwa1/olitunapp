@@ -5,6 +5,7 @@ import {
   normalizeLanguage,
   isLanguageSupported,
   deriveRateLimitIdentifier,
+  verifyAppwriteIdentity,
 } from './security.js';
 import { checkRateLimit } from './rate_limiter.js';
 import { getTranslationProvider } from './providers/translation_provider.js';
@@ -56,24 +57,55 @@ export default async ({ req, res, log, error }) => {
   const to = normalizeLanguage(reqTo, 'sat');
 
   const apiKey = process.env.APPWRITE_API_KEY;
-  if (!apiKey) {
-    error(JSON.stringify({ event: 'server_misconfigured', error: 'Missing APPWRITE_API_KEY' }));
+  const endpoint = process.env.APPWRITE_FUNCTION_API_ENDPOINT;
+  const projectId = process.env.APPWRITE_FUNCTION_PROJECT_ID;
+
+  if (!apiKey || !endpoint || !projectId) {
+    error(JSON.stringify({ event: 'server_misconfigured', error: 'Missing Appwrite configuration' }));
     return res.json(err('Translation service unavailable', 'SERVER_MISCONFIGURED'), 500);
   }
 
   const client = new Client()
-    .setEndpoint(process.env.APPWRITE_FUNCTION_API_ENDPOINT)
-    .setProject(process.env.APPWRITE_FUNCTION_PROJECT_ID)
+    .setEndpoint(endpoint)
+    .setProject(projectId)
     .setKey(apiKey);
   const db = new Databases(client);
 
-  // Determine authentication & privacy-preserving rate limit identifier
-  const authUserId = req.headers['x-appwrite-user-id'] || body?.userId || null;
-  const clientIp = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.headers['x-real-ip'] || '127.0.0.1';
-  const isAuth = Boolean(authUserId && typeof authUserId === 'string' && authUserId.trim().length > 0);
-  const rateLimitIdentifier = deriveRateLimitIdentifier({ userId: authUserId, clientIp });
+  // ---- Cryptographic Identity Verification (Zero-Trust Caller Headers) ----
+  const authHeader = req.headers['authorization'] || '';
+  const bearerJwt = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : null;
+  const rawJwt = req.headers['x-appwrite-jwt'] || bearerJwt;
 
-  // ---- Rate Limit Check (Fail-closed) ----
+  let verifiedUserId = null;
+  if (rawJwt) {
+    const authVerification = await verifyAppwriteIdentity({
+      jwt: rawJwt,
+      endpoint,
+      projectId,
+    });
+    if (authVerification.isVerified && authVerification.userId) {
+      verifiedUserId = authVerification.userId;
+    }
+  }
+
+  const isAuth = Boolean(verifiedUserId);
+  const clientIp =
+    req.headers['x-forwarded-for']?.split(',')[0]?.trim() ||
+    req.headers['x-real-ip'] ||
+    '127.0.0.1';
+
+  let rateLimitIdentifier;
+  try {
+    rateLimitIdentifier = deriveRateLimitIdentifier({
+      verifiedUserId,
+      clientIp,
+    });
+  } catch (saltErr) {
+    error(JSON.stringify({ event: 'security_misconfiguration', error: saltErr?.message }));
+    return res.json(err('Security configuration error', 'SERVER_MISCONFIGURED'), 500);
+  }
+
+  // ---- Atomic Rate Limit Check (Fail-Closed) ----
   const rlResult = await checkRateLimit({
     databases: db,
     dbId: DB_ID,
@@ -86,7 +118,6 @@ export default async ({ req, res, log, error }) => {
   if (!rlResult.allowed) {
     log(JSON.stringify({
       event: 'rate_limited',
-      identifier: rateLimitIdentifier,
       reason: rlResult.reason,
       isAuth,
       durationMs: Date.now() - startTime,
@@ -111,7 +142,6 @@ export default async ({ req, res, log, error }) => {
       const c = cached.documents[0];
       log(JSON.stringify({
         event: 'cache_hit',
-        cacheKey,
         from: c.from,
         to: c.to,
         durationMs: Date.now() - startTime,
@@ -124,7 +154,7 @@ export default async ({ req, res, log, error }) => {
       }));
     }
   } catch (cacheErr) {
-    log(JSON.stringify({ event: 'cache_lookup_failed', error: cacheErr.message }));
+    log(JSON.stringify({ event: 'cache_lookup_failed', error: cacheErr?.message }));
   }
 
   // ---- Upstream Translation Provider Call ----
@@ -142,7 +172,7 @@ export default async ({ req, res, log, error }) => {
       translatedText,
       createdAt: Date.now(),
     }).catch((saveErr) => {
-      log(JSON.stringify({ event: 'cache_save_failed', error: saveErr.message }));
+      log(JSON.stringify({ event: 'cache_save_failed', error: saveErr?.message }));
     });
 
     log(JSON.stringify({
@@ -162,10 +192,10 @@ export default async ({ req, res, log, error }) => {
   } catch (upstreamErr) {
     error(JSON.stringify({
       event: 'upstream_translation_failed',
-      error: upstreamErr.message,
+      error: upstreamErr?.message,
       durationMs: Date.now() - startTime,
     }));
-    if (upstreamErr.message && (upstreamErr.message.includes('timeout') || upstreamErr.name === 'AbortError')) {
+    if (upstreamErr?.message && (upstreamErr.message.includes('timeout') || upstreamErr.name === 'AbortError')) {
       return res.json(err('Upstream translation service timed out. Please try again.', 'UPSTREAM_TIMEOUT'), 504);
     }
     return res.json(err('Translation service failed. Please try again later.', 'UPSTREAM_ERROR'), 502);

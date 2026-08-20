@@ -17,16 +17,16 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Setup Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@7a6d8a8234af8eb26422e80e300923347d3ad828 # v5.0.0
         with:
           distribution: 'zulu'
           java-version: '17'
 
       - name: Setup Flutter
-        uses: subosito/flutter-action@v2
+        uses: subosito/flutter-action@f2c4f66bbfa70cfd38e4523047a0d450854fb321 # v2.18.0
         with:
           channel: stable
           cache: true
@@ -70,7 +70,7 @@ jobs:
             --dart-define=TRANSLATE_URL="$TRANSLATE_URL"
 
       - name: Upload APK
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@b4b15b8c7c6ac21ea08fcf65832a22e0940fb922 # v4.4.3
         with:
           name: olitun-release-apk
           path: build/app/outputs/flutter-apk/app-release.apk

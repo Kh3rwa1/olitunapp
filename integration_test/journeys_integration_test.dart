@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:itun/features/auth/presentation/welcome_screen.dart';
 import 'package:itun/features/auth/presentation/email_auth_screen.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
@@ -13,6 +14,12 @@ import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
   group('Full Application User Journeys Integration Suite', () {
+    setUpAll(() async {
+      try {
+        await Hive.initFlutter();
+      } catch (_) {}
+    });
+
     setUp(() async {
       SharedPreferences.setMockInitialValues({
         'user_name': 'Explorer',

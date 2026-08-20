@@ -164,8 +164,13 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
           _updateSyncStateFromPrefs();
         });
         Future.delayed(const Duration(seconds: 3), () {
-          if (ref.read(syncStatusProvider) == SyncStatus.success) {
-            ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
+          if (!mounted) return;
+          try {
+            if (ref.read(syncStatusProvider) == SyncStatus.success) {
+              ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
+            }
+          } catch (_) {
+            // Container disposed during delay
           }
         });
       },
@@ -174,10 +179,13 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   void _updateSyncStateFromPrefs() {
     final ref = _ref;
-    if (ref == null) return;
-    final isSynced =
-        ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ?? true;
-    ref.read(isStatsSyncedProvider.notifier).state = isSynced;
+    if (ref == null || !mounted) return;
+    try {
+      final isSynced =
+          ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ??
+          true;
+      ref.read(isStatsSyncedProvider.notifier).state = isSynced;
+    } catch (_) {}
   }
 
   Future<void> loadStats() async {

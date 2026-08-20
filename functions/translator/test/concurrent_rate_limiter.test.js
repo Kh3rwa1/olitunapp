@@ -466,3 +466,91 @@ test('Verified Identity: Mandatory RATE_LIMIT_SALT in production & domain separa
   assert.ok(netIdent.startsWith('net_'), 'Network identifier must use net_ domain separation');
   assert.notEqual(userIdent, netIdent);
 });
+
+// ==========================================
+// 4. HARDENED ATOMIC SLOT BEHAVIOR TESTS
+// ==========================================
+
+test('Rollback: When minute limit succeeds but hourly limit fails, minute slot is rolled back', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const identifier = 'usr_rollback_test';
+  const now = 8000000;
+
+  // Set hourly limit to 0 / already exhausted by creating all hourly slots
+  const hourIndex = Math.floor(now / WINDOW_HOUR_MS);
+  for (let s = 1; s <= 2; s++) {
+    const docId = generateSlotDocId('h', identifier, hourIndex, s);
+    await fakeDb.createDocument('olitun_db', 'rate_limits', docId, { count: s });
+  }
+
+  const res = await checkRateLimit({
+    databases: fakeDb,
+    identifier,
+    isAuth: false,
+    now,
+    env: {
+      RATE_LIMIT_ANON_PER_MINUTE: '5',
+      RATE_LIMIT_ANON_PER_HOUR: '2', // exhausted
+    },
+  });
+
+  assert.equal(res.allowed, false);
+  assert.equal(res.reason, 'hourly_limit_exceeded');
+
+  // Verify that the minute slot was deleted during rollback
+  const minIndex = Math.floor(now / WINDOW_MINUTE_MS);
+  const minSlotDocId = generateSlotDocId('m', identifier, minIndex, 1);
+  assert.equal(fakeDb.store.has(minSlotDocId), false, 'Minute slot must be deleted after hourly limit failure');
+});
+
+test('Fail-Closed: Non-duplicate 409 or unknown error fails closed immediately without probing next slot', async () => {
+  const customDb = {
+    createAttempts: 0,
+    async createDocument() {
+      this.createAttempts++;
+      const generic409 = new Error('Relationship constraint violation');
+      generic409.code = 409;
+      generic409.type = 'relationship_conflict';
+      throw generic409;
+    },
+  };
+
+  const res = await enforceWindowRateLimit({
+    databases: customDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_non_dup_409',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit: 5,
+    now: 10000,
+  });
+
+  assert.equal(res.allowed, false);
+  assert.equal(res.reason, 'rate_limit_storage_error');
+  assert.equal(customDb.createAttempts, 1, 'Must NOT continue probing next slots on non-duplicate error');
+});
+
+test('Fail-Closed: Limit exceeding MAX_ALLOWED_LIMIT fails closed', async () => {
+  const fakeDb = new ProductionAppwriteDatabasesFake();
+  const res = await enforceWindowRateLimit({
+    databases: fakeDb,
+    dbId: 'olitun_db',
+    collectionId: 'rate_limits',
+    identifier: 'usr_excessive_limit',
+    windowType: 'm',
+    windowMs: WINDOW_MINUTE_MS,
+    limit: 1000, // exceeds MAX_ALLOWED_LIMIT (500)
+    now: 10000,
+  });
+
+  assert.equal(res.allowed, false);
+  assert.equal(res.reason, 'rate_limit_storage_error');
+});
+
+test('SDK Version Integrity: Installed node-appwrite version matches expected release SDK', async () => {
+  const { readFileSync } = await import('node:fs');
+  const pkgUrl = new URL('../node_modules/node-appwrite/package.json', import.meta.url);
+  const pkg = JSON.parse(readFileSync(pkgUrl, 'utf8'));
+  assert.equal(pkg.version, '25.1.0', 'node-appwrite SDK must be exactly 25.1.0');
+});

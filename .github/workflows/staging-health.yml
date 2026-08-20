@@ -30,6 +30,7 @@ jobs:
       - name: Install dependencies
         run: |
           npm ci
+          npm ci --prefix functions/translator
           flutter pub get
 
       - name: Staging Appwrite Smoke Test

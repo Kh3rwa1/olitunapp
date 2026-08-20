@@ -1,7 +1,12 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
 import { Client, Databases } from 'node-appwrite';
-import { checkRateLimit, pruneExpiredRateLimits } from '../src/rate_limiter.js';
+import {
+  checkRateLimit,
+  generateSlotDocId,
+  WINDOW_MINUTE_MS,
+  WINDOW_HOUR_MS,
+} from '../src/rate_limiter.js';
 
 const STAGING_ENDPOINT = process.env.STAGING_APPWRITE_ENDPOINT;
 const STAGING_PROJECT_ID = process.env.STAGING_APPWRITE_PROJECT_ID;
@@ -56,11 +61,16 @@ test('Staging Integration: Real Appwrite parallel concurrency execution', async 
     );
     assert.equal(denied.length, 6, 'Real Appwrite must reject 6 excess requests with burst_limit_exceeded');
   } finally {
-    // Cleanup test records
-    await pruneExpiredRateLimits({
-      databases,
-      now: now + 3 * 3600 * 1000,
-      retentionBufferMs: 0,
-    });
+    // Isolated cleanup: delete only the exact slot documents reserved by this test run
+    const minIndex = Math.floor(now / WINDOW_MINUTE_MS);
+    const hourIndex = Math.floor(now / WINDOW_HOUR_MS);
+    for (let slot = 1; slot <= burstLimit; slot++) {
+      const minDocId = generateSlotDocId('m', identifier, minIndex, slot);
+      const hourDocId = generateSlotDocId('h', identifier, hourIndex, slot);
+      await Promise.allSettled([
+        databases.deleteDocument('olitun_db', 'rate_limits', minDocId),
+        databases.deleteDocument('olitun_db', 'rate_limits', hourDocId),
+      ]);
+    }
   }
 });

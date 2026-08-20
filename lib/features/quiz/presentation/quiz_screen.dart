@@ -58,6 +58,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           if (quiz.questions.isEmpty) return;
           _started = true;
           WidgetsBinding.instance.addPostFrameCallback((_) {
+            if (!mounted) return;
             ref
                 .read(quizSessionNotifierProvider(widget.quizId).notifier)
                 .startQuiz(quiz);

@@ -101,8 +101,7 @@ void main() {
 
     // Tap Continue
     await tester.tap(find.text('Continue'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 600));
+    await tester.pumpAndSettle();
 
     // Verify completion screen (using score and total)
     expect(find.byType(QuizCompleteScreen), findsOneWidget);

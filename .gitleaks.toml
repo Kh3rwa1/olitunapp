@@ -6,29 +6,28 @@
 # Use the default gitleaks config as a base
 useDefault = true
 
-[allowlist]
-description = "Known historical false positives — already cleaned from current codebase"
+[[rules]]
+id = "appwrite-session-secret"
+description = "Appwrite Session Secret or Cookie"
+regex = '''(?i)(appwrite[_-]?session[_-]?secret\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{16,}['"]?|a_session_[a-z0-9_-]+\s*[:=]\s*['"]?[a-zA-Z0-9_\-\.]{16,}['"]?|a_session_[a-z0-9_-]+\t+[a-zA-Z0-9_\-\.]{16,})'''
+keywords = ["appwrite_session_secret", "a_session_"]
 
-# The Stack Auth publishable key (pck_*) is a CLIENT-SIDE key intentionally
-# designed to be public, similar to a Stripe publishable key. It does not
-# grant any privileged server-side access.
+[allowlist]
+description = "Known non-secret token prefixes and build output paths"
+paths = [
+  '''^\.dart_tool/''',
+  '''^build/''',
+  '''^node_modules/''',
+  '''\.dill$''',
+  '''\.flat$''',
+  '''^test/''',
+  '''^functions/test/''',
+  '''^functions/translator/test/''',
+  '''^scripts/test_gitleaks_rules\.mjs$''',
+  '''cookies\.txt$''',
+]
 regexes = [
   "pck_[a-z0-9]+",
   "idempotency_[a-z0-9_]+",
   "idem_[a-z0-9_]+",
 ]
-
-paths = [
-  '''functions/test/.*''',
-  '''test/.*''',
-  '''scripts/.*''',
-]
-
-# Suppress findings in old commits that have already been cleaned up.
-# These files no longer exist in the current codebase.
-commits = [
-  "bc526f6835dae5047565adb9b1c1dbf8b9a6e50b",
-  "e0fe05d091eed72eda3f35d45746452b19f45442",
-  "6bdde56ea8a4c5fcc576c49710a13f05c8f6c875",
-]
-

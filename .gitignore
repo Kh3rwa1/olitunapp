@@ -47,6 +47,9 @@ app.*.map.json
 
 # Security
 .env
+cookies.txt
+*.cookies
+*cookie*.txt
 node_modules/
 scripts/node_modules/
 functions/*/node_modules/

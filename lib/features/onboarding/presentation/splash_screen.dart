@@ -1,14 +1,10 @@
-import 'package:itun/core/logging/app_logger.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:go_router/go_router.dart';
-import '../../../core/theme/app_colors.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../onboarding/providers/onboarding_provider.dart';
-import '../../auth/presentation/providers/auth_providers.dart';
-import '../../../core/auth/appwrite_auth_service.dart';
-import '../../../core/utils/oauth_sanitizer.dart';
+import 'package:go_router/go_router.dart';
+import 'package:itun/core/logging/app_logger.dart';
+import '../../../core/theme/app_colors.dart';
+import 'controllers/splash_controller.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({super.key});
@@ -27,98 +23,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
   }
 
   Future<void> _navigateToNext() async {
-    AppLogger.debug('Splash: starting _navigateToNext');
-    String? targetLocation;
-
-    try {
-      // 1. Check for OAuth token in URL params (after Google sign-in redirect on web)
-      if (kIsWeb) {
-        final uri = Uri.base;
-        var userId =
-            uri.queryParameters['userId'] ?? uri.queryParameters['key'];
-        var secret = uri.queryParameters['secret'];
-
-        if (userId == null || secret == null) {
-          try {
-            final routerState = GoRouterState.of(context);
-            userId ??=
-                routerState.uri.queryParameters['userId'] ??
-                routerState.uri.queryParameters['key'];
-            secret ??= routerState.uri.queryParameters['secret'];
-          } catch (e) {
-            AppLogger.debug('Splash: Could not read GoRouter state: $e');
-          }
-        }
-
-        if (userId != null && secret != null) {
-          // Immediately scrub secret and token from browser location history BEFORE starting async network call
-          OAuthSanitizer.sanitizeUrlHistory();
-
-          AppLogger.debug(
-            'Splash: Found OAuth token, exchanging for session...',
-          );
-          final authService = ref.read(appwriteAuthServiceProvider);
-          final success = await authService.exchangeOAuthToken(userId, secret);
-
-          if (success) {
-            AppLogger.debug(
-              'Splash: OAuth token exchange succeeded, navigating to /',
-            );
-            ref.read(onboardingProvider.notifier).completeOnboarding();
-            ref.invalidate(isAuthenticatedProvider);
-            targetLocation = '/';
-          } else {
-            AppLogger.debug('Splash: OAuth token exchange failed');
-          }
-        }
-      }
-
-      if (targetLocation == null) {
-        // 2. Check authentication before onboarding
-        AppLogger.debug('Splash: checking auth status...');
-        final authRepo = ref.read(authRepositoryProvider);
-        bool isLoggedIn = false;
-        try {
-          final isLoggedInResult = await authRepo.isLoggedIn().timeout(
-            const Duration(seconds: 4),
-          );
-          isLoggedIn = isLoggedInResult.getOrElse((_) => false);
-        } catch (_) {
-          AppLogger.debug(
-            'Splash: auth check timed out, treating as logged out',
-          );
-        }
-        AppLogger.debug('Splash: isLoggedIn = $isLoggedIn');
-
-        if (isLoggedIn) {
-          ref.read(onboardingProvider.notifier).completeOnboarding();
-          targetLocation = '/';
-        } else {
-          // 3. Desktop/web wide screens skip onboarding entirely
-          if (!mounted) return;
-          final isDesktopWeb = kIsWeb && MediaQuery.sizeOf(context).width > 900;
-          AppLogger.debug('Splash: isDesktopWeb = $isDesktopWeb');
-
-          final showOnboarding = ref.read(onboardingProvider);
-          AppLogger.debug('Splash: showOnboarding = $showOnboarding');
-          if (showOnboarding && !isDesktopWeb) {
-            targetLocation = '/welcome';
-          } else if (showOnboarding && isDesktopWeb) {
-            AppLogger.debug('Splash: marking onboarding complete for desktop');
-            ref.read(onboardingProvider.notifier).completeOnboarding();
-            targetLocation = '/welcome';
-          } else {
-            targetLocation = '/';
-          }
-        }
-      }
-    } catch (e) {
-      AppLogger.debug('Splash error during check: $e');
-    }
-
-    if (mounted) {
-      context.go(targetLocation ?? '/welcome');
-    }
+    final targetLocation = await SplashController.determineInitialLocation(
+      context,
+      ref,
+    );
+    if (!mounted || targetLocation == null) return;
+    AppLogger.debug('Splash: Navigating to $targetLocation');
+    context.go(targetLocation);
   }
 
   @override

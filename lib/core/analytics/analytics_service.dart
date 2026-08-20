@@ -196,12 +196,27 @@ class LearningAnalyticsService {
     await _prefs.setString(_pendingKey, jsonEncode(events));
   }
 
+  static const _sessionLastActivityKey =
+      'learning_analytics_session_last_activity_ts';
+  static const Duration _sessionInactivityTimeout = Duration(minutes: 30);
+
   String _sessionId() {
-    final existing = _prefs.getString(_sessionKey);
-    if (existing != null && existing.isNotEmpty) return existing;
-    final created = _safeId(_idFactory());
-    _prefs.setString(_sessionKey, created);
-    return created;
+    final nowMs = _now().millisecondsSinceEpoch;
+    final existingSession = _prefs.getString(_sessionKey);
+    final lastActivityMs = _prefs.getInt(_sessionLastActivityKey) ?? 0;
+
+    final isExpired =
+        (nowMs - lastActivityMs) > _sessionInactivityTimeout.inMilliseconds;
+
+    if (existingSession != null && existingSession.isNotEmpty && !isExpired) {
+      _prefs.setInt(_sessionLastActivityKey, nowMs);
+      return existingSession;
+    }
+
+    final newSessionId = _safeId(_idFactory());
+    _prefs.setString(_sessionKey, newSessionId);
+    _prefs.setInt(_sessionLastActivityKey, nowMs);
+    return newSessionId;
   }
 
   Future<String?> _safeUserId() async {

@@ -18,15 +18,15 @@ export 'account_deletion_handler.dart';
 export 'oauth_helpers.dart';
 export 'admin_functions_client.dart';
 export 'session_validator.dart';
+export 'session_persistence.dart';
 
 import 'account_deletion_handler.dart';
 import 'oauth_helpers.dart';
 import 'admin_functions_client.dart';
 import 'session_validator.dart';
+import 'session_persistence.dart';
 
 class AppwriteAuthService {
-  static const String _webSessionSecretKey = 'olitun_appwrite_session_secret';
-  static const String _webSessionTimestampKey = 'olitun_web_session_ts';
   static const String _hasLocalSessionKey = 'olitun_has_local_session';
 
   // Singleton pattern — one SDK Client shared across the app
@@ -196,98 +196,48 @@ class AppwriteAuthService {
   }
 
   Future<void> _persistWebSession(String secret) async {
-    if (secret.isEmpty) {
-      await _clearLocalSessionState();
-      throw AppwriteException('Cannot persist empty session secret.');
-    }
-    _client.setSession(secret);
-    try {
-      final prefs = await _getPrefs();
-      await prefs.setString(_webSessionSecretKey, secret);
-      await prefs.setInt(
-        _webSessionTimestampKey,
-        (_nowProvider?.call() ?? DateTime.now()).millisecondsSinceEpoch,
-      );
-      await prefs.setBool(_hasLocalSessionKey, true);
-    } catch (e) {
-      await _clearLocalSessionState();
-      throw AppwriteException(
-        'Failed to persist web session: ${RedactionHelper.sanitize(e.toString())}',
-      );
-    }
+    final prefs = await _getPrefs();
+    await SessionPersistence.persistWebSession(
+      client: _client,
+      prefs: prefs,
+      secret: secret,
+      nowProvider: _nowProvider,
+    );
   }
 
   Future<void> _restoreWebSession() async {
-    if (!_isWeb) return;
     final prefs = await _getPrefs();
-    final secret = prefs.getString(_webSessionSecretKey);
-    final ts = prefs.getInt(_webSessionTimestampKey);
-
-    if (secret == null ||
-        secret.isEmpty ||
-        ts == null ||
-        !_isWebSessionValid(ts)) {
-      AppLogger.debug(
-        'Appwrite: Web session secret or timestamp invalid; failing closed and clearing',
-      );
-      await _clearLocalSessionState();
-      return;
-    }
-    _client.setSession(secret);
+    await SessionPersistence.restoreWebSession(
+      client: _client,
+      prefs: prefs,
+      isWeb: _isWeb,
+      nowProvider: _nowProvider,
+    );
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
     if (!_isWeb) return;
     _client.setSession('');
-    final secret = prefs.getString(_webSessionSecretKey);
-    final ts = prefs.getInt(_webSessionTimestampKey);
+    final ts = prefs.getInt(SessionPersistence.webSessionTimestampKey);
+    final hasSession =
+        prefs.getBool(SessionPersistence.hasLocalSessionKey) ?? false;
 
-    if (secret == null ||
-        secret.isEmpty ||
-        ts == null ||
-        !_isWebSessionValid(ts)) {
+    if (!hasSession || ts == null || !_isWebSessionValid(ts)) {
       AppLogger.debug(
-        'Appwrite: Web session secret or timestamp invalid in sync restore; failing closed and clearing',
+        'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
       );
       unawaited(_clearLocalSessionState());
       return;
     }
-    _client.setSession(secret);
-    AppLogger.debug('Appwrite: Web session restored synchronously ✅');
+    AppLogger.debug('Appwrite: Web session validated synchronously ✅');
   }
 
   Future<void> _clearLocalSessionState() async {
-    _client.setSession('');
-    try {
-      final prefs = await _getPrefs();
-      try {
-        await prefs.setBool(_hasLocalSessionKey, false);
-      } catch (e) {
-        AppLogger.debug(
-          'Appwrite: Failed to clear local session flag: ${RedactionHelper.sanitize(e.toString())}',
-        );
-      }
-      try {
-        await prefs.remove(_webSessionSecretKey);
-      } catch (e) {
-        AppLogger.debug(
-          'Appwrite: Failed to remove session secret: ${RedactionHelper.sanitize(e.toString())}',
-        );
-      }
-      try {
-        await prefs.remove(_webSessionTimestampKey);
-      } catch (e) {
-        AppLogger.debug(
-          'Appwrite: Failed to remove session timestamp: ${RedactionHelper.sanitize(e.toString())}',
-        );
-      }
-    } catch (e) {
-      AppLogger.debug(
-        'Appwrite: Preference storage error: ${RedactionHelper.sanitize(e.toString())}',
-      );
-    } finally {
-      _client.setSession('');
-    }
+    final prefs = await _getPrefs();
+    await SessionPersistence.clearLocalSessionState(
+      client: _client,
+      prefs: prefs,
+    );
   }
 
   // ─── Session Management ───

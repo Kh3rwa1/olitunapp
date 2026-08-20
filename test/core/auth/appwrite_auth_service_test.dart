@@ -493,7 +493,6 @@ void main() {
           .subtract(const Duration(hours: 2))
           .millisecondsSinceEpoch;
       SharedPreferences.setMockInitialValues({
-        'olitun_appwrite_session_secret': 'valid_secret',
         'olitun_web_session_ts': validMs,
         'olitun_has_local_session': true,
       });
@@ -513,7 +512,7 @@ void main() {
 
       final loggedIn = await service.isLoggedIn();
       expect(loggedIn, isTrue);
-      verify(() => mockClient.setSession('valid_secret')).called(1);
+      verifyNever(() => mockClient.setSession('valid_secret'));
     });
 
     test(
@@ -523,7 +522,7 @@ void main() {
             .subtract(const Duration(hours: 1))
             .millisecondsSinceEpoch;
         SharedPreferences.setMockInitialValues({
-          'olitun_appwrite_session_secret': 'sync_secret',
+          'olitun_has_local_session': true,
           'olitun_web_session_ts': validMs,
         });
 
@@ -536,7 +535,7 @@ void main() {
         );
 
         service.restoreWebSessionSync(prefs);
-        verify(() => mockClient.setSession('sync_secret')).called(1);
+        expect(prefs.getBool('olitun_has_local_session'), isTrue);
       },
     );
 

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:integration_test/integration_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/features/auth/presentation/welcome_screen.dart';
@@ -8,7 +7,7 @@ import 'package:itun/features/auth/presentation/email_auth_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 void main() {
-  IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+  WidgetsFlutterBinding.ensureInitialized();
 
   testWidgets('Auth flow: Welcome screen to Email Auth screen', (tester) async {
     final router = GoRouter(

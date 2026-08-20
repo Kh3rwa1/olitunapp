@@ -63,6 +63,7 @@ class PurchaseRepository {
     final userCacheKey = _getCacheKey(userId);
 
     // Attempt cache first for optimistic UI rendering
+    final meta = await CacheService.getMeta(userCacheKey);
     final cached = await CacheService.get(
       userCacheKey,
       (json) => Set<String>.from(json['ids'] as List),
@@ -72,9 +73,12 @@ class PurchaseRepository {
       if (!skipRevalidate) {
         _triggerRevalidation(userId, userCacheKey, cached);
       }
+      final isStale = meta?.isExpired ?? false;
       return EntitlementResult(
         categoryIds: cached,
-        status: EntitlementStatus.cached,
+        status: isStale
+            ? EntitlementStatus.staleCached
+            : EntitlementStatus.cached,
         isFromCache: true,
       );
     }
@@ -131,7 +135,7 @@ class PurchaseRepository {
       AppLogger.debug('❌ fetchPurchasedCategoryIds failed: $e');
 
       // Attempt to recover stale cache entry if server request fails
-      final staleCache = await CacheService.get(
+      final staleCache = await CacheService.getIgnoringTtl(
         userCacheKey,
         (json) => Set<String>.from(json['ids'] as List),
       );

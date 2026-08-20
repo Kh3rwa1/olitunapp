@@ -90,6 +90,9 @@ jobs:
       - name: Format check
         run: dart format --set-exit-if-changed .
 
+      - name: Verify Version Consistency
+        run: dart run tool/verify_version_consistency.dart
+
       - name: Static analysis
         run: flutter analyze --fatal-infos
 

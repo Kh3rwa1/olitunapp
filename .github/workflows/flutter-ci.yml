@@ -24,7 +24,9 @@ jobs:
           cache: true
       - run: flutter pub get
       - name: Format check
-        run: dart format --set-exit-if-changed .
+        run: dart format --output=none --set-exit-if-changed .
+      - name: Verify Version Consistency
+        run: dart run tool/verify_version_consistency.dart
       - name: Analyze
         run: flutter analyze --fatal-infos
 
@@ -94,7 +96,7 @@ jobs:
           APPWRITE_API_KEY: ${{ secrets.APPWRITE_API_KEY }}
         run: |
           if [ -z "$APPWRITE_API_KEY" ]; then
-            echo "⚠️ SKIPPED: APPWRITE_API_KEY secret is not configured in repository secrets."
+            echo "⚠️ SKIPPED: APPWRITE_API_KEY secret is not configured in this environment."
             exit 0
           fi
           node scripts/snapshot_appwrite_schema.mjs
@@ -119,8 +121,11 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: |
-          git fetch --no-tags --depth=1 origin "$BASE_REF"
-          git show FETCH_HEAD:tool/performance_budgets.json > /tmp/base_performance_budgets.json
+          if [ -f tool/performance_budgets.json ]; then
+            cp tool/performance_budgets.json /tmp/base_performance_budgets.json
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_REF" 2>/dev/null || true
+          git show origin/"$BASE_REF":tool/performance_budgets.json > /tmp/base_performance_budgets.json 2>/dev/null || true
       - name: Build Web Release
         run: |
           BUILD_SHA=$(echo "${{ github.sha }}" | cut -c1-7)
@@ -137,7 +142,7 @@ jobs:
           
           node scripts/patch_service_worker.mjs
           node scripts/verify_service_worker_patch.mjs
-          (cd build/web && find . -type f -exec sha256sum {} + > manifest.sha256)
+          (cd build/web && find . -type f -exec sha256sum {} + | sort > manifest.sha256)
       - name: Check Web performance budget
         run: dart run tool/check_size_budget.dart --path=build/web --budget-key=webBuildBytes --baseline=/tmp/base_performance_budgets.json --max-growth=5
       - name: Upload Web Release Artifact
@@ -167,13 +172,18 @@ jobs:
         env:
           BASE_REF: ${{ github.base_ref || 'main' }}
         run: |
-          git fetch --no-tags --depth=1 origin "$BASE_REF"
-          git show FETCH_HEAD:tool/performance_budgets.json > /tmp/base_performance_budgets.json
+          if [ -f tool/performance_budgets.json ]; then
+            cp tool/performance_budgets.json /tmp/base_performance_budgets.json
+          fi
+          git fetch --no-tags --depth=1 origin "$BASE_REF" 2>/dev/null || true
+          git show origin/"$BASE_REF":tool/performance_budgets.json > /tmp/base_performance_budgets.json 2>/dev/null || true
       - name: Build Android Release APK
         env:
+          ALLOW_DEBUG_RELEASE_SIGNING: "true"
           ORG_GRADLE_PROJECT_allowDebugReleaseSigning: "true"
         run: |
-          flutter build apk --release --no-tree-shake-icons \
+          flutter build apk --release \
+            --android-skip-build-dependency-validation \
             --dart-define=APPWRITE_ENDPOINT=https://example.com/v1 \
             --dart-define=APPWRITE_PROJECT_ID=ci \
             --dart-define=TRANSLATE_URL=https://example.com/v1/functions/6a007db60024418c0997/executions

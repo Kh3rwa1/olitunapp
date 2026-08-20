@@ -12,6 +12,7 @@ import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
 
 import 'package:itun/features/quiz/presentation/widgets/quiz_option_tile.dart';
+import 'package:itun/features/quiz/presentation/widgets/quiz_question_card.dart';
 
 void main() {
   testWidgets('Quiz flow: Load quiz, answer questions, see completion', (
@@ -86,8 +87,22 @@ void main() {
     // Verify option tiles are present
     expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
-    // Tap correct option for Q1 (index 0)
-    await tester.tap(find.byType(QuizOptionTile).at(0));
+    // Determine currently displayed prompt for Q1
+    final promptO = find.descendant(
+      of: find.byType(QuizQuestionCard),
+      matching: find.text('O'),
+    );
+    final isFirstQO = promptO.evaluate().isNotEmpty;
+    final targetFirst = isFirstQO ? 'O' : 'T';
+    final targetSecond = isFirstQO ? 'T' : 'O';
+
+    // Tap matching option in QuizOptionTile
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QuizOptionTile),
+        matching: find.text(targetFirst),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Tap Continue
@@ -97,8 +112,13 @@ void main() {
     // Verify option tiles are present for Q2
     expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
-    // Tap correct option for Q2 (index 1)
-    await tester.tap(find.byType(QuizOptionTile).at(1));
+    // Tap matching option in QuizOptionTile for Q2
+    await tester.tap(
+      find.descendant(
+        of: find.byType(QuizOptionTile),
+        matching: find.text(targetSecond),
+      ),
+    );
     await tester.pumpAndSettle();
 
     // Tap Continue

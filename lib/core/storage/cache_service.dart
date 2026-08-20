@@ -7,30 +7,40 @@ import 'package:hive/hive.dart';
 /// Bump this when the serialisation format of cached models changes.
 const int cacheSchemaVersion = 4;
 
-/// Envelope that wraps every cached value with TTL and schema metadata.
+/// Envelope that wraps every cached value with TTL, sync, and schema metadata.
 class CacheEntry {
   final dynamic data;
   final int schemaVersion;
   final int createdAtMs;
+  final int lastSyncAtMs;
+  final int? contentVersion;
   final int? ttlMs;
 
   CacheEntry({
     required this.data,
     required this.schemaVersion,
     required this.createdAtMs,
+    int? lastSyncAtMs,
+    this.contentVersion,
     this.ttlMs,
-  });
+  }) : lastSyncAtMs = lastSyncAtMs ?? createdAtMs;
 
   bool get isExpired {
     if (ttlMs == null) return false;
     return DateTime.now().millisecondsSinceEpoch - createdAtMs > ttlMs!;
   }
 
+  /// Alias for [isExpired] to clarify that TTL marks staleness for background refresh,
+  /// not immediate data deletion.
+  bool get isStale => isExpired;
+
   bool get isSchemaMismatch => schemaVersion != cacheSchemaVersion;
 
   Map<String, dynamic> toJson() => {
     '_v': schemaVersion,
     '_ts': createdAtMs,
+    '_ls': lastSyncAtMs,
+    if (contentVersion != null) '_cv': contentVersion,
     if (ttlMs != null) '_ttl': ttlMs,
     'd': data,
   };
@@ -38,6 +48,8 @@ class CacheEntry {
   factory CacheEntry.fromJson(Map<String, dynamic> json) => CacheEntry(
     schemaVersion: json['_v'] as int? ?? 0,
     createdAtMs: json['_ts'] as int? ?? 0,
+    lastSyncAtMs: json['_ls'] as int? ?? json['_ts'] as int? ?? 0,
+    contentVersion: json['_cv'] as int?,
     ttlMs: json['_ttl'] as int?,
     data: json['d'],
   );
@@ -126,18 +138,19 @@ class CacheService {
     }
   }
 
-  /// Read a cached object. Returns `null` when the entry is missing,
-  /// expired, or was written under a different schema version.
+  /// Read a cached object. By default [allowStale] is true (stale-while-revalidate),
+  /// returning cached content immediately even past TTL unless schema mismatches.
   static Future<T?> get<T>(
     String key,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async {
+    T Function(Map<String, dynamic>) fromJson, {
+    bool allowStale = true,
+  }) async {
     try {
       final box = await _getBox();
       final raw = box.get(key);
       if (raw == null) return null;
 
-      final envelope = _unwrap(raw as String);
+      final envelope = _unwrap(raw as String, ignoreTtl: allowStale);
       if (envelope == null) return null;
 
       final innerData = envelope.data;
@@ -152,16 +165,19 @@ class CacheService {
     }
   }
 
+  /// Read a cached list. By default [allowStale] is true, ensuring offline availability
+  /// for lessons, categories, and literature across long offline periods.
   static Future<List<T>?> getList<T>(
     String key,
-    T Function(Map<String, dynamic>) fromJson,
-  ) async {
+    T Function(Map<String, dynamic>) fromJson, {
+    bool allowStale = true,
+  }) async {
     try {
       final box = await _getBox();
       final raw = box.get(key);
       if (raw == null) return null;
 
-      final envelope = _unwrap(raw as String);
+      final envelope = _unwrap(raw as String, ignoreTtl: allowStale);
       if (envelope == null) return null;
 
       final list = envelope.data as List;
@@ -175,31 +191,18 @@ class CacheService {
     }
   }
 
+  /// Read a strictly fresh cached object, returning null if TTL has passed.
+  static Future<T?> getStrictlyFresh<T>(
+    String key,
+    T Function(Map<String, dynamic>) fromJson,
+  ) => get<T>(key, fromJson, allowStale: false);
+
   /// Read a cached object even if expired (ignoring TTL), returning `null`
   /// only when the entry is missing or written under a mismatched schema version.
   static Future<T?> getIgnoringTtl<T>(
     String key,
     T Function(Map<String, dynamic>) fromJson,
-  ) async {
-    try {
-      final box = await _getBox();
-      final raw = box.get(key);
-      if (raw == null) return null;
-
-      final envelope = _unwrap(raw as String, ignoreTtl: true);
-      if (envelope == null) return null;
-
-      final innerData = envelope.data;
-      if (innerData is Map<String, dynamic>) {
-        return fromJson(innerData);
-      }
-      return null;
-    } catch (e) {
-      AppLogger.debug('[Cache] read ignoring TTL error ($key): $e');
-      _handleCacheError(e);
-      return null;
-    }
-  }
+  ) => get<T>(key, fromJson);
 
   /// Returns metadata about an entry without deserialising the payload.
   static Future<CacheEntry?> getMeta(String key) async {
@@ -238,8 +241,9 @@ class CacheService {
     }
   }
 
-  /// Evict all entries whose TTL has expired or whose schema is stale.
-  static Future<int> evictStale() async {
+  /// Evict entries whose schema is stale or corrupted.
+  /// Valid learning content past TTL is preserved unless [evictExpiredTtl] is explicitly true.
+  static Future<int> evictStale({bool evictExpiredTtl = false}) async {
     try {
       final box = await _getBox();
       final keysToDelete = <dynamic>[];
@@ -250,7 +254,7 @@ class CacheService {
           final entry = CacheEntry.fromJson(
             jsonDecode(raw as String) as Map<String, dynamic>,
           );
-          if (entry.isExpired || entry.isSchemaMismatch) {
+          if (entry.isSchemaMismatch || (evictExpiredTtl && entry.isExpired)) {
             keysToDelete.add(key);
           }
         } catch (_) {

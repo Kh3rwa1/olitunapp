@@ -82,8 +82,8 @@ void main() {
         const Duration(milliseconds: 50),
       ); // wait for expiry
 
-      // Verify normal CacheService.get returns null because it expired
-      final normalGet = await CacheService.get(
+      // Verify CacheService.getStrictlyFresh returns null because it expired
+      final normalGet = await CacheService.getStrictlyFresh(
         key,
         (json) => Set<String>.from(json['ids'] as List),
       );

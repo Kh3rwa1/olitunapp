@@ -43,10 +43,11 @@ the Appwrite SDK.
 
 ### Translation function
 
-User-submitted text is sent to an Appwrite Function (`functions/translator`)
-which proxies Google Translate with per-IP rate limiting (default 20
-requests/hour) and a key/value cache. The function never sees Appwrite user
-sessions and stores no PII.
+User-submitted text is sent to an Appwrite Function (`functions/translator`) which proxies translation requests through a pluggable provider interface (`TranslationProvider`) with strict privacy protections:
+- **Privacy-Preserving Rate Limiting:** Primary limiting uses authenticated `userId`. Unauthenticated requests derive a one-way HMAC-SHA256 hash using a server-side salt (`RATE_LIMIT_SALT`). Raw IP addresses are **never** stored in the database or written to logs.
+- **Tiered Multi-Window Limits:** Enforces both short burst limits (1-minute window) and sustained limits (1-hour window) with a fail-closed security policy.
+- **Cryptographic Cache Keys:** Responses are cached under deterministic SHA-256 hashes of the normalized request parameters, preventing plaintext database storage of user queries.
+- **Input Validation:** Enforces strict 5000-character payload limits and explicit supported language code allowlists.
 
 ### Crash reporting
 

@@ -43,10 +43,25 @@ const headers = {
 async function api(method, path, body = null) {
   const opts = { method, headers };
   if (body) opts.body = JSON.stringify(body);
-  const res = await fetch(`${ENDPOINT}${path}`, opts);
+  let res;
+  try {
+    res = await fetch(`${ENDPOINT}${path}`, opts);
+  } catch (err) {
+    throw new Error(`NETWORK_FAILURE: Unable to reach Appwrite at ${ENDPOINT} (${err.message})`);
+  }
+
   const text = await res.text();
   if (!res.ok) {
-    throw new Error(`${res.status} ${method} ${path}: ${text}`);
+    if (res.status === 401) {
+      throw new Error(`AUTHENTICATION_FAILURE (401): Invalid APPWRITE_API_KEY. Message: ${text}`);
+    }
+    if (res.status === 403) {
+      throw new Error(`AUTHORIZATION_FAILURE (403): APPWRITE_API_KEY lacks required database read permissions. Message: ${text}`);
+    }
+    if (res.status === 404) {
+      throw new Error(`RESOURCE_NOT_FOUND (404): Endpoint, Project, or Database '${DATABASE_ID}' not found at ${ENDPOINT}. Message: ${text}`);
+    }
+    throw new Error(`HTTP_${res.status} ${method} ${path}: ${text}`);
   }
   return text ? JSON.parse(text) : null;
 }

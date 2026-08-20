@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "test": "npm run test:backend && node scripts/test_gitleaks_rules.mjs",
-    "test:backend": "node --test functions/test/*.test.js"
+    "test:backend": "node --test functions/test/*.test.js functions/translator/test/*.test.js"
   },
   "dependencies": {
     "node-appwrite": "^14.1.0"

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive/hive.dart';
 import 'package:itun/core/storage/cache_service.dart';
@@ -84,18 +85,74 @@ void main() {
       expect(result!['name'], 'Olitun');
     });
 
-    test('expired entry returns null', () async {
+    test('strictly fresh lookup on expired entry returns null', () async {
       await CacheService.set('expired_key', {
         'name': 'old',
       }, ttl: Duration.zero);
       // Wait a tick to ensure expiry
       await Future.delayed(const Duration(milliseconds: 10));
-      final result = await CacheService.get<Map<String, dynamic>>(
+      final freshResult =
+          await CacheService.getStrictlyFresh<Map<String, dynamic>>(
+            'expired_key',
+            (json) => json,
+          );
+      expect(freshResult, isNull);
+
+      // Stale-while-revalidate returns cached data to ensure offline learning is never lost
+      final staleResult = await CacheService.get<Map<String, dynamic>>(
         'expired_key',
         (json) => json,
       );
-      expect(result, isNull);
+      expect(staleResult, isNotNull);
+      expect(staleResult!['name'], 'old');
     });
+
+    test(
+      '30-day offline simulation preserves cached lessons and categories',
+      () async {
+        final now = DateTime.now();
+        final thirtyDaysAgoMs = now
+            .subtract(const Duration(days: 30))
+            .millisecondsSinceEpoch;
+
+        final entry = CacheEntry(
+          data: {'title': 'Ol Chiki Mastery', 'id': 'lesson_30d'},
+          schemaVersion: cacheSchemaVersion,
+          createdAtMs: thirtyDaysAgoMs,
+          ttlMs: const Duration(hours: 24).inMilliseconds,
+        );
+
+        final box = await Hive.openBox('content_cache');
+        await box.put('lesson_30d_key', jsonEncode(entry.toJson()));
+
+        final result = await CacheService.get<Map<String, dynamic>>(
+          'lesson_30d_key',
+          (json) => json,
+        );
+        expect(result, isNotNull);
+        expect(result!['id'], 'lesson_30d');
+        expect(result['title'], 'Ol Chiki Mastery');
+      },
+    );
+
+    test(
+      'evictStale preserves valid learning content past TTL by default',
+      () async {
+        await CacheService.set('stale_lesson', {
+          'data': 'important',
+        }, ttl: Duration.zero);
+        await Future.delayed(const Duration(milliseconds: 10));
+
+        final evictedCount = await CacheService.evictStale();
+        expect(evictedCount, 0);
+
+        final preserved = await CacheService.get<Map<String, dynamic>>(
+          'stale_lesson',
+          (json) => json,
+        );
+        expect(preserved, isNotNull);
+      },
+    );
 
     test('getMeta returns metadata', () async {
       await CacheService.set('meta_key', {'value': 42});

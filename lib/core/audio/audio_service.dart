@@ -1,5 +1,5 @@
 import 'package:itun/core/logging/app_logger.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 final audioServiceProvider = Provider((ref) => AudioService());
@@ -10,7 +10,8 @@ class AudioService {
   Future<void> playUrl(String url) async {
     try {
       await _player.stop();
-      await _player.play(UrlSource(url));
+      await _player.setUrl(url);
+      await _player.play();
     } catch (e) {
       AppLogger.debug('Error playing audio: $e');
     }

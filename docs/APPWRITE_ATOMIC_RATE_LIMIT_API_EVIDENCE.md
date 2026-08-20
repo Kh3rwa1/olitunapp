@@ -1,39 +1,39 @@
 # Appwrite Atomic Rate Limiting API & Concurrency Evidence
 
-**Audited Date:** August 20, 2026  
-**Target Package:** `node-appwrite`  
-**Installed Version:** `14.2.0` (Root & `functions/translator/node_modules/node-appwrite`)  
-**Server Compatibility:** Appwrite 1.4.x, 1.5.x, 1.6.x+  
+**Audited Date:** August 20, 2026
+**Target Package:** `node-appwrite`
+**Installed Version:** `25.1.0` (Root `package.json` & `functions/translator/package.json`)
+**Server Compatibility:** Appwrite 1.4.x, 1.5.x, 1.6.x+
 
 ---
 
-## 1. SDK API Audit & Method Signatures
+## 1. SDK API Audit & Authoritative Version Alignment
 
-Inspection of the installed TypeScript definitions (`node_modules/node-appwrite/dist/services/databases.d.ts`) reveals the exact supported methods on the `Databases` service:
+Inspection of the installed TypeScript definitions (`functions/translator/node_modules/node-appwrite/dist/index.d.ts`) reveals the exact supported methods on the `Databases` service for `node-appwrite` v25.1.0:
 
 ```typescript
-createDocument<Document extends Models.Document>(
+createDocument<T extends Models.Document>(
     databaseId: string,
     collectionId: string,
     documentId: string,
-    data: Omit<Document, keyof Models.Document>,
+    data: Omit<T, keyof Models.Document>,
     permissions?: string[]
-): Promise<Document>;
+): Promise<T>;
 
-getDocument<Document extends Models.Document>(
+getDocument<T extends Models.Document>(
     databaseId: string,
     collectionId: string,
     documentId: string,
     queries?: string[]
-): Promise<Document>;
+): Promise<T>;
 
-updateDocument<Document extends Models.Document>(
+updateDocument<T extends Models.Document>(
     databaseId: string,
     collectionId: string,
     documentId: string,
-    data?: Partial<Omit<Document, keyof Models.Document>>,
+    data?: Partial<Omit<T, keyof Models.Document>>,
     permissions?: string[]
-): Promise<Document>;
+): Promise<T>;
 
 deleteDocument(
     databaseId: string,
@@ -41,18 +41,18 @@ deleteDocument(
     documentId: string
 ): Promise<{}>;
 
-listDocuments<Document extends Models.Document>(
+listDocuments<T extends Models.Document>(
     databaseId: string,
     collectionId: string,
     queries?: string[]
-): Promise<Models.DocumentList<Document>>;
+): Promise<Models.DocumentList<T>>;
 ```
 
 ### Key API Findings:
 1. **No `incrementDocumentAttribute`:** Appwrite Databases REST API does not offer a native server-side atomic integer increment endpoint in current production releases.
 2. **No Compare-and-Swap (CAS) Preconditions on `updateDocument`:** `updateDocument` accepts document attributes in `data`. Custom fields such as `_expectedRevision` or `_revision` are treated as arbitrary document attributes. Appwrite does not execute conditional `WHERE revision = expectedRevision` checks on updates.
 3. **No Multi-Document Interactive Transactions:** The client SDK does not expose interactive transaction blocks (`BEGIN` / `COMMIT`).
-4. **Atomic Primary Key Uniqueness on `createDocument`:** Appwrite's underlying storage engine (MariaDB) enforces strict unique primary key constraints on `documentId`. If two concurrent requests invoke `createDocument` with the identical `documentId`, exactly **one** call succeeds (`201 Created`), while all concurrent competitors receive **`409 Conflict` (AppwriteException: Document already exists)**.
+4. **Atomic Primary Key Uniqueness on `createDocument`:** Appwrite's underlying storage engine enforces strict unique primary key constraints on `documentId`. If two concurrent requests invoke `createDocument` with the identical `documentId`, exactly **one** call succeeds (`201 Created`), while all concurrent competitors receive **`409 Conflict` (AppwriteException: `document_already_exists`)**.
 
 ---
 
@@ -80,29 +80,25 @@ await databases.updateDocument(db, coll, windowId, {
 To achieve genuine atomicity without server-side CAS or schema extensions, we utilize **Deterministic Slot Reservation** backed by Appwrite's unique document ID primary key enforcement.
 
 ### Mechanism:
-1. For each window (burst minute `m`, sustained hour `h`), the rate limiter defines a deterministic window prefix:
-   - Minute Window: `m_${identifier}_${minuteTimestamp}`
-   - Hour Window: `h_${identifier}_${hourTimestamp}`
-2. Up to $L$ slots exist for a limit of $L$ (e.g. $L=5$ for burst, $L=30$ for hourly).
-3. Each slot has a deterministic document ID: `${windowPrefix}_s${slotNumber}` (where `slotNumber` $\in [1, L]$).
-4. When a request arrives:
-   - It attempts to claim an available slot $s \in [1, L]$ by calling `createDocument(dbId, collId, slotDocId, { windowId, slot: s, expiresAt })`.
-   - If `createDocument` succeeds (`201`), the slot is successfully claimed.
-   - If `createDocument` returns `409 Conflict`, that specific slot has already been claimed by another concurrent request. The worker proceeds to attempt the next slot $s+1$.
-   - If all slots $1 \dots L$ return `409 Conflict`, all allowed capacity for that window has been exhausted. The request is deterministically denied (`429 Too Many Requests`).
-   - If any storage error other than `409` occurs (e.g. network timeout, 500), the limiter fails closed with HTTP 503 (`RATE_LIMIT_ERROR`).
+1. For each window (burst minute `m`, sustained hour `h`), the rate limiter generates a deterministic document ID for slot $s \in [1, \text{limit}]$:
+   - Window index = `Math.floor(now / windowMs)`
+   - Slot Document ID = `prefix + '_' + sha256(prefix + ':' + identifier + ':' + windowIndex + ':' + slot).slice(0, 28)`
+2. When a request arrives:
+   - It attempts to claim slot $s=1$ by calling `createDocument(dbId, collectionId, slotDocId, { clientIp, count: s, windowStart })`.
+   - If `createDocument` succeeds, the slot is claimed (`allowed: true`, `remaining: limit - s`).
+   - If `createDocument` throws an Appwrite `409 Conflict` with `document_already_exists`, slot $s$ is occupied by a concurrent request. The worker advances to probe slot $s+1$.
+   - If all slots $1 \dots \text{limit}$ are occupied, the request is denied (`allowed: false`, `reason: 'burst_limit_exceeded'` or `'hourly_limit_exceeded'`).
+   - If any storage error other than a duplicate collision occurs (e.g. 500, network error, non-duplicate 409), the system fails closed immediately (`rate_limit_storage_error`).
 
-### Dual-Window Atomicity:
-- The rate limiter reserves a slot in the minute burst window first. If rejected, it immediately stops and returns `burst_limit_exceeded`.
-- It then reserves a slot in the hourly sustained window. If the hourly limit is exceeded, it cleans up the reserved minute slot and returns `hourly_limit_exceeded`.
+### Hardening & Boundaries:
+- **Maximum Configured Limit Ceiling:** Enforced at `MAX_ALLOWED_LIMIT = 500` to prevent unbounded sequential Appwrite roundtrips.
+- **Dual-Window Partial Rollback:** If the minute burst window succeeds but the hourly sustained window is exhausted, the claimed minute slot document is deleted in a rollback operation.
+- **Deterministic Cleanup:** Staging tests and maintenance tasks delete only exact slot IDs reserved by that run.
 
 ---
 
-## 4. Verification & Concurrency Guarantees
+## 4. Root vs Translator Dependency Architecture
 
-| Metric | Guarantee | Evidence |
-| :--- | :--- | :--- |
-| **Max Concurrent Requests Allowed** | Exactly $\le L$ | MariaDB primary key uniqueness on `${windowPrefix}_s${slot}` prevents double-allocation. |
-| **Fail-Closed on Outage** | 503 `RATE_LIMIT_ERROR` | Non-409 errors immediately abort and fail closed. |
-| **Privacy Preservation** | Zero PII | Identifiers use domain-separated HMAC-SHA256 digests (`usr_` and `net_`). |
-| **Retention Pruning** | Automatic | Documents include `expiresAt` timestamps; expired slot documents are batch-deleted. |
+1. **Authoritative Deployment Package:** `functions/translator/package.json` and its lockfile `functions/translator/package-lock.json` define the exact Node.js runtime for the serverless translator.
+2. **Aligned SDK Version:** Both root and translator declare and resolve exact `node-appwrite@25.1.0`.
+3. **Automated Drift Enforcement:** `scripts/verify_node_dependency_alignment.mjs` runs in CI (`format-and-analyze` job) to prevent any major/minor version discrepancy between root and translator.

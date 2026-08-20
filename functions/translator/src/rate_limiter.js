@@ -37,6 +37,24 @@ export function generateSlotDocId(prefix, identifier, windowIndex, slot) {
  * @param {number} params.now - Current timestamp in ms
  * @returns {Promise<{ allowed: boolean, remaining: number, slotDocId?: string, reason?: string, retryAfterSeconds?: number, error?: string }>}
  */
+export const MAX_ALLOWED_LIMIT = 500;
+
+/**
+ * Enforces a rate limit for a specific time window using atomic slot-reservation.
+ * Each allowed request reserves a unique slot document ID (1..limit).
+ * Relies on Appwrite's database-level primary key uniqueness constraint to guarantee atomicity.
+ *
+ * @param {Object} params
+ * @param {Object} params.databases - Appwrite Databases service instance
+ * @param {string} params.dbId - Database ID
+ * @param {string} params.collectionId - Collection ID
+ * @param {string} params.identifier - Domain-separated HMAC rate limit identifier
+ * @param {string} params.windowType - 'm' (minute) or 'h' (hour)
+ * @param {number} params.windowMs - Duration of the window in ms
+ * @param {number} params.limit - Maximum allowed requests in this window (positive integer <= MAX_ALLOWED_LIMIT)
+ * @param {number} params.now - Current timestamp in ms
+ * @returns {Promise<{ allowed: boolean, remaining: number, slotDocId?: string, reason?: string, retryAfterSeconds?: number, error?: string }>}
+ */
 export async function enforceWindowRateLimit({
   databases,
   dbId,
@@ -47,11 +65,11 @@ export async function enforceWindowRateLimit({
   limit,
   now = Date.now(),
 }) {
-  if (!Number.isInteger(limit) || limit <= 0) {
+  if (!Number.isInteger(limit) || limit <= 0 || limit > MAX_ALLOWED_LIMIT) {
     return {
       allowed: false,
       reason: 'rate_limit_storage_error',
-      error: 'Invalid rate limit configuration: limit must be a positive integer',
+      error: `Invalid rate limit configuration: limit must be an integer between 1 and ${MAX_ALLOWED_LIMIT}`,
     };
   }
 
@@ -75,17 +93,20 @@ export async function enforceWindowRateLimit({
         slotDocId,
       };
     } catch (err) {
-      const isConflict =
-        err?.code === 409 ||
-        err?.status === 409 ||
-        (err?.message && /already exists|duplicate|409/i.test(err.message));
+      // Document already exists indicates slot was occupied by a concurrent request
+      const isDuplicateConflict =
+        err?.type === 'document_already_exists' ||
+        ((err?.code === 409 || err?.status === 409) &&
+          (err?.type === 'document_already_exists' ||
+            (err?.message && /already exists|duplicate|unique|document with the requested id/i.test(err.message)) ||
+            !err?.type));
 
-      if (isConflict) {
-        // Slot is already occupied by a concurrent request -> try next slot
+      if (isDuplicateConflict) {
+        // Slot is already occupied by a concurrent request -> probe next slot
         continue;
       }
 
-      // Storage engine error -> fail closed immediately
+      // Non-duplicate error or storage engine failure -> fail closed immediately
       return {
         allowed: false,
         reason: 'rate_limit_storage_error',

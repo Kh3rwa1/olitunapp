@@ -205,17 +205,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download Coverage Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: coverage-report
           path: coverage/
       - name: Download Web Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: web-release-build
           path: artifacts/web/
       - name: Download Android APK Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: android-release-apk
           path: artifacts/apk/

@@ -44,11 +44,13 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
       state = state.copyWith(isPrefetching: true);
       try {
         await _ref.read(categoryNotifierProvider.notifier).refresh();
+        if (!mounted) return;
         state = HomePrefetchState(
           isPrefetching: false,
           lastCategoryRefresh: DateTime.now(),
         );
       } catch (_) {
+        if (!mounted) return;
         state = state.copyWith(isPrefetching: false);
       }
     }

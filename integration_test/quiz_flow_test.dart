@@ -88,51 +88,50 @@ void main() {
     expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
     // Determine currently displayed prompt for Q1
-    final promptO = find.descendant(
-      of: find.byType(QuizQuestionCard),
-      matching: find.text('O'),
-    );
-    final isFirstQO = promptO.evaluate().isNotEmpty;
+    final isFirstQO = find
+        .descendant(of: find.byType(QuizQuestionCard), matching: find.text('O'))
+        .evaluate()
+        .isNotEmpty;
     final targetFirst = isFirstQO ? 'O' : 'T';
-    final targetSecond = isFirstQO ? 'T' : 'O';
 
     // Tap matching option in QuizOptionTile
-    await tester.tap(
-      find.ancestor(
-        of: find.text(targetFirst),
-        matching: find.byType(QuizOptionTile),
-      ),
-      warnIfMissed: false,
+    final firstOptionFinder = find.descendant(
+      of: find.byType(QuizOptionTile),
+      matching: find.text(targetFirst),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.ensureVisible(firstOptionFinder.first);
+    await tester.tap(firstOptionFinder.first, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     // Tap Continue
-    await tester.tap(find.text('Continue'), warnIfMissed: false);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    final continueFinder1 = find.text('Continue');
+    await tester.ensureVisible(continueFinder1);
+    await tester.tap(continueFinder1, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     // Verify option tiles are present for Q2
     expect(find.byType(QuizOptionTile), findsNWidgets(4));
 
+    // Determine currently displayed prompt for Q2
+    final isSecondQO = find
+        .descendant(of: find.byType(QuizQuestionCard), matching: find.text('O'))
+        .evaluate()
+        .isNotEmpty;
+    final targetSecond = isSecondQO ? 'O' : 'T';
+
     // Tap matching option in QuizOptionTile for Q2
-    await tester.tap(
-      find.ancestor(
-        of: find.text(targetSecond),
-        matching: find.byType(QuizOptionTile),
-      ),
-      warnIfMissed: false,
+    final secondOptionFinder = find.descendant(
+      of: find.byType(QuizOptionTile),
+      matching: find.text(targetSecond),
     );
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    await tester.ensureVisible(secondOptionFinder.first);
+    await tester.tap(secondOptionFinder.first, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     // Tap Continue
-    await tester.tap(find.text('Continue'), warnIfMissed: false);
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 300));
+    final continueFinder2 = find.text('Continue');
+    await tester.ensureVisible(continueFinder2);
+    await tester.tap(continueFinder2, warnIfMissed: false);
     await tester.pumpAndSettle();
 
     // Verify completion screen (trophy and pass indicator)

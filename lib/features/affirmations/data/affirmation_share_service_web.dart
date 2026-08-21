@@ -1,36 +1,24 @@
 import 'dart:async';
-import 'dart:js_interop';
-import 'package:flutter/services.dart';
-import 'package:web/web.dart' as web;
+import 'dart:ui';
+import 'package:flutter/foundation.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../domain/affirmation_share_service.dart';
+import 'web_share_adapter.dart';
 
 class AffirmationShareServiceImpl implements AffirmationShareService {
+  final WebShareAdapter adapter;
+
+  AffirmationShareServiceImpl({WebShareAdapter? adapter})
+    : adapter = adapter ?? createDefaultWebShareAdapter();
+
   @override
   Future<bool> canShareFiles(Uint8List imageBytes) async {
-    try {
-      final nav = web.window.navigator;
-      final file = web.File(
-        [imageBytes.toJS].toJS,
-        'test.png',
-        web.FilePropertyBag(type: 'image/png'),
-      );
-      final data = web.ShareData(files: [file].toJS);
-      return nav.canShare(data);
-    } catch (_) {
-      return false;
-    }
+    return adapter.canShareFiles(imageBytes, 'test.png');
   }
 
   @override
   Future<bool> canShareText() async {
-    try {
-      final nav = web.window.navigator;
-      final data = web.ShareData(text: 'test');
-      return nav.canShare(data);
-    } catch (_) {
-      return false;
-    }
+    return adapter.canShareText('test', 'test');
   }
 
   @override
@@ -42,33 +30,25 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     Rect? shareOrigin,
   }) async {
     try {
-      final nav = web.window.navigator;
-      final file = web.File(
-        [imageBytes.toJS].toJS,
-        filename,
-        web.FilePropertyBag(type: 'image/png'),
-      );
+      if (adapter.isShareSupported()) {
+        if (adapter.canShareFiles(imageBytes, filename)) {
+          await adapter.shareFiles(
+            imageBytes: imageBytes,
+            filename: filename,
+            title: title,
+            text: text,
+          );
+          return AffirmationShareResult.shared;
+        }
 
-      final shareData = web.ShareData(
-        title: title,
-        text: text,
-        files: [file].toJS,
-      );
-
-      bool canShareFile = false;
-      try {
-        canShareFile = nav.canShare(shareData);
-      } catch (_) {
-        canShareFile = false;
+        if (adapter.canShareText(text, title)) {
+          await adapter.shareText(text: text, title: title);
+          return AffirmationShareResult.shared;
+        }
       }
 
-      if (canShareFile) {
-        await nav.share(shareData).toDart;
-        return AffirmationShareResult.shared;
-      }
-
-      // Fallback to text share if file sharing is not supported by this browser
-      return await shareText(text: text, title: title);
+      // If native sharing is completely unavailable or lacks file/text capability, download PNG image
+      return await downloadImage(imageBytes: imageBytes, filename: filename);
     } catch (e) {
       final errStr = e.toString().toLowerCase();
       if (errStr.contains('aborterror') ||
@@ -90,19 +70,9 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     Rect? shareOrigin,
   }) async {
     try {
-      final nav = web.window.navigator;
-      final shareData = web.ShareData(title: title, text: text, url: url ?? '');
-
-      bool supported = false;
-      try {
-        supported = nav.canShare(shareData);
-      } catch (_) {
-        // Some browser versions support share() but throw on canShare with text dictionaries
-        supported = true;
-      }
-
-      if (supported) {
-        await nav.share(shareData).toDart;
+      if (adapter.isShareSupported() &&
+          adapter.canShareText(text, title, url)) {
+        await adapter.shareText(text: text, title: title, url: url);
         return AffirmationShareResult.shared;
       }
       return await copyToClipboard(text);
@@ -124,25 +94,14 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     required String filename,
   }) async {
     try {
-      final blob = web.Blob(
-        [imageBytes.toJS].toJS,
-        web.BlobPropertyBag(type: 'image/png'),
-      );
-      final url = web.URL.createObjectURL(blob);
-      final anchor = web.HTMLAnchorElement()
-        ..href = url
-        ..download = filename
-        ..style.display = 'none';
-
-      web.document.body?.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
+      final url = adapter.createBlobUrl(imageBytes, 'image/png');
+      adapter.triggerDownload(url, filename);
 
       // Delayed object URL revocation prevents download cancellation races in Safari/WebKit
       unawaited(
         Future.delayed(const Duration(milliseconds: 1500), () {
           try {
-            web.URL.revokeObjectURL(url);
+            adapter.revokeBlobUrl(url);
           } catch (_) {}
         }),
       );
@@ -157,7 +116,7 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
   @override
   Future<AffirmationShareResult> copyToClipboard(String text) async {
     try {
-      await Clipboard.setData(ClipboardData(text: text));
+      await adapter.copyToClipboard(text);
       return AffirmationShareResult.textCopied;
     } catch (_) {
       return AffirmationShareResult.failed;

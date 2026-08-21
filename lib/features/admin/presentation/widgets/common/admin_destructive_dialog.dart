@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../../../../core/theme/admin_tokens.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../domain/admin_failure.dart';
 import 'admin_buttons.dart';
 
 /// Comprehensive, safety-hardened dialog for destructive & consequential operations.
@@ -111,9 +112,13 @@ class _AdminDestructiveDialogState extends State<AdminDestructiveDialog> {
       }
     } catch (e) {
       if (mounted) {
+        final failure = AdminFailure.fromException(
+          e,
+          actionContext: widget.actionName,
+        );
         setState(() {
           _isExecuting = false;
-          _errorMessage = e.toString().replaceFirst('Exception: ', '');
+          _errorMessage = failure.userMessage;
         });
       }
     }

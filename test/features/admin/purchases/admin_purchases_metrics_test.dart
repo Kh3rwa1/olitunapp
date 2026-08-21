@@ -1,4 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:itun/features/admin/domain/purchase_metrics_calculator.dart';
 import 'package:itun/features/admin/presentation/common/safe_csv_helper.dart';
 import 'package:itun/shared/models/content_models.dart';
 
@@ -62,41 +63,35 @@ void main() {
       ),
     ];
 
-    test('calculates gross revenue from verified paid purchases only', () {
-      final grossRevenue = testPurchases
-          .where((p) => p.status == 'verified' && p.unlockMethod == 'razorpay')
-          .fold(0, (sum, p) => sum + p.amountPaidInr);
-      expect(grossRevenue, 299 + 499); // 798
+    test(
+      'calculates gross collected revenue including original payments later refunded',
+      () {
+        final metrics = PurchaseMetricsCalculator.calculate(testPurchases);
+        // 299 (p1 verified) + 499 (p2 verified) + 199 (p5 refunded) = 997
+        expect(metrics.grossCollectedInr, 997);
+      },
+    );
+
+    test('calculates refunded amount from confirmed refunded purchases', () {
+      final metrics = PurchaseMetricsCalculator.calculate(testPurchases);
+      // 199 (p5 refunded)
+      expect(metrics.refundedInr, 199);
+      expect(metrics.refundedCount, 1);
     });
 
-    test('calculates refunded amount from refunded purchases', () {
-      final refundedAmount = testPurchases
-          .where((p) => p.status == 'refunded')
-          .fold(0, (sum, p) => sum + p.amountPaidInr);
-      expect(refundedAmount, 199);
-    });
-
-    test('calculates net revenue accurately as gross minus refunded', () {
-      final grossRevenue = testPurchases
-          .where((p) => p.status == 'verified' && p.unlockMethod == 'razorpay')
-          .fold(0, (sum, p) => sum + p.amountPaidInr);
-      final refundedAmount = testPurchases
-          .where((p) => p.status == 'refunded')
-          .fold(0, (sum, p) => sum + p.amountPaidInr);
-      final netRevenue = grossRevenue - refundedAmount;
-      expect(netRevenue, 798 - 199); // 599
-    });
+    test(
+      'calculates net revenue accurately as gross minus refunded without double deduction',
+      () {
+        final metrics = PurchaseMetricsCalculator.calculate(testPurchases);
+        // 997 gross - 199 refunded = 798 net
+        expect(metrics.netRevenueInr, 798);
+      },
+    );
 
     test('calculates verified paid share (paid / total verified unlocks)', () {
-      final paidCount = testPurchases
-          .where((p) => p.unlockMethod == 'razorpay' && p.status == 'verified')
-          .length;
-      final reviewCount = testPurchases
-          .where((p) => p.unlockMethod == 'play_store_review')
-          .length;
-      final totalVerified = paidCount + reviewCount; // 2 paid + 1 review = 3
-      final paidShare = (paidCount / totalVerified * 100).toStringAsFixed(1);
-      expect(paidShare, '66.7');
+      final metrics = PurchaseMetricsCalculator.calculate(testPurchases);
+      // 2 active paid / (2 active paid + 1 review unlock) = 66.7%
+      expect(metrics.verifiedPaidShare.toStringAsFixed(1), '66.7');
     });
 
     test('builds formula-safe CSV export for purchase records', () {

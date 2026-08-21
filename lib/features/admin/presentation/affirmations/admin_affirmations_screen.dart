@@ -36,15 +36,17 @@ class _AdminAffirmationsScreenState
       final message = isSynced
           ? 'Successfully synced latest affirmation from Google Sheet!'
           : (reason == 'already_up_to_date'
-              ? 'Affirmations are already up to date with the latest sheet row.'
-              : 'Google Sheet checked. No new rows found.');
+                ? 'Affirmations are already up to date with the latest sheet row.'
+                : 'Google Sheet checked. No new rows found.');
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Row(
             children: [
               Icon(
-                isSynced ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                isSynced
+                    ? Icons.check_circle_rounded
+                    : Icons.info_outline_rounded,
                 color: Colors.white,
                 size: 20,
               ),
@@ -60,12 +62,11 @@ class _AdminAffirmationsScreenState
               ),
             ],
           ),
-          backgroundColor:
-              isSynced ? AppColors.primary : const Color(0xFF1E293B),
+          backgroundColor: isSynced
+              ? AppColors.primary
+              : const Color(0xFF1E293B),
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     } catch (e) {
@@ -90,9 +91,7 @@ class _AdminAffirmationsScreenState
           ),
           backgroundColor: AppColors.error,
           behavior: SnackBarBehavior.floating,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-          ),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
       );
     } finally {
@@ -133,10 +132,7 @@ class _AdminAffirmationsScreenState
                   ],
                 ),
                 const SizedBox(height: 14),
-                SizedBox(
-                  width: double.infinity,
-                  child: _buildSyncButton(),
-                ),
+                SizedBox(width: double.infinity, child: _buildSyncButton()),
               ],
             ),
     );

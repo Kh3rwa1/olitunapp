@@ -100,8 +100,8 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
       final shareText = affirmation.englishMeaning.trim().isNotEmpty
           ? affirmation.englishMeaning.trim()
           : (affirmation.santaliPhonetic.trim().isNotEmpty
-              ? affirmation.santaliPhonetic.trim()
-              : "Today's wisdom from Olitun 🪶");
+                ? affirmation.santaliPhonetic.trim()
+                : "Today's wisdom from Olitun 🪶");
 
       await SharePlus.instance.share(
         ShareParams(

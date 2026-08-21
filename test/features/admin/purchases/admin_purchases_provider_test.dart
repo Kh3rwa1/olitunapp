@@ -136,8 +136,9 @@ void main() {
           ),
         ).thenAnswer((invocation) async {
           final queries =
-              invocation.namedArguments[const Symbol('queries')] as List<String>? ??
-                  [];
+              invocation.namedArguments[const Symbol('queries')]
+                  as List<String>? ??
+              [];
           final hasCursor = queries.any((q) => q.contains('cursorAfter'));
           return hasCursor ? page2 : page1;
         });
@@ -173,8 +174,9 @@ void main() {
           ),
         ).thenAnswer((invocation) async {
           final queries =
-              invocation.namedArguments[const Symbol('queries')] as List<String>? ??
-                  [];
+              invocation.namedArguments[const Symbol('queries')]
+                  as List<String>? ??
+              [];
           final hasCursor = queries.any((q) => q.contains('cursorAfter'));
           if (hasCursor) {
             throw AppwriteException('Network error', 0, 'network_failure');
@@ -240,8 +242,9 @@ void main() {
           ),
         ).thenAnswer((_) async => {});
 
-        when(() => mockRepo.clearUserEntitlementCache('u_target_123'))
-            .thenAnswer((_) async => {});
+        when(
+          () => mockRepo.clearUserEntitlementCache('u_target_123'),
+        ).thenAnswer((_) async => {});
 
         final container = createContainer();
         addTearDown(container.dispose);
@@ -328,8 +331,9 @@ void main() {
           ),
         ).thenAnswer((invocation) async {
           final queries =
-              invocation.namedArguments[const Symbol('queries')] as List<String>? ??
-                  [];
+              invocation.namedArguments[const Symbol('queries')]
+                  as List<String>? ??
+              [];
           final hasCursor = queries.any((q) => q.contains('cursorAfter'));
           if (!hasCursor) {
             return List.generate(

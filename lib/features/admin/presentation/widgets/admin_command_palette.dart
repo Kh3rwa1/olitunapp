@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,24 +38,31 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
   final FocusNode _focusNode = FocusNode();
   int _selectedIndex = 0;
   List<CommandItem> _filteredItems = [];
-  List<CommandItem> _allItems = [];
+  Timer? _debounceTimer;
 
   @override
   void initState() {
     super.initState();
     _focusNode.requestFocus();
-    _buildIndex();
-    _filterItems();
+    _searchController.addListener(_onSearchChanged);
   }
 
   @override
   void dispose() {
+    _debounceTimer?.cancel();
     _searchController.dispose();
     _focusNode.dispose();
     super.dispose();
   }
 
-  void _buildIndex() {
+  void _onSearchChanged() {
+    _debounceTimer?.cancel();
+    _debounceTimer = Timer(const Duration(milliseconds: 100), () {
+      if (mounted) setState(() => _selectedIndex = 0);
+    });
+  }
+
+  List<CommandItem> _buildIndex() {
     // 1. Static Navigation Routes
     final staticRoutes = [
       CommandItem(
@@ -74,12 +82,28 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         color: AppColors.duoYellow,
       ),
       CommandItem(
+        title: 'Purchases & Revenue',
+        subtitle: 'Course unlocks, revenue KPIs, and refunds',
+        category: 'Navigation',
+        icon: Icons.shopping_bag_rounded,
+        path: '/admin/purchases',
+        color: AppColors.duoGreen,
+      ),
+      CommandItem(
         title: 'Platform Analytics',
         subtitle: 'Deep-dive user trends and course engagement',
         category: 'Navigation',
         icon: Icons.analytics_rounded,
         path: '/admin/analytics',
         color: AppColors.duoBlue,
+      ),
+      CommandItem(
+        title: 'Daily Affirmations',
+        subtitle: 'Curated daily Santali wisdom and sync',
+        category: 'Navigation',
+        icon: Icons.auto_awesome_rounded,
+        path: '/admin/affirmations',
+        color: AppColors.duoOrange,
       ),
       CommandItem(
         title: 'Maintenance Controls',
@@ -99,12 +123,12 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
       ),
     ];
 
-    // 2. Dynamic Content from providers
-    final lessons = ref.read(lessonNotifierProvider).valueOrNull ?? [];
-    final words = ref.read(wordsProvider).valueOrNull ?? [];
-    final quizzes = ref.read(quizzesProvider).valueOrNull ?? [];
-    final letters = ref.read(lettersProvider).valueOrNull ?? [];
-    final categories = ref.read(categoryNotifierProvider).valueOrNull ?? [];
+    // 2. Dynamic Content from watched providers (reactive updates)
+    final lessons = ref.watch(lessonNotifierProvider).valueOrNull ?? [];
+    final words = ref.watch(wordsProvider).valueOrNull ?? [];
+    final quizzes = ref.watch(quizzesProvider).valueOrNull ?? [];
+    final letters = ref.watch(lettersProvider).valueOrNull ?? [];
+    final categories = ref.watch(categoryNotifierProvider).valueOrNull ?? [];
 
     final dynamicItems = <CommandItem>[];
 
@@ -176,23 +200,45 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
       );
     }
 
-    _allItems = [...staticRoutes, ...dynamicItems];
+    return [...staticRoutes, ...dynamicItems];
   }
 
-  void _filterItems() {
-    final query = _searchController.text.toLowerCase().trim();
-    setState(() {
-      if (query.isEmpty) {
-        _filteredItems = _allItems.take(8).toList(); // Quick dashboard default
-      } else {
-        _filteredItems = _allItems.where((item) {
-          return item.title.toLowerCase().contains(query) ||
-              item.subtitle.toLowerCase().contains(query) ||
-              item.category.toLowerCase().contains(query);
-        }).toList();
+  List<CommandItem> _rankAndFilter(
+    List<CommandItem> allItems,
+    String rawQuery,
+  ) {
+    final query = rawQuery.toLowerCase().trim();
+    if (query.isEmpty) {
+      return allItems.take(8).toList();
+    }
+
+    final scored = <MapEntry<CommandItem, int>>[];
+
+    for (final item in allItems) {
+      final title = item.title.toLowerCase();
+      final sub = item.subtitle.toLowerCase();
+      final cat = item.category.toLowerCase();
+
+      var score = 0;
+      if (title == query) {
+        score = 100;
+      } else if (title.startsWith(query)) {
+        score = 80;
+      } else if (title.contains(query)) {
+        score = 60;
+      } else if (cat.startsWith(query)) {
+        score = 40;
+      } else if (cat.contains(query) || sub.contains(query)) {
+        score = 20;
       }
-      _selectedIndex = 0;
-    });
+
+      if (score > 0) {
+        scored.add(MapEntry(item, score));
+      }
+    }
+
+    scored.sort((a, b) => b.value.compareTo(a.value));
+    return scored.map((e) => e.key).toList();
   }
 
   void _navigate(CommandItem item) {
@@ -203,6 +249,8 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final allItems = _buildIndex();
+    _filteredItems = _rankAndFilter(allItems, _searchController.text);
 
     return Focus(
       onKeyEvent: (node, event) {
@@ -244,7 +292,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           decoration: BoxDecoration(
             color: isDark
                 ? const Color(0xE00F1524)
-                : Colors.white.withValues(alpha: 0.90),
+                : Colors.white.withValues(alpha: 0.95),
             borderRadius: BorderRadius.circular(16),
             border: Border.all(
               color: isDark
@@ -268,7 +316,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 14,
+                  vertical: 12,
                 ),
                 decoration: BoxDecoration(
                   border: Border(
@@ -281,9 +329,9 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                 ),
                 child: Row(
                   children: [
-                    Icon(
+                    const Icon(
                       Icons.search_rounded,
-                      color: AdminTokens.textTertiary(isDark),
+                      color: AppColors.primary,
                       size: 20,
                     ),
                     const SizedBox(width: 12),
@@ -291,20 +339,19 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                       child: TextField(
                         controller: _searchController,
                         focusNode: _focusNode,
-                        onChanged: (_) => _filterItems(),
+                        autofocus: true,
                         style: TextStyle(
                           fontFamily: 'Poppins',
-                          fontSize: 14,
-                          fontWeight: FontWeight.w600,
+                          fontSize: 15,
+                          fontWeight: FontWeight.w500,
                           color: AdminTokens.textPrimary(isDark),
                         ),
                         decoration: InputDecoration(
                           hintText:
-                              'Search course content or type a command...',
+                              'Search actions, content, or jump to route…',
                           hintStyle: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 14,
-                            fontWeight: FontWeight.w500,
                             color: AdminTokens.textMuted(isDark),
                           ),
                           border: InputBorder.none,
@@ -313,197 +360,197 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                         ),
                       ),
                     ),
-                    const SizedBox(width: 10),
-                    GestureDetector(
-                      onTap: () => Navigator.pop(context),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isDark
-                              ? Colors.white.withValues(alpha: 0.04)
-                              : Colors.black.withValues(alpha: 0.04),
-                          borderRadius: BorderRadius.circular(6),
-                          border: Border.all(color: AdminTokens.border(isDark)),
-                        ),
-                        child: Text(
-                          'ESC',
-                          style: TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 10,
-                            fontWeight: FontWeight.w700,
-                            color: AdminTokens.textTertiary(isDark),
-                          ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
+                      ),
+                      decoration: BoxDecoration(
+                        color: isDark
+                            ? Colors.white.withValues(alpha: 0.06)
+                            : Colors.black.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(4),
+                      ),
+                      child: Text(
+                        'ESC to close',
+                        style: TextStyle(
+                          fontFamily: 'Poppins',
+                          fontSize: 10,
+                          fontWeight: FontWeight.w600,
+                          color: AdminTokens.textMuted(isDark),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              // Results Area
-              Flexible(
+
+              // Items List
+              Expanded(
                 child: _filteredItems.isEmpty
-                    ? Container(
-                        padding: const EdgeInsets.symmetric(vertical: 40),
+                    ? Center(
                         child: Column(
-                          mainAxisSize: MainAxisSize.min,
+                          mainAxisAlignment: MainAxisAlignment.center,
                           children: [
                             Icon(
                               Icons.search_off_rounded,
-                              size: 40,
+                              size: 32,
                               color: AdminTokens.textMuted(isDark),
                             ),
-                            const SizedBox(height: 12),
+                            const SizedBox(height: 8),
                             Text(
-                              'No matching commands or content found',
+                              'No matching results found',
                               style: TextStyle(
                                 fontFamily: 'Poppins',
                                 fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                                color: AdminTokens.textSecondary(isDark),
+                                color: AdminTokens.textMuted(isDark),
                               ),
                             ),
                           ],
                         ),
                       )
                     : ListView.builder(
-                        shrinkWrap: true,
-                        padding: const EdgeInsets.all(8),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 6,
+                          horizontal: 8,
+                        ),
                         itemCount: _filteredItems.length,
                         itemBuilder: (context, index) {
                           final item = _filteredItems[index];
                           final isSelected = index == _selectedIndex;
 
-                          return InkWell(
-                            onTap: () => _navigate(item),
-                            borderRadius: BorderRadius.circular(10),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 100),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 10,
-                              ),
-                              decoration: BoxDecoration(
-                                color: isSelected
-                                    ? AdminTokens.accent.withValues(
-                                        alpha: isDark ? 0.12 : 0.08,
-                                      )
-                                    : Colors.transparent,
-                                borderRadius: BorderRadius.circular(10),
-                                border: Border.all(
-                                  color: isSelected
-                                      ? AdminTokens.accent.withValues(
-                                          alpha: 0.28,
-                                        )
-                                      : Colors.transparent,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    width: 32,
-                                    height: 32,
-                                    decoration: BoxDecoration(
-                                      color: isSelected
-                                          ? item.color
-                                          : item.color.withValues(
-                                              alpha: isDark ? 0.15 : 0.10,
-                                            ),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: Icon(
-                                      item.icon,
-                                      size: 16,
-                                      color: isSelected
-                                          ? Colors.white
-                                          : item.color,
-                                    ),
+                          return Semantics(
+                            label:
+                                '${item.category}: ${item.title}. ${item.subtitle}',
+                            selected: isSelected,
+                            button: true,
+                            child: Material(
+                              color: Colors.transparent,
+                              child: InkWell(
+                                onTap: () => _navigate(item),
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 12,
+                                    vertical: 8,
                                   ),
-                                  const SizedBox(width: 14),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      mainAxisSize: MainAxisSize.min,
-                                      children: [
-                                        Text(
-                                          item.title,
+                                  decoration: BoxDecoration(
+                                    color: isSelected
+                                        ? (isDark
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.06,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.04,
+                                                ))
+                                        : Colors.transparent,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          color: item.color.withValues(
+                                            alpha: isDark ? 0.15 : 0.1,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            6,
+                                          ),
+                                        ),
+                                        child: Icon(
+                                          item.icon,
+                                          color: item.color,
+                                          size: 16,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment:
+                                              CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              item.title,
+                                              style: TextStyle(
+                                                fontFamily: 'Poppins',
+                                                fontSize: 13,
+                                                fontWeight: FontWeight.w600,
+                                                color: AdminTokens.textPrimary(
+                                                  isDark,
+                                                ),
+                                              ),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                            if (item.subtitle.isNotEmpty)
+                                              Text(
+                                                item.subtitle,
+                                                style: TextStyle(
+                                                  fontFamily: 'Poppins',
+                                                  fontSize: 11,
+                                                  color: AdminTokens.textMuted(
+                                                    isDark,
+                                                  ),
+                                                ),
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+                                          ],
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: isDark
+                                              ? Colors.white.withValues(
+                                                  alpha: 0.04,
+                                                )
+                                              : Colors.black.withValues(
+                                                  alpha: 0.03,
+                                                ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                        ),
+                                        child: Text(
+                                          item.category,
                                           style: TextStyle(
                                             fontFamily: 'Poppins',
-                                            fontSize: 13,
-                                            fontWeight: FontWeight.w700,
-                                            color: AdminTokens.textPrimary(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.w600,
+                                            color: AdminTokens.textSecondary(
                                               isDark,
                                             ),
                                           ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                        const SizedBox(height: 2),
-                                        Text(
-                                          item.subtitle,
-                                          style: TextStyle(
-                                            fontFamily: 'Poppins',
-                                            fontSize: 11,
-                                            fontWeight: FontWeight.w500,
-                                            color: isSelected
-                                                ? AdminTokens.textSecondary(
-                                                    isDark,
-                                                  )
-                                                : AdminTokens.textMuted(isDark),
-                                          ),
-                                          maxLines: 1,
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      horizontal: 8,
-                                      vertical: 4,
-                                    ),
-                                    decoration: BoxDecoration(
-                                      color: isDark
-                                          ? Colors.white.withValues(alpha: 0.05)
-                                          : Colors.black.withValues(
-                                              alpha: 0.04,
-                                            ),
-                                      borderRadius: BorderRadius.circular(6),
-                                    ),
-                                    child: Text(
-                                      item.category,
-                                      style: TextStyle(
-                                        fontFamily: 'Poppins',
-                                        fontSize: 9.5,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: 0.2,
-                                        color: AdminTokens.textSecondary(
-                                          isDark,
                                         ),
                                       ),
-                                    ),
+                                      if (isSelected) ...[
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.keyboard_return_rounded,
+                                          size: 14,
+                                          color: AdminTokens.textMuted(isDark),
+                                        ),
+                                      ],
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
                             ),
                           );
                         },
                       ),
               ),
-              // Footer shortcut row
+
+              // Footer Quick Hints
               Container(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 16,
-                  vertical: 10,
+                  vertical: 8,
                 ),
                 decoration: BoxDecoration(
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.01)
-                      : Colors.black.withValues(alpha: 0.01),
                   border: Border(
                     top: BorderSide(
                       color: isDark
@@ -514,40 +561,31 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                 ),
                 child: Row(
                   children: [
-                    const Icon(
-                      Icons.keyboard_arrow_up_rounded,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 14,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 6),
                     Text(
-                      'Navigate',
+                      'Navigate with ↑ ↓',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 10,
                         color: AdminTokens.textMuted(isDark),
-                        fontWeight: FontWeight.w500,
                       ),
                     ),
-                    const SizedBox(width: 14),
-                    const Icon(
-                      Icons.keyboard_return_rounded,
-                      size: 12,
-                      color: Colors.grey,
-                    ),
-                    const SizedBox(width: 6),
+                    const SizedBox(width: 12),
                     Text(
-                      'Select',
+                      'Select with ↵',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 10,
                         color: AdminTokens.textMuted(isDark),
-                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      '${_filteredItems.length} matching actions',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        color: AdminTokens.textMuted(isDark),
                       ),
                     ),
                   ],

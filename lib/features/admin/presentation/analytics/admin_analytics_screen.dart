@@ -494,25 +494,74 @@ class _RangeStatus extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final now = DateTime.now().toUtc();
-    return Wrap(
-      spacing: AdminTokens.space3,
-      runSpacing: AdminTokens.space2,
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _StatusChip(
-          isDark: isDark,
-          icon: Icons.date_range_rounded,
-          label: range.label(now),
+        Wrap(
+          spacing: AdminTokens.space3,
+          runSpacing: AdminTokens.space2,
+          children: [
+            _StatusChip(
+              isDark: isDark,
+              icon: Icons.date_range_rounded,
+              label: '${range.label(now)} (UTC)',
+            ),
+            _StatusChip(
+              isDark: isDark,
+              icon: Icons.storage_rounded,
+              label: '${snapshot.rollupRows} rollups',
+            ),
+            _StatusChip(
+              isDark: isDark,
+              icon: Icons.bolt_rounded,
+              label: snapshot.isSampled
+                  ? '${snapshot.eventRows} raw events (Sampled 1,000 max)'
+                  : '${snapshot.eventRows} raw events',
+            ),
+            _StatusChip(
+              isDark: isDark,
+              icon: snapshot.completeness == AnalyticsDataCompleteness.complete
+                  ? Icons.check_circle_outline_rounded
+                  : Icons.info_outline_rounded,
+              label: 'Status: ${snapshot.completeness.name.toUpperCase()}',
+            ),
+          ],
         ),
-        _StatusChip(
-          isDark: isDark,
-          icon: Icons.storage_rounded,
-          label: '${snapshot.rollupRows} rollups',
-        ),
-        _StatusChip(
-          isDark: isDark,
-          icon: Icons.bolt_rounded,
-          label: '${snapshot.eventRows} raw events sampled',
-        ),
+        if (snapshot.completeness == AnalyticsDataCompleteness.partial ||
+            snapshot.isSampled) ...[
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+            decoration: BoxDecoration(
+              color: Colors.amber.withValues(alpha: isDark ? 0.14 : 0.10),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(
+                color: Colors.amber.withValues(alpha: isDark ? 0.35 : 0.25),
+              ),
+            ),
+            child: Row(
+              children: [
+                const Icon(
+                  Icons.info_outline_rounded,
+                  color: Colors.amber,
+                  size: 18,
+                ),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Sampled Data Window: Raw events query reached the 1,000 document threshold. DAU and unique user counts reflect the sampled active population, while total volume is derived from nightly server rollups.',
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: isDark ? Colors.amber[200] : Colors.amber[900],
+                      height: 1.35,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -577,6 +626,8 @@ class _KpiGrid extends StatelessWidget {
             label: 'DAU',
             value: snapshot.dau.toString(),
             caption: 'Active learners today',
+            tooltip:
+                'Daily Active Users: Distinct active user/session IDs active today (UTC).',
             icon: Icons.today_rounded,
             isDark: isDark,
             compact: compact,
@@ -585,6 +636,8 @@ class _KpiGrid extends StatelessWidget {
             label: 'WAU',
             value: snapshot.wau.toString(),
             caption: 'Active learners this week',
+            tooltip:
+                'Weekly Active Users: Distinct active user/session IDs active in the last 7 days.',
             icon: Icons.calendar_view_week_rounded,
             isDark: isDark,
             compact: compact,
@@ -593,6 +646,8 @@ class _KpiGrid extends StatelessWidget {
             label: 'MAU',
             value: snapshot.mau.toString(),
             caption: 'Active learners this month',
+            tooltip:
+                'Monthly Active Users: Distinct active user/session IDs active in the last 30 days.',
             icon: Icons.calendar_month_rounded,
             isDark: isDark,
             compact: compact,
@@ -601,6 +656,8 @@ class _KpiGrid extends StatelessWidget {
             label: 'Rollups',
             value: snapshot.rollupRows.toString(),
             caption: '${snapshot.eventRows} raw events sampled',
+            tooltip:
+                'Nightly aggregated summary records computed server-side across all events.',
             icon: Icons.stacked_bar_chart_rounded,
             isDark: isDark,
             compact: compact,
@@ -625,6 +682,7 @@ class _KpiCard extends StatelessWidget {
     required this.label,
     required this.value,
     required this.caption,
+    this.tooltip,
     required this.icon,
     required this.isDark,
     required this.compact,
@@ -633,13 +691,14 @@ class _KpiCard extends StatelessWidget {
   final String label;
   final String value;
   final String caption;
+  final String? tooltip;
   final IconData icon;
   final bool isDark;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return _Panel(
+    final widgetContent = _Panel(
       isDark: isDark,
       compact: compact,
       child: Semantics(
@@ -678,6 +737,11 @@ class _KpiCard extends StatelessWidget {
         ),
       ),
     );
+
+    if (tooltip != null) {
+      return Tooltip(message: tooltip!, child: widgetContent);
+    }
+    return widgetContent;
   }
 }
 

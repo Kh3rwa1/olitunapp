@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import '../../../../core/theme/app_colors.dart';
+import 'package:intl/intl.dart';
+
 import '../../../../core/theme/admin_tokens.dart';
+import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
-import '../widgets/admin_section_header.dart';
-import '../widgets/admin_empty_state.dart';
-import '../widgets/admin_form_widgets.dart';
-import '../widgets/admin_data_table.dart';
-import '../widgets/admin_glass_card.dart';
 import '../analytics/admin_analytics_csv_exporter.dart';
+import '../common/safe_csv_helper.dart';
+import '../widgets/admin_data_table.dart';
+import '../widgets/admin_empty_state.dart';
+import '../widgets/admin_glass_card.dart';
+import '../widgets/admin_section_header.dart';
+import '../widgets/common/admin_destructive_dialog.dart';
 
 class AdminPurchasesScreen extends ConsumerStatefulWidget {
   const AdminPurchasesScreen({super.key});
@@ -21,6 +24,13 @@ class AdminPurchasesScreen extends ConsumerStatefulWidget {
 
 class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
   String _selectedFilter = 'all'; // 'all', 'razorpay', 'review', 'refunded'
+  DateTime _lastRefreshed = DateTime.now();
+
+  static final NumberFormat _inrCurrencyFormat = NumberFormat.currency(
+    locale: 'en_IN',
+    symbol: '₹',
+    decimalDigits: 0,
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -40,10 +50,21 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
           AdminSectionHeader(
             title: 'Purchases & Revenue',
             subtitle:
-                'Manage course unlocks, review metrics, and process refunds',
+                'Manage course unlocks, review verified metrics, and safely process refunds',
             icon: Icons.shopping_bag_rounded,
             eyebrow: 'PRODUCT OPS · MONETIZATION',
             actions: [
+              IconButton(
+                icon: const Icon(Icons.refresh_rounded),
+                tooltip: 'Refresh Purchases Data',
+                onPressed: () async {
+                  await ref
+                      .read(adminPurchasesProvider.notifier)
+                      .loadPurchases();
+                  if (mounted) setState(() => _lastRefreshed = DateTime.now());
+                },
+              ),
+              const SizedBox(width: 8),
               purchasesAsync.maybeWhen(
                 data: (items) => OutlinedButton.icon(
                   onPressed: items.isEmpty
@@ -71,7 +92,25 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
             ],
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 12),
+          // Data freshness indicator
+          Row(
+            children: [
+              Icon(
+                Icons.access_time_rounded,
+                size: 13,
+                color: AdminTokens.textMuted(isDark),
+              ),
+              const SizedBox(width: 6),
+              Text(
+                'Data freshness: ${DateFormat('yyyy-MM-dd HH:mm:ss').format(_lastRefreshed)} (UTC/Local)',
+                style: AdminTokens.label(
+                  isDark,
+                ).copyWith(color: AdminTokens.textMuted(isDark), fontSize: 11),
+              ),
+            ],
+          ),
+          const SizedBox(height: 20),
 
           // Main content
           Expanded(
@@ -90,14 +129,20 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
                   );
                 }
 
-                // Compute metrics
-                final totalRevenue = items
+                // Compute exact revenue & transaction metrics
+                final grossRevenue = items
                     .where(
                       (p) =>
                           p.status == 'verified' &&
                           p.unlockMethod == 'razorpay',
                     )
                     .fold(0, (sum, p) => sum + p.amountPaidInr);
+
+                final refundedAmount = items
+                    .where((p) => p.status == 'refunded')
+                    .fold(0, (sum, p) => sum + p.amountPaidInr);
+
+                final netRevenue = grossRevenue - refundedAmount;
 
                 final paidCount = items
                     .where(
@@ -106,12 +151,21 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
                           p.status == 'verified',
                     )
                     .length;
+
+                final refundedCount = items
+                    .where((p) => p.status == 'refunded')
+                    .length;
+
                 final reviewCount = items
                     .where((p) => p.unlockMethod == 'play_store_review')
                     .length;
-                final totalCount = items.length;
-                final conversionRate = totalCount > 0
-                    ? (paidCount / totalCount * 100).toStringAsFixed(1)
+
+                // Accurate "Verified Paid Share" (percentage of verified unlocks that were paid)
+                final totalVerifiedUnlocks = paidCount + reviewCount;
+                final verifiedPaidShare = totalVerifiedUnlocks > 0
+                    ? (paidCount / totalVerifiedUnlocks * 100).toStringAsFixed(
+                        1,
+                      )
                     : '0.0';
 
                 // Filter list
@@ -133,14 +187,17 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
                   children: [
                     // KPI Row
                     _buildKpiRow(
-                      isDark,
-                      isWideScreen,
-                      totalRevenue,
-                      paidCount,
-                      reviewCount,
-                      conversionRate,
+                      isDark: isDark,
+                      isWide: isWideScreen,
+                      netRevenue: netRevenue,
+                      grossRevenue: grossRevenue,
+                      refundedAmount: refundedAmount,
+                      paidCount: paidCount,
+                      refundedCount: refundedCount,
+                      reviewCount: reviewCount,
+                      verifiedPaidShare: verifiedPaidShare,
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: 20),
 
                     // Filter chips row
                     _buildFilterChips(isDark),
@@ -153,9 +210,31 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
               },
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (error, _) => Center(
-                child: SelectableText(
-                  'Error loading purchases: $error',
-                  style: const TextStyle(color: AppColors.error),
+                child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: AppColors.error,
+                        size: 36,
+                      ),
+                      const SizedBox(height: 12),
+                      SelectableText(
+                        'Unable to load purchases data. Please check connection and retry.',
+                        style: AdminTokens.body(isDark),
+                      ),
+                      const SizedBox(height: 16),
+                      OutlinedButton.icon(
+                        icon: const Icon(Icons.refresh_rounded),
+                        label: const Text('Retry'),
+                        onPressed: () => ref
+                            .read(adminPurchasesProvider.notifier)
+                            .loadPurchases(),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -165,44 +244,54 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
     );
   }
 
-  Widget _buildKpiRow(
-    bool isDark,
-    bool isWide,
-    int revenue,
-    int paid,
-    int reviews,
-    String conversion,
-  ) {
+  Widget _buildKpiRow({
+    required bool isDark,
+    required bool isWide,
+    required int netRevenue,
+    required int grossRevenue,
+    required int refundedAmount,
+    required int paidCount,
+    required int refundedCount,
+    required int reviewCount,
+    required String verifiedPaidShare,
+  }) {
     final cardStyle = TextStyle(
-      fontSize: 24,
+      fontSize: 22,
       fontWeight: FontWeight.w800,
       fontFamily: 'Poppins',
-      color: isDark ? Colors.white : Colors.black87,
+      color: AdminTokens.textPrimary(isDark),
     );
 
     final cards = [
       _KpiItem(
-        title: 'Total Revenue',
-        value: '₹$revenue',
-        icon: Icons.currency_rupee_rounded,
+        title: 'Net Revenue',
+        value: _inrCurrencyFormat.format(netRevenue),
+        subtitle:
+            'Gross: ${_inrCurrencyFormat.format(grossRevenue)} · Refunds: ${_inrCurrencyFormat.format(refundedAmount)}',
+        icon: Icons.account_balance_wallet_rounded,
         accentColor: Colors.green,
       ),
       _KpiItem(
-        title: 'Paid Sales',
-        value: paid.toString(),
+        title: 'Paid Transactions',
+        value: paidCount.toString(),
+        subtitle: 'Refunded count: $refundedCount',
         icon: Icons.payment_rounded,
         accentColor: Colors.blue,
       ),
       _KpiItem(
         title: 'Review Unlocks',
-        value: reviews.toString(),
+        value: reviewCount.toString(),
+        subtitle: 'Free Play Store review unlock',
         icon: Icons.rate_review_rounded,
         accentColor: Colors.purple,
       ),
       _KpiItem(
-        title: 'Paid Conv. Rate',
-        value: '$conversion%',
-        icon: Icons.insights_rounded,
+        title: 'Verified Paid Share',
+        value: '$verifiedPaidShare%',
+        subtitle: 'Paid unlocks / Total unlocks',
+        tooltip:
+            'Share of verified course unlocks that were monetized via paid transactions vs free review unlocks.',
+        icon: Icons.pie_chart_rounded,
         accentColor: Colors.orange,
       ),
     ];
@@ -213,7 +302,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
             .map(
               (c) => Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.only(right: 16),
+                  padding: const EdgeInsets.only(right: 12),
                   child: _buildKpiCard(isDark, c, cardStyle),
                 ),
               ),
@@ -222,20 +311,27 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
       );
     }
 
-    return GridView.count(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.6,
-      children: cards.map((c) => _buildKpiCard(isDark, c, cardStyle)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = constraints.maxWidth < 400 ? 1 : 2;
+        return GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: cols,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: cols == 1 ? 2.8 : 1.5,
+          children: cards
+              .map((c) => _buildKpiCard(isDark, c, cardStyle))
+              .toList(),
+        );
+      },
     );
   }
 
   Widget _buildKpiCard(bool isDark, _KpiItem card, TextStyle cardStyle) {
     return AdminGlassCard(
-      padding: const EdgeInsets.all(18),
+      padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -243,27 +339,62 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                card.title.toUpperCase(),
-                style: TextStyle(
-                  fontSize: 10,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white60 : Colors.black54,
-                  letterSpacing: 1.0,
+              Expanded(
+                child: Row(
+                  children: [
+                    Flexible(
+                      child: Text(
+                        card.title.toUpperCase(),
+                        style: TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: AdminTokens.textMuted(isDark),
+                          letterSpacing: 0.8,
+                        ),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    if (card.tooltip != null) ...[
+                      const SizedBox(width: 4),
+                      Tooltip(
+                        message: card.tooltip!,
+                        child: Icon(
+                          Icons.info_outline_rounded,
+                          size: 13,
+                          color: AdminTokens.textMuted(isDark),
+                        ),
+                      ),
+                    ],
+                  ],
                 ),
               ),
               Container(
-                width: 32,
-                height: 32,
+                width: 30,
+                height: 30,
                 decoration: BoxDecoration(
-                  color: card.accentColor.withValues(alpha: 0.12),
+                  color: card.accentColor.withValues(
+                    alpha: isDark ? 0.16 : 0.10,
+                  ),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(card.icon, size: 16, color: card.accentColor),
               ),
             ],
           ),
+          const SizedBox(height: 6),
           Text(card.value, style: cardStyle),
+          if (card.subtitle != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              card.subtitle!,
+              style: TextStyle(
+                fontSize: 10.5,
+                color: AdminTokens.textSecondary(isDark),
+                fontWeight: FontWeight.w500,
+              ),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
         ],
       ),
     );
@@ -292,18 +423,14 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
       label: Text(
         label,
         style: TextStyle(
-          color: isSelected
-              ? Colors.white
-              : (isDark ? Colors.white70 : Colors.black87),
+          color: isSelected ? Colors.white : AdminTokens.textPrimary(isDark),
           fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
           fontSize: 12,
         ),
       ),
       selected: isSelected,
       selectedColor: AppColors.primary,
-      backgroundColor: isDark
-          ? Colors.white.withValues(alpha: 0.05)
-          : Colors.black.withValues(alpha: 0.05),
+      backgroundColor: AdminTokens.sunken(isDark),
       onSelected: (val) {
         if (val) setState(() => _selectedFilter = value);
       },
@@ -347,7 +474,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: (isReview ? Colors.purple : Colors.blue).withValues(
-                  alpha: 0.15,
+                  alpha: isDark ? 0.20 : 0.12,
                 ),
                 borderRadius: BorderRadius.circular(6),
               ),
@@ -365,7 +492,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
         AdminColumn<PurchaseModel>(
           label: 'Amount',
           cellBuilder: (item) => Text(
-            '₹${item.amountPaidInr}',
+            _inrCurrencyFormat.format(item.amountPaidInr),
             style: const TextStyle(
               fontFamily: 'Poppins',
               fontWeight: FontWeight.bold,
@@ -398,7 +525,7 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
             return Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
-                color: c.withValues(alpha: 0.15),
+                color: c.withValues(alpha: isDark ? 0.20 : 0.12),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
@@ -435,34 +562,29 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
     BuildContext context,
     PurchaseModel item,
   ) async {
-    final ok = await showAdminConfirmDialog(
+    final confirmed = await AdminDestructiveDialog.show(
       context: context,
-      title: 'Refund Purchase',
-      message:
-          'Are you sure you want to refund this purchase? This will revoke user course access immediately.',
+      title: 'Issue Purchase Refund',
+      actionName: 'Refund & Revoke Access',
+      targetName:
+          'Payment ID: ${item.razorpayPaymentId ?? item.id} (User: ${item.userId})',
+      blastRadiusDescription:
+          'Course "${item.categoryId}" access will be revoked immediately. The amount of ${_inrCurrencyFormat.format(item.amountPaidInr)} will be marked as refunded.',
+      confirmButtonLabel:
+          'Confirm Refund (${_inrCurrencyFormat.format(item.amountPaidInr)})',
+      icon: Icons.replay_circle_filled_rounded,
+      onConfirm: () async {
+        await ref.read(adminPurchasesProvider.notifier).refundPurchase(item.id);
+      },
     );
 
-    if (ok == true) {
-      try {
-        await ref.read(adminPurchasesProvider.notifier).refundPurchase(item.id);
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Refund issued successfully'),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (context.mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text('Refund failed: $e'),
-              backgroundColor: Colors.red,
-            ),
-          );
-        }
-      }
+    if (confirmed == true && context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Refund issued and course access revoked.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
     }
   }
 
@@ -470,35 +592,46 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
     BuildContext context,
     List<PurchaseModel> items,
   ) async {
-    const header =
-        'Purchase ID,User ID,Category ID,Unlock Method,Amount (INR),Razorpay Payment ID,Razorpay Order ID,Status,Purchased At,Verified At\n';
+    final headers = [
+      'Purchase ID',
+      'User ID',
+      'Category ID',
+      'Unlock Method',
+      'Amount (INR)',
+      'Razorpay Payment ID',
+      'Razorpay Order ID',
+      'Status',
+      'Purchased At',
+      'Verified At',
+    ];
 
-    String escape(String? val) {
-      if (val == null) return '';
-      if (val.contains(',') || val.contains('"') || val.contains('\n')) {
-        return '"${val.replaceAll('"', '""')}"';
-      }
-      return val;
-    }
+    final rows = items.map((p) {
+      return <Object?>[
+        p.id,
+        p.userId,
+        p.categoryId,
+        p.unlockMethod,
+        p.amountPaidInr,
+        p.razorpayPaymentId ?? '',
+        p.razorpayOrderId ?? '',
+        p.status,
+        p.purchasedAt,
+        p.verifiedAt ?? '',
+      ];
+    }).toList();
 
-    final rows = items
-        .map((p) {
-          return [
-            escape(p.id),
-            escape(p.userId),
-            escape(p.categoryId),
-            escape(p.unlockMethod),
-            p.amountPaidInr.toString(),
-            escape(p.razorpayPaymentId),
-            escape(p.razorpayOrderId),
-            escape(p.status),
-            escape(p.purchasedAt),
-            escape(p.verifiedAt),
-          ].join(',');
-        })
-        .join('\n');
+    final metadata = {
+      'Generated At': DateTime.now().toUtc().toIso8601String(),
+      'Active Filter': _selectedFilter,
+      'Total Records': items.length.toString(),
+    };
 
-    final csv = header + rows;
+    final csv = SafeCsvHelper.buildCsv(
+      headers: headers,
+      rows: rows,
+      metadata: metadata,
+    );
+
     final filename =
         'olitun-course-purchases-${DateTime.now().millisecondsSinceEpoch}.csv';
 
@@ -515,9 +648,9 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
     } catch (e) {
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Export failed: $e'),
-            backgroundColor: Colors.red,
+          const SnackBar(
+            content: Text('Failed to export CSV.'),
+            backgroundColor: AppColors.error,
           ),
         );
       }
@@ -528,12 +661,16 @@ class _AdminPurchasesScreenState extends ConsumerState<AdminPurchasesScreen> {
 class _KpiItem {
   final String title;
   final String value;
+  final String? subtitle;
+  final String? tooltip;
   final IconData icon;
   final Color accentColor;
 
   _KpiItem({
     required this.title,
     required this.value,
+    this.subtitle,
+    this.tooltip,
     required this.icon,
     required this.accentColor,
   });

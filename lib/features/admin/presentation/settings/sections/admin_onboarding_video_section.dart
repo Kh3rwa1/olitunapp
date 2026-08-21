@@ -51,11 +51,13 @@ class AdminOnboardingVideoSection extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 10),
-                    Text(
-                      currentVideoUrl != null
-                          ? 'Custom Video Active'
-                          : 'Using Default Bundled Video',
-                      style: AdminTokens.bodyStrong(isDark),
+                    Expanded(
+                      child: Text(
+                        currentVideoUrl != null
+                            ? 'Custom Video Active'
+                            : 'Using Default Bundled Video',
+                        style: AdminTokens.bodyStrong(isDark),
+                      ),
                     ),
                   ],
                 ),
@@ -85,25 +87,23 @@ class AdminOnboardingVideoSection extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 20),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              Expanded(
-                child: AdminPrimaryButton(
-                  label: isUploading ? 'Uploading…' : 'Upload Video',
-                  icon: isUploading
-                      ? Icons.hourglass_top_rounded
-                      : Icons.cloud_upload_rounded,
-                  onTap: isUploading ? () {} : onUpload,
-                ),
+              AdminPrimaryButton(
+                label: isUploading ? 'Uploading…' : 'Upload Video',
+                icon: isUploading
+                    ? Icons.hourglass_top_rounded
+                    : Icons.cloud_upload_rounded,
+                onTap: isUploading ? () {} : onUpload,
               ),
-              if (currentVideoUrl != null) ...[
-                const SizedBox(width: 12),
+              if (currentVideoUrl != null)
                 AdminSecondaryButton(
-                  label: 'Reset',
+                  label: 'Reset Defaults',
                   icon: Icons.restore_rounded,
                   onTap: onReset,
                 ),
-              ],
             ],
           ),
           if (isUploading)

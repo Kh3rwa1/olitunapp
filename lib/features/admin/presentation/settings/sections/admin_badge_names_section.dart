@@ -46,16 +46,15 @@ class AdminBadgeNamesSection extends StatelessWidget {
             prefixIcon: Icons.people_outline_rounded,
           ),
           const SizedBox(height: 20),
-          Row(
+          Wrap(
+            spacing: 12,
+            runSpacing: 12,
             children: [
-              Expanded(
-                child: AdminPrimaryButton(
-                  label: 'Save Badge Names',
-                  icon: Icons.save_rounded,
-                  onTap: onSave,
-                ),
+              AdminPrimaryButton(
+                label: 'Save Badge Names',
+                icon: Icons.save_rounded,
+                onTap: onSave,
               ),
-              const SizedBox(width: 12),
               AdminSecondaryButton(
                 label: 'Reset Defaults',
                 icon: Icons.restore_rounded,

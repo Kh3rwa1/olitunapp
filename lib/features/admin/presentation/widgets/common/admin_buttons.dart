@@ -13,46 +13,63 @@ class AdminPrimaryButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData? icon;
   final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-        child: Container(
-          padding: EdgeInsets.symmetric(
-            horizontal: compact ? 16 : 20,
-            vertical: compact ? 11 : 14,
-          ),
-          decoration: BoxDecoration(
-            color: AdminTokens.accent,
-            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-            boxShadow: AdminTokens.brandGlow(AdminTokens.accent, strength: 0.7),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: Colors.white, size: compact ? 16 : 18),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: 'Poppins',
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w700,
-                  letterSpacing: 0.2,
+    final isEnabled = onTap != null;
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      label: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+              horizontal: compact ? 16 : 20,
+              vertical: compact ? 11 : 14,
+            ),
+            decoration: BoxDecoration(
+              color: isEnabled
+                  ? AdminTokens.accent
+                  : AdminTokens.accent.withValues(alpha: 0.4),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              boxShadow: isEnabled
+                  ? AdminTokens.brandGlow(AdminTokens.accent, strength: 0.7)
+                  : null,
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(
+                    icon,
+                    color: isEnabled ? Colors.white : Colors.white70,
+                    size: compact ? 16 : 18,
+                  ),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: isEnabled ? Colors.white : Colors.white70,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.2,
+                    ),
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -71,53 +88,64 @@ class AdminSecondaryButton extends StatelessWidget {
   });
 
   final String label;
-  final VoidCallback onTap;
+  final VoidCallback? onTap;
   final IconData? icon;
   final bool destructive;
 
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final color = destructive
+    final isEnabled = onTap != null;
+    final baseColor = destructive
         ? AppColors.error
         : AdminTokens.textPrimary(isDark);
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-        child: Container(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
-          decoration: BoxDecoration(
-            color: destructive
-                ? AppColors.error.withValues(alpha: isDark ? 0.14 : 0.10)
-                : AdminTokens.sunken(isDark),
-            borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-            border: Border.all(
+    final color = isEnabled ? baseColor : baseColor.withValues(alpha: 0.4);
+
+    return Semantics(
+      button: true,
+      enabled: isEnabled,
+      label: label,
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 14),
+            decoration: BoxDecoration(
               color: destructive
-                  ? AppColors.error.withValues(alpha: 0.3)
-                  : AdminTokens.border(isDark),
-            ),
-          ),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              if (icon != null) ...[
-                Icon(icon, color: color, size: 18),
-                const SizedBox(width: 8),
-              ],
-              Text(
-                label,
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  color: color,
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                  letterSpacing: 0.1,
-                ),
+                  ? AppColors.error.withValues(alpha: isDark ? 0.14 : 0.10)
+                  : AdminTokens.sunken(isDark),
+              borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+              border: Border.all(
+                color: destructive
+                    ? AppColors.error.withValues(alpha: 0.3)
+                    : AdminTokens.border(isDark),
               ),
-            ],
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (icon != null) ...[
+                  Icon(icon, color: color, size: 18),
+                  const SizedBox(width: 8),
+                ],
+                Flexible(
+                  child: Text(
+                    label,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      color: color,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.1,
+                    ),
+                  ),
+                ),
+              ],
+            ),
           ),
         ),
       ),

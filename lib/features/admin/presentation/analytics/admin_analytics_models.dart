@@ -1,4 +1,10 @@
 import 'dart:convert';
+import '../common/safe_csv_helper.dart';
+
+/// Backward-compatible alias to SafeCsvHelper.escapeCell
+String csvEscape(Object? value) => SafeCsvHelper.escapeCell(value);
+
+enum AnalyticsDataCompleteness { complete, partial, unavailable }
 
 class AdminAnalyticsSnapshot {
   const AdminAnalyticsSnapshot({
@@ -16,6 +22,9 @@ class AdminAnalyticsSnapshot {
     required this.eventRows,
     required this.startDate,
     required this.endDate,
+    this.isSampled = false,
+    this.completeness = AnalyticsDataCompleteness.complete,
+    this.lastAggregatedAt,
   });
 
   factory AdminAnalyticsSnapshot.fromRows({
@@ -24,6 +33,7 @@ class AdminAnalyticsSnapshot {
     DateTime? now,
     DateTime? startDate,
     DateTime? endDate,
+    bool isSampled = false,
   }) {
     final today = _dateOnly(now ?? DateTime.now().toUtc());
     final resolvedEnd = _dateOnly(endDate ?? today);
@@ -113,6 +123,12 @@ class AdminAnalyticsSnapshot {
         ? _usersSince(dailyUsers, anchorDate, const Duration(days: 29)).length
         : _countSince(dailyActiveCounts, anchorDate, const Duration(days: 29));
 
+    final completeness = (rollups.isEmpty && events.isEmpty)
+        ? AnalyticsDataCompleteness.unavailable
+        : (isSampled || (rollups.isEmpty && events.length >= 1000)
+              ? AnalyticsDataCompleteness.partial
+              : AnalyticsDataCompleteness.complete);
+
     return AdminAnalyticsSnapshot(
       dau: dau,
       wau: wau,
@@ -128,6 +144,9 @@ class AdminAnalyticsSnapshot {
       eventRows: events.length,
       startDate: resolvedStart,
       endDate: resolvedEnd,
+      isSampled: isSampled || events.length >= 1000,
+      completeness: completeness,
+      lastAggregatedAt: today,
     );
   }
 
@@ -145,6 +164,9 @@ class AdminAnalyticsSnapshot {
   final int eventRows;
   final DateTime startDate;
   final DateTime endDate;
+  final bool isSampled;
+  final AnalyticsDataCompleteness completeness;
+  final DateTime? lastAggregatedAt;
 
   bool get hasAnyData => rollupRows > 0 || eventRows > 0;
 
@@ -152,18 +174,20 @@ class AdminAnalyticsSnapshot {
 
   String get semanticsSummary =>
       'Learning analytics dashboard. DAU $dau, WAU $wau, MAU $mau. '
-      '${eventTotals.length} event types and ${platformTotals.length} platforms.';
+      '${eventTotals.length} event types and ${platformTotals.length} platforms. '
+      'Status: ${completeness.name}.';
 
   String toRollupsCsv() {
-    final lines = <List<Object?>>[
-      [
-        'dateKey',
-        'eventName',
-        'totalEvents',
-        'uniqueUsers',
-        'platformBreakdown',
-        'sourceBreakdown',
-      ],
+    final headers = [
+      'dateKey',
+      'eventName',
+      'totalEvents',
+      'uniqueUsers',
+      'platformBreakdown',
+      'sourceBreakdown',
+    ];
+
+    final rows = <List<Object?>>[
       for (final row in rollupsForExport)
         [
           row.dateKey,
@@ -174,7 +198,19 @@ class AdminAnalyticsSnapshot {
           jsonEncode(row.sourceBreakdown),
         ],
     ];
-    return lines.map((line) => line.map(csvEscape).join(',')).join('\n');
+
+    final metadata = {
+      'Generated At': DateTime.now().toUtc().toIso8601String(),
+      'Date Scope': '${formatDateKey(startDate)} to ${formatDateKey(endDate)}',
+      'Data Status': completeness.name,
+      'Total Rollup Rows': rollupsForExport.length.toString(),
+    };
+
+    return SafeCsvHelper.buildCsv(
+      headers: headers,
+      rows: rows,
+      metadata: metadata,
+    );
   }
 }
 
@@ -220,81 +256,79 @@ Map<String, int> parseBreakdown(Object? raw) {
     }
   }
   if (decoded is! Map) return {};
-
   final result = <String, int>{};
   for (final entry in decoded.entries) {
-    final key = _text(entry.key, fallback: '').trim();
-    if (key.isEmpty) continue;
-    result[key] = _integer(entry.value);
+    final key = entry.key.toString().trim();
+    final value = _integer(entry.value);
+    if (key.isNotEmpty && value > 0) result[key] = value;
   }
-  result.removeWhere((_, value) => value <= 0);
-  return sortCounts(result);
-}
-
-Map<String, int> sortCounts(Map<String, int> counts) {
-  final entries = counts.entries.toList()
-    ..sort((a, b) {
-      final byCount = b.value.compareTo(a.value);
-      return byCount == 0 ? a.key.compareTo(b.key) : byCount;
-    });
-  return Map<String, int>.fromEntries(entries);
+  return result;
 }
 
 List<RetentionCohort> buildRetentionCohorts(
   List<Map<String, dynamic>> events, {
-  DateTime? now,
-  int weeks = 6,
+  required DateTime now,
 }) {
-  final seenByActor = <String, Set<DateTime>>{};
+  final userFirstWeek = <String, DateTime>{};
+  final userActivityWeeks = <String, Set<DateTime>>{};
+
   for (final event in events) {
-    final actorId = _actorId(event);
     final date = _parseDate(event['dateKey']);
-    if (actorId == null || date == null) continue;
-    seenByActor.putIfAbsent(actorId, () => <DateTime>{}).add(_weekStart(date));
-  }
-
-  final cohorts = <DateTime, Set<String>>{};
-  for (final entry in seenByActor.entries) {
-    if (entry.value.isEmpty) continue;
-    final firstWeek = entry.value.reduce((a, b) => a.isBefore(b) ? a : b);
-    cohorts.putIfAbsent(firstWeek, () => <String>{}).add(entry.key);
-  }
-
-  final currentWeek = _weekStart(now ?? DateTime.now().toUtc());
-  final rows = <RetentionCohort>[];
-  for (final cohortWeek in cohorts.keys) {
-    if (cohortWeek.isAfter(currentWeek)) continue;
-    final members = cohorts[cohortWeek]!;
-    final retention = <double>[];
-    for (var offset = 0; offset < weeks; offset += 1) {
-      final targetWeek = cohortWeek.add(Duration(days: 7 * offset));
-      if (targetWeek.isAfter(currentWeek)) {
-        retention.add(0);
-        continue;
-      }
-      final retained = members.where((actor) {
-        return seenByActor[actor]?.contains(targetWeek) ?? false;
-      }).length;
-      retention.add(members.isEmpty ? 0 : retained / members.length);
+    final actorId = _actorId(event);
+    if (date == null || actorId == null) continue;
+    final week = _weekStart(date);
+    userActivityWeeks.putIfAbsent(actorId, () => <DateTime>{}).add(week);
+    final first = userFirstWeek[actorId];
+    if (first == null || week.isBefore(first)) {
+      userFirstWeek[actorId] = week;
     }
-    rows.add(
+  }
+
+  final cohortUsers = <DateTime, Set<String>>{};
+  for (final entry in userFirstWeek.entries) {
+    cohortUsers.putIfAbsent(entry.value, () => <String>{}).add(entry.key);
+  }
+
+  final sortedCohortWeeks = cohortUsers.keys.toList()..sort();
+  final cohorts = <RetentionCohort>[];
+
+  for (final week in sortedCohortWeeks.reversed.take(6).toList().reversed) {
+    final users = cohortUsers[week] ?? const <String>{};
+    if (users.isEmpty) continue;
+    final rates = <double>[];
+    for (var i = 0; i <= 4; i++) {
+      final targetWeek = week.add(Duration(days: i * 7));
+      if (targetWeek.isAfter(now)) break;
+      var activeCount = 0;
+      for (final user in users) {
+        final weeks = userActivityWeeks[user] ?? const <DateTime>{};
+        if (weeks.contains(targetWeek)) activeCount++;
+      }
+      rates.add(activeCount / users.length);
+    }
+    cohorts.add(
       RetentionCohort(
-        weekStart: cohortWeek,
-        size: members.length,
-        weekRetention: retention,
+        weekStart: week,
+        size: users.length,
+        weekRetention: rates,
       ),
     );
   }
 
-  rows.sort((a, b) => b.weekStart.compareTo(a.weekStart));
-  return rows.take(8).toList();
+  return cohorts;
+}
+
+Map<String, int> sortCounts(Map<String, int> input) {
+  final entries = input.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+  return Map.fromEntries(entries);
 }
 
 String formatDateKey(DateTime date) {
-  final d = _dateOnly(date);
-  return '${d.year.toString().padLeft(4, '0')}-'
-      '${d.month.toString().padLeft(2, '0')}-'
-      '${d.day.toString().padLeft(2, '0')}';
+  final year = date.year.toString().padLeft(4, '0');
+  final month = date.month.toString().padLeft(2, '0');
+  final day = date.day.toString().padLeft(2, '0');
+  return '$year-$month-$day';
 }
 
 String formatShortDate(DateTime date) {
@@ -313,14 +347,6 @@ String formatShortDate(DateTime date) {
     'Dec',
   ];
   return '${months[date.month - 1]} ${date.day}';
-}
-
-String csvEscape(Object? value) {
-  final text = value?.toString() ?? '';
-  final needsQuotes =
-      text.contains(',') || text.contains('"') || text.contains('\n');
-  final escaped = text.replaceAll('"', '""');
-  return needsQuotes ? '"$escaped"' : escaped;
 }
 
 DateTime _latestDate(List<DateTime> dates) {

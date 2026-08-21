@@ -15,6 +15,8 @@ class AdminTopBar extends StatefulWidget {
 }
 
 class _AdminTopBarState extends State<AdminTopBar> {
+  bool _isPaletteOpen = false;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +43,9 @@ class _AdminTopBarState extends State<AdminTopBar> {
   }
 
   void _showCommandPalette(BuildContext context) {
+    if (_isPaletteOpen) return;
+    _isPaletteOpen = true;
+
     showGeneralDialog(
       context: context,
       barrierDismissible: true,
@@ -66,7 +71,9 @@ class _AdminTopBarState extends State<AdminTopBar> {
           ),
         );
       },
-    );
+    ).then((_) {
+      if (mounted) _isPaletteOpen = false;
+    });
   }
 
   @override
@@ -100,15 +107,29 @@ class _AdminTopBarState extends State<AdminTopBar> {
               ),
               const SizedBox(width: 8),
             ],
-            Text(
-              crumbs[i],
-              style: AdminTokens.label(widget.isDark).copyWith(
-                color: i == crumbs.length - 1
-                    ? AdminTokens.textPrimary(widget.isDark)
-                    : AdminTokens.textTertiary(widget.isDark),
-                fontWeight: i == crumbs.length - 1
-                    ? FontWeight.w700
-                    : FontWeight.w500,
+            InkWell(
+              onTap: (i < crumbs.length - 1 && crumbs[i].path != null)
+                  ? () => context.go(crumbs[i].path!)
+                  : null,
+              borderRadius: BorderRadius.circular(4),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 4),
+                child: Text(
+                  crumbs[i].label,
+                  style: AdminTokens.label(widget.isDark).copyWith(
+                    color: i == crumbs.length - 1
+                        ? AdminTokens.textPrimary(widget.isDark)
+                        : AdminTokens.textTertiary(widget.isDark),
+                    fontWeight: i == crumbs.length - 1
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                    decoration:
+                        (i < crumbs.length - 1 && crumbs[i].path != null)
+                        ? TextDecoration.underline
+                        : TextDecoration.none,
+                    decorationColor: AdminTokens.textMuted(widget.isDark),
+                  ),
+                ),
               ),
             ),
           ],
@@ -178,16 +199,20 @@ class _AdminTopBarState extends State<AdminTopBar> {
           ),
           const Spacer(),
 
-          AdminTopBarChip(
-            isDark: widget.isDark,
-            icon: Icons.bolt_rounded,
-            label: 'Live',
-            color: AppColors.primary,
+          Tooltip(
+            message:
+                'Connected to Appwrite Production Cluster (Singapore Region)',
+            child: AdminTopBarChip(
+              isDark: widget.isDark,
+              icon: Icons.cloud_done_rounded,
+              label: 'Production',
+              color: AppColors.primary,
+            ),
           ),
           const SizedBox(width: 10),
           AdminTopBarChip(
             isDark: widget.isDark,
-            icon: Icons.person_outline_rounded,
+            icon: Icons.admin_panel_settings_rounded,
             label: 'Admin',
           ),
         ],
@@ -195,14 +220,28 @@ class _AdminTopBarState extends State<AdminTopBar> {
     );
   }
 
-  List<String> _crumbsFor(String location) {
-    if (location == '/admin' || location == '/admin/') return ['Dashboard'];
+  List<_CrumbItem> _crumbsFor(String location) {
+    if (location == '/admin' || location == '/admin/') {
+      return [const _CrumbItem(label: 'Dashboard', path: '/admin')];
+    }
     final segments = location
         .replaceFirst('/admin/', '')
         .split('/')
         .where((s) => s.isNotEmpty)
         .toList();
-    return ['Admin', ...segments.map(_titleize)];
+
+    final result = <_CrumbItem>[
+      const _CrumbItem(label: 'Admin', path: '/admin'),
+    ];
+
+    var currentPath = '/admin';
+    for (var i = 0; i < segments.length; i++) {
+      final seg = segments[i];
+      currentPath += '/$seg';
+      result.add(_CrumbItem(label: _titleize(seg), path: currentPath));
+    }
+
+    return result;
   }
 
   String _titleize(String s) {
@@ -216,6 +255,12 @@ class _AdminTopBarState extends State<AdminTopBar> {
         )
         .join(' ');
   }
+}
+
+class _CrumbItem {
+  final String label;
+  final String? path;
+  const _CrumbItem({required this.label, this.path});
 }
 
 class AdminTopBarChip extends StatelessWidget {

@@ -26,90 +26,113 @@ class AdminSectionHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final width = MediaQuery.of(context).size.width;
-    final compact = width < 600;
-
-    final titleStyle = compact
-        ? AdminTokens.pageTitle(isDark).copyWith(fontSize: 26)
-        : AdminTokens.display(isDark);
-
     final eyebrowText = (eyebrow ?? title).toUpperCase();
 
-    return Padding(
-      padding: EdgeInsets.only(bottom: compact ? 20 : 28),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final width = constraints.maxWidth;
+        final compact = width < 600;
+        final isWide = width > 760;
+
+        final titleStyle = compact
+            ? AdminTokens.pageTitle(isDark).copyWith(fontSize: 24)
+            : AdminTokens.display(isDark);
+
+        return Padding(
+          padding: EdgeInsets.only(bottom: compact ? 16 : 24),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (icon != null) ...[
-                Container(
-                  width: compact ? 44 : 52,
-                  height: compact ? 44 : 52,
-                  decoration: BoxDecoration(
-                    color: AdminTokens.accentSoft(isDark),
-                    borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
-                    border: Border.all(color: AdminTokens.accentBorder(isDark)),
-                  ),
-                  child: Icon(
-                    icon,
-                    color: AdminTokens.accent,
-                    size: compact ? 22 : 26,
-                  ),
-                ),
-                SizedBox(width: compact ? 14 : 18),
-              ],
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Row(
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (icon != null) ...[
+                    Container(
+                      width: compact ? 40 : 48,
+                      height: compact ? 40 : 48,
+                      decoration: BoxDecoration(
+                        color: AdminTokens.accentSoft(isDark),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusMd,
+                        ),
+                        border: Border.all(
+                          color: AdminTokens.accentBorder(isDark),
+                        ),
+                      ),
+                      child: Icon(
+                        icon,
+                        color: AdminTokens.accent,
+                        size: compact ? 20 : 24,
+                      ),
+                    ),
+                    SizedBox(width: compact ? 12 : 16),
+                  ],
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
                       children: [
-                        Container(
-                          width: 6,
-                          height: 6,
-                          decoration: const BoxDecoration(
-                            color: AdminTokens.accent,
-                            shape: BoxShape.circle,
-                          ),
+                        Row(
+                          children: [
+                            Container(
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                color: AdminTokens.accent,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                'ADMIN · $eyebrowText',
+                                overflow: TextOverflow.ellipsis,
+                                style: AdminTokens.eyebrow(isDark),
+                              ),
+                            ),
+                          ],
                         ),
-                        const SizedBox(width: 8),
-                        Flexible(
-                          child: Text(
-                            'ADMIN · $eyebrowText',
-                            overflow: TextOverflow.ellipsis,
-                            style: AdminTokens.eyebrow(isDark),
+                        const SizedBox(height: 6),
+                        Text(title, style: titleStyle),
+                        if (subtitle != null) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            subtitle!,
+                            style: AdminTokens.body(
+                              isDark,
+                            ).copyWith(fontSize: compact ? 12 : 14),
                           ),
-                        ),
+                        ],
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    Text(title, style: titleStyle),
-                    if (subtitle != null) ...[
-                      const SizedBox(height: 6),
-                      Text(
-                        subtitle!,
-                        style: AdminTokens.body(
-                          isDark,
-                        ).copyWith(fontSize: compact ? 13 : 15),
+                  ),
+                  if (actions != null && actions!.isNotEmpty && isWide) ...[
+                    const SizedBox(width: 16),
+                    Flexible(
+                      child: Wrap(
+                        alignment: WrapAlignment.end,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: actions!,
                       ),
-                    ],
+                    ),
                   ],
-                ),
+                ],
               ),
-              if (actions != null && actions!.isNotEmpty && width > 720) ...[
-                const SizedBox(width: 24),
-                Wrap(spacing: 8, runSpacing: 8, children: actions!),
+              if (actions != null && actions!.isNotEmpty && !isWide) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: actions!,
+                ),
               ],
             ],
           ),
-          if (actions != null && actions!.isNotEmpty && width <= 720) ...[
-            const SizedBox(height: 16),
-            Wrap(spacing: 8, runSpacing: 8, children: actions!),
-          ],
-        ],
-      ),
+        );
+      },
     );
   }
 }

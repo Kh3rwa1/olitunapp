@@ -5,6 +5,28 @@ All notable changes to Olitun will be documented in this file.
 This project uses conventional commits and release-please to keep release notes
 and tags consistent.
 
+## [1.4.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.3.0...olitun-v1.4.0) (2026-08-21)
+
+
+### Features
+
+* google sheet automated affirmation sync and wisdom UI cleanup ([#137](https://github.com/Kh3rwa1/olitunapp/issues/137)) ([3a7d68c](https://github.com/Kh3rwa1/olitunapp/commit/3a7d68c4e575168c305f165f834dca76c1068b7e))
+* **hardening:** atomic rate limiting, verified identity, cache-first SWR, fail-closed signing & action pinning ([#132](https://github.com/Kh3rwa1/olitunapp/issues/132)) ([a179efa](https://github.com/Kh3rwa1/olitunapp/commit/a179efaa604982786e42c8197ffc7e9dbdeaf5ed))
+
+
+### Bug Fixes
+
+* **admin, affirmations:** finalize 10/10 financial metrics, truthful refunds, and browser affirmation sharing ([#140](https://github.com/Kh3rwa1/olitunapp/issues/140)) ([b24aac1](https://github.com/Kh3rwa1/olitunapp/commit/b24aac1cd27a26b1af2b9e9e548a78760f067c9b))
+* **admin:** 10/10 production hardening for purchases, refunds, pagination, csv export, and affirmation sharing ([#141](https://github.com/Kh3rwa1/olitunapp/issues/141)) ([b16e2eb](https://github.com/Kh3rwa1/olitunapp/commit/b16e2ebfe225fcd6db455cbe5d712ec3733a2cc4))
+* **admin:** 10/10 production hardening for purchases, refunds, responsive tables, and web sharing ([#142](https://github.com/Kh3rwa1/olitunapp/issues/142)) ([b492218](https://github.com/Kh3rwa1/olitunapp/commit/b492218c30fdb0c256fd502d605acaee0d61e3e2))
+* **admin:** finalize 10-of-10 reliability, revenue metrics, safe CSV, and accessibility ([#139](https://github.com/Kh3rwa1/olitunapp/issues/139)) ([5921a00](https://github.com/Kh3rwa1/olitunapp/commit/5921a0011ee284e516be240ec487d81d43fb189f))
+* e2e test runner, node-appwrite SDK alignment, signing verification, and release gates ([#134](https://github.com/Kh3rwa1/olitunapp/issues/134)) ([f7a0f12](https://github.com/Kh3rwa1/olitunapp/commit/f7a0f129030c442d5d68f7a46b53cbaf1cb6e7f6))
+* **integration:** dynamically match prompts and ensureVisible before tap in Quiz flow E2E ([#135](https://github.com/Kh3rwa1/olitunapp/issues/135)) ([3665f90](https://github.com/Kh3rwa1/olitunapp/commit/3665f90c8305ae1d76db1c90c410715d7e5ff130))
+* real atomic slot reservation rate limit and e2e release gates ([#133](https://github.com/Kh3rwa1/olitunapp/issues/133)) ([0beed0d](https://github.com/Kh3rwa1/olitunapp/commit/0beed0dfb53e19d71a3e3b10ba93a7318336347b))
+* **release:** require cert fingerprint, tag tested commits, and handle staging secrets ([#136](https://github.com/Kh3rwa1/olitunapp/issues/136)) ([0827882](https://github.com/Kh3rwa1/olitunapp/commit/0827882206efba771f11b4791fbbc8028da29ef1))
+* **security,payments,ci:** resolve P1/P2 web session security, stale cache fallback, version drift & CI gating ([#124](https://github.com/Kh3rwa1/olitunapp/issues/124)) ([cd13202](https://github.com/Kh3rwa1/olitunapp/commit/cd132026e23c9dc45a04cad01793616d49e38f0c))
+* **sync:** support request header key and default fallback endpoint/project ([#138](https://github.com/Kh3rwa1/olitunapp/issues/138)) ([c1e1b46](https://github.com/Kh3rwa1/olitunapp/commit/c1e1b465db3c4ead02e1572e45b94949ed63990b))
+
 ## [1.3.0](https://github.com/Kh3rwa1/olitunapp/compare/olitun-v1.2.2...olitun-v1.3.0) (2026-08-09)
 
 

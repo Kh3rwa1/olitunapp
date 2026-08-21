@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:js_interop';
 import 'package:flutter/services.dart';
 import 'package:web/web.dart' as web;
@@ -54,18 +55,26 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
         files: [file].toJS,
       );
 
-      if (nav.canShare(shareData)) {
+      bool canShareFile = false;
+      try {
+        canShareFile = nav.canShare(shareData);
+      } catch (_) {
+        canShareFile = false;
+      }
+
+      if (canShareFile) {
         await nav.share(shareData).toDart;
         return AffirmationShareResult.shared;
       }
 
-      // Fallback to text share if files aren't supported
+      // Fallback to text share if file sharing is not supported by this browser
       return await shareText(text: text, title: title);
     } catch (e) {
-      final errStr = e.toString();
-      if (errStr.contains('AbortError') ||
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('aborterror') ||
           errStr.contains('cancelled') ||
-          errStr.contains('canceled')) {
+          errStr.contains('canceled') ||
+          errStr.contains('user rejected')) {
         return AffirmationShareResult.cancelled;
       }
       AppLogger.debug('⚠️ Web shareImage failed, falling back to download: $e');
@@ -83,16 +92,26 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
     try {
       final nav = web.window.navigator;
       final shareData = web.ShareData(title: title, text: text, url: url ?? '');
-      if (nav.canShare(shareData)) {
+
+      bool supported = false;
+      try {
+        supported = nav.canShare(shareData);
+      } catch (_) {
+        // Some browser versions support share() but throw on canShare with text dictionaries
+        supported = true;
+      }
+
+      if (supported) {
         await nav.share(shareData).toDart;
         return AffirmationShareResult.shared;
       }
       return await copyToClipboard(text);
     } catch (e) {
-      final errStr = e.toString();
-      if (errStr.contains('AbortError') ||
+      final errStr = e.toString().toLowerCase();
+      if (errStr.contains('aborterror') ||
           errStr.contains('cancelled') ||
-          errStr.contains('canceled')) {
+          errStr.contains('canceled') ||
+          errStr.contains('user rejected')) {
         return AffirmationShareResult.cancelled;
       }
       return await copyToClipboard(text);
@@ -118,7 +137,16 @@ class AffirmationShareServiceImpl implements AffirmationShareService {
       web.document.body?.appendChild(anchor);
       anchor.click();
       anchor.remove();
-      web.URL.revokeObjectURL(url);
+
+      // Delayed object URL revocation prevents download cancellation races in Safari/WebKit
+      unawaited(
+        Future.delayed(const Duration(milliseconds: 1500), () {
+          try {
+            web.URL.revokeObjectURL(url);
+          } catch (_) {}
+        }),
+      );
+
       return AffirmationShareResult.downloaded;
     } catch (e) {
       AppLogger.debug('❌ Web downloadImage failed: $e');

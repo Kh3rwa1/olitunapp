@@ -9,8 +9,10 @@ import 'package:itun/shared/models/content_models.dart';
 
 class FakeAffirmationShareService implements AffirmationShareService {
   bool shareImageInvoked = false;
+  bool shareTextInvoked = false;
   bool downloadInvoked = false;
   bool copyInvoked = false;
+  AffirmationShareResult shareImageResult = AffirmationShareResult.shared;
 
   @override
   Future<bool> canShareFiles(Uint8List imageBytes) async => true;
@@ -27,7 +29,7 @@ class FakeAffirmationShareService implements AffirmationShareService {
     Rect? shareOrigin,
   }) async {
     shareImageInvoked = true;
-    return AffirmationShareResult.shared;
+    return shareImageResult;
   }
 
   @override
@@ -37,6 +39,7 @@ class FakeAffirmationShareService implements AffirmationShareService {
     String? url,
     Rect? shareOrigin,
   }) async {
+    shareTextInvoked = true;
     return AffirmationShareResult.shared;
   }
 
@@ -198,6 +201,59 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fakeService.downloadInvoked, isTrue);
+    });
+
+    testWidgets('handles Copy Text tap', (tester) async {
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            affirmationShareServiceProvider.overrideWithValue(fakeService),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: AffirmationShareSheet(
+                affirmation: affirmation,
+                imageBytes: transparentPng,
+                shareText: 'Dare ge jiwi - Trees are life',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Copy Text'));
+      await tester.pumpAndSettle();
+
+      expect(fakeService.copyInvoked, isTrue);
+    });
+
+    testWidgets('user cancellation does not show error snackbar', (
+      tester,
+    ) async {
+      fakeService.shareImageResult = AffirmationShareResult.cancelled;
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            affirmationShareServiceProvider.overrideWithValue(fakeService),
+          ],
+          child: MaterialApp(
+            home: Scaffold(
+              body: AffirmationShareSheet(
+                affirmation: affirmation,
+                imageBytes: transparentPng,
+                shareText: 'Dare ge jiwi - Trees are life',
+              ),
+            ),
+          ),
+        ),
+      );
+
+      await tester.tap(find.text('Share Image'));
+      await tester.pumpAndSettle();
+
+      expect(fakeService.shareImageInvoked, isTrue);
+      expect(find.byType(SnackBar), findsNothing);
     });
   });
 }

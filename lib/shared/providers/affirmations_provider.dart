@@ -3,6 +3,7 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/api/appwrite_db_service.dart';
+import '../../core/auth/appwrite_auth_service.dart';
 import '../../core/storage/cache_service.dart';
 import '../models/content_models.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';

@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:flutter/foundation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/logging/app_logger.dart';
@@ -28,87 +29,109 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
   Future<void> _shareCard(AffirmationModel affirmation) async {
     if (_isSharing) return;
-    setState(() => _isSharing = true);
+    _isSharing = true;
     HapticFeedback.mediumImpact();
 
+    final shareText = affirmation.englishMeaning.trim().isNotEmpty
+        ? affirmation.englishMeaning.trim()
+        : (affirmation.santaliPhonetic.trim().isNotEmpty
+              ? affirmation.santaliPhonetic.trim()
+              : "Today's wisdom from Olitun 🪶");
+
+    final renderBox = context.findRenderObject() as RenderBox?;
+    final origin = renderBox != null
+        ? renderBox.localToGlobal(Offset.zero) & renderBox.size
+        : null;
+
     try {
-      final boundary =
-          _repaintKey.currentContext?.findRenderObject()
-              as RenderRepaintBoundary?;
-      if (boundary == null) throw Exception('Boundary not found');
+      XFile? imageFile;
 
-      // Capture screen image
-      final image = await boundary.toImage(pixelRatio: 3.0);
-      final byteData = await image.toByteData(format: ui.ImageByteFormat.png);
-      final pngBytes = byteData!.buffer.asUint8List();
+      try {
+        final boundary =
+            _repaintKey.currentContext?.findRenderObject()
+                as RenderRepaintBoundary?;
 
-      // We want to add a watermark on a custom Canvas
-      final recorder = ui.PictureRecorder();
-      final canvas = Canvas(recorder);
-      final paint = Paint();
+        if (boundary != null && !boundary.debugNeedsPaint) {
+          final image = await boundary.toImage(pixelRatio: 2.5);
+          final byteData = await image.toByteData(
+            format: ui.ImageByteFormat.png,
+          );
 
-      // Draw the captured image
-      final capturedImage = await _loadImage(pngBytes);
-      canvas.drawImage(capturedImage, Offset.zero, paint);
+          if (byteData != null) {
+            final pngBytes = byteData.buffer.asUint8List();
 
-      // Draw watermark text at the bottom right
-      final watermarkStyle = TextStyle(
-        color: Colors.white.withValues(alpha: 0.5),
-        fontSize: 32,
-        fontWeight: FontWeight.bold,
-        fontFamily: 'Poppins',
-      );
-      final textSpan = TextSpan(text: 'Olitun 🪶', style: watermarkStyle);
-      final textPainter = TextPainter(
-        text: textSpan,
-        textDirection: TextDirection.ltr,
-      );
-      textPainter.layout();
+            final recorder = ui.PictureRecorder();
+            final canvas = Canvas(recorder);
+            final paint = Paint();
 
-      // Draw watermark background overlay (semi-transparent bar at very bottom)
-      final textOffset = Offset(
-        capturedImage.width - textPainter.width - 48,
-        capturedImage.height - textPainter.height - 48,
-      );
+            final capturedImage = await _loadImage(pngBytes);
+            canvas.drawImage(capturedImage, Offset.zero, paint);
 
-      textPainter.paint(canvas, textOffset);
+            final watermarkStyle = TextStyle(
+              color: Colors.white.withValues(alpha: 0.6),
+              fontSize: 28,
+              fontWeight: FontWeight.bold,
+              fontFamily: 'Poppins',
+            );
+            final textSpan = TextSpan(text: 'Olitun 🪶', style: watermarkStyle);
+            final textPainter = TextPainter(
+              text: textSpan,
+              textDirection: TextDirection.ltr,
+            );
+            textPainter.layout();
 
-      // Save processed image
-      final watermarkImage = await recorder.endRecording().toImage(
-        capturedImage.width,
-        capturedImage.height,
-      );
-      final watermarkByteData = await watermarkImage.toByteData(
-        format: ui.ImageByteFormat.png,
-      );
-      final watermarkedBytes = watermarkByteData!.buffer.asUint8List();
+            final textOffset = Offset(
+              capturedImage.width - textPainter.width - 40,
+              capturedImage.height - textPainter.height - 40,
+            );
+            textPainter.paint(canvas, textOffset);
 
-      // Save to temp directory
-      final tempDir = await getTemporaryDirectory();
-      final file = await File(
-        '${tempDir.path}/olitun_wisdom_${affirmation.id}.png',
-      ).create();
-      await file.writeAsBytes(watermarkedBytes);
+            final watermarkImage = await recorder.endRecording().toImage(
+              capturedImage.width,
+              capturedImage.height,
+            );
+            final watermarkByteData = await watermarkImage.toByteData(
+              format: ui.ImageByteFormat.png,
+            );
 
-      // Share
+            if (watermarkByteData != null) {
+              final watermarkedBytes = watermarkByteData.buffer.asUint8List();
+
+              if (!kIsWeb) {
+                final tempDir = await getTemporaryDirectory();
+                final fileId = affirmation.id.replaceAll(
+                  RegExp(r'[^a-zA-Z0-9]'),
+                  '_',
+                );
+                final file = await File(
+                  '${tempDir.path}/olitun_wisdom_${fileId.isNotEmpty ? fileId : "daily"}.png',
+                ).create();
+                await file.writeAsBytes(watermarkedBytes);
+                imageFile = XFile(file.path);
+              } else {
+                imageFile = XFile.fromData(
+                  watermarkedBytes,
+                  mimeType: 'image/png',
+                  name: 'olitun_wisdom.png',
+                );
+              }
+            }
+          }
+        }
+      } catch (imgErr) {
+        AppLogger.debug('⚠️ Image capture fallback: $imgErr');
+      }
+
       if (!mounted) return;
-      final renderBox = context.findRenderObject() as RenderBox?;
-      final origin = renderBox != null
-          ? renderBox.localToGlobal(Offset.zero) & renderBox.size
-          : null;
 
-      final shareText = affirmation.englishMeaning.trim().isNotEmpty
-          ? affirmation.englishMeaning.trim()
-          : (affirmation.santaliPhonetic.trim().isNotEmpty
-                ? affirmation.santaliPhonetic.trim()
-                : "Today's wisdom from Olitun 🪶");
+      final filesList = imageFile != null ? [imageFile] : const <XFile>[];
 
       await SharePlus.instance.share(
         ShareParams(
           title: shareText,
           subject: shareText,
           text: shareText,
-          files: [XFile(file.path)],
+          files: filesList,
           sharePositionOrigin: origin,
         ),
       );
@@ -117,15 +140,18 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
     } catch (e) {
       AppLogger.debug('❌ Failed to share affirmation card: $e');
       if (mounted) {
+        // Ultimate fallback: Copy to clipboard if OS share sheet encounters issue
+        await Clipboard.setData(ClipboardData(text: shareText));
+        if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Failed to share affirmation card'),
+            content: Text('Wisdom copied to clipboard! 📋'),
             behavior: SnackBarBehavior.floating,
           ),
         );
       }
     } finally {
-      if (mounted) setState(() => _isSharing = false);
+      _isSharing = false;
     }
   }
 

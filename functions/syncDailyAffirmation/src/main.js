@@ -155,25 +155,32 @@ export function parseBody(body) {
   }
 }
 
-export function appwriteClient(env = process.env) {
+export function appwriteClient(req, env = process.env) {
   const endpoint =
     env.APPWRITE_FUNCTION_API_ENDPOINT ||
     env.APPWRITE_ENDPOINT ||
-    env.OLITUN_APPWRITE_ENDPOINT;
+    env.OLITUN_APPWRITE_ENDPOINT ||
+    'https://sgp.cloud.appwrite.io/v1';
   const projectId =
     env.APPWRITE_FUNCTION_PROJECT_ID ||
     env.APPWRITE_PROJECT_ID ||
-    env.OLITUN_APPWRITE_PROJECT_ID;
+    env.OLITUN_APPWRITE_PROJECT_ID ||
+    '699495910038e39622c5';
   const apiKey =
+    req?.headers?.['x-appwrite-key'] ||
     env.APPWRITE_FUNCTION_API_KEY ||
     env.APPWRITE_API_KEY ||
     env.OLITUN_APPWRITE_API_KEY;
 
-  if (!endpoint || !projectId || !apiKey) {
-    throw new Error('Missing Appwrite endpoint, project ID, or API key.');
+  if (!endpoint || !projectId) {
+    throw new Error('Missing Appwrite endpoint or project ID.');
   }
 
-  return new Client().setEndpoint(endpoint).setProject(projectId).setKey(apiKey);
+  const client = new Client().setEndpoint(endpoint).setProject(projectId);
+  if (apiKey) {
+    client.setKey(apiKey);
+  }
+  return client;
 }
 
 /**
@@ -278,7 +285,7 @@ export default async ({ req, res, log, error }) => {
     const sheetUrl = body.sheetUrl || process.env.GOOGLE_SHEET_CSV_URL || DEFAULT_SHEET_CSV_URL;
     const force = Boolean(body.force);
 
-    const client = appwriteClient();
+    const client = appwriteClient(req);
     const databases = new Databases(client);
 
     const result = await syncAffirmationFromSheet({

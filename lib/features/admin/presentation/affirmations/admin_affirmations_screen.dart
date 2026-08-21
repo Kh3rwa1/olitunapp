@@ -21,6 +21,244 @@ class AdminAffirmationsScreen extends ConsumerStatefulWidget {
 
 class _AdminAffirmationsScreenState
     extends ConsumerState<AdminAffirmationsScreen> {
+  bool _isSyncing = false;
+
+  Future<void> _triggerSheetSync() async {
+    if (_isSyncing) return;
+    setState(() => _isSyncing = true);
+    try {
+      final result = await ref
+          .read(affirmationsProvider.notifier)
+          .syncFromGoogleSheet();
+      if (!mounted) return;
+      final isSynced = result['synced'] == true;
+      final reason = result['reason'];
+      final message = isSynced
+          ? 'Successfully synced latest affirmation from Google Sheet!'
+          : (reason == 'already_up_to_date'
+              ? 'Affirmations are already up to date with the latest sheet row.'
+              : 'Google Sheet checked. No new rows found.');
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              Icon(
+                isSynced ? Icons.check_circle_rounded : Icons.info_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  message,
+                  style: const TextStyle(
+                    fontFamily: 'Poppins',
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor:
+              isSynced ? AppColors.primary : const Color(0xFF1E293B),
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(
+                Icons.error_outline_rounded,
+                color: Colors.white,
+                size: 20,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Failed to sync from Google Sheet: $e',
+                  style: const TextStyle(fontFamily: 'Poppins'),
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: AppColors.error,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(8),
+          ),
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isSyncing = false);
+      }
+    }
+  }
+
+  Widget _buildGoogleSheetSyncBanner(bool isDark, bool isWideScreen) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 20),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AdminTokens.raised(isDark),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusMd),
+        border: Border.all(color: AdminTokens.border(isDark)),
+        boxShadow: AdminTokens.raisedShadow(isDark),
+      ),
+      child: isWideScreen
+          ? Row(
+              children: [
+                _buildSheetIconBadge(isDark),
+                const SizedBox(width: 16),
+                Expanded(child: _buildSheetInfoText(isDark)),
+                const SizedBox(width: 16),
+                _buildSyncButton(),
+              ],
+            )
+          : Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    _buildSheetIconBadge(isDark),
+                    const SizedBox(width: 12),
+                    Expanded(child: _buildSheetInfoText(isDark)),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                SizedBox(
+                  width: double.infinity,
+                  child: _buildSyncButton(),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildSheetIconBadge(bool isDark) {
+    return Container(
+      width: 44,
+      height: 44,
+      decoration: BoxDecoration(
+        color: const Color(0xFF107C41).withValues(alpha: 0.12),
+        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+        border: Border.all(
+          color: const Color(0xFF107C41).withValues(alpha: 0.25),
+        ),
+      ),
+      child: const Icon(
+        Icons.table_chart_rounded,
+        color: Color(0xFF107C41),
+        size: 22,
+      ),
+    );
+  }
+
+  Widget _buildSheetInfoText(bool isDark) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Text(
+              'Google Sheet Auto-Sync',
+              style: TextStyle(
+                fontFamily: 'Poppins',
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+                color: AdminTokens.textPrimary(isDark),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: AppColors.primary.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(
+                  color: AppColors.primary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 6,
+                    height: 6,
+                    decoration: const BoxDecoration(
+                      color: AppColors.primary,
+                      shape: BoxShape.circle,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  const Text(
+                    'Every 3 Hours',
+                    style: TextStyle(
+                      fontSize: 11,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.primary,
+                      fontFamily: 'Poppins',
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Fetches the latest (last) row automatically from the connected spreadsheet and updates the daily affirmation.',
+          style: TextStyle(
+            fontFamily: 'Poppins',
+            fontSize: 12,
+            color: AdminTokens.textSecondary(isDark),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildSyncButton() {
+    return ElevatedButton.icon(
+      onPressed: _isSyncing ? null : _triggerSheetSync,
+      style: ElevatedButton.styleFrom(
+        backgroundColor: const Color(0xFF107C41),
+        foregroundColor: Colors.white,
+        disabledBackgroundColor: const Color(0xFF107C41).withValues(alpha: 0.5),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        elevation: 0,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+        ),
+      ),
+      icon: _isSyncing
+          ? const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Icon(Icons.sync_rounded, size: 18),
+      label: Text(
+        _isSyncing ? 'Syncing...' : 'Sync from Sheet Now',
+        style: const TextStyle(
+          fontFamily: 'Poppins',
+          fontWeight: FontWeight.w700,
+          fontSize: 13,
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final affirmationsAsync = ref.watch(affirmationsProvider);
@@ -66,6 +304,9 @@ class _AdminAffirmationsScreenState
           ),
 
           const SizedBox(height: 20),
+
+          // Google Sheet Integration & Sync Card
+          _buildGoogleSheetSyncBanner(isDark, isWideScreen),
 
           // Main content
           Expanded(

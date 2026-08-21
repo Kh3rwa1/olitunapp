@@ -318,6 +318,28 @@
                 "databases.read",
                 "databases.write"
             ]
+        },
+        {
+            "$id": "syncDailyAffirmation",
+            "name": "syncDailyAffirmation",
+            "runtime": "node-22",
+            "path": "functions/syncDailyAffirmation",
+            "entrypoint": "src/main.js",
+            "execute": [
+                "users"
+            ],
+            "enabled": true,
+            "logging": true,
+            "events": [],
+            "schedule": "0 */3 * * *",
+            "timeout": 30,
+            "commands": "npm install",
+            "scopes": [
+                "databases.read",
+                "databases.write",
+                "documents.read",
+                "documents.write"
+            ]
         }
     ],
     "sites": [

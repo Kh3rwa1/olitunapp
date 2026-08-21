@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:appwrite/appwrite.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -90,6 +91,36 @@ class AffirmationsNotifier
     }
   }
 
+  Future<Map<String, dynamic>> syncFromGoogleSheet({
+    String? sheetUrl,
+    bool force = false,
+  }) async {
+    try {
+      final client = ref.read(appwriteAuthServiceProvider).client;
+      final functions = Functions(client);
+      final execution = await functions.createExecution(
+        functionId: 'syncDailyAffirmation',
+        body: '{"sheetUrl":"${sheetUrl ?? ""}", "force":$force}',
+      );
+
+      Map<String, dynamic> result = {'ok': true};
+      if (execution.responseBody.isNotEmpty) {
+        try {
+          final decoded = jsonDecode(execution.responseBody);
+          if (decoded is Map<String, dynamic>) {
+            result = decoded;
+          }
+        } catch (_) {}
+      }
+
+      await _loadAffirmations();
+      return result;
+    } catch (e) {
+      AppLogger.debug('❌ sync affirmations from Google Sheet FAILED: $e');
+      rethrow;
+    }
+  }
+
   Future<void> refresh() async => _loadAffirmations();
 }
 
@@ -98,11 +129,14 @@ final todayAffirmationProvider = Provider<AsyncValue<AffirmationModel?>>((ref) {
   return affirmationsAsync.when(
     data: (list) {
       if (list.isEmpty) return const AsyncValue.data(null);
-      // Deterministic selection per day of year
-      final now = DateTime.now();
-      final dayOfYear = now.difference(DateTime(now.year)).inDays;
-      final selected = list[dayOfYear % list.length];
-      return AsyncValue.data(selected);
+      // Prioritize the latest synced affirmation by order desc and publishedAt desc
+      final sorted = List<AffirmationModel>.from(list)
+        ..sort((a, b) {
+          final orderComp = b.order.compareTo(a.order);
+          if (orderComp != 0) return orderComp;
+          return b.publishedAt.compareTo(a.publishedAt);
+        });
+      return AsyncValue.data(sorted.first);
     },
     loading: () => const AsyncValue.loading(),
     error: AsyncValue.error,

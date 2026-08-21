@@ -28,7 +28,14 @@ class InfoPill extends StatelessWidget {
         children: [
           Text(label, style: AdminTokens.label(isDark)),
           const SizedBox(height: 2),
-          SelectableText(value, style: AdminTokens.bodyStrong(isDark)),
+          ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 220),
+            child: Text(
+              value,
+              style: AdminTokens.bodyStrong(isDark),
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

@@ -8,6 +8,7 @@ import '../../../../core/config/appwrite_config.dart';
 import '../../../../core/theme/admin_tokens.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../widgets/admin_page_header.dart';
+import '../widgets/common/admin_destructive_dialog.dart';
 import 'controllers/admin_access_controller.dart';
 import 'widgets/access_card.dart';
 import 'widgets/info_pill.dart';
@@ -23,6 +24,7 @@ class AdminAccessScreen extends ConsumerStatefulWidget {
 class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
   final _addEmailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void initState() {
@@ -39,21 +41,97 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
 
   Future<void> _addAdmin() async {
     final email = _addEmailController.text.trim();
+    if (email.isEmpty) return;
     await ref.read(adminAccessControllerProvider.notifier).addAdmin(email);
     _addEmailController.clear();
   }
 
   Future<void> _removeAdmin(Map<String, dynamic> admin) async {
-    final userId = admin['userId']?.toString();
-    if (userId == null || userId.isEmpty) return;
-    await ref.read(adminAccessControllerProvider.notifier).removeAdmin(userId);
+    final userId = admin['userId']?.toString() ?? '';
+    final userEmail = admin['userEmail']?.toString() ?? userId;
+    final userName = admin['userName']?.toString() ?? 'Admin';
+    if (userId.isEmpty) return;
+
+    final confirmed = await AdminDestructiveDialog.show(
+      context: context,
+      title: 'Remove Administrator Access',
+      actionName: 'Revoke Admin Access',
+      targetName: '$userName ($userEmail)',
+      blastRadiusDescription:
+          'This user will be removed from the Appwrite "$AppwriteConfig.adminTeamId" team and will lose all access to Olitun Content Studio immediately.',
+      isReversible: true,
+      confirmButtonLabel: 'Remove Administrator',
+      icon: Icons.person_remove_rounded,
+      onConfirm: () async {
+        await ref
+            .read(adminAccessControllerProvider.notifier)
+            .removeAdmin(userId);
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Removed admin access for $userEmail'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
   }
 
-  Future<void> _resetPassword() async {
+  Future<void> _confirmResetPassword() async {
+    final state = ref.read(adminAccessControllerProvider);
+    final targetId = state.selectedUserId;
+    if (targetId == null || targetId.isEmpty) return;
+
+    final targetAdmin = state.admins.firstWhere(
+      (a) => a['userId'] == targetId,
+      orElse: () => {'userId': targetId, 'userEmail': targetId},
+    );
+    final email = targetAdmin['userEmail']?.toString() ?? targetId;
     final password = _passwordController.text.trim();
-    await ref
-        .read(adminAccessControllerProvider.notifier)
-        .resetPassword(password);
+
+    if (password.length < 16) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Password must be at least 16 characters long.'),
+          backgroundColor: AppColors.error,
+        ),
+      );
+      return;
+    }
+
+    final confirmed = await AdminDestructiveDialog.show(
+      context: context,
+      title: 'Reset Admin Password',
+      actionName: 'Rotate Account Credentials',
+      targetName: email,
+      blastRadiusDescription: state.revokeSessions
+          ? 'The account password will be rotated and all existing active login sessions will be immediately terminated.'
+          : 'The account password will be updated to the newly generated credential.',
+      confirmButtonLabel: 'Reset Password',
+      icon: Icons.lock_reset_rounded,
+      isDanger: false,
+      onConfirm: () async {
+        await ref
+            .read(adminAccessControllerProvider.notifier)
+            .resetPassword(password);
+      },
+    );
+
+    if (confirmed == true && mounted) {
+      // Clear password field after successful reset for safety
+      setState(() {
+        _passwordController.text = _generatePassword();
+        _obscurePassword = true;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Password updated for $email!'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+    }
   }
 
   String _generatePassword() {
@@ -81,9 +159,16 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
     final password = _passwordController.text.trim();
     if (password.isEmpty) return;
     await Clipboard.setData(ClipboardData(text: password));
-    ref
-        .read(adminAccessControllerProvider.notifier)
-        .setMessage('Generated password copied.');
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Generated password copied to clipboard. Paste securely.',
+          ),
+          backgroundColor: AppColors.primary,
+        ),
+      );
+    }
   }
 
   @override
@@ -97,14 +182,18 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
         child: state.isLoading
             ? const Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(AdminTokens.space7),
+                padding: EdgeInsets.all(
+                  MediaQuery.of(context).size.width < 600
+                      ? 16
+                      : AdminTokens.space7,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const AdminPageHeader(
                       title: 'Admin Access',
                       subtitle:
-                          'Manage Appwrite admin team members and rotate admin passwords.',
+                          'Manage Appwrite admin team members and rotate admin passwords safely.',
                       eyebrow: 'SYSTEM · ACCESS',
                     ),
                     const SizedBox(height: 24),
@@ -150,25 +239,57 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Expanded(
-                                child: TextField(
-                                  controller: _addEmailController,
-                                  keyboardType: TextInputType.emailAddress,
-                                  decoration: const InputDecoration(
-                                    labelText: 'Existing user email',
-                                    hintText: 'admin@example.com',
+                          LayoutBuilder(
+                            builder: (context, constraints) {
+                              final isNarrow = constraints.maxWidth < 460;
+                              if (isNarrow) {
+                                return Column(
+                                  crossAxisAlignment:
+                                      CrossAxisAlignment.stretch,
+                                  children: [
+                                    TextField(
+                                      controller: _addEmailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Existing user email',
+                                        hintText: 'admin@example.com',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    FilledButton.icon(
+                                      onPressed: state.isBusy
+                                          ? null
+                                          : _addAdmin,
+                                      icon: const Icon(
+                                        Icons.person_add_rounded,
+                                      ),
+                                      label: const Text('Add Member'),
+                                    ),
+                                  ],
+                                );
+                              }
+
+                              return Row(
+                                children: [
+                                  Expanded(
+                                    child: TextField(
+                                      controller: _addEmailController,
+                                      keyboardType: TextInputType.emailAddress,
+                                      decoration: const InputDecoration(
+                                        labelText: 'Existing user email',
+                                        hintText: 'admin@example.com',
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ),
-                              const SizedBox(width: 12),
-                              FilledButton.icon(
-                                onPressed: state.isBusy ? null : _addAdmin,
-                                icon: const Icon(Icons.person_add_rounded),
-                                label: const Text('Add'),
-                              ),
-                            ],
+                                  const SizedBox(width: 12),
+                                  FilledButton.icon(
+                                    onPressed: state.isBusy ? null : _addAdmin,
+                                    icon: const Icon(Icons.person_add_rounded),
+                                    label: const Text('Add'),
+                                  ),
+                                ],
+                              );
+                            },
                           ),
                           const SizedBox(height: 18),
                           ...state.admins.map((admin) {
@@ -216,6 +337,7 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           DropdownButtonFormField<String>(
+                            isExpanded: true,
                             initialValue: state.selectedUserId,
                             items: state.admins
                                 .map(
@@ -247,16 +369,36 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
                           const SizedBox(height: 14),
                           TextField(
                             controller: _passwordController,
+                            obscureText: _obscurePassword,
                             decoration: InputDecoration(
                               labelText: 'New password',
-                              suffixIcon: IconButton(
-                                tooltip: 'Copy password',
-                                onPressed: _copyPassword,
-                                icon: const Icon(Icons.copy_rounded),
+                              suffixIcon: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    tooltip: _obscurePassword
+                                        ? 'Reveal password'
+                                        : 'Hide password',
+                                    onPressed: () => setState(
+                                      () =>
+                                          _obscurePassword = !_obscurePassword,
+                                    ),
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip: 'Copy password',
+                                    onPressed: _copyPassword,
+                                    icon: const Icon(Icons.copy_rounded),
+                                  ),
+                                ],
                               ),
                             ),
                           ),
-                          const SizedBox(height: 8),
+                          const SizedBox(height: 12),
                           Wrap(
                             spacing: 10,
                             runSpacing: 10,
@@ -282,7 +424,9 @@ class _AdminAccessScreenState extends ConsumerState<AdminAccessScreen> {
                                           .updateRevokeSessions(value),
                               ),
                               FilledButton.icon(
-                                onPressed: state.isBusy ? null : _resetPassword,
+                                onPressed: state.isBusy
+                                    ? null
+                                    : _confirmResetPassword,
                                 icon: const Icon(Icons.lock_reset_rounded),
                                 label: const Text('Reset Password'),
                               ),

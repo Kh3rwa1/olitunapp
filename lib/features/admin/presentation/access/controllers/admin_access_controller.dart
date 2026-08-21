@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/auth/appwrite_auth_service.dart';
+import '../../../domain/admin_failure.dart';
 
 class AdminAccessState {
   final bool isLoading;
@@ -114,7 +115,8 @@ class AdminAccessController extends StateNotifier<AdminAccessState> {
       _applySummary(data);
       state = state.copyWith(message: () => successMessage);
     } catch (e) {
-      state = state.copyWith(message: e.toString);
+      final failure = AdminFailure.fromException(e);
+      state = state.copyWith(message: () => failure.userMessage);
     } finally {
       state = state.copyWith(isBusy: false);
     }

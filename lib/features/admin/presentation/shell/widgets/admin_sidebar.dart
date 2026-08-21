@@ -521,7 +521,7 @@ class _AdminNavItemState extends State<AdminNavItem> {
               ? AdminTokens.textPrimary(isDark)
               : AdminTokens.textSecondary(isDark));
 
-    return Padding(
+    Widget navItem = Padding(
       padding: const EdgeInsets.only(bottom: 2),
       child: MouseRegion(
         onEnter: (_) => setState(() => _hovering = true),
@@ -593,6 +593,21 @@ class _AdminNavItemState extends State<AdminNavItem> {
           ),
         ),
       ),
+    );
+
+    if (widget.isCompact) {
+      navItem = Tooltip(
+        message: widget.label,
+        waitDuration: const Duration(milliseconds: 300),
+        child: navItem,
+      );
+    }
+
+    return Semantics(
+      label: widget.label,
+      selected: selected,
+      button: true,
+      child: navItem,
     );
   }
 }

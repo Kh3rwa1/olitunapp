@@ -51,7 +51,7 @@ class DashboardHeader extends ConsumerWidget {
                   ),
                   const SizedBox(width: 10),
                   Text(
-                    'OVERVIEW · LIVE',
+                    'OVERVIEW · PRODUCTION',
                     style: AdminTokens.eyebrow(
                       isDark,
                     ).copyWith(color: AppColors.primary),

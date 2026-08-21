@@ -175,7 +175,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               );
 
         final textColor = isDark ? Colors.white : Colors.black87;
-        final subtextColor = isDark ? Colors.white60 : Colors.black54;
 
         return RepaintBoundary(
           key: _repaintKey,

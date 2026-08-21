@@ -2,12 +2,51 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import '../../../../shared/models/content_models.dart';
 
-/// Pure domain utility for generating audit-compliant, injection-safe CSV exports.
-class PurchaseCsvExporter {
-  const PurchaseCsvExporter._();
+/// Status of an asynchronous or paginated purchase export operation.
+enum PurchaseExportStatus { completed, truncated, cancelled, failed }
 
-  /// Column headers for purchase exports in deterministic order.
-  static const List<String> headers = [
+/// Typed result of an admin purchase export query.
+@immutable
+class PurchaseExportResult {
+  final List<PurchaseModel> items;
+  final int exportedCount;
+  final int? totalEstimated;
+  final bool isTruncated;
+  final bool hasMore;
+  final PurchaseExportStatus status;
+  final String activeFilter;
+  final String searchQuery;
+  final DateTime startedAt;
+  final DateTime completedAt;
+  final String? sanitizedFailure;
+
+  const PurchaseExportResult({
+    required this.items,
+    required this.exportedCount,
+    this.totalEstimated,
+    required this.isTruncated,
+    required this.hasMore,
+    required this.status,
+    required this.activeFilter,
+    required this.searchQuery,
+    required this.startedAt,
+    required this.completedAt,
+    this.sanitizedFailure,
+  });
+
+  bool get isSuccessful =>
+      status == PurchaseExportStatus.completed ||
+      status == PurchaseExportStatus.truncated;
+}
+
+/// Pure domain utility for generating RFC 4180 compliant CSVs from purchase records.
+class PurchaseCsvExporter {
+  PurchaseCsvExporter._();
+
+  static const String schemaVersion = '1.0';
+  static const String currency = 'INR';
+
+  static const List<String> csvHeaders = [
     'Purchase ID',
     'Masked User ID',
     'Category ID',
@@ -20,9 +59,9 @@ class PurchaseCsvExporter {
     'Verified At (UTC)',
   ];
 
-  /// Neutralizes CSV / Spreadsheet formula injection vulnerabilities.
+  /// Neutralizes spreadsheet formula injection (CSV Injection / CWE-1236).
   ///
-  /// Prepends a single quote if the field begins with '=', '+', '-', '@', '\t', or '\r'.
+  /// Prefixes cells starting with '=', '+', '-', '@', '\t', or '\r' with an apostrophe.
   static String sanitizeForCsv(String value) {
     if (value.isEmpty) return value;
     final firstChar = value[0];
@@ -37,62 +76,66 @@ class PurchaseCsvExporter {
     return value;
   }
 
-  /// Masks user identifiers to prevent unnecessary PII leakage in exports.
+  /// Masks user identifiers to prevent PII exposure in exported reports.
   static String maskUserId(String userId) {
-    final clean = userId.trim();
-    if (clean.isEmpty) return '';
-    if (clean.length <= 6) return 'u_****';
-    return 'u_${clean.substring(0, 4)}***';
+    if (userId.isEmpty) return '';
+    if (userId.length <= 6) return 'u_****';
+    return 'u_${userId.substring(0, 4)}***';
   }
 
-  /// Encodes a single cell into standard RFC 4180 CSV syntax.
+  /// Escapes a single CSV cell according to RFC 4180 rules.
   static String escapeCsvCell(Object? value) {
     if (value == null) return '';
-    String str;
-    if (value is num || value is bool) {
-      str = value.toString();
-    } else {
-      str = sanitizeForCsv(value.toString());
-    }
+    final str = sanitizeForCsv(value.toString());
 
     if (str.contains(',') ||
         str.contains('"') ||
         str.contains('\n') ||
         str.contains('\r')) {
-      return '"${str.replaceAll('"', '""')}"';
+      final escaped = str.replaceAll('"', '""');
+      return '"$escaped"';
     }
     return str;
   }
 
-  /// Generates complete CSV content as a UTF-8 string with optional metadata manifest.
+  /// Builds a complete UTF-8 CSV string with BOM, metadata comments, and sanitized rows.
   static String generateCsv({
     required List<PurchaseModel> items,
     required String exportScope,
     required String activeFilter,
     required String searchQuery,
-    String currency = 'INR',
+    bool isTruncated = false,
+    int? totalEstimatedCount,
     DateTime? timestampUtc,
   }) {
-    final now = (timestampUtc ?? DateTime.now().toUtc()).toIso8601String();
+    final now = timestampUtc ?? DateTime.now().toUtc();
     final buffer = StringBuffer();
 
-    // UTF-8 Byte Order Mark (BOM) for seamless Excel & spreadsheet Unicode rendering
+    // UTF-8 Byte Order Mark for Excel and Unicode compatibility (Santali / Ol Chiki)
     buffer.write('\uFEFF');
 
     // Structured metadata header comments
     buffer.writeln('# Olitun Admin Purchase Export');
-    buffer.writeln('# Generated (UTC): $now');
-    buffer.writeln('# Export Scope: $exportScope (${items.length} rows)');
+    buffer.writeln('# Schema Version: $schemaVersion');
+    buffer.writeln('# Generated (UTC): ${now.toIso8601String()}');
     buffer.writeln(
-      '# Filter: $activeFilter | Search: ${searchQuery.isEmpty ? "none" : searchQuery}',
+      '# Export Scope: $exportScope${isTruncated ? " (Truncated - Safety Limit Reached)" : " (Complete)"}',
     );
-    buffer.writeln('# Currency: $currency | PII Masking: Active');
-    buffer.writeln('# Schema Version: 1.0');
+    buffer.writeln('# Filter: $activeFilter');
+    buffer.writeln('# Search: ${searchQuery.isEmpty ? "none" : searchQuery}');
+    buffer.writeln('# Currency: $currency');
+    buffer.writeln('# Row Count: ${items.length}');
+    if (totalEstimatedCount != null) {
+      buffer.writeln('# Total Matching Records: $totalEstimatedCount');
+    }
+    buffer.writeln('# Complete: ${!isTruncated}');
+    buffer.writeln('# PII Masking: Active (User IDs masked)');
+    buffer.writeln('#');
 
-    // CSV Header row
-    buffer.writeln(headers.map(escapeCsvCell).join(','));
+    // CSV Column Headers
+    buffer.writeln(csvHeaders.join(','));
 
-    // Data rows
+    // Rows
     for (final p in items) {
       final row = <Object?>[
         p.id,
@@ -106,19 +149,21 @@ class PurchaseCsvExporter {
         p.purchasedAt,
         p.verifiedAt ?? '',
       ];
+
       buffer.writeln(row.map(escapeCsvCell).join(','));
     }
 
     return buffer.toString();
   }
 
-  /// Returns UTF-8 encoded bytes with BOM.
+  /// Returns UTF-8 encoded bytes for browser download or file writing.
   static Uint8List generateCsvBytes({
     required List<PurchaseModel> items,
     required String exportScope,
     required String activeFilter,
     required String searchQuery,
-    String currency = 'INR',
+    bool isTruncated = false,
+    int? totalEstimatedCount,
     DateTime? timestampUtc,
   }) {
     final csvString = generateCsv(
@@ -126,7 +171,8 @@ class PurchaseCsvExporter {
       exportScope: exportScope,
       activeFilter: activeFilter,
       searchQuery: searchQuery,
-      currency: currency,
+      isTruncated: isTruncated,
+      totalEstimatedCount: totalEstimatedCount,
       timestampUtc: timestampUtc,
     );
     return Uint8List.fromList(utf8.encode(csvString));

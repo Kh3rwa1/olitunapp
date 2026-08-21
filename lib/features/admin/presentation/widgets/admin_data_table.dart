@@ -200,13 +200,17 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      widget.columns[i].label.toUpperCase(),
-                      style: AdminTokens.eyebrow(
-                        isDark,
-                      ).copyWith(fontSize: 10.5),
+                    Flexible(
+                      child: Text(
+                        widget.columns[i].label.toUpperCase(),
+                        overflow: TextOverflow.ellipsis,
+                        style: AdminTokens.eyebrow(
+                          isDark,
+                        ).copyWith(fontSize: 10.5),
+                      ),
                     ),
-                    if (_sortColumnIndex == i)
+                    if (_sortColumnIndex == i) ...[
+                      const SizedBox(width: 4),
                       Icon(
                         _sortAscending
                             ? Icons.arrow_upward_rounded
@@ -214,6 +218,7 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
                         size: 14,
                         color: AppColors.primary,
                       ),
+                    ],
                   ],
                 ),
               ),

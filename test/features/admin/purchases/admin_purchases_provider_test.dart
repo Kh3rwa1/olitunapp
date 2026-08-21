@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
+import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
+import 'package:itun/features/auth/domain/entities/user_entity.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:mocktail/mocktail.dart';
@@ -20,13 +22,20 @@ void main() {
     mockRepo = MockPurchaseRepository();
   });
 
-  ProviderContainer createContainer() {
+  const testAdminUser = UserEntity(
+    id: 'admin_usr_999',
+    email: 'admin@olitun.com',
+    name: 'Admin Operator',
+    isEmailVerified: true,
+  );
+
+  ProviderContainer createContainer({UserEntity? operator = testAdminUser}) {
     return ProviderContainer(
       overrides: [
         appwriteDbServiceProvider.overrideWithValue(mockDb),
         purchaseRepositoryProvider.overrideWithValue(mockRepo),
         isAuthenticatedProvider.overrideWith((ref) async => true),
-        currentUserProvider.overrideWith((ref) async => null),
+        currentUserProvider.overrideWith((ref) async => operator),
       ],
     );
   }
@@ -52,7 +61,7 @@ void main() {
     };
   }
 
-  group('AdminPurchasesNotifier - State & Pagination Matrix', () {
+  group('AdminPurchasesNotifier - State, Pagination, Idempotency & Export Matrix', () {
     test(
       'Case 1: initial load loads first page and computes metrics',
       () async {
@@ -91,6 +100,8 @@ void main() {
 
         final state = container.read(adminPurchasesProvider);
         expect(state.isLoading, isFalse);
+        expect(state.hasInitialError, isFalse);
+        expect(state.hasLoadMoreError, isFalse);
         expect(state.items.length, 2);
         expect(state.hasMore, isFalse);
         expect(state.isSampledOrPartial, isFalse);
@@ -161,11 +172,12 @@ void main() {
         expect(state.items.length, 51);
         expect(state.hasMore, isFalse);
         expect(state.isSampledOrPartial, isFalse);
+        expect(state.hasLoadMoreError, isFalse);
       },
     );
 
     test(
-      'Case 3: loadNextPage preserves existing items when error occurs',
+      'Case 3: loadNextPage preserves existing items, sets loadMoreFailure, and keeps hasMore true on error',
       () async {
         when(
           () => mockDb.listDocuments(
@@ -179,7 +191,7 @@ void main() {
               [];
           final hasCursor = queries.any((q) => q.contains('cursorAfter'));
           if (hasCursor) {
-            throw AppwriteException('Network error', 0, 'network_failure');
+            throw AppwriteException('Network timeout', 0, 'network_timeout');
           }
           return List.generate(
             50,
@@ -206,14 +218,16 @@ void main() {
         await notifier.loadNextPage();
 
         final state = container.read(adminPurchasesProvider);
-        expect(state.items.length, 50);
+        expect(state.items.length, 50); // Preserved!
         expect(state.isLoadingMore, isFalse);
-        expect(state.failure, isNotNull);
+        expect(state.hasLoadMoreError, isTrue);
+        expect(state.hasInitialError, isFalse);
+        expect(state.hasMore, isTrue); // Stays true so user can retry!
       },
     );
 
     test(
-      'Case 4: recordExternalRefund updates document, invalidates user entitlement cache, and reloads',
+      'Case 4: recordExternalRefund stores actual operator admin ID and invalidates user cache',
       () async {
         when(
           () => mockDb.listDocuments(
@@ -235,6 +249,20 @@ void main() {
         );
 
         when(
+          () => mockDb.getDocument('course_purchases', 'p_refund_target'),
+        ).thenAnswer(
+          (_) async => makePurchaseDoc(
+            id: 'p_refund_target',
+            userId: 'u_target_123',
+            categoryId: 'santali_pro',
+            unlockMethod: 'razorpay',
+            amountPaidInr: 499,
+            status: 'verified',
+            paymentId: 'pay_target',
+          ),
+        );
+
+        when(
           () => mockDb.updateDocument(
             'course_purchases',
             'p_refund_target',
@@ -252,13 +280,14 @@ void main() {
         final notifier = container.read(adminPurchasesProvider.notifier);
         await notifier.loadPurchases();
 
-        final success = await notifier.recordExternalRefund(
+        final outcome = await notifier.recordExternalRefund(
           'p_refund_target',
           externalRefundId: 'rfnd_ext_123',
-          reason: 'Customer requested refund via email',
+          reason: 'Customer requested refund via support ticket',
+          idempotencyKey: 'idemp_key_999',
         );
 
-        expect(success, isTrue);
+        expect(outcome, RefundResult.completed);
         verify(
           () => mockDb.updateDocument(
             'course_purchases',
@@ -268,8 +297,10 @@ void main() {
                 return data['status'] == 'refunded' &&
                     data['refundReference'] == 'rfnd_ext_123' &&
                     data['refundReason'] ==
-                        'Customer requested refund via email' &&
-                    data['refundedBy'] == 'admin' &&
+                        'Customer requested refund via support ticket' &&
+                    data['refundedBy'] ==
+                        'admin_usr_999' && // Actual operator ID!
+                    data['idempotencyKey'] == 'idemp_key_999' &&
                     data['previousStatus'] == 'verified';
               }),
             ),
@@ -283,7 +314,7 @@ void main() {
     );
 
     test(
-      'Case 5: recordExternalRefund handles already-refunded items idempotently',
+      'Case 5: recordExternalRefund returns alreadyRefunded idempotently without duplicate update',
       () async {
         when(
           () => mockDb.listDocuments(
@@ -304,17 +335,31 @@ void main() {
           ],
         );
 
+        when(
+          () => mockDb.getDocument('course_purchases', 'p_already_refunded'),
+        ).thenAnswer(
+          (_) async => makePurchaseDoc(
+            id: 'p_already_refunded',
+            userId: 'u_target_456',
+            categoryId: 'santali_pro',
+            unlockMethod: 'razorpay',
+            amountPaidInr: 499,
+            status: 'refunded',
+            paymentId: 'pay_target',
+          ),
+        );
+
         final container = createContainer();
         addTearDown(container.dispose);
 
         final notifier = container.read(adminPurchasesProvider.notifier);
         await notifier.loadPurchases();
 
-        final success = await notifier.recordExternalRefund(
+        final outcome = await notifier.recordExternalRefund(
           'p_already_refunded',
         );
 
-        expect(success, isTrue);
+        expect(outcome, RefundResult.alreadyRefunded);
         verifyNever(
           () => mockDb.updateDocument('course_purchases', any(), any()),
         );
@@ -322,7 +367,52 @@ void main() {
     );
 
     test(
-      'Case 6: fetchAllMatchingPurchases loops through all pages with cursor',
+      'Case 6: recordExternalRefund rejects invalid state transitions',
+      () async {
+        when(
+          () => mockDb.listDocuments(
+            'course_purchases',
+            queries: any(named: 'queries'),
+          ),
+        ).thenAnswer(
+          (_) async => [
+            makePurchaseDoc(
+              id: 'p_failed_item',
+              userId: 'u_fail_1',
+              categoryId: 'santali_pro',
+              unlockMethod: 'razorpay',
+              amountPaidInr: 499,
+              status: 'failed',
+            ),
+          ],
+        );
+
+        when(
+          () => mockDb.getDocument('course_purchases', 'p_failed_item'),
+        ).thenAnswer(
+          (_) async => makePurchaseDoc(
+            id: 'p_failed_item',
+            userId: 'u_fail_1',
+            categoryId: 'santali_pro',
+            unlockMethod: 'razorpay',
+            amountPaidInr: 499,
+            status: 'failed',
+          ),
+        );
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminPurchasesProvider.notifier);
+        await notifier.loadPurchases();
+
+        final outcome = await notifier.recordExternalRefund('p_failed_item');
+        expect(outcome, RefundResult.invalidTransition);
+      },
+    );
+
+    test(
+      'Case 7: fetchAllMatchingPurchases loops through all pages via cursor and returns completed status',
       () async {
         when(
           () => mockDb.listDocuments(
@@ -366,9 +456,83 @@ void main() {
         addTearDown(container.dispose);
 
         final notifier = container.read(adminPurchasesProvider.notifier);
-        final allItems = await notifier.fetchAllMatchingPurchases();
+        final result = await notifier.fetchAllMatchingPurchases();
 
-        expect(allItems.length, 80);
+        expect(result.status, PurchaseExportStatus.completed);
+        expect(result.items.length, 80);
+        expect(result.isTruncated, isFalse);
+      },
+    );
+
+    test(
+      'Case 8: fetchAllMatchingPurchases respects safety threshold and returns truncated status',
+      () async {
+        when(
+          () => mockDb.listDocuments(
+            'course_purchases',
+            queries: any(named: 'queries'),
+          ),
+        ).thenAnswer((invocation) async {
+          return List.generate(
+            50,
+            (i) => makePurchaseDoc(
+              id: 'p_${DateTime.now().microsecondsSinceEpoch}_$i',
+              userId: 'u_$i',
+              categoryId: 'santali_basics',
+              unlockMethod: 'razorpay',
+              amountPaidInr: 299,
+              status: 'verified',
+            ),
+          );
+        });
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminPurchasesProvider.notifier);
+        final result = await notifier.fetchAllMatchingPurchases(
+          safetyLimit: 100, // Explicit safety limit for test
+        );
+
+        expect(result.status, PurchaseExportStatus.truncated);
+        expect(result.items.length, 100);
+        expect(result.isTruncated, isTrue);
+        expect(result.hasMore, isTrue);
+      },
+    );
+
+    test(
+      'Case 9: fetchAllMatchingPurchases handles cancellation cleanly',
+      () async {
+        when(
+          () => mockDb.listDocuments(
+            'course_purchases',
+            queries: any(named: 'queries'),
+          ),
+        ).thenAnswer((invocation) async {
+          return List.generate(
+            50,
+            (i) => makePurchaseDoc(
+              id: 'p_$i',
+              userId: 'u_$i',
+              categoryId: 'santali_basics',
+              unlockMethod: 'razorpay',
+              amountPaidInr: 299,
+              status: 'verified',
+            ),
+          );
+        });
+
+        final container = createContainer();
+        addTearDown(container.dispose);
+
+        final notifier = container.read(adminPurchasesProvider.notifier);
+        final result = await notifier.fetchAllMatchingPurchases(
+          isCancelled: () => true, // Cancel immediately
+        );
+
+        expect(result.status, PurchaseExportStatus.cancelled);
+        expect(result.items.isEmpty, isTrue);
       },
     );
   });

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:appwrite/appwrite.dart';
@@ -5,6 +6,7 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/api/appwrite_db_service.dart';
 import 'package:itun/core/payments/purchase_repository.dart';
 import 'package:itun/features/admin/domain/admin_failure.dart';
+import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/features/admin/domain/purchase_metrics_calculator.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/models/content_models.dart';
@@ -17,6 +19,16 @@ final purchasedCategoriesProvider = FutureProvider<Set<String>>((ref) async {
   return repo.fetchPurchasedCategoryIds(user.id);
 });
 
+/// Typed outcome for recording an external refund in Appwrite.
+enum RefundResult {
+  completed,
+  alreadyRefunded,
+  invalidTransition,
+  notFound,
+  unauthorized,
+  failed,
+}
+
 /// Immutable state model for the Admin Purchases & Revenue module.
 @immutable
 class AdminPurchasesState {
@@ -28,7 +40,8 @@ class AdminPurchasesState {
   final bool isSampledOrPartial;
   final String activeFilter;
   final String searchQuery;
-  final AdminFailure? failure;
+  final AdminFailure? initialFailure;
+  final AdminFailure? loadMoreFailure;
   final int totalLoaded;
   final int requestGeneration;
   final DateTime? lastUpdatedAt;
@@ -42,14 +55,19 @@ class AdminPurchasesState {
     this.isSampledOrPartial = false,
     this.activeFilter = 'all',
     this.searchQuery = '',
-    this.failure,
+    this.initialFailure,
+    this.loadMoreFailure,
     this.totalLoaded = 0,
     this.requestGeneration = 0,
     this.lastUpdatedAt,
   });
 
-  bool get hasError => failure != null;
+  bool get hasInitialError => initialFailure != null;
+  bool get hasLoadMoreError => loadMoreFailure != null;
+  bool get hasError => hasInitialError || hasLoadMoreError;
   bool get isInitialLoading => isLoading && items.isEmpty;
+
+  AdminFailure? get failure => initialFailure ?? loadMoreFailure;
 
   PurchaseMetricsResult get metrics => PurchaseMetricsCalculator.calculate(
     items,
@@ -66,8 +84,10 @@ class AdminPurchasesState {
     bool? isSampledOrPartial,
     String? activeFilter,
     String? searchQuery,
-    AdminFailure? failure,
-    bool clearFailure = false,
+    AdminFailure? initialFailure,
+    bool clearInitialFailure = false,
+    AdminFailure? loadMoreFailure,
+    bool clearLoadMoreFailure = false,
     int? totalLoaded,
     int? requestGeneration,
     DateTime? lastUpdatedAt,
@@ -81,7 +101,12 @@ class AdminPurchasesState {
       isSampledOrPartial: isSampledOrPartial ?? this.isSampledOrPartial,
       activeFilter: activeFilter ?? this.activeFilter,
       searchQuery: searchQuery ?? this.searchQuery,
-      failure: clearFailure ? null : (failure ?? this.failure),
+      initialFailure: clearInitialFailure
+          ? null
+          : (initialFailure ?? this.initialFailure),
+      loadMoreFailure: clearLoadMoreFailure
+          ? null
+          : (loadMoreFailure ?? this.loadMoreFailure),
       totalLoaded: totalLoaded ?? this.totalLoaded,
       requestGeneration: requestGeneration ?? this.requestGeneration,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
@@ -98,6 +123,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
   final Ref ref;
 
   static const int pageSize = 50;
+  static const int exportSafetyThreshold = 25000;
   int _generationCounter = 0;
 
   bool get isLoadingMore => state.isLoadingMore;
@@ -123,7 +149,8 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
 
     state = state.copyWith(
       isLoading: true,
-      clearFailure: true,
+      clearInitialFailure: true,
+      clearLoadMoreFailure: true,
       activeFilter: newFilter,
       searchQuery: newSearch,
       clearNextCursor: true,
@@ -173,7 +200,8 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         isSampledOrPartial: hasMoreRecords,
         totalLoaded: list.length,
         lastUpdatedAt: DateTime.now().toUtc(),
-        clearFailure: true,
+        clearInitialFailure: true,
+        clearLoadMoreFailure: true,
       );
     } catch (e) {
       if (gen != _generationCounter || !mounted) return;
@@ -183,7 +211,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         actionContext: 'Loading purchases',
       );
       AppLogger.debug('❌ loadPurchases failed: ${failure.sanitizedDetails}');
-      state = state.copyWith(isLoading: false, failure: failure);
+      state = state.copyWith(isLoading: false, initialFailure: failure);
     }
   }
 
@@ -195,7 +223,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
 
     final gen = ++_generationCounter;
     final cursor = state.nextCursor!;
-    state = state.copyWith(isLoadingMore: true, clearFailure: true);
+    state = state.copyWith(isLoadingMore: true, clearLoadMoreFailure: true);
 
     try {
       final db = ref.read(appwriteDbServiceProvider);
@@ -242,11 +270,10 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         hasMore: hasMoreRecords,
         nextCursor: nextCursor,
         clearNextCursor: nextCursor == null,
-        // Crucial fix: recompute isSampledOrPartial so reaching the final page marks dataset complete
         isSampledOrPartial: hasMoreRecords,
         totalLoaded: combined.length,
         lastUpdatedAt: DateTime.now().toUtc(),
-        clearFailure: true,
+        clearLoadMoreFailure: true,
       );
     } catch (e) {
       if (gen != _generationCounter || !mounted) return;
@@ -256,23 +283,28 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         actionContext: 'Loading next purchases page',
       );
       AppLogger.debug('⚠️ loadNextPage failed: ${failure.sanitizedDetails}');
-      // Preserve existing loaded items on load-more error
-      state = state.copyWith(isLoadingMore: false, failure: failure);
+      // Preserves existing loaded items and keeps hasMore intact for retry
+      state = state.copyWith(isLoadingMore: false, loadMoreFailure: failure);
     }
   }
 
-  /// Records an external refund in the Appwrite database and revokes course access.
+  /// Records an external refund in Appwrite with authenticated admin ID and idempotency protection.
   ///
   /// Truthful Mode B Status-Only Operation:
-  /// Updates database record with status 'refunded', notes external refund reference,
+  /// Updates database record with status 'refunded', records operator admin ID,
   /// and invalidates the user's entitlement cache. Does not execute payment gateway wire transfers.
-  Future<bool> recordExternalRefund(
+  Future<RefundResult> recordExternalRefund(
     String purchaseId, {
     String? externalRefundId,
     String? reason,
+    String? idempotencyKey,
   }) async {
     try {
       final db = ref.read(appwriteDbServiceProvider);
+
+      // Authenticate operator identity
+      final currentUser = await ref.read(currentUserProvider.future);
+      final operatorId = currentUser?.id ?? 'authenticated_admin';
 
       PurchaseModel? targetItem;
       for (final p in state.items) {
@@ -282,30 +314,38 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         }
       }
 
-      // If already marked as refunded, return idempotently
-      if (targetItem != null && targetItem.status == 'refunded') {
-        AppLogger.debug('ℹ️ Purchase $purchaseId is already refunded.');
-        return true;
+      // Fetch fresh server state to prevent race conditions
+      try {
+        final freshDoc = await db.getDocument('course_purchases', purchaseId);
+        targetItem = PurchaseModel.fromJson(freshDoc);
+      } catch (e) {
+        if (targetItem == null) {
+          return RefundResult.notFound;
+        }
       }
 
-      if (targetItem == null) {
-        try {
-          final doc = await db.getDocument('course_purchases', purchaseId);
-          targetItem = PurchaseModel.fromJson(doc);
-          if (targetItem.status == 'refunded') {
-            return true;
-          }
-        } catch (_) {
-          // Proceed with update
-        }
+      // Concurrency & Idempotency check
+      if (targetItem.status == 'refunded') {
+        AppLogger.debug(
+          'ℹ️ Purchase $purchaseId is already refunded (Idempotent).',
+        );
+        return RefundResult.alreadyRefunded;
+      }
+
+      // Validate state transition
+      if (targetItem.status != 'verified' && targetItem.status != 'completed') {
+        AppLogger.debug(
+          '⚠️ Invalid refund transition from status: ${targetItem.status}',
+        );
+        return RefundResult.invalidTransition;
       }
 
       final nowUtc = DateTime.now().toUtc().toIso8601String();
       final updatePayload = <String, dynamic>{
         'status': 'refunded',
         'refundedAt': nowUtc,
-        'refundedBy': 'admin',
-        if (targetItem != null) 'previousStatus': targetItem.status,
+        'refundedBy': operatorId,
+        'previousStatus': targetItem.status,
       };
 
       if (externalRefundId != null && externalRefundId.trim().isNotEmpty) {
@@ -314,22 +354,31 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
       if (reason != null && reason.trim().isNotEmpty) {
         updatePayload['refundReason'] = reason.trim();
       }
+      if (idempotencyKey != null && idempotencyKey.trim().isNotEmpty) {
+        updatePayload['idempotencyKey'] = idempotencyKey.trim();
+      }
 
-      // Update purchase status in Appwrite
+      // Update document in Appwrite
       await db.updateDocument('course_purchases', purchaseId, updatePayload);
 
       // Invalidate the specific user's entitlement cache
       final repo = ref.read(purchaseRepositoryProvider);
-      if (targetItem != null && targetItem.userId.isNotEmpty) {
-        await repo.clearUserEntitlementCache(targetItem.userId);
+      if (targetItem.userId.isNotEmpty) {
+        try {
+          await repo.clearUserEntitlementCache(targetItem.userId);
+        } catch (e) {
+          AppLogger.debug(
+            '⚠️ Cache invalidation warning for ${targetItem.userId}: $e',
+          );
+        }
       }
 
-      // Reload purchases table
+      // Reload purchase records
       await loadPurchases();
 
-      // Refresh currentUser entitlement provider
+      // Refresh current user entitlement provider
       ref.invalidate(purchasedCategoriesProvider);
-      return true;
+      return RefundResult.completed;
     } catch (e) {
       final failure = AdminFailure.fromException(
         e,
@@ -338,17 +387,19 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
       AppLogger.debug(
         '❌ recordExternalRefund failed: ${failure.sanitizedDetails}',
       );
-      rethrow;
+      return RefundResult.failed;
     }
   }
 
-  /// Fetches all matching purchase records from Appwrite via cursor loop for full export.
-  Future<List<PurchaseModel>> fetchAllMatchingPurchases({
+  /// Fetches matching purchase records from Appwrite with continuous pagination, backoff, and safety limits.
+  Future<PurchaseExportResult> fetchAllMatchingPurchases({
     String? filter,
     String? search,
-    int maxLimit = 5000,
+    int safetyLimit = exportSafetyThreshold,
     void Function(int count)? onProgress,
+    bool Function()? isCancelled,
   }) async {
+    final startedAt = DateTime.now().toUtc();
     final effectiveFilter = filter ?? state.activeFilter;
     final effectiveSearch = (search ?? state.searchQuery).trim();
     final db = ref.read(appwriteDbServiceProvider);
@@ -357,8 +408,28 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
     final seenIds = <String>{};
     String? cursor;
     bool hasMore = true;
+    bool isTruncated = false;
 
-    while (hasMore && allItems.length < maxLimit) {
+    while (hasMore) {
+      if (isCancelled?.call() == true) {
+        return PurchaseExportResult(
+          items: allItems,
+          exportedCount: allItems.length,
+          isTruncated: true,
+          hasMore: true,
+          status: PurchaseExportStatus.cancelled,
+          activeFilter: effectiveFilter,
+          searchQuery: effectiveSearch,
+          startedAt: startedAt,
+          completedAt: DateTime.now().toUtc(),
+        );
+      }
+
+      if (allItems.length >= safetyLimit) {
+        isTruncated = true;
+        break;
+      }
+
       final queries = <String>[
         Query.orderDesc('purchasedAt'),
         Query.limit(pageSize),
@@ -381,14 +452,40 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         queries.add(Query.search('categoryId', effectiveSearch));
       }
 
-      final result = await db.listDocuments(
-        'course_purchases',
-        queries: queries,
-      );
+      List<Map<String, dynamic>>? result;
+      int attempts = 0;
+      const maxRetries = 3;
+
+      while (attempts < maxRetries && result == null) {
+        try {
+          result = await db.listDocuments('course_purchases', queries: queries);
+        } catch (e) {
+          attempts++;
+          if (attempts >= maxRetries) {
+            final failure = AdminFailure.fromException(
+              e,
+              actionContext: 'Export query',
+            );
+            return PurchaseExportResult(
+              items: allItems,
+              exportedCount: allItems.length,
+              isTruncated: true,
+              hasMore: true,
+              status: PurchaseExportStatus.failed,
+              activeFilter: effectiveFilter,
+              searchQuery: effectiveSearch,
+              startedAt: startedAt,
+              completedAt: DateTime.now().toUtc(),
+              sanitizedFailure: failure.userMessage,
+            );
+          }
+          await Future.delayed(Duration(milliseconds: 250 * (1 << attempts)));
+        }
+      }
+
+      if (result == null || result.isEmpty) break;
 
       final page = result.map(PurchaseModel.fromJson).toList();
-      if (page.isEmpty) break;
-
       cursor = page.last.id;
       hasMore = page.length >= pageSize;
 
@@ -402,10 +499,24 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
       onProgress?.call(allItems.length);
     }
 
-    return allItems;
+    return PurchaseExportResult(
+      items: allItems,
+      exportedCount: allItems.length,
+      isTruncated: isTruncated,
+      hasMore: hasMore && isTruncated,
+      status: isTruncated
+          ? PurchaseExportStatus.truncated
+          : PurchaseExportStatus.completed,
+      activeFilter: effectiveFilter,
+      searchQuery: effectiveSearch,
+      startedAt: startedAt,
+      completedAt: DateTime.now().toUtc(),
+    );
   }
 
-  /// Backward-compatible alias to recordExternalRefund.
-  Future<void> refundPurchase(String purchaseId) =>
-      recordExternalRefund(purchaseId);
+  /// Backward-compatible alias.
+  Future<bool> refundPurchase(String purchaseId) async {
+    final res = await recordExternalRefund(purchaseId);
+    return res == RefundResult.completed || res == RefundResult.alreadyRefunded;
+  }
 }

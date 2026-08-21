@@ -1,18 +1,16 @@
-import 'dart:io';
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:flutter/foundation.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/audio/audio_service.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
+import '../../../affirmations/data/affirmation_share_service_provider.dart';
+import '../../../affirmations/presentation/widgets/affirmation_share_sheet.dart';
 
 class TodayAffirmationCard extends ConsumerStatefulWidget {
   const TodayAffirmationCard({super.key});
@@ -38,13 +36,8 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               ? affirmation.santaliPhonetic.trim()
               : "Today's wisdom from Olitun 🪶");
 
-    final renderBox = context.findRenderObject() as RenderBox?;
-    final origin = renderBox != null
-        ? renderBox.localToGlobal(Offset.zero) & renderBox.size
-        : null;
-
     try {
-      XFile? imageFile;
+      Uint8List? watermarkedBytes;
 
       try {
         final boundary =
@@ -68,8 +61,8 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
             canvas.drawImage(capturedImage, Offset.zero, paint);
 
             final watermarkStyle = TextStyle(
-              color: Colors.white.withValues(alpha: 0.6),
-              fontSize: 28,
+              color: Colors.white.withValues(alpha: 0.7),
+              fontSize: 26,
               fontWeight: FontWeight.bold,
               fontFamily: 'Poppins',
             );
@@ -95,26 +88,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
             );
 
             if (watermarkByteData != null) {
-              final watermarkedBytes = watermarkByteData.buffer.asUint8List();
-
-              if (!kIsWeb) {
-                final tempDir = await getTemporaryDirectory();
-                final fileId = affirmation.id.replaceAll(
-                  RegExp(r'[^a-zA-Z0-9]'),
-                  '_',
-                );
-                final file = await File(
-                  '${tempDir.path}/olitun_wisdom_${fileId.isNotEmpty ? fileId : "daily"}.png',
-                ).create();
-                await file.writeAsBytes(watermarkedBytes);
-                imageFile = XFile(file.path);
-              } else {
-                imageFile = XFile.fromData(
-                  watermarkedBytes,
-                  mimeType: 'image/png',
-                  name: 'olitun_wisdom.png',
-                );
-              }
+              watermarkedBytes = watermarkByteData.buffer.asUint8List();
             }
           }
         }
@@ -124,23 +98,25 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
       if (!mounted) return;
 
-      final filesList = imageFile != null ? [imageFile] : const <XFile>[];
-
-      await SharePlus.instance.share(
-        ShareParams(
-          title: shareText,
-          subject: shareText,
+      if (watermarkedBytes != null) {
+        // Step 2 in 2-step activation workflow: Show share sheet preview
+        await AffirmationShareSheet.show(
+          context,
+          affirmation: affirmation,
+          imageBytes: watermarkedBytes,
+          shareText: shareText,
+        );
+      } else {
+        // Text-only fallback if image capture failed
+        final service = ref.read(affirmationShareServiceProvider);
+        await service.shareText(
           text: shareText,
-          files: filesList,
-          sharePositionOrigin: origin,
-        ),
-      );
-
-      AppLogger.debug('✅ Affirmation card shared successfully');
+          title: "Today's Wisdom · Olitun 🪶",
+        );
+      }
     } catch (e) {
       AppLogger.debug('❌ Failed to share affirmation card: $e');
       if (mounted) {
-        // Ultimate fallback: Copy to clipboard if OS share sheet encounters issue
         await Clipboard.setData(ClipboardData(text: shareText));
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
@@ -151,7 +127,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
         );
       }
     } finally {
-      _isSharing = false;
+      if (mounted) setState(() => _isSharing = false);
     }
   }
 
@@ -171,8 +147,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
     } else {
       setState(() => _isPlaying = true);
       await ref.read(audioServiceProvider).playUrl(audioUrl);
-      // Wait for play to finish or stop. Since audioplayers play is async,
-      // we can listen to events or just toggle. Simple toggle is fine for now.
     }
   }
 
@@ -187,7 +161,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
         final isRead = ref.watch(todayAffirmationReadProvider);
 
-        // Define terracotta->cream light or navy->charcoal dark gradients
         final backgroundGradient = isDark
             ? const LinearGradient(
                 colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
@@ -226,7 +199,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               borderRadius: BorderRadius.circular(24),
               child: Stack(
                 children: [
-                  // Decorative watermarked background symbol
                   Positioned(
                     right: -20,
                     bottom: -20,
@@ -238,13 +210,11 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                           : Colors.black.withValues(alpha: 0.02),
                     ),
                   ),
-
                   Padding(
                     padding: const EdgeInsets.all(24),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        // Eyebrow
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -266,8 +236,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                           ],
                         ),
                         const SizedBox(height: 20),
-
-                        // Ol Chiki text only
                         Padding(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 8,
@@ -291,18 +259,14 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                           ),
                         ),
                         const SizedBox(height: 20),
-
                         Divider(
                           color: isDark ? Colors.white10 : Colors.black12,
                           height: 1,
                         ),
                         const SizedBox(height: 16),
-
-                        // Action Row
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceAround,
                           children: [
-                            // Play audio button
                             if (affirmation.audioUrl != null)
                               _ActionButton(
                                 icon: _isPlaying
@@ -314,8 +278,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                               )
                             else
                               const SizedBox.shrink(),
-
-                            // Mark as read button
                             _ActionButton(
                               icon: isRead
                                   ? Icons.check_circle_rounded
@@ -335,8 +297,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                                           .markAsRead();
                                     },
                             ),
-
-                            // Share button
                             _ActionButton(
                               icon: Icons.share_rounded,
                               label: 'Share',

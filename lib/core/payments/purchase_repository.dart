@@ -229,14 +229,20 @@ class PurchaseRepository {
     );
   }
 
-  /// Purge user-scoped cache upon logout or account change.
-  Future<void> clearUserCache(String userId) async {
+  /// Purge user-scoped entitlement cache upon refund, logout or account change.
+  Future<void> clearUserEntitlementCache(String userId) async {
     if (userId.isNotEmpty) {
       await CacheService.delete(_getCacheKey(userId));
     }
   }
 
+  /// Backward-compatible alias for clearUserEntitlementCache.
+  Future<void> clearUserCache(String userId) =>
+      clearUserEntitlementCache(userId);
+
+  /// Backward-compatible alias for clearing caches.
   Future<void> clearAllCaches() async {
+    // Purge legacy key if any still exists
     await CacheService.delete('purchased_categories');
   }
 

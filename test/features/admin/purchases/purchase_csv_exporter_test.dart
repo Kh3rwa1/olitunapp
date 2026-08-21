@@ -3,42 +3,30 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/domain/purchase_csv_exporter.dart';
 import 'package:itun/shared/models/content_models.dart';
 
-void main() {
-  group('PurchaseCsvExporter', () {
-    final samplePurchases = [
-      PurchaseModel(
-        id: 'doc_1',
-        userId: 'usr_abc123456',
-        categoryId: 'santali_basics_ol_chiki',
-        unlockMethod: 'razorpay',
-        amountPaidInr: 299,
-        razorpayPaymentId: 'pay_12345678',
-        razorpayOrderId: 'order_12345678',
-        status: 'verified',
-        purchasedAt: '2026-08-21T10:00:00Z',
-        verifiedAt: '2026-08-21T10:00:05Z',
-      ),
-      PurchaseModel(
-        id: 'doc_2',
-        userId: 'usr_short',
-        categoryId: 'santali_sentences_ᱟ_ᱵ',
-        unlockMethod: 'play_store_review',
-        amountPaidInr: 0,
-        status: 'verified',
-        purchasedAt: '2026-08-21T11:00:00Z',
-      ),
-      PurchaseModel(
-        id: 'doc_3',
-        userId: 'usr_injected',
-        categoryId: '=1+1',
-        unlockMethod: 'razorpay',
-        amountPaidInr: 199,
-        razorpayPaymentId: '@malicious_pay',
-        status: 'refunded',
-        purchasedAt: '2026-08-21T12:00:00Z',
-      ),
-    ];
+PurchaseModel makeTestPurchaseItem({
+  required String id,
+  required String userId,
+  required String categoryId,
+  required String unlockMethod,
+  required int amountPaidInr,
+  required String status,
+  String? paymentId,
+  String purchasedAt = '2026-08-21T10:00:00Z',
+}) {
+  return PurchaseModel(
+    id: id,
+    userId: userId,
+    categoryId: categoryId,
+    unlockMethod: unlockMethod,
+    amountPaidInr: amountPaidInr,
+    status: status,
+    razorpayPaymentId: paymentId,
+    purchasedAt: purchasedAt,
+  );
+}
 
+void main() {
+  group('PurchaseCsvExporter - Complete Export & Safety Limit Matrix', () {
     test(
       'Case 1: neutralizes formula injection starting with =, +, -, @, tab, cr',
       () {
@@ -80,34 +68,149 @@ void main() {
       },
     );
 
-    test(
-      'Case 4: preserves Santali / Ol Chiki characters in generated CSV',
-      () {
+    test('Case 4: preserves Santali / Ol Chiki characters with UTF-8 BOM', () {
+      final purchases = [
+        makeTestPurchaseItem(
+          id: 'doc_1',
+          userId: 'usr_santali_1',
+          categoryId: 'santali_sentences_ᱟ_ᱵ',
+          unlockMethod: 'razorpay',
+          amountPaidInr: 299,
+          status: 'verified',
+        ),
+      ];
+
+      final csv = PurchaseCsvExporter.generateCsv(
+        items: purchases,
+        exportScope: 'All Matching Results',
+        activeFilter: 'all',
+        searchQuery: '',
+      );
+
+      expect(csv.startsWith('\uFEFF'), isTrue); // UTF-8 BOM
+      expect(csv, contains('santali_sentences_ᱟ_ᱵ'));
+      expect(csv, contains('# Complete: true'));
+      expect(csv, contains('# Schema Version: 1.0'));
+    });
+
+    test('Case 5: generates accurate metadata manifest for 0 records', () {
+      final csv = PurchaseCsvExporter.generateCsv(
+        items: [],
+        exportScope: 'All Matching Results',
+        activeFilter: 'all',
+        searchQuery: '',
+      );
+
+      expect(csv, contains('# Row Count: 0'));
+      expect(csv, contains('# Complete: true'));
+      expect(csv, contains('Purchase ID,Masked User ID,Category ID'));
+    });
+
+    test('Case 6: handles 1, 49, 50, 51 records with complete metadata', () {
+      for (final count in [1, 49, 50, 51]) {
+        final items = List.generate(
+          count,
+          (i) => makeTestPurchaseItem(
+            id: 'p_$i',
+            userId: 'user_$i',
+            categoryId: 'basics',
+            unlockMethod: 'razorpay',
+            amountPaidInr: 299,
+            status: 'verified',
+          ),
+        );
+
         final csv = PurchaseCsvExporter.generateCsv(
-          items: samplePurchases,
+          items: items,
           exportScope: 'All Matching Results',
-          activeFilter: 'all',
+          activeFilter: 'razorpay',
           searchQuery: '',
         );
 
-        expect(csv, contains('santali_sentences_ᱟ_ᱵ'));
-        expect(csv.startsWith('\uFEFF'), isTrue); // Starts with UTF-8 BOM
-      },
-    );
+        expect(csv, contains('# Row Count: $count'));
+        expect(csv, contains('# Complete: true'));
+      }
+    });
 
-    test('Case 5: encodes CSV bytes into valid UTF-8', () {
+    test('Case 7: handles 5000 records without truncation flag', () {
+      final items = List.generate(
+        5000,
+        (i) => makeTestPurchaseItem(
+          id: 'p_$i',
+          userId: 'user_$i',
+          categoryId: 'basics',
+          unlockMethod: 'razorpay',
+          amountPaidInr: 299,
+          status: 'verified',
+        ),
+      );
+
+      final csv = PurchaseCsvExporter.generateCsv(
+        items: items,
+        exportScope: 'All Matching Results',
+        activeFilter: 'all',
+        searchQuery: '',
+      );
+
+      expect(csv, contains('# Row Count: 5000'));
+      expect(csv, contains('# Complete: true'));
+      expect(csv.contains('Truncated'), isFalse);
+    });
+
+    test('Case 8: explicitly labels truncated exports at safety threshold', () {
+      final items = List.generate(
+        5001,
+        (i) => makeTestPurchaseItem(
+          id: 'p_$i',
+          userId: 'user_$i',
+          categoryId: 'basics',
+          unlockMethod: 'razorpay',
+          amountPaidInr: 299,
+          status: 'verified',
+        ),
+      );
+
+      final csv = PurchaseCsvExporter.generateCsv(
+        items: items,
+        exportScope: 'All Matching Results',
+        activeFilter: 'all',
+        searchQuery: '',
+        isTruncated: true,
+      );
+
+      expect(csv, contains('# Row Count: 5001'));
+      expect(
+        csv,
+        contains(
+          '# Export Scope: All Matching Results (Truncated - Safety Limit Reached)',
+        ),
+      );
+      expect(csv, contains('# Complete: false'));
+    });
+
+    test('Case 9: generateCsvBytes produces valid UTF-8 byte stream', () {
+      final items = [
+        makeTestPurchaseItem(
+          id: 'p_byte',
+          userId: 'u_byte_123',
+          categoryId: 'santali_words',
+          unlockMethod: 'razorpay',
+          amountPaidInr: 499,
+          status: 'verified',
+        ),
+      ];
+
       final bytes = PurchaseCsvExporter.generateCsvBytes(
-        items: samplePurchases,
+        items: items,
         exportScope: 'Visible Rows',
-        activeFilter: 'razorpay',
-        searchQuery: 'santali',
+        activeFilter: 'all',
+        searchQuery: '',
       );
 
       final decoded = utf8.decode(bytes);
       expect(decoded, contains('# Olitun Admin Purchase Export'));
-      expect(decoded, contains('santali_basics_ol_chiki'));
-      expect(decoded, contains("'=1+1"));
-      expect(decoded, contains("'@malicious_pay"));
+      expect(decoded, contains('santali_words'));
+      expect(decoded, contains('u_u_by***'));
     });
   });
 }

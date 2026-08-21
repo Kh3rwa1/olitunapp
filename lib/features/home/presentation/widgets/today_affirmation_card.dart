@@ -97,11 +97,17 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
           ? renderBox.localToGlobal(Offset.zero) & renderBox.size
           : null;
 
+      final shareText = affirmation.englishMeaning.trim().isNotEmpty
+          ? affirmation.englishMeaning.trim()
+          : (affirmation.santaliPhonetic.trim().isNotEmpty
+                ? affirmation.santaliPhonetic.trim()
+                : "Today's wisdom from Olitun 🪶");
+
       await SharePlus.instance.share(
         ShareParams(
-          title: "Today's wisdom from Olitun 🪶",
-          subject: "Today's wisdom from Olitun 🪶",
-          text: "Today's wisdom from Olitun 🪶",
+          title: shareText,
+          subject: shareText,
+          text: shareText,
           files: [XFile(file.path)],
           sharePositionOrigin: origin,
         ),
@@ -169,7 +175,6 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               );
 
         final textColor = isDark ? Colors.white : Colors.black87;
-        final subtextColor = isDark ? Colors.white60 : Colors.black54;
 
         return RepaintBoundary(
           key: _repaintKey,
@@ -236,43 +241,30 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                         ),
                         const SizedBox(height: 20),
 
-                        // Ol Chiki text
-                        Text(
-                          affirmation.olChikiText,
-                          style: TextStyle(
-                            fontFamily: 'OlChiki',
-                            fontSize: 32,
-                            fontWeight: FontWeight.bold,
-                            color: textColor,
-                            height: 1.3,
+                        // Ol Chiki text only
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 8,
+                            vertical: 8,
                           ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Santali phonetic
-                        Text(
-                          affirmation.santaliPhonetic,
-                          style: GoogleFonts.poppins(
-                            fontSize: 15,
-                            fontWeight: FontWeight.w500,
-                            color: subtextColor,
+                          child: Text(
+                            affirmation.olChikiText,
+                            style: TextStyle(
+                              fontFamily: 'OlChiki',
+                              fontFamilyFallback: const [
+                                'Poppins',
+                                'sans-serif',
+                              ],
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color: textColor,
+                              height: 1.4,
+                              letterSpacing: 0.5,
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 10),
-
-                        // English meaning
-                        Text(
-                          affirmation.englishMeaning,
-                          style: GoogleFonts.poppins(
-                            fontSize: 13,
-                            color: subtextColor.withValues(alpha: 0.7),
-                            fontStyle: FontStyle.italic,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 20),
 
                         Divider(
                           color: isDark ? Colors.white10 : Colors.black12,

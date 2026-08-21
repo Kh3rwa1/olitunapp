@@ -1,0 +1,14 @@
+{
+  "name": "sync-daily-affirmation",
+  "version": "1.0.0",
+  "description": "Periodically fetches latest daily affirmation from Google Sheet and syncs to Appwrite database.",
+  "main": "src/main.js",
+  "type": "module",
+  "scripts": {
+    "check": "node --check src/main.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "25.1.0"
+  }
+}

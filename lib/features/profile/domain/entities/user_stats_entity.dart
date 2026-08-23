@@ -20,6 +20,10 @@ class UserStatsEntity extends Equatable {
   final int totalStars;
   final Set<String> completedMissionsDates;
 
+  /// Local dates (yyyy-MM-dd) on which the learner completed ANY practice
+  /// activity (quiz, lesson, typing). Capped to the most recent entries.
+  final Set<String> practiceDates;
+
   const UserStatsEntity({
     required this.practicedLetters,
     required this.completedLessons,
@@ -30,6 +34,7 @@ class UserStatsEntity extends Equatable {
     required this.currentStreak,
     required this.totalStars,
     this.completedMissionsDates = const {},
+    this.practiceDates = const {},
   });
 
   @override
@@ -43,6 +48,7 @@ class UserStatsEntity extends Equatable {
     currentStreak,
     totalStars,
     completedMissionsDates,
+    practiceDates,
   ];
 
   UserStatsEntity copyWith({
@@ -55,6 +61,7 @@ class UserStatsEntity extends Equatable {
     int? currentStreak,
     int? totalStars,
     Set<String>? completedMissionsDates,
+    Set<String>? practiceDates,
   }) {
     return UserStatsEntity(
       practicedLetters: practicedLetters ?? this.practicedLetters,
@@ -67,6 +74,7 @@ class UserStatsEntity extends Equatable {
       totalStars: totalStars ?? this.totalStars,
       completedMissionsDates:
           completedMissionsDates ?? this.completedMissionsDates,
+      practiceDates: practiceDates ?? this.practiceDates,
     );
   }
 

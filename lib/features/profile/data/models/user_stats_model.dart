@@ -12,6 +12,7 @@ class UserStatsModel extends UserStatsEntity {
     required super.currentStreak,
     required super.totalStars,
     required super.completedMissionsDates,
+    super.practiceDates,
   });
 
   factory UserStatsModel.fromJson(Map<String, dynamic> json) {
@@ -62,6 +63,7 @@ class UserStatsModel extends UserStatsEntity {
       completedMissionsDates: Set<String>.from(
         json['completedMissionsDates'] ?? [],
       ),
+      practiceDates: Set<String>.from(json['practiceDates'] ?? []),
     );
   }
 
@@ -78,6 +80,7 @@ class UserStatsModel extends UserStatsEntity {
       'currentStreak': currentStreak,
       'totalStars': totalStars,
       'completedMissionsDates': completedMissionsDates.toList(),
+      'practiceDates': practiceDates.toList(),
     };
   }
 
@@ -92,6 +95,7 @@ class UserStatsModel extends UserStatsEntity {
       currentStreak: entity.currentStreak,
       totalStars: entity.totalStars,
       completedMissionsDates: entity.completedMissionsDates,
+      practiceDates: entity.practiceDates,
     );
   }
 }

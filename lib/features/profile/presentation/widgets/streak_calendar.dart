@@ -1,57 +1,33 @@
+// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
-import '../../../../core/motion/motion.dart';
+
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
+import '../../domain/streak_week_logic.dart';
 
 class StreakCalendar extends ConsumerWidget {
   final UserStatsEntity stats;
 
   const StreakCalendar({super.key, required this.stats});
 
-  /// Checks if a given date was active based on quiz history or last active date.
-  bool _isDayActive(DateTime day) {
-    final targetStr = _formatDateKey(day);
-
-    // 1. Explicitly check last active date
-    if (stats.lastActiveDate == targetStr) {
-      return stats.currentStreak > 0;
-    }
-
-    // 2. Check if a quiz was completed on this day
-    for (final result in stats.quizHistory.values) {
-      final completedDate = DateTime.tryParse(result.completedAt)?.toLocal();
-      if (completedDate != null) {
-        final compStr = _formatDateKey(completedDate);
-        if (compStr == targetStr) {
-          return true;
-        }
-      }
-    }
-
-    return false;
-  }
-
-  String _formatDateKey(DateTime date) {
-    return date.toIso8601String().substring(0, 10);
-  }
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final reduceEffects = ref.watch(reduceVisualEffectsProvider);
 
-    // Generate past 7 days ending with today
     final now = DateTime.now();
     final today = DateTime(now.year, now.month, now.day);
-    final last7Days = List.generate(7, (i) {
-      return today.subtract(Duration(days: 6 - i));
-    });
-
-    final activeCount = last7Days.where(_isDayActive).length;
+    final week = StreakWeekLogic.calendarWeek(today);
+    final activeCount = StreakWeekLogic.activeCountInWeek(stats, week);
+    final headerState = StreakWeekLogic.headerState(
+      streak: stats.currentStreak,
+      activeCount: activeCount,
+    );
+    final isActive = headerState == StreakHeaderState.active;
 
     return Container(
           width: double.infinity,
@@ -81,43 +57,61 @@ class StreakCalendar extends ConsumerWidget {
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: AppColors.duoOrange.withValues(alpha: 0.15),
+                      color: isActive
+                          ? AppColors.duoOrange.withValues(alpha: 0.15)
+                          : (isDark
+                                ? Colors.white.withValues(alpha: 0.06)
+                                : Colors.black.withValues(alpha: 0.04)),
                       shape: BoxShape.circle,
                     ),
-                    child:
-                        const Icon(
-                              Icons.local_fire_department_rounded,
-                              color: AppColors.duoOrange,
-                              size: 20,
-                            )
-                            .animate(
-                              onPlay: reduceEffects ? null : (c) => c.repeat(),
-                            )
-                            .shimmer(duration: 2000.ms, color: Colors.white),
+                    child: isActive
+                        ? const Icon(
+                                Icons.local_fire_department_rounded,
+                                color: AppColors.duoOrange,
+                                size: 20,
+                              )
+                              .animate(
+                                onPlay: reduceEffects
+                                    ? null
+                                    : (c) => c.repeat(),
+                              )
+                              .shimmer(duration: 2000.ms, color: Colors.white)
+                        : Icon(
+                            Icons.local_fire_department_outlined,
+                            color: isDark ? Colors.white38 : Colors.black38,
+                            size: 20,
+                          ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text(
-                          'Weekly Streak Active',
+                        Text(
+                          // Honest state machine: never claim "Active" at zero.
+                          isActive
+                              ? 'Weekly Streak Active'
+                              : 'Start Your Streak',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.2,
+                            color: isDark ? Colors.white : Colors.black87,
                           ),
                           maxLines: 2,
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Keep learning to grow your flame!',
+                          isActive
+                              ? 'Keep learning to grow your flame!'
+                              : 'Complete any activity to light your flame!',
                           style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
-                            color: isDark ? Colors.white38 : Colors.black38,
+                            // Bumped from black38/white38 for WCAG AA contrast.
+                            color: isDark ? Colors.white60 : Colors.black54,
                           ),
                           maxLines: 2,
                         ),
@@ -125,214 +119,177 @@ class StreakCalendar extends ConsumerWidget {
                     ),
                   ),
                   const SizedBox(width: 12),
-                  // Streak badge pill
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      gradient: const LinearGradient(
-                        colors: [AppColors.duoOrange, AppColors.duoYellow],
-                      ),
-                      borderRadius: BorderRadius.circular(16),
-                      boxShadow: [
-                        BoxShadow(
-                          color: AppColors.duoOrange.withValues(alpha: 0.3),
-                          blurRadius: 8,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        const Icon(
-                          Icons.bolt_rounded,
-                          color: Colors.white,
-                          size: 14,
-                        ),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${stats.currentStreak} DAYS',
-                          style: GoogleFonts.poppins(
-                            fontSize: 11,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.white,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
+                  _StreakBadge(count: stats.currentStreak, isDark: isDark),
                 ],
               ),
 
               const SizedBox(height: 20),
 
-              // Horizontal grid strip of the past 7 days
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(7, (index) {
-                  final day = last7Days[index];
-                  final isActive = _isDayActive(day);
-                  final isToday =
-                      day.year == today.year &&
-                      day.month == today.month &&
-                      day.day == today.day;
+              // Calendar week strip: Monday-anchored, today ringed, future days
+              // dimmed. Every column uses a single-letter label so nothing wraps.
+              Semantics(
+                label:
+                    'This week: practiced $activeCount of ${_daysElapsed(week, today)} days',
+                child: Row(
+                  children: List.generate(7, (index) {
+                    final day = week[index];
+                    final isFuture = day.isAfter(today);
+                    final isToday = day == today;
+                    final isActiveDay =
+                        !isFuture && StreakWeekLogic.isDayActive(stats, day);
 
-                  final dayName = index == 6
-                      ? 'Today'
-                      : _getShortDayName(day.weekday);
-                  final dayNum = day.day.toString();
-
-                  return Expanded(
-                    child: PressableScale(
-                      scale: 0.9,
-                      onTap: () {
-                        // Tap gives feedback and shows message
-                      },
-                      child: Container(
-                        margin: const EdgeInsets.symmetric(horizontal: 2.5),
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 12,
-                          horizontal: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.duoOrange.withValues(
-                                  alpha: isDark ? 0.12 : 0.08,
-                                )
-                              : (isToday
-                                    ? (isDark
-                                          ? Colors.white.withValues(alpha: 0.05)
-                                          : Colors.black.withValues(
-                                              alpha: 0.03,
-                                            ))
-                                    : Colors.transparent),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: isActive
-                                ? AppColors.duoOrange.withValues(alpha: 0.4)
-                                : (isToday
+                    return Expanded(
+                      child: Semantics(
+                        label:
+                            '${_fullDayName(day.weekday)}, ${_monthDay(day)}'
+                            '${isFuture
+                                ? ', upcoming'
+                                : isActiveDay
+                                ? ', practiced'
+                                : ', not practiced'}',
+                        button: false,
+                        child: Container(
+                          margin: const EdgeInsets.symmetric(horizontal: 2.5),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          decoration: BoxDecoration(
+                            color: isActiveDay
+                                ? AppColors.duoOrange.withValues(
+                                    alpha: isDark ? 0.12 : 0.08,
+                                  )
+                                : (isToday && !isFuture
                                       ? (isDark
-                                            ? Colors.white30
-                                            : Colors.black12)
+                                            ? Colors.white.withValues(
+                                                alpha: 0.05,
+                                              )
+                                            : Colors.black.withValues(
+                                                alpha: 0.03,
+                                              ))
                                       : Colors.transparent),
-                            width: 1.5,
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: isActiveDay
+                                  ? AppColors.duoOrange.withValues(alpha: 0.4)
+                                  : (isToday && !isFuture
+                                        ? (isDark
+                                              ? Colors.white30
+                                              : Colors.black12)
+                                        : Colors.transparent),
+                              width: 1.5,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _weekdayLetter(day.weekday),
+                                style: TextStyle(
+                                  fontFamily: 'Poppins',
+                                  fontSize: 10.5,
+                                  fontWeight: isToday
+                                      ? FontWeight.w800
+                                      : FontWeight.w600,
+                                  color: _labelColor(
+                                    isDark: isDark,
+                                    isActive: isActiveDay,
+                                    isToday: isToday,
+                                    isFuture: isFuture,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              AnimatedContainer(
+                                duration: const Duration(milliseconds: 300),
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isActiveDay
+                                      ? Colors.transparent
+                                      : (isFuture
+                                            ? Colors.transparent
+                                            : (isDark
+                                                  ? const Color(0xFF1E1E1E)
+                                                  : const Color(0xFFF1F3F5))),
+                                  border: Border.all(
+                                    color: isActiveDay
+                                        ? Colors.transparent
+                                        : (isToday && !isFuture
+                                              ? AppColors.primary.withValues(
+                                                  alpha: 0.5,
+                                                )
+                                              : Colors.transparent),
+                                    width: 1.5,
+                                  ),
+                                  boxShadow: isActiveDay
+                                      ? [
+                                          BoxShadow(
+                                            color: AppColors.duoOrange
+                                                .withValues(alpha: 0.35),
+                                            blurRadius: 8,
+                                            spreadRadius: 1,
+                                          ),
+                                        ]
+                                      : [],
+                                ),
+                                child: Center(
+                                  child: isActiveDay
+                                      ? const Icon(
+                                              Icons
+                                                  .local_fire_department_rounded,
+                                              color: AppColors.duoOrange,
+                                              size: 20,
+                                            )
+                                            .animate(
+                                              onPlay: reduceEffects
+                                                  ? null
+                                                  : (c) => c.repeat(),
+                                            )
+                                            .scale(
+                                              duration: 1000.ms,
+                                              begin: const Offset(0.9, 0.9),
+                                              end: const Offset(1.1, 1.1),
+                                              curve: Curves.easeInOut,
+                                            )
+                                            .then()
+                                            .scale(
+                                              duration: 1000.ms,
+                                              begin: const Offset(1.1, 1.1),
+                                              end: const Offset(0.9, 0.9),
+                                              curve: Curves.easeInOut,
+                                            )
+                                      : Text(
+                                          '${day.day}',
+                                          style: TextStyle(
+                                            fontFamily: 'Poppins',
+                                            fontSize: 11,
+                                            fontWeight: isToday
+                                                ? FontWeight.w800
+                                                : FontWeight.w700,
+                                            color: isFuture
+                                                ? (isDark
+                                                      ? Colors.white24
+                                                      : Colors.black26)
+                                                : (isToday
+                                                      ? (isDark
+                                                            ? Colors.white
+                                                            : Colors.black87)
+                                                      : (isDark
+                                                            ? Colors.white24
+                                                            : Colors.black26)),
+                                          ),
+                                        ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                        child: Column(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Text(
-                              dayName,
-                              style: TextStyle(
-                                fontFamily: 'Poppins',
-                                fontSize: 10,
-                                fontWeight: isToday
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                color: isActive
-                                    ? AppColors.duoOrange
-                                    : (isToday
-                                          ? (isDark
-                                                ? Colors.white
-                                                : Colors.black87)
-                                          : (isDark
-                                                ? Colors.white38
-                                                : Colors.black38)),
-                              ),
-                            ),
-                            const SizedBox(height: 8),
-                            // Inner visual element
-                            AnimatedContainer(
-                              duration: const Duration(milliseconds: 300),
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                color: isActive
-                                    ? Colors.transparent
-                                    : (isDark
-                                          ? const Color(0xFF1E1E1E)
-                                          : const Color(0xFFF1F3F5)),
-                                border: Border.all(
-                                  color: isActive
-                                      ? Colors.transparent
-                                      : (isToday
-                                            ? AppColors.primary.withValues(
-                                                alpha: 0.5,
-                                              )
-                                            : Colors.transparent),
-                                  width: 1.5,
-                                ),
-                                boxShadow: isActive
-                                    ? [
-                                        BoxShadow(
-                                          color: AppColors.duoOrange.withValues(
-                                            alpha: 0.35,
-                                          ),
-                                          blurRadius: 8,
-                                          spreadRadius: 1,
-                                        ),
-                                      ]
-                                    : [],
-                              ),
-                              child: Center(
-                                child: isActive
-                                    ? const Icon(
-                                            Icons.local_fire_department_rounded,
-                                            color: AppColors.duoOrange,
-                                            size: 20,
-                                          )
-                                          .animate(
-                                            onPlay: reduceEffects
-                                                ? null
-                                                : (c) => c.repeat(),
-                                          )
-                                          .scale(
-                                            duration: 1000.ms,
-                                            begin: const Offset(0.9, 0.9),
-                                            end: const Offset(1.1, 1.1),
-                                            curve: Curves.easeInOut,
-                                          )
-                                          .then()
-                                          .scale(
-                                            duration: 1000.ms,
-                                            begin: const Offset(1.1, 1.1),
-                                            end: const Offset(0.9, 0.9),
-                                            curve: Curves.easeInOut,
-                                          )
-                                    : Text(
-                                        dayNum,
-                                        style: TextStyle(
-                                          fontFamily: 'Poppins',
-                                          fontSize: 11,
-                                          fontWeight: isToday
-                                              ? FontWeight.w800
-                                              : FontWeight.w700,
-                                          color: isToday
-                                              ? (isDark
-                                                    ? Colors.white
-                                                    : Colors.black87)
-                                              : (isDark
-                                                    ? Colors.white24
-                                                    : Colors.black26),
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ],
-                        ),
                       ),
-                    ),
-                  );
-                }),
+                    );
+                  }),
+                ),
               ),
 
               const SizedBox(height: 16),
-              // Footer quick status text
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.symmetric(
@@ -356,10 +313,12 @@ class StreakCalendar extends ConsumerWidget {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'You practiced $activeCount of the last 7 days. Keep the momentum!',
+                        isActive
+                            ? 'You practiced $activeCount of ${_daysElapsed(week, today)} days this week. Keep it up!'
+                            : 'No practice yet this week — pick any activity to begin!',
                         style: TextStyle(
                           fontFamily: 'Poppins',
-                          fontSize: 10.5,
+                          fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white60 : Colors.black54,
                         ),
@@ -377,24 +336,116 @@ class StreakCalendar extends ConsumerWidget {
         .slideY(begin: 0.05, end: 0, curve: Curves.easeOutCubic);
   }
 
-  String _getShortDayName(int weekday) {
-    switch (weekday) {
-      case DateTime.monday:
-        return 'M';
-      case DateTime.tuesday:
-        return 'T';
-      case DateTime.wednesday:
-        return 'W';
-      case DateTime.thursday:
-        return 'T';
-      case DateTime.friday:
-        return 'F';
-      case DateTime.saturday:
-        return 'S';
-      case DateTime.sunday:
-        return 'S';
-      default:
-        return '';
-    }
+  int _daysElapsed(List<DateTime> week, DateTime today) {
+    return week.where((d) => !d.isAfter(today)).length;
+  }
+
+  Color _labelColor({
+    required bool isDark,
+    required bool isActive,
+    required bool isToday,
+    required bool isFuture,
+  }) {
+    if (isActive) return AppColors.duoOrange;
+    if (isFuture) return isDark ? Colors.white24 : Colors.black26;
+    if (isToday) return isDark ? Colors.white : Colors.black87;
+    return isDark ? Colors.white54 : Colors.black45;
+  }
+
+  String _weekdayLetter(int weekday) {
+    // Single letters keep all seven columns visually identical; "today" is
+    // communicated by the ring + bold weight instead of a longer word that
+    // would wrap on narrow screens.
+    return ['M', 'T', 'W', 'T', 'F', 'S', 'S'][weekday - 1];
+  }
+
+  String _fullDayName(int weekday) {
+    return [
+      'Monday',
+      'Tuesday',
+      'Wednesday',
+      'Thursday',
+      'Friday',
+      'Saturday',
+      'Sunday',
+    ][weekday - 1];
+  }
+
+  String _monthDay(DateTime d) {
+    return 'August ${d.day}'.replaceFirst('August', _monthName(d.month));
+  }
+
+  String _monthName(int m) {
+    return [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ][m - 1];
+  }
+}
+
+/// Gradient pill when streaking; quiet neutral chip at zero so an empty
+/// streak never reads as an achievement.
+class _StreakBadge extends StatelessWidget {
+  final int count;
+  final bool isDark;
+
+  const _StreakBadge({required this.count, required this.isDark});
+
+  @override
+  Widget build(BuildContext context) {
+    final active = count > 0;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        gradient: active
+            ? const LinearGradient(
+                colors: [AppColors.duoOrange, AppColors.duoYellow],
+              )
+            : null,
+        color: active
+            ? null
+            : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: active
+            ? [
+                BoxShadow(
+                  color: AppColors.duoOrange.withValues(alpha: 0.3),
+                  blurRadius: 8,
+                  offset: const Offset(0, 4),
+                ),
+              ]
+            : [],
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (active) ...[
+            const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
+            const SizedBox(width: 4),
+          ],
+          Text(
+            '$count DAYS',
+            style: GoogleFonts.poppins(
+              fontSize: 11,
+              fontWeight: FontWeight.w900,
+              color: active
+                  ? Colors.white
+                  : (isDark ? Colors.white54 : Colors.black45),
+              letterSpacing: 0.5,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

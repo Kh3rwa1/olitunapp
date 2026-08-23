@@ -49,14 +49,7 @@ void main() {
   group('StreakWeekLogic.isDayActive', () {
     test('true when date is in practiceDates', () {
       final stats = _stats(practiceDates: {'2026-08-18'});
-<<<<<<< HEAD
       expect(StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 18)), isTrue);
-=======
-      expect(
-        StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 18)),
-        isTrue,
-      );
->>>>>>> 1002fa04 (fix(profile): honest streak states, calendar-week strip, nav scrim and a11y)
     });
 
     test('true when a quiz was completed that day', () {
@@ -70,26 +63,12 @@ void main() {
           ),
         },
       );
-<<<<<<< HEAD
       expect(StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 19)), isTrue);
-=======
-      expect(
-        StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 19)),
-        isTrue,
-      );
->>>>>>> 1002fa04 (fix(profile): honest streak states, calendar-week strip, nav scrim and a11y)
     });
 
     test('true for today via lastActiveDate with positive streak', () {
       final stats = _stats(lastActiveDate: '2026-08-23', streak: 2);
-<<<<<<< HEAD
       expect(StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 23)), isTrue);
-=======
-      expect(
-        StreakWeekLogic.isDayActive(stats, DateTime(2026, 8, 23)),
-        isTrue,
-      );
->>>>>>> 1002fa04 (fix(profile): honest streak states, calendar-week strip, nav scrim and a11y)
     });
 
     test('false for inactive days', () {

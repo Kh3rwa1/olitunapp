@@ -14,6 +14,7 @@ import '../../../../core/analytics/analytics_service.dart';
 import 'package:flutter/material.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import '../../../../shared/widgets/state_widgets.dart';
+import '../../../../core/auth/appwrite_auth_service.dart';
 
 enum SyncStatus { idle, syncing, success, error }
 
@@ -29,6 +30,22 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   final authRepo = ref.watch(authRepositoryProvider);
   final prefs = ref.watch(sharedPreferencesProvider);
   return ProfileRepositoryImpl(authRepo, prefs);
+});
+
+/// Real account creation date from Appwrite (null for guests/offline).
+/// The profile hero hides its "Since ..." line rather than guessing.
+final accountCreatedAtProvider = FutureProvider<DateTime?>((ref) async {
+  // Guests have no account record — skip the network call entirely.
+  final authed = await ref.watch(isAuthenticatedProvider.future);
+  if (!authed) return null;
+  try {
+    final authService = ref.watch(appwriteAuthServiceProvider);
+    final account = await authService.account.get();
+    // Appwrite returns `registration` as an ISO string.
+    return DateTime.tryParse(account.registration)?.toLocal();
+  } catch (_) {
+    return null;
+  }
 });
 
 /// Injectable clock for streak/date calculations.

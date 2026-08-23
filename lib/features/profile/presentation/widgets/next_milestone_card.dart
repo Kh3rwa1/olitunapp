@@ -5,6 +5,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/profile_providers.dart';
+import '../../domain/entities/user_stats_entity.dart';
 
 class NextMilestoneCard extends ConsumerWidget {
   const NextMilestoneCard({super.key});
@@ -265,6 +266,20 @@ class NextMilestoneCard extends ConsumerWidget {
                                         color: isDark
                                             ? Colors.white
                                             : Colors.black87,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      // Disambiguates this % from the hero
+                                      // card's course-wide Overall Progress.
+                                      'Level progress · '
+                                      '${UserStatsEntity.levelThresholds[levelIndex]} → $nextLevelName',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 10.5,
+                                        fontWeight: FontWeight.w500,
+                                        color: isDark
+                                            ? Colors.white54
+                                            : Colors.black45,
                                       ),
                                     ),
                                   ],

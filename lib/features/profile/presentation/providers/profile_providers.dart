@@ -304,7 +304,14 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
     final today = todayDate.toIso8601String().substring(0, 10);
     final lastDate = stats.lastActiveDate;
 
-    if (lastDate == today) return stats.copyWith(lastActiveDate: today);
+    final updatedPracticeDates = _bumpPracticeDates(stats, today);
+
+    if (lastDate == today) {
+      return stats.copyWith(
+        lastActiveDate: today,
+        practiceDates: updatedPracticeDates,
+      );
+    }
 
     int newStreak = 1;
     if (lastDate.isNotEmpty) {
@@ -326,7 +333,21 @@ class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
       }
     }
 
-    return stats.copyWith(lastActiveDate: today, currentStreak: newStreak);
+    return stats.copyWith(
+      lastActiveDate: today,
+      currentStreak: newStreak,
+      practiceDates: updatedPracticeDates,
+    );
+  }
+
+  /// Adds [todayKey] to the practice-date log, keeping only the most recent
+  /// [_practiceDateLogLimit] entries.
+  Set<String> _bumpPracticeDates(UserStatsEntity stats, String todayKey) {
+    const limit = 90;
+    final dates = Set<String>.from(stats.practiceDates)..add(todayKey);
+    if (dates.length <= limit) return dates;
+    final sorted = dates.toList()..sort();
+    return Set<String>.from(sorted.sublist(sorted.length - limit));
   }
 
   Future<void> recordPracticeCompletion({

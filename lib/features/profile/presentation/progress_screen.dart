@@ -198,7 +198,14 @@ class ProgressScreen extends ConsumerWidget {
                           stats,
                           userName,
                         ),
-                        SizedBox(height: isDesktop ? 32 : 120),
+                        // Clears the floating nav: 80 (nav) + 15 (margin) + viewPadding.bottom
+                        // + breathing room, so the last card never sits under it.
+                        SizedBox(
+                          height:
+                              isDesktop
+                              ? 32
+                              : MediaQuery.of(context).viewPadding.bottom + 135,
+                        ),
                       ],
                     ),
                   ),

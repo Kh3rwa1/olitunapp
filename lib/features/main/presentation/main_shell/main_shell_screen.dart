@@ -200,10 +200,41 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen>
           left: 0,
           right: 0,
           bottom: 0,
-          child: _buildGlassicNav(isDark, isTablet),
+          child: Stack(
+            children: [
+              // Readability scrim: fades page content out beneath the
+              // floating glass nav so text never collides with it.
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: IgnorePointer(
+                  child: Container(
+                    height: 150,
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          _scrimBaseColor(isDark).withValues(alpha: 0),
+                          _scrimBaseColor(isDark).withValues(alpha: 0.85),
+                        ],
+                        stops: const [0.0, 1.0],
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              _buildGlassicNav(isDark, isTablet),
+            ],
+          ),
         ),
       ],
     );
+  }
+
+  Color _scrimBaseColor(bool isDark) {
+    return isDark ? const Color(0xFF121A2B) : const Color(0xFFF8FAFF);
   }
 
   Widget _buildPremiumBackground(bool isDark) {

@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,7 +6,6 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../core/theme/admin_tokens.dart';
-import '../../../../core/utils/csv_helper.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../widgets/admin_page_header.dart';
@@ -18,6 +16,8 @@ import '../../domain/content_badge_resolver.dart';
 import '../widgets/content_type_badge.dart';
 import '../../../../shared/widgets/cover_thumbnail.dart';
 import '../../../categories/domain/entities/category_entity.dart';
+import 'utils/content_csv_exporter.dart';
+import '../../../../core/utils/csv_helper.dart';
 
 /// A unified, highly-polished content administration screen.
 /// Parameterized by [ContentKind] to manage Letters, Numbers, Words, Sentences, Lessons, and Rhymes.
@@ -180,6 +180,27 @@ class _AdminContentListScreenState
     }
   }
 
+  Future<void> _exportToCsv(List<ContentItem> items) async {
+    final csvContent = buildContentListCsv(widget.kind, items);
+    final filename = 'Olitun_${widget.kind.name}_Export.csv';
+    try {
+      await saveAndShareCsv(
+        csvContent: csvContent,
+        filename: filename,
+        shareSubject: 'Olitun $_title Export',
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Failed to export CSV: \$e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _handleSeedData(BuildContext context) async {
     final ok = await showAdminConfirmDialog(
       context: context,
@@ -220,127 +241,6 @@ class _AdminContentListScreenState
             content: Text('Failed to seed data: $e'),
             backgroundColor: Colors.red,
             behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
-  }
-
-  Future<void> _exportToCsv(List<ContentItem> items) async {
-    final isSentence = widget.kind == ContentKind.sentence;
-    final isLessonOrRhyme =
-        widget.kind == ContentKind.lesson || widget.kind == ContentKind.rhyme;
-
-    final String csvHeader;
-    if (isSentence) {
-      csvHeader =
-          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Meaning Block,Usage Block,Audio Block URL,Audio Block Transcript,Blocks JSON,Updated At\n';
-    } else if (isLessonOrRhyme) {
-      csvHeader =
-          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Blocks JSON,Updated At\n';
-    } else {
-      csvHeader =
-          'ID,Kind,Title,Title Ol Chiki,Ol Chiki,Subtitle,Category,Published,Premium,Order,Tags,Updated At\n';
-    }
-
-    final csvRows = items
-        .map((item) {
-          String meaningBlock = '';
-          String usageBlock = '';
-          String audioUrlBlock = '';
-          String audioTranscriptBlock = '';
-
-          if (isSentence) {
-            // Try fetching by block IDs first
-            for (final block in item.blocks) {
-              if (block is TextBlock) {
-                if (block.id == 'meaning') {
-                  meaningBlock = block.markdown;
-                } else if (block.id == 'usage') {
-                  usageBlock = block.markdown;
-                }
-              } else if (block is AudioBlock) {
-                if (block.id == 'pronunciation_audio') {
-                  audioUrlBlock = block.media.url;
-                  audioTranscriptBlock = block.transcript ?? '';
-                }
-              }
-            }
-            // Fallback to order if IDs not matches
-            if (meaningBlock.isEmpty) {
-              final textBlocks = item.blocks.whereType<TextBlock>().toList();
-              if (textBlocks.isNotEmpty) {
-                meaningBlock = textBlocks[0].markdown;
-                if (textBlocks.length > 1 && usageBlock.isEmpty) {
-                  usageBlock = textBlocks[1].markdown;
-                }
-              }
-            }
-            if (audioUrlBlock.isEmpty) {
-              final audioBlocks = item.blocks.whereType<AudioBlock>().toList();
-              if (audioBlocks.isNotEmpty) {
-                audioUrlBlock = audioBlocks[0].media.url;
-                audioTranscriptBlock = audioBlocks[0].transcript ?? '';
-              }
-            }
-          }
-
-          final row = [
-            item.id,
-            item.kind.name,
-            item.title,
-            item.titleOlChiki ?? '',
-            item.olChiki ?? '',
-            item.subtitle ?? '',
-            item.categoryId,
-            item.isPublished.toString(),
-            item.isPremium.toString(),
-            item.order.toString(),
-            item.tags.join('; '),
-          ];
-
-          if (isSentence) {
-            row.addAll([
-              meaningBlock,
-              usageBlock,
-              audioUrlBlock,
-              audioTranscriptBlock,
-            ]);
-          }
-
-          if (isSentence || isLessonOrRhyme) {
-            final blocksJson = jsonEncode(
-              item.blocks.map((e) => e.toJson()).toList(),
-            );
-            row.add(blocksJson);
-          }
-
-          row.add(item.updatedAt.toIso8601String());
-
-          return row
-              .map((val) {
-                final escaped = val.replaceAll('"', '""');
-                return '"$escaped"';
-              })
-              .join(',');
-        })
-        .join('\n');
-
-    final csvContent = csvHeader + csvRows;
-    final filename = 'Olitun_${widget.kind.name}_Export.csv';
-
-    try {
-      await saveAndShareCsv(
-        csvContent: csvContent,
-        filename: filename,
-        shareSubject: 'Olitun $_title Export',
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to export CSV: $e'),
-            backgroundColor: Colors.red,
           ),
         );
       }

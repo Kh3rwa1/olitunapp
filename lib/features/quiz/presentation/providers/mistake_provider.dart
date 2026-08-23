@@ -63,19 +63,24 @@ class MistakeItem {
   }
 }
 
-class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
-  final Ref _ref;
+class MistakeNotifier extends Notifier<List<MistakeItem>> {
   static const String _prefKey = 'user_mistakes_list';
   static const String _masteredKey = 'user_mistakes_mastered_count';
 
-  MistakeNotifier(this._ref) : super([]) {
-    _loadMistakes();
-    unawaited(syncFromBackend());
+  @override
+  List<MistakeItem> build() {
+    ref.onDispose(() {
+      // Provider disposed — pending backend sync result will be dropped by Riverpod.
+    });
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadMistakes);
+    unawaited(Future.microtask(syncFromBackend));
+    return [];
   }
 
   void _loadMistakes() {
     try {
-      final prefs = _ref.read(sharedPreferencesProvider);
+      final prefs = ref.read(sharedPreferencesProvider);
       final raw = prefs.getString(_prefKey);
       if (raw != null && raw.isNotEmpty) {
         final List<dynamic> decoded = jsonDecode(raw);
@@ -93,7 +98,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
 
   Future<void> _saveMistakes() async {
     try {
-      final prefs = _ref.read(sharedPreferencesProvider);
+      final prefs = ref.read(sharedPreferencesProvider);
       final raw = jsonEncode(state.map((item) => item.toJson()).toList());
       await prefs.setString(_prefKey, raw);
     } catch (e) {
@@ -102,7 +107,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
   }
 
   int get masteredCount {
-    final prefs = _ref.read(sharedPreferencesProvider);
+    final prefs = ref.read(sharedPreferencesProvider);
     return prefs.getInt(_masteredKey) ?? 0;
   }
 
@@ -152,7 +157,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
       await _saveMistakes();
 
       // Increment mastered count
-      final prefs = _ref.read(sharedPreferencesProvider);
+      final prefs = ref.read(sharedPreferencesProvider);
       final count = prefs.getInt(_masteredKey) ?? 0;
       await prefs.setInt(_masteredKey, count + 1);
       await _markMistakeMasteredRemotely(
@@ -169,9 +174,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
     required List<MistakeItem> masteredMistakes,
   }) async {
     try {
-      final functions = Functions(
-        _ref.read(appwriteAuthServiceProvider).client,
-      );
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
       final response = await functions.createExecution(
         functionId: 'completeMistakeReview',
         body: jsonEncode({
@@ -199,13 +202,11 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
   }
 
   Future<void> syncFromBackend() async {
-    final isAuth = _ref.read(isAuthenticatedProvider).value ?? false;
+    final isAuth = ref.read(isAuthenticatedProvider).value ?? false;
     if (!isAuth) return;
 
     try {
-      final functions = Functions(
-        _ref.read(appwriteAuthServiceProvider).client,
-      );
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
       final response = await functions.createExecution(
         functionId: 'getUserMistakes',
         body: jsonEncode({}),
@@ -236,9 +237,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
     String? wrongAnswer,
   }) async {
     try {
-      final functions = Functions(
-        _ref.read(appwriteAuthServiceProvider).client,
-      );
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
       final correctAnswer = _correctAnswerFor(question);
       await functions.createExecution(
         functionId: 'recordMistake',
@@ -261,9 +260,7 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
     required int questionIndex,
   }) async {
     try {
-      final functions = Functions(
-        _ref.read(appwriteAuthServiceProvider).client,
-      );
+      final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
       await functions.createExecution(
         functionId: 'markMistakeMastered',
         body: jsonEncode({
@@ -292,10 +289,9 @@ class MistakeNotifier extends StateNotifier<List<MistakeItem>> {
   }
 }
 
-final mistakeProvider =
-    StateNotifierProvider<MistakeNotifier, List<MistakeItem>>((ref) {
-      return MistakeNotifier(ref);
-    });
+final mistakeProvider = NotifierProvider<MistakeNotifier, List<MistakeItem>>(
+  MistakeNotifier.new,
+);
 
 final mistakesMasteredCountProvider = Provider<int>((ref) {
   // Watch mistakeProvider so we rebuild if mistakes change

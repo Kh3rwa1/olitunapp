@@ -15,22 +15,62 @@ import 'package:mocktail/mocktail.dart';
 class MockLearningAnalyticsService extends Mock
     implements LearningAnalyticsService {}
 
-class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
-    with Mock
-    implements UserStatsNotifier {
-  MockUserStatsNotifier(super.state);
+class MockUserStatsNotifier extends UserStatsNotifier {
+  final AsyncValue<UserStatsEntity> _initial;
+  final List<QuizResultEntity> savedResults = [];
+  final List<int> starsAdded = [];
+  bool throwOnSave = false;
+
+  MockUserStatsNotifier(this._initial);
+
+  @override
+  AsyncValue<UserStatsEntity> build() => _initial;
+
+  @override
+  Future<void> saveQuizResult(QuizResultEntity result) async {
+    if (throwOnSave) throw Exception('Appwrite offline error');
+    savedResults.add(result);
+  }
+
+  @override
+  Future<void> addStars(int count) async {
+    starsAdded.add(count);
+  }
 }
 
-class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
-    with Mock
-    implements MistakeNotifier {
-  MockMistakeNotifier(super.state);
+class MockMistakeNotifier extends MistakeNotifier {
+  final List<MistakeItem> _initial;
+
+  MockMistakeNotifier(this._initial);
+
+  @override
+  List<MistakeItem> build() => _initial;
+
+  @override
+  Future<void> syncFromBackend() async {}
+
+  @override
+  Future<void> recordMistake({
+    required String quizId,
+    required int questionIndex,
+    required QuizQuestion question,
+    String? wrongAnswer,
+  }) async {}
 }
 
-class MockDailyMissionNotifier extends StateNotifier<bool>
-    with Mock
-    implements DailyMissionNotifier {
-  MockDailyMissionNotifier(super.state);
+class MockQuizTakenTodayNotifier extends QuizTakenTodayNotifier {
+  final bool _initial;
+  int setCompletedCalls = 0;
+
+  MockQuizTakenTodayNotifier(this._initial);
+
+  @override
+  bool build() => _initial;
+
+  @override
+  Future<void> setCompleted(bool completed) async {
+    setCompletedCalls++;
+  }
 }
 
 class FakeQuizQuestion extends Fake implements QuizQuestion {}
@@ -49,7 +89,7 @@ void main() {
   late MockLearningAnalyticsService mockAnalytics;
   late MockMistakeNotifier mockMistakes;
   late MockUserStatsNotifier mockUserStats;
-  late MockDailyMissionNotifier mockQuizTakenToday;
+  late MockQuizTakenTodayNotifier mockQuizTakenToday;
   late ProviderContainer container;
 
   final mockQuiz = QuizModel(
@@ -82,7 +122,7 @@ void main() {
     mockAnalytics = MockLearningAnalyticsService();
     mockMistakes = MockMistakeNotifier([]);
     mockUserStats = MockUserStatsNotifier(const AsyncValue.data(mockStats));
-    mockQuizTakenToday = MockDailyMissionNotifier(false);
+    mockQuizTakenToday = MockQuizTakenTodayNotifier(false);
 
     when(
       () => mockAnalytics.track(
@@ -95,26 +135,13 @@ void main() {
       ),
     ).thenAnswer((_) async {});
 
-    when(
-      () => mockMistakes.recordMistake(
-        quizId: any(named: 'quizId'),
-        questionIndex: any(named: 'questionIndex'),
-        question: any(named: 'question'),
-        wrongAnswer: any(named: 'wrongAnswer'),
-      ),
-    ).thenAnswer((_) async {});
-
-    when(() => mockUserStats.saveQuizResult(any())).thenAnswer((_) async {});
-    when(() => mockUserStats.addStars(any())).thenAnswer((_) async {});
-    when(() => mockQuizTakenToday.setCompleted(any())).thenAnswer((_) async {});
-
     container = ProviderContainer(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(mockPrefs),
-        userStatsProvider.overrideWith((ref) => mockUserStats),
+        userStatsProvider.overrideWith(() => mockUserStats),
         learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
-        mistakeProvider.overrideWith((ref) => mockMistakes),
-        quizTakenTodayProvider.overrideWith((ref) => mockQuizTakenToday),
+        mistakeProvider.overrideWith(() => mockMistakes),
+        quizTakenTodayProvider.overrideWith(() => mockQuizTakenToday),
       ],
     );
   });
@@ -145,11 +172,9 @@ void main() {
         expect(state.isQuizComplete, isTrue);
 
         // Verify we saved result and added stars
-        verifyInOrder([
-          () => mockUserStats.saveQuizResult(any()),
-          () => mockUserStats.addStars((1 * 5) + 0),
-        ]);
-        verify(() => mockQuizTakenToday.setCompleted(true)).called(1);
+        expect(mockUserStats.savedResults.length, 1);
+        expect(mockUserStats.starsAdded, [(1 * 5) + 0]);
+        expect(mockQuizTakenToday.setCompletedCalls, 1);
       },
     );
 
@@ -157,9 +182,7 @@ void main() {
       'Completion handles exceptions thrown by userStatsProvider gracefully',
       () async {
         // Configure mockUserStats to throw an exception when saving quiz result
-        when(
-          () => mockUserStats.saveQuizResult(any()),
-        ).thenThrow(Exception('Appwrite offline error'));
+        mockUserStats.throwOnSave = true;
 
         final notifier = container.read(
           quizSessionNotifierProvider('test_quiz_id').notifier,

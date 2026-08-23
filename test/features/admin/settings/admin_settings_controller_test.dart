@@ -27,7 +27,7 @@ void main() {
   });
 
   ProviderContainer createContainer() {
-    return ProviderContainer(
+    final container = ProviderContainer(
       overrides: [
         appwriteDbServiceProvider.overrideWithValue(mockDb),
         sharedPreferencesProvider.overrideWithValue(prefs),
@@ -35,6 +35,24 @@ void main() {
         appSettingsProvider.overrideWith((ref) async => <String, dynamic>{}),
       ],
     );
+    // Keep the autoDispose controller alive for the duration of the test and
+    // ensure every later `.notifier` read resolves to this same instance.
+    container.listen(adminSettingsControllerProvider, (previous, next) {});
+    container.read(adminSettingsControllerProvider.notifier);
+    return container;
+  }
+
+  /// Waits for the controller's build()-triggered initial load to finish.
+  Future<void> waitForLoaded(ProviderContainer container) async {
+    for (var i = 0; i < 100; i++) {
+      await Future<void>.delayed(Duration.zero);
+      final status = container.read(adminSettingsControllerProvider).status;
+      if (status == AdminSettingsStatus.loaded ||
+          status == AdminSettingsStatus.loadFailure ||
+          status == AdminSettingsStatus.conflict) {
+        return;
+      }
+    }
   }
 
   group('AdminSettingsController - Razorpay Key Validation Matrix', () {
@@ -115,10 +133,8 @@ void main() {
       final container = createContainer();
       addTearDown(container.dispose);
 
-      final controller = container.read(
-        adminSettingsControllerProvider.notifier,
-      );
-      await controller.loadSettings();
+      container.read(adminSettingsControllerProvider.notifier);
+      await waitForLoaded(container);
 
       final state = container.read(adminSettingsControllerProvider);
       expect(state.isLoaded, isTrue);
@@ -141,11 +157,7 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
-        final controller = container.read(
-          adminSettingsControllerProvider.notifier,
-        );
-        await controller.loadSettings();
+        await waitForLoaded(container);
 
         final state = container.read(adminSettingsControllerProvider);
         expect(state.isLoaded, isTrue);
@@ -223,11 +235,10 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
@@ -260,11 +271,10 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
@@ -295,11 +305,10 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         final success = await controller.saveSetting(
           'onboarding_video_url',
@@ -327,11 +336,10 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         expect(
           container.read(adminSettingsControllerProvider).onboardingVideoUrl,
@@ -364,11 +372,10 @@ void main() {
       () async {
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         final success = await controller.saveSetting(
           'razorpay_key_id',
@@ -431,11 +438,10 @@ void main() {
       () async {
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForLoaded(container);
         final controller = container.read(
           adminSettingsControllerProvider.notifier,
         );
-        await controller.loadSettings();
 
         final success = await controller.saveBadgeNames(
           archer: 'Hero Archer',

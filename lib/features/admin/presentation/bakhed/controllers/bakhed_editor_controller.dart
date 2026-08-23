@@ -59,10 +59,21 @@ class BakhedEditorState {
   }
 }
 
-class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
-  final String bakhedId;
-  final BakhedRepository _repository;
-  final Ref _ref;
+class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
+  late String bakhedId;
+  bool _disposed = false;
+
+  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
+
+  @override
+  BakhedEditorState build(String arg) {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    bakhedId = arg;
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(load);
+    return BakhedEditorState(item: const AsyncValue.loading());
+  }
 
   int _inflightUploads = 0;
   bool get hasInflightUpload => _inflightUploads > 0;
@@ -84,16 +95,11 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
     );
   }
 
-  BakhedEditorNotifier(this.bakhedId, this._repository, this._ref)
-    : super(BakhedEditorState(item: const AsyncValue.loading())) {
-    load();
-  }
-
   Future<void> load() async {
-    if (!mounted) return;
+    if (_disposed) return;
     state = state.copyWith(item: const AsyncValue.loading());
     final res = await _repository.get(bakhedId);
-    if (!mounted) return;
+    if (_disposed) return;
     res.fold(
       (failure) {
         if (failure is ServerFailure && failure.code == 404) {
@@ -272,12 +278,12 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
         return SaveResult.concurrencyConflict;
       }
 
-      final dbService = _ref.read(appwriteDbServiceProvider);
+      final dbService = ref.read(appwriteDbServiceProvider);
 
       // 2. Save Subcollections (Child-First Save with Diff-based writes)
 
       // A. Lyrics Save
-      final lyricsState = _ref.read(bakhedLyricsEditorProvider(currentItem.id));
+      final lyricsState = ref.read(bakhedLyricsEditorProvider(currentItem.id));
       if (lyricsState.isLoaded) {
         try {
           final currentIds = lyricsState.currentLines
@@ -335,7 +341,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       }
 
       // B. Vocabulary Save
-      final vocabState = _ref.read(
+      final vocabState = ref.read(
         bakhedVocabularyEditorProvider(currentItem.id),
       );
       if (vocabState.isLoaded) {
@@ -390,7 +396,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
       }
 
       // C. Cultural Notes Save
-      final notesState = _ref.read(bakhedNotesEditorProvider(currentItem.id));
+      final notesState = ref.read(bakhedNotesEditorProvider(currentItem.id));
       if (notesState.isLoaded) {
         try {
           final currentIds = notesState.currentNotes
@@ -496,7 +502,7 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
             pendingDeletions: const [],
           );
 
-          final uploader = _ref.read(mediaUploaderProvider);
+          final uploader = ref.read(mediaUploaderProvider);
           // Execute deletions in background so it doesn't block the UI transit
           Future.microtask(() async {
             for (final fileId in deletions) {
@@ -537,17 +543,17 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
 
           // Re-initialize original lists to establish new baseline for edits
           if (lyricsState.isLoaded) {
-            _ref
+            ref
                 .read(bakhedLyricsEditorProvider(currentItem.id).notifier)
                 .markClean();
           }
           if (vocabState.isLoaded) {
-            _ref
+            ref
                 .read(bakhedVocabularyEditorProvider(currentItem.id).notifier)
                 .markClean();
           }
           if (notesState.isLoaded) {
-            _ref
+            ref
                 .read(bakhedNotesEditorProvider(currentItem.id).notifier)
                 .markClean();
           }
@@ -564,14 +570,9 @@ class BakhedEditorNotifier extends StateNotifier<BakhedEditorState> {
 }
 
 final bakhedEditorControllerProvider =
-    StateNotifierProvider.family<
-      BakhedEditorNotifier,
-      BakhedEditorState,
-      String
-    >((ref, bakhedId) {
-      final repository = ref.watch(bakhedRepositoryProvider);
-      return BakhedEditorNotifier(bakhedId, repository, ref);
-    });
+    NotifierProvider.family<BakhedEditorNotifier, BakhedEditorState, String>(
+      BakhedEditorNotifier.new,
+    );
 
 // ==========================================
 // 2. Lyrics Timeline Editor Controller
@@ -618,13 +619,17 @@ class BakhedLyricsState {
   }
 }
 
-class BakhedLyricsEditorNotifier extends StateNotifier<BakhedLyricsState> {
-  final String bakhedId;
-  final BakhedRepository _repository;
-  final Ref _ref;
+class BakhedLyricsEditorNotifier
+    extends FamilyNotifier<BakhedLyricsState, String> {
+  late String bakhedId;
 
-  BakhedLyricsEditorNotifier(this.bakhedId, this._repository, this._ref)
-    : super(const BakhedLyricsState());
+  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
+
+  @override
+  BakhedLyricsState build(String arg) {
+    bakhedId = arg;
+    return const BakhedLyricsState();
+  }
 
   Future<void> ensureLoaded() async {
     if (state.isLoaded || state.isLoading) return;
@@ -658,7 +663,7 @@ class BakhedLyricsEditorNotifier extends StateNotifier<BakhedLyricsState> {
     });
 
     state = state.copyWith(currentLines: updated);
-    _ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
+    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
   }
 
   void reorderLines(int oldIndex, int newIndex) {
@@ -741,14 +746,11 @@ class BakhedLyricsEditorNotifier extends StateNotifier<BakhedLyricsState> {
 }
 
 final bakhedLyricsEditorProvider =
-    StateNotifierProvider.family<
+    NotifierProvider.family<
       BakhedLyricsEditorNotifier,
       BakhedLyricsState,
       String
-    >((ref, bakhedId) {
-      final repository = ref.watch(bakhedRepositoryProvider);
-      return BakhedLyricsEditorNotifier(bakhedId, repository, ref);
-    });
+    >(BakhedLyricsEditorNotifier.new);
 
 // ==========================================
 // 3. Vocabulary Editor Controller
@@ -796,13 +798,16 @@ class BakhedVocabularyState {
 }
 
 class BakhedVocabularyEditorNotifier
-    extends StateNotifier<BakhedVocabularyState> {
-  final String bakhedId;
-  final BakhedRepository _repository;
-  final Ref _ref;
+    extends FamilyNotifier<BakhedVocabularyState, String> {
+  late String bakhedId;
 
-  BakhedVocabularyEditorNotifier(this.bakhedId, this._repository, this._ref)
-    : super(const BakhedVocabularyState());
+  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
+
+  @override
+  BakhedVocabularyState build(String arg) {
+    bakhedId = arg;
+    return const BakhedVocabularyState();
+  }
 
   Future<void> ensureLoaded() async {
     if (state.isLoaded || state.isLoading) return;
@@ -833,7 +838,7 @@ class BakhedVocabularyEditorNotifier
       return items[index].copyWith(sortOrder: index);
     });
     state = state.copyWith(currentItems: updated);
-    _ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
+    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
   }
 
   void addItem(BakhedVocabularyItem item) {
@@ -855,7 +860,7 @@ class BakhedVocabularyEditorNotifier
       ),
     );
     if (removedItem.audioFileId.isNotEmpty) {
-      _ref
+      ref
           .read(bakhedEditorControllerProvider(bakhedId).notifier)
           .markForDeletion(removedItem.audioFileId);
     }
@@ -873,14 +878,11 @@ class BakhedVocabularyEditorNotifier
 }
 
 final bakhedVocabularyEditorProvider =
-    StateNotifierProvider.family<
+    NotifierProvider.family<
       BakhedVocabularyEditorNotifier,
       BakhedVocabularyState,
       String
-    >((ref, bakhedId) {
-      final repository = ref.watch(bakhedRepositoryProvider);
-      return BakhedVocabularyEditorNotifier(bakhedId, repository, ref);
-    });
+    >(BakhedVocabularyEditorNotifier.new);
 
 // ==========================================
 // 4. Cultural Notes Editor Controller
@@ -927,13 +929,17 @@ class BakhedNotesState {
   }
 }
 
-class BakhedNotesEditorNotifier extends StateNotifier<BakhedNotesState> {
-  final String bakhedId;
-  final BakhedRepository _repository;
-  final Ref _ref;
+class BakhedNotesEditorNotifier
+    extends FamilyNotifier<BakhedNotesState, String> {
+  late String bakhedId;
 
-  BakhedNotesEditorNotifier(this.bakhedId, this._repository, this._ref)
-    : super(const BakhedNotesState());
+  BakhedRepository get _repository => ref.read(bakhedRepositoryProvider);
+
+  @override
+  BakhedNotesState build(String arg) {
+    bakhedId = arg;
+    return const BakhedNotesState();
+  }
 
   Future<void> ensureLoaded() async {
     if (state.isLoaded || state.isLoading) return;
@@ -960,7 +966,7 @@ class BakhedNotesEditorNotifier extends StateNotifier<BakhedNotesState> {
 
   void updateNotes(List<BakhedCulturalNote> notes) {
     state = state.copyWith(currentNotes: notes);
-    _ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
+    ref.read(bakhedEditorControllerProvider(bakhedId).notifier).markDirty();
   }
 
   void addNote(BakhedCulturalNote note) {
@@ -980,14 +986,11 @@ class BakhedNotesEditorNotifier extends StateNotifier<BakhedNotesState> {
 }
 
 final bakhedNotesEditorProvider =
-    StateNotifierProvider.family<
+    NotifierProvider.family<
       BakhedNotesEditorNotifier,
       BakhedNotesState,
       String
-    >((ref, bakhedId) {
-      final repository = ref.watch(bakhedRepositoryProvider);
-      return BakhedNotesEditorNotifier(bakhedId, repository, ref);
-    });
+    >(BakhedNotesEditorNotifier.new);
 
 final bakhedAudioPlayerProvider = Provider.autoDispose.family<AudioPlayer, String>((
   ref,

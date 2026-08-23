@@ -54,9 +54,7 @@ void main() {
             currentUserProvider.overrideWith((ref) async => null),
 
             // Override stats provider with empty guest stats
-            userStatsProvider.overrideWith((ref) {
-              return UserStatsNotifier(ref.watch(profileRepositoryProvider));
-            }),
+            userStatsProvider.overrideWith(UserStatsNotifier.new),
 
             // Mock connectivity to prevent continuous network listening triggers
             appConnectivityProvider.overrideWith(

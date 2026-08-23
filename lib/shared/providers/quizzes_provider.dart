@@ -14,10 +14,9 @@ import 'learner_content_providers.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final quizzesProvider =
-    StateNotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>((ref) {
-      ref.watch(isAuthenticatedProvider);
-      return QuizzesNotifier(ref);
-    });
+    NotifierProvider<QuizzesNotifier, AsyncValue<List<QuizModel>>>(
+      QuizzesNotifier.new,
+    );
 
 final quizzesByIdProvider = Provider<AsyncValue<Map<String, QuizModel>>>((ref) {
   return ref.watch(quizzesProvider).whenData((list) {
@@ -25,18 +24,25 @@ final quizzesByIdProvider = Provider<AsyncValue<Map<String, QuizModel>>>((ref) {
   });
 });
 
-class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
-  QuizzesNotifier(this.ref) : super(const AsyncValue.loading()) {
-    _loadQuizzes();
+class QuizzesNotifier extends Notifier<AsyncValue<List<QuizModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<QuizModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadQuizzes);
     Future.microtask(() {
-      if (!mounted) return;
+      if (_disposed) return;
       ref.listen(learnerWordsProvider, (_, _) => _updateDynamicQuizzes());
       ref.listen(learnerSentencesProvider, (_, _) => _updateDynamicQuizzes());
       _updateDynamicQuizzes();
     });
+    return const AsyncValue.loading();
   }
-
-  final Ref ref;
 
   static const String _collectionId = 'quizzes';
   static const String _cacheKey = 'cached_quizzes';
@@ -47,7 +53,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   List<QuizModel> _baseQuizzes = [];
 
   void _updateDynamicQuizzes() {
-    if (!mounted) return;
+    if (_disposed) return;
 
     final words = ref.read(learnerWordsProvider).value;
     final sentences = ref.read(learnerSentencesProvider).value;
@@ -69,7 +75,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
 
   Future<void> _loadQuizzes() async {
     await _restoreCachedQuizzes();
-    if (!mounted) return;
+    if (_disposed) return;
 
     try {
       final data = await ref
@@ -78,14 +84,14 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
             _collectionId,
             queries: [Query.orderAsc('order'), Query.limit(500)],
           );
-      if (!mounted) return;
+      if (_disposed) return;
 
       final quizzes = data.map(QuizModel.fromJson).toList();
       await _replaceBaseQuizzes(
         quizzes.isNotEmpty ? quizzes : _fallbackIfEmpty(),
       );
     } catch (e) {
-      if (!mounted) return;
+      if (_disposed) return;
       if (e is AppwriteException && e.code == 404) {
         AppLogger.debug(
           'Quizzes collection ("$_collectionId") not found in Appwrite. '
@@ -106,7 +112,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
         _cacheKey,
         QuizModel.fromJson,
       );
-      if (!mounted) return;
+      if (_disposed) return;
 
       if (cached != null && cached.isNotEmpty) {
         _baseQuizzes = cached;
@@ -124,7 +130,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
       await _prefs.remove(_legacyCacheKey);
       await _prefs.remove(_cacheKey);
     } catch (e) {
-      if (mounted) {
+      if (!_disposed) {
         AppLogger.debug('Failed to load cached quizzes: $e');
       }
     }
@@ -135,7 +141,7 @@ class QuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>> {
   }
 
   Future<void> _replaceBaseQuizzes(List<QuizModel> quizzes) async {
-    if (!mounted) return;
+    if (_disposed) return;
     _baseQuizzes = quizzes;
     _updateDynamicQuizzes();
     await _saveQuizzes(quizzes);

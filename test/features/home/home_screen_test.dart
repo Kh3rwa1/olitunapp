@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/home/presentation/home_screen.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
@@ -18,101 +17,80 @@ import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/features/quiz/presentation/providers/mistake_provider.dart';
 import '../../test_utils.dart';
 
-class MockCategoryNotifier
-    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
-    with Mock
-    implements CategoryNotifier {
-  MockCategoryNotifier() : super(const AsyncValue.data([]));
+class MockCategoryNotifier extends CategoryNotifier {
+  @override
+  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([]);
 }
 
-class MockLessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>>
-    with Mock
-    implements LessonNotifier {
-  MockLessonNotifier() : super(const AsyncValue.data([]));
+class MockLessonNotifier extends LessonNotifier {
+  @override
+  AsyncValue<List<LessonEntity>> build() => const AsyncValue.data([]);
 }
 
-class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
-    with Mock
-    implements QuizzesNotifier {
-  MockQuizzesNotifier() : super(const AsyncValue.data([]));
+class MockQuizzesNotifier extends QuizzesNotifier {
+  @override
+  AsyncValue<List<QuizModel>> build() => const AsyncValue.data([]);
 }
 
-class MockBannersNotifier
-    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>>
-    with Mock
-    implements BannersNotifier {
-  MockBannersNotifier() : super(const AsyncValue.data([]));
+class MockBannersNotifier extends BannersNotifier {
+  @override
+  AsyncValue<List<FeaturedBannerModel>> build() => const AsyncValue.data([]);
 }
 
-class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>>
-    with Mock
-    implements WordsNotifier {
-  MockWordsNotifier() : super(const AsyncValue.data([]));
+class MockWordsNotifier extends WordsNotifier {
+  @override
+  AsyncValue<List<WordModel>> build() => const AsyncValue.data([]);
 }
 
-class MockNumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>>
-    with Mock
-    implements NumbersNotifier {
-  MockNumbersNotifier() : super(const AsyncValue.data([]));
+class MockNumbersNotifier extends NumbersNotifier {
+  @override
+  AsyncValue<List<NumberModel>> build() => const AsyncValue.data([]);
 }
 
-class MockSentencesNotifier
-    extends StateNotifier<AsyncValue<List<SentenceModel>>>
-    with Mock
-    implements SentencesNotifier {
-  MockSentencesNotifier() : super(const AsyncValue.data([]));
+class MockSentencesNotifier extends SentencesNotifier {
+  @override
+  AsyncValue<List<SentenceModel>> build() => const AsyncValue.data([]);
 }
 
-class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>>
-    with Mock
-    implements LettersNotifier {
-  MockLettersNotifier() : super(const AsyncValue.data([]));
+class MockLettersNotifier extends LettersNotifier {
+  @override
+  AsyncValue<List<LetterModel>> build() => const AsyncValue.data([]);
 }
 
-class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
-    with Mock
-    implements UserStatsNotifier {
-  MockUserStatsNotifier()
-    : super(
-        const AsyncValue.data(
-          UserStatsEntity(
-            practicedLetters: {},
-            completedLessons: {},
-            quizHistory: {},
-            categoryMastery: {},
-            totalLearningMinutes: 10,
-            lastActiveDate: '',
-            currentStreak: 2,
-            totalStars: 100,
-          ),
-        ),
-      );
+class MockUserStatsNotifier extends UserStatsNotifier {
+  @override
+  AsyncValue<UserStatsEntity> build() => const AsyncValue.data(
+    UserStatsEntity(
+      practicedLetters: {},
+      completedLessons: {},
+      quizHistory: {},
+      categoryMastery: {},
+      totalLearningMinutes: 10,
+      lastActiveDate: '',
+      currentStreak: 2,
+      totalStars: 100,
+    ),
+  );
 }
 
-class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
-    with Mock
-    implements MistakeNotifier {
-  MockMistakeNotifier() : super([]);
+class MockMistakeNotifier extends MistakeNotifier {
+  @override
+  List<MistakeItem> build() => [];
 }
 
-class MockAffirmationsNotifier
-    extends StateNotifier<AsyncValue<List<AffirmationModel>>>
-    with Mock
-    implements AffirmationsNotifier {
-  MockAffirmationsNotifier()
-    : super(
-        AsyncValue.data([
-          AffirmationModel(
-            id: 'aff_1',
-            olChikiText: 'ᱚᱞ ᱪᱤᱠᱤ',
-            santaliPhonetic: 'ol chiki',
-            englishMeaning: 'Ol Chiki is beautiful',
-            category: 'identity',
-            order: 1,
-            publishedAt: '',
-          ),
-        ]),
-      );
+class MockAffirmationsNotifier extends AffirmationsNotifier {
+  @override
+  AsyncValue<List<AffirmationModel>> build() => AsyncValue.data([
+    AffirmationModel(
+      id: 'aff_1',
+      olChikiText: 'ᱚᱞ ᱪᱤᱠᱤ',
+      santaliPhonetic: 'ol chiki',
+      englishMeaning: 'Ol Chiki is beautiful',
+      category: 'identity',
+      order: 1,
+      publishedAt: '',
+    ),
+  ]);
 }
 
 void main() {
@@ -136,10 +114,6 @@ void main() {
     final lessonNotifier = MockLessonNotifier();
     final userStatsNotifier = MockUserStatsNotifier();
 
-    when(categoryNotifier.refresh).thenAnswer((_) async {});
-    when(lessonNotifier.refresh).thenAnswer((_) async {});
-    when(userStatsNotifier.syncPendingStats).thenAnswer((_) async {});
-
     // Use desktop-sized viewport to skip EnchantedVisualizer (infinite anim)
     tester.view.physicalSize = const Size(2000, 1000);
     tester.view.devicePixelRatio = 1.0;
@@ -155,24 +129,22 @@ void main() {
           isAuthenticatedProvider.overrideWith((ref) async => true),
           userStarsProvider.overrideWith((ref) => 100),
           lessonsCompletedProvider.overrideWith((ref) => 2),
-          categoryNotifierProvider.overrideWith((ref) => categoryNotifier),
-          lessonNotifierProvider.overrideWith((ref) => lessonNotifier),
-          quizzesProvider.overrideWith((ref) => MockQuizzesNotifier()),
-          userStatsProvider.overrideWith((ref) => userStatsNotifier),
+          categoryNotifierProvider.overrideWith(() => categoryNotifier),
+          lessonNotifierProvider.overrideWith(() => lessonNotifier),
+          quizzesProvider.overrideWith(MockQuizzesNotifier.new),
+          userStatsProvider.overrideWith(() => userStatsNotifier),
           lastOpenedLessonIdProvider.overrideWith((ref) => null),
-          bannersProvider.overrideWith((ref) => MockBannersNotifier()),
+          bannersProvider.overrideWith(MockBannersNotifier.new),
 
-          wordsProvider.overrideWith((ref) => MockWordsNotifier()),
-          numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
-          sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
-          lettersProvider.overrideWith((ref) => MockLettersNotifier()),
+          wordsProvider.overrideWith(MockWordsNotifier.new),
+          numbersProvider.overrideWith(MockNumbersNotifier.new),
+          sentencesProvider.overrideWith(MockSentencesNotifier.new),
+          lettersProvider.overrideWith(MockLettersNotifier.new),
           appConnectivityProvider.overrideWith(
             (ref) => Stream.value([ConnectivityResult.wifi]),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier()),
-          affirmationsProvider.overrideWith(
-            (ref) => MockAffirmationsNotifier(),
-          ),
+          mistakeProvider.overrideWith(MockMistakeNotifier.new),
+          affirmationsProvider.overrideWith(MockAffirmationsNotifier.new),
         ],
       ),
     );

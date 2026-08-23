@@ -30,7 +30,7 @@ void main() {
   );
 
   ProviderContainer createContainer({UserEntity? operator = testAdminUser}) {
-    return ProviderContainer(
+    final container = ProviderContainer(
       overrides: [
         appwriteDbServiceProvider.overrideWithValue(mockDb),
         purchaseRepositoryProvider.overrideWithValue(mockRepo),
@@ -38,6 +38,18 @@ void main() {
         currentUserProvider.overrideWith((ref) async => operator),
       ],
     );
+    // Pin the notifier instance for the duration of the test.
+    container.listen(adminPurchasesProvider, (previous, next) {});
+    container.read(adminPurchasesProvider.notifier);
+    return container;
+  }
+
+  /// Waits for the build()-triggered initial load to settle.
+  Future<void> waitForInitialLoad(ProviderContainer container) async {
+    for (var i = 0; i < 100; i++) {
+      await Future<void>.delayed(Duration.zero);
+      if (!container.read(adminPurchasesProvider).isLoading) return;
+    }
   }
 
   Map<String, dynamic> makePurchaseDoc({
@@ -94,9 +106,7 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
-        final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
+        await waitForInitialLoad(container);
 
         final state = container.read(adminPurchasesProvider);
         expect(state.isLoading, isFalse);
@@ -156,9 +166,8 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
 
         var state = container.read(adminPurchasesProvider);
         expect(state.items.length, 50);
@@ -209,9 +218,8 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
 
         expect(container.read(adminPurchasesProvider).items.length, 50);
 
@@ -276,9 +284,8 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
 
         final outcome = await notifier.recordExternalRefund(
           'p_refund_target',
@@ -351,9 +358,8 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
 
         final outcome = await notifier.recordExternalRefund(
           'p_already_refunded',
@@ -402,9 +408,8 @@ void main() {
 
         final container = createContainer();
         addTearDown(container.dispose);
-
+        await waitForInitialLoad(container);
         final notifier = container.read(adminPurchasesProvider.notifier);
-        await notifier.loadPurchases();
 
         final outcome = await notifier.recordExternalRefund('p_failed_item');
         expect(outcome, RefundResult.invalidTransition);

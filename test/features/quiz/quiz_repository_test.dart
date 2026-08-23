@@ -5,7 +5,6 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/quiz/data/quiz_repository.dart';
 import 'package:itun/shared/models/content_models.dart';
 import 'package:itun/shared/providers/quizzes_provider.dart';
-import 'package:mocktail/mocktail.dart';
 
 void main() {
   final quiz = QuizModel(
@@ -25,7 +24,7 @@ void main() {
   ProviderContainer containerWith(AsyncValue<List<QuizModel>> state) {
     final container = ProviderContainer(
       overrides: [
-        quizzesProvider.overrideWith((ref) => _TestQuizzesNotifier(state)),
+        quizzesProvider.overrideWith(() => _TestQuizzesNotifier(state)),
       ],
     );
     addTearDown(container.dispose);
@@ -78,8 +77,11 @@ void main() {
   });
 }
 
-class _TestQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
-    with Mock
-    implements QuizzesNotifier {
-  _TestQuizzesNotifier(super.state);
+class _TestQuizzesNotifier extends QuizzesNotifier {
+  final AsyncValue<List<QuizModel>> _initial;
+
+  _TestQuizzesNotifier(this._initial);
+
+  @override
+  AsyncValue<List<QuizModel>> build() => _initial;
 }

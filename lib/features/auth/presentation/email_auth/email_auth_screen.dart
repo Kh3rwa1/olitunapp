@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../onboarding/providers/onboarding_provider.dart';
+import '../controllers/auth_controller.dart';
 import '../providers/auth_providers.dart';
 import 'widgets/email_request_form.dart';
 import 'widgets/otp_verify_form.dart';
@@ -69,8 +70,8 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     });
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final result = await authRepo.sendOtp(email);
+      final auth = ref.read(authControllerProvider);
+      final result = await auth.sendOtp(email);
 
       result.fold(
         (failure) {
@@ -118,8 +119,9 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     });
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final result = await authRepo.verifyOtp(userId: _userId!, secret: code);
+      final result = await ref
+          .read(authControllerProvider)
+          .verifyOtp(userId: _userId!, secret: code);
 
       result.fold(
         (failure) {
@@ -156,8 +158,7 @@ class _EmailAuthScreenState extends ConsumerState<EmailAuthScreen> {
     });
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      await authRepo.signInAnonymously();
+      await ref.read(authControllerProvider).signInAnonymously();
       ref.invalidate(isAuthenticatedProvider);
     } catch (e) {
       // Gracefully catch any errors (e.g. offline/network failures)

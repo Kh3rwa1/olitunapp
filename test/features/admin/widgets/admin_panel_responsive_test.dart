@@ -6,21 +6,19 @@ import 'package:itun/features/admin/presentation/access/controllers/admin_access
 import 'package:itun/features/admin/presentation/settings/sections/admin_badge_names_section.dart';
 import 'package:itun/features/admin/presentation/settings/sections/admin_onboarding_video_section.dart';
 
-class _FakeAdminAccessController extends StateNotifier<AdminAccessState>
+class _FakeAdminAccessController extends Notifier<AdminAccessState>
     implements AdminAccessController {
-  _FakeAdminAccessController()
-    : super(
-        const AdminAccessState(
-          isLoading: false,
-          admins: [
-            {
-              'userId': 'admin_1',
-              'userEmail': 'admin@example.com',
-              'userName': 'Super Admin',
-            },
-          ],
-        ),
-      );
+  @override
+  AdminAccessState build() => const AdminAccessState(
+    isLoading: false,
+    admins: [
+      {
+        'userId': 'admin_1',
+        'userEmail': 'admin@example.com',
+        'userName': 'Super Admin',
+      },
+    ],
+  );
 
   @override
   Future<void> addAdmin(String email) async {}
@@ -120,7 +118,7 @@ void main() {
         ProviderScope(
           overrides: [
             adminAccessControllerProvider.overrideWith(
-              (ref) => _FakeAdminAccessController(),
+              _FakeAdminAccessController.new,
             ),
           ],
           child: const MaterialApp(home: Scaffold(body: AdminAccessScreen())),

@@ -7,6 +7,7 @@ import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/widgets/minimum_tap_target.dart';
+import '../../auth/presentation/controllers/auth_controller.dart';
 import '../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../providers/onboarding_provider.dart';
 
@@ -40,22 +41,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     updateDailyGoalMinutes(ref, _selectedDailyGoal);
 
     // Save onboarding goals to user prefs in Appwrite if logged in
-    try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final isLoggedInResult = await authRepo.isLoggedIn();
-      final isLoggedIn = isLoggedInResult.getOrElse((_) => false);
-      if (isLoggedIn) {
-        final currentPrefsResult = await authRepo.getUserPrefs();
-        final currentPrefs = currentPrefsResult.getOrElse(
-          (_) => <String, dynamic>{},
-        );
-        final newPrefs = Map<String, dynamic>.from(currentPrefs)
-          ..['learning_goals'] = _selectedGoals;
-        await authRepo.updateUserPrefs(newPrefs);
-      }
-    } catch (_) {
-      // Gracefully catch and log if guest or network is off
-    }
+    await ref.read(authControllerProvider).syncLearningGoals(_selectedGoals);
 
     // Mark onboarding completed
     await ref.read(onboardingProvider.notifier).completeOnboarding();

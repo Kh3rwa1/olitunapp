@@ -41,20 +41,29 @@ class RhymeAudioState {
   }
 }
 
-class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
+class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
   final AudioPlayer _player = AudioPlayer();
   StreamSubscription<PlayerState>? _playerStateSub;
   StreamSubscription<Duration>? _positionSub;
   StreamSubscription<Duration?>? _durationSub;
-  final Ref? _ref;
+  bool _disposed = false;
   bool _eventTriggeredForCurrent = false;
   int _lastSyncedProgressPercent = -1;
 
-  RhymeAudioNotifier({Ref? ref}) : _ref = ref, super(const RhymeAudioState()) {
+  @override
+  RhymeAudioState build() {
+    _disposed = false;
+    _eventTriggeredForCurrent = false;
+    _lastSyncedProgressPercent = -1;
+    _wirePlayerListeners();
+    return const RhymeAudioState();
+  }
+
+  void _wirePlayerListeners() {
     _player.setWebCrossOrigin(WebCrossOrigin.anonymous);
     _playerStateSub = _player.playerStateStream.listen(
       (playerState) {
-        if (!mounted) return;
+        if (_disposed) return;
 
         if (playerState.processingState == ProcessingState.completed) {
           state = state.copyWith(
@@ -80,16 +89,17 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     );
 
     _positionSub = _player.positionStream.listen((pos) {
-      if (!mounted) return;
+      if (_disposed) return;
       state = state.copyWith(position: pos);
       _checkBakhedCompletion();
     });
 
     _durationSub = _player.durationStream.listen((dur) {
-      if (!mounted) return;
+      if (_disposed) return;
       state = state.copyWith(duration: dur ?? Duration.zero);
       _checkBakhedCompletion();
     });
+    ref.onDispose(dispose);
   }
 
   void _checkBakhedCompletion() {
@@ -114,7 +124,7 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
       }
       if (percentage >= 0.8 && !_eventTriggeredForCurrent) {
         _eventTriggeredForCurrent = true;
-        _ref?.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
+        ref.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
       }
     }
   }
@@ -207,8 +217,6 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     required int lastPositionMs,
   }) async {
     try {
-      final ref = _ref;
-      if (ref == null) return;
       final functions = Functions(ref.read(appwriteAuthServiceProvider).client);
       await functions.createExecution(
         functionId: 'recordBakhedProgress',
@@ -223,17 +231,16 @@ class RhymeAudioNotifier extends StateNotifier<RhymeAudioState> {
     }
   }
 
-  @override
   void dispose() {
+    _disposed = true;
     unawaited(_playerStateSub?.cancel());
     unawaited(_positionSub?.cancel());
     unawaited(_durationSub?.cancel());
     unawaited(_player.dispose());
-    super.dispose();
   }
 }
 
 final rhymeAudioProvider =
-    StateNotifierProvider<RhymeAudioNotifier, RhymeAudioState>((ref) {
-      return RhymeAudioNotifier(ref: ref);
-    });
+    NotifierProvider<RhymeAudioNotifier, RhymeAudioState>(
+      RhymeAudioNotifier.new,
+    );

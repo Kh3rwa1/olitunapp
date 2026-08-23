@@ -67,6 +67,11 @@ jobs:
           name: coverage-report
           path: coverage/lcov.info
           retention-days: 7
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5.5.5
+        with:
+          files: coverage/lcov.info
+          fail_ci_if_error: false
 
   node-backend-tests:
     name: Node Serverless Function Tests

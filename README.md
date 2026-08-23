@@ -133,9 +133,6 @@ cd olitunapp
 
 # Install dependencies
 flutter pub get
-
-# Generate code (Riverpod)
-dart run build_runner build
 ```
 
 ### Quality checks

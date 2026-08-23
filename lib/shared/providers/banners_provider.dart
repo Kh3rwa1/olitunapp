@@ -7,25 +7,27 @@ import '../models/content_models.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final bannersProvider =
-    StateNotifierProvider<
-      BannersNotifier,
-      AsyncValue<List<FeaturedBannerModel>>
-    >((ref) {
-      ref.watch(isAuthenticatedProvider);
-      return BannersNotifier(ref);
-    });
+    NotifierProvider<BannersNotifier, AsyncValue<List<FeaturedBannerModel>>>(
+      BannersNotifier.new,
+    );
 
 // Alias for backward compatibility
 final featuredBannersProvider = bannersProvider;
 
-class BannersNotifier
-    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>> {
-  BannersNotifier(this.ref)
-    : super(const AsyncValue.data(<FeaturedBannerModel>[])) {
-    _loadBanners();
+class BannersNotifier extends Notifier<AsyncValue<List<FeaturedBannerModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<FeaturedBannerModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadBanners);
+    return const AsyncValue.data(<FeaturedBannerModel>[]);
   }
 
-  final Ref ref;
   static const String _cacheKey = 'cached_banners';
 
   Future<void> _loadBanners() async {
@@ -33,7 +35,7 @@ class BannersNotifier
       _cacheKey,
       FeaturedBannerModel.fromJson,
     );
-    if (!mounted) return;
+    if (_disposed) return;
     if (cached != null) {
       state = AsyncValue.data(cached);
     }
@@ -44,7 +46,7 @@ class BannersNotifier
         'banners',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      if (!mounted) return;
+      if (_disposed) return;
       final banners = data.map(FeaturedBannerModel.fromJson).toList();
       state = AsyncValue.data(banners);
       await CacheService.set(
@@ -53,7 +55,7 @@ class BannersNotifier
       );
     } catch (e, stack) {
       AppLogger.debug('❌ load banners FAILED: $e');
-      if (!mounted) return;
+      if (_disposed) return;
       if (cached == null) {
         state = AsyncValue.error(e, stack);
       }

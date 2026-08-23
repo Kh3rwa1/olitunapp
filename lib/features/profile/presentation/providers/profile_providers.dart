@@ -31,13 +31,15 @@ final profileRepositoryProvider = Provider<ProfileRepository>((ref) {
   return ProfileRepositoryImpl(authRepo, prefs);
 });
 
+/// Injectable clock for streak/date calculations.
+final userStatsClockProvider = Provider<DateTime Function()>((ref) {
+  return DateTime.now;
+});
+
 final userStatsProvider =
-    StateNotifierProvider<UserStatsNotifier, AsyncValue<UserStatsEntity>>((
-      ref,
-    ) {
-      final repo = ref.watch(profileRepositoryProvider);
-      return UserStatsNotifier(repo, ref: ref);
-    });
+    NotifierProvider<UserStatsNotifier, AsyncValue<UserStatsEntity>>(
+      UserStatsNotifier.new,
+    );
 
 final userNameProvider = StateProvider<String>((ref) {
   return ref.read(sharedPreferencesProvider).getString('user_name') ??
@@ -102,25 +104,27 @@ final userAvatarColorsProvider = Provider<List<Color>>((ref) {
   )];
 });
 
-class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
-  final ProfileRepository _repository;
-  final Ref? _ref;
-  final DateTime Function() _now;
+class UserStatsNotifier extends Notifier<AsyncValue<UserStatsEntity>> {
+  bool _disposed = false;
 
-  UserStatsNotifier(this._repository, {Ref? ref, DateTime Function()? now})
-    : _now = now ?? DateTime.now,
-      _ref = ref,
-      super(const AsyncValue.loading()) {
-    loadStats();
-    _syncProfileFromCloud();
+  DateTime Function() get _now => ref.read(userStatsClockProvider);
+
+  ProfileRepository get _repository => ref.read(profileRepositoryProvider);
+
+  @override
+  AsyncValue<UserStatsEntity> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadStats);
+    Future.microtask(_syncProfileFromCloud);
     _setupConnectivityListener();
+    return const AsyncValue.loading();
   }
 
   void _setupConnectivityListener() {
-    final ref = _ref;
-    if (ref == null) return;
     Future.microtask(() {
-      if (!mounted) return;
+      if (_disposed) return;
       ref.listen<AsyncValue<List<ConnectivityResult>>>(
         appConnectivityProvider,
         (previous, next) {
@@ -144,9 +148,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> syncPendingStats() async {
-    final ref = _ref;
-    if (ref == null) return;
-
     ref.read(syncStatusProvider.notifier).state = SyncStatus.syncing;
     final result = await _repository.syncPendingStats();
     await result.fold(
@@ -164,7 +165,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
           _updateSyncStateFromPrefs();
         });
         Future.delayed(const Duration(seconds: 3), () {
-          if (!mounted) return;
+          if (_disposed) return;
           try {
             if (ref.read(syncStatusProvider) == SyncStatus.success) {
               ref.read(syncStatusProvider.notifier).state = SyncStatus.idle;
@@ -178,8 +179,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   void _updateSyncStateFromPrefs() {
-    final ref = _ref;
-    if (ref == null || !mounted) return;
+    if (_disposed) return;
     try {
       final isSynced =
           ref.read(sharedPreferencesProvider).getBool('is_stats_synced') ??
@@ -189,10 +189,10 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> loadStats() async {
-    if (!mounted) return;
+    if (_disposed) return;
     state = const AsyncValue.loading();
     final result = await _repository.getUserStats();
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) => state = AsyncValue.error(failure, StackTrace.current),
       (stats) {
@@ -204,9 +204,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
   /// Fetches current user from Appwrite and updates local name if it's still 'Learner'
   Future<void> _syncProfileFromCloud() async {
-    final ref = _ref;
-    if (ref == null) return;
-
     try {
       final authRepo = ref.read(authRepositoryProvider);
       final userResult = await authRepo.getCurrentUser();
@@ -249,8 +246,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     UserStatsEntity? previous,
     UserStatsEntity current,
   ) {
-    final ref = _ref;
-    if (ref == null || previous == null) return;
+    if (previous == null) return;
     if (current.currentStreak <= previous.currentStreak) return;
 
     const milestones = [3, 7, 14, 30, 60, 100, 365];
@@ -278,8 +274,7 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     UserStatsEntity? previous,
     UserStatsEntity current,
   ) {
-    final ref = _ref;
-    if (ref == null || previous == null) return;
+    if (previous == null) return;
     if (current.currentStreak <= 0) return;
     if (current.lastActiveDate.isEmpty ||
         current.lastActiveDate == previous.lastActiveDate) {
@@ -352,21 +347,20 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     // 2. Track Analytics
     unawaited(
-      _ref
-              ?.read(learningAnalyticsServiceProvider)
-              .track(
-                LearningAnalyticsEvents.practiceCompleted,
-                source: 'typing_practice',
-                sourceId: contentId,
-                metadata: {
-                  'contentType': contentType,
-                  'practiceMode': practiceMode,
-                  'attempts': attempts,
-                  'withHint': withHint,
-                  'starsAwarded': starsAwarded,
-                },
-              ) ??
-          Future.value(),
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.practiceCompleted,
+            source: 'typing_practice',
+            sourceId: contentId,
+            metadata: {
+              'contentType': contentType,
+              'practiceMode': practiceMode,
+              'attempts': attempts,
+              'withHint': withHint,
+              'starsAwarded': starsAwarded,
+            },
+          ),
     );
 
     // 3. Increment streak and save stats
@@ -415,21 +409,19 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     final updated = current.copyWith(completedMissionsDates: updatedDates);
 
-    if (_ref != null) {
-      unawaited(
-        _ref
-            .read(learningAnalyticsServiceProvider)
-            .track(
-              LearningAnalyticsEvents.dailyMissionCompleted,
-              source: 'daily_missions',
-              sourceId: today,
-              metadata: {
-                'weekId': weekId,
-                'completedDaysThisWeek': completedDaysThisWeek,
-              },
-            ),
-      );
-    }
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.dailyMissionCompleted,
+            source: 'daily_missions',
+            sourceId: today,
+            metadata: {
+              'weekId': weekId,
+              'completedDaysThisWeek': completedDaysThisWeek,
+            },
+          ),
+    );
 
     await updateStats(updated);
   }
@@ -526,18 +518,17 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
 
     if (score != null) {
       unawaited(
-        _ref
-                ?.read(learningAnalyticsServiceProvider)
-                .track(
-                  LearningAnalyticsEvents.letterPracticed,
-                  source: 'practice_trace',
-                  sourceId: normalizedLetter,
-                  metadata: {
-                    'score': double.parse(score.toStringAsFixed(2)),
-                    'isDigit': isDigit,
-                  },
-                ) ??
-            Future.value(),
+        ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              LearningAnalyticsEvents.letterPracticed,
+              source: 'practice_trace',
+              sourceId: normalizedLetter,
+              metadata: {
+                'score': double.parse(score.toStringAsFixed(2)),
+                'isDigit': isDigit,
+              },
+            ),
       );
     }
 
@@ -597,20 +588,19 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
     await updateStats(updated);
     if (!alreadyCompleted) {
       unawaited(
-        _ref
-                ?.read(learningAnalyticsServiceProvider)
-                .track(
-                  LearningAnalyticsEvents.lessonCompleted,
-                  source: 'lesson_detail',
-                  sourceId: lessonId,
-                  learnerLevel: updated.learnerLevel,
-                  metadata: {
-                    'categoryId': categoryId,
-                    'estimatedMinutes': estimatedMinutes.clamp(0, 240),
-                    'totalCompletedLessons': updated.completedLessons.length,
-                  },
-                ) ??
-            Future.value(),
+        ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              LearningAnalyticsEvents.lessonCompleted,
+              source: 'lesson_detail',
+              sourceId: lessonId,
+              learnerLevel: updated.learnerLevel,
+              metadata: {
+                'categoryId': categoryId,
+                'estimatedMinutes': estimatedMinutes.clamp(0, 240),
+                'totalCompletedLessons': updated.completedLessons.length,
+              },
+            ),
       );
     }
   }
@@ -644,23 +634,21 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
       );
       await updateStats(updated);
       unawaited(
-        _ref
-                ?.read(learningAnalyticsServiceProvider)
-                .track(
-                  LearningAnalyticsEvents.quizCompleted,
-                  source: 'quiz',
-                  sourceId: sanitized.quizId,
-                  learnerLevel: updated.learnerLevel,
-                  metadata: {
-                    'score': sanitized.score,
-                    'totalQuestions': sanitized.totalQuestions,
-                    'percent':
-                        (sanitized.score / sanitized.totalQuestions * 100)
-                            .round(),
-                    'passed': sanitized.isPassing,
-                  },
-                ) ??
-            Future.value(),
+        ref
+            .read(learningAnalyticsServiceProvider)
+            .track(
+              LearningAnalyticsEvents.quizCompleted,
+              source: 'quiz',
+              sourceId: sanitized.quizId,
+              learnerLevel: updated.learnerLevel,
+              metadata: {
+                'score': sanitized.score,
+                'totalQuestions': sanitized.totalQuestions,
+                'percent': (sanitized.score / sanitized.totalQuestions * 100)
+                    .round(),
+                'passed': sanitized.isPassing,
+              },
+            ),
       );
     } catch (e, st) {
       AppLogger.debug('Failed to save quiz result: $e\n$st');
@@ -682,9 +670,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateName(String name) async {
-    final ref = _ref;
-    if (ref == null) return;
-
     ref.read(userNameProvider.notifier).state = name;
     final result = await _repository.updateDisplayName(name);
     result.fold(
@@ -695,9 +680,6 @@ class UserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>> {
   }
 
   Future<void> updateAvatar(String emoji, int colorIndex) async {
-    final ref = _ref;
-    if (ref == null) return;
-
     final result = await _repository.updateAvatar(emoji, colorIndex);
     result.fold((failure) => null, (_) {
       ref.read(userAvatarEmojiProvider.notifier).state = emoji;

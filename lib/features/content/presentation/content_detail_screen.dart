@@ -13,7 +13,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/core/audio/audio_service.dart';
-import 'package:itun/shared/repositories/content_repository.dart';
+import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/shared/widgets/content_hero.dart';
 import 'package:itun/shared/widgets/tracing_canvas.dart';

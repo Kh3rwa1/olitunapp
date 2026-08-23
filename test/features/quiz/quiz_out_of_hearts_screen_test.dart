@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -111,11 +109,9 @@ void main() {
 
     await tester.pump(const Duration(seconds: 1));
 
-    if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-      await expectLater(
-        find.byType(QuizOutOfHeartsScreen),
-        matchesGoldenFile('../../goldens/quiz_out_of_hearts.png'),
-      );
-    }
+    await expectLater(
+      find.byType(QuizOutOfHeartsScreen),
+      matchesGoldenFile('../../goldens/quiz_out_of_hearts.png'),
+    );
   });
 }

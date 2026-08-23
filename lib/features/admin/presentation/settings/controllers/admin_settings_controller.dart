@@ -87,13 +87,13 @@ class AdminSettingsState {
   }
 }
 
-class AdminSettingsController extends StateNotifier<AdminSettingsState> {
-  AdminSettingsController(this.ref)
-    : super(const AdminSettingsState(status: AdminSettingsStatus.initial)) {
-    loadSettings();
+class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
+  @override
+  AdminSettingsState build() {
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadSettings);
+    return const AdminSettingsState(status: AdminSettingsStatus.initial);
   }
-
-  final Ref ref;
 
   static const defaultGoals = [
     {
@@ -123,8 +123,13 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
     },
   ];
 
+  /// Guards against a stale in-flight load clobbering newer local state
+  /// (e.g. validation results written after the load was scheduled).
+  int _loadSeq = 0;
+
   /// Loads all remote app settings from Appwrite.
   Future<void> loadSettings() async {
+    final seq = ++_loadSeq;
     state = state.copyWith(
       status: AdminSettingsStatus.loading,
       clearFailure: true,
@@ -133,6 +138,7 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final docs = await db.listDocuments('app_settings');
+      if (seq != _loadSeq) return;
 
       final settings = <String, dynamic>{};
       for (final doc in docs) {
@@ -182,6 +188,7 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
         badgeKherwal: kherwal,
       );
 
+      if (seq != _loadSeq) return;
       state = nextState.copyWith(lastConfirmedState: nextState);
     } catch (e) {
       final failure = AdminFailure.fromException(
@@ -203,6 +210,7 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
   /// Saves a single setting key-value pair to Appwrite DB using strict 404 create fallback.
   Future<bool> saveSetting(String key, String value) async {
     if (state.isSaving(key)) return false;
+    ++_loadSeq;
 
     // Razorpay Key Validation
     if (key == 'razorpay_key_id') {
@@ -284,6 +292,7 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
 
   /// Updates and saves onboarding learning goals.
   Future<bool> saveGoals(List<Map<String, String>> goals) async {
+    ++_loadSeq;
     for (final g in goals) {
       final title = g['title']?.trim() ?? '';
       if (title.isEmpty) {
@@ -309,6 +318,7 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
     required String kudum,
     required String kherwal,
   }) async {
+    ++_loadSeq;
     final a = archer.trim();
     final k = kudum.trim();
     final kh = kherwal.trim();
@@ -384,7 +394,6 @@ class AdminSettingsController extends StateNotifier<AdminSettingsState> {
 }
 
 final adminSettingsControllerProvider =
-    StateNotifierProvider.autoDispose<
-      AdminSettingsController,
-      AdminSettingsState
-    >(AdminSettingsController.new);
+    NotifierProvider.autoDispose<AdminSettingsController, AdminSettingsState>(
+      AdminSettingsController.new,
+    );

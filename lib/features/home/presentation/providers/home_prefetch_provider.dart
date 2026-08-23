@@ -19,19 +19,24 @@ class HomePrefetchState {
   }
 }
 
-class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
-  final Ref _ref;
+class HomePrefetchNotifier extends Notifier<HomePrefetchState> {
+  bool _disposed = false;
+
   static const _stalenessThreshold = Duration(minutes: 5);
 
-  HomePrefetchNotifier(this._ref)
-    : super(HomePrefetchState(isPrefetching: false));
+  @override
+  HomePrefetchState build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    return HomePrefetchState(isPrefetching: false);
+  }
 
   Future<void> prefetch({bool forceRefresh = false}) async {
     // 1. Trigger reading of core learner content providers
-    _ref.read(learnerWordsProvider);
-    _ref.read(learnerNumbersProvider);
-    _ref.read(learnerSentencesProvider);
-    _ref.read(learnerLettersProvider);
+    ref.read(learnerWordsProvider);
+    ref.read(learnerNumbersProvider);
+    ref.read(learnerSentencesProvider);
+    ref.read(learnerLettersProvider);
 
     // 2. Check category list staleness and refresh if needed
     final lastRefresh = state.lastCategoryRefresh;
@@ -43,14 +48,14 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
     if (isStale || forceRefresh) {
       state = state.copyWith(isPrefetching: true);
       try {
-        await _ref.read(categoryNotifierProvider.notifier).refresh();
-        if (!mounted) return;
+        await ref.read(categoryNotifierProvider.notifier).refresh();
+        if (_disposed) return;
         state = HomePrefetchState(
           isPrefetching: false,
           lastCategoryRefresh: DateTime.now(),
         );
       } catch (_) {
-        if (!mounted) return;
+        if (_disposed) return;
         state = state.copyWith(isPrefetching: false);
       }
     }
@@ -58,6 +63,6 @@ class HomePrefetchNotifier extends StateNotifier<HomePrefetchState> {
 }
 
 final homePrefetchProvider =
-    StateNotifierProvider<HomePrefetchNotifier, HomePrefetchState>((ref) {
-      return HomePrefetchNotifier(ref);
-    });
+    NotifierProvider<HomePrefetchNotifier, HomePrefetchState>(
+      HomePrefetchNotifier.new,
+    );

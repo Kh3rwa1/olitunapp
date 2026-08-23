@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../core/motion/pressable_scale.dart';
 import '../../../core/theme/app_colors.dart';
+import '../presentation/controllers/auth_controller.dart';
 import '../presentation/providers/auth_providers.dart';
 import '../../onboarding/providers/onboarding_provider.dart';
 
@@ -333,30 +334,16 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
     HapticFeedback.lightImpact();
 
     try {
-      final authRepo = ref.read(authRepositoryProvider);
-      final result = await authRepo.signInWithGoogle();
+      final auth = ref.read(authControllerProvider);
+      final result = await auth.signInWithGoogle();
 
       result.fold(
         (failure) {
           if (!mounted) return;
           setState(() => _isLoading = false);
 
-          final msg = failure.message.toLowerCase();
-
-          // Genuine user dismissal — silently ignore, no snackbar needed.
-          if (msg.contains('canceled') && !msg.contains('appwrite')) return;
-
-          String displayMsg;
-          if (failure.message.contains('user_already_exists') ||
-              (failure.code != null && failure.code == 409)) {
-            displayMsg =
-                'An account with this email already exists. Please sign in with Email instead.';
-          } else if (msg.contains('canceled') || msg.contains('cancelled')) {
-            // OAuth sheet was closed by the system (e.g. back-navigation) — no noise.
-            return;
-          } else {
-            displayMsg = 'Google sign-in failed: ${failure.message}';
-          }
+          final displayMsg = auth.googleSignInUserMessage(failure);
+          if (displayMsg == null) return;
 
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
@@ -386,16 +373,15 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
     } catch (e) {
       if (!mounted) return;
       setState(() => _isLoading = false);
-      final errStr = e.toString().toLowerCase();
 
-      // Genuine user dismissal — swallow silently.
-      if (errStr.contains('canceled') || errStr.contains('cancelled')) return;
+      final displayMsg = ref
+          .read(authControllerProvider)
+          .googleSignInExceptionMessage(e);
+      if (displayMsg == null) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(
-            'Google sign-in failed: ${e.toString().replaceAll('Exception: ', '')}',
-          ),
+          content: Text(displayMsg),
           backgroundColor: Colors.red,
           behavior: SnackBarBehavior.floating,
           shape: RoundedRectangleBorder(

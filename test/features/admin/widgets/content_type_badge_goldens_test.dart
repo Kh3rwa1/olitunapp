@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/features/admin/domain/content_badge_resolver.dart';
@@ -42,12 +40,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byType(Wrap),
-          matchesGoldenFile('../../../goldens/content_badges_light_grid.png'),
-        );
-      }
+      await expectLater(
+        find.byType(Wrap),
+        matchesGoldenFile('../../../goldens/content_badges_light_grid.png'),
+      );
     });
 
     testWidgets('renders all 10 badge types in dark theme grid', (
@@ -83,12 +79,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byType(Wrap),
-          matchesGoldenFile('../../../goldens/content_badges_dark_grid.png'),
-        );
-      }
+      await expectLater(
+        find.byType(Wrap),
+        matchesGoldenFile('../../../goldens/content_badges_dark_grid.png'),
+      );
     });
 
     testWidgets('renders overlaid badges with shadow ring on card thumbnail', (
@@ -166,12 +160,10 @@ void main() {
 
       await tester.pumpAndSettle();
 
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byKey(const Key('overlay_test_grid')),
-          matchesGoldenFile('../../../goldens/content_badges_overlays.png'),
-        );
-      }
+      await expectLater(
+        find.byKey(const Key('overlay_test_grid')),
+        matchesGoldenFile('../../../goldens/content_badges_overlays.png'),
+      );
     });
   });
 }

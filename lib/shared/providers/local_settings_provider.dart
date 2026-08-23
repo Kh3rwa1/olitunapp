@@ -26,12 +26,9 @@ final userReduceVisualEffectsProvider = StateProvider<bool>((ref) {
       false;
 });
 
-class SystemReduceMotionNotifier extends StateNotifier<bool>
+class SystemReduceMotionNotifier extends Notifier<bool>
     with WidgetsBindingObserver {
-  SystemReduceMotionNotifier() : super(false) {
-    WidgetsBinding.instance.addObserver(this);
-    _updateState();
-  }
+  bool _observing = false;
 
   void _updateState() {
     try {
@@ -43,21 +40,29 @@ class SystemReduceMotionNotifier extends StateNotifier<bool>
   }
 
   @override
-  void didChangeAccessibilityFeatures() {
+  bool build() {
+    if (!_observing) {
+      WidgetsBinding.instance.addObserver(this);
+      _observing = true;
+    }
+    ref.onDispose(() {
+      WidgetsBinding.instance.removeObserver(this);
+      _observing = false;
+    });
     _updateState();
+    return state;
   }
 
   @override
-  void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
-    super.dispose();
+  void didChangeAccessibilityFeatures() {
+    _updateState();
   }
 }
 
 final systemReduceMotionProvider =
-    StateNotifierProvider<SystemReduceMotionNotifier, bool>((ref) {
-      return SystemReduceMotionNotifier();
-    });
+    NotifierProvider<SystemReduceMotionNotifier, bool>(
+      SystemReduceMotionNotifier.new,
+    );
 
 final reduceVisualEffectsProvider = Provider<bool>((ref) {
   final userPref = ref.watch(userReduceVisualEffectsProvider);

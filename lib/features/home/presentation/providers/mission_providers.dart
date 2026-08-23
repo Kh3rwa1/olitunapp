@@ -37,52 +37,56 @@ Future<String> fetchServerDate() async {
   return DateTime.now().toUtc().toIso8601String().substring(0, 10);
 }
 
-final currentDateProvider = StateNotifierProvider<CurrentDateNotifier, String>((
-  ref,
-) {
-  return CurrentDateNotifier();
-});
+final currentDateProvider = NotifierProvider<CurrentDateNotifier, String>(
+  CurrentDateNotifier.new,
+);
 
-class CurrentDateNotifier extends StateNotifier<String> {
-  CurrentDateNotifier()
-    : super(DateTime.now().toUtc().toIso8601String().substring(0, 10)) {
+class CurrentDateNotifier extends Notifier<String> {
+  bool _disposed = false;
+
+  @override
+  String build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
     syncDate();
+    return DateTime.now().toUtc().toIso8601String().substring(0, 10);
   }
 
   Future<void> syncDate() async {
     final serverDate = await fetchServerDate();
-    if (!mounted) return;
+    if (_disposed) return;
     state = serverDate;
   }
 }
 
-class DailyMissionNotifier extends StateNotifier<bool> {
-  final Ref _ref;
-  final String _prefKey;
-  final String _today;
+/// Base for the four daily-mission flags. Each concrete notifier supplies
+/// its own [prefKey]; separate provider instances keep per-provider test
+/// overrides possible.
+abstract class DailyMissionNotifier extends Notifier<bool> {
+  String get prefKey;
 
-  DailyMissionNotifier(this._ref, this._prefKey, this._today) : super(false) {
-    _loadState();
-  }
-
-  void _loadState() {
+  @override
+  bool build() {
     try {
-      final prefs = _ref.read(sharedPreferencesProvider);
-      final savedDate = prefs.getString(_prefKey) ?? '';
-      state = savedDate == _today;
+      // Rebuild when the server-synced date rolls over.
+      final today = ref.watch(currentDateProvider);
+      final prefs = ref.read(sharedPreferencesProvider);
+      final savedDate = prefs.getString(prefKey) ?? '';
+      return savedDate == today;
     } catch (_) {
-      state = false;
+      return false;
     }
   }
 
   Future<void> setCompleted(bool completed) async {
     try {
-      final prefs = _ref.read(sharedPreferencesProvider);
+      final prefs = ref.read(sharedPreferencesProvider);
+      final today = ref.read(currentDateProvider);
       if (completed) {
-        await prefs.setString(_prefKey, _today);
+        await prefs.setString(prefKey, today);
         state = true;
       } else {
-        await prefs.remove(_prefKey);
+        await prefs.remove(prefKey);
         state = false;
       }
     } catch (_) {
@@ -95,30 +99,41 @@ class DailyMissionNotifier extends StateNotifier<bool> {
   }
 }
 
-final lessonCompletedTodayProvider =
-    StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      final today = ref.watch(currentDateProvider);
-      return DailyMissionNotifier(ref, 'mission_lesson_completed_date', today);
-    });
+class LessonCompletedTodayNotifier extends DailyMissionNotifier {
+  @override
+  String get prefKey => 'mission_lesson_completed_date';
+}
 
-final quizTakenTodayProvider =
-    StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      final today = ref.watch(currentDateProvider);
-      return DailyMissionNotifier(ref, 'mission_quiz_taken_date', today);
-    });
+class QuizTakenTodayNotifier extends DailyMissionNotifier {
+  @override
+  String get prefKey => 'mission_quiz_taken_date';
+}
+
+class BakhedListenedTodayNotifier extends DailyMissionNotifier {
+  @override
+  String get prefKey => 'mission_bakhed_listened_date';
+}
+
+class QuickWinCompletedTodayNotifier extends DailyMissionNotifier {
+  @override
+  String get prefKey => 'mission_quick_win_completed_date';
+}
+
+final lessonCompletedTodayProvider =
+    NotifierProvider<LessonCompletedTodayNotifier, bool>(
+      LessonCompletedTodayNotifier.new,
+    );
+
+final quizTakenTodayProvider = NotifierProvider<QuizTakenTodayNotifier, bool>(
+  QuizTakenTodayNotifier.new,
+);
 
 final bakhedListenedTodayProvider =
-    StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      final today = ref.watch(currentDateProvider);
-      return DailyMissionNotifier(ref, 'mission_bakhed_listened_date', today);
-    });
+    NotifierProvider<BakhedListenedTodayNotifier, bool>(
+      BakhedListenedTodayNotifier.new,
+    );
 
 final quickWinCompletedTodayProvider =
-    StateNotifierProvider<DailyMissionNotifier, bool>((ref) {
-      final today = ref.watch(currentDateProvider);
-      return DailyMissionNotifier(
-        ref,
-        'mission_quick_win_completed_date',
-        today,
-      );
-    });
+    NotifierProvider<QuickWinCompletedTodayNotifier, bool>(
+      QuickWinCompletedTodayNotifier.new,
+    );

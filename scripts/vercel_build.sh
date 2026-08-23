@@ -16,7 +16,6 @@ fi
 flutter --version
 flutter config --enable-web
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
 
 flutter build web --release \
   --dart-define=APPWRITE_ENDPOINT="$APPWRITE_ENDPOINT" \

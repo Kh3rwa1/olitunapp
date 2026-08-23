@@ -54,12 +54,12 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
-            (ref) => MockQuizzesNotifier(const AsyncValue.loading()),
+            () => MockQuizzesNotifier(const AsyncValue.loading()),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+            () => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
           learningAnalyticsServiceProvider.overrideWithValue(
             MockLearningAnalyticsService(),
           ),
@@ -78,12 +78,12 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
-            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+            () => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+            () => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
           learningAnalyticsServiceProvider.overrideWithValue(
             MockLearningAnalyticsService(),
           ),
@@ -117,12 +117,12 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
-            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+            () => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+            () => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
           learningAnalyticsServiceProvider.overrideWithValue(
             MockLearningAnalyticsService(),
           ),
@@ -172,12 +172,12 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
-            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+            () => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+            () => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
           learningAnalyticsServiceProvider.overrideWithValue(
             MockLearningAnalyticsService(),
           ),
@@ -199,16 +199,22 @@ void main() {
   });
 }
 
-class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
-    with Mock
-    implements QuizzesNotifier {
-  MockQuizzesNotifier(super.state);
+class MockQuizzesNotifier extends QuizzesNotifier {
+  final AsyncValue<List<QuizModel>> _initial;
+
+  MockQuizzesNotifier(this._initial);
+
+  @override
+  AsyncValue<List<QuizModel>> build() => _initial;
 }
 
-class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
-    with Mock
-    implements UserStatsNotifier {
-  MockUserStatsNotifier(super.state);
+class MockUserStatsNotifier extends UserStatsNotifier {
+  final AsyncValue<UserStatsEntity> _initial;
+
+  MockUserStatsNotifier(this._initial);
+
+  @override
+  AsyncValue<UserStatsEntity> build() => _initial;
 
   @override
   Future<void> saveQuizResult(QuizResultEntity result) async {}
@@ -216,10 +222,13 @@ class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
   Future<void> addStars(int count) async {}
 }
 
-class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
-    with Mock
-    implements MistakeNotifier {
-  MockMistakeNotifier(super.state);
+class MockMistakeNotifier extends MistakeNotifier {
+  final List<MistakeItem> _initial;
+
+  MockMistakeNotifier(this._initial);
+
+  @override
+  List<MistakeItem> build() => _initial;
 
   @override
   Future<void> recordMistake({

@@ -306,11 +306,10 @@ void main() {
       if (state.hasValue && state.value != null) {
         return state.value!;
       }
-      final nextState = await container
-          .read(quizzesProvider.notifier)
-          .stream
-          .firstWhere((s) => s.hasValue && s.value != null);
-      return nextState.value!;
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+      final next = container.read(quizzesProvider);
+      return next.value!;
     }
 
     ProviderContainer createContainer(FakeAppwriteDbService fakeDb) {
@@ -361,15 +360,17 @@ void main() {
         addTearDown(container.dispose);
 
         // Wait specifically for the dynamic hybrid quizzes to be compiled
-        final quizzes = await container
-            .read(quizzesProvider.notifier)
-            .stream
-            .firstWhere(
-              (s) =>
-                  s.value?.any((q) => q.id == 'quiz_dynamic_hybrid_beginner') ??
-                  false,
-            )
-            .then((s) => s.value!);
+        AsyncValue<List<QuizModel>> state = const AsyncValue.loading();
+        for (var i = 0; i < 20; i++) {
+          await Future.delayed(Duration.zero);
+          container.read(quizzesProvider);
+          state = container.read(quizzesProvider);
+          if (state.value?.any((q) => q.id == 'quiz_dynamic_hybrid_beginner') ??
+              false) {
+            break;
+          }
+        }
+        final quizzes = state.value!;
 
         // Verify the beginner hybrid challenge exists
         final beginnerHybrid = quizzes.firstWhere(

@@ -23,35 +23,37 @@ final userWaitlistProvider = FutureProvider<List<WaitlistModel>>((ref) async {
 });
 
 final adminWaitlistProvider =
-    StateNotifierProvider<
-      AdminWaitlistNotifier,
-      AsyncValue<List<WaitlistModel>>
-    >((ref) {
-      return AdminWaitlistNotifier(ref);
-    });
+    NotifierProvider<AdminWaitlistNotifier, AsyncValue<List<WaitlistModel>>>(
+      AdminWaitlistNotifier.new,
+    );
 
-class AdminWaitlistNotifier
-    extends StateNotifier<AsyncValue<List<WaitlistModel>>> {
-  final Ref ref;
-  AdminWaitlistNotifier(this.ref) : super(const AsyncValue.loading()) {
-    loadWaitlist();
+class AdminWaitlistNotifier extends Notifier<AsyncValue<List<WaitlistModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<WaitlistModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadWaitlist);
+    return const AsyncValue.loading();
   }
 
   Future<void> loadWaitlist() async {
     try {
-      if (!mounted) return;
+      if (_disposed) return;
       state = const AsyncValue.loading();
       final db = ref.read(appwriteDbServiceProvider);
       final result = await db.listDocuments(
         'binti_guru_waitlist',
         queries: [Query.orderDesc('submittedAt'), Query.limit(1000)],
       );
-      if (!mounted) return;
+      if (_disposed) return;
       final list = result.map(WaitlistModel.fromJson).toList();
       state = AsyncValue.data(list);
     } catch (e, stack) {
       AppLogger.debug('❌ loadWaitlist failed: $e');
-      if (!mounted) return;
+      if (_disposed) return;
       state = AsyncValue.error(e, stack);
     }
   }

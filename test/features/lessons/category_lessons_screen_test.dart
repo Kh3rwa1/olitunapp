@@ -12,11 +12,14 @@ import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:itun/core/storage/hive_service.dart';
 
-class MockCategoryNotifier
-    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
-    implements CategoryNotifier {
-  MockCategoryNotifier(List<CategoryEntity> initial)
-    : super(AsyncValue.data(initial));
+class MockCategoryNotifier extends CategoryNotifier {
+  final List<CategoryEntity> _initial;
+
+  MockCategoryNotifier(this._initial);
+
+  @override
+  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+
   @override
   Future<void> loadCategories() async {}
   @override
@@ -106,7 +109,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             categoryNotifierProvider.overrideWith(
-              (ref) => MockCategoryNotifier([mockAlphabetCategory]),
+              () => MockCategoryNotifier([mockAlphabetCategory]),
             ),
             lessonsByCategoryProvider(
               'cat_alphabets',
@@ -172,7 +175,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             categoryNotifierProvider.overrideWith(
-              (ref) => MockCategoryNotifier([mockNumberCategory]),
+              () => MockCategoryNotifier([mockNumberCategory]),
             ),
             lessonsByCategoryProvider(
               'cat_numbers',
@@ -241,7 +244,7 @@ void main() {
           overrides: [
             sharedPreferencesProvider.overrideWithValue(prefs),
             categoryNotifierProvider.overrideWith(
-              (ref) => MockCategoryNotifier([mockAlphabetCategory]),
+              () => MockCategoryNotifier([mockAlphabetCategory]),
             ),
             lessonsByCategoryProvider(
               'cat_alphabets',

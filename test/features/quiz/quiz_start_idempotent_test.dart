@@ -15,22 +15,48 @@ import 'package:mocktail/mocktail.dart';
 class MockLearningAnalyticsService extends Mock
     implements LearningAnalyticsService {}
 
-class MockQuizzesNotifier extends StateNotifier<AsyncValue<List<QuizModel>>>
-    with Mock
-    implements QuizzesNotifier {
-  MockQuizzesNotifier(super.state);
+class MockQuizzesNotifier extends QuizzesNotifier {
+  final AsyncValue<List<QuizModel>> _initial;
+
+  MockQuizzesNotifier(this._initial);
+
+  @override
+  AsyncValue<List<QuizModel>> build() => _initial;
 }
 
-class MockUserStatsNotifier extends StateNotifier<AsyncValue<UserStatsEntity>>
-    with Mock
-    implements UserStatsNotifier {
-  MockUserStatsNotifier(super.state);
+class MockUserStatsNotifier extends UserStatsNotifier {
+  final AsyncValue<UserStatsEntity> _initial;
+
+  MockUserStatsNotifier(this._initial);
+
+  @override
+  AsyncValue<UserStatsEntity> build() => _initial;
+
+  @override
+  Future<void> saveQuizResult(covariant dynamic result) async {}
+
+  @override
+  Future<void> addStars(covariant dynamic count) async {}
 }
 
-class MockMistakeNotifier extends StateNotifier<List<MistakeItem>>
-    with Mock
-    implements MistakeNotifier {
-  MockMistakeNotifier(super.state);
+class MockMistakeNotifier extends MistakeNotifier {
+  final List<MistakeItem> _initial;
+
+  MockMistakeNotifier(this._initial);
+
+  @override
+  List<MistakeItem> build() => _initial;
+
+  @override
+  Future<void> syncFromBackend() async {}
+
+  @override
+  Future<void> recordMistake({
+    required String quizId,
+    required int questionIndex,
+    required QuizQuestion question,
+    String? wrongAnswer,
+  }) async {}
 }
 
 class StatefulRebuilder extends StatefulWidget {
@@ -112,12 +138,12 @@ void main() {
         overrides: [
           sharedPreferencesProvider.overrideWithValue(mockPrefs),
           quizzesProvider.overrideWith(
-            (ref) => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
+            () => MockQuizzesNotifier(AsyncValue.data([mockQuiz])),
           ),
           userStatsProvider.overrideWith(
-            (ref) => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
+            () => MockUserStatsNotifier(const AsyncValue.data(mockStats)),
           ),
-          mistakeProvider.overrideWith((ref) => MockMistakeNotifier([])),
+          mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
           learningAnalyticsServiceProvider.overrideWithValue(mockAnalytics),
         ],
       );

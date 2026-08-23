@@ -7,10 +7,18 @@ import 'package:itun/core/error/failures.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/domain/repositories/lesson_repository.dart';
 import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_providers.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/repositories/content_repository.dart';
 
 class _MockLessonRepository extends Mock implements LessonRepository {}
+
+ProviderContainer _containerFor(_MockLessonRepository repo) {
+  final container = ProviderContainer(
+    overrides: [lessonRepositoryProvider.overrideWithValue(repo)],
+  );
+  return container;
+}
 
 void main() {
   late _MockLessonRepository mockRepo;
@@ -52,7 +60,9 @@ void main() {
         () => mockRepo.getLessons(),
       ).thenAnswer((_) async => Right(sampleLessons));
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
 
       // Give the async init time to complete.
       await Future.delayed(Duration.zero);
@@ -68,7 +78,9 @@ void main() {
         (_) async => const Left(ServerFailure(message: 'timeout', code: 500)),
       );
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -80,7 +92,9 @@ void main() {
         () => mockRepo.getLessons(),
       ).thenAnswer((_) async => Right(sampleLessons));
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -96,7 +110,9 @@ void main() {
         () => mockRepo.createLesson(any()),
       ).thenAnswer((_) async => const Right(null));
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -115,7 +131,9 @@ void main() {
         () => mockRepo.deleteLesson(any()),
       ).thenAnswer((_) async => const Right(null));
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -131,7 +149,9 @@ void main() {
         () => mockRepo.createLesson(any()),
       ).thenAnswer((_) async => const Left(ServerFailure(message: 'conflict')));
 
-      final notifier = LessonNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(lessonNotifierProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 

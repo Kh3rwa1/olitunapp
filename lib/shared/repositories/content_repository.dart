@@ -1,15 +1,16 @@
 // ignore_for_file: deprecated_member_use
 import 'package:appwrite/appwrite.dart';
 import 'package:fpdart/fpdart.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
-import 'package:itun/core/auth/appwrite_auth_service.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/storage/cache_service.dart';
 import 'package:itun/shared/models/content_item.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
+
+// Provider-level API lives in ../providers/content_providers.dart;
+// re-exported here for compatibility.
+export '../providers/content_providers.dart';
 
 class ContentRepository {
   final Databases _databases;
@@ -114,7 +115,7 @@ class ContentRepository {
 
   static final List<ContentItem> _fallbackSeedItems = [];
 
-  static ContentItem _synthesizeFallbackItem(ContentKind kind, String id) {
+  static ContentItem synthesizeFallbackItem(ContentKind kind, String id) {
     String categoryId = 'cat_alphabets';
     String title = id.replaceAll('_', ' ').replaceAll('-', ' ');
     if (title.length > 1) {
@@ -253,7 +254,7 @@ class ContentRepository {
         return right(fallbackItems);
       }
 
-      return right([_synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
+      return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
     } catch (e) {
       final fallbackItems = _fallbackSeedItems.where((item) {
         final matchesKind = item.kind == kind;
@@ -280,7 +281,7 @@ class ContentRepository {
         return right(fallbackItems);
       }
 
-      return right([_synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
+      return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
     }
   }
 
@@ -335,7 +336,7 @@ class ContentRepository {
       }
 
       // Synthesize a high-quality fallback ContentItem on-the-fly to guarantee zero crashes
-      return right(_synthesizeFallbackItem(kind, id));
+      return right(synthesizeFallbackItem(kind, id));
     } catch (e) {
       final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
         (item) => item?.id == id && item?.kind == kind,
@@ -347,7 +348,7 @@ class ContentRepository {
       }
 
       // Synthesize a high-quality fallback ContentItem on-the-fly to guarantee zero crashes
-      return right(_synthesizeFallbackItem(kind, id));
+      return right(synthesizeFallbackItem(kind, id));
     }
   }
 
@@ -451,42 +452,3 @@ class ContentRepository {
     }
   }
 }
-
-// Providers
-final contentRepositoryProvider = Provider<ContentRepository>((ref) {
-  final authService = ref.watch(appwriteAuthServiceProvider);
-  final networkInfo = ref.watch(networkInfoProvider);
-  return ContentRepository(
-    databases: Databases(authService.client),
-    networkInfo: networkInfo,
-  );
-});
-
-// Family Provider for Lists
-final contentListProvider =
-    FutureProvider.family<List<ContentItem>, (ContentKind, String?)>((
-      ref,
-      arg,
-    ) async {
-      ref.watch(isAuthenticatedProvider);
-      final kind = arg.$1;
-      final categoryId = arg.$2;
-      final repo = ref.watch(contentRepositoryProvider);
-
-      final res = await repo.list(kind, categoryId: categoryId);
-      return res.fold((failure) => <ContentItem>[], (list) => list);
-    });
-
-// Family Provider for Single Items
-final contentDetailProvider =
-    FutureProvider.family<ContentItem, (ContentKind, String)>((ref, arg) async {
-      final kind = arg.$1;
-      final id = arg.$2;
-      final repo = ref.watch(contentRepositoryProvider);
-
-      final res = await repo.get(kind, id);
-      return res.fold(
-        (failure) => ContentRepository._synthesizeFallbackItem(kind, id),
-        (item) => item,
-      );
-    });

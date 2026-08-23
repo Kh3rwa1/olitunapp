@@ -7,16 +7,22 @@ import '../models/content_models.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lettersProvider =
-    StateNotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>(
+    NotifierProvider<LettersNotifier, AsyncValue<List<LetterModel>>>(
       LettersNotifier.new,
     );
 
-class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
-  LettersNotifier(this.ref) : super(const AsyncValue.loading()) {
-    _loadLetters();
+class LettersNotifier extends Notifier<AsyncValue<List<LetterModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<LetterModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadLetters);
+    return const AsyncValue.loading();
   }
 
-  final Ref ref;
   static const String _cacheKey = 'cached_letters';
 
   static final List<LetterModel> _seedLetters = [
@@ -74,7 +80,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
   Future<void> _loadLetters() async {
     // 1. Try Cache
     final cached = await CacheService.getList(_cacheKey, LetterModel.fromJson);
-    if (!mounted) return;
+    if (_disposed) return;
     if (cached != null && cached.isNotEmpty) {
       state = AsyncValue.data(cached);
     }
@@ -86,7 +92,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
         'letters',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      if (!mounted) return;
+      if (_disposed) return;
       final list = data.map(LetterModel.fromJson).toList();
 
       if (list.isNotEmpty) {
@@ -100,7 +106,7 @@ class LettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>> {
       }
     } catch (e) {
       AppLogger.debug('❌ _loadLetters network FAILED: $e');
-      if (!mounted) return;
+      if (_disposed) return;
       if (!state.hasValue || state.value!.isEmpty) {
         state = AsyncValue.data(_deduplicate(_seedLetters));
       }

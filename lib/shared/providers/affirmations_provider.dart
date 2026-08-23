@@ -9,22 +9,25 @@ import '../models/content_models.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
 
 final affirmationsProvider =
-    StateNotifierProvider<
-      AffirmationsNotifier,
-      AsyncValue<List<AffirmationModel>>
-    >((ref) {
-      ref.watch(isAuthenticatedProvider);
-      return AffirmationsNotifier(ref);
-    });
+    NotifierProvider<AffirmationsNotifier, AsyncValue<List<AffirmationModel>>>(
+      AffirmationsNotifier.new,
+    );
 
 class AffirmationsNotifier
-    extends StateNotifier<AsyncValue<List<AffirmationModel>>> {
-  AffirmationsNotifier(this.ref)
-    : super(const AsyncValue.data(<AffirmationModel>[])) {
-    _loadAffirmations();
+    extends Notifier<AsyncValue<List<AffirmationModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<AffirmationModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadAffirmations);
+    return const AsyncValue.data(<AffirmationModel>[]);
   }
 
-  final Ref ref;
   static const String _cacheKey = 'cached_daily_affirmations';
 
   Future<void> _loadAffirmations() async {
@@ -32,7 +35,7 @@ class AffirmationsNotifier
       _cacheKey,
       AffirmationModel.fromJson,
     );
-    if (!mounted) return;
+    if (_disposed) return;
     if (cached != null) {
       state = AsyncValue.data(cached);
     }
@@ -43,7 +46,7 @@ class AffirmationsNotifier
         'daily_affirmations',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      if (!mounted) return;
+      if (_disposed) return;
       final affirmations = data.map(AffirmationModel.fromJson).toList();
       state = AsyncValue.data(affirmations);
       await CacheService.set(
@@ -52,7 +55,7 @@ class AffirmationsNotifier
       );
     } catch (e, stack) {
       AppLogger.debug('❌ load affirmations FAILED: $e');
-      if (!mounted) return;
+      if (_disposed) return;
       if (cached == null) {
         state = AsyncValue.error(e, stack);
       }
@@ -145,16 +148,22 @@ final todayAffirmationProvider = Provider<AsyncValue<AffirmationModel?>>((ref) {
 });
 
 final todayAffirmationReadProvider =
-    StateNotifierProvider<TodayAffirmationReadNotifier, bool>((ref) {
-      final todayAff = ref.watch(todayAffirmationProvider).value;
-      return TodayAffirmationReadNotifier(ref, todayAff?.id);
-    });
+    NotifierProvider<TodayAffirmationReadNotifier, bool>(
+      TodayAffirmationReadNotifier.new,
+    );
 
-class TodayAffirmationReadNotifier extends StateNotifier<bool> {
-  final Ref ref;
-  final String? todayAffId;
-  TodayAffirmationReadNotifier(this.ref, this.todayAffId) : super(false) {
-    _load();
+class TodayAffirmationReadNotifier extends Notifier<bool> {
+  bool _disposed = false;
+
+  @override
+  bool build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Rebuild when the affirmation of the day changes.
+    final todayAffId = ref.watch(todayAffirmationProvider).value?.id;
+    if (todayAffId == null) return false;
+    _load(todayAffId);
+    return false;
   }
 
   String get _dateKey {
@@ -162,16 +171,17 @@ class TodayAffirmationReadNotifier extends StateNotifier<bool> {
     return '${now.year}-${now.month}-${now.day}';
   }
 
-  Future<void> _load() async {
-    if (todayAffId == null) return;
+  Future<void> _load(String todayAffId) async {
     final data = await CacheService.get(
       'affirmation_read_${_dateKey}_$todayAffId',
       (json) => json['read'] as bool,
     );
+    if (_disposed) return;
     state = data ?? false;
   }
 
   Future<void> markAsRead() async {
+    final todayAffId = ref.watch(todayAffirmationProvider).value?.id;
     if (todayAffId == null) return;
     await CacheService.set('affirmation_read_${_dateKey}_$todayAffId', {
       'read': true,

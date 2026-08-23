@@ -2,17 +2,18 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/home/presentation/widgets/home_banners_carousel.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 import '../../../test_utils.dart';
 
-class MockBannersNotifier
-    extends StateNotifier<AsyncValue<List<FeaturedBannerModel>>>
-    with Mock
-    implements BannersNotifier {
-  MockBannersNotifier(super.initial);
+class MockBannersNotifier extends BannersNotifier {
+  final AsyncValue<List<FeaturedBannerModel>> _initial;
+
+  MockBannersNotifier(this._initial);
+
+  @override
+  AsyncValue<List<FeaturedBannerModel>> build() => _initial;
 }
 
 void main() {
@@ -29,7 +30,7 @@ void main() {
       await tester.pumpWidget(
         createTestableWidget(
           child: const HomeBannersCarousel(isDark: false, autoScroll: false),
-          overrides: [bannersProvider.overrideWith((ref) => notifier)],
+          overrides: [bannersProvider.overrideWith(() => notifier)],
         ),
       );
 
@@ -71,7 +72,7 @@ void main() {
     await tester.pumpWidget(
       createTestableWidget(
         child: const HomeBannersCarousel(isDark: false, autoScroll: false),
-        overrides: [bannersProvider.overrideWith((ref) => notifier)],
+        overrides: [bannersProvider.overrideWith(() => notifier)],
       ),
     );
 

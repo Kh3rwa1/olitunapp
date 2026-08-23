@@ -44,25 +44,32 @@ class AdminAccessState {
   }
 }
 
-class AdminAccessController extends StateNotifier<AdminAccessState> {
-  AdminAccessController(this._authService) : super(const AdminAccessState()) {
-    loadSummary();
+class AdminAccessController extends Notifier<AdminAccessState> {
+  bool _disposed = false;
+
+  AppwriteAuthService get _authService => ref.read(appwriteAuthServiceProvider);
+
+  @override
+  AdminAccessState build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadSummary);
+    return const AdminAccessState();
   }
 
-  final AppwriteAuthService _authService;
-
   Future<void> loadSummary() async {
-    if (!mounted) return;
+    if (_disposed) return;
     state = state.copyWith(isLoading: true, message: () => null);
     try {
       final data = await _authService.executeAdminAccess({'action': 'summary'});
-      if (!mounted) return;
+      if (_disposed) return;
       _applySummary(data);
     } catch (e) {
-      if (!mounted) return;
+      if (_disposed) return;
       state = state.copyWith(message: () => 'Could not load admin access: $e');
     } finally {
-      if (mounted) {
+      if (!_disposed) {
         state = state.copyWith(isLoading: false);
       }
     }
@@ -178,7 +185,6 @@ class AdminAccessController extends StateNotifier<AdminAccessState> {
 }
 
 final adminAccessControllerProvider =
-    StateNotifierProvider<AdminAccessController, AdminAccessState>((ref) {
-      final authService = ref.watch(appwriteAuthServiceProvider);
-      return AdminAccessController(authService);
-    });
+    NotifierProvider<AdminAccessController, AdminAccessState>(
+      AdminAccessController.new,
+    );

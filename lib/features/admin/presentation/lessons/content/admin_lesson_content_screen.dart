@@ -8,7 +8,7 @@ import '../../../../../core/utils/csv_helper.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_item.dart';
 import '../../../../../shared/models/content_item_extensions.dart';
-import '../../../../../shared/repositories/content_repository.dart';
+import '../../../../../shared/providers/content_providers.dart';
 import '../../../../lessons/presentation/providers/lesson_notifier.dart';
 import '../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../../../core/presentation/animations/scale_button.dart';

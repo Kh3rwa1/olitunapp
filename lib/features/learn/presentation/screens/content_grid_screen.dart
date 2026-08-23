@@ -7,7 +7,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
-import 'package:itun/shared/repositories/content_repository.dart';
+import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/shared/widgets/state_widgets.dart';
 import 'package:itun/core/motion/pressable_scale.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';

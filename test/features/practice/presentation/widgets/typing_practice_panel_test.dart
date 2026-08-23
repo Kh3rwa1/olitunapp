@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
@@ -234,14 +232,12 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byType(TypingPracticePanel),
-          matchesGoldenFile(
-            '../../../goldens/typing_practice_panel_light_half_typed.png',
-          ),
-        );
-      }
+      await expectLater(
+        find.byType(TypingPracticePanel),
+        matchesGoldenFile(
+          '../../../goldens/typing_practice_panel_light_half_typed.png',
+        ),
+      );
     });
 
     testWidgets('6. Golden Test: TypingPracticePanel dark theme done state', (
@@ -267,14 +263,12 @@ void main() {
       );
 
       await tester.pumpAndSettle();
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byType(TypingPracticePanel),
-          matchesGoldenFile(
-            '../../../goldens/typing_practice_panel_dark_done.png',
-          ),
-        );
-      }
+      await expectLater(
+        find.byType(TypingPracticePanel),
+        matchesGoldenFile(
+          '../../../goldens/typing_practice_panel_dark_done.png',
+        ),
+      );
     });
 
     testWidgets('7. Golden Test: TypingPracticePanel wrong-shake mid-frame', (
@@ -313,14 +307,12 @@ void main() {
       );
 
       await tester.pump(const Duration(milliseconds: 50));
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          find.byType(TypingPracticePanel),
-          matchesGoldenFile(
-            '../../../goldens/typing_practice_panel_shake_mid_frame.png',
-          ),
-        );
-      }
+      await expectLater(
+        find.byType(TypingPracticePanel),
+        matchesGoldenFile(
+          '../../../goldens/typing_practice_panel_shake_mid_frame.png',
+        ),
+      );
     });
 
     testWidgets(
@@ -345,14 +337,12 @@ void main() {
         );
 
         await tester.pumpAndSettle();
-        if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-          await expectLater(
-            find.byType(TypingPracticePanel),
-            matchesGoldenFile(
-              '../../../goldens/typing_practice_panel_reveal_visible.png',
-            ),
-          );
-        }
+        await expectLater(
+          find.byType(TypingPracticePanel),
+          matchesGoldenFile(
+            '../../../goldens/typing_practice_panel_reveal_visible.png',
+          ),
+        );
       },
     );
   });

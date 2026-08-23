@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -122,14 +120,12 @@ void main() {
         // Advance animation to t=500ms (peak celebration)
         await tester.pump(const Duration(milliseconds: 500));
 
-        if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-          await expectLater(
-            find.byType(TypingCompleteCelebration),
-            matchesGoldenFile(
-              '../../../goldens/typing_complete_celebration_light.png',
-            ),
-          );
-        }
+        await expectLater(
+          find.byType(TypingCompleteCelebration),
+          matchesGoldenFile(
+            '../../../goldens/typing_complete_celebration_light.png',
+          ),
+        );
       },
     );
 
@@ -163,14 +159,12 @@ void main() {
         // Advance animation to t=500ms (peak celebration)
         await tester.pump(const Duration(milliseconds: 500));
 
-        if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-          await expectLater(
-            find.byType(TypingCompleteCelebration),
-            matchesGoldenFile(
-              '../../../goldens/typing_complete_celebration_dark.png',
-            ),
-          );
-        }
+        await expectLater(
+          find.byType(TypingCompleteCelebration),
+          matchesGoldenFile(
+            '../../../goldens/typing_complete_celebration_dark.png',
+          ),
+        );
       },
     );
   });

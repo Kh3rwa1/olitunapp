@@ -8,7 +8,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../categories/domain/entities/category_entity.dart';
 import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
-import '../../../shared/repositories/content_repository.dart';
+import '../../../shared/providers/content_providers.dart';
 import '../../../shared/models/content_item.dart';
 import '../../../shared/providers/purchases_provider.dart';
 import '../../../shared/widgets/paywall_bottom_sheet.dart';

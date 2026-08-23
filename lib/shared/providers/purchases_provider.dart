@@ -115,16 +115,25 @@ class AdminPurchasesState {
 }
 
 final adminPurchasesProvider =
-    StateNotifierProvider<AdminPurchasesNotifier, AdminPurchasesState>((ref) {
-      return AdminPurchasesNotifier(ref);
-    });
+    NotifierProvider<AdminPurchasesNotifier, AdminPurchasesState>(
+      AdminPurchasesNotifier.new,
+    );
 
-class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
-  final Ref ref;
+class AdminPurchasesNotifier extends Notifier<AdminPurchasesState> {
+  bool _disposed = false;
 
   static const int pageSize = 50;
   static const int exportSafetyThreshold = 25000;
   int _generationCounter = 0;
+
+  @override
+  AdminPurchasesState build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadPurchases);
+    return const AdminPurchasesState(isLoading: true);
+  }
 
   bool get isLoadingMore => state.isLoadingMore;
   bool get hasMore => state.hasMore;
@@ -132,11 +141,6 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
   bool get isSampledOrPartial => state.isSampledOrPartial;
   String get currentFilter => state.activeFilter;
   String get currentSearch => state.searchQuery;
-
-  AdminPurchasesNotifier(this.ref)
-    : super(const AdminPurchasesState(isLoading: true)) {
-    loadPurchases();
-  }
 
   /// Pure financial metrics calculated from current loaded items.
   PurchaseMetricsResult get currentMetrics => state.metrics;
@@ -185,7 +189,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
       );
 
       // Stale response protection: if a newer request was dispatched, discard this result
-      if (gen != _generationCounter || !mounted) return;
+      if (gen != _generationCounter || _disposed) return;
 
       final list = result.map(PurchaseModel.fromJson).toList();
       final hasMoreRecords = list.length >= pageSize;
@@ -204,7 +208,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         clearLoadMoreFailure: true,
       );
     } catch (e) {
-      if (gen != _generationCounter || !mounted) return;
+      if (gen != _generationCounter || _disposed) return;
 
       final failure = AdminFailure.fromException(
         e,
@@ -251,7 +255,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         queries: queries,
       );
 
-      if (gen != _generationCounter || !mounted) return;
+      if (gen != _generationCounter || _disposed) return;
 
       final newItems = result.map(PurchaseModel.fromJson).toList();
       final hasMoreRecords = newItems.length >= pageSize;
@@ -276,7 +280,7 @@ class AdminPurchasesNotifier extends StateNotifier<AdminPurchasesState> {
         clearLoadMoreFailure: true,
       );
     } catch (e) {
-      if (gen != _generationCounter || !mounted) return;
+      if (gen != _generationCounter || _disposed) return;
 
       final failure = AdminFailure.fromException(
         e,

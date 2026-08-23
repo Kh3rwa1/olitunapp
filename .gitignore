@@ -82,3 +82,6 @@ sites/
 
 # Migration backups
 scripts/backups/
+
+# Golden test failure diff artifacts
+**/failures/*.png

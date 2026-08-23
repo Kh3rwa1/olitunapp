@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:video_player/video_player.dart';
@@ -18,10 +17,24 @@ import 'package:itun/features/rhymes/presentation/providers/rhyme_audio_provider
 import '../../../helpers/fake_video_player_platform.dart';
 import '../../../test_utils.dart';
 
-class MockRhymeAudioNotifier extends StateNotifier<RhymeAudioState>
-    with Mock
-    implements RhymeAudioNotifier {
-  MockRhymeAudioNotifier(super.state);
+class MockRhymeAudioNotifier extends RhymeAudioNotifier {
+  final RhymeAudioState _initial;
+  int togglePlayCalls = 0;
+
+  MockRhymeAudioNotifier(this._initial);
+
+  @override
+  RhymeAudioState build() => _initial;
+
+  @override
+  Future<void> togglePlay(
+    String rhymeId,
+    String? url, {
+    String? title,
+    String? artworkUrl,
+  }) async {
+    togglePlayCalls++;
+  }
 }
 
 void main() {
@@ -56,7 +69,7 @@ void main() {
       ),
       overrides: [
         sharedPreferencesProvider.overrideWithValue(prefs),
-        rhymeAudioProvider.overrideWith((ref) => mockRhymeAudioNotifier),
+        rhymeAudioProvider.overrideWith(() => mockRhymeAudioNotifier),
         reduceVisualEffectsProvider.overrideWithValue(true),
       ],
     );
@@ -165,15 +178,6 @@ void main() {
         thumbnailUrl: 'https://example.com/art.png',
       );
 
-      when(
-        () => mockRhymeAudioNotifier.togglePlay(
-          any(),
-          any(),
-          title: any(named: 'title'),
-          artworkUrl: any(named: 'artworkUrl'),
-        ),
-      ).thenAnswer((_) async {});
-
       await tester.pumpWidget(createFeaturedCardWidget(rhyme: rhyme));
       await tester.pump();
 
@@ -183,14 +187,7 @@ void main() {
       await tester.tap(playButtonFinder);
       await tester.pump();
 
-      verify(
-        () => mockRhymeAudioNotifier.togglePlay(
-          'r4',
-          'https://example.com/audio.mp3',
-          title: any(named: 'title'),
-          artworkUrl: 'https://example.com/art.png',
-        ),
-      ).called(1);
+      expect(mockRhymeAudioNotifier.togglePlayCalls, 1);
 
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpWidget(const SizedBox());

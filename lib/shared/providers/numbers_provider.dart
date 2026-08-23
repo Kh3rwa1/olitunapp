@@ -6,16 +6,21 @@ import '../models/content_models.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final numbersProvider =
-    StateNotifierProvider<NumbersNotifier, AsyncValue<List<NumberModel>>>(
+    NotifierProvider<NumbersNotifier, AsyncValue<List<NumberModel>>>(
       NumbersNotifier.new,
     );
 
-class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
-  NumbersNotifier(this.ref) : super(const AsyncValue.loading()) {
-    _loadNumbers();
-  }
+class NumbersNotifier extends Notifier<AsyncValue<List<NumberModel>>> {
+  bool _disposed = false;
 
-  final Ref ref;
+  @override
+  AsyncValue<List<NumberModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadNumbers);
+    return const AsyncValue.loading();
+  }
 
   // IDEMPOTENT: safe to re-run, will not create duplicates.
   static final List<NumberModel> _seedNumbers = [
@@ -107,12 +112,12 @@ class NumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>> {
         'numbers',
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
-      if (!mounted) return;
+      if (_disposed) return;
       state = AsyncValue.data(
         _deduplicate(data.map(NumberModel.fromJson).toList()),
       );
     } catch (e) {
-      if (!mounted) return;
+      if (_disposed) return;
       state = AsyncValue.data(_deduplicate(_seedNumbers));
     }
   }

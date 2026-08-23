@@ -16,14 +16,42 @@ import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
 class _MockProfileRepo extends Mock implements ProfileRepository {}
 
-class _MockRef extends Mock implements Ref {}
+late SharedPreferences _testPrefs;
+_MockAnalyticsService? _lastAnalytics;
+
+ProviderContainer _containerFor(
+  ProfileRepository repo, {
+  DateTime Function()? now,
+}) {
+  final analytics = _MockAnalyticsService();
+  final authRepo = _MockAuthRepo();
+  when(authRepo.getCurrentUser).thenAnswer((_) async => const Right(null));
+  when(
+    () => analytics.track(
+      any(),
+      source: any(named: 'source'),
+      sourceId: any(named: 'sourceId'),
+      metadata: any(named: 'metadata'),
+      learnerLevel: any(named: 'learnerLevel'),
+      scriptMode: any(named: 'scriptMode'),
+    ),
+  ).thenAnswer((_) async {});
+  _lastAnalytics = analytics;
+
+  return ProviderContainer(
+    overrides: [
+      profileRepositoryProvider.overrideWithValue(repo),
+      if (now != null) userStatsClockProvider.overrideWithValue(now),
+      sharedPreferencesProvider.overrideWithValue(_testPrefs),
+      learningAnalyticsServiceProvider.overrideWithValue(analytics),
+      authRepositoryProvider.overrideWithValue(authRepo),
+    ],
+  );
+}
 
 class _MockAnalyticsService extends Mock implements LearningAnalyticsService {}
 
 class _MockAuthRepo extends Mock implements AuthRepository {}
-
-class _MockSubscription extends Mock
-    implements ProviderSubscription<AsyncValue<List<ConnectivityResult>>> {}
 
 class _FakeConnectivityProviderListenable extends Fake
     implements ProviderListenable<AsyncValue<List<ConnectivityResult>>> {}
@@ -37,6 +65,11 @@ void main() {
       final stats = invocation.positionalArguments[0] as UserStatsEntity;
       return Right(stats);
     });
+  });
+
+  setUpAll(() async {
+    SharedPreferences.setMockInitialValues({});
+    _testPrefs = await SharedPreferences.getInstance();
   });
 
   setUpAll(() {
@@ -78,7 +111,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -91,7 +126,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'no data')));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
       expect(notifier.state.hasError, isTrue);
@@ -102,7 +139,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -115,7 +154,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -131,7 +172,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Left(CacheFailure(message: 'no data')));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -145,7 +188,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -161,7 +206,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -175,7 +222,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -199,10 +248,12 @@ void main() {
         ),
       );
 
-      final notifier = UserStatsNotifier(
+      final container = _containerFor(
         mockRepo,
         now: () => DateTime(2026, 5, 16, 23, 55),
       );
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -216,7 +267,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -230,7 +283,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -252,7 +307,9 @@ void main() {
           () => mockRepo.getUserStats(),
         ).thenAnswer((_) async => const Right(baseStats));
 
-        final notifier = UserStatsNotifier(mockRepo);
+        final container = _containerFor(mockRepo);
+        addTearDown(container.dispose);
+        final notifier = container.read(userStatsProvider.notifier);
         await Future.delayed(Duration.zero);
         await Future.delayed(Duration.zero);
 
@@ -285,7 +342,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -307,7 +366,9 @@ void main() {
         () => mockRepo.getUserStats(),
       ).thenAnswer((_) async => const Right(baseStats));
 
-      final notifier = UserStatsNotifier(mockRepo);
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
       await Future.delayed(Duration.zero);
       await Future.delayed(Duration.zero);
 
@@ -323,7 +384,9 @@ void main() {
           () => mockRepo.getUserStats(),
         ).thenAnswer((_) async => const Right(baseStats));
 
-        final notifier = UserStatsNotifier(mockRepo);
+        final container = _containerFor(mockRepo);
+        addTearDown(container.dispose);
+        final notifier = container.read(userStatsProvider.notifier);
         await Future.delayed(Duration.zero);
         await Future.delayed(Duration.zero);
 
@@ -347,11 +410,12 @@ void main() {
           () => mockRepo.getUserStats(),
         ).thenAnswer((_) async => const Right(baseStats));
 
-        final notifier = UserStatsNotifier(
+        final container = _containerFor(
           mockRepo,
-          now: () =>
-              DateTime(2026, 5, 2), // Day after lastActiveDate '2026-05-01'
+          now: () => DateTime(2026, 5, 2),
         );
+        addTearDown(container.dispose);
+        final notifier = container.read(userStatsProvider.notifier);
         await Future.delayed(Duration.zero);
         await Future.delayed(Duration.zero);
 
@@ -380,49 +444,12 @@ void main() {
           () => mockRepo.getUserStats(),
         ).thenAnswer((_) async => const Right(baseStats));
 
-        final mockRef = _MockRef();
-        final mockAnalytics = _MockAnalyticsService();
-        final mockAuthRepo = _MockAuthRepo();
-        final mockSub = _MockSubscription();
-        SharedPreferences.setMockInitialValues({});
-        final prefs = await SharedPreferences.getInstance();
-
-        when(
-          () => mockRef.listen<AsyncValue<List<ConnectivityResult>>>(
-            any(),
-            any(),
-          ),
-        ).thenReturn(mockSub);
-        when(() => mockRef.read(sharedPreferencesProvider)).thenReturn(prefs);
-        when(
-          () => mockRef.read(authRepositoryProvider),
-        ).thenReturn(mockAuthRepo);
-        when(() => mockRef.read(userNameProvider)).thenReturn('Learner');
-        when(
-          () => mockRef.read(learningAnalyticsServiceProvider),
-        ).thenReturn(mockAnalytics);
-        when(
-          () => mockRef.read(isStatsSyncedProvider.notifier),
-        ).thenReturn(StateController<bool>(true));
-        when(
-          mockAuthRepo.getCurrentUser,
-        ).thenAnswer((_) async => const Right(null));
-
-        when(
-          () => mockAnalytics.track(
-            any(),
-            source: any(named: 'source'),
-            sourceId: any(named: 'sourceId'),
-            metadata: any(named: 'metadata'),
-            learnerLevel: any(named: 'learnerLevel'),
-            scriptMode: any(named: 'scriptMode'),
-          ),
-        ).thenAnswer((_) async {});
-
-        final notifier = UserStatsNotifier(mockRepo, ref: mockRef);
+        final container = _containerFor(mockRepo);
+        addTearDown(container.dispose);
+        final notifier = container.read(userStatsProvider.notifier);
         await Future.delayed(Duration.zero);
         await Future.delayed(Duration.zero);
-
+        final mockAnalytics = _lastAnalytics!;
         await notifier.recordPracticeCompletion(
           contentId: 'word_1',
           contentType: 'word',

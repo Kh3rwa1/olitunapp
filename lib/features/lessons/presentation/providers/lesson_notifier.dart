@@ -5,12 +5,12 @@ import '../../domain/repositories/lesson_repository.dart';
 import 'lesson_providers.dart';
 import '../../../../shared/models/content_item.dart';
 import '../../../../shared/models/content_item_extensions.dart';
-import '../../../../shared/repositories/content_repository.dart';
+import '../../../../shared/providers/content_providers.dart';
 
 @Deprecated('Use contentListProvider. Will be removed in v1.4.0')
 final lessonNotifierProvider =
-    StateNotifierProvider<LessonNotifier, AsyncValue<List<LessonEntity>>>(
-      (ref) => LessonNotifier(ref.watch(lessonRepositoryProvider), ref: ref),
+    NotifierProvider<LessonNotifier, AsyncValue<List<LessonEntity>>>(
+      LessonNotifier.new,
     );
 
 final lessonsByCategoryProvider =
@@ -27,23 +27,27 @@ final lessonsByCategoryProvider =
       );
     });
 
-class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
-  final LessonRepository _repository;
-  final Ref? _ref;
+class LessonNotifier extends Notifier<AsyncValue<List<LessonEntity>>> {
+  bool _disposed = false;
 
-  LessonNotifier(this._repository, {Ref? ref})
-    : _ref = ref,
-      super(const AsyncValue.loading()) {
-    loadLessons();
+  LessonRepository get _repository => ref.read(lessonRepositoryProvider);
+
+  @override
+  AsyncValue<List<LessonEntity>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadLessons);
+    return const AsyncValue.loading();
   }
 
   Future<void> loadLessons() async {
-    if (!mounted) return;
+    if (_disposed) return;
     if (!state.hasValue) {
       state = const AsyncValue.loading();
     }
     final result = await _repository.getLessons();
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
@@ -77,9 +81,6 @@ class LessonNotifier extends StateNotifier<AsyncValue<List<LessonEntity>>> {
     bool alreadyCompleted = false,
     String? scriptMode,
   }) async {
-    final ref = _ref;
-    if (ref == null) return;
-
     await ref
         .read(learningAnalyticsServiceProvider)
         .track(

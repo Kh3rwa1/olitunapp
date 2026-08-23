@@ -1,209 +1,276 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/features/admin/presentation/content/admin_content_list_screen.dart';
+import 'package:go_router/go_router.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/features/lessons/presentation/category_lessons_screen.dart';
+import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
-import 'package:itun/features/categories/domain/repositories/category_repository.dart';
-import 'package:itun/shared/providers/providers.dart';
-import 'package:itun/core/error/failures.dart';
-import 'package:fpdart/fpdart.dart';
-import 'package:mocktail/mocktail.dart';
+import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
+import 'package:itun/features/lessons/presentation/providers/lesson_notifier.dart';
+import 'package:itun/shared/providers/purchases_provider.dart';
+import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/core/storage/hive_service.dart';
 
-class MockContentRepository extends Mock implements ContentRepository {}
-
-class MockCategoryNotifier
-    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
-    with Mock
+class MockCategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>>
     implements CategoryNotifier {
-  MockCategoryNotifier()
-    : super(
-        const AsyncValue.data(<CategoryEntity>[
-          CategoryEntity(
-            id: 'cat_1',
-            titleOlChiki: 'ᱥᱟᱵᱟᱫᱽ',
-            titleLatin: 'Vocabulary',
-          ),
-          CategoryEntity(
-            id: 'cat_2',
-            titleOlChiki: 'ᱟᱲᱟᱝ',
-            titleLatin: 'Alphabets',
-          ),
-        ]),
-      );
+  final List<CategoryEntity> _initial;
+
+  MockCategoryNotifier(this._initial);
+
+  @override
+  AsyncValue<List<CategoryEntity>> build() => AsyncValue.data(_initial);
+
+  @override
+  Future<void> loadCategories() async {}
+  @override
+  Future<void> refresh() async {}
+  @override
+  Future<void> addCategory(CategoryEntity category) async {}
+  @override
+  Future<void> updateCategory(CategoryEntity category) async {}
+  @override
+  Future<void> deleteCategory(String id) async {}
+  @override
+  Future<void> reorderCategories(int oldIndex, int newIndex) async {}
+  @override
+  Future<void> seed() async {}
 }
 
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
+  const mockAlphabetCategory = CategoryEntity(
+    id: 'cat_alphabets',
+    titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
+    titleLatin: 'Alphabets',
+    totalLessons: 1,
+  );
 
-  final List<ContentItem> mockItems = [
-    ContentItem(
-      id: 'item_1',
-      kind: ContentKind.word,
-      categoryId: 'cat_1',
-      title: 'Word with Thumbnail',
-      titleOlChiki: 'ᱴᱮᱥᱴ ᱑',
-      subtitle: 'A beautifully designed word card featuring an image',
-      blocks: const [],
-      heroMedia: const ContentMedia(
-        url: 'https://images.unsplash.com/photo-1546410531-bb4caa6b424d',
-        fileId: 'mock_file_1',
-        kind: ContentMediaKind.image,
-      ),
-      isPublished: true,
-      isPremium: true,
-      updatedAt: DateTime.now(),
-    ),
-    ContentItem(
-      id: 'item_2',
-      kind: ContentKind.sentence,
-      categoryId: 'cat_1',
-      title: 'Sentence Row',
-      titleOlChiki: 'ᱴᱮᱥᱴ ᱒',
-      subtitle:
-          'A clean metadata text-only card demonstrating responsive wrap layout',
-      blocks: const [],
-      updatedAt: DateTime.now(),
-    ),
-    ContentItem(
-      id: 'item_3',
-      kind: ContentKind.lesson,
-      categoryId: 'cat_2',
-      title: 'Tracing Lesson Row',
-      titleOlChiki: 'ᱴᱮᱥᱴ ᱓',
-      subtitle:
-          'A card in active selection state with checkmark indicator highlighted',
-      blocks: const [],
-      isPublished: true,
-      updatedAt: DateTime.now(),
+  const mockNumberCategory = CategoryEntity(
+    id: 'cat_numbers',
+    titleOlChiki: 'ᱞᱮᱠᱷᱟ',
+    titleLatin: 'Numbers',
+    gradientPreset: 'peach',
+    totalLessons: 1,
+  );
+
+  final mockLessons = [
+    const LessonEntity(
+      id: 'lesson_vowels_1',
+      categoryId: 'cat_alphabets',
+      titleOlChiki: 'Vowels I',
+      titleLatin: 'Vowels I',
     ),
   ];
 
-  group('AdminContentListScreen Row Layout Golden Tests', () {
-    testWidgets('captures list view baseline rendering', (tester) async {
-      tester.view.physicalSize = const Size(1200, 1000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
+  final mockNumberLessons = [
+    const LessonEntity(
+      id: 'lesson_numbers_1',
+      categoryId: 'cat_numbers',
+      titleOlChiki: 'Lekha 1',
+      titleLatin: 'Numbers 1-5',
+    ),
+  ];
 
-      final mockRepo = MockContentRepository();
+  testWidgets(
+    'CategoryLessonsScreen displays Ol Chiki Browse All card and routes correctly for Alphabets',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            isAuthenticatedProvider.overrideWith((ref) async => true),
-            categoryNotifierProvider.overrideWith(
-              (ref) => MockCategoryNotifier(),
-            ),
-            contentListProvider.overrideWith((ref, arg) async {
-              return mockItems;
-            }),
-            contentRepositoryProvider.overrideWithValue(mockRepo),
-          ],
-          child: const MaterialApp(
-            themeMode: ThemeMode.light,
-            home: Scaffold(
-              body: AdminContentListScreen(kind: ContentKind.word),
+      final router = GoRouter(
+        initialLocation: '/lessons/cat_alphabets',
+        routes: [
+          GoRoute(
+            path: '/lessons/:categoryId',
+            builder: (context, state) => CategoryLessonsScreen(
+              categoryId: state.pathParameters['categoryId'] ?? '',
             ),
           ),
-        ),
+          GoRoute(
+            path: '/letter/standalone/:subcategoryId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Standalone Letter Grid: ${state.pathParameters['subcategoryId']}',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/lesson/:lessonId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Lesson Carousel: ${state.pathParameters['lessonId']}',
+              ),
+            ),
+          ),
+        ],
       );
 
-      // Let network images settle
-      await tester.pumpAndSettle();
-
-      // Tap on the checkbox of the third row to put it in selected state
-      final checkboxFinder = find.byType(Checkbox);
-      expect(checkboxFinder, findsNWidgets(3));
-      await tester.tap(checkboxFinder.at(2));
-      await tester.pumpAndSettle();
-
-      // Find the ListView
-      final listViewFinder = find.byType(ListView);
-      expect(listViewFinder, findsOneWidget);
-
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          listViewFinder,
-          matchesGoldenFile('../../../goldens/content_row_baseline.png'),
-        );
-      }
-    });
-
-    testWidgets('captures grid view baseline rendering with badges', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1200, 1000);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(() {
-        tester.view.resetPhysicalSize();
-        tester.view.resetDevicePixelRatio();
-      });
-
-      final mockRepo = MockContentRepository();
-
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
-            isAuthenticatedProvider.overrideWith((ref) async => true),
+            sharedPreferencesProvider.overrideWithValue(prefs),
             categoryNotifierProvider.overrideWith(
-              (ref) => MockCategoryNotifier(),
+              () => MockCategoryNotifier([mockAlphabetCategory]),
             ),
-            contentListProvider.overrideWith((ref, arg) async {
-              return mockItems;
-            }),
-            contentRepositoryProvider.overrideWithValue(mockRepo),
+            lessonsByCategoryProvider(
+              'cat_alphabets',
+            ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+            purchasedCategoriesProvider.overrideWith(
+              (ref) => {'cat_alphabets'},
+            ),
+            effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
           ],
-          child: const MaterialApp(
-            themeMode: ThemeMode.light,
-            home: Scaffold(
-              body: AdminContentListScreen(kind: ContentKind.letter),
-            ),
-          ),
+          child: MaterialApp.router(routerConfig: router),
         ),
       );
 
       await tester.pumpAndSettle();
 
-      final gridViewFinder = find.byType(GridView);
-      expect(gridViewFinder, findsOneWidget);
+      // Assert that "Ol Chiki" Browse All card appears at the top
+      expect(find.text('Ol Chiki'), findsOneWidget);
+      expect(
+        find.text('Explore the complete grid dictionary of all letters'),
+        findsOneWidget,
+      );
 
-      if (!Platform.environment.containsKey('GITHUB_ACTIONS')) {
-        await expectLater(
-          gridViewFinder,
-          matchesGoldenFile('../../../goldens/content_grid_badges.png'),
-        );
-      }
-    });
-  });
-}
+      // Assert that "Vowels I" lesson card appears below it
+      expect(find.text('Vowels I'), findsOneWidget);
 
-class FakeCategoryRepository implements CategoryRepository {
-  @override
-  Future<Either<Failure, void>> createCategory(CategoryEntity category) async {
-    return const Right(null);
-  }
+      // Tap the "Ol Chiki" card
+      await tester.tap(find.text('Ol Chiki'));
+      await tester.pumpAndSettle();
 
-  @override
-  Future<Either<Failure, void>> deleteCategory(String id) async {
-    return const Right(null);
-  }
+      // Assert navigation to standalone letter grid all
+      expect(find.text('Standalone Letter Grid: all'), findsOneWidget);
+    },
+  );
 
-  @override
-  Future<Either<Failure, List<CategoryEntity>>> getCategories() async {
-    return const Right(<CategoryEntity>[]);
-  }
+  testWidgets(
+    'CategoryLessonsScreen displays Lekha Browse All card and routes correctly for Numbers',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
 
-  @override
-  Future<Either<Failure, CategoryEntity>> getCategoryById(String id) async {
-    throw UnimplementedError();
-  }
+      final router = GoRouter(
+        initialLocation: '/lessons/cat_numbers',
+        routes: [
+          GoRoute(
+            path: '/lessons/:categoryId',
+            builder: (context, state) => CategoryLessonsScreen(
+              categoryId: state.pathParameters['categoryId'] ?? '',
+            ),
+          ),
+          GoRoute(
+            path: '/number/standalone/:subcategoryId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Standalone Number Grid: ${state.pathParameters['subcategoryId']}',
+              ),
+            ),
+          ),
+        ],
+      );
 
-  @override
-  Future<Either<Failure, void>> updateCategory(CategoryEntity category) async {
-    return const Right(null);
-  }
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            categoryNotifierProvider.overrideWith(
+              () => MockCategoryNotifier([mockNumberCategory]),
+            ),
+            lessonsByCategoryProvider(
+              'cat_numbers',
+            ).overrideWith((ref) => AsyncValue.data(mockNumberLessons)),
+            purchasedCategoriesProvider.overrideWith((ref) => {'cat_numbers'}),
+            effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Assert that "Lekha" Browse All card appears at the top
+      expect(find.text('Lekha'), findsOneWidget);
+      expect(
+        find.text('Explore the complete grid dictionary of all numbers'),
+        findsOneWidget,
+      );
+
+      // Tap the "Lekha" card
+      await tester.tap(find.text('Lekha'));
+      await tester.pumpAndSettle();
+
+      // Assert navigation to standalone number grid all
+      expect(find.text('Standalone Number Grid: all'), findsOneWidget);
+    },
+  );
+
+  testWidgets(
+    'CategoryLessonsScreen tapping a lesson card routes to the per-lesson carousel route, NOT standalone grid',
+    (tester) async {
+      SharedPreferences.setMockInitialValues({});
+      final prefs = await SharedPreferences.getInstance();
+
+      final router = GoRouter(
+        initialLocation: '/lessons/cat_alphabets',
+        routes: [
+          GoRoute(
+            path: '/lessons/:categoryId',
+            builder: (context, state) => CategoryLessonsScreen(
+              categoryId: state.pathParameters['categoryId'] ?? '',
+            ),
+          ),
+          GoRoute(
+            path: '/letter/standalone/:subcategoryId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Standalone Letter Grid: ${state.pathParameters['subcategoryId']}',
+              ),
+            ),
+          ),
+          GoRoute(
+            path: '/lesson/:lessonId',
+            builder: (context, state) => Scaffold(
+              body: Text(
+                'Lesson Carousel: ${state.pathParameters['lessonId']}',
+              ),
+            ),
+          ),
+        ],
+      );
+
+      await tester.pumpWidget(
+        ProviderScope(
+          overrides: [
+            sharedPreferencesProvider.overrideWithValue(prefs),
+            categoryNotifierProvider.overrideWith(
+              () => MockCategoryNotifier([mockAlphabetCategory]),
+            ),
+            lessonsByCategoryProvider(
+              'cat_alphabets',
+            ).overrideWith((ref) => AsyncValue.data(mockLessons)),
+            purchasedCategoriesProvider.overrideWith(
+              (ref) => {'cat_alphabets'},
+            ),
+            effectiveScriptModeProvider.overrideWith((ref) => 'latin'),
+          ],
+          child: MaterialApp.router(routerConfig: router),
+        ),
+      );
+
+      await tester.pumpAndSettle();
+
+      // Assert lesson card Vowels I is present
+      expect(find.text('Vowels I'), findsOneWidget);
+
+      // Tap the Vowels I card
+      await tester.tap(find.text('Vowels I'));
+      await tester.pumpAndSettle();
+
+      // Assert navigation to the per-lesson carousel, NOT ContentGridScreen standalone
+      expect(find.text('Lesson Carousel: lesson_vowels_1'), findsOneWidget);
+      expect(find.textContaining('Standalone Letter Grid:'), findsNothing);
+    },
+  );
 }

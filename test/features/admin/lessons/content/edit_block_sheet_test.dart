@@ -1,35 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/admin/presentation/lessons/content/widgets/edit_block_sheet.dart';
 import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/shared/models/content_models.dart';
 
-class MockLettersNotifier extends StateNotifier<AsyncValue<List<LetterModel>>>
-    with Mock
-    implements LettersNotifier {
-  MockLettersNotifier() : super(const AsyncValue.data([]));
+class MockLettersNotifier extends LettersNotifier {
+  @override
+  AsyncValue<List<LetterModel>> build() => const AsyncValue.data([]);
 }
 
-class MockNumbersNotifier extends StateNotifier<AsyncValue<List<NumberModel>>>
-    with Mock
-    implements NumbersNotifier {
-  MockNumbersNotifier() : super(const AsyncValue.data([]));
+class MockNumbersNotifier extends NumbersNotifier {
+  @override
+  AsyncValue<List<NumberModel>> build() => const AsyncValue.data([]);
 }
 
-class MockWordsNotifier extends StateNotifier<AsyncValue<List<WordModel>>>
-    with Mock
-    implements WordsNotifier {
-  MockWordsNotifier() : super(const AsyncValue.data([]));
+class MockWordsNotifier extends WordsNotifier {
+  @override
+  AsyncValue<List<WordModel>> build() => const AsyncValue.data([]);
 }
 
-class MockSentencesNotifier
-    extends StateNotifier<AsyncValue<List<SentenceModel>>>
-    with Mock
-    implements SentencesNotifier {
-  MockSentencesNotifier() : super(const AsyncValue.data([]));
+class MockSentencesNotifier extends SentencesNotifier {
+  @override
+  AsyncValue<List<SentenceModel>> build() => const AsyncValue.data([]);
 }
 
 void main() {
@@ -45,10 +39,10 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
-          lettersProvider.overrideWith((ref) => MockLettersNotifier()),
-          numbersProvider.overrideWith((ref) => MockNumbersNotifier()),
-          wordsProvider.overrideWith((ref) => MockWordsNotifier()),
-          sentencesProvider.overrideWith((ref) => MockSentencesNotifier()),
+          lettersProvider.overrideWith(MockLettersNotifier.new),
+          numbersProvider.overrideWith(MockNumbersNotifier.new),
+          wordsProvider.overrideWith(MockWordsNotifier.new),
+          sentencesProvider.overrideWith(MockSentencesNotifier.new),
         ],
         child: MaterialApp(
           home: Scaffold(

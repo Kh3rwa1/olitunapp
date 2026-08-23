@@ -1,13 +1,37 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/presentation/providers/profile_providers.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
+import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 
-class MockUserStatsNotifier extends Mock implements UserStatsNotifier {}
+class MockUserStatsNotifier extends UserStatsNotifier {
+  @override
+  AsyncValue<UserStatsEntity> build() => const AsyncValue.data(
+    UserStatsEntity(
+      practicedLetters: {},
+      completedLessons: {},
+      quizHistory: {},
+      categoryMastery: {},
+      totalLearningMinutes: 0,
+      lastActiveDate: '',
+      currentStreak: 0,
+      totalStars: 0,
+    ),
+  );
+
+  @override
+  Future<void> recordPracticeCompletion({
+    required String contentId,
+    required String contentType,
+    required String practiceMode,
+    required int attempts,
+    required bool withHint,
+    required int starsAwarded,
+  }) async {}
+}
 
 class MockTypingPracticeController extends TypingPracticeController {
   final TypingPracticeState mockedState;
@@ -72,7 +96,7 @@ Future<void> pumpPracticeWidget(
     ProviderScope(
       overrides: [
         sharedPreferencesProvider.overrideWithValue(actualPrefs),
-        userStatsProvider.overrideWith((ref) => mockUserStats),
+        userStatsProvider.overrideWith(() => mockUserStats),
         typingPracticeControllerProvider.overrideWith(() => controller),
       ],
       child: MaterialApp(

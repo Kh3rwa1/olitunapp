@@ -6,27 +6,33 @@ import 'category_providers.dart';
 import '../../../auth/presentation/providers/auth_providers.dart';
 
 final categoryNotifierProvider =
-    StateNotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>((
-      ref,
-    ) {
-      ref.watch(isAuthenticatedProvider);
-      return CategoryNotifier(ref.watch(categoryRepositoryProvider));
-    });
+    NotifierProvider<CategoryNotifier, AsyncValue<List<CategoryEntity>>>(
+      CategoryNotifier.new,
+    );
 
-class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
-  final CategoryRepository _repository;
+class CategoryNotifier extends Notifier<AsyncValue<List<CategoryEntity>>> {
+  bool _disposed = false;
 
-  CategoryNotifier(this._repository) : super(const AsyncValue.loading()) {
-    loadCategories();
+  CategoryRepository get _repository => ref.read(categoryRepositoryProvider);
+
+  @override
+  AsyncValue<List<CategoryEntity>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(loadCategories);
+    return const AsyncValue.loading();
   }
 
   Future<void> loadCategories() async {
-    if (!mounted) return;
+    if (_disposed) return;
     if (!state.hasValue) {
       state = const AsyncValue.loading();
     }
     final result = await _repository.getCategories();
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) =>
           state = AsyncValue.error(failure.message, StackTrace.current),
@@ -58,7 +64,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> addCategory(CategoryEntity category) async {
     final result = await _repository.createCategory(category);
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),
@@ -67,7 +73,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> updateCategory(CategoryEntity category) async {
     final result = await _repository.updateCategory(category);
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),
@@ -76,7 +82,7 @@ class CategoryNotifier extends StateNotifier<AsyncValue<List<CategoryEntity>>> {
 
   Future<void> deleteCategory(String id) async {
     final result = await _repository.deleteCategory(id);
-    if (!mounted) return;
+    if (_disposed) return;
     result.fold(
       (failure) => null, // Handle error
       (_) => loadCategories(),

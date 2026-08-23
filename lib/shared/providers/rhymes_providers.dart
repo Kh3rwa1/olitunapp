@@ -12,17 +12,24 @@ import '../../features/auth/presentation/providers/auth_providers.dart';
 // ============== RHYMES ==============
 
 final rhymesProvider =
-    StateNotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>((ref) {
-      ref.watch(isAuthenticatedProvider);
-      return RhymesNotifier(ref);
-    });
+    NotifierProvider<RhymesNotifier, AsyncValue<List<RhymeModel>>>(
+      RhymesNotifier.new,
+    );
 
-class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
-  RhymesNotifier(this.ref) : super(const AsyncValue.loading()) {
-    _loadRhymes();
+class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
+  bool _disposed = false;
+
+  @override
+  AsyncValue<List<RhymeModel>> build() {
+    _disposed = false;
+    ref.onDispose(() => _disposed = true);
+    // Re-create the notifier when the auth state changes.
+    ref.watch(isAuthenticatedProvider);
+    // Deferred: `state` may not be read or written inside build().
+    Future.microtask(_loadRhymes);
+    return const AsyncValue.loading();
   }
 
-  final Ref ref;
   static const String _cacheKey = 'cached_rhymes';
 
   static final List<RhymeModel> _seedRhymes = [
@@ -48,7 +55,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
     // 1. Try Cache
     try {
       final cached = await CacheService.getList(_cacheKey, RhymeModel.fromJson);
-      if (cached != null && cached.isNotEmpty && mounted) {
+      if (cached != null && cached.isNotEmpty && !_disposed) {
         state = AsyncValue.data(cached);
       }
     } catch (e) {
@@ -75,7 +82,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
       }
 
       final resultList = rhymes.isEmpty ? _seedRhymes : rhymes;
-      if (mounted) {
+      if (!_disposed) {
         state = AsyncValue.data(resultList);
       }
 
@@ -99,7 +106,7 @@ class RhymesNotifier extends StateNotifier<AsyncValue<List<RhymeModel>>> {
         error: e.toString(),
       );
 
-      if (mounted && (!state.hasValue || state.value!.isEmpty)) {
+      if (!_disposed && (!state.hasValue || state.value!.isEmpty)) {
         state = AsyncValue.data(_seedRhymes);
       }
     }

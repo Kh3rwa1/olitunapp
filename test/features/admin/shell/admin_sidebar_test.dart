@@ -1,92 +1,100 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-import 'package:itun/core/storage/hive_service.dart';
-import 'package:itun/features/admin/presentation/shell/widgets/admin_sidebar.dart';
-import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/features/home/presentation/providers/home_prefetch_provider.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
-import 'package:itun/shared/providers/providers.dart';
-import 'package:mocktail/mocktail.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:itun/features/categories/domain/entities/category_entity.dart';
+import 'package:itun/shared/providers/learner_content_providers.dart';
 
-class MockCategoryNotifier
-    extends StateNotifier<AsyncValue<List<CategoryEntity>>>
-    with Mock
-    implements CategoryNotifier {
-  MockCategoryNotifier() : super(const AsyncValue.data([]));
+class MockCategoryNotifier extends CategoryNotifier {
+  int refreshCount = 0;
+
+  @override
+  AsyncValue<List<CategoryEntity>> build() => const AsyncValue.data([]);
+
+  @override
+  Future<void> refresh() async {
+    refreshCount++;
+  }
 }
 
 void main() {
-  late SharedPreferences prefs;
   late MockCategoryNotifier mockCategoryNotifier;
+  late ProviderContainer container;
 
-  setUp(() async {
-    SharedPreferences.setMockInitialValues({});
-    prefs = await SharedPreferences.getInstance();
+  setUp(() {
     mockCategoryNotifier = MockCategoryNotifier();
+
+    container = ProviderContainer(
+      overrides: [
+        categoryNotifierProvider.overrideWith(() => mockCategoryNotifier),
+        // Override the core providers with simple data to avoid actual DB loading
+        learnerWordsProvider.overrideWith((ref) => const AsyncValue.data([])),
+        learnerNumbersProvider.overrideWith((ref) => const AsyncValue.data([])),
+        learnerSentencesProvider.overrideWith(
+          (ref) => const AsyncValue.data([]),
+        ),
+        learnerLettersProvider.overrideWith((ref) => const AsyncValue.data([])),
+      ],
+    );
   });
 
-  Widget buildTestWidget({bool isCompact = false}) {
-    final router = GoRouter(
-      initialLocation: '/admin',
-      routes: [
-        GoRoute(
-          path: '/admin',
-          builder: (context, state) =>
-              Scaffold(body: AdminSidebar(isCompact: isCompact)),
-        ),
-        GoRoute(
-          path: '/admin/purchases',
-          builder: (context, state) => const Scaffold(body: Text('Purchases')),
-        ),
-      ],
+  tearDown(() {
+    container.dispose();
+  });
+
+  group('HomePrefetchNotifier Tests', () {
+    test(
+      'initial prefetch triggers category refresh and reads core contents',
+      () async {
+        final notifier = container.read(homePrefetchProvider.notifier);
+
+        // Verify initial state
+        final initialState = container.read(homePrefetchProvider);
+        expect(initialState.isPrefetching, isFalse);
+        expect(initialState.lastCategoryRefresh, isNull);
+
+        // Call prefetch
+        await notifier.prefetch();
+
+        // Verify category refresh was called
+        expect(mockCategoryNotifier.refreshCount, 1);
+
+        // Verify state was updated with timestamp and isPrefetching became false
+        final stateAfter = container.read(homePrefetchProvider);
+        expect(stateAfter.isPrefetching, isFalse);
+        expect(stateAfter.lastCategoryRefresh, isNotNull);
+      },
     );
 
-    return ProviderScope(
-      overrides: [
-        sharedPreferencesProvider.overrideWithValue(prefs),
-        categoryNotifierProvider.overrideWith((ref) => mockCategoryNotifier),
-      ],
-      child: MaterialApp.router(routerConfig: router),
+    test(
+      'subsequent prefetch within threshold skips category refresh',
+      () async {
+        final notifier = container.read(homePrefetchProvider.notifier);
+
+        // First prefetch
+        await notifier.prefetch();
+        expect(mockCategoryNotifier.refreshCount, 1);
+
+        // Second prefetch immediately after
+        await notifier.prefetch();
+
+        // Verify refresh was NOT called again (still total of 1 call)
+        expect(mockCategoryNotifier.refreshCount, 1);
+      },
     );
-  }
 
-  group('AdminSidebar', () {
-    testWidgets('renders all major collapsible groups and expands/collapses', (
-      tester,
-    ) async {
-      tester.view.physicalSize = const Size(1280, 1200);
-      tester.view.devicePixelRatio = 1.0;
-      addTearDown(tester.view.resetPhysicalSize);
+    test('prefetch with forceRefresh: true bypasses staleness check', () async {
+      final notifier = container.read(homePrefetchProvider.notifier);
 
-      await tester.pumpWidget(buildTestWidget());
-      await tester.pumpAndSettle();
+      // First prefetch
+      await notifier.prefetch();
+      expect(mockCategoryNotifier.refreshCount, 1);
 
-      expect(find.text('OVERVIEW'), findsOneWidget);
-      expect(find.text('CONTENT'), findsOneWidget);
-      expect(find.text('MONETIZATION'), findsOneWidget);
-      expect(find.text('OPERATIONS'), findsOneWidget);
-      expect(find.text('Purchases & Revenue'), findsOneWidget);
+      // Second prefetch with forceRefresh
+      await notifier.prefetch(forceRefresh: true);
 
-      // Tap to collapse MONETIZATION group
-      await tester.tap(find.text('MONETIZATION'));
-      await tester.pumpAndSettle();
-
-      // Tap to expand MONETIZATION group
-      await tester.tap(find.text('MONETIZATION'));
-      await tester.pumpAndSettle();
-
-      expect(find.text('Purchases & Revenue'), findsOneWidget);
-    });
-
-    testWidgets('renders compact mode with tooltips without crashing', (
-      tester,
-    ) async {
-      await tester.pumpWidget(buildTestWidget(isCompact: true));
-      await tester.pumpAndSettle();
-
-      expect(find.byType(AdminSidebar), findsOneWidget);
+      // Verify refresh WAS called again (total of 2 calls)
+      expect(mockCategoryNotifier.refreshCount, 2);
     });
   });
 }

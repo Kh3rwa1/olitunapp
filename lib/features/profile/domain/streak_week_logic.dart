@@ -55,5 +55,6 @@ class StreakWeekLogic {
   }
 
   /// Local-date key (`yyyy-MM-dd`) used across stats fields.
-  static String dateKey(DateTime d) => d.toIso8601String().substring(0, 10);
+  static String dateKey(DateTime d) =>
+      d.toIso8601String().substring(0, 10);
 }

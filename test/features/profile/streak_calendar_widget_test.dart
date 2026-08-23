@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
+import 'package:itun/features/profile/domain/streak_week_logic.dart';
 import 'package:itun/features/profile/presentation/widgets/streak_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -66,20 +67,18 @@ void main() {
 
   testWidgets('tapping a practiced day opens the detail sheet', (tester) async {
     final semantics = tester.ensureSemantics();
+    final now = DateTime.now();
+    final todayKey = StreakWeekLogic.dateKey(now);
+
     await tester.pumpWidget(
       await wrap(
-        _stats(
-          streak: 1,
-          lastActiveDate: '2026-08-23',
-          practiceDates: {'2026-08-22'},
-        ),
+        _stats(streak: 1, lastActiveDate: todayKey, practiceDates: {todayKey}),
       ),
     );
     await tester.pump(const Duration(milliseconds: 600));
 
-    // Saturday the 22nd in the week of Aug 17-23 2026.
-    // Flame #0 is the header badge; flame #1 is the first practiced day
-    // chip (the 22nd), before today's (23rd) in widget order.
+    // Flame #0 is the header badge; flame #1 is today's chip (the only
+    // practiced day).
     await tester.tap(find.byIcon(Icons.local_fire_department_rounded).at(1));
     await tester.pump(const Duration(milliseconds: 600));
 
@@ -89,10 +88,14 @@ void main() {
 
   testWidgets('tapping an empty day reports no activity', (tester) async {
     final semantics = tester.ensureSemantics();
+    final now = DateTime.now();
+
     await tester.pumpWidget(await wrap(_stats()));
     await tester.pump(const Duration(milliseconds: 600));
 
-    await tester.tap(find.text('18'));
+    // Today is always in the rendered week and, with no activity, shows
+    // its date number rather than a flame.
+    await tester.tap(find.text('${now.day}'));
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('No activity recorded'), findsOneWidget);

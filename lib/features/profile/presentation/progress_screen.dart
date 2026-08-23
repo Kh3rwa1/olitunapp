@@ -53,7 +53,11 @@ class ProgressScreen extends ConsumerWidget {
         final stars = stats.totalStars;
         final quizzesCompleted = stats.quizzesCompletedCount;
         final avatarColors = [AppColors.primary, AppColors.primaryDark];
-        const memberSince = 'April 2024';
+        final memberSince = ref
+            .watch(accountCreatedAtProvider)
+            .value
+            ?.toIso8601String()
+            .substring(0, 10);
         final learningTime = stats.totalLearningMinutes;
 
         return Scaffold(

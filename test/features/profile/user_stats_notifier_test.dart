@@ -278,6 +278,39 @@ void main() {
       expect(notifier.state.value!.practicedLetters.length, 3);
     });
 
+    test('recordPracticeCompletion logs today into practiceDates', () async {
+      when(
+        () => mockRepo.getUserStats(),
+      ).thenAnswer((_) async => const Right(baseStats));
+
+      final container = _containerFor(mockRepo);
+      addTearDown(container.dispose);
+      final notifier = container.read(userStatsProvider.notifier);
+      await Future.delayed(Duration.zero);
+      await Future.delayed(Duration.zero);
+
+      final now = DateTime.now();
+      final todayKey = DateTime(
+        now.year,
+        now.month,
+        now.day,
+      ).toIso8601String().substring(0, 10);
+
+      await notifier.recordPracticeCompletion(
+        contentId: 'word_x',
+        contentType: 'word',
+        practiceMode: 'typing',
+        attempts: 1,
+        withHint: false,
+        starsAwarded: 5,
+      );
+
+      final saved =
+          verify(() => mockRepo.updateUserStats(captureAny())).captured.last
+              as UserStatsEntity;
+      expect(saved.practiceDates, contains(todayKey));
+    });
+
     test('saveQuizResult stores result in history', () async {
       when(
         () => mockRepo.getUserStats(),

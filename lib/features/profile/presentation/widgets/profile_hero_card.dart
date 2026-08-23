@@ -9,7 +9,9 @@ class ProfileHeroCard extends StatelessWidget {
   final String avatarEmoji;
   final String level;
   final int levelIndex;
-  final String memberSince;
+
+  /// ISO yyyy-MM-dd, or null when unknown (line is hidden rather than guessed).
+  final String? memberSince;
   final double overallProgress;
   final bool isDark;
   final VoidCallback onEditName;
@@ -22,7 +24,7 @@ class ProfileHeroCard extends StatelessWidget {
     required this.avatarEmoji,
     required this.level,
     required this.levelIndex,
-    required this.memberSince,
+    this.memberSince,
     required this.overallProgress,
     required this.isDark,
     required this.onEditName,
@@ -233,13 +235,16 @@ class ProfileHeroCard extends StatelessWidget {
                           ),
                         ),
                         const SizedBox(width: 10),
-                        Text(
-                          'Since ${_formatDate(memberSince)}',
-                          style: GoogleFonts.inter(
-                            fontSize: 11,
-                            color: isDark ? Colors.white30 : Colors.black38,
+                        // Hidden entirely when creation date is unknown —
+                        // never guess a member-since date.
+                        if (memberSince != null)
+                          Text(
+                            'Since ${_formatDate(memberSince!)}',
+                            style: GoogleFonts.inter(
+                              fontSize: 11,
+                              color: isDark ? Colors.white30 : Colors.black38,
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ],

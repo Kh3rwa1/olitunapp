@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/core/storage/hive_service.dart';
+import 'package:itun/features/profile/domain/entities/quiz_result_entity.dart';
 import 'package:itun/features/profile/domain/entities/user_stats_entity.dart';
 import 'package:itun/features/profile/domain/streak_week_logic.dart';
+import 'package:itun/l10n/generated/app_localizations.dart';
+import 'package:itun/shared/models/content_models.dart';
+import 'package:itun/shared/providers/quizzes_provider.dart';
 import 'package:itun/features/profile/presentation/widgets/streak_calendar.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -11,11 +15,12 @@ UserStatsEntity _stats({
   int streak = 0,
   Set<String> practiceDates = const {},
   String lastActiveDate = '',
+  Map<String, QuizResultEntity> quizHistory = const {},
 }) {
   return UserStatsEntity(
     practicedLetters: {},
     completedLessons: {},
-    quizHistory: {},
+    quizHistory: quizHistory,
     categoryMastery: {},
     totalLearningMinutes: 0,
     lastActiveDate: lastActiveDate,
@@ -25,12 +30,22 @@ UserStatsEntity _stats({
   );
 }
 
-Future<Widget> wrap(UserStatsEntity stats) async {
+Future<Widget> wrap(
+  UserStatsEntity stats, {
+  List<Override> extraOverrides = const [],
+}) async {
   SharedPreferences.setMockInitialValues({});
   final prefs = await SharedPreferences.getInstance();
   return ProviderScope(
-    overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+    overrides: [
+      sharedPreferencesProvider.overrideWithValue(prefs),
+      // Keep the quizzes catalogue inert unless a test supplies real data.
+      quizzesByIdProvider.overrideWithValue(const AsyncValue.data({})),
+      ...extraOverrides,
+    ],
     child: MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       home: Scaffold(
         body: SingleChildScrollView(child: StreakCalendar(stats: stats)),
       ),
@@ -83,6 +98,46 @@ void main() {
     await tester.pump(const Duration(milliseconds: 600));
 
     expect(find.text('Practice session'), findsOneWidget);
+    semantics.dispose();
+  });
+
+  testWidgets('detail sheet shows the real quiz title when available', (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
+    final now = DateTime.now();
+    final todayKey = StreakWeekLogic.dateKey(now);
+
+    final quiz = QuizModel(id: 'quiz_letters', title: 'Letters Quiz');
+
+    await tester.pumpWidget(
+      await wrap(
+        _stats(
+          streak: 1,
+          lastActiveDate: todayKey,
+          quizHistory: {
+            'quiz_letters': QuizResultEntity(
+              quizId: 'quiz_letters',
+              score: 8,
+              totalQuestions: 10,
+              completedAt: now.toIso8601String(),
+            ),
+          },
+        ),
+        extraOverrides: [
+          quizzesByIdProvider.overrideWithValue(
+            AsyncValue.data({'quiz_letters': quiz}),
+          ),
+        ],
+      ),
+    );
+    await tester.pump(const Duration(milliseconds: 600));
+
+    // Flame #0 is the header badge; #1 is today's chip.
+    await tester.tap(find.byIcon(Icons.local_fire_department_rounded).at(1));
+    await tester.pump(const Duration(milliseconds: 600));
+
+    expect(find.text('Quiz · Letters Quiz'), findsOneWidget);
     semantics.dispose();
   });
 

@@ -429,4 +429,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noQuestionsFound => 'No questions found.';
+
+  @override
+  String get streakActiveTitle => 'Weekly Streak Active';
+
+  @override
+  String get streakIdleTitle => 'Start Your Streak';
+
+  @override
+  String get streakActiveSubtitle => 'Keep learning to grow your flame!';
+
+  @override
+  String get streakIdleSubtitle => 'Complete any activity to light your flame!';
+
+  @override
+  String get streakStartLearning => 'Start learning';
+
+  @override
+  String streakDaysBadge(int count) {
+    return '$count DAYS';
+  }
+
+  @override
+  String streakFooterActive(int count, int total) {
+    return 'You practiced $count of $total days this week. Keep it up!';
+  }
+
+  @override
+  String get streakFooterIdle =>
+      'No practice yet this week — pick any activity to begin!';
+
+  @override
+  String streakWeekSemantics(int count, int total) {
+    return 'This week: practiced $count of $total days';
+  }
+
+  @override
+  String get dayDetailNoActivity => 'No activity recorded';
+
+  @override
+  String get dayDetailPracticeSession => 'Practice session';
+
+  @override
+  String get dayDetailStreakDay => 'Streak day';
+
+  @override
+  String get dayDetailQuiz => 'Quiz';
+
+  @override
+  String get dayUpcoming => 'upcoming';
+
+  @override
+  String get dayPracticed => 'practiced';
+
+  @override
+  String get dayNotPracticed => 'not practiced';
+
+  @override
+  String milestoneLevelProgressCaption(String from, String to) {
+    return 'Level progress · $from → $to';
+  }
 }

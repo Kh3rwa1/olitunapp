@@ -889,6 +889,108 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No questions found.'**
   String get noQuestionsFound;
+
+  /// No description provided for @streakActiveTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly Streak Active'**
+  String get streakActiveTitle;
+
+  /// No description provided for @streakIdleTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start Your Streak'**
+  String get streakIdleTitle;
+
+  /// No description provided for @streakActiveSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep learning to grow your flame!'**
+  String get streakActiveSubtitle;
+
+  /// No description provided for @streakIdleSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete any activity to light your flame!'**
+  String get streakIdleSubtitle;
+
+  /// No description provided for @streakStartLearning.
+  ///
+  /// In en, this message translates to:
+  /// **'Start learning'**
+  String get streakStartLearning;
+
+  /// No description provided for @streakDaysBadge.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} DAYS'**
+  String streakDaysBadge(int count);
+
+  /// No description provided for @streakFooterActive.
+  ///
+  /// In en, this message translates to:
+  /// **'You practiced {count} of {total} days this week. Keep it up!'**
+  String streakFooterActive(int count, int total);
+
+  /// No description provided for @streakFooterIdle.
+  ///
+  /// In en, this message translates to:
+  /// **'No practice yet this week — pick any activity to begin!'**
+  String get streakFooterIdle;
+
+  /// No description provided for @streakWeekSemantics.
+  ///
+  /// In en, this message translates to:
+  /// **'This week: practiced {count} of {total} days'**
+  String streakWeekSemantics(int count, int total);
+
+  /// No description provided for @dayDetailNoActivity.
+  ///
+  /// In en, this message translates to:
+  /// **'No activity recorded'**
+  String get dayDetailNoActivity;
+
+  /// No description provided for @dayDetailPracticeSession.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice session'**
+  String get dayDetailPracticeSession;
+
+  /// No description provided for @dayDetailStreakDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Streak day'**
+  String get dayDetailStreakDay;
+
+  /// No description provided for @dayDetailQuiz.
+  ///
+  /// In en, this message translates to:
+  /// **'Quiz'**
+  String get dayDetailQuiz;
+
+  /// No description provided for @dayUpcoming.
+  ///
+  /// In en, this message translates to:
+  /// **'upcoming'**
+  String get dayUpcoming;
+
+  /// No description provided for @dayPracticed.
+  ///
+  /// In en, this message translates to:
+  /// **'practiced'**
+  String get dayPracticed;
+
+  /// No description provided for @dayNotPracticed.
+  ///
+  /// In en, this message translates to:
+  /// **'not practiced'**
+  String get dayNotPracticed;
+
+  /// No description provided for @milestoneLevelProgressCaption.
+  ///
+  /// In en, this message translates to:
+  /// **'Level progress · {from} → {to}'**
+  String milestoneLevelProgressCaption(String from, String to);
 }
 
 class _AppLocalizationsDelegate

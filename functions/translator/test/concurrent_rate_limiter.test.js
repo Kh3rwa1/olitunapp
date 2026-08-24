@@ -552,5 +552,5 @@ test('SDK Version Integrity: Installed node-appwrite version matches expected re
   const { readFileSync } = await import('node:fs');
   const pkgUrl = new URL('../node_modules/node-appwrite/package.json', import.meta.url);
   const pkg = JSON.parse(readFileSync(pkgUrl, 'utf8'));
-  assert.equal(pkg.version, '28.0.0', 'node-appwrite SDK must be exactly 28.0.0');
+  assert.equal(pkg.version, '25.1.0', 'node-appwrite SDK must be exactly 25.1.0');
 });

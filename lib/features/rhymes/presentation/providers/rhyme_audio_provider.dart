@@ -8,6 +8,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import '../../../../core/auth/appwrite_auth_service.dart';
 import '../../../home/presentation/providers/mission_providers.dart';
+import 'listened_bakhed_provider.dart';
 
 class RhymeAudioState {
   final String? playingRhymeId;
@@ -125,6 +126,8 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
       if (percentage >= 0.8 && !_eventTriggeredForCurrent) {
         _eventTriggeredForCurrent = true;
         ref.read(bakhedListenedTodayProvider.notifier).setCompleted(true);
+        // Local "heard" badge for catalogue cards.
+        ref.read(listenedBakhedProvider.notifier).markListened(rhymeId);
       }
     }
   }

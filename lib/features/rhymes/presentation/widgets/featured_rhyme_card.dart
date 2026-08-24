@@ -197,8 +197,14 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                   style: const TextStyle(
                                     fontSize: 24,
                                     fontWeight: FontWeight.w700,
-                                    color: Colors.white70,
+                                    color: Colors.white,
                                     fontFamily: 'OlChiki',
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black54,
+                                        blurRadius: 12,
+                                      ),
+                                    ],
                                   ),
                                 )
                                 .animate()

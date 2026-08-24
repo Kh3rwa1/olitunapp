@@ -12,6 +12,7 @@ class RhymeModel {
   final String? categoryId;
   final String? category;
   final List<String> tags;
+  final bool isFeatured;
   final String? coverMediaType;
   final ContentMedia? heroMedia;
 
@@ -26,6 +27,7 @@ class RhymeModel {
     this.categoryId,
     this.category,
     this.tags = const [],
+    this.isFeatured = false,
     this.coverMediaType,
     this.heroMedia,
   });
@@ -60,6 +62,9 @@ class RhymeModel {
       tags:
           (json['tags'] as List<dynamic>?)?.map((e) => e.toString()).toList() ??
           const [],
+      isFeatured:
+          json['isFeatured'] == true ||
+          (json['data'] is Map && json['data']['isFeatured'] == true),
       coverMediaType:
           _readString(json, 'coverMediaType') ??
           (parsedHeroMedia != null ? 'image' : null),
@@ -79,6 +84,7 @@ class RhymeModel {
       'categoryId': categoryId,
       'category': category,
       'tags': tags,
+      'isFeatured': isFeatured,
       if (coverMediaType != null) 'coverMediaType': coverMediaType,
       if (heroMedia != null) 'heroMedia': heroMedia!.toJson(),
     };

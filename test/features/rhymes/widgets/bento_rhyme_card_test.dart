@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,6 +13,7 @@ import 'package:itun/features/rhymes/domain/rhyme_model.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/shared/providers/local_settings_provider.dart';
+import 'package:itun/features/rhymes/presentation/providers/listened_bakhed_provider.dart';
 import 'package:itun/features/rhymes/presentation/providers/rhyme_audio_provider.dart';
 
 import '../../../helpers/fake_video_player_platform.dart';
@@ -37,6 +39,11 @@ class MockRhymeAudioNotifier extends RhymeAudioNotifier {
   }
 }
 
+class _ListenedFake extends ListenedBakhedNotifier {
+  @override
+  Set<String> build() => {'heard_1'};
+}
+
 void main() {
   late FakeVideoPlayerPlatform fakeVideoPlayerPlatform;
   late MockRhymeAudioNotifier mockRhymeAudioNotifier;
@@ -59,6 +66,7 @@ void main() {
   Widget createBentoCardWidget({
     required RhymeModel rhyme,
     required int index,
+    List<Override> extraOverrides = const [],
   }) {
     return createTestableWidget(
       child: Scaffold(
@@ -74,11 +82,42 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
         rhymeAudioProvider.overrideWith(() => mockRhymeAudioNotifier),
         reduceVisualEffectsProvider.overrideWithValue(true),
+        ...extraOverrides,
       ],
     );
   }
 
   group('BentoRhymeCard Widget Tests', () {
+    testWidgets('0. Listened bakhed shows a heard badge on the category chip', (
+      tester,
+    ) async {
+      final rhyme = RhymeModel(
+        id: 'heard_1',
+        titleOlChiki: 'ᱛᱮᱥᱴ',
+        titleLatin: 'heard story',
+        contentOlChiki: '',
+        contentLatin: '',
+        category: 'Sohrai',
+      );
+
+      await tester.pumpWidget(
+        createBentoCardWidget(
+          rhyme: rhyme,
+          index: 0,
+          extraOverrides: [
+            listenedBakhedProvider.overrideWith(_ListenedFake.new),
+          ],
+        ),
+      );
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 100));
+
+      expect(find.byIcon(Icons.check_circle_rounded), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 1));
+      await tester.pumpWidget(const SizedBox());
+    });
+
     testWidgets('1. Legacy/Null cover renders category icon fallback', (
       tester,
     ) async {
@@ -101,8 +140,8 @@ void main() {
       // Should render animal/category icon (pets in our mapping, or similar fallback)
       expect(
         find.byType(Icon),
-        findsNWidgets(2),
-      ); // category icon and play button icon
+        findsNWidgets(3),
+      ); // generated-art watermark + category chip icon + play button icon
 
       await tester.pump(const Duration(seconds: 1));
       await tester.pumpWidget(const SizedBox());

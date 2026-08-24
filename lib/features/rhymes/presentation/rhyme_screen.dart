@@ -21,6 +21,7 @@ import 'widgets/featured_rhyme_card.dart';
 import 'widgets/bento_rhyme_card.dart';
 import 'widgets/enchanted_visualizer.dart';
 import 'widgets/binti_guru_landing.dart';
+import '../domain/rhyme_catalog.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -35,16 +36,11 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   String? _selectedCategoryName;
   String? _selectedTag;
   int _currentTab = 0; // 0 = Bakhed Audio, 1 = Binti Guru
-  late final AnimationController _headerPulseController;
   late final AnimationController _dividerGlowController;
 
   @override
   void initState() {
     super.initState();
-    _headerPulseController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
-    );
     _dividerGlowController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 4),
@@ -52,14 +48,12 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
     final reduceEffects = ref.read(reduceVisualEffectsProvider);
     if (!reduceEffects) {
-      _headerPulseController.repeat(reverse: true);
       _dividerGlowController.repeat();
     }
   }
 
   @override
   void dispose() {
-    _headerPulseController.dispose();
     _dividerGlowController.dispose();
     super.dispose();
   }
@@ -68,10 +62,8 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   Widget build(BuildContext context) {
     ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
       if (next) {
-        _headerPulseController.stop();
         _dividerGlowController.stop();
       } else {
-        _headerPulseController.repeat(reverse: true);
         _dividerGlowController.repeat();
       }
     });
@@ -252,17 +244,28 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => setState(() => _currentTab = 0),
-                      child: Center(
-                        child: Text(
-                          '🎵 Bakhed Audio',
-                          style: GoogleFonts.fredoka(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.music_note_rounded,
+                            size: 16,
                             color: _currentTab == 0
                                 ? Colors.white
                                 : (isDark ? Colors.white70 : Colors.black54),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Bakhed Audio',
+                            style: GoogleFonts.fredoka(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _currentTab == 0
+                                  ? Colors.white
+                                  : (isDark ? Colors.white70 : Colors.black54),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -270,17 +273,28 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     child: GestureDetector(
                       behavior: HitTestBehavior.opaque,
                       onTap: () => setState(() => _currentTab = 1),
-                      child: Center(
-                        child: Text(
-                          '🧑‍🏫 Binti Guru',
-                          style: GoogleFonts.fredoka(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w600,
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            Icons.school_rounded,
+                            size: 16,
                             color: _currentTab == 1
                                 ? Colors.white
                                 : (isDark ? Colors.white70 : Colors.black54),
                           ),
-                        ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Binti Guru',
+                            style: GoogleFonts.fredoka(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              color: _currentTab == 1
+                                  ? Colors.white
+                                  : (isDark ? Colors.white70 : Colors.black54),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -349,11 +363,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                     .slideX(begin: -0.15, curve: Curves.easeOutCubic)
                     .blurXY(begin: 4, end: 0, duration: 500.ms),
               ],
-            ),
-            const Spacer(),
-            AnimatedMusicIcon(
-              controller: _headerPulseController,
-              isDark: isDark,
             ),
           ],
         ),
@@ -498,12 +507,18 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   ) {
     return rhymesAsync.when(
       data: (rhymes) {
-        final filtered = _filterRhymes(rhymes);
-        return filtered.isNotEmpty
+        final filtered = RhymeCatalog.filterRhymes(
+          rhymes,
+          categoryId: _selectedCategoryId,
+          categoryName: _selectedCategoryName,
+          tag: _selectedTag,
+        );
+        final selection = RhymeCatalog.selectFeatured(filtered);
+        return selection.featured != null
             ? SliverToBoxAdapter(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: isTablet ? 32 : 24),
-                  child: FeaturedRhymeCard(rhyme: filtered.first),
+                  child: FeaturedRhymeCard(rhyme: selection.featured!),
                 ),
               )
             : const SliverToBoxAdapter(child: SizedBox.shrink());
@@ -585,17 +600,35 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
   ) {
     return rhymesAsync.when(
       data: (rhymes) {
-        final filtered = _filterRhymes(rhymes);
-        final gridItems = filtered.length > 1
-            ? filtered.sublist(1)
-            : <RhymeModel>[];
+        final filtered = RhymeCatalog.filterRhymes(
+          rhymes,
+          categoryId: _selectedCategoryId,
+          categoryName: _selectedCategoryName,
+          tag: _selectedTag,
+        );
+        final selection = RhymeCatalog.selectFeatured(filtered);
+        final gridItems = selection.grid;
 
         if (gridItems.isEmpty) {
+          // Honest states: "preparing" only when the catalogue itself is
+          // empty; otherwise the items simply live in the featured hero.
           return SliverFillRemaining(
             hasScrollBody: false,
             child: Padding(
               padding: const EdgeInsets.all(24.0),
-              child: _BakhedPreparingAnimation(isDark: isDark),
+              child: filtered.isEmpty
+                  ? _BakhedPreparingAnimation(isDark: isDark)
+                  : Center(
+                      child: Text(
+                        "That's everything here — new Bakhed coming soon!",
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.fredoka(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white54 : Colors.black45,
+                        ),
+                      ),
+                    ),
             ),
           );
         }
@@ -655,24 +688,6 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
         ),
       ),
     );
-  }
-
-  List<RhymeModel> _filterRhymes(List<RhymeModel> rhymes) {
-    var filtered = rhymes;
-    if (_selectedCategoryId != null || _selectedCategoryName != null) {
-      filtered = filtered
-          .where(
-            (r) =>
-                r.categoryId == _selectedCategoryId ||
-                r.category == _selectedCategoryId ||
-                r.category == _selectedCategoryName,
-          )
-          .toList();
-    }
-    if (_selectedTag != null) {
-      filtered = filtered.where((r) => r.tags.contains(_selectedTag)).toList();
-    }
-    return filtered;
   }
 }
 

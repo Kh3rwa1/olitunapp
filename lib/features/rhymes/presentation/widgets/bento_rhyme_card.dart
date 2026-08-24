@@ -14,6 +14,7 @@ import 'enchanted_visualizer.dart';
 
 import 'package:go_router/go_router.dart';
 import '../providers/rhyme_audio_provider.dart';
+import '../providers/listened_bakhed_provider.dart';
 
 /// Bento-grid rhyme card with play toggle and mini visualizer.
 class BentoRhymeCard extends ConsumerStatefulWidget {
@@ -63,6 +64,9 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
     final audioState = ref.watch(rhymeAudioProvider);
     final isPlaying =
         audioState.playingRhymeId == widget.rhyme.id && audioState.isPlaying;
+    final listened = ref
+        .watch(listenedBakhedProvider)
+        .contains(widget.rhyme.id);
     final color = _palette[widget.index % _palette.length];
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final scriptMode = ref.watch(effectiveScriptModeProvider);
@@ -91,6 +95,32 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
             : Colors.white.withValues(alpha: 0.7),
         child: Stack(
           children: [
+            // Generated cover art for entries without media: category
+            // gradient + oversized watermark icon, so cards never look
+            // broken or washed out.
+            if (!_hasCover)
+              Positioned.fill(
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(32),
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [
+                        color.withValues(alpha: isDark ? 0.35 : 0.30),
+                        color.withValues(alpha: isDark ? 0.08 : 0.06),
+                      ],
+                    ),
+                  ),
+                  child: Center(
+                    child: Icon(
+                      _getIconForCategory(widget.rhyme.category),
+                      size: 72,
+                      color: color.withValues(alpha: 0.35),
+                    ),
+                  ),
+                ),
+              ),
             // Background Cover (image or video first-frame poster)
             if (_hasCover)
               Positioned.fill(
@@ -150,11 +180,17 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                                   : color.withValues(alpha: 0.15),
                               shape: BoxShape.circle,
                             ),
-                            child: Icon(
-                              _getIconForCategory(widget.rhyme.category),
-                              color: _hasCover ? Colors.white : color,
-                              size: 16,
-                            ),
+                            child: listened
+                                ? const Icon(
+                                    Icons.check_circle_rounded,
+                                    color: AppColors.primary,
+                                    size: 16,
+                                  )
+                                : Icon(
+                                    _getIconForCategory(widget.rhyme.category),
+                                    color: _hasCover ? Colors.white : color,
+                                    size: 16,
+                                  ),
                           )
                           .animate(
                             onPlay: reduceEffects

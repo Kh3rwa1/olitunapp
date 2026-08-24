@@ -8,6 +8,7 @@ import '../../core/observability/crash_reporting.dart';
 import '../../features/rhymes/domain/rhyme_model.dart';
 import '../../features/rhymes/domain/rhyme_category_model.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/rhymes/domain/rhyme_catalog.dart';
 
 // ============== RHYMES ==============
 
@@ -157,24 +158,5 @@ final rhymeCategoriesProvider = Provider<AsyncValue<List<RhymeCategoryModel>>>((
   ref,
 ) {
   final rhymesAsync = ref.watch(rhymesProvider);
-  return rhymesAsync.whenData((rhymes) {
-    final seen = <String>{};
-    final categories = <RhymeCategoryModel>[];
-    var order = 0;
-    for (final rhyme in rhymes) {
-      final name = rhyme.category;
-      if (name == null || name.isEmpty || !seen.add(name)) continue;
-      categories.add(
-        RhymeCategoryModel(
-          id: name,
-          nameOlChiki: name,
-          nameLatin: name,
-          iconName: 'auto_awesome',
-          order: order++,
-        ),
-      );
-    }
-    categories.sort((a, b) => a.order.compareTo(b.order));
-    return categories;
-  });
+  return rhymesAsync.whenData(RhymeCatalog.collectCategories);
 });

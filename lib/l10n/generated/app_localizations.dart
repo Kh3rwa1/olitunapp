@@ -991,6 +991,210 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Level progress · {from} → {to}'**
   String milestoneLevelProgressCaption(String from, String to);
+
+  /// No description provided for @homeDiscover.
+  ///
+  /// In en, this message translates to:
+  /// **'DISCOVER'**
+  String get homeDiscover;
+
+  /// No description provided for @homeSwipeHint.
+  ///
+  /// In en, this message translates to:
+  /// **'SWIPE'**
+  String get homeSwipeHint;
+
+  /// No description provided for @homeExploreHint.
+  ///
+  /// In en, this message translates to:
+  /// **'EXPLORE'**
+  String get homeExploreHint;
+
+  /// No description provided for @guestSignInCta.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to save your progress'**
+  String get guestSignInCta;
+
+  /// No description provided for @nbaBadgeStartHere.
+  ///
+  /// In en, this message translates to:
+  /// **'START HERE'**
+  String get nbaBadgeStartHere;
+
+  /// No description provided for @nbaTitleFirstLetters.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn your first Ol Chiki letters'**
+  String get nbaTitleFirstLetters;
+
+  /// No description provided for @nbaSubFirstLetters.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin with the basic alphabet and unlock Santali writing.'**
+  String get nbaSubFirstLetters;
+
+  /// No description provided for @nbaCtaBeginLesson.
+  ///
+  /// In en, this message translates to:
+  /// **'Begin Lesson'**
+  String get nbaCtaBeginLesson;
+
+  /// No description provided for @nbaBadgeNextStep.
+  ///
+  /// In en, this message translates to:
+  /// **'NEXT STEP'**
+  String get nbaBadgeNextStep;
+
+  /// No description provided for @nbaTitleNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Santali numbers'**
+  String get nbaTitleNumbers;
+
+  /// No description provided for @nbaSubNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Build confidence with everyday counting and number words.'**
+  String get nbaSubNumbers;
+
+  /// No description provided for @nbaCtaPracticeNumbers.
+  ///
+  /// In en, this message translates to:
+  /// **'Practice Numbers'**
+  String get nbaCtaPracticeNumbers;
+
+  /// No description provided for @nbaBadgeMistakes.
+  ///
+  /// In en, this message translates to:
+  /// **'PRACTICE NEEDED'**
+  String get nbaBadgeMistakes;
+
+  /// No description provided for @nbaTitleMistakes.
+  ///
+  /// In en, this message translates to:
+  /// **'Transform mistakes into wisdom'**
+  String get nbaTitleMistakes;
+
+  /// No description provided for @nbaSubMistakes.
+  ///
+  /// In en, this message translates to:
+  /// **'You have {count} question(s) to review and master.'**
+  String nbaSubMistakes(int count);
+
+  /// No description provided for @nbaCtaReviewMistakes.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Mistakes'**
+  String get nbaCtaReviewMistakes;
+
+  /// No description provided for @nbaBadgeStreakRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'STREAK RISK'**
+  String get nbaBadgeStreakRisk;
+
+  /// No description provided for @nbaTitleStreakRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep your daily momentum'**
+  String get nbaTitleStreakRisk;
+
+  /// No description provided for @nbaSubStreakRisk.
+  ///
+  /// In en, this message translates to:
+  /// **'One quick quiz or lesson will secure your {count} day streak today.'**
+  String nbaSubStreakRisk(int count);
+
+  /// No description provided for @nbaCtaQuickReview.
+  ///
+  /// In en, this message translates to:
+  /// **'Quick Review'**
+  String get nbaCtaQuickReview;
+
+  /// No description provided for @nbaBadgeTryBakhed.
+  ///
+  /// In en, this message translates to:
+  /// **'TRY BAKHED'**
+  String get nbaBadgeTryBakhed;
+
+  /// No description provided for @nbaTitleTryBakhed.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen to a cultural rhyme'**
+  String get nbaTitleTryBakhed;
+
+  /// No description provided for @nbaSubTryBakhed.
+  ///
+  /// In en, this message translates to:
+  /// **'Immerse yourself in beautiful Santali oral poetry for 30s.'**
+  String get nbaSubTryBakhed;
+
+  /// No description provided for @nbaCtaListenNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen Now'**
+  String get nbaCtaListenNow;
+
+  /// No description provided for @nbaBadgeAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'ALL COMPLETE'**
+  String get nbaBadgeAllDone;
+
+  /// No description provided for @nbaTitleAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'You finished everything — brilliant!'**
+  String get nbaTitleAllDone;
+
+  /// No description provided for @nbaSubAllDone.
+  ///
+  /// In en, this message translates to:
+  /// **'New lessons are on the way. Revisit Bakhed or review anytime.'**
+  String get nbaSubAllDone;
+
+  /// No description provided for @nbaCtaExploreBakhed.
+  ///
+  /// In en, this message translates to:
+  /// **'Explore Bakhed'**
+  String get nbaCtaExploreBakhed;
+
+  /// No description provided for @affirmationListen.
+  ///
+  /// In en, this message translates to:
+  /// **'Listen'**
+  String get affirmationListen;
+
+  /// No description provided for @affirmationStop.
+  ///
+  /// In en, this message translates to:
+  /// **'Stop'**
+  String get affirmationStop;
+
+  /// No description provided for @affirmationMarkRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Mark Read'**
+  String get affirmationMarkRead;
+
+  /// No description provided for @affirmationRead.
+  ///
+  /// In en, this message translates to:
+  /// **'Read'**
+  String get affirmationRead;
+
+  /// No description provided for @todaysMissionTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s Mission'**
+  String get todaysMissionTitle;
+
+  /// No description provided for @missionsDoneCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{done}/4 Done'**
+  String missionsDoneCount(int done);
 }
 
 class _AppLocalizationsDelegate

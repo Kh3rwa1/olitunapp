@@ -4,6 +4,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/minimum_tap_target.dart';
 import '../../../../core/motion/confetti_overlay.dart';
 import '../providers/mission_providers.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class TodayMissionCard extends ConsumerStatefulWidget {
   const TodayMissionCard({super.key});
@@ -136,7 +137,9 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                               ),
                               const SizedBox(width: 12),
                               Text(
-                                "Today's Mission",
+                                AppLocalizations.of(
+                                  context,
+                                )!.todaysMissionTitle,
                                 style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.bold,
@@ -159,7 +162,9 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                             child: Text(
-                              '$completedCount/4 Done',
+                              AppLocalizations.of(
+                                context,
+                              )!.missionsDoneCount(completedCount),
                               style: TextStyle(
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,

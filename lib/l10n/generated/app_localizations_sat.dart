@@ -488,4 +488,116 @@ class AppLocalizationsSat extends AppLocalizations {
   String milestoneLevelProgressCaption(String from, String to) {
     return 'Level progress · $from → $to';
   }
+
+  @override
+  String get homeDiscover => 'DISCOVER';
+
+  @override
+  String get homeSwipeHint => 'SWIPE';
+
+  @override
+  String get homeExploreHint => 'EXPLORE';
+
+  @override
+  String get guestSignInCta => 'Sign in to save your progress';
+
+  @override
+  String get nbaBadgeStartHere => 'START HERE';
+
+  @override
+  String get nbaTitleFirstLetters => 'Learn your first Ol Chiki letters';
+
+  @override
+  String get nbaSubFirstLetters =>
+      'Begin with the basic alphabet and unlock Santali writing.';
+
+  @override
+  String get nbaCtaBeginLesson => 'Begin Lesson';
+
+  @override
+  String get nbaBadgeNextStep => 'NEXT STEP';
+
+  @override
+  String get nbaTitleNumbers => 'Practice Santali numbers';
+
+  @override
+  String get nbaSubNumbers =>
+      'Build confidence with everyday counting and number words.';
+
+  @override
+  String get nbaCtaPracticeNumbers => 'Practice Numbers';
+
+  @override
+  String get nbaBadgeMistakes => 'PRACTICE NEEDED';
+
+  @override
+  String get nbaTitleMistakes => 'Transform mistakes into wisdom';
+
+  @override
+  String nbaSubMistakes(int count) {
+    return 'You have $count question(s) to review and master.';
+  }
+
+  @override
+  String get nbaCtaReviewMistakes => 'Review Mistakes';
+
+  @override
+  String get nbaBadgeStreakRisk => 'STREAK RISK';
+
+  @override
+  String get nbaTitleStreakRisk => 'Keep your daily momentum';
+
+  @override
+  String nbaSubStreakRisk(int count) {
+    return 'One quick quiz or lesson will secure your $count day streak today.';
+  }
+
+  @override
+  String get nbaCtaQuickReview => 'Quick Review';
+
+  @override
+  String get nbaBadgeTryBakhed => 'TRY BAKHED';
+
+  @override
+  String get nbaTitleTryBakhed => 'Listen to a cultural rhyme';
+
+  @override
+  String get nbaSubTryBakhed =>
+      'Immerse yourself in beautiful Santali oral poetry for 30s.';
+
+  @override
+  String get nbaCtaListenNow => 'Listen Now';
+
+  @override
+  String get nbaBadgeAllDone => 'ALL COMPLETE';
+
+  @override
+  String get nbaTitleAllDone => 'You finished everything — brilliant!';
+
+  @override
+  String get nbaSubAllDone =>
+      'New lessons are on the way. Revisit Bakhed or review anytime.';
+
+  @override
+  String get nbaCtaExploreBakhed => 'Explore Bakhed';
+
+  @override
+  String get affirmationListen => 'Listen';
+
+  @override
+  String get affirmationStop => 'Stop';
+
+  @override
+  String get affirmationMarkRead => 'Mark Read';
+
+  @override
+  String get affirmationRead => 'Read';
+
+  @override
+  String get todaysMissionTitle => 'Today\'s Mission';
+
+  @override
+  String missionsDoneCount(int done) {
+    return '$done/4 Done';
+  }
 }

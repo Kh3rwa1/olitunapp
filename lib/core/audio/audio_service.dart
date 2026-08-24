@@ -7,6 +7,14 @@ final audioServiceProvider = Provider((ref) => AudioService());
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
 
+  /// Single source of truth for "is audio currently playing".
+  ///
+  /// Emits false on pause, stop, natural completion AND playback failure —
+  /// consumers should derive UI state from this instead of local booleans,
+  /// which silently desync (the affirmation-card bug class).
+  Stream<bool> get isPlayingStream =>
+      _player.playerStateStream.map((state) => state.playing);
+
   Future<void> playUrl(String url) async {
     try {
       await _player.stop();

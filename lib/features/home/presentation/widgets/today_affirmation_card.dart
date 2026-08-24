@@ -11,6 +11,8 @@ import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../affirmations/data/affirmation_share_service_provider.dart';
 import '../../../affirmations/presentation/widgets/affirmation_share_sheet.dart';
+import '../../../../core/audio/audio_providers.dart';
+import '../../../../l10n/generated/app_localizations.dart';
 
 class TodayAffirmationCard extends ConsumerStatefulWidget {
   const TodayAffirmationCard({super.key});
@@ -23,7 +25,6 @@ class TodayAffirmationCard extends ConsumerStatefulWidget {
 class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
   final GlobalKey _repaintKey = GlobalKey();
   bool _isSharing = false;
-  bool _isPlaying = false;
 
   Future<void> _shareCard(AffirmationModel affirmation) async {
     if (_isSharing) return;
@@ -141,11 +142,11 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
     if (audioUrl == null) return;
     HapticFeedback.lightImpact();
 
-    if (_isPlaying) {
+    // Truth comes from audioIsPlayingProvider (player state stream), so a
+    // failed load or natural completion can never leave a stuck 'Stop'.
+    if (ref.read(audioIsPlayingProvider).value == true) {
       await ref.read(audioServiceProvider).stop();
-      setState(() => _isPlaying = false);
     } else {
-      setState(() => _isPlaying = true);
       await ref.read(audioServiceProvider).playUrl(audioUrl);
     }
   }
@@ -154,6 +155,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
   Widget build(BuildContext context) {
     final todayAffAsync = ref.watch(todayAffirmationProvider);
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isPlaying = ref.watch(audioIsPlayingProvider).value == true;
 
     return todayAffAsync.when(
       data: (affirmation) {
@@ -269,10 +271,16 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                           children: [
                             if (affirmation.audioUrl != null)
                               _ActionButton(
-                                icon: _isPlaying
+                                icon: isPlaying
                                     ? Icons.stop_rounded
                                     : Icons.volume_up_rounded,
-                                label: _isPlaying ? 'Stop' : 'Listen',
+                                label: isPlaying
+                                    ? AppLocalizations.of(
+                                        context,
+                                      )!.affirmationStop
+                                    : AppLocalizations.of(
+                                        context,
+                                      )!.affirmationListen,
                                 isDark: isDark,
                                 onTap: () => _toggleAudio(affirmation.audioUrl),
                               )

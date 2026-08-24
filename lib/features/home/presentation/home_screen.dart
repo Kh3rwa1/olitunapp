@@ -4,6 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
+import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/state_widgets.dart';
@@ -72,7 +73,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     final userName = ref.watch(userNameProvider);
     final isAuthAsync = ref.watch(isAuthenticatedProvider);
     final isGuest = isAuthAsync.value == false;
-    final displayUserName = isGuest ? 'Explorer' : userName;
+    // One persona everywhere: the profile screen's default is 'Learner',
+    // so the home greeting must not invent a second identity for guests.
+    final displayUserName = userName;
     final reduceVisualEffects = ref.watch(reduceVisualEffectsProvider);
     final categoriesAsync = ref.watch(categoryNotifierProvider);
     // Watch prefetch provider to trigger rebuilds or updates
@@ -104,6 +107,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final isDesktop = ResponsiveLayout.isDesktop(context);
+    final l10n = AppLocalizations.of(context)!;
 
     final mainContent = Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -161,7 +165,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     children: [
                       Expanded(
                         child: Text(
-                          'Sign in to save your progress →',
+                          l10n.guestSignInCta,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -197,7 +201,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'DISCOVER',
+                  l10n.homeDiscover,
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w900,
@@ -215,7 +219,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: Text(
-                    isDesktop ? 'EXPLORE' : 'SWIPE',
+                    isDesktop ? l10n.homeExploreHint : l10n.homeSwipeHint,
                     style: const TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.w900,
@@ -238,7 +242,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               },
               loading: () => _buildSkeletonGrid(isDark),
               error: (e, st) => AppErrorState(
-                message: 'Could not load learning paths',
+                message: l10n.couldNotLoadPaths,
                 onRetry: _onRefresh,
               ),
             ),
@@ -257,40 +261,31 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           : AppColors.lightBackground,
       body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
-        child: Stack(
-          children: [
-            // (1) OfflineStatusBanner - keep as positioned overlay
-            const Positioned(
-              top: 16,
-              left: 16,
-              right: 16,
-              child: OfflineStatusBanner(),
+        child: SafeArea(
+          // Banner lives IN the scroll flow (first child) so it shifts
+          // content down instead of covering the greeting.
+          child: SingleChildScrollView(
+            physics: const AlwaysScrollableScrollPhysics(
+              parent: BouncingScrollPhysics(),
             ),
-
-            SafeArea(
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(
-                  parent: BouncingScrollPhysics(),
-                ),
-                child: RepaintBoundary(
-                  child: ResponsivePageContainer(
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: isDesktop ? 8 : 0,
-                      ),
-                      child: mainContent,
-                    ),
+            child: RepaintBoundary(
+              child: ResponsivePageContainer(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: isDesktop ? 8 : 0),
+                  child: Column(
+                    children: [const OfflineStatusBanner(), mainContent],
                   ),
                 ),
               ),
             ),
-          ],
+          ),
         ),
       ),
     );
   }
 
   Widget _buildHeader({required String userName, required bool isDark}) {
+    final l10n = AppLocalizations.of(context)!;
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -299,7 +294,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                'Johar, $userName!',
+                l10n.joharUser(userName),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(

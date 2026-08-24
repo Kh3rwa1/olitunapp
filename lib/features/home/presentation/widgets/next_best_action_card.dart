@@ -6,6 +6,7 @@ import '../../../../shared/widgets/minimum_tap_target.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
 import '../providers/mission_providers.dart';
+import '../../../../../l10n/generated/app_localizations.dart';
 
 class NextBestActionCard extends ConsumerWidget {
   final String? nextLessonId;
@@ -14,6 +15,7 @@ class NextBestActionCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final l10n = AppLocalizations.of(context)!;
 
     // Watch statistics and learning status
     final statsAsync = ref.watch(userStatsProvider);
@@ -26,7 +28,7 @@ class NextBestActionCard extends ConsumerWidget {
 
     // Determine the state and copy
     String badgeText = 'NEXT';
-    String title = 'Continue learning';
+    String title = l10n.continueLearning;
     String subtitle = 'Choose one small practice step for today.';
     String ctaText = 'Continue';
     VoidCallback onTap = () {};
@@ -45,31 +47,30 @@ class NextBestActionCard extends ConsumerWidget {
         (stats?.numbersProgress ?? 0) >= 1 || completedNumbers;
 
     if (isGuest || !hasCompletedAlphabet) {
-      badgeText = 'START HERE';
-      title = 'Learn your first Ol Chiki letters';
-      subtitle = 'Begin with the basic alphabet and unlock Santali writing.';
-      ctaText = 'Begin Lesson';
+      badgeText = l10n.nbaBadgeStartHere;
+      title = l10n.nbaTitleFirstLetters;
+      subtitle = l10n.nbaSubFirstLetters;
+      ctaText = l10n.nbaCtaBeginLesson;
       icon = Icons.menu_book_rounded;
       color = AppColors.primary;
       onTap = () {
         context.push('/letter/standalone/all');
       };
     } else if (!hasCompletedNumbers) {
-      badgeText = 'NEXT STEP';
-      title = 'Practice Santali numbers';
-      subtitle = 'Build confidence with everyday counting and number words.';
-      ctaText = 'Practice Numbers';
+      badgeText = l10n.nbaBadgeNextStep;
+      title = l10n.nbaTitleNumbers;
+      subtitle = l10n.nbaSubNumbers;
+      ctaText = l10n.nbaCtaPracticeNumbers;
       icon = Icons.pin_rounded;
       color = AppColors.duoBlue;
       onTap = () {
         context.push('/number/standalone/all');
       };
     } else if (mistakes.isNotEmpty) {
-      badgeText = 'PRACTICE NEEDED';
-      title = 'Transform mistakes into wisdom';
-      subtitle =
-          'You have ${mistakes.length} question${mistakes.length > 1 ? "s" : ""} to review and master.';
-      ctaText = 'Review Mistakes';
+      badgeText = l10n.nbaBadgeMistakes;
+      title = l10n.nbaTitleMistakes;
+      subtitle = l10n.nbaSubMistakes(mistakes.length);
+      ctaText = l10n.nbaCtaReviewMistakes;
       icon = Icons.psychology_rounded;
       color = AppColors.duoOrange;
       onTap = () {
@@ -78,23 +79,36 @@ class NextBestActionCard extends ConsumerWidget {
     } else if (streak > 0 &&
         !(ref.watch(lessonCompletedTodayProvider) ||
             ref.watch(quizTakenTodayProvider))) {
-      badgeText = 'STREAK RISK';
-      title = 'Keep your daily momentum';
-      subtitle =
-          'One quick quiz or lesson will secure your $streak day streak today.';
-      ctaText = 'Quick Review';
+      badgeText = l10n.nbaBadgeStreakRisk;
+      title = l10n.nbaTitleStreakRisk;
+      subtitle = l10n.nbaSubStreakRisk(streak);
+      ctaText = l10n.nbaCtaQuickReview;
       icon = Icons.local_fire_department_rounded;
       color = AppColors.duoOrange;
       onTap = () {
         context.push('/quizzes');
       };
     } else if (!ref.watch(bakhedListenedTodayProvider)) {
-      badgeText = 'TRY BAKHED';
-      title = 'Listen to a cultural rhyme';
-      subtitle = 'Immerse yourself in beautiful Santali oral poetry for 30s.';
-      ctaText = 'Listen Now';
+      badgeText = l10n.nbaBadgeTryBakhed;
+      title = l10n.nbaTitleTryBakhed;
+      subtitle = l10n.nbaSubTryBakhed;
+      ctaText = l10n.nbaCtaListenNow;
       icon = Icons.music_note_rounded;
       color = AppColors.duoBlue;
+      onTap = () {
+        context.push('/bakhed');
+      };
+    } else if (nextLessonId == null &&
+        hasCompletedAlphabet &&
+        hasCompletedNumbers) {
+      // Learner has exhausted the current catalogue — celebrate instead of
+      // telling them to start over.
+      badgeText = l10n.nbaBadgeAllDone;
+      title = l10n.nbaTitleAllDone;
+      subtitle = l10n.nbaSubAllDone;
+      ctaText = l10n.nbaCtaExploreBakhed;
+      icon = Icons.celebration_rounded;
+      color = AppColors.duoYellow;
       onTap = () {
         context.push('/bakhed');
       };

@@ -240,6 +240,7 @@ class AppwriteAuthService {
     );
   }
 
+
   // ─── Session Management ───
 
   /// Check if user has an active session

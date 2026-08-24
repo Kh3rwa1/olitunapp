@@ -523,6 +523,7 @@ void main() {
             .millisecondsSinceEpoch;
         SharedPreferences.setMockInitialValues({
           'olitun_has_local_session': true,
+          'olitun_appwrite_session_secret': 'sync_secret',
           'olitun_web_session_ts': validMs,
         });
 
@@ -536,6 +537,7 @@ void main() {
 
         service.restoreWebSessionSync(prefs);
         expect(prefs.getBool('olitun_has_local_session'), isTrue);
+        verify(() => mockClient.setSession('sync_secret')).called(1);
       },
     );
 

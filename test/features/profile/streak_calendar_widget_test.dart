@@ -108,10 +108,7 @@ void main() {
     final now = DateTime.now();
     final todayKey = StreakWeekLogic.dateKey(now);
 
-    final quiz = QuizModel(
-      id: 'quiz_letters',
-      title: 'Letters Quiz',
-    );
+    final quiz = QuizModel(id: 'quiz_letters', title: 'Letters Quiz');
 
     await tester.pumpWidget(
       await wrap(

@@ -31,6 +31,7 @@ class LessonRepositoryImpl implements LessonRepository {
     return f;
   }
 
+<<<<<<< HEAD
   /// Validates remote lesson models before committing them to persistent cache.
   List<LessonModel> _validateRemoteLessons(List<LessonModel> lessons) {
     return lessons.where((m) {
@@ -84,6 +85,14 @@ class LessonRepositoryImpl implements LessonRepository {
           }
         }
         return validLessons;
+=======
+  @override
+  Future<Either<Failure, List<LessonEntity>>> getLessons() async {
+    if (await networkInfo.isConnected) {
+      final List<LessonModel> remoteLessons;
+      try {
+        remoteLessons = await remoteDataSource.getLessons();
+>>>>>>> origin/hardening/release-candidate-10-of-10
       } catch (e, st) {
         if (e is ServerException) {
           _recordedServerFailure(e, st);
@@ -92,6 +101,7 @@ class LessonRepositoryImpl implements LessonRepository {
       } finally {
         _inFlightRefreshes.remove(key);
       }
+<<<<<<< HEAD
     }();
 
     _inFlightRefreshes[key] = future;
@@ -110,6 +120,21 @@ class LessonRepositoryImpl implements LessonRepository {
       }
     } catch (_) {
       // Local cache empty or unreadable; proceed to remote fetch with seed fallback
+=======
+
+      try {
+        await localDataSource.cacheLessons(remoteLessons);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache remote lessons: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(remoteLessons.map((m) => m.toEntity()).toList());
+    } else {
+      return _getCachedLessons('No internet connection');
+>>>>>>> origin/hardening/release-candidate-10-of-10
     }
 
     // 2. Cache was empty -> fetch from remote
@@ -167,16 +192,37 @@ class LessonRepositoryImpl implements LessonRepository {
 
     // 2. Cache was empty for category -> fetch from remote
     if (await networkInfo.isConnected) {
+      final List<LessonModel> remoteLessons;
       try {
+<<<<<<< HEAD
         final remote = await _revalidateLessons(categoryId: categoryId);
         if (remote.isNotEmpty) {
           return Right(remote.map((m) => m.toEntity()).toList());
         }
+=======
+        remoteLessons = await remoteDataSource.getLessonsByCategory(categoryId);
+>>>>>>> origin/hardening/release-candidate-10-of-10
       } catch (e, st) {
         if (e is ServerException) {
           _recordedServerFailure(e, st);
         }
       }
+<<<<<<< HEAD
+=======
+
+      try {
+        await localDataSource.cacheLessons(remoteLessons);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache category lessons: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(remoteLessons.map((m) => m.toEntity()).toList());
+    } else {
+      return _getCachedLessonsByCategory(categoryId, 'No internet connection');
+>>>>>>> origin/hardening/release-candidate-10-of-10
     }
 
     // 3. Fallback to static seed lessons for the category
@@ -290,9 +336,99 @@ class LessonRepositoryImpl implements LessonRepository {
     ),
   ];
 
+<<<<<<< HEAD
   @override
   Future<Either<Failure, LessonEntity>> getLessonById(String id) async {
     // Check local cache first
+=======
+  Future<Either<Failure, List<LessonEntity>>> _getCachedLessons(
+    String originalMessage,
+  ) async {
+    try {
+      final cached = await localDataSource.getLessons();
+      return Right(cached.map((m) => m.toEntity()).toList());
+    } on CacheException {
+      // Fallback to static seed lessons if both remote fetch fails and local cache is empty.
+      return const Right(_staticSeedLessons);
+    }
+  }
+
+  Future<Either<Failure, List<LessonEntity>>> _getCachedLessonsByCategory(
+    String categoryId,
+    String originalMessage,
+  ) async {
+    try {
+      final cached = await localDataSource.getLessons();
+      return Right(
+        cached
+            .where((lesson) {
+              if (categoryId == 'cat_vocab' ||
+                  categoryId == 'cat_words' ||
+                  categoryId == 'seed_words') {
+                return lesson.categoryId == 'cat_vocab' ||
+                    lesson.categoryId == 'cat_words' ||
+                    lesson.categoryId == 'seed_words';
+              }
+              if (categoryId == 'cat_sentences' ||
+                  categoryId == 'seed_sentences') {
+                return lesson.categoryId == 'cat_sentences' ||
+                    lesson.categoryId == 'seed_sentences';
+              }
+              return lesson.categoryId == categoryId;
+            })
+            .map((model) => model.toEntity())
+            .toList(),
+      );
+    } on CacheException {
+      // Fallback to static seed lessons for the specific category if cache is empty.
+      return Right(
+        _staticSeedLessons.where((lesson) {
+          if (categoryId == 'cat_vocab' ||
+              categoryId == 'cat_words' ||
+              categoryId == 'seed_words') {
+            return lesson.categoryId == 'cat_vocab';
+          }
+          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
+            return lesson.categoryId == 'cat_sentences';
+          }
+          return lesson.categoryId == categoryId;
+        }).toList(),
+      );
+    } catch (_) {
+      return const Left(NetworkFailure());
+    }
+  }
+
+  @override
+  Future<Either<Failure, LessonEntity>> getLessonById(String id) async {
+    if (await networkInfo.isConnected) {
+      final LessonModel result;
+      try {
+        result = await remoteDataSource.getLessonById(id);
+      } catch (e, st) {
+        if (e is ServerException) {
+          _recordedServerFailure(e, st);
+        }
+        return _getCachedLessonById(id);
+      }
+
+      try {
+        await localDataSource.cacheLessons([result]);
+      } catch (cacheErr, cacheSt) {
+        CrashReporting.recordFailure(
+          CacheFailure(message: 'Failed to cache lesson by id: $cacheErr'),
+          cacheSt,
+        );
+      }
+
+      return Right(result.toEntity());
+    } else {
+      return _getCachedLessonById(id);
+    }
+  }
+
+  Future<Either<Failure, LessonEntity>> _getCachedLessonById(String id) async {
+>>>>>>> origin/hardening/release-candidate-10-of-10
     try {
       final cached = await localDataSource.getLessons();
       final lesson = cached.firstWhere((l) => l.id == id);

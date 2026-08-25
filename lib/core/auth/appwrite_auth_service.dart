@@ -196,26 +196,16 @@ class AppwriteAuthService {
   }
 
   Future<void> _persistWebSession(String secret) async {
-<<<<<<< HEAD
     final prefs = await _getPrefs();
     await SessionPersistence.persistWebSession(
       client: _client,
       prefs: prefs,
       secret: secret,
       nowProvider: _nowProvider,
-=======
-    _client.setSession(secret);
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_webSessionSecretKey, secret);
-    await prefs.setInt(
-      _webSessionTimestampKey,
-      DateTime.now().millisecondsSinceEpoch,
->>>>>>> origin/hardening/release-candidate-10-of-10
     );
   }
 
   Future<void> _restoreWebSession() async {
-<<<<<<< HEAD
     final prefs = await _getPrefs();
     await SessionPersistence.restoreWebSession(
       client: _client,
@@ -223,33 +213,6 @@ class AppwriteAuthService {
       isWeb: _isWeb,
       nowProvider: _nowProvider,
     );
-=======
-    if (!kIsWeb) return;
-    final prefs = await SharedPreferences.getInstance();
-    final secret = prefs.getString(_webSessionSecretKey);
-    final ts = prefs.getInt(_webSessionTimestampKey);
-
-    if (secret != null && secret.isNotEmpty) {
-      if (ts == null) {
-        AppLogger.debug(
-          'Appwrite: Web session missing timestamp; failing closed and clearing',
-        );
-        await _clearWebSession();
-        return;
-      }
-      final age = DateTime.now().difference(
-        DateTime.fromMillisecondsSinceEpoch(ts),
-      );
-      if (age > _maxWebSessionDuration) {
-        AppLogger.debug(
-          'Appwrite: Web session expired after ${_maxWebSessionDuration.inHours}h; clearing',
-        );
-        await _clearWebSession();
-        return;
-      }
-      _client.setSession(secret);
-    }
->>>>>>> origin/hardening/release-candidate-10-of-10
   }
 
   void restoreWebSessionSync(SharedPreferences prefs) {
@@ -259,7 +222,6 @@ class AppwriteAuthService {
     final hasSession =
         prefs.getBool(SessionPersistence.hasLocalSessionKey) ?? false;
 
-<<<<<<< HEAD
     if (!hasSession || ts == null || !_isWebSessionValid(ts)) {
       AppLogger.debug(
         'Appwrite: Web session timestamp invalid in sync restore; failing closed and clearing',
@@ -268,32 +230,6 @@ class AppwriteAuthService {
       return;
     }
     AppLogger.debug('Appwrite: Web session validated synchronously ✅');
-=======
-    if (secret != null && secret.isNotEmpty) {
-      if (ts == null ||
-          DateTime.now().difference(DateTime.fromMillisecondsSinceEpoch(ts)) >
-              _maxWebSessionDuration) {
-        prefs.remove(_webSessionSecretKey);
-        prefs.remove(_webSessionTimestampKey);
-        try {
-          _client.setSession('');
-        } catch (_) {}
-        return;
-      }
-      _client.setSession(secret);
-      AppLogger.debug('Appwrite: Web session restored synchronously ✅');
-    }
-  }
-
-  Future<void> _clearWebSession() async {
-    if (!kIsWeb) return;
-    try {
-      _client.setSession('');
-    } catch (_) {}
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.remove(_webSessionSecretKey);
-    await prefs.remove(_webSessionTimestampKey);
->>>>>>> origin/hardening/release-candidate-10-of-10
   }
 
   Future<void> _clearLocalSessionState() async {
@@ -303,7 +239,6 @@ class AppwriteAuthService {
       prefs: prefs,
     );
   }
-
 
   // ─── Session Management ───
 
@@ -413,15 +348,10 @@ class AppwriteAuthService {
   Future<void> deleteAccount() async {
     try {
       await _restoreWebSession();
-<<<<<<< HEAD
-=======
-      // Hard-delete the account using our Cloud Function
->>>>>>> origin/hardening/release-candidate-10-of-10
       final execution = await _functions.createExecution(
         functionId: 'delete-account',
       );
 
-<<<<<<< HEAD
       // ignore: invalid_use_of_visible_for_testing_member
       final result = parseAccountDeletionExecution(
         status: execution.status.toString(),
@@ -445,49 +375,6 @@ class AppwriteAuthService {
         );
       }
 
-=======
-      final trimmedBody = execution.responseBody.trim();
-      Map<String, dynamic>? responseData;
-      if (trimmedBody.isNotEmpty) {
-        try {
-          responseData = jsonDecode(trimmedBody) as Map<String, dynamic>;
-        } catch (_) {}
-      }
-
-      final isAuthDeleted = responseData?['authDeleted'] == true;
-
-      // If execution status failed, status code is non-2xx, or server returned ok != true
-      if (execution.status.toString().toLowerCase() == 'failed' ||
-          execution.responseStatusCode < 200 ||
-          execution.responseStatusCode >= 300 ||
-          responseData == null ||
-          responseData['ok'] != true) {
-        // If server confirmed Auth user was deleted before state update error:
-        if (isAuthDeleted) {
-          await _clearLocalSessionState();
-          throw AppwriteException(
-            'Account deleted; final cleanup reconciliation is pending.',
-            execution.responseStatusCode != 0
-                ? execution.responseStatusCode
-                : 500,
-          );
-        }
-
-        final errCode =
-            responseData?['code']?.toString() ??
-            responseData?['message']?.toString() ??
-            'Account deletion failed on server';
-
-        throw AppwriteException(
-          errCode,
-          execution.responseStatusCode != 0
-              ? execution.responseStatusCode
-              : 500,
-        );
-      }
-
-      // Server confirmed full deletion success; clear local session state
->>>>>>> origin/hardening/release-candidate-10-of-10
       await _clearLocalSessionState();
     } on AppwriteException catch (e) {
       AppLogger.error(
@@ -495,7 +382,6 @@ class AppwriteAuthService {
       );
       rethrow;
     } catch (e) {
-<<<<<<< HEAD
       AppLogger.error(
         'Appwrite: deleteAccount unexpected error: ${RedactionHelper.sanitize(e.toString())}',
       );
@@ -503,10 +389,6 @@ class AppwriteAuthService {
         'Account deletion failed: ${RedactionHelper.sanitize(e.toString())}',
         500,
       );
-=======
-      AppLogger.error('Appwrite: deleteAccount unexpected error: $e');
-      throw AppwriteException('Account deletion failed: ${e.toString()}', 500);
->>>>>>> origin/hardening/release-candidate-10-of-10
     }
   }
 

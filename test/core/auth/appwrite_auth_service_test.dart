@@ -535,7 +535,10 @@ void main() {
         );
 
         service.restoreWebSessionSync(prefs);
+        // Hardened model: sync restore validates metadata only — the raw
+        // secret is never re-injected from prefs (cookies hold it on web).
         expect(prefs.getBool('olitun_has_local_session'), isTrue);
+        verifyNever(() => mockClient.setSession('sync_secret'));
       },
     );
 

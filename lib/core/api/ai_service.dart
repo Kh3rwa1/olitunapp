@@ -105,7 +105,9 @@ class AiService {
         r'/functions/([^/]+)/executions',
       ).firstMatch(url);
       if (functions != null && execMatch != null) {
-        return _executeViaSdk(
+        // Await inside try so execution failures surface through the
+        // existing connection-error handling below.
+        return await _executeViaSdk(
           functions!,
           execMatch.group(1)!,
           body,

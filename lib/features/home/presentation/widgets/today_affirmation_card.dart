@@ -45,7 +45,10 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
             _repaintKey.currentContext?.findRenderObject()
                 as RenderRepaintBoundary?;
 
-        if (boundary != null && !boundary.debugNeedsPaint) {
+        // NOTE: never gate on boundary.debugNeedsPaint — it is assert-backed
+        // and THROWS in release/profile builds, silently killing the share
+        // screenshot. toImage() itself is the safe timing check.
+        if (boundary != null) {
           final image = await boundary.toImage(pixelRatio: 2.5);
           final byteData = await image.toByteData(
             format: ui.ImageByteFormat.png,

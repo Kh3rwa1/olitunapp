@@ -2,8 +2,10 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:appwrite/appwrite.dart';
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/config/appwrite_config.dart';
+import '../auth/appwrite_auth_service.dart';
 
 /// Translation API configuration.
 ///
@@ -44,9 +46,15 @@ class AiConfig {
 /// `functions/translator/`. The function wraps Google Translate with
 /// caching + rate limiting (see that directory's README).
 class AiService {
-  AiService({http.Client? client}) : _client = client ?? http.Client();
+  AiService({http.Client? client, this.functions})
+    : _client = client ?? http.Client();
 
   final http.Client _client;
+
+  /// When provided, executions go through the Appwrite SDK so the user's
+  /// session authenticates the call (the function requires `users` execute
+  /// permission). Raw-HTTP fallback remains for web-cookie contexts.
+  final Functions? functions;
 
   Future<TranslateResult?> translate(
     String text, {
@@ -91,6 +99,18 @@ class AiService {
       );
     }
     try {
+      // Preferred path: SDK execution with session auth. The function's
+      // execute permission is ['users'], so bare HTTP can never pass.
+      final execMatch = RegExp(r'/functions/([^/]+)/executions').firstMatch(url);
+      if (functions != null && execMatch != null) {
+        return _executeViaSdk(
+          functions!,
+          execMatch.group(1)!,
+          body,
+          endpointName: endpointName,
+        );
+      }
+
       final requestBody = url.contains('/executions')
           ? jsonEncode({'body': jsonEncode(body), 'async': false})
           : jsonEncode(body);
@@ -156,6 +176,49 @@ class AiService {
   /// In production (release mode), never return null — always surface an
   /// error result so the UI can display a user-facing message.
   /// Only debug mode is lenient (returns null → retryable).
+  Future<TranslateResult?> _executeViaSdk(
+    Functions functions,
+    String functionId,
+    Map<String, dynamic> body, {
+    required String endpointName,
+  }) async {
+    final execution = await functions.createExecution(
+      functionId: functionId,
+      body: jsonEncode(body),
+      xasync: false,
+    );
+
+    final innerStatus = execution.responseStatusCode;
+    if (innerStatus == 429) {
+      AppLogger.debug('AiService: 429 rate-limited on $endpointName');
+      return TranslateResult(
+        translation: 'Rate limit reached. Please try again later.',
+        isError: true,
+      );
+    }
+    if (innerStatus != 200 && innerStatus != 201) {
+      AppLogger.debug(
+        'AiService execution $endpointName HTTP $innerStatus',
+      );
+      return _failClosed('Service error ($innerStatus). Please try again.');
+    }
+
+    final parsed = _unwrapAppwriteExecution(execution.responseBody);
+    if (parsed == null) {
+      return _failClosed('Unexpected response format.');
+    }
+    if (parsed['success'] != true || parsed['data'] == null) {
+      AppLogger.debug('AiService API error: ${parsed['message']}');
+      return _failClosed('${parsed['message'] ?? 'Translation failed.'}');
+    }
+    final d = parsed['data'] as Map<String, dynamic>;
+    return TranslateResult(
+      translation: (d['translation'] as String?) ?? '',
+      detectedLanguage: d['detectedLanguage'] as String?,
+      cached: d['cached'] == true,
+    );
+  }
+
   static TranslateResult _failClosed(String message) {
     return TranslateResult(translation: message, isError: true);
   }
@@ -217,4 +280,7 @@ class TranslateResult {
   });
 }
 
-final aiServiceProvider = Provider((ref) => AiService());
+final aiServiceProvider = Provider((ref) {
+  final auth = ref.watch(appwriteAuthServiceProvider);
+  return AiService(functions: Functions(auth.client));
+});

@@ -101,7 +101,9 @@ class AiService {
     try {
       // Preferred path: SDK execution with session auth. The function's
       // execute permission is ['users'], so bare HTTP can never pass.
-      final execMatch = RegExp(r'/functions/([^/]+)/executions').firstMatch(url);
+      final execMatch = RegExp(
+        r'/functions/([^/]+)/executions',
+      ).firstMatch(url);
       if (functions != null && execMatch != null) {
         return _executeViaSdk(
           functions!,
@@ -197,9 +199,7 @@ class AiService {
       );
     }
     if (innerStatus != 200 && innerStatus != 201) {
-      AppLogger.debug(
-        'AiService execution $endpointName HTTP $innerStatus',
-      );
+      AppLogger.debug('AiService execution $endpointName HTTP $innerStatus');
       return _failClosed('Service error ($innerStatus). Please try again.');
     }
 

@@ -60,11 +60,10 @@ void main() {
       expect(imageFinder, findsOneWidget);
 
       final Image image = tester.widget(imageFinder);
-      expect(image.image, isA<NetworkImage>());
-      expect(
-        (image.image as NetworkImage).url,
-        'https://example.com/cover.png',
-      );
+      // Decode-capped via memCacheWidth -> provider is ResizeImage
+      // (memory/jank optimization for multi-megapixel CMS covers).
+      expect(image.image, isA<ResizeImage>());
+      expect((image.image as ResizeImage).width, 800);
     });
 
     testWidgets(

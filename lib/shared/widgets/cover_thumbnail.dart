@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class CoverThumbnail extends StatefulWidget {
   final ContentMedia? media;
@@ -149,21 +150,21 @@ class _CoverThumbnailState extends State<CoverThumbnail> {
         );
       }
     } else {
-      content = Image.network(
-        media.url,
+      // Cached + decode-capped: CMS covers are often multi-megapixel;
+      // decoding them full-res per card is wasted memory and jank.
+      content = CachedNetworkImage(
+        imageUrl: media.url,
         fit: widget.fit,
-        errorBuilder: (context, error, stackTrace) =>
+        memCacheWidth: 800,
+        errorWidget: (context, url, error) =>
             widget.fallback ?? const Icon(Icons.music_note_rounded),
-        loadingBuilder: (context, child, loadingProgress) {
-          if (loadingProgress == null) return child;
-          return const Center(
-            child: SizedBox(
-              width: 16,
-              height: 16,
-              child: CircularProgressIndicator(strokeWidth: 2),
-            ),
-          );
-        },
+        placeholder: (context, url) => const Center(
+          child: SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
       );
     }
 

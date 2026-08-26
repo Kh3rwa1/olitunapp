@@ -84,6 +84,7 @@ flutter:
   uses-material-design: true
 
   assets:
+    - assets/fonts/
     - assets/images/
     - assets/icons/
     - assets/animations/
@@ -92,6 +93,12 @@ flutter:
 
 
   fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Variable.ttf
+    - family: Fredoka
+      fonts:
+        - asset: assets/fonts/Fredoka-Variable.ttf
     - family: Poppins
       fonts:
         - asset: fonts/Poppins-Regular.ttf

@@ -10,6 +10,7 @@ import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_destructive_dialog.dart';
 import 'controllers/admin_maintenance_controller.dart';
 import 'controllers/admin_settings_controller.dart';
+import 'sections/admin_admob_section.dart';
 import 'sections/admin_badge_names_section.dart';
 import 'sections/admin_danger_zone_section.dart';
 import 'sections/admin_desktop_behavior_section.dart';
@@ -833,6 +834,16 @@ class _AdminSettingsScreenState extends ConsumerState<AdminSettingsScreen> {
                           ],
                         ),
                       ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    // Google AdMob Monetization Section
+                    const AdminSettingsSectionCard(
+                      icon: Icons.ads_click_rounded,
+                      title: 'Google AdMob Monetization',
+                      subtitle:
+                          'Configure banner, interstitial, rewarded, and native ads, frequency caps, and test tools.',
+                      child: AdminAdmobSection(),
                     ),
                     const SizedBox(height: 24),
 

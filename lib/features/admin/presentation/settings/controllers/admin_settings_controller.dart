@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../../core/ads/ad_state.dart';
 import '../../../../../core/api/appwrite_db_service.dart';
 import '../../../../../core/logging/app_logger.dart';
 import '../../../../../core/storage/hive_service.dart';
@@ -28,6 +29,13 @@ class AdminSettingsState {
     this.badgeArcher = 'Santali Archer',
     this.badgeKudum = 'Kudum Master',
     this.badgeKherwal = 'Kherwal Elder',
+    this.isAdsEnabledForFreeTier = true,
+    this.adMobBannerIdOverride = '',
+    this.adMobInterstitialIdOverride = '',
+    this.adMobRewardedIdOverride = '',
+    this.adMobNativeIdOverride = '',
+    this.adMobInterstitialCapMinutes = 3,
+    this.adMobRewardedCooldownMinutes = 10,
     this.savingKey,
     this.failure,
     this.isDirty = false,
@@ -42,6 +50,13 @@ class AdminSettingsState {
   final String badgeArcher;
   final String badgeKudum;
   final String badgeKherwal;
+  final bool isAdsEnabledForFreeTier;
+  final String adMobBannerIdOverride;
+  final String adMobInterstitialIdOverride;
+  final String adMobRewardedIdOverride;
+  final String adMobNativeIdOverride;
+  final int adMobInterstitialCapMinutes;
+  final int adMobRewardedCooldownMinutes;
   final String? savingKey;
   final AdminFailure? failure;
   final bool isDirty;
@@ -62,6 +77,13 @@ class AdminSettingsState {
     String? badgeArcher,
     String? badgeKudum,
     String? badgeKherwal,
+    bool? isAdsEnabledForFreeTier,
+    String? adMobBannerIdOverride,
+    String? adMobInterstitialIdOverride,
+    String? adMobRewardedIdOverride,
+    String? adMobNativeIdOverride,
+    int? adMobInterstitialCapMinutes,
+    int? adMobRewardedCooldownMinutes,
     String? savingKey,
     AdminFailure? failure,
     bool? isDirty,
@@ -79,6 +101,20 @@ class AdminSettingsState {
       badgeArcher: badgeArcher ?? this.badgeArcher,
       badgeKudum: badgeKudum ?? this.badgeKudum,
       badgeKherwal: badgeKherwal ?? this.badgeKherwal,
+      isAdsEnabledForFreeTier:
+          isAdsEnabledForFreeTier ?? this.isAdsEnabledForFreeTier,
+      adMobBannerIdOverride:
+          adMobBannerIdOverride ?? this.adMobBannerIdOverride,
+      adMobInterstitialIdOverride:
+          adMobInterstitialIdOverride ?? this.adMobInterstitialIdOverride,
+      adMobRewardedIdOverride:
+          adMobRewardedIdOverride ?? this.adMobRewardedIdOverride,
+      adMobNativeIdOverride:
+          adMobNativeIdOverride ?? this.adMobNativeIdOverride,
+      adMobInterstitialCapMinutes:
+          adMobInterstitialCapMinutes ?? this.adMobInterstitialCapMinutes,
+      adMobRewardedCooldownMinutes:
+          adMobRewardedCooldownMinutes ?? this.adMobRewardedCooldownMinutes,
       savingKey: clearSavingKey ? null : (savingKey ?? this.savingKey),
       failure: clearFailure ? null : (failure ?? this.failure),
       isDirty: isDirty ?? this.isDirty,
@@ -176,6 +212,20 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
       final kudum = ref.read(badgeTraditionalKudumNameProvider);
       final kherwal = ref.read(badgeTraditionalKherwalNameProvider);
 
+      // Read AdMob settings
+      final isAdsEnabled = settings['admob_enabled_free_tier'] != 'false';
+      final bannerIdOverride = settings['admob_banner_id'] as String? ?? '';
+      final interstitialIdOverride = settings['admob_interstitial_id'] as String? ?? '';
+      final rewardedIdOverride = settings['admob_rewarded_id'] as String? ?? '';
+      final nativeIdOverride = settings['admob_native_id'] as String? ?? '';
+      final interstitialCap = int.tryParse(settings['admob_interstitial_cap_minutes']?.toString() ?? '') ?? 3;
+      final rewardedCooldown = int.tryParse(settings['admob_rewarded_cooldown_minutes']?.toString() ?? '') ?? 10;
+
+      // Sync with global AdState
+      ref.read(adStateProvider.notifier).setGlobalAdsEnabled(isAdsEnabled);
+      ref.read(adStateProvider.notifier).setInterstitialIntervalMinutes(interstitialCap);
+      ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(rewardedCooldown);
+
       final nextState = AdminSettingsState(
         status: AdminSettingsStatus.loaded,
         onboardingVideoUrl: settings['onboarding_video_url'] as String?,
@@ -186,6 +236,13 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         badgeArcher: archer,
         badgeKudum: kudum,
         badgeKherwal: kherwal,
+        isAdsEnabledForFreeTier: isAdsEnabled,
+        adMobBannerIdOverride: bannerIdOverride,
+        adMobInterstitialIdOverride: interstitialIdOverride,
+        adMobRewardedIdOverride: rewardedIdOverride,
+        adMobNativeIdOverride: nativeIdOverride,
+        adMobInterstitialCapMinutes: interstitialCap,
+        adMobRewardedCooldownMinutes: rewardedCooldown,
       );
 
       if (seq != _loadSeq) return;
@@ -266,6 +323,26 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
         );
       } else if (key == 'razorpay_key_id') {
         updated = updated.copyWith(razorpayKeyId: value);
+      } else if (key == 'admob_enabled_free_tier') {
+        final enabled = value.toLowerCase() != 'false';
+        updated = updated.copyWith(isAdsEnabledForFreeTier: enabled);
+        ref.read(adStateProvider.notifier).setGlobalAdsEnabled(enabled);
+      } else if (key == 'admob_banner_id') {
+        updated = updated.copyWith(adMobBannerIdOverride: value);
+      } else if (key == 'admob_interstitial_id') {
+        updated = updated.copyWith(adMobInterstitialIdOverride: value);
+      } else if (key == 'admob_rewarded_id') {
+        updated = updated.copyWith(adMobRewardedIdOverride: value);
+      } else if (key == 'admob_native_id') {
+        updated = updated.copyWith(adMobNativeIdOverride: value);
+      } else if (key == 'admob_interstitial_cap_minutes') {
+        final cap = int.tryParse(value) ?? 3;
+        updated = updated.copyWith(adMobInterstitialCapMinutes: cap);
+        ref.read(adStateProvider.notifier).setInterstitialIntervalMinutes(cap);
+      } else if (key == 'admob_rewarded_cooldown_minutes') {
+        final cd = int.tryParse(value) ?? 10;
+        updated = updated.copyWith(adMobRewardedCooldownMinutes: cd);
+        ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(cd);
       }
 
       state = updated.copyWith(lastConfirmedState: updated);

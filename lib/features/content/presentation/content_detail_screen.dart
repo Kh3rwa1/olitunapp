@@ -22,6 +22,7 @@ import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/features/practice/presentation/widgets/typing_practice_panel.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
+import 'package:itun/core/ads/interstitial_ad_manager.dart';
 
 import 'widgets/inline_media_players.dart';
 import 'widgets/premium_bakhed_body.dart';
@@ -676,7 +677,14 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       _isFinished = true;
     });
 
-    // 5. Show premium celebration sheet with a quiz CTA when available.
+    // 5. Trigger interstitial ad if allowed (free tier, frequency cap checked)
+    unawaited(
+      ref
+          .read(interstitialAdManagerProvider)
+          .showIfAllowed(context, 'lesson_complete'),
+    );
+
+    // 6. Show premium celebration sheet with a quiz CTA when available.
     _showCompletionSheet(context, item, recommendation: recommendation);
   }
 

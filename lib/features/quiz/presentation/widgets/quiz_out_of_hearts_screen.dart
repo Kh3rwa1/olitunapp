@@ -6,6 +6,7 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import '../providers/quiz_session_notifier.dart';
+import '../../../../core/ads/rewarded_ad_manager.dart';
 
 class QuizOutOfHeartsScreen extends ConsumerWidget {
   final int score;
@@ -297,6 +298,70 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
               const Spacer(),
+
+              // Rewarded ad to refill hearts
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: OutlinedButton.icon(
+                  onPressed: () async {
+                    final rewarded = ref.read(rewardedAdManagerProvider);
+                    final shown = await rewarded.show(
+                      context: context,
+                      placement: 'quiz_out_of_hearts',
+                      rewardType: RewardType.hearts,
+                      amount: 3,
+                      onRewardGranted: () {
+                        ref
+                            .read(quizSessionNotifierProvider(quizId).notifier)
+                            .reset();
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: const Text('Hearts Refilled! ❤️❤️❤️'),
+                            backgroundColor: AppColors.success,
+                            behavior: SnackBarBehavior.floating,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                    if (!shown && context.mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: const Text(
+                            'Rewarded ad is cooling down. Please try regular reset.',
+                          ),
+                          behavior: SnackBarBehavior.floating,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                      );
+                    }
+                  },
+                  icon: const Icon(Icons.favorite_rounded, color: AppColors.error),
+                  label: const Text(
+                    'Watch Ad to Refill Hearts (Free)',
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.error,
+                    ),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    side: BorderSide(
+                      color: AppColors.error.withValues(alpha: 0.5),
+                      width: 1.5,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                ),
+              ).animate().fadeIn(delay: 300.ms).scale(),
+              const SizedBox(height: 12),
 
               // Try again CTA
               SizedBox(

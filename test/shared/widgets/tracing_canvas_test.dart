@@ -24,6 +24,9 @@ class MockAnalyticsService implements LearningAnalyticsService {
 
   @override
   Future<void> flushPending() async {}
+
+  @override
+  Future<void> logAdEvent(AdEvent event) async {}
 }
 
 void main() {

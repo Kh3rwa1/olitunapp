@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
@@ -11,6 +12,8 @@ import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import 'mistake_review_card.dart';
+import '../../../../core/ads/interstitial_ad_manager.dart';
+import '../../../../core/ads/rewarded_ad_manager.dart';
 
 bool get _isTesting {
   try {
@@ -565,28 +568,118 @@ class QuizCompleteScreen extends ConsumerWidget {
                 ),
                 Padding(
                   padding: const EdgeInsets.fromLTRB(24, 8, 24, 20),
-                  child: SizedBox(
-                    width: double.infinity,
-                    height: 54,
-                    child: ElevatedButton(
-                      onPressed: () => context.go('/'),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.white,
-                        elevation: 0,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Rewarded Bonus Stars Action
+                      Consumer(
+                        builder: (context, ref, _) {
+                          return Padding(
+                            padding: const EdgeInsets.only(bottom: 12),
+                            child: SizedBox(
+                              width: double.infinity,
+                              height: 48,
+                              child: OutlinedButton.icon(
+                                onPressed: () async {
+                                  final rewarded = ref.read(
+                                    rewardedAdManagerProvider,
+                                  );
+                                  final shown = await rewarded.show(
+                                    context: context,
+                                    placement: 'quiz_reward_bonus_stars',
+                                    rewardType: RewardType.stars,
+                                    amount: 50,
+                                    onRewardGranted: () {
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: const Text(
+                                            'Bonus 50 Stars Earned! ⭐',
+                                          ),
+                                          backgroundColor: AppColors.success,
+                                          behavior: SnackBarBehavior.floating,
+                                          shape: RoundedRectangleBorder(
+                                            borderRadius: BorderRadius.circular(
+                                              12,
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    },
+                                  );
+                                  if (!shown && context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: const Text(
+                                          'Rewarded ad is cooling down. Try again later.',
+                                        ),
+                                        behavior: SnackBarBehavior.floating,
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(
+                                            12,
+                                          ),
+                                        ),
+                                      ),
+                                    );
+                                  }
+                                },
+                                icon: const Icon(
+                                  Icons.stars_rounded,
+                                  color: AppColors.duoYellowDark,
+                                ),
+                                label: const Text(
+                                  'Watch Ad for +50 Bonus Stars',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.duoYellowDark,
+                                  ),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: AppColors.duoYellow,
+                                    width: 1.5,
+                                  ),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(16),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(
+                        width: double.infinity,
+                        height: 54,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            unawaited(
+                              ref
+                                  .read(interstitialAdManagerProvider)
+                                  .showIfAllowed(context, 'quiz_complete'),
+                            );
+                            context.go('/');
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.white,
+                            elevation: 0,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          child: Text(
+                            AppLocalizations.of(context)!.continueButton,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
                         ),
                       ),
-                      child: Text(
-                        AppLocalizations.of(context)!.continueButton,
-                        style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ).animate().fadeIn(delay: 500.ms),
               ],

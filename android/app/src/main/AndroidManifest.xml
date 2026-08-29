@@ -37,6 +37,10 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- Google AdMob App ID -->
+        <meta-data
+            android:name="com.google.android.gms.ads.APPLICATION_ID"
+            android:value="ca-app-pub-7288061764998409~8819895924"/>
         <!-- Appwrite OAuth2 Callback Activity -->
         <activity
             android:name="com.linusu.flutter_web_auth_2.CallbackActivity"

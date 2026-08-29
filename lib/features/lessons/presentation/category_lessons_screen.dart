@@ -14,6 +14,7 @@ import '../../../shared/providers/purchases_provider.dart';
 import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -274,6 +275,9 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      bottomNavigationBar: const BannerAdWidget(
+        placement: 'category_lessons_bottom',
+      ),
       body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
         child: CustomScrollView(

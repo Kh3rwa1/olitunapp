@@ -9,6 +9,8 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
 import '../../../core/widgets/shimmer_loading.dart';
 import '../../../core/motion/motion.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 class LessonsScreen extends ConsumerStatefulWidget {
   const LessonsScreen({super.key});
@@ -34,6 +36,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      bottomNavigationBar: const BannerAdWidget(placement: 'lessons_bottom'),
       body: SafeArea(
         child: categories.when(
           data: (data) => BrandedRefreshIndicator(
@@ -134,6 +137,10 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                         ),
                       ),
 
+                    const SizedBox(height: 16),
+                    const RepaintBoundary(
+                      child: NativeAdWidget(placement: 'lessons_native'),
+                    ),
                     const SizedBox(height: 24),
 
                     // --- Bento Grid of Remaining Categories ---

@@ -10,6 +10,8 @@ import '../../../shared/providers/providers.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/widgets/bento_grid.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 class QuizListScreen extends ConsumerWidget {
   const QuizListScreen({super.key});
@@ -25,6 +27,7 @@ class QuizListScreen extends ConsumerWidget {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      bottomNavigationBar: const BannerAdWidget(placement: 'quiz_list_bottom'),
       body: SafeArea(
         child: Column(
           children: [
@@ -92,7 +95,13 @@ class QuizListScreen extends ConsumerWidget {
                             ),
 
                           if (activeQuizzes.length > 1) ...[
-                            const SizedBox(height: 28),
+                            const SizedBox(height: 16),
+                            const RepaintBoundary(
+                              child: NativeAdWidget(
+                                placement: 'quiz_list_native',
+                              ),
+                            ),
+                            const SizedBox(height: 24),
 
                             Text(
                                   'MORE QUIZZES',

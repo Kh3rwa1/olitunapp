@@ -19,6 +19,9 @@ import 'widgets/full_bleed_hero_media.dart';
 import '../../practice/presentation/widgets/typing_practice_panel.dart';
 import '../../practice/presentation/providers/typing_practice_controller.dart';
 import '../../practice/data/typing_practice_settings.dart';
+import '../../../core/ads/interstitial_ad_manager.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 import 'widgets/lesson_block_widgets.dart';
 
@@ -211,6 +214,9 @@ class _LessonBlockDetailScreenState
               );
 
         return Scaffold(
+          bottomNavigationBar: const BannerAdWidget(
+            placement: 'lesson_block_bottom',
+          ),
           body: AnimatedContainer(
             duration: const Duration(milliseconds: 500),
             curve: Curves.easeInOut,
@@ -480,7 +486,18 @@ class _LessonBlockDetailScreenState
             icon: backIcon ?? Icons.arrow_back_rounded,
             onPressed:
                 onBackPressed ??
-                () => context.canPop() ? context.pop() : context.go('/'),
+                () async {
+                  await ref
+                      .read(interstitialAdManagerProvider)
+                      .showIfAllowed(context, 'lesson_complete');
+                  if (context.mounted) {
+                    if (context.canPop()) {
+                      context.pop();
+                    } else {
+                      context.go('/');
+                    }
+                  }
+                },
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -1444,8 +1461,17 @@ class _LessonBlockDetailScreenState
                               ),
                             ),
                           ],
+                          const SizedBox(height: 24),
+                          const Padding(
+                            padding: EdgeInsets.symmetric(horizontal: 20),
+                            child: RepaintBoundary(
+                              child: NativeAdWidget(
+                                placement: 'lesson_block_native',
+                              ),
+                            ),
+                          ),
                           const SizedBox(
-                            height: 120,
+                            height: 100,
                           ), // elegant bottom padding for unified scroll spacing
                         ],
                       ),

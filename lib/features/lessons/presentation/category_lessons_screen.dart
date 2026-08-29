@@ -15,6 +15,7 @@ import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 class CategoryLessonsScreen extends ConsumerStatefulWidget {
   final String categoryId;
@@ -576,32 +577,55 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                               },
                       );
 
-                      return _buildTimelineItem(
-                            card: cardWidget,
-                            index: index,
-                            isFirst: index == 0,
-                            isLast: index == totalCount - 1,
-                            isDark: isDark,
-                            isLocked: isLocked,
-                            themeColor: themeColor,
-                            gradient: brandGradient,
-                            stepNodeChild: Text(
-                              '${lessonIndex + 1}',
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.w900,
-                                color: Colors.white,
+                      final timelineItem =
+                          _buildTimelineItem(
+                                card: cardWidget,
+                                index: index,
+                                isFirst: index == 0,
+                                isLast: index == totalCount - 1,
+                                isDark: isDark,
+                                isLocked: isLocked,
+                                themeColor: themeColor,
+                                gradient: brandGradient,
+                                stepNodeChild: Text(
+                                  '${lessonIndex + 1}',
+                                  style: const TextStyle(
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w900,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              )
+                              .animate()
+                              .fadeIn(delay: (index * 80).ms, duration: 400.ms)
+                              .slideY(
+                                begin: 0.08,
+                                end: 0,
+                                curve: MotionTokens.emphasized,
+                                duration: 450.ms,
+                              );
+
+                      if ((lessonIndex + 1) % 2 == 0 &&
+                          lessonIndex < data.length - 1) {
+                        return Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            timelineItem,
+                            const SizedBox(height: 16),
+                            const Padding(
+                              padding: EdgeInsets.only(left: 48, right: 8),
+                              child: RepaintBoundary(
+                                child: NativeAdWidget(
+                                  placement: 'category_lessons_inline',
+                                ),
                               ),
                             ),
-                          )
-                          .animate()
-                          .fadeIn(delay: (index * 80).ms, duration: 400.ms)
-                          .slideY(
-                            begin: 0.08,
-                            end: 0,
-                            curve: MotionTokens.emphasized,
-                            duration: 450.ms,
-                          );
+                            const SizedBox(height: 16),
+                          ],
+                        );
+                      }
+
+                      return timelineItem;
                     }, childCount: totalCount),
                   ),
                 );

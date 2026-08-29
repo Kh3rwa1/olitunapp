@@ -9,6 +9,7 @@ import '../../../../core/api/ai_service.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../shared/widgets/animated_buttons.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
+import '../../../../core/ads/widgets/native_ad_widget.dart';
 
 class AiTranslatorScreen extends ConsumerStatefulWidget {
   const AiTranslatorScreen({super.key});
@@ -243,7 +244,10 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                       begin: const Offset(0.95, 0.95),
                       curve: Curves.easeOutBack,
                     ),
-
+                  const SizedBox(height: 20),
+                  const RepaintBoundary(
+                    child: NativeAdWidget(placement: 'translator_native'),
+                  ),
                   const SizedBox(height: 100),
                 ],
               ),

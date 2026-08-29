@@ -22,6 +22,8 @@ import 'widgets/bento_rhyme_card.dart';
 import 'widgets/enchanted_visualizer.dart';
 import 'widgets/binti_guru_landing.dart';
 import '../domain/rhyme_catalog.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class RhymeScreen extends ConsumerStatefulWidget {
   const RhymeScreen({super.key});
@@ -104,6 +106,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
 
     return Scaffold(
       backgroundColor: Colors.transparent,
+      bottomNavigationBar: const BannerAdWidget(placement: 'rhymes_bottom'),
       body: Stack(
         children: [
           WhimsicalBackground(
@@ -146,7 +149,20 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       // --- Featured Card ---
                       _buildFeaturedSection(rhymesAsync, isTablet),
 
-                      const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
+
+                      SliverToBoxAdapter(
+                        child: Padding(
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isTablet ? 32 : 24,
+                          ),
+                          child: const RepaintBoundary(
+                            child: NativeAdWidget(placement: 'rhymes_native'),
+                          ),
+                        ),
+                      ),
+
+                      const SliverToBoxAdapter(child: SizedBox(height: 24)),
 
                       // --- Section Title ---
                       SliverToBoxAdapter(

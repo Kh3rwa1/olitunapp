@@ -12,6 +12,8 @@ import '../../../shared/providers/local_settings_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'widgets/settings_widgets.dart';
 import '../../practice/data/typing_practice_settings.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -118,6 +120,7 @@ class SettingsScreen extends ConsumerWidget {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      bottomNavigationBar: const BannerAdWidget(placement: 'settings_bottom'),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -407,6 +410,10 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _buildLegalCard(context, isDark, 4),
+        const SizedBox(height: 16),
+        const RepaintBoundary(
+          child: NativeAdWidget(placement: 'settings_native'),
+        ),
         const SizedBox(height: 16),
         SettingsCard(
           title: AppLocalizations.of(context)!.dangerZone,

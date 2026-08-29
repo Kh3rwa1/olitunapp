@@ -23,6 +23,8 @@ import 'package:itun/features/practice/presentation/widgets/typing_practice_pane
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/core/ads/interstitial_ad_manager.dart';
+import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
+import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 
 import 'widgets/inline_media_players.dart';
 import 'widgets/premium_bakhed_body.dart';
@@ -197,55 +199,80 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       );
     }
 
-    return Stack(
-      children: [
-        CustomScrollView(
-          physics: const BouncingScrollPhysics(),
-          slivers: [
-            // Sliver Header
-            SliverToBoxAdapter(
-              child: ContentHero(
-                item: item,
-                accentColor: accentColor,
-                onBackPressed: () => Navigator.maybePop(context),
+    return Scaffold(
+      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      bottomNavigationBar: const BannerAdWidget(
+        placement: 'content_detail_bottom',
+      ),
+      body: Stack(
+        children: [
+          CustomScrollView(
+            physics: const BouncingScrollPhysics(),
+            slivers: [
+              // Sliver Header
+              SliverToBoxAdapter(
+                child: ContentHero(
+                  item: item,
+                  accentColor: accentColor,
+                  onBackPressed: () => Navigator.maybePop(context),
+                ),
               ),
-            ),
 
-            // Blocks list
-            SliverPadding(
-              padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
-              sliver: SliverList(
-                delegate: SliverChildBuilderDelegate((context, index) {
-                  final block = blocks[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 24.0),
-                    child: _buildBlockRenderer(
-                      context,
-                      block,
-                      accentColor,
-                      isDark,
-                    ),
-                  );
-                }, childCount: blocks.length),
+              // Blocks list
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(20, 24, 20, 100),
+                sliver: SliverList(
+                  delegate: SliverChildBuilderDelegate((context, index) {
+                    final block = blocks[index];
+                    final blockWidget = Padding(
+                      padding: const EdgeInsets.only(bottom: 24.0),
+                      child: _buildBlockRenderer(
+                        context,
+                        block,
+                        accentColor,
+                        isDark,
+                      ),
+                    );
+
+                    if (index == 1 && blocks.length > 2) {
+                      return Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          blockWidget,
+                          const Padding(
+                            padding: EdgeInsets.only(bottom: 24.0),
+                            child: RepaintBoundary(
+                              child: NativeAdWidget(
+                                placement: 'content_detail_inline',
+                              ),
+                            ),
+                          ),
+                        ],
+                      );
+                    }
+
+                    return blockWidget;
+                  }, childCount: blocks.length),
+                ),
               ),
-            ),
-          ],
-        ),
-
-        // Bottom progress footer
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: _buildFooter(context, item, accentColor, isDark),
-        ),
-
-        // Completion celebration overlay
-        if (_isFinished)
-          const Positioned.fill(
-            child: AbsorbPointer(child: ConfettiBurst(particleCount: 70)),
+            ],
           ),
-      ],
+
+          // Bottom progress footer
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: _buildFooter(context, item, accentColor, isDark),
+          ),
+
+          // Completion celebration overlay
+          if (_isFinished)
+            const Positioned.fill(
+              child: AbsorbPointer(child: ConfettiBurst(particleCount: 70)),
+            ),
+        ],
+      ),
     );
   }
 

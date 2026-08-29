@@ -11,6 +11,7 @@ import '../../../../shared/providers/providers.dart';
 import 'stroke_order_view.dart';
 import 'practice_guide.dart';
 import 'tracing_view.dart';
+import '../../../../core/ads/widgets/banner_ad_widget.dart';
 
 class PracticeScreen extends ConsumerStatefulWidget {
   final String letterChar;
@@ -130,6 +131,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
+      bottomNavigationBar: const BannerAdWidget(placement: 'practice_bottom'),
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark

@@ -16,6 +16,37 @@ typedef AnalyticsRemoteWriter =
     Future<void> Function(String eventId, Map<String, dynamic> payload);
 typedef AnalyticsUserIdProvider = Future<String?> Function();
 
+enum AdEventType { impression, click, reward, error, loadFail, dismissed }
+
+class AdEvent {
+  final AdEventType type;
+  final String adFormat; // banner, interstitial, rewarded, native
+  final String
+  placement; // home_bottom, lesson_complete, quiz_reward, category_list
+  final String? errorCode;
+  final int? rewardAmount;
+  final String? rewardType; // stars, quiz_attempt, hearts
+
+  const AdEvent({
+    required this.type,
+    required this.adFormat,
+    required this.placement,
+    this.errorCode,
+    this.rewardAmount,
+    this.rewardType,
+  });
+
+  Map<String, dynamic> toMap() {
+    return {
+      'adFormat': adFormat,
+      'placement': placement,
+      if (errorCode != null) 'errorCode': errorCode,
+      if (rewardAmount != null) 'rewardAmount': rewardAmount,
+      if (rewardType != null) 'rewardType': rewardType,
+    };
+  }
+}
+
 class LearningAnalyticsEvents {
   const LearningAnalyticsEvents._();
 
@@ -29,6 +60,14 @@ class LearningAnalyticsEvents {
   static const dailyMissionCompleted = 'daily_mission_completed';
   static const letterPracticed = 'letter_practiced';
   static const practiceCompleted = 'practice_completed';
+
+  // Ad events
+  static const adImpression = 'ad_impression';
+  static const adClick = 'ad_click';
+  static const adRewardGranted = 'ad_reward_granted';
+  static const adError = 'ad_error';
+  static const adLoadFail = 'ad_load_fail';
+  static const adDismissed = 'ad_dismissed';
 }
 
 class LearningAnalyticsService {
@@ -116,6 +155,25 @@ class LearningAnalyticsService {
     }..removeWhere((_, value) => value == null);
 
     await _writeOrQueue(eventId, payload);
+  }
+
+  /// Log AdMob monetization lifecycle and interaction event.
+  Future<void> logAdEvent(AdEvent event) async {
+    final eventName = switch (event.type) {
+      AdEventType.impression => LearningAnalyticsEvents.adImpression,
+      AdEventType.click => LearningAnalyticsEvents.adClick,
+      AdEventType.reward => LearningAnalyticsEvents.adRewardGranted,
+      AdEventType.error => LearningAnalyticsEvents.adError,
+      AdEventType.loadFail => LearningAnalyticsEvents.adLoadFail,
+      AdEventType.dismissed => LearningAnalyticsEvents.adDismissed,
+    };
+
+    await track(
+      eventName,
+      source: 'admob',
+      sourceId: '${event.adFormat}_${event.placement}',
+      metadata: event.toMap(),
+    );
   }
 
   Future<void> flushPending() => _synchronized(() async {

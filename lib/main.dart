@@ -17,6 +17,8 @@ import 'core/theme/app_theme.dart';
 import 'core/network/secure_http_overrides.dart';
 import 'shared/providers/local_settings_provider.dart';
 import 'l10n/generated/app_localizations.dart';
+import 'core/ads/ad_service.dart';
+import 'core/ads/consent_manager.dart';
 import 'features/home/presentation/providers/daily_missions_observer.dart';
 
 @visibleForTesting
@@ -84,6 +86,14 @@ Future<void> main() async {
           );
         } catch (e) {
           AppLogger.debug('Non-essential JustAudioBackground init failed: $e');
+        }
+
+        // Initialize Google AdMob & UMP GDPR consent flow
+        try {
+          final consentManager = ConsentManager(prefs);
+          await AdService.instance.initialize(consentManager: consentManager);
+        } catch (e) {
+          AppLogger.debug('Non-essential AdService init failed: $e');
         }
 
         // All Google Fonts families (Inter, Fredoka, Poppins) are bundled in

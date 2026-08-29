@@ -16,6 +16,7 @@ import 'widgets/today_mission_card.dart';
 import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -135,7 +136,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   RepaintBoundary(
                     child: NextBestActionCard(nextLessonId: nextLesson?.id),
                   ),
-                  const SizedBox(height: 24),
+                  const SizedBox(height: 16),
+                  const RepaintBoundary(
+                    child: NativeAdWidget(
+                      placement: 'home_native',
+                      height: 120,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
                   const RepaintBoundary(child: TodayMissionCard()),
                 ],
               ),

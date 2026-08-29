@@ -21,7 +21,8 @@ enum AdEventType { impression, click, reward, error, loadFail, dismissed }
 class AdEvent {
   final AdEventType type;
   final String adFormat; // banner, interstitial, rewarded, native
-  final String placement; // home_bottom, lesson_complete, quiz_reward, category_list
+  final String
+  placement; // home_bottom, lesson_complete, quiz_reward, category_list
   final String? errorCode;
   final int? rewardAmount;
   final String? rewardType; // stars, quiz_attempt, hearts

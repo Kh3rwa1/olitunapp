@@ -341,7 +341,10 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                       );
                     }
                   },
-                  icon: const Icon(Icons.favorite_rounded, color: AppColors.error),
+                  icon: const Icon(
+                    Icons.favorite_rounded,
+                    color: AppColors.error,
+                  ),
                   label: const Text(
                     'Watch Ad to Refill Hearts (Free)',
                     style: TextStyle(

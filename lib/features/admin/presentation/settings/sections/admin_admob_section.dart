@@ -26,14 +26,18 @@ class _AdminAdmobSectionState extends ConsumerState<AdminAdmobSection> {
   void initState() {
     super.initState();
     final state = ref.read(adminSettingsControllerProvider);
-    _bannerController =
-        TextEditingController(text: state.adMobBannerIdOverride);
-    _interstitialController =
-        TextEditingController(text: state.adMobInterstitialIdOverride);
-    _rewardedController =
-        TextEditingController(text: state.adMobRewardedIdOverride);
-    _nativeController =
-        TextEditingController(text: state.adMobNativeIdOverride);
+    _bannerController = TextEditingController(
+      text: state.adMobBannerIdOverride,
+    );
+    _interstitialController = TextEditingController(
+      text: state.adMobInterstitialIdOverride,
+    );
+    _rewardedController = TextEditingController(
+      text: state.adMobRewardedIdOverride,
+    );
+    _nativeController = TextEditingController(
+      text: state.adMobNativeIdOverride,
+    );
   }
 
   @override

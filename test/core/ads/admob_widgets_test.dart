@@ -18,7 +18,9 @@ void main() {
   });
 
   group('AdMob Widgets Headless Tests', () {
-    testWidgets('BannerAdWidget renders empty box when Ad-Free', (tester) async {
+    testWidgets('BannerAdWidget renders empty box when Ad-Free', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -28,9 +30,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: BannerAdWidget(placement: 'test_placement'),
-            ),
+            home: Scaffold(body: BannerAdWidget(placement: 'test_placement')),
           ),
         ),
       );
@@ -40,7 +40,9 @@ void main() {
       expect(find.byType(SizedBox), findsWidgets);
     });
 
-    testWidgets('NativeAdWidget renders empty box when Ad-Free', (tester) async {
+    testWidgets('NativeAdWidget renders empty box when Ad-Free', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -50,9 +52,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: NativeAdWidget(placement: 'test_placement'),
-            ),
+            home: Scaffold(body: NativeAdWidget(placement: 'test_placement')),
           ),
         ),
       );

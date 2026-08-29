@@ -131,9 +131,7 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
 
     return Scaffold(
       extendBodyBehindAppBar: true,
-      bottomNavigationBar: const BannerAdWidget(
-        placement: 'practice_bottom',
-      ),
+      bottomNavigationBar: const BannerAdWidget(placement: 'practice_bottom'),
       body: Container(
         decoration: BoxDecoration(
           gradient: isDark

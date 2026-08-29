@@ -30,9 +30,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: BannerAdWidget(placement: 'integration_test'),
-            ),
+            home: Scaffold(body: BannerAdWidget(placement: 'integration_test')),
           ),
         ),
       );
@@ -53,9 +51,7 @@ void main() {
             ),
           ],
           child: const MaterialApp(
-            home: Scaffold(
-              body: NativeAdWidget(placement: 'integration_test'),
-            ),
+            home: Scaffold(body: NativeAdWidget(placement: 'integration_test')),
           ),
         ),
       );
@@ -67,9 +63,7 @@ void main() {
     testWidgets('Rewarded ad flow delivers rewards properly', (tester) async {
       await tester.pumpWidget(
         ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-          ],
+          overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
           child: const MaterialApp(
             home: Scaffold(
               body: Center(child: Text('Olitun Monetization Test')),

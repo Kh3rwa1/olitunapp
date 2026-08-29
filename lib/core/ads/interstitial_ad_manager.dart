@@ -30,13 +30,17 @@ class InterstitialAdManager {
     _isLoading = false;
     result.fold(
       (error) {
-        AppLogger.debug('InterstitialAdManager: Preload failed: ${error.message}');
+        AppLogger.debug(
+          'InterstitialAdManager: Preload failed: ${error.message}',
+        );
         _ref.read(adStateProvider.notifier).recordError('interstitial');
       },
       (ad) {
         _interstitialAd = ad;
         _ref.read(adStateProvider.notifier).resetErrors('interstitial');
-        AppLogger.debug('InterstitialAdManager: Interstitial ad preloaded successfully');
+        AppLogger.debug(
+          'InterstitialAdManager: Interstitial ad preloaded successfully',
+        );
       },
     );
   }
@@ -46,25 +50,33 @@ class InterstitialAdManager {
     final adState = _ref.read(adStateProvider);
 
     if (!adState.shouldShowAds) {
-      AppLogger.debug('InterstitialAdManager: Suppressed ($trigger) - User is ad-free or ads disabled');
+      AppLogger.debug(
+        'InterstitialAdManager: Suppressed ($trigger) - User is ad-free or ads disabled',
+      );
       return false;
     }
 
     // Special trigger constraint: Category switch is limited to max once per app session
     if (trigger == 'category_switch') {
       if (_isCategorySwitchAdShownThisSession) {
-        AppLogger.debug('InterstitialAdManager: Suppressed (category_switch already shown this session)');
+        AppLogger.debug(
+          'InterstitialAdManager: Suppressed (category_switch already shown this session)',
+        );
         return false;
       }
     }
 
     if (!adState.canShowInterstitial()) {
-      AppLogger.debug('InterstitialAdManager: Suppressed ($trigger) - Frequency cap active');
+      AppLogger.debug(
+        'InterstitialAdManager: Suppressed ($trigger) - Frequency cap active',
+      );
       return false;
     }
 
     if (_interstitialAd == null) {
-      AppLogger.debug('InterstitialAdManager: Ad not ready for trigger: $trigger');
+      AppLogger.debug(
+        'InterstitialAdManager: Ad not ready for trigger: $trigger',
+      );
       unawaited(preload());
       return false;
     }
@@ -76,13 +88,17 @@ class InterstitialAdManager {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
         AppLogger.debug('InterstitialAdManager: Ad showed ($trigger)');
-        _ref.read(adStateProvider.notifier).recordImpression('interstitial', trigger);
+        _ref
+            .read(adStateProvider.notifier)
+            .recordImpression('interstitial', trigger);
         if (trigger == 'category_switch') {
           _isCategorySwitchAdShownThisSession = true;
         }
 
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.impression,
                   adFormat: 'interstitial',
@@ -95,7 +111,9 @@ class InterstitialAdManager {
         AppLogger.debug('InterstitialAdManager: Ad dismissed ($trigger)');
         ad.dispose();
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.dismissed,
                   adFormat: 'interstitial',
@@ -113,7 +131,9 @@ class InterstitialAdManager {
         );
         ad.dispose();
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.error,
                   adFormat: 'interstitial',
@@ -127,7 +147,9 @@ class InterstitialAdManager {
       },
       onAdClicked: (ad) {
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.click,
                   adFormat: 'interstitial',

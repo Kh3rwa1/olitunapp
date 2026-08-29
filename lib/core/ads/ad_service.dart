@@ -15,8 +15,7 @@ class AdService with WidgetsBindingObserver {
   static final AdService instance = AdService._();
 
   ConsentManager? _consentManager;
-  ConsentManager get consentManager =>
-      _consentManager ??= ConsentManager();
+  ConsentManager get consentManager => _consentManager ??= ConsentManager();
 
   bool _isInitialized = false;
   bool get isInitialized => _isInitialized;
@@ -26,7 +25,9 @@ class AdService with WidgetsBindingObserver {
   final Set<Ad> _activeAds = {};
 
   /// Initialize MobileAds SDK and configuration safely.
-  Future<Either<AdError, bool>> initialize({ConsentManager? consentManager}) async {
+  Future<Either<AdError, bool>> initialize({
+    ConsentManager? consentManager,
+  }) async {
     if (kIsWeb) {
       _isInitialized = true;
       return right<AdError, bool>(true);
@@ -60,7 +61,9 @@ class AdService with WidgetsBindingObserver {
       // Initialize MobileAds instance
       final status = await MobileAds.instance.initialize();
       _isInitialized = true;
-      AppLogger.debug('AdService: MobileAds initialized: ${status.adapterStatuses}');
+      AppLogger.debug(
+        'AdService: MobileAds initialized: ${status.adapterStatuses}',
+      );
 
       // Register default native ad factory
       registerOlitunNativeAdFactory();
@@ -129,7 +132,9 @@ class AdService with WidgetsBindingObserver {
 
     final unitId = AdConfig.interstitialAdUnitId;
     if (unitId.isEmpty) {
-      return left<AdError, InterstitialAd>(const AdInitError('Interstitial ad unit ID is empty'));
+      return left<AdError, InterstitialAd>(
+        const AdInitError('Interstitial ad unit ID is empty'),
+      );
     }
 
     final completer = Completer<Either<AdError, InterstitialAd>>();
@@ -163,7 +168,9 @@ class AdService with WidgetsBindingObserver {
 
     final unitId = AdConfig.rewardedAdUnitId;
     if (unitId.isEmpty) {
-      return left<AdError, RewardedAd>(const AdInitError('Rewarded ad unit ID is empty'));
+      return left<AdError, RewardedAd>(
+        const AdInitError('Rewarded ad unit ID is empty'),
+      );
     }
 
     final completer = Completer<Either<AdError, RewardedAd>>();
@@ -238,7 +245,9 @@ class AdService with WidgetsBindingObserver {
     try {
       MobileAds.instance.openAdInspector((error) {
         if (error != null) {
-          AppLogger.debug('AdInspector error: ${error.code} - ${error.message}');
+          AppLogger.debug(
+            'AdInspector error: ${error.code} - ${error.message}',
+          );
         }
       });
     } catch (e) {
@@ -279,7 +288,9 @@ class AdService with WidgetsBindingObserver {
 
   @override
   void didHaveMemoryPressure() {
-    AppLogger.debug('AdService: Memory pressure detected. Disposing heavy ad objects.');
+    AppLogger.debug(
+      'AdService: Memory pressure detected. Disposing heavy ad objects.',
+    );
     disposeAll();
   }
 

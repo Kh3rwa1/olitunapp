@@ -215,16 +215,29 @@ class AdminSettingsController extends AutoDisposeNotifier<AdminSettingsState> {
       // Read AdMob settings
       final isAdsEnabled = settings['admob_enabled_free_tier'] != 'false';
       final bannerIdOverride = settings['admob_banner_id'] as String? ?? '';
-      final interstitialIdOverride = settings['admob_interstitial_id'] as String? ?? '';
+      final interstitialIdOverride =
+          settings['admob_interstitial_id'] as String? ?? '';
       final rewardedIdOverride = settings['admob_rewarded_id'] as String? ?? '';
       final nativeIdOverride = settings['admob_native_id'] as String? ?? '';
-      final interstitialCap = int.tryParse(settings['admob_interstitial_cap_minutes']?.toString() ?? '') ?? 3;
-      final rewardedCooldown = int.tryParse(settings['admob_rewarded_cooldown_minutes']?.toString() ?? '') ?? 10;
+      final interstitialCap =
+          int.tryParse(
+            settings['admob_interstitial_cap_minutes']?.toString() ?? '',
+          ) ??
+          3;
+      final rewardedCooldown =
+          int.tryParse(
+            settings['admob_rewarded_cooldown_minutes']?.toString() ?? '',
+          ) ??
+          10;
 
       // Sync with global AdState
       ref.read(adStateProvider.notifier).setGlobalAdsEnabled(isAdsEnabled);
-      ref.read(adStateProvider.notifier).setInterstitialIntervalMinutes(interstitialCap);
-      ref.read(adStateProvider.notifier).setRewardedCooldownMinutes(rewardedCooldown);
+      ref
+          .read(adStateProvider.notifier)
+          .setInterstitialIntervalMinutes(interstitialCap);
+      ref
+          .read(adStateProvider.notifier)
+          .setRewardedCooldownMinutes(rewardedCooldown);
 
       final nextState = AdminSettingsState(
         status: AdminSettingsStatus.loaded,

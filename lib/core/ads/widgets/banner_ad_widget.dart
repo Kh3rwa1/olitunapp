@@ -14,10 +14,7 @@ import '../ad_state.dart';
 class BannerAdWidget extends ConsumerStatefulWidget {
   final String placement;
 
-  const BannerAdWidget({
-    super.key,
-    this.placement = 'default_bottom',
-  });
+  const BannerAdWidget({super.key, this.placement = 'default_bottom'});
 
   @override
   ConsumerState<BannerAdWidget> createState() => _BannerAdWidgetState();
@@ -65,7 +62,10 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
     try {
       // Sizing: adaptive anchored banner or standard banner
-      final adSize = await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(width) ??
+      final adSize =
+          await AdSize.getCurrentOrientationAnchoredAdaptiveBannerAdSize(
+            width,
+          ) ??
           AdSize.banner;
 
       if (!mounted) return;
@@ -88,7 +88,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
           });
           ref.read(adStateProvider.notifier).resetErrors('banner');
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.impression,
                     adFormat: 'banner',
@@ -103,7 +105,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
           setState(() => _isLoaded = false);
           ref.read(adStateProvider.notifier).recordError('banner');
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.loadFail,
                     adFormat: 'banner',
@@ -116,7 +120,9 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
         },
         onClicked: (ad) {
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.click,
                     adFormat: 'banner',
@@ -174,17 +180,19 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
     ref.listen<AsyncValue<List<ConnectivityResult>>>(
       connectivityStreamProvider,
       (previous, next) {
-      final wasOffline =
-          previous?.value?.contains(ConnectivityResult.none) ?? false;
-      final isOnline = !(next.value?.contains(ConnectivityResult.none) ?? true);
-      if (wasOffline && isOnline && (!_isLoaded || _hasPersistentError)) {
-        setState(() {
-          _hasPersistentError = false;
-          _retryCount = 0;
-        });
-        _loadAd();
-      }
-    });
+        final wasOffline =
+            previous?.value?.contains(ConnectivityResult.none) ?? false;
+        final isOnline =
+            !(next.value?.contains(ConnectivityResult.none) ?? true);
+        if (wasOffline && isOnline && (!_isLoaded || _hasPersistentError)) {
+          setState(() {
+            _hasPersistentError = false;
+            _retryCount = 0;
+          });
+          _loadAd();
+        }
+      },
+    );
 
     if (!_isLoaded || _bannerAd == null) {
       return const SizedBox.shrink();

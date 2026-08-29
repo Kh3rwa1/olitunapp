@@ -44,7 +44,9 @@ class ConsentManager {
           completer.complete(right<AdError, ConsentStatus>(status));
         } catch (e) {
           AppLogger.debug('ConsentManager: Failed to read consent status: $e');
-          completer.complete(right<AdError, ConsentStatus>(ConsentStatus.unknown));
+          completer.complete(
+            right<AdError, ConsentStatus>(ConsentStatus.unknown),
+          );
         }
       },
       (FormError error) {
@@ -70,30 +72,32 @@ class ConsentManager {
 
     final completer = Completer<Either<AdError, ConsentStatus>>();
 
-    ConsentForm.loadAndShowConsentFormIfRequired(
-      (FormError? formError) async {
-        if (formError != null) {
-          AppLogger.debug(
-            'ConsentManager: Consent form error: ${formError.errorCode} - ${formError.message}',
-          );
-          completer.complete(
-            left<AdError, ConsentStatus>(
-              AdConsentError(formError.message, formError.errorCode.toString()),
-            ),
-          );
-          return;
-        }
+    ConsentForm.loadAndShowConsentFormIfRequired((FormError? formError) async {
+      if (formError != null) {
+        AppLogger.debug(
+          'ConsentManager: Consent form error: ${formError.errorCode} - ${formError.message}',
+        );
+        completer.complete(
+          left<AdError, ConsentStatus>(
+            AdConsentError(formError.message, formError.errorCode.toString()),
+          ),
+        );
+        return;
+      }
 
-        try {
-          final status = await ConsentInformation.instance.getConsentStatus();
-          await _saveConsentStatus(status);
-          AppLogger.debug('ConsentManager: Consent form dismissed. Status: $status');
-          completer.complete(right<AdError, ConsentStatus>(status));
-        } catch (e) {
-          completer.complete(right<AdError, ConsentStatus>(ConsentStatus.unknown));
-        }
-      },
-    );
+      try {
+        final status = await ConsentInformation.instance.getConsentStatus();
+        await _saveConsentStatus(status);
+        AppLogger.debug(
+          'ConsentManager: Consent form dismissed. Status: $status',
+        );
+        completer.complete(right<AdError, ConsentStatus>(status));
+      } catch (e) {
+        completer.complete(
+          right<AdError, ConsentStatus>(ConsentStatus.unknown),
+        );
+      }
+    });
 
     return completer.future;
   }

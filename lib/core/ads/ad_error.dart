@@ -19,23 +19,25 @@ final class AdLoadError extends AdError {
 }
 
 final class AdNotReadyError extends AdError {
-  const AdNotReadyError([String message = 'Ad is not loaded or ready to display'])
-      : super(message, 'AD_NOT_READY');
+  const AdNotReadyError([
+    String message = 'Ad is not loaded or ready to display',
+  ]) : super(message, 'AD_NOT_READY');
 }
 
 final class AdFrequencyCappedError extends AdError {
   const AdFrequencyCappedError([String message = 'Ad frequency cap in effect'])
-      : super(message, 'FREQUENCY_CAPPED');
+    : super(message, 'FREQUENCY_CAPPED');
 }
 
 final class AdDisabledError extends AdError {
-  const AdDisabledError([String message = 'Ads are disabled for this user or globally'])
-      : super(message, 'ADS_DISABLED');
+  const AdDisabledError([
+    String message = 'Ads are disabled for this user or globally',
+  ]) : super(message, 'ADS_DISABLED');
 }
 
 final class AdNetworkError extends AdError {
   const AdNetworkError([String message = 'Network connection unavailable'])
-      : super(message, 'NETWORK_UNAVAILABLE');
+    : super(message, 'NETWORK_UNAVAILABLE');
 }
 
 final class AdConsentError extends AdError {
@@ -43,6 +45,7 @@ final class AdConsentError extends AdError {
 }
 
 final class AdPlatformUnsupportedError extends AdError {
-  const AdPlatformUnsupportedError([String message = 'Ads not supported on this platform'])
-      : super(message, 'PLATFORM_UNSUPPORTED');
+  const AdPlatformUnsupportedError([
+    String message = 'Ads not supported on this platform',
+  ]) : super(message, 'PLATFORM_UNSUPPORTED');
 }

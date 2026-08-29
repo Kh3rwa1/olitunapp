@@ -18,7 +18,9 @@ void main() {
   });
 
   group('Ad Managers Unit Tests', () {
-    testWidgets('InterstitialAdManager respects ad-free and frequency rules', (tester) async {
+    testWidgets('InterstitialAdManager respects ad-free and frequency rules', (
+      tester,
+    ) async {
       await tester.pumpWidget(
         ProviderScope(
           overrides: [
@@ -43,41 +45,45 @@ void main() {
 
       // Setting ad-free suppresses instantly
       container.read(adStateProvider.notifier).setIsAdFreeUser(true);
-      final suppressed = await manager.showIfAllowed(element, 'lesson_complete');
+      final suppressed = await manager.showIfAllowed(
+        element,
+        'lesson_complete',
+      );
       expect(suppressed, isFalse);
     });
 
-    testWidgets('RewardedAdManager instantly grants rewards to Ad-Free users without loading ads', (tester) async {
-      await tester.pumpWidget(
-        ProviderScope(
-          overrides: [
-            sharedPreferencesProvider.overrideWithValue(prefs),
-          ],
-          child: const MaterialApp(home: Scaffold(body: Text('Test'))),
-        ),
-      );
+    testWidgets(
+      'RewardedAdManager instantly grants rewards to Ad-Free users without loading ads',
+      (tester) async {
+        await tester.pumpWidget(
+          ProviderScope(
+            overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
+            child: const MaterialApp(home: Scaffold(body: Text('Test'))),
+          ),
+        );
 
-      final element = tester.element(find.text('Test'));
-      final container = ProviderScope.containerOf(element);
+        final element = tester.element(find.text('Test'));
+        final container = ProviderScope.containerOf(element);
 
-      // Set user as Ad-Free
-      container.read(adStateProvider.notifier).setIsAdFreeUser(true);
+        // Set user as Ad-Free
+        container.read(adStateProvider.notifier).setIsAdFreeUser(true);
 
-      final rewardedManager = container.read(rewardedAdManagerProvider);
-      bool rewardCallbackTriggered = false;
+        final rewardedManager = container.read(rewardedAdManagerProvider);
+        bool rewardCallbackTriggered = false;
 
-      final success = await rewardedManager.show(
-        context: element,
-        placement: 'quiz_reward_test',
-        rewardType: RewardType.stars,
-        amount: 50,
-        onRewardGranted: () {
-          rewardCallbackTriggered = true;
-        },
-      );
+        final success = await rewardedManager.show(
+          context: element,
+          placement: 'quiz_reward_test',
+          rewardType: RewardType.stars,
+          amount: 50,
+          onRewardGranted: () {
+            rewardCallbackTriggered = true;
+          },
+        );
 
-      expect(success, isTrue);
-      expect(rewardCallbackTriggered, isTrue);
-    });
+        expect(success, isTrue);
+        expect(rewardCallbackTriggered, isTrue);
+      },
+    );
   });
 }

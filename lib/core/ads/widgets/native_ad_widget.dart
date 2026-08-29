@@ -53,8 +53,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
       final isDark = Theme.of(context).brightness == Brightness.dark;
       final templateStyle = NativeTemplateStyle(
         templateType: widget.templateType,
-        mainBackgroundColor:
-            isDark ? AppColors.darkSurfaceElevated : AppColors.lightSurface,
+        mainBackgroundColor: isDark
+            ? AppColors.darkSurfaceElevated
+            : AppColors.lightSurface,
         cornerRadius: 16.0,
         callToActionTextStyle: NativeTemplateTextStyle(
           textColor: Colors.white,
@@ -87,7 +88,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
           }
           setState(() => _isLoaded = true);
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.impression,
                     adFormat: 'native',
@@ -97,11 +100,15 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
           } catch (_) {}
         },
         onFailed: (ad, error) {
-          AppLogger.debug('NativeAdWidget: Failed to load: ${error.message} (code: ${error.code})');
+          AppLogger.debug(
+            'NativeAdWidget: Failed to load: ${error.message} (code: ${error.code})',
+          );
           if (!mounted) return;
           setState(() => _isLoaded = false);
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.loadFail,
                     adFormat: 'native',
@@ -113,7 +120,9 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
         },
         onClicked: (ad) {
           try {
-            ref.read(learningAnalyticsServiceProvider).logAdEvent(
+            ref
+                .read(learningAnalyticsServiceProvider)
+                .logAdEvent(
                   AdEvent(
                     type: AdEventType.click,
                     adFormat: 'native',

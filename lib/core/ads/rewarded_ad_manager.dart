@@ -38,7 +38,9 @@ class RewardedAdManager {
       (ad) {
         _rewardedAd = ad;
         _ref.read(adStateProvider.notifier).resetErrors('rewarded');
-        AppLogger.debug('RewardedAdManager: Rewarded ad preloaded successfully');
+        AppLogger.debug(
+          'RewardedAdManager: Rewarded ad preloaded successfully',
+        );
       },
     );
   }
@@ -56,19 +58,25 @@ class RewardedAdManager {
 
     // Rule: Ad-free users get reward instantly without watching
     if (adState.isAdFreeUser || !adState.isAdsEnabledGlobally) {
-      AppLogger.debug('RewardedAdManager: Ad-free user instant reward granted ($placement)');
+      AppLogger.debug(
+        'RewardedAdManager: Ad-free user instant reward granted ($placement)',
+      );
       await _grantReward(rewardType, amount);
       await onRewardGranted();
       return true;
     }
 
     if (!adState.canShowRewarded()) {
-      AppLogger.debug('RewardedAdManager: Cooldown in effect for placement: $placement');
+      AppLogger.debug(
+        'RewardedAdManager: Cooldown in effect for placement: $placement',
+      );
       return false;
     }
 
     if (_rewardedAd == null) {
-      AppLogger.debug('RewardedAdManager: Ad not ready for placement: $placement');
+      AppLogger.debug(
+        'RewardedAdManager: Ad not ready for placement: $placement',
+      );
       unawaited(preload());
       return false;
     }
@@ -81,9 +89,13 @@ class RewardedAdManager {
     ad.fullScreenContentCallback = FullScreenContentCallback(
       onAdShowedFullScreenContent: (ad) {
         AppLogger.debug('RewardedAdManager: Ad showed ($placement)');
-        _ref.read(adStateProvider.notifier).recordImpression('rewarded', placement);
+        _ref
+            .read(adStateProvider.notifier)
+            .recordImpression('rewarded', placement);
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.impression,
                   adFormat: 'rewarded',
@@ -98,7 +110,9 @@ class RewardedAdManager {
         AppLogger.debug('RewardedAdManager: Ad dismissed ($placement)');
         ad.dispose();
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.dismissed,
                   adFormat: 'rewarded',
@@ -116,10 +130,14 @@ class RewardedAdManager {
         if (!completer.isCompleted) completer.complete(rewardEarned);
       },
       onAdFailedToShowFullScreenContent: (ad, error) {
-        AppLogger.debug('RewardedAdManager: Ad failed to show ($placement): ${error.message}');
+        AppLogger.debug(
+          'RewardedAdManager: Ad failed to show ($placement): ${error.message}',
+        );
         ad.dispose();
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.error,
                   adFormat: 'rewarded',
@@ -133,7 +151,9 @@ class RewardedAdManager {
       },
       onAdClicked: (ad) {
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.click,
                   adFormat: 'rewarded',
@@ -146,10 +166,14 @@ class RewardedAdManager {
 
     await ad.show(
       onUserEarnedReward: (ad, reward) {
-        AppLogger.debug('RewardedAdManager: User earned reward: ${reward.amount} ${reward.type}');
+        AppLogger.debug(
+          'RewardedAdManager: User earned reward: ${reward.amount} ${reward.type}',
+        );
         rewardEarned = true;
         try {
-          _ref.read(learningAnalyticsServiceProvider).logAdEvent(
+          _ref
+              .read(learningAnalyticsServiceProvider)
+              .logAdEvent(
                 AdEvent(
                   type: AdEventType.reward,
                   adFormat: 'rewarded',
@@ -175,7 +199,9 @@ class RewardedAdManager {
         case RewardType.quizAttempt:
         case RewardType.hearts:
           // User awarded free attempt or hearts refill
-          AppLogger.debug('RewardedAdManager: Refilled $amount hearts / quiz attempts');
+          AppLogger.debug(
+            'RewardedAdManager: Refilled $amount hearts / quiz attempts',
+          );
           break;
       }
     } catch (e) {

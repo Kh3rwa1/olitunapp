@@ -8,6 +8,8 @@ import 'package:itun/features/admin/domain/admin_failure.dart';
 import 'package:itun/features/admin/presentation/settings/controllers/admin_settings_controller.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 import 'package:itun/shared/providers/app_settings_provider.dart';
+import 'package:itun/core/ads/ad_state.dart';
+import 'package:itun/shared/providers/purchases_provider.dart';
 import 'package:mocktail/mocktail.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -33,6 +35,8 @@ void main() {
         sharedPreferencesProvider.overrideWithValue(prefs),
         isAuthenticatedProvider.overrideWith((ref) async => true),
         appSettingsProvider.overrideWith((ref) async => <String, dynamic>{}),
+        adStateProvider.overrideWith(() => AdStateNotifier(const AdState())),
+        purchasedCategoriesProvider.overrideWith((ref) async => <String>{}),
       ],
     );
     // Keep the autoDispose controller alive for the duration of the test and

@@ -7,8 +7,7 @@ class AdConfig {
   // Test Ad Unit IDs provided by Google AdMob
   static const String testAndroidAppId =
       'ca-app-pub-3940256099942544~3347511713';
-  static const String testIosAppId =
-      'ca-app-pub-3940256099942544~1458002511';
+  static const String testIosAppId = 'ca-app-pub-3940256099942544~1458002511';
 
   static const String testAndroidBannerId =
       'ca-app-pub-3940256099942544/6300978111';
@@ -135,7 +134,11 @@ class AdConfig {
   static List<String> get testDeviceIds {
     const definedDevices = String.fromEnvironment('ADMOB_TEST_DEVICES');
     if (definedDevices.isNotEmpty) {
-      return definedDevices.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList();
+      return definedDevices
+          .split(',')
+          .map((e) => e.trim())
+          .where((e) => e.isNotEmpty)
+          .toList();
     }
     return const [];
   }

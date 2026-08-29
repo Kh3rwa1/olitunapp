@@ -26,7 +26,8 @@ final networkInfoProvider = Provider<NetworkInfo>((ref) {
   return NetworkInfoImpl(Connectivity());
 });
 
-final connectivityStreamProvider =
-    StreamProvider<List<ConnectivityResult>>((ref) {
-      return ref.watch(networkInfoProvider).onConnectivityChanged;
-    });
+final connectivityStreamProvider = StreamProvider<List<ConnectivityResult>>((
+  ref,
+) {
+  return ref.watch(networkInfoProvider).onConnectivityChanged;
+});

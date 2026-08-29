@@ -23,6 +23,8 @@ import 'widgets/badges_grid_widget.dart';
 import 'widgets/mastery_chart.dart';
 import 'widgets/mastery_milestones.dart';
 import 'widgets/next_milestone_card.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class ProgressScreen extends ConsumerWidget {
   const ProgressScreen({super.key});
@@ -64,6 +66,9 @@ class ProgressScreen extends ConsumerWidget {
           backgroundColor: isDark
               ? AppColors.darkBackground
               : AppColors.lightBackground,
+          bottomNavigationBar: const BannerAdWidget(
+            placement: 'profile_bottom',
+          ),
           body: BrandedRefreshIndicator(
             onRefresh: () async {
               ref.invalidate(userStatsProvider);
@@ -142,6 +147,10 @@ class ProgressScreen extends ConsumerWidget {
                         // ═══════════════ NEXT MILESTONE ═══════════════
                         const NextMilestoneCard(),
 
+                        const SizedBox(height: 16),
+                        const RepaintBoundary(
+                          child: NativeAdWidget(placement: 'profile_native'),
+                        ),
                         const SizedBox(height: 24),
 
                         // ═══════════════ CORE STATS ROW ═══════════════

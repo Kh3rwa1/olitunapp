@@ -17,6 +17,7 @@ import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 @visibleForTesting
 LessonEntity? continueLessonFor({
@@ -254,6 +255,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 onRetry: _onRefresh,
               ),
             ),
+            const SizedBox(height: 20),
+            const RepaintBoundary(
+              child: NativeAdWidget(
+                placement: 'home_native_bottom',
+              ),
+            ),
           ],
         ),
 
@@ -267,6 +274,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           : isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      bottomNavigationBar: const BannerAdWidget(placement: 'home_bottom'),
       body: BrandedRefreshIndicator(
         onRefresh: _onRefresh,
         child: SafeArea(

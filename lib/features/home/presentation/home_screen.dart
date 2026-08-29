@@ -257,9 +257,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             ),
             const SizedBox(height: 20),
             const RepaintBoundary(
-              child: NativeAdWidget(
-                placement: 'home_native_bottom',
-              ),
+              child: NativeAdWidget(placement: 'home_native_bottom'),
             ),
           ],
         ),

@@ -605,8 +605,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 duration: 450.ms,
                               );
 
-                      if ((lessonIndex + 1) % 2 == 0 &&
-                          lessonIndex < data.length - 1) {
+                      if (lessonIndex < data.length - 1) {
                         return Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [

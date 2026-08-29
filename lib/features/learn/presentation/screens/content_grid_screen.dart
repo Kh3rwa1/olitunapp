@@ -13,6 +13,7 @@ import 'package:itun/core/motion/pressable_scale.dart';
 import 'package:itun/features/categories/presentation/providers/category_notifier.dart';
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/core/logging/app_logger.dart';
+import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 
 class ContentGridScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -94,6 +95,9 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
 
     return Scaffold(
       backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      bottomNavigationBar: const BannerAdWidget(
+        placement: 'content_grid_bottom',
+      ),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

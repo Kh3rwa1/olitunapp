@@ -915,8 +915,13 @@ class _LessonBlockDetailScreenState
                                     'FLUTTER_TEST',
                                   );
                               Widget content;
-                              if (isLongText || (textOlChiki.isNotEmpty && textLatin.isNotEmpty) || cardText.contains('\n')) {
-                                final isMultiLine = cardText.contains('\n') || cardText.length > 60;
+                              if (isLongText ||
+                                  (textOlChiki.isNotEmpty &&
+                                      textLatin.isNotEmpty) ||
+                                  cardText.contains('\n')) {
+                                final isMultiLine =
+                                    cardText.contains('\n') ||
+                                    cardText.length > 60;
                                 content = Padding(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 28,
@@ -969,7 +974,8 @@ class _LessonBlockDetailScreenState
                                           ),
                                         ),
                                       ],
-                                      if (textOlChiki.isEmpty && textLatin.isNotEmpty)
+                                      if (textOlChiki.isEmpty &&
+                                          textLatin.isNotEmpty)
                                         Text(
                                           textLatin,
                                           textAlign: TextAlign.center,
@@ -982,7 +988,8 @@ class _LessonBlockDetailScreenState
                                             height: 1.35,
                                           ),
                                         ),
-                                      if (textOlChiki.isEmpty && textLatin.isEmpty)
+                                      if (textOlChiki.isEmpty &&
+                                          textLatin.isEmpty)
                                         Text(
                                           lesson.titleLatin,
                                           textAlign: TextAlign.center,

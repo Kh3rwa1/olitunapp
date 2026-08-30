@@ -92,14 +92,12 @@ class BakhedSyncedAudioPlayer extends ConsumerWidget {
                         ),
                         Expanded(
                           child: Slider(
-                            value: position.inMilliseconds
-                                .toDouble()
-                                .clamp(
-                                  0.0,
-                                  duration.inMilliseconds.toDouble() > 0
-                                      ? duration.inMilliseconds.toDouble()
-                                      : 1.0,
-                                ),
+                            value: position.inMilliseconds.toDouble().clamp(
+                              0.0,
+                              duration.inMilliseconds.toDouble() > 0
+                                  ? duration.inMilliseconds.toDouble()
+                                  : 1.0,
+                            ),
                             max: duration.inMilliseconds.toDouble() > 0
                                 ? duration.inMilliseconds.toDouble()
                                 : 1.0,

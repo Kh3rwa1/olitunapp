@@ -497,10 +497,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     final double maxSliderVal = hasValidDuration
         ? durationMs.toDouble()
         : math.max(positionMs.toDouble(), 1.0);
-    final double currentSliderVal = (hasValidDuration
-            ? positionMs.toDouble()
-            : (positionMs > 0 ? positionMs.toDouble() : 0.0))
-        .clamp(0.0, maxSliderVal);
+    final double currentSliderVal =
+        (hasValidDuration
+                ? positionMs.toDouble()
+                : (positionMs > 0 ? positionMs.toDouble() : 0.0))
+            .clamp(0.0, maxSliderVal);
 
     return Scaffold(
       backgroundColor: const Color(0xFF070B13), // Deep premium midnight black
@@ -704,7 +705,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       ),
                       Text(
                         hasValidDuration
-                            ? _formatDuration(Duration(milliseconds: durationMs))
+                            ? _formatDuration(
+                                Duration(milliseconds: durationMs),
+                              )
                             : (isPlaying ? '--:--' : '00:00'),
                         style: GoogleFonts.inter(
                           fontSize: 12,

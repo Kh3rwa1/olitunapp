@@ -85,33 +85,32 @@ class ContentRepository {
               'assets/seed/vocab_lessons.json',
             );
             final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledVocabLessons = raw
-                .cast<Map<String, dynamic>>()
-                .map((map) {
-                  final lesson = LessonModel.fromJson(map);
-                  return ContentItem(
-                    id: lesson.id,
-                    kind: ContentKind.lesson,
-                    categoryId: lesson.categoryId.isNotEmpty
-                        ? lesson.categoryId
-                        : 'cat_vocab',
-                    title: lesson.titleLatin,
-                    titleOlChiki: lesson.titleOlChiki.isNotEmpty
-                        ? lesson.titleOlChiki
-                        : null,
-                    subtitle: lesson.description,
-                    order: lesson.order,
-                    durationSeconds: lesson.estimatedMinutes * 60,
-                    blocks: lesson.blocks
-                        .asMap()
-                        .entries
-                        .map((e) => e.value.toContentBlock(e.key))
-                        .toList(),
-                    isPublished: true,
-                    updatedAt: DateTime(2026, 8, 30),
-                  );
-                })
-                .toList();
+            _cachedBundledVocabLessons = raw.cast<Map<String, dynamic>>().map((
+              map,
+            ) {
+              final lesson = LessonModel.fromJson(map);
+              return ContentItem(
+                id: lesson.id,
+                kind: ContentKind.lesson,
+                categoryId: lesson.categoryId.isNotEmpty
+                    ? lesson.categoryId
+                    : 'cat_vocab',
+                title: lesson.titleLatin,
+                titleOlChiki: lesson.titleOlChiki.isNotEmpty
+                    ? lesson.titleOlChiki
+                    : null,
+                subtitle: lesson.description,
+                order: lesson.order,
+                durationSeconds: lesson.estimatedMinutes * 60,
+                blocks: lesson.blocks
+                    .asMap()
+                    .entries
+                    .map((e) => e.value.toContentBlock(e.key))
+                    .toList(),
+                isPublished: true,
+                updatedAt: DateTime(2026, 8, 30),
+              );
+            }).toList();
           } catch (_) {
             _cachedBundledVocabLessons = [];
           }
@@ -154,30 +153,27 @@ class ContentRepository {
               'assets/seed/sentences.json',
             );
             final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledSentences = raw
-                .cast<Map<String, dynamic>>()
-                .map((s) {
-                  return ContentItem(
-                    id: s['id'] as String? ?? '',
-                    kind: ContentKind.sentence,
-                    categoryId: s['category'] as String? ?? 'cat_sentences',
-                    category: s['category'] as String? ?? 'General',
-                    title: s['sentenceLatin'] as String? ?? '',
-                    titleOlChiki: s['sentenceOlChiki'] as String?,
-                    olChiki: s['sentenceOlChiki'] as String?,
-                    subtitle: s['meaning'] as String?,
-                    order: s['order'] as int? ?? 1,
-                    blocks: const [],
-                    tags: [
-                      if (s['usage'] != null) s['usage'] as String,
-                      if (s['pronunciation'] != null)
-                        'pronunciation:${s['pronunciation']}',
-                    ],
-                    isPublished: s['isActive'] as bool? ?? true,
-                    updatedAt: DateTime(2026, 8, 30),
-                  );
-                })
-                .toList();
+            _cachedBundledSentences = raw.cast<Map<String, dynamic>>().map((s) {
+              return ContentItem(
+                id: s['id'] as String? ?? '',
+                kind: ContentKind.sentence,
+                categoryId: s['category'] as String? ?? 'cat_sentences',
+                category: s['category'] as String? ?? 'General',
+                title: s['sentenceLatin'] as String? ?? '',
+                titleOlChiki: s['sentenceOlChiki'] as String?,
+                olChiki: s['sentenceOlChiki'] as String?,
+                subtitle: s['meaning'] as String?,
+                order: s['order'] as int? ?? 1,
+                blocks: const [],
+                tags: [
+                  if (s['usage'] != null) s['usage'] as String,
+                  if (s['pronunciation'] != null)
+                    'pronunciation:${s['pronunciation']}',
+                ],
+                isPublished: s['isActive'] as bool? ?? true,
+                updatedAt: DateTime(2026, 8, 30),
+              );
+            }).toList();
           } catch (_) {
             _cachedBundledSentences = [];
           }
@@ -192,29 +188,26 @@ class ContentRepository {
               'assets/seed/words.json',
             );
             final raw = jsonDecode(jsonStr) as List<dynamic>;
-            _cachedBundledWords = raw
-                .cast<Map<String, dynamic>>()
-                .map((w) {
-                  return ContentItem(
-                    id: w['id'] as String? ?? '',
-                    kind: ContentKind.word,
-                    categoryId: w['category'] as String? ?? 'cat_vocab',
-                    category: w['category'] as String? ?? 'General',
-                    title: w['wordLatin'] as String? ?? '',
-                    titleOlChiki: w['wordOlChiki'] as String?,
-                    olChiki: w['wordOlChiki'] as String?,
-                    subtitle: w['meaning'] as String?,
-                    order: w['order'] as int? ?? 1,
-                    blocks: const [],
-                    tags: [
-                      if (w['pronunciation'] != null)
-                        'pronunciation:${w['pronunciation']}',
-                    ],
-                    isPublished: w['isActive'] as bool? ?? true,
-                    updatedAt: DateTime(2026, 8, 30),
-                  );
-                })
-                .toList();
+            _cachedBundledWords = raw.cast<Map<String, dynamic>>().map((w) {
+              return ContentItem(
+                id: w['id'] as String? ?? '',
+                kind: ContentKind.word,
+                categoryId: w['category'] as String? ?? 'cat_vocab',
+                category: w['category'] as String? ?? 'General',
+                title: w['wordLatin'] as String? ?? '',
+                titleOlChiki: w['wordOlChiki'] as String?,
+                olChiki: w['wordOlChiki'] as String?,
+                subtitle: w['meaning'] as String?,
+                order: w['order'] as int? ?? 1,
+                blocks: const [],
+                tags: [
+                  if (w['pronunciation'] != null)
+                    'pronunciation:${w['pronunciation']}',
+                ],
+                isPublished: w['isActive'] as bool? ?? true,
+                updatedAt: DateTime(2026, 8, 30),
+              );
+            }).toList();
           } catch (_) {
             _cachedBundledWords = [];
           }

@@ -3,10 +3,25 @@ import 'package:itun/core/logging/app_logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'audio_service_stub.dart'
+    if (dart.library.js_interop) 'audio_service_web.dart';
+
 final audioServiceProvider = Provider((ref) => AudioService());
 
 class AudioService {
-  AudioPlayer _player = AudioPlayer();
+  final AudioPlayer _player = AudioPlayer();
+
+  AudioService() {
+    _initWebCrossOrigin();
+  }
+
+  void _initWebCrossOrigin() {
+    if (kIsWeb) {
+      try {
+        _player.setWebCrossOrigin(WebCrossOrigin.anonymous);
+      } catch (_) {}
+    }
+  }
 
   /// Single source of truth for "is audio currently playing".
   ///
@@ -19,6 +34,7 @@ class AudioService {
   Future<void> playUrl(String url) async {
     if (url.isEmpty) return;
     try {
+      _initWebCrossOrigin();
       await _player.stop();
       await _player.setUrl(url);
       await _player.play();
@@ -26,11 +42,7 @@ class AudioService {
       AppLogger.warning('AudioService playUrl failed: $e');
       if (kIsWeb) {
         try {
-          // Re-create player on web if the web audio context / element got stuck
-          await _player.dispose();
-          _player = AudioPlayer();
-          await _player.setUrl(url);
-          await _player.play();
+          playNativeWebAudio(url);
         } catch (webErr) {
           AppLogger.warning('AudioService web fallback failed: $webErr');
         }
@@ -42,9 +54,19 @@ class AudioService {
     try {
       await _player.stop();
     } catch (_) {}
+    if (kIsWeb) {
+      try {
+        stopNativeWebAudio();
+      } catch (_) {}
+    }
   }
 
   void dispose() {
+    if (kIsWeb) {
+      try {
+        stopNativeWebAudio();
+      } catch (_) {}
+    }
     _player.dispose();
   }
 }

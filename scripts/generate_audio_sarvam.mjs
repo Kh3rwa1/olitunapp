@@ -4,7 +4,7 @@
  * Sarvam AI Audio Generation & Appwrite Storage Sync Script
  * 
  * Generates natural Indic text-to-speech audio using Sarvam AI (bulbul:v4 / bulbul:v3)
- * for Olitun stories, sentences, vocabulary, and letters, then automatically uploads
+ * for Olitun stories, sentences, vocabulary lessons, and words, then automatically uploads
  * the generated audio to the Appwrite Storage "audio" bucket and updates the database records.
  * 
  * Usage:
@@ -14,7 +14,7 @@
  *   SARVAM_MODEL="bulbul:v4" (default: bulbul:v4 with auto-fallback to bulbul:v3)
  *   SPEAKER="shubh" (or "aditi", "priya", "amartya")
  *   PACE="0.9" (0.5 to 2.0; 0.9 is ideal for learners)
- *   TARGET="all" | "stories" | "grammar" | "sentences" | "words"
+ *   TARGET="all" | "vocab" | "sentences" | "words"
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -52,9 +52,9 @@ function getAppwriteHeaders() {
 let activeModel = PREFERRED_MODEL;
 
 /**
- * Call Sarvam AI Text-To-Speech API
+ * Call Sarvam AI Text-To-Speech API with Rate Limit Retry & Fallback
  */
-async function generateSpeech(text, targetLang = 'hi-IN') {
+async function generateSpeech(text, targetLang = 'hi-IN', retries = 3) {
   const clean = text.replace(/[\(\)\[\]"']/g, '').split('–')[0].split('-')[0].trim();
   if (!clean) return null;
 
@@ -66,21 +66,8 @@ async function generateSpeech(text, targetLang = 'hi-IN') {
     pace: PACE,
   };
 
-  let res = await fetch('https://api.sarvam.ai/text-to-speech', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'api-subscription-key': SARVAM_API_KEY,
-    },
-    body: JSON.stringify(payload),
-  });
-
-  // Auto-fallback from bulbul:v4 to bulbul:v3 if v4 preview is not enabled on the key
-  if (!res.ok && activeModel === 'bulbul:v4' && (res.status === 400 || res.status === 404)) {
-    console.log('ℹ️  bulbul:v4 not enabled for this tier, falling back to bulbul:v3...');
-    activeModel = 'bulbul:v3';
-    payload.model = 'bulbul:v3';
-    res = await fetch('https://api.sarvam.ai/text-to-speech', {
+  for (let attempt = 0; attempt <= retries; attempt++) {
+    let res = await fetch('https://api.sarvam.ai/text-to-speech', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -88,19 +75,43 @@ async function generateSpeech(text, targetLang = 'hi-IN') {
       },
       body: JSON.stringify(payload),
     });
+
+    if (res.status === 429 && attempt < retries) {
+      const waitTime = (attempt + 1) * 1500;
+      process.stdout.write(`⏳ (429 rate limit, waiting ${waitTime}ms)... `);
+      await new Promise(r => setTimeout(r, waitTime));
+      continue;
+    }
+
+    // Auto-fallback from bulbul:v4 to bulbul:v3 if v4 preview is not enabled on the key
+    if (!res.ok && activeModel === 'bulbul:v4' && (res.status === 400 || res.status === 404)) {
+      console.log('ℹ️  bulbul:v4 not enabled for this tier, falling back to bulbul:v3...');
+      activeModel = 'bulbul:v3';
+      payload.model = 'bulbul:v3';
+      res = await fetch('https://api.sarvam.ai/text-to-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'api-subscription-key': SARVAM_API_KEY,
+        },
+        body: JSON.stringify(payload),
+      });
+    }
+
+    if (!res.ok) {
+      const errText = await res.text();
+      throw new Error(`Sarvam AI API failed (${res.status}): ${errText}`);
+    }
+
+    const json = await res.json();
+    if (!json.audios || !json.audios[0]) {
+      throw new Error('No audio returned in Sarvam AI response');
+    }
+
+    return Buffer.from(json.audios[0], 'base64');
   }
 
-  if (!res.ok) {
-    const errText = await res.text();
-    throw new Error(`Sarvam AI API failed (${res.status}): ${errText}`);
-  }
-
-  const json = await res.json();
-  if (!json.audios || !json.audios[0]) {
-    throw new Error('No audio returned in Sarvam AI response');
-  }
-
-  return Buffer.from(json.audios[0], 'base64');
+  return null;
 }
 
 /**
@@ -155,8 +166,55 @@ async function uploadToAppwrite(appwriteHeaders, fileId, audioBuffer, filename =
   return `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${json.$id}/view?project=${PROJECT_ID}`;
 }
 
-async function processAllLessons(appwriteHeaders) {
-  console.log('\n📖 Generating Sarvam AI Audio for All Sentence, Story & Grammar Lessons...');
+async function processVocabLessons(appwriteHeaders) {
+  console.log('\n📖 Generating Sarvam AI Audio for Vocabulary Lessons (vocab_lessons.json)...');
+  const filePath = new URL('../assets/seed/vocab_lessons.json', import.meta.url);
+  const lessons = JSON.parse(readFileSync(filePath, 'utf8'));
+
+  let generatedCount = 0;
+
+  for (const lesson of lessons) {
+    console.log(`\n📚 Vocab Lesson: ${lesson.titleLatin || lesson.id} (${lesson.id})`);
+    for (let i = 0; i < lesson.blocks.length; i++) {
+      const block = lesson.blocks[i];
+      if (block.type === 'quiz') continue;
+
+      if (block.audioUrl && block.audioUrl.startsWith('http')) {
+        console.log(`  [${i + 1}/${lesson.blocks.length}] ⏭️ Already has audio`);
+        continue;
+      }
+
+      const speechText = block.textLatin || block.textOlChiki || '';
+      if (!speechText) continue;
+
+      const cleanPrompt = speechText.replace(/[\(\)\[\]"]/g, '').split('–')[0].split('-')[0].trim();
+      const prefix = lesson.id.replace('lesson_', '');
+      const fileId = `snd_${prefix}_${i}`.slice(0, 36);
+
+      try {
+        process.stdout.write(`  [${i + 1}/${lesson.blocks.length}] "${cleanPrompt.slice(0, 30)}..." -> `);
+        const audioBuf = await generateSpeech(cleanPrompt);
+        if (!audioBuf) {
+          console.log(`⚠️ Empty text prompt, skipping`);
+          continue;
+        }
+        const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
+        block.audioUrl = fileUrl;
+        console.log(`✅ ${fileUrl}`);
+        generatedCount++;
+        await new Promise(r => setTimeout(r, 200));
+      } catch (e) {
+        console.log(`❌ Error: ${e.message}`);
+      }
+    }
+  }
+
+  writeFileSync(filePath, JSON.stringify(lessons, null, 2), 'utf8');
+  console.log(`\n🎉 Updated assets/seed/vocab_lessons.json with ${generatedCount} new Sarvam audio URLs!`);
+}
+
+async function processSentenceLessons(appwriteHeaders) {
+  console.log('\n📖 Generating Sarvam AI Audio for Sentence & Story Lessons (sentence_lessons.json)...');
   const filePath = new URL('../assets/seed/sentence_lessons.json', import.meta.url);
   const lessons = JSON.parse(readFileSync(filePath, 'utf8'));
 
@@ -191,7 +249,6 @@ async function processAllLessons(appwriteHeaders) {
         block.audioUrl = fileUrl;
         console.log(`✅ ${fileUrl}`);
         generatedCount++;
-        // Small delay to avoid rate limits
         await new Promise(r => setTimeout(r, 200));
       } catch (e) {
         console.log(`❌ Error: ${e.message}`);
@@ -209,11 +266,9 @@ async function processWords(appwriteHeaders) {
   const words = JSON.parse(readFileSync(filePath, 'utf8'));
 
   let generatedCount = 0;
-  // Generate audio for top words
-  const wordsToProcess = words.slice(0, 100);
 
-  for (let i = 0; i < wordsToProcess.length; i++) {
-    const word = wordsToProcess[i];
+  for (let i = 0; i < words.length; i++) {
+    const word = words[i];
     if (word.audioUrl && word.audioUrl.startsWith('http')) continue;
 
     const speechText = word.latin || word.santaliLatin || word.wordLatin || word.santali || '';
@@ -221,14 +276,14 @@ async function processWords(appwriteHeaders) {
 
     const fileId = `word_${word.id || i}`.slice(0, 36);
     try {
-      process.stdout.write(`  [${i + 1}/${wordsToProcess.length}] "${speechText}" -> `);
+      process.stdout.write(`  [${i + 1}/${words.length}] "${speechText}" -> `);
       const audioBuf = await generateSpeech(speechText);
       if (!audioBuf) continue;
       const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
       word.audioUrl = fileUrl;
       console.log(`✅ ${fileUrl}`);
       generatedCount++;
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 250));
     } catch (e) {
       console.log(`❌ Error: ${e.message}`);
     }
@@ -247,7 +302,12 @@ async function main() {
 
   const appwriteHeaders = getAppwriteHeaders();
 
-  await processAllLessons(appwriteHeaders);
+  if (TARGET === 'vocab' || TARGET === 'all') {
+    await processVocabLessons(appwriteHeaders);
+  }
+  if (TARGET === 'sentences' || TARGET === 'all') {
+    await processSentenceLessons(appwriteHeaders);
+  }
   if (TARGET === 'words' || TARGET === 'all') {
     await processWords(appwriteHeaders);
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:just_audio_background/just_audio_background.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'audio_service_stub.dart'
@@ -35,8 +36,16 @@ class AudioService {
     if (url.isEmpty) return;
     try {
       _initWebCrossOrigin();
-      await _player.stop();
-      await _player.setUrl(url);
+      if (_player.playing) {
+        await _player.pause();
+      }
+      await _player.setAudioSource(
+        AudioSource.uri(
+          Uri.parse(url),
+          tag: MediaItem(id: url, album: 'Olitun', title: 'Pronunciation'),
+        ),
+      );
+      await _player.setVolume(1.0);
       await _player.play();
     } catch (e) {
       AppLogger.warning('AudioService playUrl failed: $e');
@@ -45,6 +54,14 @@ class AudioService {
           playNativeWebAudio(url);
         } catch (webErr) {
           AppLogger.warning('AudioService web fallback failed: $webErr');
+        }
+      } else {
+        try {
+          await _player.setUrl(url);
+          await _player.setVolume(1.0);
+          await _player.play();
+        } catch (retryErr) {
+          AppLogger.warning('AudioService native retry failed: $retryErr');
         }
       }
     }

@@ -6,13 +6,16 @@ extension ContentBlockToLegacy on ContentBlock {
   LessonBlockEntity toLessonBlockEntity() {
     final self = this;
     final blockData = <String, dynamic>{...meta, 'id': id};
+    final resolvedAudioUrl =
+        (self.meta['audioUrl'] as String?) ??
+        (self.meta['audio_url'] as String?);
 
     if (self is TextBlock) {
       return LessonBlockEntity(
         type: 'text',
         textLatin: self.textLatin ?? self.markdown,
         textOlChiki: self.textOlChiki,
-        audioUrl: self.meta['audioUrl'] as String?,
+        audioUrl: resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -22,7 +25,7 @@ extension ContentBlockToLegacy on ContentBlock {
         type: self.media.kind == ContentMediaKind.svg ? 'svg' : 'image',
         textLatin: self.caption,
         imageUrl: self.media.url,
-        audioUrl: self.meta['audioUrl'] as String?,
+        audioUrl: resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -37,7 +40,9 @@ extension ContentBlockToLegacy on ContentBlock {
         type: 'video',
         textLatin: self.media.caption,
         imageUrl: self.posterUrl, // legacy: poster in imageUrl
-        audioUrl: self.media.url, // legacy: video URL in audioUrl
+        audioUrl: self.media.url.isNotEmpty
+            ? self.media.url
+            : resolvedAudioUrl, // legacy: video URL in audioUrl
         data: blockData,
       );
     }
@@ -47,7 +52,7 @@ extension ContentBlockToLegacy on ContentBlock {
       return LessonBlockEntity(
         type: 'audio',
         textLatin: self.media.caption,
-        audioUrl: self.media.url,
+        audioUrl: self.media.url.isNotEmpty ? self.media.url : resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -57,7 +62,7 @@ extension ContentBlockToLegacy on ContentBlock {
       return LessonBlockEntity(
         type: 'lottie',
         imageUrl: self.media.url,
-        audioUrl: self.meta['audioUrl'] as String?,
+        audioUrl: resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -70,7 +75,7 @@ extension ContentBlockToLegacy on ContentBlock {
         type: 'glyph',
         textOlChiki: self.olChiki,
         textLatin: self.latin,
-        audioUrl: self.audioUrl ?? self.meta['audioUrl'] as String?,
+        audioUrl: self.audioUrl ?? resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -79,7 +84,7 @@ extension ContentBlockToLegacy on ContentBlock {
       return LessonBlockEntity(
         type: 'callout',
         textLatin: self.text,
-        audioUrl: self.meta['audioUrl'] as String?,
+        audioUrl: resolvedAudioUrl,
         data: blockData,
       );
     }
@@ -89,7 +94,7 @@ extension ContentBlockToLegacy on ContentBlock {
     }
     return LessonBlockEntity(
       type: type,
-      audioUrl: self.meta['audioUrl'] as String?,
+      audioUrl: resolvedAudioUrl,
       data: blockData,
     );
   }

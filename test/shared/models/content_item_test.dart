@@ -284,5 +284,79 @@ void main() {
         expect(reconverted.meta['customField'], 'q1');
       },
     );
+
+    test(
+      'TextBlock with top-level audioUrl parses into meta and toLessonBlockEntity',
+      () {
+        final json = {
+          'id': 'b_st4_1',
+          'type': 'text',
+          'textOlChiki':
+              'ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱵᱟᱹᱫᱽ ᱠᱚ ᱥᱚᱱᱟ ᱞᱮᱠᱟ ᱥᱟᱥᱟᱝ ᱦᱳᱲᱳ ᱛᱮ ᱯᱮᱨᱮᱡ ᱮᱱᱟ ᱾',
+          'textLatin': 'Hariyar bad ko sona leka sasang horo te perej ena.',
+          'audioUrl':
+              'https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/story_village_harvest_0/view',
+        };
+
+        final block = ContentBlock.fromJson(json) as TextBlock;
+        expect(
+          block.meta['audioUrl'],
+          'https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/story_village_harvest_0/view',
+        );
+
+        final legacy = block.toLessonBlockEntity();
+        expect(
+          legacy.audioUrl,
+          'https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/story_village_harvest_0/view',
+        );
+
+        // Round-trip through ContentItem
+        final lessonItem = ContentItem.fromJson(
+          {
+            'titleLatin': 'Village Harvest',
+            'blocks': jsonEncode([json]),
+          },
+          'lesson_story_village_harvest',
+          ContentKind.lesson,
+        );
+
+        final lessonEntity = lessonItem.toLessonEntity();
+        expect(
+          lessonEntity.blocks.first.audioUrl,
+          'https://sgp.cloud.appwrite.io/v1/storage/buckets/audio/files/story_village_harvest_0/view',
+        );
+      },
+    );
+
+    test(
+      'Word and Sentence ContentItem preserves audioUrl for toWordModel and toSentenceModel',
+      () {
+        final sentenceItem = ContentItem.fromJson(
+          {
+            'sentenceLatin': 'Johar',
+            'audioUrl': 'https://storage/audio/sentence_1.wav',
+          },
+          'sent_1',
+          ContentKind.sentence,
+        );
+        expect(
+          sentenceItem.toSentenceModel().audioUrl,
+          'https://storage/audio/sentence_1.wav',
+        );
+
+        final wordItem = ContentItem.fromJson(
+          {
+            'wordLatin': 'Johar',
+            'audioUrl': 'https://storage/audio/word_1.wav',
+          },
+          'word_1',
+          ContentKind.word,
+        );
+        expect(
+          wordItem.toWordModel().audioUrl,
+          'https://storage/audio/word_1.wav',
+        );
+      },
+    );
   });
 }

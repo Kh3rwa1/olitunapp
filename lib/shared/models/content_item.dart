@@ -382,6 +382,16 @@ sealed class ContentBlock extends Equatable {
   Map<String, dynamic> toJson();
 }
 
+Map<String, dynamic> _extractBlockMeta(Map<String, dynamic> json) {
+  return <String, dynamic>{
+    if (json['audioUrl'] != null) 'audioUrl': json['audioUrl'],
+    if (json['audio_url'] != null) 'audioUrl': json['audio_url'],
+    if (json['themeColor'] != null) 'themeColor': json['themeColor'],
+    if (json['data'] is Map) ...(json['data'] as Map).cast<String, dynamic>(),
+    if (json['meta'] is Map) ...(json['meta'] as Map).cast<String, dynamic>(),
+  };
+}
+
 class TextBlock extends ContentBlock {
   final String markdown;
   final String? textOlChiki;
@@ -407,7 +417,7 @@ class TextBlock extends ContentBlock {
           '',
       textOlChiki: json['textOlChiki'] as String?,
       textLatin: json['textLatin'] as String?,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -420,6 +430,7 @@ class TextBlock extends ContentBlock {
       'markdown': markdown,
       if (textOlChiki != null) 'textOlChiki': textOlChiki,
       if (textLatin != null) 'textLatin': textLatin,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -461,7 +472,7 @@ class ImageBlock extends ContentBlock {
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       caption: json['caption'] as String? ?? json['textLatin'] as String?,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -473,6 +484,7 @@ class ImageBlock extends ContentBlock {
       'type': 'image',
       'media': media.toJson(),
       if (caption != null) 'caption': caption,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -514,7 +526,7 @@ class VideoBlock extends ContentBlock {
       posterUrl: json['posterUrl'] as String? ?? json['imageUrl'] as String?,
       autoplay: json['autoplay'] as bool? ?? false,
       durationSeconds: json['durationSeconds'] as int?,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -527,6 +539,7 @@ class VideoBlock extends ContentBlock {
     if (posterUrl != null) 'posterUrl': posterUrl,
     'autoplay': autoplay,
     if (durationSeconds != null) 'durationSeconds': durationSeconds,
+    if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
     if (meta.isNotEmpty) 'meta': meta,
   };
 
@@ -559,7 +572,9 @@ class AudioBlock extends ContentBlock {
       parsedMedia = ContentMedia.fromJson(rawMedia.cast<String, dynamic>());
     } else {
       parsedMedia = ContentMedia(
-        url: (json['audioUrl'] ?? json['url'] ?? '') as String,
+        url:
+            (json['audioUrl'] ?? json['audio_url'] ?? json['url'] ?? '')
+                as String,
         fileId: '',
         kind: ContentMediaKind.audio,
       );
@@ -572,7 +587,7 @@ class AudioBlock extends ContentBlock {
       media: parsedMedia,
       transcript:
           json['transcript'] as String? ?? rawData?['transcript'] as String?,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -584,6 +599,7 @@ class AudioBlock extends ContentBlock {
       'type': 'audio',
       'media': media.toJson(),
       if (transcript != null) 'transcript': transcript,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -611,7 +627,9 @@ class LottieBlock extends ContentBlock {
       parsedMedia = ContentMedia.fromJson(rawMedia.cast<String, dynamic>());
     } else {
       parsedMedia = ContentMedia(
-        url: (json['imageUrl'] ?? json['url'] ?? '') as String,
+        url:
+            (json['imageUrl'] ?? json['animationUrl'] ?? json['url'] ?? '')
+                as String,
         fileId: '',
         kind: ContentMediaKind.lottie,
       );
@@ -623,7 +641,7 @@ class LottieBlock extends ContentBlock {
       order: json['order'] as int? ?? 0,
       media: parsedMedia,
       loop: json['loop'] as bool? ?? rawData?['loop'] as bool? ?? true,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -635,6 +653,7 @@ class LottieBlock extends ContentBlock {
       'type': 'lottie',
       'media': media.toJson(),
       'loop': loop,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -665,7 +684,7 @@ class QuizBlock extends ContentBlock {
                   rawData?['quizRefId'] ??
                   '')
               as String,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -676,6 +695,7 @@ class QuizBlock extends ContentBlock {
       'order': order,
       'type': 'quiz',
       'quizId': quizId,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -709,7 +729,7 @@ class GlyphBlock extends ContentBlock {
           '',
       latin: json['latin'] as String? ?? json['textLatin'] as String? ?? '',
       audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -751,7 +771,7 @@ class CalloutBlock extends ContentBlock {
       variant: CalloutVariant.fromString(
         json['variant'] as String? ?? rawData?['style'] as String? ?? 'note',
       ),
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -763,6 +783,7 @@ class CalloutBlock extends ContentBlock {
       'type': 'callout',
       'text': text,
       'variant': variant.name,
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }
@@ -791,7 +812,7 @@ class TracingBlock extends ContentBlock {
             ? json['config'] as Map<String, dynamic>
             : (rawData?.cast<String, dynamic>() ?? const {}),
       ),
-      meta: (json['meta'] as Map?)?.cast<String, dynamic>() ?? const {},
+      meta: _extractBlockMeta(json),
     );
   }
 
@@ -802,6 +823,7 @@ class TracingBlock extends ContentBlock {
       'order': order,
       'type': 'tracing',
       'config': config.toJson(),
+      if (meta.containsKey('audioUrl')) 'audioUrl': meta['audioUrl'],
       if (meta.isNotEmpty) 'meta': meta,
     };
   }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
@@ -48,6 +49,7 @@ class _BannerAdWidgetState extends ConsumerState<BannerAdWidget> {
 
   Future<void> _loadAd() async {
     if (kIsWeb || !mounted) return;
+    if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
 
     final adState = ref.read(adStateProvider);
     if (!adState.shouldShowAds || _hasPersistentError) {

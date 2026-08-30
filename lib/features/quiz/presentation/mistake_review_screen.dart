@@ -10,6 +10,8 @@ import '../../../core/copy/kudos_messages.dart';
 import '../presentation/providers/mistake_provider.dart';
 import '../presentation/widgets/quiz_option_tile.dart';
 import '../presentation/widgets/quiz_feedback_panel.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
 
 class MistakeReviewScreen extends ConsumerStatefulWidget {
   const MistakeReviewScreen({super.key});
@@ -63,6 +65,9 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
             ),
           ),
         ),
+        bottomNavigationBar: const BannerAdWidget(
+          placement: 'mistake_review_bottom',
+        ),
         body: Center(
           child: Padding(
             padding: const EdgeInsets.all(24),
@@ -95,7 +100,13 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                     color: isDark ? Colors.white70 : Colors.black54,
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: 24),
+                const RepaintBoundary(
+                  child: NativeAdWidget(
+                    placement: 'mistake_review_empty_native',
+                  ),
+                ),
+                const SizedBox(height: 24),
                 SizedBox(
                   width: 200,
                   height: 52,
@@ -128,9 +139,12 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
         backgroundColor: isDark
             ? AppColors.darkBackground
             : AppColors.lightBackground,
+        bottomNavigationBar: const BannerAdWidget(
+          placement: 'mistake_review_bottom',
+        ),
         body: SafeArea(
           child: Center(
-            child: Padding(
+            child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -190,7 +204,13 @@ class _MistakeReviewScreenState extends ConsumerState<MistakeReviewScreen> {
                       ],
                     ),
                   ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.1),
-                  const SizedBox(height: 48),
+                  const SizedBox(height: 24),
+                  const RepaintBoundary(
+                    child: NativeAdWidget(
+                      placement: 'mistake_review_complete_native',
+                    ),
+                  ),
+                  const SizedBox(height: 24),
                   SizedBox(
                     width: double.infinity,
                     height: 54,

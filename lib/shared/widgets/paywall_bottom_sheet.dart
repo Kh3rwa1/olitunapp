@@ -14,6 +14,7 @@ import '../providers/purchases_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
 import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../core/ads/widgets/native_ad_widget.dart';
 
 class PaywallBottomSheet extends ConsumerStatefulWidget {
   final CategoryEntity category;
@@ -562,7 +563,11 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                         'Enjoy lifetime access with no renewals or monthly subscriptions.',
                       ),
 
-                      const SizedBox(height: 36),
+                      const SizedBox(height: 24),
+                      const RepaintBoundary(
+                        child: NativeAdWidget(placement: 'paywall_native'),
+                      ),
+                      const SizedBox(height: 24),
 
                       // Platform limitations block
                       if (kIsWeb)

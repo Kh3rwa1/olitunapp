@@ -14,6 +14,8 @@ import '../../domain/quiz_scoring_rules.dart';
 import 'mistake_review_card.dart';
 import '../../../../core/ads/interstitial_ad_manager.dart';
 import '../../../../core/ads/rewarded_ad_manager.dart';
+import '../../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../../core/ads/widgets/banner_ad_widget.dart';
 
 bool get _isTesting {
   try {
@@ -280,6 +282,9 @@ class QuizCompleteScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
+      bottomNavigationBar: const BannerAdWidget(
+        placement: 'quiz_complete_bottom',
+      ),
       body: Stack(
         children: [
           SafeArea(
@@ -561,6 +566,12 @@ class QuizCompleteScreen extends ConsumerWidget {
                             animationIndex: 5,
                           ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.1),
 
+                        const SizedBox(height: 16),
+                        const RepaintBoundary(
+                          child: NativeAdWidget(
+                            placement: 'quiz_complete_native',
+                          ),
+                        ),
                         const SizedBox(height: 16),
                       ],
                     ),

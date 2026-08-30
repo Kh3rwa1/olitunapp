@@ -14,7 +14,7 @@
  *   SARVAM_MODEL="bulbul:v4" (default: bulbul:v4 with auto-fallback to bulbul:v3)
  *   SPEAKER="shubh" (or "aditi", "priya", "amartya")
  *   PACE="0.9" (0.5 to 2.0; 0.9 is ideal for learners)
- *   TARGET="stories" | "sentences" | "words" | "all" (default: stories)
+ *   TARGET="all" | "stories" | "grammar" | "sentences" | "words"
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -23,7 +23,7 @@ const SARVAM_API_KEY = process.env.SARVAM_API_KEY;
 const PREFERRED_MODEL = process.env.SARVAM_MODEL || 'bulbul:v4';
 const SPEAKER = process.env.SPEAKER || 'shubh';
 const PACE = parseFloat(process.env.PACE || '0.9');
-const TARGET = process.env.TARGET || 'stories';
+const TARGET = process.env.TARGET || 'all';
 
 const ENDPOINT = 'https://sgp.cloud.appwrite.io/v1';
 const PROJECT_ID = '699495910038e39622c5';
@@ -55,8 +55,11 @@ let activeModel = PREFERRED_MODEL;
  * Call Sarvam AI Text-To-Speech API
  */
 async function generateSpeech(text, targetLang = 'hi-IN') {
+  const clean = text.replace(/[\(\)\[\]"']/g, '').split('–')[0].split('-')[0].trim();
+  if (!clean) return null;
+
   const payload = {
-    text: text.slice(0, 2500),
+    text: clean.slice(0, 2500),
     language_code: targetLang,
     speaker: SPEAKER,
     model: activeModel,
@@ -104,13 +107,16 @@ async function generateSpeech(text, targetLang = 'hi-IN') {
  * Upload Audio Buffer to Appwrite Storage Bucket
  */
 async function uploadToAppwrite(appwriteHeaders, fileId, audioBuffer, filename = 'speech.wav') {
+  // Sanitize file ID to comply with Appwrite rules (max 36 chars, alphanumeric, _, .)
+  const safeFileId = fileId.toLowerCase().replace(/[^a-z0-9_.]/g, '_').slice(0, 36);
+
   const boundary = '----AppwriteFormBoundary' + Math.random().toString(36).substring(2);
   
   const headerParts = [
     `--${boundary}`,
     `Content-Disposition: form-data; name="fileId"`,
     '',
-    fileId,
+    safeFileId,
     `--${boundary}`,
     `Content-Disposition: form-data; name="file"; filename="${filename}"`,
     `Content-Type: audio/wav`,
@@ -137,7 +143,7 @@ async function uploadToAppwrite(appwriteHeaders, fileId, audioBuffer, filename =
 
   if (res.status === 409) {
     // Already exists
-    return `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${fileId}/view?project=${PROJECT_ID}`;
+    return `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${safeFileId}/view?project=${PROJECT_ID}`;
   }
 
   if (!res.ok) {
@@ -149,34 +155,44 @@ async function uploadToAppwrite(appwriteHeaders, fileId, audioBuffer, filename =
   return `${ENDPOINT}/storage/buckets/${BUCKET_ID}/files/${json.$id}/view?project=${PROJECT_ID}`;
 }
 
-async function processStories(appwriteHeaders) {
-  console.log('\n📖 Generating Sarvam AI Audio for Folktales & Stories...');
+async function processAllLessons(appwriteHeaders) {
+  console.log('\n📖 Generating Sarvam AI Audio for All Sentence, Story & Grammar Lessons...');
   const filePath = new URL('../assets/seed/sentence_lessons.json', import.meta.url);
   const lessons = JSON.parse(readFileSync(filePath, 'utf8'));
 
-  const storyLessons = lessons.filter(l => l.id.startsWith('lesson_story_'));
   let generatedCount = 0;
 
-  for (const lesson of storyLessons) {
-    console.log(`\n📚 Story: ${lesson.titleLatin} (${lesson.id})`);
+  for (const lesson of lessons) {
+    console.log(`\n📚 Lesson: ${lesson.titleLatin || lesson.id} (${lesson.id})`);
     for (let i = 0; i < lesson.blocks.length; i++) {
       const block = lesson.blocks[i];
       if (block.type === 'quiz') continue;
 
+      if (block.audioUrl && block.audioUrl.startsWith('http')) {
+        console.log(`  [${i + 1}/${lesson.blocks.length}] ⏭️ Already has audio`);
+        continue;
+      }
+
       const speechText = block.textLatin || block.textOlChiki || '';
       if (!speechText) continue;
 
-      // Extract pronunciation or text
-      const cleanPrompt = speechText.replace(/[\(\)\[\]"]/g, '').split('–')[0].trim();
-      const fileId = `story_${lesson.id.replace('lesson_story_', '')}_${i}`;
+      const cleanPrompt = speechText.replace(/[\(\)\[\]"]/g, '').split('–')[0].split('-')[0].trim();
+      const prefix = lesson.id.replace('lesson_', '');
+      const fileId = `snd_${prefix}_${i}`.slice(0, 36);
 
       try {
         process.stdout.write(`  [${i + 1}/${lesson.blocks.length}] "${cleanPrompt.slice(0, 30)}..." -> `);
         const audioBuf = await generateSpeech(cleanPrompt);
+        if (!audioBuf) {
+          console.log(`⚠️ Empty text prompt, skipping`);
+          continue;
+        }
         const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
         block.audioUrl = fileUrl;
         console.log(`✅ ${fileUrl}`);
         generatedCount++;
+        // Small delay to avoid rate limits
+        await new Promise(r => setTimeout(r, 200));
       } catch (e) {
         console.log(`❌ Error: ${e.message}`);
       }
@@ -184,7 +200,42 @@ async function processStories(appwriteHeaders) {
   }
 
   writeFileSync(filePath, JSON.stringify(lessons, null, 2), 'utf8');
-  console.log(`\n🎉 Updated assets/seed/sentence_lessons.json with ${generatedCount} Sarvam audio URLs!`);
+  console.log(`\n🎉 Updated assets/seed/sentence_lessons.json with ${generatedCount} new Sarvam audio URLs!`);
+}
+
+async function processWords(appwriteHeaders) {
+  console.log('\n🔤 Generating Sarvam AI Audio for Vocabulary Words...');
+  const filePath = new URL('../assets/seed/words.json', import.meta.url);
+  const words = JSON.parse(readFileSync(filePath, 'utf8'));
+
+  let generatedCount = 0;
+  // Generate audio for top words
+  const wordsToProcess = words.slice(0, 100);
+
+  for (let i = 0; i < wordsToProcess.length; i++) {
+    const word = wordsToProcess[i];
+    if (word.audioUrl && word.audioUrl.startsWith('http')) continue;
+
+    const speechText = word.latin || word.santaliLatin || word.wordLatin || word.santali || '';
+    if (!speechText) continue;
+
+    const fileId = `word_${word.id || i}`.slice(0, 36);
+    try {
+      process.stdout.write(`  [${i + 1}/${wordsToProcess.length}] "${speechText}" -> `);
+      const audioBuf = await generateSpeech(speechText);
+      if (!audioBuf) continue;
+      const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
+      word.audioUrl = fileUrl;
+      console.log(`✅ ${fileUrl}`);
+      generatedCount++;
+      await new Promise(r => setTimeout(r, 200));
+    } catch (e) {
+      console.log(`❌ Error: ${e.message}`);
+    }
+  }
+
+  writeFileSync(filePath, JSON.stringify(words, null, 2), 'utf8');
+  console.log(`\n🎉 Updated assets/seed/words.json with ${generatedCount} word audio URLs!`);
 }
 
 async function main() {
@@ -196,11 +247,12 @@ async function main() {
 
   const appwriteHeaders = getAppwriteHeaders();
 
-  if (TARGET === 'stories' || TARGET === 'all') {
-    await processStories(appwriteHeaders);
+  await processAllLessons(appwriteHeaders);
+  if (TARGET === 'words' || TARGET === 'all') {
+    await processWords(appwriteHeaders);
   }
 
-  console.log('\n🏁 Audio pipeline execution finished successfully!');
+  console.log('\n🏁 Complete audio pipeline execution finished successfully!');
 }
 
 main().catch(err => {

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 final audioServiceProvider = Provider((ref) => AudioService());
 
 class AudioService {
-  final AudioPlayer _player = AudioPlayer();
+  AudioPlayer _player = AudioPlayer();
 
   /// Single source of truth for "is audio currently playing".
   ///
@@ -16,17 +17,31 @@ class AudioService {
       _player.playerStateStream.map((state) => state.playing);
 
   Future<void> playUrl(String url) async {
+    if (url.isEmpty) return;
     try {
       await _player.stop();
       await _player.setUrl(url);
       await _player.play();
     } catch (e) {
-      AppLogger.debug('Error playing audio: $e');
+      AppLogger.warning('AudioService playUrl failed: $e');
+      if (kIsWeb) {
+        try {
+          // Re-create player on web if the web audio context / element got stuck
+          await _player.dispose();
+          _player = AudioPlayer();
+          await _player.setUrl(url);
+          await _player.play();
+        } catch (webErr) {
+          AppLogger.warning('AudioService web fallback failed: $webErr');
+        }
+      }
     }
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    try {
+      await _player.stop();
+    } catch (_) {}
   }
 
   void dispose() {

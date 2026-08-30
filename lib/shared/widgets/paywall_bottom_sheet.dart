@@ -639,7 +639,9 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                             width: double.infinity,
                             height: 56,
                             child: OutlinedButton(
-                              onPressed: _isLoading ? null : _handleReviewUnlock,
+                              onPressed: _isLoading
+                                  ? null
+                                  : _handleReviewUnlock,
                               style: OutlinedButton.styleFrom(
                                 side: const BorderSide(
                                   color: AppColors.primary,

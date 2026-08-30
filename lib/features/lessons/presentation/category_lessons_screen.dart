@@ -825,9 +825,7 @@ class _LessonCard extends StatelessWidget {
           decoration: BoxDecoration(
             color: activeBgColor,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: activeBorderColor,
-            ),
+            border: Border.all(color: activeBorderColor),
             boxShadow: isDark
                 ? null
                 : [
@@ -849,11 +847,7 @@ class _LessonCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        _buildLevelBadge(lesson.level, isDark),
-                      ],
-                    ),
+                    Row(children: [_buildLevelBadge(lesson.level, isDark)]),
                     const SizedBox(height: 10),
                     Text(
                       primaryTitle,

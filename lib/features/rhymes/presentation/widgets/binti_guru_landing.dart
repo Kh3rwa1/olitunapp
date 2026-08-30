@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/ads/widgets/native_ad_widget.dart';
 import 'binti_guru_form_sheet.dart';
 
 class BintiGuruLanding extends StatelessWidget {
@@ -113,7 +114,11 @@ class BintiGuruLanding extends StatelessWidget {
           ),
         ),
 
-        const SizedBox(height: 32),
+        const SizedBox(height: 24),
+        const RepaintBoundary(
+          child: NativeAdWidget(placement: 'binti_guru_native'),
+        ),
+        const SizedBox(height: 24),
 
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 4),

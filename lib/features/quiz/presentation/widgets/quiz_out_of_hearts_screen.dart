@@ -7,6 +7,8 @@ import '../../../../shared/models/content_models.dart';
 import '../../domain/quiz_scoring_rules.dart';
 import '../providers/quiz_session_notifier.dart';
 import '../../../../core/ads/rewarded_ad_manager.dart';
+import '../../../../core/ads/widgets/native_ad_widget.dart';
+import '../../../../core/ads/widgets/banner_ad_widget.dart';
 
 class QuizOutOfHeartsScreen extends ConsumerWidget {
   final int score;
@@ -235,6 +237,9 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
+      bottomNavigationBar: const BannerAdWidget(
+        placement: 'quiz_out_of_hearts_bottom',
+      ),
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
@@ -298,6 +303,11 @@ class QuizOutOfHeartsScreen extends ConsumerWidget {
                 ),
               ).animate().fadeIn(delay: 200.ms, duration: 400.ms),
               const Spacer(),
+
+              const RepaintBoundary(
+                child: NativeAdWidget(placement: 'quiz_out_of_hearts_native'),
+              ),
+              const SizedBox(height: 16),
 
               // Rewarded ad to refill hearts
               SizedBox(

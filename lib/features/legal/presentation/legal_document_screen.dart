@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
+import '../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../core/ads/widgets/native_ad_widget.dart';
 
 enum LegalDocumentType { privacy, terms }
 
@@ -23,6 +25,7 @@ class LegalDocumentScreen extends StatelessWidget {
       backgroundColor: isDark
           ? AppColors.darkBackground
           : AppColors.lightBackground,
+      bottomNavigationBar: const BannerAdWidget(placement: 'legal_bottom'),
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -79,6 +82,11 @@ class LegalDocumentScreen extends StatelessWidget {
                       ),
                       const SizedBox(height: 22),
                     ],
+                    const SizedBox(height: 16),
+                    const RepaintBoundary(
+                      child: NativeAdWidget(placement: 'legal_native'),
+                    ),
+                    const SizedBox(height: 24),
                   ],
                 ),
               ),

@@ -453,6 +453,16 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                 },
               ),
             ),
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.fromLTRB(16, 8, 16, 8),
+                child: RepaintBoundary(
+                  child: NativeAdWidget(
+                    placement: 'category_lessons_header_native',
+                  ),
+                ),
+              ),
+            ),
             lessons.when(
               data: (data) {
                 if (data.isEmpty) {

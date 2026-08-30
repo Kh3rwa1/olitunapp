@@ -1,12 +1,16 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:convert';
 import 'package:appwrite/appwrite.dart';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:fpdart/fpdart.dart';
 import 'package:itun/core/api/appwrite_databases_pagination.dart';
 import 'package:itun/core/config/appwrite_config.dart';
 import 'package:itun/core/error/failures.dart';
 import 'package:itun/core/network/network_info.dart';
 import 'package:itun/core/storage/cache_service.dart';
+import 'package:itun/features/lessons/data/models/lesson_model.dart';
 import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/models/content_item_extensions.dart';
 
 // Provider-level API lives in ../providers/content_providers.dart;
 // re-exported here for compatibility.
@@ -21,6 +25,221 @@ class ContentRepository {
     required NetworkInfo networkInfo,
   }) : _databases = databases,
        _networkInfo = networkInfo;
+
+  static List<ContentItem>? _cachedBundledSentenceLessons;
+  static List<ContentItem>? _cachedBundledVocabLessons;
+  static List<ContentItem>? _cachedBundledSentences;
+  static List<ContentItem>? _cachedBundledWords;
+
+  static Future<List<ContentItem>> _loadBundledSeedItems(
+    ContentKind kind,
+    String? categoryId,
+  ) async {
+    try {
+      if (kind == ContentKind.lesson) {
+        final List<ContentItem> allLessons = [];
+
+        // 1. Sentence & Grammar & Folktale Lessons (23 lessons)
+        if (_cachedBundledSentenceLessons == null) {
+          try {
+            final jsonStr = await rootBundle.loadString(
+              'assets/seed/sentence_lessons.json',
+            );
+            final raw = jsonDecode(jsonStr) as List<dynamic>;
+            _cachedBundledSentenceLessons = raw
+                .cast<Map<String, dynamic>>()
+                .map((map) {
+                  final lesson = LessonModel.fromJson(map);
+                  return ContentItem(
+                    id: lesson.id,
+                    kind: ContentKind.lesson,
+                    categoryId: lesson.categoryId.isNotEmpty
+                        ? lesson.categoryId
+                        : 'cat_sentences',
+                    title: lesson.titleLatin,
+                    titleOlChiki: lesson.titleOlChiki.isNotEmpty
+                        ? lesson.titleOlChiki
+                        : null,
+                    subtitle: lesson.description,
+                    order: lesson.order,
+                    durationSeconds: lesson.estimatedMinutes * 60,
+                    blocks: lesson.blocks
+                        .asMap()
+                        .entries
+                        .map((e) => e.value.toContentBlock(e.key))
+                        .toList(),
+                    isPublished: true,
+                    updatedAt: DateTime(2026, 8, 30),
+                  );
+                })
+                .toList();
+          } catch (_) {
+            _cachedBundledSentenceLessons = [];
+          }
+        }
+
+        // 2. Vocab Lessons (14 lessons)
+        if (_cachedBundledVocabLessons == null) {
+          try {
+            final jsonStr = await rootBundle.loadString(
+              'assets/seed/vocab_lessons.json',
+            );
+            final raw = jsonDecode(jsonStr) as List<dynamic>;
+            _cachedBundledVocabLessons = raw
+                .cast<Map<String, dynamic>>()
+                .map((map) {
+                  final lesson = LessonModel.fromJson(map);
+                  return ContentItem(
+                    id: lesson.id,
+                    kind: ContentKind.lesson,
+                    categoryId: lesson.categoryId.isNotEmpty
+                        ? lesson.categoryId
+                        : 'cat_vocab',
+                    title: lesson.titleLatin,
+                    titleOlChiki: lesson.titleOlChiki.isNotEmpty
+                        ? lesson.titleOlChiki
+                        : null,
+                    subtitle: lesson.description,
+                    order: lesson.order,
+                    durationSeconds: lesson.estimatedMinutes * 60,
+                    blocks: lesson.blocks
+                        .asMap()
+                        .entries
+                        .map((e) => e.value.toContentBlock(e.key))
+                        .toList(),
+                    isPublished: true,
+                    updatedAt: DateTime(2026, 8, 30),
+                  );
+                })
+                .toList();
+          } catch (_) {
+            _cachedBundledVocabLessons = [];
+          }
+        }
+
+        allLessons.addAll(_cachedBundledSentenceLessons ?? []);
+        allLessons.addAll(_cachedBundledVocabLessons ?? []);
+
+        if (categoryId != null && categoryId.isNotEmpty) {
+          return allLessons.where((l) {
+            if (categoryId == 'cat_sentences' ||
+                categoryId == 'seed_sentences' ||
+                categoryId.contains('sentence')) {
+              return l.categoryId == 'cat_sentences' ||
+                  l.categoryId == 'seed_sentences' ||
+                  l.id.contains('sentence') ||
+                  l.id.contains('grammar') ||
+                  l.id.contains('story');
+            }
+            if (categoryId == 'cat_vocab' ||
+                categoryId == 'cat_words' ||
+                categoryId == 'seed_words' ||
+                categoryId.contains('vocab') ||
+                categoryId.contains('word')) {
+              return l.categoryId == 'cat_vocab' ||
+                  l.categoryId == 'cat_words' ||
+                  l.categoryId == 'seed_words' ||
+                  l.id.contains('vocab');
+            }
+            return l.categoryId == categoryId;
+          }).toList();
+        }
+        return allLessons;
+      }
+
+      if (kind == ContentKind.sentence) {
+        if (_cachedBundledSentences == null) {
+          try {
+            final jsonStr = await rootBundle.loadString(
+              'assets/seed/sentences.json',
+            );
+            final raw = jsonDecode(jsonStr) as List<dynamic>;
+            _cachedBundledSentences = raw
+                .cast<Map<String, dynamic>>()
+                .map((s) {
+                  return ContentItem(
+                    id: s['id'] as String? ?? '',
+                    kind: ContentKind.sentence,
+                    categoryId: s['category'] as String? ?? 'cat_sentences',
+                    category: s['category'] as String? ?? 'General',
+                    title: s['sentenceLatin'] as String? ?? '',
+                    titleOlChiki: s['sentenceOlChiki'] as String?,
+                    olChiki: s['sentenceOlChiki'] as String?,
+                    subtitle: s['meaning'] as String?,
+                    order: s['order'] as int? ?? 1,
+                    blocks: const [],
+                    tags: [
+                      if (s['usage'] != null) s['usage'] as String,
+                      if (s['pronunciation'] != null)
+                        'pronunciation:${s['pronunciation']}',
+                    ],
+                    isPublished: s['isActive'] as bool? ?? true,
+                    updatedAt: DateTime(2026, 8, 30),
+                  );
+                })
+                .toList();
+          } catch (_) {
+            _cachedBundledSentences = [];
+          }
+        }
+        return _cachedBundledSentences ?? [];
+      }
+
+      if (kind == ContentKind.word) {
+        if (_cachedBundledWords == null) {
+          try {
+            final jsonStr = await rootBundle.loadString(
+              'assets/seed/words.json',
+            );
+            final raw = jsonDecode(jsonStr) as List<dynamic>;
+            _cachedBundledWords = raw
+                .cast<Map<String, dynamic>>()
+                .map((w) {
+                  return ContentItem(
+                    id: w['id'] as String? ?? '',
+                    kind: ContentKind.word,
+                    categoryId: w['category'] as String? ?? 'cat_vocab',
+                    category: w['category'] as String? ?? 'General',
+                    title: w['wordLatin'] as String? ?? '',
+                    titleOlChiki: w['wordOlChiki'] as String?,
+                    olChiki: w['wordOlChiki'] as String?,
+                    subtitle: w['meaning'] as String?,
+                    order: w['order'] as int? ?? 1,
+                    blocks: const [],
+                    tags: [
+                      if (w['pronunciation'] != null)
+                        'pronunciation:${w['pronunciation']}',
+                    ],
+                    isPublished: w['isActive'] as bool? ?? true,
+                    updatedAt: DateTime(2026, 8, 30),
+                  );
+                })
+                .toList();
+          } catch (_) {
+            _cachedBundledWords = [];
+          }
+        }
+        return _cachedBundledWords ?? [];
+      }
+    } catch (_) {}
+    return [];
+  }
+
+  static List<ContentItem> _mergeContentItems(
+    List<ContentItem> bundled,
+    List<ContentItem> remote,
+  ) {
+    final Map<String, ContentItem> byId = {};
+    for (final item in bundled) {
+      byId[item.id] = item;
+    }
+    for (final item in remote) {
+      byId[item.id] = item;
+    }
+    final list = byId.values.toList();
+    list.sort((a, b) => a.order.compareTo(b.order));
+    return list;
+  }
 
   String _getCollectionId(ContentKind kind) {
     switch (kind) {
@@ -71,6 +290,9 @@ class ContentRepository {
     final collectionId = _getCollectionId(kind);
     final cacheKey = _cacheListKey(kind, categoryId);
 
+    // 1. Always retrieve full bundled seed dataset
+    final bundledItems = await _loadBundledSeedItems(kind, categoryId);
+
     if (await _networkInfo.isConnected) {
       try {
         final categoryAttribute = _categoryAttribute(kind);
@@ -90,26 +312,39 @@ class ContentRepository {
           queries: queries,
         );
 
-        final items = response.map((doc) {
+        final remoteItems = response.map((doc) {
           return ContentItem.fromJson(doc.data, doc.$id, kind);
         }).toList();
 
+        // Merge remote items with full bundled catalog (bundled seed content always available)
+        final mergedItems = _mergeContentItems(bundledItems, remoteItems);
+
         // Update local cache
-        final cachedData = items.map((e) => e.toJson()).toList();
+        final cachedData = mergedItems.map((e) => e.toJson()).toList();
         await CacheService.set(cacheKey, cachedData);
 
         // Also cache individual items
-        for (final item in items) {
+        for (final item in mergedItems) {
           await CacheService.set(_cacheItemKey(kind, item.id), item.toJson());
         }
 
-        return right(items);
+        return right(mergedItems);
       } catch (e) {
-        // Fallback to cache on error
-        return _getCachedList(kind, categoryId, e.toString());
+        // Fallback to cache or bundled seeds on error
+        return _getCachedList(
+          kind,
+          categoryId,
+          e.toString(),
+          fallback: bundledItems,
+        );
       }
     } else {
-      return _getCachedList(kind, categoryId, 'No internet connection');
+      return _getCachedList(
+        kind,
+        categoryId,
+        'No internet connection',
+        fallback: bundledItems,
+      );
     }
   }
 
@@ -216,8 +451,9 @@ class ContentRepository {
   Future<Either<Failure, List<ContentItem>>> _getCachedList(
     ContentKind kind,
     String? categoryId,
-    String originalError,
-  ) async {
+    String originalError, {
+    List<ContentItem>? fallback,
+  }) async {
     try {
       final cacheKey = _cacheListKey(kind, categoryId);
       final cached = await CacheService.getList<ContentItem>(
@@ -225,62 +461,23 @@ class ContentRepository {
         (data) => ContentItem.fromJson(data, null, kind),
       );
 
+      final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);
+
       if (cached != null && cached.isNotEmpty) {
-        return right(cached);
+        final merged = _mergeContentItems(bundled, cached);
+        return right(merged);
       }
 
-      final fallbackItems = _fallbackSeedItems.where((item) {
-        final matchesKind = item.kind == kind;
-        if (categoryId != null && categoryId.isNotEmpty) {
-          if (categoryId == 'cat_vocab' ||
-              categoryId == 'cat_words' ||
-              categoryId == 'seed_words') {
-            return matchesKind &&
-                (item.categoryId == 'cat_vocab' ||
-                    item.categoryId == 'cat_words' ||
-                    item.categoryId == 'seed_words');
-          }
-          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
-            return matchesKind &&
-                (item.categoryId == 'cat_sentences' ||
-                    item.categoryId == 'seed_sentences');
-          }
-          return matchesKind && item.categoryId == categoryId;
-        }
-        return matchesKind;
-      }).toList();
-
-      if (fallbackItems.isNotEmpty) {
-        return right(fallbackItems);
+      if (bundled.isNotEmpty) {
+        return right(bundled);
       }
 
       return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
     } catch (e) {
-      final fallbackItems = _fallbackSeedItems.where((item) {
-        final matchesKind = item.kind == kind;
-        if (categoryId != null && categoryId.isNotEmpty) {
-          if (categoryId == 'cat_vocab' ||
-              categoryId == 'cat_words' ||
-              categoryId == 'seed_words') {
-            return matchesKind &&
-                (item.categoryId == 'cat_vocab' ||
-                    item.categoryId == 'cat_words' ||
-                    item.categoryId == 'seed_words');
-          }
-          if (categoryId == 'cat_sentences' || categoryId == 'seed_sentences') {
-            return matchesKind &&
-                (item.categoryId == 'cat_sentences' ||
-                    item.categoryId == 'seed_sentences');
-          }
-          return matchesKind && item.categoryId == categoryId;
-        }
-        return matchesKind;
-      }).toList();
-
-      if (fallbackItems.isNotEmpty) {
-        return right(fallbackItems);
+      final bundled = fallback ?? await _loadBundledSeedItems(kind, categoryId);
+      if (bundled.isNotEmpty) {
+        return right(bundled);
       }
-
       return right([synthesizeFallbackItem(kind, '${kind.name}_fallback_1')]);
     }
   }
@@ -326,6 +523,17 @@ class ContentRepository {
         return right(cached);
       }
 
+      // Check bundled seed items
+      final bundled = await _loadBundledSeedItems(kind, null);
+      final bundledItem = bundled.cast<ContentItem?>().firstWhere(
+        (item) => item?.id == id,
+        orElse: () => null,
+      );
+
+      if (bundledItem != null) {
+        return right(bundledItem);
+      }
+
       final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
         (item) => item?.id == id && item?.kind == kind,
         orElse: () => null,
@@ -338,6 +546,16 @@ class ContentRepository {
       // Synthesize a high-quality fallback ContentItem on-the-fly to guarantee zero crashes
       return right(synthesizeFallbackItem(kind, id));
     } catch (e) {
+      final bundled = await _loadBundledSeedItems(kind, null);
+      final bundledItem = bundled.cast<ContentItem?>().firstWhere(
+        (item) => item?.id == id,
+        orElse: () => null,
+      );
+
+      if (bundledItem != null) {
+        return right(bundledItem);
+      }
+
       final fallbackItem = _fallbackSeedItems.cast<ContentItem?>().firstWhere(
         (item) => item?.id == id && item?.kind == kind,
         orElse: () => null,

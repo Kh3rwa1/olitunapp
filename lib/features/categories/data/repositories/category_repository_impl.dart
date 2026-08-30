@@ -76,7 +76,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           iconName: 'vocabulary',
           gradientPreset: 'rose',
           order: 2,
-          totalLessons: 5,
+          totalLessons: 14,
         ),
         CategoryEntity(
           id: 'cat_sentences',
@@ -85,7 +85,7 @@ class CategoryRepositoryImpl implements CategoryRepository {
           iconName: 'sentences',
           gradientPreset: 'emerald',
           order: 3,
-          totalLessons: 1,
+          totalLessons: 23,
         ),
         CategoryEntity(
           id: 'cat_greetings',

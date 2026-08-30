@@ -38,6 +38,7 @@ class SentencesNotifier extends Notifier<AsyncValue<List<SentenceModel>>> {
   }
 
   Future<void> _loadSentences() async {
+    final seed = await loadSeedSentences();
     try {
       final db = ref.read(appwriteDbServiceProvider);
       final data = await db.listDocuments(
@@ -45,10 +46,17 @@ class SentencesNotifier extends Notifier<AsyncValue<List<SentenceModel>>> {
         queries: [Query.orderAsc('order'), Query.limit(500)],
       );
       if (_disposed) return;
-      state = AsyncValue.data(data.map(SentenceModel.fromJson).toList());
+      final remote = data.map(SentenceModel.fromJson).toList();
+      final Map<String, SentenceModel> map = {for (final s in seed) s.id: s};
+      for (final r in remote) {
+        map[r.id] = r;
+      }
+      final merged = map.values.toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+      state = AsyncValue.data(merged);
     } catch (e) {
       if (_disposed) return;
-      state = AsyncValue.data(await loadSeedSentences());
+      state = AsyncValue.data(seed);
     }
   }
 

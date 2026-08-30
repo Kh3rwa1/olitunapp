@@ -1,4 +1,6 @@
 import 'dart:async';
+import 'dart:convert';
+import 'package:flutter/services.dart' show rootBundle;
 import 'package:fpdart/fpdart.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -18,6 +20,56 @@ class LessonRepositoryImpl implements LessonRepository {
 
   /// In-flight request deduplication map to prevent redundant concurrent fetches.
   final Map<String, Future<List<LessonModel>>> _inFlightRefreshes = {};
+
+  static List<LessonEntity>? _cachedBundledLessons;
+
+  static Future<List<LessonEntity>> _loadBundledSeedLessons() async {
+    if (_cachedBundledLessons != null) return _cachedBundledLessons!;
+    final List<LessonEntity> result = [];
+    try {
+      final jsonStrSentences = await rootBundle.loadString(
+        'assets/seed/sentence_lessons.json',
+      );
+      final rawSentences = jsonDecode(jsonStrSentences) as List<dynamic>;
+      result.addAll(
+        rawSentences
+            .cast<Map<String, dynamic>>()
+            .map((map) => LessonModel.fromJson(map).toEntity()),
+      );
+    } catch (_) {}
+
+    try {
+      final jsonStrVocab = await rootBundle.loadString(
+        'assets/seed/vocab_lessons.json',
+      );
+      final rawVocab = jsonDecode(jsonStrVocab) as List<dynamic>;
+      result.addAll(
+        rawVocab
+            .cast<Map<String, dynamic>>()
+            .map((map) => LessonModel.fromJson(map).toEntity()),
+      );
+    } catch (_) {}
+
+    result.addAll(_staticSeedLessons);
+    _cachedBundledLessons = result;
+    return result;
+  }
+
+  static List<LessonEntity> _mergeLessons(
+    List<LessonEntity> bundled,
+    List<LessonEntity> remote,
+  ) {
+    final Map<String, LessonEntity> byId = {};
+    for (final item in bundled) {
+      byId[item.id] = item;
+    }
+    for (final item in remote) {
+      byId[item.id] = item;
+    }
+    final list = byId.values.toList();
+    list.sort((a, b) => a.order.compareTo(b.order));
+    return list;
+  }
 
   LessonRepositoryImpl({
     required this.remoteDataSource,
@@ -48,9 +100,9 @@ class LessonRepositoryImpl implements LessonRepository {
   }
 
   /// Triggers an in-flight deduplicated background revalidation.
+  /// If a fetch for [categoryId] is already in progress, returns the existing Future.
   Future<List<LessonModel>> _revalidateLessons({String? categoryId}) {
-    final key = categoryId == null ? 'all' : 'cat_$categoryId';
-
+    final key = categoryId ?? '__all__';
     if (_inFlightRefreshes.containsKey(key)) {
       return _inFlightRefreshes[key]!;
     }

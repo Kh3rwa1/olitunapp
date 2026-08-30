@@ -1,3 +1,4 @@
+import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -45,6 +46,7 @@ class _NativeAdWidgetState extends ConsumerState<NativeAdWidget> {
 
   void _loadNativeAd() {
     if (kIsWeb || !mounted) return;
+    if (!kIsWeb && Platform.environment.containsKey('FLUTTER_TEST')) return;
 
     final adState = ref.read(adStateProvider);
     if (!adState.shouldShowAds) return;

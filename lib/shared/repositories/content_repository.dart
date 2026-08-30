@@ -164,6 +164,7 @@ class ContentRepository {
                 olChiki: s['sentenceOlChiki'] as String?,
                 subtitle: s['meaning'] as String?,
                 order: s['order'] as int? ?? 1,
+                audioUrl: s['audioUrl'] as String? ?? s['audio_url'] as String?,
                 blocks: const [],
                 tags: [
                   if (s['usage'] != null) s['usage'] as String,
@@ -199,6 +200,7 @@ class ContentRepository {
                 olChiki: w['wordOlChiki'] as String?,
                 subtitle: w['meaning'] as String?,
                 order: w['order'] as int? ?? 1,
+                audioUrl: w['audioUrl'] as String? ?? w['audio_url'] as String?,
                 blocks: const [],
                 tags: [
                   if (w['pronunciation'] != null)

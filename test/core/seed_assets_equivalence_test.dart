@@ -10,9 +10,9 @@ import 'package:flutter_test/flutter_test.dart';
 void main() {
   const expectedCounts = <String, int>{
     'assets/seed/vocab_lessons.json': 14,
-    'assets/seed/sentence_lessons.json': 15,
+    'assets/seed/sentence_lessons.json': 23,
     'assets/seed/words.json': 415,
-    'assets/seed/sentences.json': 105,
+    'assets/seed/sentences.json': 250,
   };
 
   String? latinText(Map<String, dynamic> item) =>

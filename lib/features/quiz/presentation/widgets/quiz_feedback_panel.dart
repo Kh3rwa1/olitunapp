@@ -68,21 +68,42 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
         ? (isDark ? 'Sange! (Correct)' : 'Correct!')
         : 'Incorrect';
 
+    final String olChiki = widget.correctOptionOlChiki.trim();
+    final String latin = widget.correctOptionLatin.trim();
+    final bool hasDistinctOlChiki = olChiki.isNotEmpty && olChiki != latin;
+
     // Premium dynamic fallback explanations for absolute premium experience
-    final String displayExplanation =
-        (widget.explanation != null && widget.explanation!.trim().isNotEmpty)
-        ? widget.explanation!
-        : (widget.isCorrect
-              ? 'Splendid! You matched the correct Ol Chiki glyph "${widget.correctOptionOlChiki}" with its designated latin sound "${widget.correctOptionLatin}". Your learning retention is skyrocketing!'
-              : 'Observe the shape of the character carefully. The glyph "${widget.correctOptionOlChiki}" corresponds directly to the sound "${widget.correctOptionLatin}". Study this relation to solidify your recall.');
+    final String displayExplanation;
+    if (widget.explanation != null && widget.explanation!.trim().isNotEmpty) {
+      displayExplanation = widget.explanation!.trim();
+    } else if (widget.isCorrect) {
+      if (hasDistinctOlChiki) {
+        displayExplanation =
+            'Splendid! You matched "$olChiki" with its designated sound "$latin". Your recall is spot-on!';
+      } else {
+        displayExplanation =
+            'Splendid! "$latin" is the correct answer. Keep up the great work!';
+      }
+    } else {
+      if (hasDistinctOlChiki) {
+        displayExplanation =
+            'Observe carefully: The character "$olChiki" corresponds to the sound "$latin". Review this relation to solidify your recall.';
+      } else {
+        displayExplanation =
+            'The correct answer is "$latin". Study this relation to solidify your recall.';
+      }
+    }
+
+    final maxHeight = MediaQuery.of(context).size.height * 0.55;
 
     return Container(
       width: double.infinity,
+      constraints: BoxConstraints(maxHeight: maxHeight),
       padding: EdgeInsets.fromLTRB(
         24,
-        20,
+        16,
         24,
-        MediaQuery.of(context).padding.bottom + 20,
+        MediaQuery.of(context).padding.bottom + 16,
       ),
       decoration: BoxDecoration(
         color: backgroundColor,
@@ -99,166 +120,177 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
+      child: SafeArea(
+        top: false,
+        child: SingleChildScrollView(
+          physics: const BouncingScrollPhysics(),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: widget.isCorrect
-                      ? AppColors.primary.withValues(alpha: 0.2)
-                      : AppColors.error.withValues(alpha: 0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  widget.isCorrect
-                      ? Icons.check_circle_rounded
-                      : Icons.cancel_rounded,
-                  color: iconColor,
-                  size: 28,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Text(
-                titleText,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  color: textColor,
-                ),
-              ),
-            ],
-          ),
-          if (!widget.isCorrect) ...[
-            const SizedBox(height: 12),
-            Text(
-              'Correct Answer:',
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isDark ? Colors.white60 : Colors.black54,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Row(
-              children: [
-                if (widget.correctOptionOlChiki.isNotEmpty) ...[
-                  Text(
-                    widget.correctOptionOlChiki,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      fontFamily: 'OlChiki',
-                      color: isDark ? Colors.white : Colors.black,
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: widget.isCorrect
+                          ? AppColors.primary.withValues(alpha: 0.2)
+                          : AppColors.error.withValues(alpha: 0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      widget.isCorrect
+                          ? Icons.check_circle_rounded
+                          : Icons.cancel_rounded,
+                      color: iconColor,
+                      size: 28,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 12),
                   Text(
-                    '•',
+                    titleText,
                     style: TextStyle(
-                      color: isDark ? Colors.white30 : Colors.black26,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      color: textColor,
                     ),
                   ),
-                  const SizedBox(width: 8),
                 ],
-                Expanded(
-                  child: Text(
-                    widget.correctOptionLatin,
+              ),
+              if (!widget.isCorrect) ...[
+                const SizedBox(height: 10),
+                Text(
+                  'Correct Answer:',
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isDark ? Colors.white60 : Colors.black54,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                if (hasDistinctOlChiki)
+                  Wrap(
+                    crossAxisAlignment: WrapCrossAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      Text(
+                        olChiki,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          fontFamily: 'OlChiki',
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                      Text(
+                        '•',
+                        style: TextStyle(
+                          color: isDark ? Colors.white30 : Colors.black26,
+                        ),
+                      ),
+                      Text(
+                        latin,
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600,
+                          color: isDark ? Colors.white : Colors.black,
+                        ),
+                      ),
+                    ],
+                  )
+                else
+                  Text(
+                    latin.isNotEmpty ? latin : olChiki,
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white : Colors.black,
                     ),
                   ),
-                ),
               ],
-            ),
-          ],
-
-          const SizedBox(height: 12),
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: isDark
-                  ? Colors.white.withValues(alpha: 0.04)
-                  : Colors.black.withValues(alpha: 0.02),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: isDark
-                    ? Colors.white.withValues(alpha: 0.06)
-                    : Colors.black.withValues(alpha: 0.05),
-              ),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Row(
+              const SizedBox(height: 12),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(14),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.02),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.06)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Icon(
-                      Icons.info_outline_rounded,
-                      size: 14,
-                      color: textColor.withValues(alpha: 0.8),
+                    Row(
+                      children: [
+                        Icon(
+                          Icons.info_outline_rounded,
+                          size: 14,
+                          color: textColor.withValues(alpha: 0.8),
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Insight & Guidance:',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: textColor.withValues(alpha: 0.8),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(width: 6),
+                    const SizedBox(height: 6),
                     Text(
-                      'Insight & Guidance:',
+                      displayExplanation,
                       style: TextStyle(
-                        fontSize: 12,
-                        fontWeight: FontWeight.bold,
-                        color: textColor.withValues(alpha: 0.8),
+                        fontSize: 13,
+                        color: isDark ? Colors.white70 : Colors.black87,
+                        height: 1.4,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 6),
-                Text(
-                  displayExplanation,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: isDark ? Colors.white70 : Colors.black87,
-                    height: 1.4,
+              ),
+              const SizedBox(height: 16),
+              SizedBox(
+                width: double.infinity,
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: () {
+                    try {
+                      HapticFeedback.lightImpact();
+                    } catch (_) {}
+                    widget.onContinue();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: widget.isCorrect
+                        ? AppColors.primary
+                        : AppColors.error,
+                    foregroundColor: Colors.white,
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: const Text(
+                    'Continue',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 0.5,
+                    ),
                   ),
                 ),
-              ],
-            ),
-          ),
-
-          const SizedBox(height: 20),
-          SizedBox(
-            width: double.infinity,
-            height: 52,
-            child: ElevatedButton(
-              onPressed: () {
-                try {
-                  HapticFeedback.lightImpact();
-                } catch (_) {}
-                widget.onContinue();
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: widget.isCorrect
-                    ? AppColors.primary
-                    : AppColors.error,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
               ),
-              child: const Text(
-                'Continue',
-                style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 0.5,
-                ),
-              ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     ).animate().slideY(begin: 1.0, duration: 250.ms, curve: Curves.easeOutQuad);
   }

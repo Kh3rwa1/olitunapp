@@ -4486,5 +4486,203 @@
         }
       }
     ]
+  },
+  {
+    "id": "lesson_grammar_pronouns",
+    "titleLatin": "Santali Pronouns & Persons",
+    "titleOlChiki": "ᱥᱟᱱᱛᱟᱲᱤ ᱩᱭᱦᱟᱹᱨ ᱧᱩᱛᱩᱢ",
+    "level": "beginner",
+    "blocks": [
+      {
+        "type": "text",
+        "textOlChiki": "ᱤᱧ - Iny (I / Me)",
+        "textLatin": "Iny – First person singular: I or Me",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Clarity",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Knowledge",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱟᱢ - Am (You singular)",
+        "textLatin": "Am – Second person singular: You",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Friendship",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Communication",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱩᱱᱤ - Uni (He / She / That person)",
+        "textLatin": "Uni – Third person singular: He or She",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Respect",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Inclusion",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱟᱵᱚ - Abo (We all - inclusive)",
+        "textLatin": "Abo – We (including the listener): You and I together",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Unity",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Community",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱟᱞᱮ - Ale (We - exclusive)",
+        "textLatin": "Ale – We (excluding the listener): Us, but not you",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Community",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Precision",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱟᱯᱮ - Ape (You all - plural)",
+        "textLatin": "Ape – Second person plural: You all",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Warmth",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Hospitality",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱩᱱᱠᱩ - Unku (They / Those people)",
+        "textLatin": "Unku – Third person plural: They or Those people",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Curiosity",
+          "storyArc": "Grammar Basics",
+          "growthValue": "Social Awareness",
+          "characterGoal": "Learn Santali Pronouns"
+        }
+      }
+    ]
+  },
+  {
+    "id": "lesson_grammar_questions_cases",
+    "titleLatin": "Questions & Direction Markers",
+    "titleOlChiki": "ᱠᱩᱠᱞᱤ ᱟᱨ ᱦᱚᱨ ᱪᱤᱱᱦᱟᱹ",
+    "level": "beginner",
+    "blocks": [
+      {
+        "type": "text",
+        "textOlChiki": "ᱪᱮᱫ - Ched (What?)",
+        "textLatin": "Ched – Used to ask about things, objects, or actions",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Inquiry",
+          "storyArc": "Grammar Questions",
+          "growthValue": "Curiosity",
+          "characterGoal": "Master Question Particles"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱚᱠᱚᱭ - Okoi (Who?)",
+        "textLatin": "Okoi – Used to ask about people and identities",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Inquiry",
+          "storyArc": "Grammar Questions",
+          "growthValue": "Recognition",
+          "characterGoal": "Master Question Particles"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱚᱠᱟ - Oka (Which / Where?)",
+        "textLatin": "Oka – Used to ask about places, locations, or selections",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Discovery",
+          "storyArc": "Grammar Questions",
+          "growthValue": "Navigation",
+          "characterGoal": "Master Question Particles"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱛᱤᱥ - Tis (When?)",
+        "textLatin": "Tis – Used to ask about time, dates, and schedules",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Planning",
+          "storyArc": "Grammar Questions",
+          "growthValue": "Punctuality",
+          "characterGoal": "Master Question Particles"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "ᱪᱮᱞᱠᱟ - Cileka (How?)",
+        "textLatin": "Cileka – Used to ask about condition, manner, or quality",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Empathy",
+          "storyArc": "Grammar Questions",
+          "growthValue": "Care",
+          "characterGoal": "Master Question Particles"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "-ᱨᱮ (-re: in / at / on)",
+        "textLatin": "-re – Locative marker (e.g., Oṛak-re = in the house, Atu-re = in the village)",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Structure",
+          "storyArc": "Case Markers",
+          "growthValue": "Precision",
+          "characterGoal": "Master Case Endings"
+        }
+      },
+      {
+        "type": "text",
+        "textOlChiki": "-ᱠᱷᱚᱱ (-khon: from)",
+        "textLatin": "-khon – Ablative marker (e.g., Atu-khon = from the village)",
+        "imageUrl": null,
+        "audioUrl": null,
+        "data": {
+          "emotion": "Movement",
+          "storyArc": "Case Markers",
+          "growthValue": "Journey",
+          "characterGoal": "Master Case Endings"
+        }
+      }
+    ]
   }
 ]

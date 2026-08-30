@@ -35,20 +35,71 @@ class RhymesNotifier extends Notifier<AsyncValue<List<RhymeModel>>> {
 
   static final List<RhymeModel> _seedRhymes = [
     RhymeModel(
-      id: 'seed_1',
-      titleOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ',
-      titleLatin: 'Isin Sanam',
-      contentOlChiki: 'ᱤᱥᱤᱱ ᱥᱟᱱᱟᱢ ᱨᱮ\nᱵᱤᱨ ᱦᱚᱨ ᱥᱟᱱᱟᱢ',
-      contentLatin: 'Isin sanam re\nBir hor sanam',
+      id: 'seed_sohrai',
+      titleOlChiki: 'ᱥᱚᱦᱨᱟᱭ ᱵᱟᱠᱷᱮᱬ',
+      titleLatin: 'Sohrai Bakhed',
+      contentOlChiki:
+          'ᱡᱚᱦᱟᱨ ᱛᱚᱵᱮ ᱢᱟᱨᱟᱝ ᱵᱩᱨᱩ, ᱡᱟᱦᱮᱨ ᱮᱨᱟ, ᱢᱚᱬᱮ ᱠᱚ ᱛᱩᱨᱩᱭ ᱠᱚ᱾\nᱜᱟᱹᱭ ᱰᱟᱝᱜᱽᱨᱟ ᱠᱚ ᱥᱟᱨᱠᱚᱜ ᱢᱟ, ᱦᱳᱲᱳ ᱪᱟᱣᱞᱮ ᱯᱮᱨᱮᱡᱚᱜ ᱢᱟ᱾\nᱟᱹᱛᱩ ᱫᱤᱥᱚᱢ ᱥᱩᱠᱷ ᱥᱟᱹᱱᱛᱤ ᱛᱮ ᱛᱟᱦᱮᱸᱱ ᱢᱟ᱾',
+      contentLatin:
+          'Johar tobe Marang Buru, Jaher Era, Mone ko Turui ko.\nGay dangra ko sarkog ma, horo cawle perejog ma.\nAtu disom sukh santi te tahen ma.',
       category: 'Sohrai',
+      tags: ['harvest', 'cattle', 'thanksgiving', 'sacred'],
+      isFeatured: true,
     ),
     RhymeModel(
-      id: 'seed_2',
-      titleOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ',
-      titleLatin: 'Meram Pasi',
-      contentOlChiki: 'ᱢᱮᱨᱟᱢ ᱯᱟᱥᱤ\nᱠᱟᱛᱮ ᱟᱥᱤ',
-      contentLatin: 'Meram pasi\nKate asi',
+      id: 'seed_baha',
+      titleOlChiki: 'ᱵᱟᱦᱟ ᱵᱟᱠᱷᱮᱬ',
+      titleLatin: 'Baha Bakhed',
+      contentOlChiki:
+          'ᱥᱟᱹᱜᱩᱱ ᱵᱟᱦᱟ ᱯᱚᱨᱚᱵᱽ ᱨᱮ ᱥᱟᱨᱡᱚᱢ ᱵᱟᱦᱟ ᱥᱟᱶᱛᱮ ᱡᱚᱦᱟᱨ᱾\nᱫᱷᱟᱹᱨᱛᱤ ᱯᱩᱨᱤ ᱱᱟᱶᱟ ᱥᱟᱠᱟᱢ ᱛᱮ ᱥᱟᱡᱟᱣᱜ ᱠᱟᱱᱟ᱾\nᱥᱟᱱᱟᱢ ᱢᱟᱹᱱᱢᱤ ᱠᱚ ᱨᱟᱹᱥᱠᱟᱹ ᱛᱮ ᱠᱚ ᱮᱱᱮᱡ ᱥᱮᱨᱮᱧ ᱢᱟ᱾',
+      contentLatin:
+          'Sagun Baha Porob re Sarjom Baha sawte Johar.\nDharti puri nawa sakam te sajawg kana.\nSanam manmi ko raska te ko enej sereny ma.',
       category: 'Baha',
+      tags: ['spring', 'sal flower', 'renewal', 'nature'],
+    ),
+    RhymeModel(
+      id: 'seed_karam',
+      titleOlChiki: 'ᱠᱟᱨᱟᱢ ᱵᱟᱠᱷᱮᱬ',
+      titleLatin: 'Karam Bakhed',
+      contentOlChiki:
+          'ᱠᱟᱨᱟᱢ ᱫᱟᱨᱮ ᱩᱢᱩᱞ ᱨᱮ ᱵᱚᱭᱦᱟ ᱥᱟᱹᱜᱟᱹᱭ ᱠᱮᱴᱮᱡᱚᱜ ᱢᱟ᱾\nᱫᱷᱚᱱ ᱫᱩᱨᱤᱵᱽ ᱦᱟᱨᱟᱜ ᱢᱟ, ᱡᱤᱣᱤ ᱡᱤᱭᱟᱹᱲ ᱛᱟᱦᱮᱸᱱ ᱢᱟ᱾',
+      contentLatin:
+          'Karam dare umul re boyha sagay ketejog ma.\nDhon durib harag ma, jiwi jiyar tahen ma.',
+      category: 'Karam',
+      tags: ['brotherhood', 'prosperity', 'fertility'],
+    ),
+    RhymeModel(
+      id: 'seed_sakrat',
+      titleOlChiki: 'ᱥᱟᱠᱨᱟᱛ ᱵᱟᱠᱷᱮᱬ',
+      titleLatin: 'Sakrat Bakhed',
+      contentOlChiki:
+          'ᱯᱤᱴᱷᱟᱹ ᱞᱟᱹᱰᱩ ᱡᱚᱢ ᱥᱟᱶᱛᱮ ᱟᱹᱜᱤᱞ ᱦᱟᱯᱲᱟᱢ ᱠᱚ ᱩᱭᱦᱟᱹᱨ ᱠᱚᱣᱟ ᱵᱚᱱ᱾\nᱵᱷᱮᱡᱟ ᱛᱩᱧ ᱨᱮ ᱡᱤᱛᱠᱟᱹᱨ ᱦᱩᱭᱩᱜ ᱢᱟ᱾',
+      contentLatin:
+          'Pitha ladu jom sawte agil hapram ko uyhar kowa bon.\nBheja tuny re jitkar huyug ma.',
+      category: 'Sakrat',
+      tags: ['archery', 'ancestors', 'winter'],
+    ),
+    RhymeModel(
+      id: 'seed_dasae',
+      titleOlChiki: 'ᱫᱟᱥᱟᱭ ᱥᱮᱨᱮᱧ',
+      titleLatin: 'Dasae Sereng',
+      contentOlChiki:
+          'ᱦᱟᱭ ᱨᱮ ᱦᱟᱭ ᱫᱤᱥᱚᱢ ᱫᱟᱥᱟᱭ ᱨᱮ,\nᱵᱩᱣᱟᱝ ᱨᱟᱦᱟ ᱛᱮ ᱫᱤᱥᱚᱢ ᱟᱸᱫᱚᱲᱚᱜ ᱠᱟᱱ᱾',
+      contentLatin:
+          'Hay re hay disom Dasae re,\nBuwang raha te disom andorog kan.',
+      category: 'Dasae',
+      tags: ['buwang', 'remembrance', 'traditional'],
+    ),
+    RhymeModel(
+      id: 'seed_mage',
+      titleOlChiki: 'ᱢᱟᱜᱮ ᱥᱤᱢ ᱵᱟᱠᱷᱮᱬ',
+      titleLatin: 'Mage Sim Bakhed',
+      contentOlChiki:
+          'ᱥᱟᱹᱜᱩᱱ ᱢᱟᱜᱮ ᱪᱟᱸᱫᱚ ᱨᱮ ᱚᱲᱟᱜ ᱫᱩᱣᱟᱹᱨ ᱥᱟᱯᱷᱟ ᱠᱟᱛᱮ ᱡᱚᱦᱟᱨ᱾\nᱥᱟᱱᱟᱢ ᱫᱩᱠᱷ ᱠᱚ ᱥᱟᱦᱟᱜ ᱢᱟ᱾',
+      contentLatin:
+          'Sagun Mage Cando re orag duwar sapha kate Johar.\nSanam dukh ko sahag ma.',
+      category: 'Mage',
+      tags: ['hearth', 'purification', 'household'],
     ),
   ];
 

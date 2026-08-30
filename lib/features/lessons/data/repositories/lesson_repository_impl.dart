@@ -48,9 +48,9 @@ class LessonRepositoryImpl implements LessonRepository {
   }
 
   /// Triggers an in-flight deduplicated background revalidation.
+  /// If a fetch for [categoryId] is already in progress, returns the existing Future.
   Future<List<LessonModel>> _revalidateLessons({String? categoryId}) {
-    final key = categoryId == null ? 'all' : 'cat_$categoryId';
-
+    final key = categoryId ?? '__all__';
     if (_inFlightRefreshes.containsKey(key)) {
       return _inFlightRefreshes[key]!;
     }

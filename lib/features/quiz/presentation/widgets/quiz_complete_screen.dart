@@ -589,7 +589,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                             padding: const EdgeInsets.only(bottom: 12),
                             child: SizedBox(
                               width: double.infinity,
-                              height: 48,
+                              height: 52,
                               child: OutlinedButton.icon(
                                 onPressed: () async {
                                   final rewarded = ref.read(
@@ -638,15 +638,24 @@ class QuizCompleteScreen extends ConsumerWidget {
                                 icon: const Icon(
                                   Icons.stars_rounded,
                                   color: AppColors.duoYellowDark,
+                                  size: 22,
                                 ),
-                                label: const Text(
-                                  'Watch Ad for +50 Bonus Stars',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.duoYellowDark,
+                                label: const FittedBox(
+                                  fit: BoxFit.scaleDown,
+                                  child: Text(
+                                    'Watch Ad for +50 Bonus Stars',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.duoYellowDark,
+                                    ),
                                   ),
                                 ),
                                 style: OutlinedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 10,
+                                  ),
                                   side: const BorderSide(
                                     color: AppColors.duoYellow,
                                     width: 1.5,

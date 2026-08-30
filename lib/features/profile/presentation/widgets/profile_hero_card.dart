@@ -195,7 +195,10 @@ class ProfileHeroCard extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Row(
+                    Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         // Level badge
                         Container(
@@ -234,7 +237,6 @@ class ProfileHeroCard extends StatelessWidget {
                             ],
                           ),
                         ),
-                        const SizedBox(width: 10),
                         // Hidden entirely when creation date is unknown —
                         // never guess a member-since date.
                         if (memberSince != null)

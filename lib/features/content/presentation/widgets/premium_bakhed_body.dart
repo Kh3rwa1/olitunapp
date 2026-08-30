@@ -1,4 +1,5 @@
 // ignore_for_file: deprecated_member_use
+import 'dart:math' as math;
 import 'dart:ui';
 
 import 'package:google_fonts/google_fonts.dart';
@@ -472,13 +473,35 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
     final isPlaying =
         audioState.playingRhymeId == item.id && audioState.isPlaying;
 
-    final durationMs = audioState.duration.inMilliseconds;
-    final positionMs = audioState.position.inMilliseconds;
-
     // Fetch synced learning content
     final learningContentAsync = ref.watch(
       bakhedLearningContentProvider(item.id),
     );
+
+    int durationMs = audioState.duration.inMilliseconds;
+    final positionMs = audioState.position.inMilliseconds;
+
+    // Smart fallback: If player stream hasn't resolved total duration yet,
+    // infer total length from synced lyrics end timestamp
+    if (durationMs <= 0 && learningContentAsync.hasValue) {
+      final lyrics = learningContentAsync.value?.lyrics ?? [];
+      if (lyrics.isNotEmpty) {
+        final lastEndMs = lyrics.map((l) => l.endMs).fold<int>(0, math.max);
+        if (lastEndMs > 0) {
+          durationMs = lastEndMs;
+        }
+      }
+    }
+
+    final bool hasValidDuration = durationMs > 0;
+    final double maxSliderVal = hasValidDuration
+        ? durationMs.toDouble()
+        : math.max(positionMs.toDouble(), 1.0);
+    final double currentSliderVal =
+        (hasValidDuration
+                ? positionMs.toDouble()
+                : (positionMs > 0 ? positionMs.toDouble() : 0.0))
+            .clamp(0.0, maxSliderVal);
 
     return Scaffold(
       backgroundColor: const Color(0xFF070B13), // Deep premium midnight black
@@ -653,16 +676,15 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       ),
                     ),
                     child: Slider(
-                      max: durationMs > 0 ? durationMs.toDouble() : 100.0,
-                      value: positionMs.toDouble().clamp(
-                        0.0,
-                        durationMs > 0 ? durationMs.toDouble() : 100.0,
-                      ),
-                      onChanged: (val) {
-                        ref
-                            .read(rhymeAudioProvider.notifier)
-                            .seek(Duration(milliseconds: val.toInt()));
-                      },
+                      max: maxSliderVal,
+                      value: currentSliderVal,
+                      onChanged: hasValidDuration
+                          ? (val) {
+                              ref
+                                  .read(rhymeAudioProvider.notifier)
+                                  .seek(Duration(milliseconds: val.toInt()));
+                            }
+                          : null,
                     ),
                   ),
                 ),
@@ -682,7 +704,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                         ),
                       ),
                       Text(
-                        _formatDuration(Duration(milliseconds: durationMs)),
+                        hasValidDuration
+                            ? _formatDuration(
+                                Duration(milliseconds: durationMs),
+                              )
+                            : (isPlaying ? '--:--' : '00:00'),
                         style: GoogleFonts.inter(
                           fontSize: 12,
                           color: Colors.white60,

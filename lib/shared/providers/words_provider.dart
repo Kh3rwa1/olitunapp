@@ -47,14 +47,21 @@ class WordsNotifier extends Notifier<AsyncValue<List<WordModel>>> {
   }
 
   Future<void> _load() async {
+    final seed = await loadSeedWords();
     try {
-      final data = await _fetchWords();
+      final remote = await _fetchWords();
       if (_disposed) return;
-      state = AsyncValue.data(data);
+      final Map<String, WordModel> map = {for (final w in seed) w.id: w};
+      for (final r in remote) {
+        map[r.id] = r;
+      }
+      final merged = map.values.toList()
+        ..sort((a, b) => a.order.compareTo(b.order));
+      state = AsyncValue.data(merged);
     } catch (_) {
       if (_disposed) return;
       // Offline or collection unavailable — fall back to bundled content.
-      state = AsyncValue.data(await loadSeedWords());
+      state = AsyncValue.data(seed);
     }
   }
 

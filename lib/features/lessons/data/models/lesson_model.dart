@@ -186,13 +186,28 @@ class LessonBlockModel extends LessonBlockEntity {
 
   factory LessonBlockModel.fromJson(Map<String, dynamic> json) {
     final parsedData = _parseData(json['data']);
+    final content = json['content'] as String? ?? json['text'] as String?;
+    final rawOlChiki =
+        json['textOlChiki'] as String? ?? json['text_ol_chiki'] as String?;
+    final rawLatin =
+        json['textLatin'] as String? ?? json['text_latin'] as String?;
+
+    String? resolvedOlChiki = rawOlChiki;
+    String? resolvedLatin = rawLatin;
+
+    if (resolvedOlChiki == null && resolvedLatin == null && content != null) {
+      resolvedLatin = content;
+      if (content.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F)) {
+        resolvedOlChiki = content;
+      }
+    }
 
     return LessonBlockModel(
       type: json['type'] as String? ?? 'text',
-      textOlChiki: json['textOlChiki'] as String?,
-      textLatin: json['textLatin'] as String?,
-      imageUrl: json['imageUrl'] as String?,
-      audioUrl: json['audioUrl'] as String?,
+      textOlChiki: resolvedOlChiki,
+      textLatin: resolvedLatin,
+      imageUrl: json['imageUrl'] as String? ?? json['image_url'] as String?,
+      audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
       data: parsedData,
     );
   }

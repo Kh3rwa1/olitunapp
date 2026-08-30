@@ -172,9 +172,11 @@ class RhymeAudioNotifier extends Notifier<RhymeAudioState> {
           )
           .timeout(const Duration(seconds: 12));
 
+      final resolvedDuration = _player.duration ?? state.duration;
       state = state.copyWith(
         playingRhymeId: rhymeId,
         isPlaying: true,
+        duration: resolvedDuration,
         processingState: _player.processingState,
       );
       unawaited(_player.play());

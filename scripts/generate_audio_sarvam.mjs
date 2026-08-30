@@ -14,7 +14,7 @@
  *   SARVAM_MODEL="bulbul:v4" (default: bulbul:v4 with auto-fallback to bulbul:v3)
  *   SPEAKER="shubh" (or "aditi", "priya", "amartya")
  *   PACE="0.9" (0.5 to 2.0; 0.9 is ideal for learners)
- *   TARGET="all" | "vocab" | "sentences" | "words"
+ *   TARGET="all" | "vocab" | "sentences" | "sentence_lessons" | "words"
  */
 
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -51,11 +51,22 @@ function getAppwriteHeaders() {
 
 let activeModel = PREFERRED_MODEL;
 
+function extractCleanSpeechPrompt(text) {
+  if (!text) return '';
+  let s = text.replace(/[\(\)\[\]"']/g, '').split('–')[0].trim();
+  if (s.startsWith('-')) {
+    s = s.replace(/^-+/, '').trim();
+  } else if (s.includes(' - ')) {
+    s = s.split(' - ')[0].trim();
+  }
+  return s;
+}
+
 /**
  * Call Sarvam AI Text-To-Speech API with Rate Limit Retry & Fallback
  */
 async function generateSpeech(text, targetLang = 'hi-IN', retries = 3) {
-  const clean = text.replace(/[\(\)\[\]"']/g, '').split('–')[0].split('-')[0].trim();
+  const clean = extractCleanSpeechPrompt(text);
   if (!clean) return null;
 
   const payload = {
@@ -180,14 +191,13 @@ async function processVocabLessons(appwriteHeaders) {
       if (block.type === 'quiz') continue;
 
       if (block.audioUrl && block.audioUrl.startsWith('http')) {
-        console.log(`  [${i + 1}/${lesson.blocks.length}] ⏭️ Already has audio`);
         continue;
       }
 
       const speechText = block.textLatin || block.textOlChiki || '';
       if (!speechText) continue;
 
-      const cleanPrompt = speechText.replace(/[\(\)\[\]"]/g, '').split('–')[0].split('-')[0].trim();
+      const cleanPrompt = extractCleanSpeechPrompt(speechText);
       const prefix = lesson.id.replace('lesson_', '');
       const fileId = `snd_${prefix}_${i}`.slice(0, 36);
 
@@ -221,25 +231,23 @@ async function processSentenceLessons(appwriteHeaders) {
   let generatedCount = 0;
 
   for (const lesson of lessons) {
-    console.log(`\n📚 Lesson: ${lesson.titleLatin || lesson.id} (${lesson.id})`);
     for (let i = 0; i < lesson.blocks.length; i++) {
       const block = lesson.blocks[i];
       if (block.type === 'quiz') continue;
 
       if (block.audioUrl && block.audioUrl.startsWith('http')) {
-        console.log(`  [${i + 1}/${lesson.blocks.length}] ⏭️ Already has audio`);
         continue;
       }
 
       const speechText = block.textLatin || block.textOlChiki || '';
       if (!speechText) continue;
 
-      const cleanPrompt = speechText.replace(/[\(\)\[\]"]/g, '').split('–')[0].split('-')[0].trim();
+      const cleanPrompt = extractCleanSpeechPrompt(speechText);
       const prefix = lesson.id.replace('lesson_', '');
       const fileId = `snd_${prefix}_${i}`.slice(0, 36);
 
       try {
-        process.stdout.write(`  [${i + 1}/${lesson.blocks.length}] "${cleanPrompt.slice(0, 30)}..." -> `);
+        process.stdout.write(`  [${lesson.id} block ${i + 1}] "${cleanPrompt.slice(0, 30)}..." -> `);
         const audioBuf = await generateSpeech(cleanPrompt);
         if (!audioBuf) {
           console.log(`⚠️ Empty text prompt, skipping`);
@@ -261,7 +269,7 @@ async function processSentenceLessons(appwriteHeaders) {
 }
 
 async function processWords(appwriteHeaders) {
-  console.log('\n🔤 Generating Sarvam AI Audio for Vocabulary Words...');
+  console.log('\n🔤 Generating Sarvam AI Audio for Vocabulary Words (words.json)...');
   const filePath = new URL('../assets/seed/words.json', import.meta.url);
   const words = JSON.parse(readFileSync(filePath, 'utf8'));
 
@@ -271,19 +279,23 @@ async function processWords(appwriteHeaders) {
     const word = words[i];
     if (word.audioUrl && word.audioUrl.startsWith('http')) continue;
 
-    const speechText = word.latin || word.santaliLatin || word.wordLatin || word.santali || '';
+    const speechText = word.wordLatin || word.latin || word.santaliLatin || word.santali || '';
     if (!speechText) continue;
 
+    const cleanPrompt = extractCleanSpeechPrompt(speechText);
     const fileId = `word_${word.id || i}`.slice(0, 36);
     try {
-      process.stdout.write(`  [${i + 1}/${words.length}] "${speechText}" -> `);
-      const audioBuf = await generateSpeech(speechText);
-      if (!audioBuf) continue;
+      process.stdout.write(`  [${i + 1}/${words.length}] "${cleanPrompt}" -> `);
+      const audioBuf = await generateSpeech(cleanPrompt);
+      if (!audioBuf) {
+        console.log(`⚠️ Empty prompt`);
+        continue;
+      }
       const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
       word.audioUrl = fileUrl;
       console.log(`✅ ${fileUrl}`);
       generatedCount++;
-      await new Promise(r => setTimeout(r, 250));
+      await new Promise(r => setTimeout(r, 200));
     } catch (e) {
       console.log(`❌ Error: ${e.message}`);
     }
@@ -291,6 +303,43 @@ async function processWords(appwriteHeaders) {
 
   writeFileSync(filePath, JSON.stringify(words, null, 2), 'utf8');
   console.log(`\n🎉 Updated assets/seed/words.json with ${generatedCount} word audio URLs!`);
+}
+
+async function processSentences(appwriteHeaders) {
+  console.log('\n💬 Generating Sarvam AI Audio for Sentences (sentences.json)...');
+  const filePath = new URL('../assets/seed/sentences.json', import.meta.url);
+  const sentences = JSON.parse(readFileSync(filePath, 'utf8'));
+
+  let generatedCount = 0;
+
+  for (let i = 0; i < sentences.length; i++) {
+    const sentence = sentences[i];
+    if (sentence.audioUrl && sentence.audioUrl.startsWith('http')) continue;
+
+    const speechText = sentence.sentenceLatin || sentence.latin || sentence.sentenceOlChiki || '';
+    if (!speechText) continue;
+
+    const cleanPrompt = extractCleanSpeechPrompt(speechText);
+    const fileId = `sentence_${sentence.id || i}`.slice(0, 36);
+    try {
+      process.stdout.write(`  [${i + 1}/${sentences.length}] "${cleanPrompt.slice(0, 30)}..." -> `);
+      const audioBuf = await generateSpeech(cleanPrompt);
+      if (!audioBuf) {
+        console.log(`⚠️ Empty prompt`);
+        continue;
+      }
+      const fileUrl = await uploadToAppwrite(appwriteHeaders, fileId, audioBuf, `${fileId}.wav`);
+      sentence.audioUrl = fileUrl;
+      console.log(`✅ ${fileUrl}`);
+      generatedCount++;
+      await new Promise(r => setTimeout(r, 200));
+    } catch (e) {
+      console.log(`❌ Error: ${e.message}`);
+    }
+  }
+
+  writeFileSync(filePath, JSON.stringify(sentences, null, 2), 'utf8');
+  console.log(`\n🎉 Updated assets/seed/sentences.json with ${generatedCount} sentence audio URLs!`);
 }
 
 async function main() {
@@ -302,14 +351,17 @@ async function main() {
 
   const appwriteHeaders = getAppwriteHeaders();
 
+  if (TARGET === 'sentence_lessons' || TARGET === 'all') {
+    await processSentenceLessons(appwriteHeaders);
+  }
   if (TARGET === 'vocab' || TARGET === 'all') {
     await processVocabLessons(appwriteHeaders);
   }
-  if (TARGET === 'sentences' || TARGET === 'all') {
-    await processSentenceLessons(appwriteHeaders);
-  }
   if (TARGET === 'words' || TARGET === 'all') {
     await processWords(appwriteHeaders);
+  }
+  if (TARGET === 'sentences' || TARGET === 'all') {
+    await processSentences(appwriteHeaders);
   }
 
   console.log('\n🏁 Complete audio pipeline execution finished successfully!');

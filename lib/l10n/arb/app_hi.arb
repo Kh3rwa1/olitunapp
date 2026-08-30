@@ -1,0 +1,364 @@
+{
+  "@@locale": "hi",
+  "helloUser": "नमस्ते, {userName}! 👋",
+  "@helloUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "readyToLearn": "आज सीखने के लिए तैयार?",
+  "dayStreak": "दिन की स्ट्रीक",
+  "stars": "सितारे",
+  "lessons": "पाठ",
+  "continueLearning": "सीखना जारी रखें",
+  "pickUpWhereLeftOff": "जहाँ छोड़ा था वहीं से शुरू करें",
+  "percentComplete": "{percent}% पूर्ण",
+  "@percentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyQuiz": "दैनिक क्विज़",
+  "practice": "अभ्यास",
+  "explore": "खोजें",
+  "chooseCategory": "एक श्रेणी चुनें",
+  "lessonsCount": "{count} पाठ",
+  "@lessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings": "सेटिंग्स",
+  "customizeExperience": "अपना सीखने का अनुभव अनुकूलित करें",
+  "appearance": "दिखावट",
+  "darkMode": "डार्क मोड",
+  "scriptDisplay": "लिपि प्रदर्शन",
+  "scriptMode": "लिपि मोड",
+  "appLanguage": "ऐप भाषा",
+  "chooseLanguage": "भाषा चुनें",
+  "english": "अंग्रेज़ी",
+  "languageChanged": "भाषा बदल दी गई",
+  "sound": "ध्वनि",
+  "soundEffects": "साउंड इफ़ेक्ट्स",
+  "playSoundsForActions": "क्रियाओं के लिए ध्वनि चलाएँ",
+  "dangerZone": "खतरनाक क्षेत्र",
+  "resetProgress": "प्रगति रीसेट करें",
+  "clearAllLearningData": "सारा सीखने का डेटा साफ़ करें",
+  "deleteAccount": "खाता हटाएँ",
+  "deleteAccountSubtitle": "अपना खाता स्थायी रूप से हटाएँ",
+  "legal": "कानूनी",
+  "privacyPolicy": "गोपनीयता नीति",
+  "privacyPolicySubtitle": "खाता और सीखने का डेटा कैसे संभाला जाता है",
+  "termsOfUse": "उपयोग की शर्तें",
+  "termsOfUseSubtitle": "शिक्षार्थियों, खातों और सामग्री के नियम",
+  "chooseTheme": "थीम चुनें",
+  "systemDefault": "सिस्टम डिफ़ॉल्ट",
+  "light": "लाइट",
+  "dark": "डार्क",
+  "olChikiOnly": "केवल ओलचिकी",
+  "latinOnly": "केवल लैटिन",
+  "bothScripts": "दोनों लिपियाँ",
+  "cancel": "रद्द करें",
+  "reset": "रीसेट",
+  "resetProgressWarning": "इससे आपकी सारी प्रगति, सितारे और स्ट्रीक मिट जाएँगे। यह क्रिया पूर्ववत नहीं की जा सकती।",
+  "deleteAccountWarning": "इससे आपका खाता और सारा संबंधित डेटा स्थायी रूप से हट जाएगा। यह क्रिया पूर्ववत नहीं की जा सकती।\n\nआपकी प्रगति, सेटिंग्स और व्यक्तिगत जानकारी स्थायी रूप से हटा दी जाएगी।",
+  "deletePermanently": "स्थायी रूप से हटाएँ",
+  "failedToDeleteAccount": "खाता हटाने में विफल: {message}",
+  "@failedToDeleteAccount": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInWithEmail": "ईमेल से साइन इन करें",
+  "magicCodeDescription": "हम आपकी पहचान सत्यापित करने के लिए एक जादुई कोड भेजेंगे। पासवर्ड की ज़रूरत नहीं!",
+  "emailAddress": "ईमेल पता",
+  "emailHint": "learner@example.com",
+  "sendCode": "कोड भेजें",
+  "continueWithoutAccount": "बिना खाते के जारी रखें",
+  "enterVerificationCode": "सत्यापन कोड दर्ज करें",
+  "codeSentTo": "हमने {email} पर एक कोड भेजा है",
+  "@codeSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationCode": "सत्यापन कोड",
+  "enterCodeFromEmail": "ईमेल से कोड दर्ज करें",
+  "verifyAndContinue": "सत्यापित करें और जारी रखें",
+  "resendCodeIn": "{seconds} सेकंड में कोड फिर भेजें",
+  "@resendCodeIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "resendCode": "कोड फिर भेजें",
+  "validEmailError": "कृपया एक मान्य ईमेल पता दर्ज करें",
+  "enterCodeError": "कृपया सत्यापन कोड दर्ज करें",
+  "sessionExpired": "सत्र समाप्त हो गया। कृपया कोड फिर भेजें।",
+  "errorCopiedToClipboard": "त्रुटि क्लिपबोर्ड पर कॉपी हुई",
+  "skip": "छोड़ें",
+  "quiz": "क्विज़",
+  "noQuestionsYet": "अभी कोई प्रश्न नहीं",
+  "goBack": "वापस जाएँ",
+  "continueButton": "जारी रखें",
+  "wellDone": "शाबाश!",
+  "keepPracticing": "अभ्यास जारी रखें",
+  "youScored": "आपने {total} में से {score} अंक पाए",
+  "@youScored": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "plusStars": "+{count} सितारे",
+  "@plusStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutThisLesson": "इस पाठ के बारे में",
+  "completeLesson": "पाठ पूरा करें",
+  "lettersToLearn": "सीखने वाले अक्षर",
+  "numbersToLearn": "सीखने वाली संख्याएँ",
+  "vocabulary": "शब्दावली",
+  "commonPhrases": "सामान्य वाक्यांश",
+  "content": "सामग्री",
+  "takeAQuiz": "क्विज़ लें",
+  "testYourKnowledge": "अभी अपना ज्ञान परखें!",
+  "noLettersAvailable": "अभी कोई अक्षर उपलब्ध नहीं",
+  "noNumbersAvailable": "अभी कोई संख्या उपलब्ध नहीं",
+  "noWordsAvailable": "अभी कोई शब्द उपलब्ध नहीं",
+  "noSentencesAvailable": "अभी कोई वाक्य उपलब्ध नहीं",
+  "noLessonsAvailable": "कोई पाठ उपलब्ध नहीं",
+  "joharUser": "जोहार, {userName}!",
+  "@joharUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyProgressPercent": "दैनिक प्रगति: {percent}%",
+  "@dailyProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "milestones": "मील के पत्थर",
+  "learningTime": "सीखने का समय",
+  "time": "समय",
+  "resumeJourney": "यात्रा जारी रखें",
+  "testYourKnowledgeTitle": "अपना ज्ञान\nपरखें!",
+  "quizzesAvailable": "{count} क्विज़ उपलब्ध",
+  "@quizzesAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "start": "शुरू",
+  "discover": "खोजें",
+  "couldNotLoadPaths": "सीखने के रास्ते लोड नहीं हो सके",
+  "yourStats": "आपके आँकड़े",
+  "skillsMastery": "कौशल निपुणता",
+  "quizAnalysis": "क्विज़ विश्लेषण",
+  "account": "खाता",
+  "editName": "नाम बदलें",
+  "share": "शेयर करें",
+  "comingSoon": "जल्द आ रहा है!",
+  "chooseYourAvatar": "अपना अवतार चुनें",
+  "backgroundColor": "पृष्ठभूमि रंग",
+  "avatarEmoji": "अवतार इमोजी",
+  "rhymes": "बाखेड़",
+  "santali": "संताली",
+  "unlockMagic": "कहानियों और गीतों का जादू खोलें",
+  "all": "सभी",
+  "discoverMore": "और खोजें",
+  "moreComing": "और जल्द आ रहा है! ✨",
+  "couldNotLoadRhymes": "बाखेड़ लोड नहीं हो सके",
+  "checkConnection": "अपना कनेक्शन जाँचें और फिर कोशिश करें",
+  "featured": "विशेष",
+  "listenNow": "अभी सुनें",
+  "pause": "रोकें",
+  "getStarted": "शुरू करें",
+  "loading": "लोड हो रहा है...",
+  "error": "त्रुटि",
+  "retry": "फिर कोशिश करें",
+  "undo": "पूर्ववत करें",
+  "clear": "साफ़ करें",
+  "tryAgain": "फिर कोशिश करें",
+  "replayAnimation": "ऐनिमेशन फिर चलाएँ",
+  "sentences": "वाक्य",
+  "noSentencesFound": "कोई वाक्य नहीं मिला",
+  "noQuestionsFound": "कोई प्रश्न नहीं मिला।",
+  "streakActiveTitle": "साप्ताहिक स्ट्रीक सक्रिय",
+  "streakIdleTitle": "अपनी स्ट्रीक शुरू करें",
+  "streakActiveSubtitle": "अपनी लौ बढ़ाने के लिए सीखते रहें!",
+  "streakIdleSubtitle": "अपनी लौ जलाने के लिए कोई भी गतिविधि पूरी करें!",
+  "streakStartLearning": "सीखना शुरू करें",
+  "streakDaysBadge": "{count} दिन",
+  "@streakDaysBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFooterActive": "इस सप्ताह आपने {total} में से {count} दिन अभ्यास किया। जारी रखें!",
+  "@streakFooterActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFooterIdle": "इस सप्ताह अभी तक कोई अभ्यास नहीं — शुरू करने के लिए कोई गतिविधि चुनें!",
+  "streakWeekSemantics": "इस सप्ताह: {total} में से {count} दिन अभ्यास किया",
+  "@streakWeekSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dayDetailNoActivity": "कोई गतिविधि दर्ज नहीं",
+  "dayDetailPracticeSession": "अभ्यास सत्र",
+  "dayDetailStreakDay": "स्ट्रीक दिन",
+  "dayDetailQuiz": "क्विज़",
+  "dayUpcoming": "आगामी",
+  "dayPracticed": "अभ्यास किया",
+  "dayNotPracticed": "अभ्यास नहीं किया",
+  "milestoneLevelProgressCaption": "स्तर प्रगति · {from} → {to}",
+  "@milestoneLevelProgressCaption": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "homeDiscover": "खोजें",
+  "homeSwipeHint": "स्वाइप करें",
+  "homeExploreHint": "खोजें",
+  "guestSignInCta": "अपनी प्रगति सहेजने के लिए साइन इन करें",
+  "nbaBadgeStartHere": "यहाँ से शुरू करें",
+  "nbaTitleFirstLetters": "अपने पहले ओलचिकी अक्षर सीखें",
+  "nbaSubFirstLetters": "मूल वर्णमाला से शुरू करें और संताली लेखन खोलें।",
+  "nbaCtaBeginLesson": "पाठ शुरू करें",
+  "nbaBadgeNextStep": "अगला कदम",
+  "nbaTitleNumbers": "संताली संख्याओं का अभ्यास करें",
+  "nbaSubNumbers": "रोज़मर्रा की गिनती और संख्या शब्दों में आत्मविश्वास बढ़ाएँ।",
+  "nbaCtaPracticeNumbers": "संख्याओं का अभ्यास करें",
+  "nbaBadgeMistakes": "अभ्यास ज़रूरी",
+  "nbaTitleMistakes": "गलतियों को सीख में बदलें",
+  "nbaSubMistakes": "आपके पास समीक्षा और निपुणता के लिए {count} प्रश्न हैं।",
+  "@nbaSubMistakes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nbaCtaReviewMistakes": "गलतियों की समीक्षा करें",
+  "nbaBadgeStreakRisk": "स्ट्रीक खतरे में",
+  "nbaTitleStreakRisk": "अपनी दैनिक गति बनाए रखें",
+  "nbaSubStreakRisk": "एक त्वरित क्विज़ या पाठ आज आपकी {count} दिन की स्ट्रीक सुरक्षित करेगा।",
+  "@nbaSubStreakRisk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nbaCtaQuickReview": "त्वरित समीक्षा",
+  "nbaBadgeTryBakhed": "बाखेड़ आज़माएँ",
+  "nbaTitleTryBakhed": "एक सांस्कृतिक कविता सुनें",
+  "nbaSubTryBakhed": "30 सेकंड के लिए सुंदर संताली मौखिक कविता में डूब जाएँ।",
+  "nbaCtaListenNow": "अभी सुनें",
+  "nbaBadgeAllDone": "सब पूर्ण",
+  "nbaTitleAllDone": "आपने सब कुछ पूरा किया — शानदार!",
+  "nbaSubAllDone": "नए पाठ रास्ते में हैं। कभी भी बाखेड़ दोबारा देखें या समीक्षा करें।",
+  "nbaCtaExploreBakhed": "बाखेड़ खोजें",
+  "affirmationListen": "सुनें",
+  "affirmationStop": "रोकें",
+  "affirmationMarkRead": "पढ़ा हुआ चिह्नित करें",
+  "affirmationRead": "पढ़ें",
+  "todaysMissionTitle": "आज का मिशन",
+  "missionsDoneCount": "{done}/4 पूर्ण",
+  "@missionsDoneCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "hindi": "हिंदी",
+  "bengali": "बांग्ला",
+  "odia": "ओड़िया",
+  "teachingLanguage": "शिक्षण भाषा",
+  "teachingLanguageSubtitle": "अर्थ और व्याख्या के लिए उपयोग होती है",
+  "lessonAudioMode": "पाठ ऑडियो",
+  "lessonAudioModeSubtitle": "चुनें कि संताली और अनुवाद ऑडियो कैसे चले",
+  "onboardingStepLanguageTitle": "आप कौन सी भाषा सबसे अच्छे से समझते हैं?",
+  "onboardingStepProficiencyTitle": "आपको कितनी संताली आती है?",
+  "onboardingStepGoalsTitle": "आप क्या हासिल करना चाहते हैं?",
+  "onboardingStepGoalsSubtitle": "एक या अधिक चुनें — हम आपका रास्ता व्यक्तिगत बनाएंगे।",
+  "onboardingStepAudioTitle": "पाठ का ऑडियो कैसे चलना चाहिए?",
+  "onboardingStepReadyTitle": "आप लगभग तैयार हैं!",
+  "proficiencyNone": "मुझे संताली नहीं आती",
+  "proficiencyUnderstandsSome": "मुझे कुछ संताली समझ आती है",
+  "proficiencyFluentSpeaker": "मुझे संताली बोलनी आती है",
+  "proficiencyBeginnerReader": "मुझे थोड़ी ओलचिकी पढ़नी आती है",
+  "proficiencyFluentReader": "मुझे ओलचिकी पढ़नी आती है",
+  "goalSpeakSantali": "संताली बोलना",
+  "goalUnderstandSantali": "संताली समझना",
+  "goalReadOlChiki": "ओलचिकी पढ़ना",
+  "goalWriteOlChiki": "ओलचिकी लिखना",
+  "goalLearnEverything": "सब कुछ सीखना",
+  "goalHelpMyChild": "अपने बच्चे को सिखाने में मदद करना",
+  "goalPrepareExam": "स्कूल या परीक्षा की तैयारी",
+  "audioModeTargetOnly": "केवल संताली",
+  "audioModeBilingual": "संताली, फिर मेरी भाषा",
+  "audioModeTranslationOnDemand": "अनुवाद केवल टैप करने पर चलाएँ",
+  "dailyGoalLabel": "दैनिक लक्ष्य",
+  "minutesPerDay": "{minutes} मिनट/दिन",
+  "@minutesPerDay": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadStarterAudio": "स्टार्टर ऑडियो डाउनलोड करें",
+  "downloadStarterAudioSubtitle": "पहले दिन से ऑफ़लाइन सीखें",
+  "backButton": "पीछे"
+}

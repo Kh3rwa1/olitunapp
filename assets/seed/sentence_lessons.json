@@ -4688,9 +4688,9 @@
   {
     "id": "lesson_grammar_verb_tenses",
     "titleOlChiki": "ᱠᱟᱱᱣᱟ ᱚᱠᱛᱚ ᱪᱤᱱᱦᱟᱹ",
-    "titleLatin": "Santali Verb Tenses & Conjugation",
-    "description": "Master the three core Santali verb aspect suffixes: Present Continuous (-eda), Past Simple (-keda / -en), and Future/Habitual (-a).",
-    "categoryId": "grammar",
+    "titleLatin": "Verb Tenses & Suffixes",
+    "description": "Master core Santali verb aspect suffixes: Present Continuous (-eda), Past Simple (-keda / -en), and Future (-a).",
+    "categoryId": "cat_sentences",
     "order": 16,
     "difficulty": "intermediate",
     "xpReward": 35,
@@ -4706,42 +4706,56 @@
       {
         "id": "b_gvt_1",
         "type": "text",
-        "content": "In Santali, verbs change their meaning using aspect suffixes attached directly to the verb root:\n\n• **Present Continuous (-eda / -ed-)**: Action happening right now.\n  - Root: *parhaw* (read) ➔ *parhaw-eda* (reading)\n  - Root: *kami* (work) ➔ *kami-eda* (working)\n\n• **Past Simple (-keda / -en)**: Action completed.\n  - Root: *jom* (eat) ➔ *jom-keda* (ate)\n  - Root: *sen* (go) ➔ *sen-en* (went)\n\n• **Future / Habitual (-a / -ag-)**: Action that will happen or usually happens.\n  - Root: *hiju* (come) ➔ *hijug-a* (will come)\n  - Root: *chala* (go) ➔ *chalag-a* (will go)"
+        "textOlChiki": "ᱯᱟᱲᱦᱟᱣ ᱮᱫᱟᱧ (Parhaw-edanj)",
+        "textLatin": "Present Continuous: Verb root + -eda (transitive) / -kan (intransitive) -> Iny parhaw-edanj (I am reading right now).",
+        "data": {
+          "grammarRule": "Present Continuous"
+        }
       },
       {
         "id": "b_gvt_2",
-        "type": "quiz",
-        "question": "Which suffix indicates an ongoing action in the present (e.g. reading/working)?",
-        "options": [
-          "-eda",
-          "-keda",
-          "-en",
-          "-khon"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'-eda' is the standard transitive present continuous aspect marker in Santali."
+        "type": "text",
+        "textOlChiki": "ᱡᱚᱢ ᱠᱮᱫᱟᱧ (Jom-kedanj)",
+        "textLatin": "Past Simple: Verb root + -keda (transitive) / -ena (intransitive) -> Iny daka jom-kedanj (I ate rice / completed).",
+        "data": {
+          "grammarRule": "Past Simple"
+        }
       },
       {
         "id": "b_gvt_3",
+        "type": "text",
+        "textOlChiki": "ᱦᱤᱡᱩᱜᱼᱟᱧ (Hijug-any)",
+        "textLatin": "Future & Habitual: Verb root + -a -> Gapa iny hijug-any (I will come tomorrow).",
+        "data": {
+          "grammarRule": "Future Tense"
+        }
+      },
+      {
+        "id": "b_gvt_q1",
         "type": "quiz",
-        "question": "How do you say 'I ate food' in Santali (past tense of 'jom')?",
-        "options": [
-          "Daka iny jom-keda",
-          "Daka iny jom-eda",
-          "Daka iny jom-a",
-          "Daka iny jom-me"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'-keda' marks completed transitive past action ('jom-keda' = ate)."
+        "textOlChiki": "ᱱᱤᱛᱚᱜ ᱪᱟᱹᱞᱩ ᱠᱟᱹᱢᱤ ᱞᱟᱹᱜᱤᱫ ᱚᱠᱟ ᱪᱤᱱᱦᱟᱹ ᱞᱟᱜᱟᱣᱼᱟ?",
+        "textLatin": "Which suffix indicates an ongoing action in the present (e.g. reading/working)?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_grammar_verb_tenses",
+          "question": "Which suffix indicates an ongoing action in the present (e.g. reading/working)?",
+          "options": [
+            "-eda",
+            "-keda",
+            "-en",
+            "-khon"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "'-eda' is the standard transitive present continuous aspect marker in Santali."
+        }
       }
     ]
   },
   {
     "id": "lesson_grammar_possessives",
     "titleOlChiki": "ᱟᱯᱱᱟᱨ ᱥᱟᱹᱜᱟᱹᱭ ᱪᱤᱱᱦᱟᱹ",
-    "titleLatin": "Possessives & Pronoun Genitives",
+    "titleLatin": "Possessives & Pronouns",
     "description": "Learn how to express ownership and relationships using genitive suffixes (-ag / -ak) with pronouns.",
-    "categoryId": "grammar",
+    "categoryId": "cat_sentences",
     "order": 17,
     "difficulty": "intermediate",
     "xpReward": 35,
@@ -4757,42 +4771,56 @@
       {
         "id": "b_gp_1",
         "type": "text",
-        "content": "To express 'my', 'your', 'his', or 'our', attach the possessive marker **-ag** (or **-ak**) to the personal pronoun:\n\n• **Inyag** (ᱤᱧᱟᱜ) = My / Mine\n• **Amag** (ᱟᱢᱟᱜ) = Your / Yours (singular)\n• **Uniyag** (ᱩᱱᱤᱭᱟᱜ) = His / Her / Hers\n• **Aleyag** (ᱟᱞᱮᱭᱟᱜ) = Our / Ours (exclusive - excluding listener)\n• **Aboyag** (ᱟᱵᱚᱣᱟᱜ) = Our / Ours (inclusive - including listener)\n• **Apeag** (ᱟᱯᱮᱭᱟᱜ) = Your / Yours (plural)\n• **Unkuyag** (ᱩᱱᱠᱩᱣᱟᱜ) = Their / Theirs"
+        "textOlChiki": "ᱤᱧᱟᱜ (Inyag) ᱟᱨ ᱟᱢᱟᱜ (Amag)",
+        "textLatin": "Personal Pronoun Genitives: Inyag = My/Mine, Amag = Your/Yours (Singular). Example: Inyag nyutum (My name).",
+        "data": {
+          "grammarRule": "Singular Possessives"
+        }
       },
       {
         "id": "b_gp_2",
-        "type": "quiz",
-        "question": "What is the Santali word for 'My name'?",
-        "options": [
-          "Inyag nyutum",
-          "Amag nyutum",
-          "Uniyag nyutum",
-          "Aleyag nyutum"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'Inyag' (My) + 'nyutum' (name) = 'Inyag nyutum'."
+        "type": "text",
+        "textOlChiki": "ᱟᱵᱚᱣᱟᱜ (Aboyag) ᱟᱨ ᱟᱞᱮᱭᱟᱜ (Aleyag)",
+        "textLatin": "Plural Pronoun Genitives: Aboyag = Our (Inclusive, including listener), Aleyag = Our (Exclusive). Example: Aboyag atu (Our village).",
+        "data": {
+          "grammarRule": "Plural Possessives"
+        }
       },
       {
         "id": "b_gp_3",
+        "type": "text",
+        "textOlChiki": "ᱩᱱᱤᱭᱟᱜ (Uniyag) ᱟᱨ ᱩᱱᱠᱩᱣᱟᱜ (Unkuyag)",
+        "textLatin": "Third Person: Uniyag = His/Her, Unkuyag = Theirs. Example: Unkuyag orag (Their house).",
+        "data": {
+          "grammarRule": "Third Person Possessives"
+        }
+      },
+      {
+        "id": "b_gp_q1",
         "type": "quiz",
-        "question": "How do you say 'Our village' (including everyone listening)?",
-        "options": [
-          "Aboyag atu",
-          "Inyag atu",
-          "Amag atu",
-          "Uniyag atu"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'Aboyag' is the inclusive first-person plural possessive ('our')."
+        "textOlChiki": "'ᱤᱧᱟᱜ ᱧᱩᱛᱩᱢ' ᱨᱮᱭᱟᱜ ᱢᱮᱱᱮᱛ ᱪᱮᱫ?",
+        "textLatin": "What is the English meaning of 'Inyag nyutum'?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_grammar_possessives",
+          "question": "What is the English meaning of 'Inyag nyutum'?",
+          "options": [
+            "My name",
+            "Your name",
+            "His name",
+            "Our village"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "'Inyag' (My) + 'nyutum' (name) = 'My name'."
+        }
       }
     ]
   },
   {
     "id": "lesson_grammar_plurals_numbers",
     "titleOlChiki": "ᱥᱟᱸᱜᱮ ᱪᱤᱱᱦᱟᱹ ᱟᱨ ᱞᱮᱠᱷᱟ",
-    "titleLatin": "Plural Markers & Quantifiers",
+    "titleLatin": "Plurals & Number Agreements",
     "description": "Understand plural (-ko), dual (-kin), and numeral classifier agreements in Santali.",
-    "categoryId": "grammar",
+    "categoryId": "cat_sentences",
     "order": 18,
     "difficulty": "intermediate",
     "xpReward": 35,
@@ -4808,33 +4836,38 @@
       {
         "id": "b_gpn_1",
         "type": "text",
-        "content": "Santali distinguishes between Singular, Dual (exactly two), and Plural (three or more):\n\n• **Dual suffix (-kin / -ᱠᱤᱱ)**: Used for pairs.\n  - *Gate-kin* (two friends)\n  - *Dare-kin* (two trees)\n\n• **Plural suffix (-ko / -ᱠᱚ)**: Used for multiple people or things.\n  - *Hor-ko* (people)\n  - *Gidra-ko* (children)\n  - *Dare-ko* (trees)\n  - *Cene-ko* (birds)\n\n• **Numbers as Modifiers**:\n  - *Mit'tan* (one), *Barea* (two), *Pea* (three), *Pon'ya* (four), *Monyea* (five)."
+        "textOlChiki": "ᱜᱟᱛᱮᱠᱤᱱ (Gate-kin)",
+        "textLatin": "Dual Number (-kin): Used specifically for pairs of people or things. Example: Barya gate-kin (Two friends).",
+        "data": {
+          "grammarRule": "Dual Suffix"
+        }
       },
       {
         "id": "b_gpn_2",
-        "type": "quiz",
-        "question": "Which suffix is attached to a noun to make it plural in Santali?",
-        "options": [
-          "-ko",
-          "-re",
-          "-khon",
-          "-en"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'-ko' is the standard plural suffix (e.g. 'gidra-ko' = children)."
+        "type": "text",
+        "textOlChiki": "ᱦᱚᱲᱠᱚ (Hor-ko) ᱟᱨ ᱜᱤᱫᱽᱨᱟᱹᱠᱚ (Gidra-ko)",
+        "textLatin": "Plural Number (-ko): Used for three or more people or items. Example: Gidra-ko enej kana (Children are playing).",
+        "data": {
+          "grammarRule": "Plural Suffix"
+        }
       },
       {
-        "id": "b_gpn_3",
+        "id": "b_gpn_q1",
         "type": "quiz",
-        "question": "What does '-kin' indicate when added to 'gate' (gate-kin)?",
-        "options": [
-          "Two friends (Dual)",
-          "Many friends (Plural)",
-          "One friend",
-          "Friend's house"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'-kin' specifically denotes the dual number (two items/people)."
+        "textOlChiki": "ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ ᱥᱟᱸᱜᱮ ᱵᱮᱱᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱪᱮᱫ ᱪᱤᱱᱦᱟᱹ ᱞᱟᱜᱟᱣᱼᱟ?",
+        "textLatin": "Which suffix is attached to a noun to make it plural (3+) in Santali?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_grammar_plurals_numbers",
+          "question": "Which suffix is attached to a noun to make it plural (3+) in Santali?",
+          "options": [
+            "-ko",
+            "-kin",
+            "-re",
+            "-khon"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "'-ko' is the standard plural suffix for multiple items/people."
+        }
       }
     ]
   },
@@ -4843,7 +4876,7 @@
     "titleOlChiki": "ᱡᱚᱲᱟᱣ ᱟᱹᱲᱟᱹ ᱠᱚ",
     "titleLatin": "Conjunctions & Connectors",
     "description": "Learn essential connecting words like 'Ar' (And), 'Menkhan' (But), 'Ente' (Because), and 'Bankhan' (Otherwise).",
-    "categoryId": "grammar",
+    "categoryId": "cat_sentences",
     "order": 19,
     "difficulty": "intermediate",
     "xpReward": 35,
@@ -4859,33 +4892,38 @@
       {
         "id": "b_gc_1",
         "type": "text",
-        "content": "Conjunctions connect clauses and ideas into smooth, natural sentences:\n\n• **Ar (ᱟᱨ)** = And\n  - *Cawle ar dal* (Rice and lentils)\n  - *Tamak ar Tumdak* (Tamak and Tumdak drums)\n\n• **Menkhan (ᱢᱮᱱᱠᱷᱟᱱ)** = But / However\n  - *Iny sen-eny menkhan uni bange tahe kana* (I went, but he was not there)\n\n• **Ente (ᱮᱱᱛᱮ)** = Because / For\n  - *Kami me ente nitog do okto kana* (Work, because now is the time)\n\n• **Bankhan (ᱵᱟᱝᱠᱷᱟᱱ)** = Otherwise / Or else\n  - *Logon hijug me bankhan gari chala-a* (Come fast, otherwise the bus will leave)"
+        "textOlChiki": "ᱟᱨ (Ar) ᱟᱨ ᱢᱮᱱᱠᱷᱟᱱ (Menkhan)",
+        "textLatin": "Ar = And (Cawle ar dal -> Rice and lentils). Menkhan = But (Iny sen-eny menkhan uni bange -> I went but he wasn't there).",
+        "data": {
+          "grammarRule": "And & But"
+        }
       },
       {
         "id": "b_gc_2",
-        "type": "quiz",
-        "question": "What is the Santali word for 'And'?",
-        "options": [
-          "Ar",
-          "Menkhan",
-          "Ente",
-          "Bankhan"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'Ar' (ᱟᱨ) means 'And' in Santali."
+        "type": "text",
+        "textOlChiki": "ᱮᱱᱛᱮ (Ente) ᱟᱨ ᱵᱟᱝᱠᱷᱟᱱ (Bankhan)",
+        "textLatin": "Ente = Because (Kami me ente okto kana -> Work because it is time). Bankhan = Otherwise / Or else (Logon hijug me bankhan gari chala-a).",
+        "data": {
+          "grammarRule": "Because & Otherwise"
+        }
       },
       {
-        "id": "b_gc_3",
+        "id": "b_gc_q1",
         "type": "quiz",
-        "question": "Which connector means 'Otherwise / Or else'?",
-        "options": [
-          "Bankhan",
-          "Ar",
-          "Menkhan",
-          "Ente"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'Bankhan' (ᱵᱟᱝᱠᱷᱟᱱ) means 'Otherwise' or 'Or else'."
+        "textOlChiki": "ᱥᱟᱱᱛᱟᱲᱤ ᱛᱮ 'And' ᱫᱚ ᱪᱮᱫ ᱠᱚ ᱢᱮᱛᱟᱜᱼᱟ?",
+        "textLatin": "What is the Santali word for 'And'?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_grammar_conjunctions",
+          "question": "What is the Santali word for 'And'?",
+          "options": [
+            "Ar",
+            "Menkhan",
+            "Ente",
+            "Bankhan"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "'Ar' (ᱟᱨ) means 'And' in Santali."
+        }
       }
     ]
   },
@@ -4894,7 +4932,7 @@
     "titleOlChiki": "ᱪᱟᱞᱟᱠ ᱠᱟᱹᱦᱩ ᱟᱨ ᱫᱟᱜ ᱴᱩᱠᱩᱡ",
     "titleLatin": "The Clever Crow & The Water Pot",
     "description": "A classic graded reading story in Santali: A thirsty crow uses pebble stones to raise water in a pitcher.",
-    "categoryId": "stories",
+    "categoryId": "cat_sentences",
     "order": 20,
     "difficulty": "intermediate",
     "xpReward": 40,
@@ -4907,20 +4945,65 @@
       {
         "id": "b_st1_1",
         "type": "text",
-        "content": "📖 **ᱪᱟᱞᱟᱠ ᱠᱟᱹᱦᱩ ᱟᱨ ᱫᱟᱜ ᱴᱩᱠᱩᱡ (The Clever Crow & The Pot)**\n\n1. **ᱢᱤᱫᱴᱟᱝ ᱠᱟᱹᱦᱩ ᱫᱟᱜ ᱟᱹᱰᱤ ᱡᱩᱨ ᱛᱮᱛᱟᱝ ᱞᱮᱫᱮᱭᱟ᱾**\n*(Midtan kahu dag adi jur tetang ledeya.)*\n➔ A crow felt very thirsty for water.\n\n2. **ᱩᱱᱤ ᱫᱚ ᱵᱟᱹᱫᱽ ᱫᱷᱟᱨᱮ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱴᱩᱠᱩᱡ ᱮ ᱧᱮᱞ ᱧᱟᱢ ᱠᱮᱫᱟ᱾**\n*(Uni do bad dhare re midtan tukuj e nyel nyam keda.)*\n➔ He spotted a clay pitcher near the field.\n\n3. **ᱴᱩᱠᱩᱡ ᱨᱮ ᱫᱟᱜ ᱫᱚ ᱟᱹᱰᱤ ᱞᱟᱛᱟᱨ ᱨᱮ ᱛᱟᱦᱮᱸ ᱠᱟᱱᱟ᱾**\n*(Tukuj re dag do adi latar re tahe kana.)*\n➔ In the pitcher, water was very low at the bottom.\n\n4. **ᱠᱟᱹᱦᱩ ᱫᱚ ᱵᱩᱫᱷᱤ ᱠᱟᱛᱮ ᱫᱷᱤᱨᱤ ᱠᱮᱪᱮᱪ ᱴᱩᱠᱩᱡ ᱨᱮᱭ ᱠᱷᱟᱫᱽᱞᱮ ᱠᱮᱫᱟ᱾**\n*(Kahu do budhi kate dhiri kecec tukuj rey khadle keda.)*\n➔ The clever crow dropped small pebbles into the pot.\n\n5. **ᱫᱟᱜ ᱪᱚᱴ ᱛᱮ ᱨᱟᱠᱟᱵ ᱮᱱᱟ ᱟᱨ ᱠᱟᱹᱦᱩ ᱫᱟᱜ ᱧᱩ ᱠᱟᱛᱮ ᱨᱟᱹᱥᱠᱟᱹ ᱛᱮ ᱩᱰᱟᱹᱣ ᱮᱱᱟᱭ᱾**\n*(Dag cot te rakab ena ar kahu dag nyu kate raska te udaw enay.)*\n➔ The water rose to the top and the crow drank joyfully and flew away."
+        "textOlChiki": "ᱢᱤᱫᱴᱟᱝ ᱠᱟᱹᱦᱩ ᱫᱟᱜ ᱟᱹᱰᱤ ᱡᱩᱨ ᱛᱮᱛᱟᱝ ᱞᱮᱫᱮᱭᱟ ᱾",
+        "textLatin": "Midtan kahu dag adi jur tetang ledeya. – A crow felt very thirsty for water.",
+        "data": {
+          "storyArc": "Introduction"
+        }
       },
       {
         "id": "b_st1_2",
+        "type": "text",
+        "textOlChiki": "ᱩᱱᱤ ᱫᱚ ᱵᱟᱹᱫᱽ ᱫᱷᱟᱨᱮ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱴᱩᱠᱩᱡ ᱮ ᱧᱮᱞ ᱧᱟᱢ ᱠᱮᱫᱟ ᱾",
+        "textLatin": "Uni do bad dhare re midtan tukuj e nyel nyam keda. – He spotted a clay pitcher near the field.",
+        "data": {
+          "storyArc": "Discovery"
+        }
+      },
+      {
+        "id": "b_st1_3",
+        "type": "text",
+        "textOlChiki": "ᱴᱩᱠᱩᱡ ᱨᱮ ᱫᱟᱜ ᱫᱚ ᱟᱹᱰᱤ ᱞᱟᱛᱟᱨ ᱨᱮ ᱛᱟᱦᱮᱸ ᱠᱟᱱᱟ ᱾",
+        "textLatin": "Tukuj re dag do adi latar re tahe kana. – In the pitcher, water was very low at the bottom.",
+        "data": {
+          "storyArc": "Challenge"
+        }
+      },
+      {
+        "id": "b_st1_4",
+        "type": "text",
+        "textOlChiki": "ᱠᱟᱹᱦᱩ ᱫᱚ ᱵᱩᱫᱷᱤ ᱠᱟᱛᱮ ᱫᱷᱤᱨᱤ ᱠᱮᱪᱮᱪ ᱴᱩᱠᱩᱡ ᱨᱮᱭ ᱠᱷᱟᱫᱽᱞᱮ ᱠᱮᱫᱟ ᱾",
+        "textLatin": "Kahu do budhi kate dhiri kecec tukuj rey khadle keda. – The clever crow dropped small pebbles into the pot.",
+        "data": {
+          "storyArc": "Clever Solution"
+        }
+      },
+      {
+        "id": "b_st1_5",
+        "type": "text",
+        "textOlChiki": "ᱫᱟᱜ ᱪᱚᱴ ᱛᱮ ᱨᱟᱠᱟᱵ ᱮᱱᱟ ᱟᱨ ᱠᱟᱹᱦᱩ ᱫᱟᱜ ᱧᱩ ᱠᱟᱛᱮ ᱨᱟᱹᱥᱠᱟᱹ ᱛᱮ ᱩᱰᱟᱹᱣ ᱮᱱᱟᱭ ᱾",
+        "textLatin": "Dag cot te rakab ena ar kahu dag nyu kate raska te udaw enay. – The water rose to the top and the crow drank joyfully and flew away.",
+        "data": {
+          "storyArc": "Happy Ending"
+        }
+      },
+      {
+        "id": "b_st1_q1",
         "type": "quiz",
-        "question": "What did the crow drop into the pot to make the water rise?",
-        "options": [
-          "Dhiri kecec (Pebbles)",
-          "Dare sakam (Leaves)",
-          "Cawle (Rice)",
-          "Pitha (Bread)"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "The crow dropped 'dhiri kecec' (pebble stones) into the pot."
+        "textOlChiki": "ᱠᱟᱹᱦᱩ ᱪᱮᱫ ᱴᱩᱠᱩᱡ ᱨᱮᱭ ᱠᱷᱟᱫᱽᱞᱮ ᱠᱮᱫᱟ?",
+        "textLatin": "What did the crow drop into the pot to make the water rise?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_story_fox_crow",
+          "question": "What did the crow drop into the pot to make the water rise?",
+          "options": [
+            "Dhiri kecec (Pebbles)",
+            "Dare sakam (Leaves)",
+            "Cawle (Rice)",
+            "Pitha (Bread)"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "The crow dropped 'dhiri kecec' (pebble stones) into the pot."
+        }
       }
     ]
   },
@@ -4929,7 +5012,7 @@
     "titleOlChiki": "ᱥᱟᱨᱡᱚᱢ ᱵᱤᱨ ᱨᱮ ᱡᱷᱚᱸᱠ ᱟᱨ ᱠᱩᱞ",
     "titleLatin": "The Wise Deer & The Tiger",
     "description": "An inspiring Santali forest story teaching courage and quick wit in the face of danger.",
-    "categoryId": "stories",
+    "categoryId": "cat_sentences",
     "order": 21,
     "difficulty": "intermediate",
     "xpReward": 40,
@@ -4942,20 +5025,65 @@
       {
         "id": "b_st2_1",
         "type": "text",
-        "content": "📖 **ᱥᱟᱨᱡᱚᱢ ᱵᱤᱨ ᱨᱮ ᱡᱷᱚᱸᱠ ᱟᱨ ᱠᱩᱞ (The Wise Deer & The Tiger)**\n\n1. **ᱢᱟᱨᱟᱝ ᱥᱟᱨᱡᱚᱢ ᱵᱤᱨ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱪᱚᱨᱚᱠ ᱡᱷᱚᱸᱠ ᱜᱟᱹᱥᱤᱭᱟᱹᱲ ᱜᱟᱥ ᱮ ᱡᱚᱢ ᱮᱫ ᱛᱟᱦᱮᱸᱫ᱾**\n*(Marang Sarjom bir re midtan corok jhonk gasiyar gas e jom ed tahend.)*\n➔ In the great Sal forest, a graceful deer was grazing fresh green grass.\n\n2. **ᱦᱟᱱᱛᱮ ᱠᱷᱚᱱ ᱢᱤᱫᱴᱟᱝ ᱨᱮᱸᱜᱮᱡ ᱠᱩᱞ ᱦᱮᱡ ᱥᱮᱴᱮᱨ ᱮᱱᱟᱭ᱾**\n*(Hante khon midtan rengej kul hej seter enay.)*\n➔ From across the grove, a hungry tiger arrived.\n\n3. **ᱡᱷᱚᱸᱠ ᱫᱚ ᱵᱟᱭ ᱵᱚᱛᱚᱨ ᱮᱱᱟ, ᱩᱱᱤ ᱫᱚ ᱥᱟᱦᱟᱥ ᱛᱮ ᱛᱤᱸᱜᱩ ᱮᱱᱟᱭ᱾**\n*(Jhonk do bay botor ena, uni do sahas te tingu enay.)*\n➔ The deer did not panic; he stood tall with bravery.\n\n4. **ᱡᱷᱚᱸᱠ ᱮ ᱢᱮᱱ ᱠᱮᱫᱟ: 'ᱤᱧ ᱫᱚ ᱢᱟᱨᱟᱝ ᱵᱩᱨᱩ ᱨᱤᱱᱤᱡ ᱫᱩᱜ ᱦᱚᱲ ᱠᱟᱱᱟᱹᱧ!'**\n*(Jhonk e men keda: 'Iny do Marang Buru rinij dug hor kanany!')*\n➔ The deer proclaimed: 'I am protected under the guardian spirit of Marang Buru!'\n\n5. **ᱠᱩᱞ ᱫᱚ ᱵᱚᱛᱚᱨ ᱛᱮ ᱵᱤᱨ ᱵᱷᱤᱛᱨᱤ ᱛᱮ ᱫᱟᱹᱲ ᱠᱮᱫᱟᱭ᱾ ᱵᱩᱫᱷᱤ ᱜᱮ ᱥᱟᱱᱟᱢᱟᱜ ᱠᱷᱚᱱ ᱢᱟᱨᱟᱝ ᱫᱟᱲᱮ ᱠᱟᱱᱟ᱾**\n*(Kul do botor te bir bhitri te dar keday. Budhi ge sanamag khon marang dare kana.)*\n➔ The tiger fled into the forest. Wisdom is the greatest strength of all."
+        "textOlChiki": "ᱢᱟᱨᱟᱝ ᱥᱟᱨᱡᱚᱢ ᱵᱤᱨ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱪᱚᱨᱚᱠ ᱡᱷᱚᱸᱠ ᱜᱟᱹᱥᱤᱭᱟᱹᱲ ᱜᱟᱥ ᱮ ᱡᱚᱢ ᱮᱫ ᱛᱟᱦᱮᱸᱫ ᱾",
+        "textLatin": "Marang Sarjom bir re midtan corok jhonk gasiyar gas e jom ed tahend. – In the great Sal forest, a graceful deer was grazing fresh green grass.",
+        "data": {
+          "storyArc": "Setting"
+        }
       },
       {
         "id": "b_st2_2",
+        "type": "text",
+        "textOlChiki": "ᱦᱟᱱᱛᱮ ᱠᱷᱚᱱ ᱢᱤᱫᱴᱟᱝ ᱨᱮᱸᱜᱮᱡ ᱠᱩᱞ ᱦᱮᱡ ᱥᱮᱴᱮᱨ ᱮᱱᱟᱭ ᱾",
+        "textLatin": "Hante khon midtan rengej kul hej seter enay. – From across the grove, a hungry tiger arrived.",
+        "data": {
+          "storyArc": "Danger"
+        }
+      },
+      {
+        "id": "b_st2_3",
+        "type": "text",
+        "textOlChiki": "ᱡᱷᱚᱸᱠ ᱫᱚ ᱵᱟᱭ ᱵᱚᱛᱚᱨ ᱮᱱᱟ, ᱩᱱᱤ ᱫᱚ ᱥᱟᱦᱟᱥ ᱛᱮ ᱛᱤᱸᱜᱩ ᱮᱱᱟᱭ ᱾",
+        "textLatin": "Jhonk do bay botor ena, uni do sahas te tingu enay. – The deer did not panic; he stood tall with bravery.",
+        "data": {
+          "storyArc": "Courage"
+        }
+      },
+      {
+        "id": "b_st2_4",
+        "type": "text",
+        "textOlChiki": "ᱡᱷᱚᱸᱠ ᱮ ᱢᱮᱱ ᱠᱮᱫᱟ: 'ᱤᱧ ᱫᱚ ᱢᱟᱨᱟᱝ ᱵᱩᱨᱩ ᱨᱤᱱᱤᱡ ᱫᱩᱜ ᱦᱚᱲ ᱠᱟᱱᱟᱹᱧ!'",
+        "textLatin": "Jhonk e men keda: 'Iny do Marang Buru rinij dug hor kanany!' – The deer proclaimed: 'I am protected under the guardian spirit of Marang Buru!'",
+        "data": {
+          "storyArc": "Quick Wit"
+        }
+      },
+      {
+        "id": "b_st2_5",
+        "type": "text",
+        "textOlChiki": "ᱠᱩᱞ ᱫᱚ ᱵᱚᱛᱚᱨ ᱛᱮ ᱵᱤᱨ ᱵᱷᱤᱛᱨᱤ ᱛᱮ ᱫᱟᱹᱲ ᱠᱮᱫᱟᱭ ᱾ ᱵᱩᱫᱷᱤ ᱜᱮ ᱢᱟᱨᱟᱝ ᱫᱟᱲᱮ ᱠᱟᱱᱟ ᱾",
+        "textLatin": "Kul do botor te bir bhitri te dar keday. Budhi ge marang dare kana. – The tiger fled into the forest. Wisdom is the greatest strength.",
+        "data": {
+          "storyArc": "Moral Victory"
+        }
+      },
+      {
+        "id": "b_st2_q1",
         "type": "quiz",
-        "question": "What moral does the story of the wise deer teach?",
-        "options": [
-          "Budhi ge marang dare (Wisdom is the greatest strength)",
-          "Always run away",
-          "Cut down the trees",
-          "Stay angry"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "'Budhi ge marang dare' — Wisdom and presence of mind overcome brute force."
+        "textOlChiki": "ᱱᱚᱣᱟ ᱠᱟᱹᱦᱱᱤ ᱪᱮᱫ ᱮ ᱥᱮᱪᱮᱫ ᱮᱫᱼᱟ?",
+        "textLatin": "What moral does the story of the wise deer teach?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_story_deer_tiger",
+          "question": "What moral does the story of the wise deer teach?",
+          "options": [
+            "Budhi ge marang dare (Wisdom is the greatest strength)",
+            "Always run away in panic",
+            "Tigers are always friendly",
+            "Do not enter the forest"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "'Budhi ge marang dare' — Wisdom and presence of mind overcome danger."
+        }
       }
     ]
   },
@@ -4964,7 +5092,7 @@
     "titleOlChiki": "ᱵᱟᱨᱭᱟ ᱪᱮᱬᱮ ᱨᱮᱭᱟᱜ ᱠᱟᱹᱦᱱᱤ",
     "titleLatin": "The Two Birds of Marang Buru",
     "description": "A poetic traditional Santal tale celebrating kindness, melody, and mutual support in nature.",
-    "categoryId": "stories",
+    "categoryId": "cat_sentences",
     "order": 22,
     "difficulty": "intermediate",
     "xpReward": 40,
@@ -4977,20 +5105,65 @@
       {
         "id": "b_st3_1",
         "type": "text",
-        "content": "📖 **ᱵᱟᱨᱭᱟ ᱪᱮᱬᱮ ᱨᱮᱭᱟᱜ ᱠᱟᱹᱦᱱᱤ (The Two Birds of Marang Buru)**\n\n1. **ᱢᱟᱨᱟᱝ ᱵᱩᱨᱩ ᱯᱷᱮᱰ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱢᱟᱨᱟᱝ ᱢᱟᱛᱠᱚᱢ ᱫᱟᱨᱮ ᱛᱟᱦᱮᱸ ᱠᱟᱱᱟ᱾**\n*(Marang Buru phed re midtan marang matkom dare tahe kana.)*\n➔ At the foot of the sacred mountain, there stood a magnificent Mahua tree.\n\n2. **ᱚᱱᱟ ᱫᱟᱨᱮ ᱨᱮ ᱵᱟᱨᱭᱟ ᱪᱮᱬᱮ ᱛᱩᱠᱟᱹ ᱠᱤᱱ ᱵᱮᱱᱟᱣ ᱞᱮᱫᱟ᱾**\n*(Ona dare re barya cene tuka kin benaw leda.)*\n➔ On that tree, two birds had built their cozy nest.\n\n3. **ᱥᱮᱛᱟᱜ ᱵᱮᱲᱟ ᱵᱟᱱᱟᱨ ᱪᱮᱬᱮ ᱢᱤᱫ ᱛᱮ ᱥᱤᱵᱤᱞ ᱨᱟᱦᱟ ᱛᱮ ᱠᱤᱱ ᱥᱮᱨᱮᱧ ᱮᱫ ᱛᱟᱦᱮᱸᱫ᱾**\n*(Setag bera banar cene mid te sibil raha te kin sereny ed tahend.)*\n➔ Every dawn, both birds sang together in sweetest harmony.\n\n4. **ᱡᱟᱹᱯᱩᱫ ᱫᱤᱱ ᱨᱮ ᱩᱱᱠᱤᱱ ᱢᱤᱫ ᱟᱨ ᱢᱤᱫᱴᱟᱝ ᱠᱤᱱ ᱜᱚᱲᱚᱣᱟᱫ ᱠᱤᱱᱟ᱾**\n*(Japud din re unkin mid ar midtan kin gorowad kina.)*\n➔ During heavy monsoon rains, they protected and helped one another.\n\n5. **ᱥᱩᱞᱩᱠ ᱛᱮ ᱛᱟᱦᱮᱸᱱ ᱨᱮᱜᱮ ᱡᱤᱭᱚᱱ ᱨᱮᱭᱟᱜ ᱥᱟᱹᱨᱤ ᱨᱟᱹᱥᱠᱟᱹ ᱢᱮᱱᱟᱜᱼᱟ᱾**\n*(Suluk te tahen rege jiyon reyag sari raska menag-a.)*\n➔ In living with harmony and love lies the true joy of life."
+        "textOlChiki": "ᱢᱟᱨᱟᱝ ᱵᱩᱨᱩ ᱯᱷᱮᱰ ᱨᱮ ᱢᱤᱫᱴᱟᱝ ᱢᱟᱨᱟᱝ ᱢᱟᱛᱠᱚᱢ ᱫᱟᱨᱮ ᱛᱟᱦᱮᱸ ᱠᱟᱱᱟ ᱾",
+        "textLatin": "Marang Buru phed re midtan marang matkom dare tahe kana. – At the foot of the sacred mountain, there stood a magnificent Mahua tree.",
+        "data": {
+          "storyArc": "Setting"
+        }
       },
       {
         "id": "b_st3_2",
+        "type": "text",
+        "textOlChiki": "ᱚᱱᱟ ᱫᱟᱨᱮ ᱨᱮ ᱵᱟᱨᱭᱟ ᱪᱮᱬᱮ ᱛᱩᱠᱟᱹ ᱠᱤᱱ ᱵᱮᱱᱟᱣ ᱞᱮᱫᱟ ᱾",
+        "textLatin": "Ona dare re barya cene tuka kin benaw leda. – On that tree, two birds had built their cozy nest.",
+        "data": {
+          "storyArc": "Home"
+        }
+      },
+      {
+        "id": "b_st3_3",
+        "type": "text",
+        "textOlChiki": "ᱥᱮᱛᱟᱜ ᱵᱮᱲᱟ ᱵᱟᱱᱟᱨ ᱪᱮᱬᱮ ᱢᱤᱫ ᱛᱮ ᱥᱤᱵᱤᱞ ᱨᱟᱦᱟ ᱛᱮ ᱠᱤᱱ ᱥᱮᱨᱮᱧ ᱮᱫ ᱛᱟᱦᱮᱸᱫ ᱾",
+        "textLatin": "Setag bera banar cene mid te sibil raha te kin sereny ed tahend. – Every dawn, both birds sang together in sweetest harmony.",
+        "data": {
+          "storyArc": "Harmony"
+        }
+      },
+      {
+        "id": "b_st3_4",
+        "type": "text",
+        "textOlChiki": "ᱡᱟᱹᱯᱩᱫ ᱫᱤᱱ ᱨᱮ ᱩᱱᱠᱤᱱ ᱢᱤᱫ ᱟᱨ ᱢᱤᱫᱴᱟᱝ ᱠᱤᱱ ᱜᱚᱲᱚᱣᱟᱫ ᱠᱤᱱᱟ ᱾",
+        "textLatin": "Japud din re unkin mid ar midtan kin gorowad kina. – During heavy monsoon rains, they protected and helped one another.",
+        "data": {
+          "storyArc": "Support"
+        }
+      },
+      {
+        "id": "b_st3_5",
+        "type": "text",
+        "textOlChiki": "ᱥᱩᱞᱩᱠ ᱛᱮ ᱛᱟᱦᱮᱸᱱ ᱨᱮᱜᱮ ᱡᱤᱭᱚᱱ ᱨᱮᱭᱟᱜ ᱥᱟᱹᱨᱤ ᱨᱟᱹᱥᱠᱟᱹ ᱢᱮᱱᱟᱜᱼᱟ ᱾",
+        "textLatin": "Suluk te tahen rege jiyon reyag sari raska menag-a. – In living with harmony and love lies the true joy of life.",
+        "data": {
+          "storyArc": "Moral"
+        }
+      },
+      {
+        "id": "b_st3_q1",
         "type": "quiz",
-        "question": "Where did the two birds build their nest in the story?",
-        "options": [
-          "Matkom dare (Mahua tree)",
-          "Rel gari",
-          "Bazar re",
-          "Bad re"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "The two birds nested on a 'matkom dare' (Mahua tree) near the sacred hills."
+        "textOlChiki": "ᱵᱟᱨᱭᱟ ᱪᱮᱬᱮ ᱚᱠᱟᱨᱮ ᱛᱩᱠᱟᱹ ᱠᱤᱱ ᱵᱮᱱᱟᱣ ᱞᱮᱫᱟ?",
+        "textLatin": "Where did the two birds build their nest in the story?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_story_two_birds",
+          "question": "Where did the two birds build their nest in the story?",
+          "options": [
+            "Matkom dare (Mahua tree)",
+            "Rel gari (Train)",
+            "Bazar re (In the market)",
+            "Bad re (In the field)"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "The two birds nested on a 'matkom dare' (Mahua tree) near the sacred mountain."
+        }
       }
     ]
   },
@@ -4999,7 +5172,7 @@
     "titleOlChiki": "ᱵᱮᱰᱟ ᱨᱮ ᱥᱚᱦᱨᱟᱭ ᱦᱳᱲᱳ ᱨᱟᱹᱥᱠᱟᱹ",
     "titleLatin": "The Joy of Sohrai Harvest",
     "description": "Immerse in a village harvest narrative capturing the warmth, cattle blessing, and community feasts of Sohrai.",
-    "categoryId": "stories",
+    "categoryId": "cat_sentences",
     "order": 23,
     "difficulty": "intermediate",
     "xpReward": 40,
@@ -5012,20 +5185,65 @@
       {
         "id": "b_st4_1",
         "type": "text",
-        "content": "📖 **ᱵᱮᱰᱟ ᱨᱮ ᱥᱚᱦᱨᱟᱭ ᱦᱳᱲᱳ ᱨᱟᱹᱥᱠᱟᱹ (The Joy of Sohrai Harvest)**\n\n1. **ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱵᱟᱹᱫᱽ ᱠᱚ ᱥᱚᱱᱟ ᱞᱮᱠᱟ ᱥᱟᱥᱟᱝ ᱦᱳᱲᱳ ᱛᱮ ᱯᱮᱨᱮᱡ ᱮᱱᱟ᱾**\n*(Hariyar bad ko sona leka sasang horo te perej ena.)*\n➔ The green fields turned golden with ripe winter paddy.\n\n2. **ᱟᱹᱛᱩ ᱨᱤᱱ ᱦᱚᱲ ᱠᱚ ᱥᱚᱦᱨᱟᱭ ᱯᱚᱨᱚᱵᱽ ᱞᱟᱹᱜᱤᱫ ᱚᱲᱟᱜ ᱠᱚ ᱪᱚᱨᱚᱠ ᱠᱚ ᱨᱚᱝ ᱠᱮᱫᱟ᱾**\n*(Atu rin hor ko Sohrai porob lagid orag ko corok ko rong keda.)*\n➔ Village families painted and decorated their clay homes with traditional wall murals.\n\n3. **ᱜᱟᱹᱭ ᱰᱟᱝᱜᱽᱨᱟ ᱠᱚ ᱥᱟᱹᱜᱩᱱ ᱛᱮ ᱠᱚ ᱪᱩᱢᱟᱹᱣ ᱠᱮᱫ ᱠᱚᱣᱟ᱾**\n*(Gay dangra ko sagun te ko chumaw ked kowa.)*\n➔ Cattle were bathed, oiled, and blessed with sacred flower garlands.\n\n4. **ᱧᱤᱫᱟᱹ ᱵᱮᱲᱟ ᱠᱩᱞᱦᱤ ᱟᱠᱷᱲᱟ ᱨᱮ ᱴᱟᱢᱟᱠ ᱟᱨ ᱛᱩᱢᱫᱟᱜ ᱨᱟᱦᱟ ᱛᱮ ᱥᱟᱱᱟᱢ ᱠᱚ ᱮᱱᱮᱡ ᱮᱱᱟ᱾**\n*(Nyida bera kulhi akhra re Tamak ar Tumdak raha te sanam ko enej ena.)*\n➔ At night, the whole village danced to the rhythm of Tamak and Tumdak drums.\n\n5. **ᱱᱚᱣᱟ ᱯᱚᱨᱚᱵᱽ ᱫᱚ ᱫᱷᱟᱹᱨᱛᱤ ᱟᱨ ᱡᱤᱵᱽ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱨᱦᱟᱣ ᱨᱮᱭᱟᱜ ᱯᱚᱨᱚᱵᱽ ᱠᱟᱱᱟ᱾**\n*(Nowa porob do dharti ar jib ko lagid sarhaw reyag porob kana.)*\n➔ This celebration is a thanksgiving festival to Mother Earth and all living beings."
+        "textOlChiki": "ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱵᱟᱹᱫᱽ ᱠᱚ ᱥᱚᱱᱟ ᱞᱮᱠᱟ ᱥᱟᱥᱟᱝ ᱦᱳᱲᱳ ᱛᱮ ᱯᱮᱨᱮᱡ ᱮᱱᱟ ᱾",
+        "textLatin": "Hariyar bad ko sona leka sasang horo te perej ena. – The green fields turned golden with ripe winter paddy.",
+        "data": {
+          "storyArc": "Harvest Time"
+        }
       },
       {
         "id": "b_st4_2",
+        "type": "text",
+        "textOlChiki": "ᱟᱹᱛᱩ ᱨᱤᱱ ᱦᱚᱲ ᱠᱚ ᱥᱚᱦᱨᱟᱭ ᱯᱚᱨᱚᱵᱽ ᱞᱟᱹᱜᱤᱫ ᱚᱲᱟᱜ ᱠᱚ ᱪᱚᱨᱚᱠ ᱠᱚ ᱨᱚᱝ ᱠᱮᱫᱟ ᱾",
+        "textLatin": "Atu rin hor ko Sohrai porob lagid orag ko corok ko rong keda. – Village families painted and decorated their clay homes with wall murals.",
+        "data": {
+          "storyArc": "Preparation"
+        }
+      },
+      {
+        "id": "b_st4_3",
+        "type": "text",
+        "textOlChiki": "ᱜᱟᱹᱭ ᱰᱟᱝᱜᱽᱨᱟ ᱠᱚ ᱥᱟᱹᱜᱩᱱ ᱛᱮ ᱠᱚ ᱪᱩᱢᱟᱹᱣ ᱠᱮᱫ ᱠᱚᱣᱟ ᱾",
+        "textLatin": "Gay dangra ko sagun te ko chumaw ked kowa. – Cattle were bathed, oiled, and blessed with sacred flower garlands.",
+        "data": {
+          "storyArc": "Cattle Blessing"
+        }
+      },
+      {
+        "id": "b_st4_4",
+        "type": "text",
+        "textOlChiki": "ᱧᱤᱫᱟᱹ ᱵᱮᱲᱟ ᱠᱩᱞᱦᱤ ᱟᱠᱷᱲᱟ ᱨᱮ ᱴᱟᱢᱟᱠ ᱟᱨ ᱛᱩᱢᱫᱟᱜ ᱨᱟᱦᱟ ᱛᱮ ᱥᱟᱱᱟᱢ ᱠᱚ ᱮᱱᱮᱡ ᱮᱱᱟ ᱾",
+        "textLatin": "Nyida bera kulhi akhra re Tamak ar Tumdak raha te sanam ko enej ena. – At night, the whole village danced to the rhythm of Tamak and Tumdak drums.",
+        "data": {
+          "storyArc": "Village Dance"
+        }
+      },
+      {
+        "id": "b_st4_5",
+        "type": "text",
+        "textOlChiki": "ᱱᱚᱣᱟ ᱯᱚᱨᱚᱵᱽ ᱫᱚ ᱫᱷᱟᱹᱨᱛᱤ ᱟᱨ ᱡᱤᱵᱽ ᱠᱚ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱨᱦᱟᱣ ᱨᱮᱭᱟᱜ ᱯᱚᱨᱚᱵᱽ ᱠᱟᱱᱟ ᱾",
+        "textLatin": "Nowa porob do dharti ar jib ko lagid sarhaw reyag porob kana. – This celebration is a thanksgiving festival to Mother Earth and all living beings.",
+        "data": {
+          "storyArc": "Thanksgiving"
+        }
+      },
+      {
+        "id": "b_st4_q1",
         "type": "quiz",
-        "question": "Which festival is celebrated as a thanksgiving for harvest and cattle?",
-        "options": [
-          "Sohrai Porob",
-          "Baha Porob",
-          "Karam Porob",
-          "Sakrat Porob"
-        ],
-        "correctAnswerIndex": 0,
-        "explanation": "Sohrai is the grand harvest and cattle thanksgiving festival of the Santal community."
+        "textOlChiki": "ᱥᱚᱦᱨᱟᱭ ᱯᱚᱨᱚᱵᱽ ᱪᱮᱫ ᱨᱮᱭᱟᱜ ᱯᱚᱨᱚᱵᱽ ᱠᱟᱱᱟ?",
+        "textLatin": "Which festival is celebrated as a thanksgiving for harvest and cattle?",
+        "data": {
+          "quizId": "dynamic_quiz_lesson_story_village_harvest",
+          "question": "Which festival is celebrated as a thanksgiving for harvest and cattle?",
+          "options": [
+            "Sohrai Porob",
+            "Baha Porob",
+            "Karam Porob",
+            "Sakrat Porob"
+          ],
+          "correctAnswerIndex": 0,
+          "explanation": "Sohrai is the grand harvest and cattle thanksgiving festival of the Santal community."
+        }
       }
     ]
   }

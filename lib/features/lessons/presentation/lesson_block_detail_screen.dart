@@ -915,45 +915,85 @@ class _LessonBlockDetailScreenState
                                     'FLUTTER_TEST',
                                   );
                               Widget content;
-                              if (isLongText) {
+                              if (isLongText || (textOlChiki.isNotEmpty && textLatin.isNotEmpty) || cardText.contains('\n')) {
+                                final isMultiLine = cardText.contains('\n') || cardText.length > 60;
                                 content = Padding(
                                   padding: const EdgeInsets.symmetric(
-                                    horizontal: 32,
+                                    horizontal: 28,
                                     vertical: 16,
                                   ),
                                   child: Column(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
-                                      Text(
-                                        cardText,
-                                        textAlign: TextAlign.center,
-                                        style: TextStyle(
-                                          fontSize: textOlChiki.isNotEmpty
-                                              ? 36
-                                              : 28,
-                                          fontWeight: FontWeight.w900,
-                                          color: isDark
-                                              ? Colors.white
-                                              : accentColor,
-                                          fontFamily: textOlChiki.isNotEmpty
-                                              ? 'OlChiki'
-                                              : null,
-                                          height: 1.3,
-                                          shadows: [
-                                            Shadow(
-                                              color: isDark
-                                                  ? Colors.black.withValues(
-                                                      alpha: 0.3,
-                                                    )
-                                                  : accentColor.withValues(
-                                                      alpha: 0.15,
-                                                    ),
-                                              offset: const Offset(0, 2),
-                                              blurRadius: 4,
-                                            ),
-                                          ],
+                                      if (textOlChiki.isNotEmpty)
+                                        Text(
+                                          textOlChiki,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: isMultiLine ? 24 : 32,
+                                            fontWeight: FontWeight.w900,
+                                            color: isDark
+                                                ? Colors.white
+                                                : accentColor,
+                                            fontFamily: 'OlChiki',
+                                            height: 1.35,
+                                            shadows: [
+                                              Shadow(
+                                                color: isDark
+                                                    ? Colors.black.withValues(
+                                                        alpha: 0.3,
+                                                      )
+                                                    : accentColor.withValues(
+                                                        alpha: 0.15,
+                                                      ),
+                                                offset: const Offset(0, 2),
+                                                blurRadius: 4,
+                                              ),
+                                            ],
+                                          ),
                                         ),
-                                      ),
+                                      if (textOlChiki.isNotEmpty &&
+                                          textLatin.isNotEmpty &&
+                                          textLatin != textOlChiki) ...[
+                                        const SizedBox(height: 12),
+                                        Text(
+                                          textLatin,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: isMultiLine ? 16 : 18,
+                                            fontWeight: FontWeight.w600,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : const Color(0xFF475569),
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      ],
+                                      if (textOlChiki.isEmpty && textLatin.isNotEmpty)
+                                        Text(
+                                          textLatin,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: isMultiLine ? 17 : 26,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? Colors.white
+                                                : accentColor,
+                                            height: 1.35,
+                                          ),
+                                        ),
+                                      if (textOlChiki.isEmpty && textLatin.isEmpty)
+                                        Text(
+                                          lesson.titleLatin,
+                                          textAlign: TextAlign.center,
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.w800,
+                                            color: isDark
+                                                ? Colors.white
+                                                : accentColor,
+                                          ),
+                                        ),
                                       if (block.audioUrl != null &&
                                           block.audioUrl!.isNotEmpty) ...[
                                         const SizedBox(height: 16),

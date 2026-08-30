@@ -408,6 +408,20 @@ class VocabularyListContent extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (word.pronunciation != null &&
+                            word.pronunciation!.isNotEmpty) ...[
+                          const SizedBox(height: 2),
+                          Text(
+                            '[${word.pronunciation}]',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.primary,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
                         const SizedBox(height: 4),
                         Text(
                           word.meaning,
@@ -475,14 +489,50 @@ class VocabularyListContent extends ConsumerWidget {
                               ),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              word.wordLatin,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white70 : Colors.black54,
-                                letterSpacing: 0.5,
-                              ),
+                            Row(
+                              children: [
+                                Text(
+                                  word.wordLatin,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w600,
+                                    color: isDark
+                                        ? Colors.white70
+                                        : Colors.black54,
+                                    letterSpacing: 0.5,
+                                  ),
+                                ),
+                                if (word.pronunciation != null &&
+                                    word.pronunciation!.isNotEmpty) ...[
+                                  const SizedBox(width: 8),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 6,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.primary.withValues(
+                                        alpha: isDark ? 0.2 : 0.08,
+                                      ),
+                                      borderRadius: BorderRadius.circular(6),
+                                      border: Border.all(
+                                        color: AppColors.primary.withValues(
+                                          alpha: isDark ? 0.35 : 0.2,
+                                        ),
+                                      ),
+                                    ),
+                                    child: Text(
+                                      '[${word.pronunciation}]',
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w700,
+                                        color: AppColors.primary,
+                                        letterSpacing: 0.2,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ],
                             ),
                             const SizedBox(height: 8),
                             Text(
@@ -688,6 +738,36 @@ class SentenceListContent extends ConsumerWidget {
                                 fontStyle: FontStyle.italic,
                               ),
                             ),
+                            if (sentence.pronunciation != null &&
+                                sentence.pronunciation!.isNotEmpty) ...[
+                              const SizedBox(height: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 8,
+                                  vertical: 3,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary.withValues(
+                                    alpha: isDark ? 0.2 : 0.08,
+                                  ),
+                                  borderRadius: BorderRadius.circular(6),
+                                  border: Border.all(
+                                    color: AppColors.primary.withValues(
+                                      alpha: isDark ? 0.35 : 0.2,
+                                    ),
+                                  ),
+                                ),
+                                child: Text(
+                                  'Pronunciation: ${sentence.pronunciation}',
+                                  style: const TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primary,
+                                    letterSpacing: 0.2,
+                                  ),
+                                ),
+                              ),
+                            ],
                             const SizedBox(height: 10),
                             Text(
                               sentence.meaning,

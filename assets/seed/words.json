@@ -4,12 +4,12 @@
     "wordOlChiki": "ᱡᱚᱦᱟᱨ",
     "wordLatin": "Johar",
     "meaning": "Hello / Greetings",
-    "usage": null,
+    "usage": "ᱡᱚᱦᱟᱨ ᱢᱟᱪᱮᱛ ᱜᱚᱢᱠᱮ (Johar macet gomke – Greetings teacher sir)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jo-Har",
     "order": 1,
     "isActive": true,
     "themeColor": null
@@ -19,12 +19,12 @@
     "wordOlChiki": "ᱥᱟᱨᱦᱟᱣ",
     "wordLatin": "Sarhaw",
     "meaning": "Thank you",
-    "usage": null,
+    "usage": "ᱟᱢᱟᱜ ᱜᱚᱲᱚ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱨᱦᱟᱣ (Amaag goro lagid sarhaw – Thank you for your help)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sar-Haw",
     "order": 2,
     "isActive": true,
     "themeColor": null
@@ -34,12 +34,12 @@
     "wordOlChiki": "ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ",
     "wordLatin": "Sagun Daram",
     "meaning": "Welcome",
-    "usage": null,
+    "usage": "ᱟᱞᱮᱭᱟᱜ ᱟᱹᱛᱩ ᱛᱮ ᱥᱟᱹᱜᱩᱱ ᱫᱟᱨᱟᱢ (Aleyag atu te sagun daram – Welcome to our village)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Da-Ram",
     "order": 3,
     "isActive": true,
     "themeColor": null
@@ -49,12 +49,12 @@
     "wordOlChiki": "ᱥᱟᱹᱜᱩᱱ ᱥᱮᱛᱟᱜ",
     "wordLatin": "Sagun Setag",
     "meaning": "Good morning",
-    "usage": null,
+    "usage": "ᱥᱟᱹᱜᱩᱱ ᱥᱮᱛᱟᱜ ᱤᱧᱤᱡ ᱜᱟᱛᱮ (Sagun setag inyij gate – Good morning my friend)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Se-Tag",
     "order": 4,
     "isActive": true,
     "themeColor": null
@@ -64,12 +64,12 @@
     "wordOlChiki": "ᱥᱟᱹᱜᱩᱱ ᱧᱤᱫᱟᱹ",
     "wordLatin": "Sagun Njida",
     "meaning": "Good night",
-    "usage": null,
+    "usage": "ᱥᱟᱹᱜᱩᱱ ᱧᱤᱫᱟᱹ, ᱱᱟᱯᱟᱭ ᱛᱮ ᱡᱟᱹᱯᱤᱫ ᱢᱮ (Sagun nyida, napay te japid me – Good night, sleep well)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Nji-Da",
     "order": 5,
     "isActive": true,
     "themeColor": null
@@ -79,12 +79,12 @@
     "wordOlChiki": "ᱡᱚᱦᱟᱨ ᱜᱮ",
     "wordLatin": "Johar ge",
     "meaning": "Greetings to you",
-    "usage": null,
+    "usage": "ᱡᱚᱦᱟᱨ ᱜᱮ, ᱪᱮᱞᱠᱟ ᱢᱮᱱᱟᱢᱟ? (Johar ge, cileka menama? – Greetings, how are you?)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jo-Har Ge",
     "order": 6,
     "isActive": true,
     "themeColor": null
@@ -94,12 +94,12 @@
     "wordOlChiki": "ᱱᱟᱯᱟᱭ ᱜᱮ",
     "wordLatin": "Napay ge",
     "meaning": "Just fine",
-    "usage": null,
+    "usage": "ᱤᱧ ᱫᱚ ᱱᱟᱯᱟᱭ ᱜᱮ ᱢᱮᱱᱟᱹᱧᱟ (Iny do napay ge menanya – I am doing just fine)",
     "category": "greeting",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Na-Pa-Y Ge",
     "order": 7,
     "isActive": true,
     "themeColor": null
@@ -114,7 +114,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Rang Jo-Har",
     "order": 8,
     "isActive": true,
     "themeColor": null
@@ -129,7 +129,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gun Ma-Naw",
     "order": 9,
     "isActive": true,
     "themeColor": null
@@ -144,7 +144,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Y-Ar",
     "order": 10,
     "isActive": true,
     "themeColor": null
@@ -159,7 +159,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "La-San-Hed",
     "order": 11,
     "isActive": true,
     "themeColor": null
@@ -174,7 +174,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hel-Mel",
     "order": 12,
     "isActive": true,
     "themeColor": null
@@ -189,7 +189,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Ti-Kin",
     "order": 13,
     "isActive": true,
     "themeColor": null
@@ -204,7 +204,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun A-Y-Ub",
     "order": 14,
     "isActive": true,
     "themeColor": null
@@ -219,7 +219,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Sin-Ge",
     "order": 15,
     "isActive": true,
     "themeColor": null
@@ -234,7 +234,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Din",
     "order": 16,
     "isActive": true,
     "themeColor": null
@@ -249,7 +249,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma Jo-Har",
     "order": 17,
     "isActive": true,
     "themeColor": null
@@ -264,7 +264,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Hen",
     "order": 18,
     "isActive": true,
     "themeColor": null
@@ -279,7 +279,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Nog",
     "order": 19,
     "isActive": true,
     "themeColor": null
@@ -294,7 +294,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sar-Haw Ge",
     "order": 20,
     "isActive": true,
     "themeColor": null
@@ -309,7 +309,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hẽ",
     "order": 21,
     "isActive": true,
     "themeColor": null
@@ -324,7 +324,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bang",
     "order": 22,
     "isActive": true,
     "themeColor": null
@@ -339,7 +339,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ced",
     "order": 23,
     "isActive": true,
     "themeColor": null
@@ -354,7 +354,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Ko-Y",
     "order": 24,
     "isActive": true,
     "themeColor": null
@@ -369,7 +369,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Oka",
     "order": 25,
     "isActive": true,
     "themeColor": null
@@ -384,7 +384,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ce-Le-Ka",
     "order": 26,
     "isActive": true,
     "themeColor": null
@@ -399,7 +399,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Tis",
     "order": 27,
     "isActive": true,
     "themeColor": null
@@ -414,7 +414,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Ka-Re",
     "order": 28,
     "isActive": true,
     "themeColor": null
@@ -429,7 +429,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Inj",
     "order": 29,
     "isActive": true,
     "themeColor": null
@@ -444,7 +444,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Am",
     "order": 30,
     "isActive": true,
     "themeColor": null
@@ -459,7 +459,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Uni",
     "order": 31,
     "isActive": true,
     "themeColor": null
@@ -474,7 +474,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Nuy",
     "order": 32,
     "isActive": true,
     "themeColor": null
@@ -489,7 +489,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ni",
     "order": 33,
     "isActive": true,
     "themeColor": null
@@ -504,7 +504,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ona",
     "order": 34,
     "isActive": true,
     "themeColor": null
@@ -519,7 +519,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "No-Wa",
     "order": 35,
     "isActive": true,
     "themeColor": null
@@ -534,7 +534,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Adi",
     "order": 36,
     "isActive": true,
     "themeColor": null
@@ -549,7 +549,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kaj",
     "order": 37,
     "isActive": true,
     "themeColor": null
@@ -564,7 +564,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jho-To",
     "order": 38,
     "isActive": true,
     "themeColor": null
@@ -579,7 +579,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ci-Li",
     "order": 39,
     "isActive": true,
     "themeColor": null
@@ -594,7 +594,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Na-Se",
     "order": 40,
     "isActive": true,
     "themeColor": null
@@ -604,12 +604,12 @@
     "wordOlChiki": "ᱵᱟᱵᱟ",
     "wordLatin": "Baba",
     "meaning": "Father",
-    "usage": null,
+    "usage": "ᱤᱧᱤᱡ ᱟᱯᱟᱛ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱟᱹ ᱠᱟᱱᱟᱭ (Inyij apat do kamiya kanay – My father is a hard worker)",
     "category": "family",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Ba",
     "order": 41,
     "isActive": true,
     "themeColor": null
@@ -619,12 +619,12 @@
     "wordOlChiki": "ᱟᱭᱳ",
     "wordLatin": "Ayo",
     "meaning": "Mother",
-    "usage": null,
+    "usage": "ᱟᱭᱳ ᱫᱚ ᱫᱟᱠᱟᱭ ᱤᱥᱤᱱ ᱮᱫᱟ (Ayo do dakay isin eda – Mother is cooking food)",
     "category": "family",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ayo",
     "order": 42,
     "isActive": true,
     "themeColor": null
@@ -634,12 +634,12 @@
     "wordOlChiki": "ᱳᱲᱟᱜ ᱦᱚᱲ",
     "wordLatin": "Orag hor",
     "meaning": "Spouse / Family member",
-    "usage": null,
+    "usage": "ᱫᱟᱫᱟ ᱫᱚ ᱵᱟᱡᱟᱨ ᱮ ᱪᱟᱞᱟᱣ ᱟᱠᱟᱱᱟ (Dada do bajar e chalaw akana – Elder brother has gone to town)",
     "category": "family",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Rag Hor",
     "order": 43,
     "isActive": true,
     "themeColor": null
@@ -649,12 +649,12 @@
     "wordOlChiki": "ᱫᱟᱫᱟ",
     "wordLatin": "Dada",
     "meaning": "Elder brother",
-    "usage": null,
+    "usage": "ᱫᱟᱹᱭ ᱫᱚ ᱚᱞ ᱪᱮᱫ ᱮᱫᱟ (Dai do ol ched eda – Elder sister is learning to write)",
     "category": "family",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Da",
     "order": 44,
     "isActive": true,
     "themeColor": null
@@ -669,7 +669,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dai",
     "order": 45,
     "isActive": true,
     "themeColor": null
@@ -684,7 +684,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bo-Konj",
     "order": 46,
     "isActive": true,
     "themeColor": null
@@ -699,7 +699,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mi-Se-Ra",
     "order": 47,
     "isActive": true,
     "themeColor": null
@@ -714,7 +714,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ho-Pon",
     "order": 48,
     "isActive": true,
     "themeColor": null
@@ -729,7 +729,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ho-Pon Era",
     "order": 49,
     "isActive": true,
     "themeColor": null
@@ -744,7 +744,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Go-Rom Ha-Ram",
     "order": 50,
     "isActive": true,
     "themeColor": null
@@ -759,7 +759,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Go-Rom Bud-Hi",
     "order": 51,
     "isActive": true,
     "themeColor": null
@@ -774,7 +774,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Ka",
     "order": 52,
     "isActive": true,
     "themeColor": null
@@ -789,7 +789,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Ki",
     "order": 53,
     "isActive": true,
     "themeColor": null
@@ -804,7 +804,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Mo",
     "order": 54,
     "isActive": true,
     "themeColor": null
@@ -819,7 +819,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Tom",
     "order": 55,
     "isActive": true,
     "themeColor": null
@@ -834,7 +834,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ten-Jang",
     "order": 56,
     "isActive": true,
     "themeColor": null
@@ -849,7 +849,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hi-Li",
     "order": 57,
     "isActive": true,
     "themeColor": null
@@ -864,7 +864,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Hu",
     "order": 58,
     "isActive": true,
     "themeColor": null
@@ -879,7 +879,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Wa-Y",
     "order": 59,
     "isActive": true,
     "themeColor": null
@@ -894,7 +894,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Go-Rom",
     "order": 60,
     "isActive": true,
     "themeColor": null
@@ -909,7 +909,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag",
     "order": 61,
     "isActive": true,
     "themeColor": null
@@ -924,7 +924,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Ka",
     "order": 62,
     "isActive": true,
     "themeColor": null
@@ -939,7 +939,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Rag",
     "order": 63,
     "isActive": true,
     "themeColor": null
@@ -954,7 +954,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kic-Rij",
     "order": 64,
     "isActive": true,
     "themeColor": null
@@ -969,7 +969,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor",
     "order": 65,
     "isActive": true,
     "themeColor": null
@@ -984,7 +984,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Atu",
     "order": 66,
     "isActive": true,
     "themeColor": null
@@ -999,7 +999,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Ka",
     "order": 67,
     "isActive": true,
     "themeColor": null
@@ -1014,7 +1014,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Mi",
     "order": 68,
     "isActive": true,
     "themeColor": null
@@ -1029,7 +1029,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Pid",
     "order": 69,
     "isActive": true,
     "themeColor": null
@@ -1044,7 +1044,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Tu-Pun",
     "order": 70,
     "isActive": true,
     "themeColor": null
@@ -1059,7 +1059,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Nog",
     "order": 71,
     "isActive": true,
     "themeColor": null
@@ -1074,7 +1074,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hi-Jug",
     "order": 72,
     "isActive": true,
     "themeColor": null
@@ -1089,7 +1089,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-Rub",
     "order": 73,
     "isActive": true,
     "themeColor": null
@@ -1104,7 +1104,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ten-Go",
     "order": 74,
     "isActive": true,
     "themeColor": null
@@ -1119,7 +1119,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dar",
     "order": 75,
     "isActive": true,
     "themeColor": null
@@ -1134,7 +1134,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Ram",
     "order": 76,
     "isActive": true,
     "themeColor": null
@@ -1149,7 +1149,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ror",
     "order": 77,
     "isActive": true,
     "themeColor": null
@@ -1164,7 +1164,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "An-Jom",
     "order": 78,
     "isActive": true,
     "themeColor": null
@@ -1179,7 +1179,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Njel",
     "order": 79,
     "isActive": true,
     "themeColor": null
@@ -1194,7 +1194,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ol",
     "order": 80,
     "isActive": true,
     "themeColor": null
@@ -1209,7 +1209,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "A-Rag",
     "order": 81,
     "isActive": true,
     "themeColor": "#EF4444"
@@ -1224,7 +1224,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Sang",
     "order": 82,
     "isActive": true,
     "themeColor": "#EAB308"
@@ -1239,7 +1239,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ry-Ar",
     "order": 83,
     "isActive": true,
     "themeColor": "#10B981"
@@ -1254,7 +1254,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Pund",
     "order": 84,
     "isActive": true,
     "themeColor": "#FFFFFF"
@@ -1269,7 +1269,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hen-De",
     "order": 85,
     "isActive": true,
     "themeColor": "#1E293B"
@@ -1284,7 +1284,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lil",
     "order": 86,
     "isActive": true,
     "themeColor": "#3B82F6"
@@ -1299,7 +1299,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gu-La-Pi",
     "order": 87,
     "isActive": true,
     "themeColor": "#F43F5E"
@@ -1314,7 +1314,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Khak-Ri",
     "order": 88,
     "isActive": true,
     "themeColor": "#78350F"
@@ -1329,7 +1329,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kah-La",
     "order": 89,
     "isActive": true,
     "themeColor": "#475569"
@@ -1344,7 +1344,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sen-Gel A-Rag",
     "order": 90,
     "isActive": true,
     "themeColor": "#DC2626"
@@ -1359,7 +1359,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med A-Rag",
     "order": 91,
     "isActive": true,
     "themeColor": "#991B1B"
@@ -1374,7 +1374,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Sa",
     "order": 92,
     "isActive": true,
     "themeColor": "#78716C"
@@ -1389,7 +1389,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "So-Na",
     "order": 93,
     "isActive": true,
     "themeColor": "#D97706"
@@ -1404,7 +1404,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ru-Pa",
     "order": 94,
     "isActive": true,
     "themeColor": "#CBD5E1"
@@ -1419,7 +1419,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "La-Du O-Ran-Ge",
     "order": 95,
     "isActive": true,
     "themeColor": "#F97316"
@@ -1434,7 +1434,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Cun",
     "order": 96,
     "isActive": true,
     "themeColor": "#F8FAFC"
@@ -1449,7 +1449,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ku-Y-La",
     "order": 97,
     "isActive": true,
     "themeColor": "#0F172A"
@@ -1464,7 +1464,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lil-Cha-Ta",
     "order": 98,
     "isActive": true,
     "themeColor": "#7DD3FC"
@@ -1479,7 +1479,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jar-Di",
     "order": 99,
     "isActive": true,
     "themeColor": "#EAB308"
@@ -1494,7 +1494,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ry-Ar-Cha-Ta",
     "order": 100,
     "isActive": true,
     "themeColor": "#86EFAC"
@@ -1504,12 +1504,12 @@
     "wordOlChiki": "ᱥᱮᱛᱟ",
     "wordLatin": "Seta",
     "meaning": "Dog",
-    "usage": null,
+    "usage": "ᱥᱤᱸᱜᱤ ᱫᱚ ᱥᱮᱛᱟᱜ ᱨᱮ ᱨᱟᱠᱟᱵᱼᱟ (Singi do setag re rakab-a – The sun rises in the morning)",
     "category": "nature",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Ta",
     "order": 101,
     "isActive": true,
     "themeColor": null
@@ -1519,12 +1519,12 @@
     "wordOlChiki": "ᱯᱩᱥᱤ",
     "wordLatin": "Pusi",
     "meaning": "Cat",
-    "usage": null,
+    "usage": "ᱧᱤᱫᱟᱹ ᱪᱟᱸᱫᱚ ᱫᱚ ᱟᱹᱰᱤ ᱪᱚᱨᱚᱠ ᱧᱮᱞᱚᱜᱼᱟ (Nyida cando do adi corok nyelog-a – The moon looks very beautiful at night)",
     "category": "nature",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Pu-Si",
     "order": 102,
     "isActive": true,
     "themeColor": null
@@ -1534,12 +1534,12 @@
     "wordOlChiki": "ᱢᱮᱨᱳᱢ",
     "wordLatin": "Merom",
     "meaning": "Goat",
-    "usage": null,
+    "usage": "ᱟᱹᱛᱩ ᱨᱮ ᱟᱹᱰᱤ ᱢᱟᱨᱟᱝ ᱫᱟᱨᱮ ᱢᱮᱱᱟᱜᱼᱟ (Atu re adi marang dare menag-a – There is a huge tree in the village)",
     "category": "nature",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Me-Rom",
     "order": 103,
     "isActive": true,
     "themeColor": null
@@ -1549,12 +1549,12 @@
     "wordOlChiki": "ᱜᱟᱹᱭ",
     "wordLatin": "Gai",
     "meaning": "Cow",
-    "usage": null,
+    "usage": "ᱥᱟᱠᱟᱢ ᱠᱚ ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱜᱮᱭᱟ (Sakam ko hariyar geya – The leaves are green)",
     "category": "nature",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gai",
     "order": 104,
     "isActive": true,
     "themeColor": null
@@ -1569,7 +1569,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Rub",
     "order": 105,
     "isActive": true,
     "themeColor": null
@@ -1584,7 +1584,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ce-Ne",
     "order": 106,
     "isActive": true,
     "themeColor": null
@@ -1599,7 +1599,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ku",
     "order": 107,
     "isActive": true,
     "themeColor": null
@@ -1614,7 +1614,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re",
     "order": 108,
     "isActive": true,
     "themeColor": null
@@ -1629,7 +1629,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Ha",
     "order": 109,
     "isActive": true,
     "themeColor": null
@@ -1644,7 +1644,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sing",
     "order": 110,
     "isActive": true,
     "themeColor": null
@@ -1659,7 +1659,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "I-Pil",
     "order": 111,
     "isActive": true,
     "themeColor": null
@@ -1674,7 +1674,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Da",
     "order": 112,
     "isActive": true,
     "themeColor": null
@@ -1689,7 +1689,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Dom",
     "order": 113,
     "isActive": true,
     "themeColor": null
@@ -1704,7 +1704,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ti",
     "order": 114,
     "isActive": true,
     "themeColor": null
@@ -1719,7 +1719,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Binj",
     "order": 115,
     "isActive": true,
     "themeColor": null
@@ -1734,7 +1734,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Kam",
     "order": 116,
     "isActive": true,
     "themeColor": null
@@ -1749,7 +1749,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ri-Mil",
     "order": 117,
     "isActive": true,
     "themeColor": null
@@ -1764,7 +1764,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sen-Gel",
     "order": 118,
     "isActive": true,
     "themeColor": null
@@ -1779,7 +1779,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hoy",
     "order": 119,
     "isActive": true,
     "themeColor": null
@@ -1794,7 +1794,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Sa",
     "order": 120,
     "isActive": true,
     "themeColor": null
@@ -1809,7 +1809,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Chan-Do",
     "order": 121,
     "isActive": true,
     "themeColor": null
@@ -1824,7 +1824,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Ha",
     "order": 122,
     "isActive": true,
     "themeColor": null
@@ -1839,7 +1839,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Te-Henj",
     "order": 123,
     "isActive": true,
     "themeColor": null
@@ -1854,7 +1854,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Pa",
     "order": 124,
     "isActive": true,
     "themeColor": null
@@ -1869,7 +1869,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ho-La",
     "order": 125,
     "isActive": true,
     "themeColor": null
@@ -1884,7 +1884,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Si-Tung Ri-Tu",
     "order": 126,
     "isActive": true,
     "themeColor": null
@@ -1899,7 +1899,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag Ri-Tu",
     "order": 127,
     "isActive": true,
     "themeColor": null
@@ -1914,7 +1914,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ra-Bang Ri-Tu",
     "order": 128,
     "isActive": true,
     "themeColor": null
@@ -1929,7 +1929,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ser-Ma",
     "order": 129,
     "isActive": true,
     "themeColor": null
@@ -1944,7 +1944,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hap-Ta",
     "order": 130,
     "isActive": true,
     "themeColor": null
@@ -1959,7 +1959,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ghan-Ta",
     "order": 131,
     "isActive": true,
     "themeColor": null
@@ -1974,7 +1974,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti-Rij",
     "order": 132,
     "isActive": true,
     "themeColor": null
@@ -1989,7 +1989,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Tag",
     "order": 133,
     "isActive": true,
     "themeColor": null
@@ -2004,7 +2004,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti-Kin",
     "order": 134,
     "isActive": true,
     "themeColor": null
@@ -2019,7 +2019,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "A-Y-Ub",
     "order": 135,
     "isActive": true,
     "themeColor": null
@@ -2034,7 +2034,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Nji-Da",
     "order": 136,
     "isActive": true,
     "themeColor": null
@@ -2049,7 +2049,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Me-Y-Ang",
     "order": 137,
     "isActive": true,
     "themeColor": null
@@ -2064,7 +2064,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Han-Der",
     "order": 138,
     "isActive": true,
     "themeColor": null
@@ -2079,7 +2079,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ni-Tog",
     "order": 139,
     "isActive": true,
     "themeColor": null
@@ -2094,7 +2094,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Y-Om",
     "order": 140,
     "isActive": true,
     "themeColor": null
@@ -2109,7 +2109,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Par-Si",
     "order": 141,
     "isActive": true,
     "themeColor": null
@@ -2124,7 +2124,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "San-Ta-Li",
     "order": 142,
     "isActive": true,
     "themeColor": null
@@ -2139,7 +2139,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ol Chi-Ki",
     "order": 143,
     "isActive": true,
     "themeColor": null
@@ -2154,7 +2154,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Put-Hi",
     "order": 144,
     "isActive": true,
     "themeColor": null
@@ -2169,7 +2169,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "I-Tun As-Ra",
     "order": 145,
     "isActive": true,
     "themeColor": null
@@ -2184,7 +2184,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Som",
     "order": 146,
     "isActive": true,
     "themeColor": null
@@ -2199,7 +2199,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor",
     "order": 147,
     "isActive": true,
     "themeColor": null
@@ -2214,7 +2214,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Renj",
     "order": 148,
     "isActive": true,
     "themeColor": null
@@ -2229,7 +2229,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "E-Nej",
     "order": 149,
     "isActive": true,
     "themeColor": null
@@ -2244,7 +2244,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Po-Rob",
     "order": 150,
     "isActive": true,
     "themeColor": null
@@ -2259,7 +2259,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Soh-Ra-E",
     "order": 151,
     "isActive": true,
     "themeColor": null
@@ -2274,7 +2274,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Ha Po-Rob",
     "order": 152,
     "isActive": true,
     "themeColor": null
@@ -2289,7 +2289,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Tum-Dag",
     "order": 153,
     "isActive": true,
     "themeColor": null
@@ -2304,7 +2304,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Mak",
     "order": 154,
     "isActive": true,
     "themeColor": null
@@ -2319,7 +2319,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Nam",
     "order": 155,
     "isActive": true,
     "themeColor": null
@@ -2334,7 +2334,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti-Ry-Aw",
     "order": 156,
     "isActive": true,
     "themeColor": null
@@ -2349,7 +2349,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Ti",
     "order": 157,
     "isActive": true,
     "themeColor": null
@@ -2364,7 +2364,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kher-War",
     "order": 158,
     "isActive": true,
     "themeColor": null
@@ -2379,7 +2379,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Saw-Hed",
     "order": 159,
     "isActive": true,
     "themeColor": null
@@ -2394,7 +2394,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lak-Car",
     "order": 160,
     "isActive": true,
     "themeColor": null
@@ -2409,7 +2409,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bo-Hog",
     "order": 161,
     "isActive": true,
     "themeColor": null
@@ -2424,7 +2424,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Il",
     "order": 162,
     "isActive": true,
     "themeColor": null
@@ -2439,7 +2439,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Long",
     "order": 163,
     "isActive": true,
     "themeColor": null
@@ -2454,7 +2454,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med",
     "order": 164,
     "isActive": true,
     "themeColor": null
@@ -2469,7 +2469,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Tur",
     "order": 165,
     "isActive": true,
     "themeColor": null
@@ -2484,7 +2484,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mu",
     "order": 166,
     "isActive": true,
     "themeColor": null
@@ -2499,7 +2499,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Ti",
     "order": 167,
     "isActive": true,
     "themeColor": null
@@ -2514,7 +2514,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "A-Lang",
     "order": 168,
     "isActive": true,
     "themeColor": null
@@ -2529,7 +2529,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Ta",
     "order": 169,
     "isActive": true,
     "themeColor": null
@@ -2544,7 +2544,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ho-Tot",
     "order": 170,
     "isActive": true,
     "themeColor": null
@@ -2559,7 +2559,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti",
     "order": 171,
     "isActive": true,
     "themeColor": null
@@ -2574,7 +2574,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jan-Ga",
     "order": 172,
     "isActive": true,
     "themeColor": null
@@ -2589,7 +2589,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ko-Ram",
     "order": 173,
     "isActive": true,
     "themeColor": null
@@ -2604,7 +2604,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Laj",
     "order": 174,
     "isActive": true,
     "themeColor": null
@@ -2619,7 +2619,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "De-Y-A",
     "order": 175,
     "isActive": true,
     "themeColor": null
@@ -2634,7 +2634,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ub",
     "order": 176,
     "isActive": true,
     "themeColor": null
@@ -2649,7 +2649,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Tup",
     "order": 177,
     "isActive": true,
     "themeColor": null
@@ -2664,7 +2664,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ra-Ma",
     "order": 178,
     "isActive": true,
     "themeColor": null
@@ -2679,7 +2679,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Har-Ta",
     "order": 179,
     "isActive": true,
     "themeColor": null
@@ -2694,7 +2694,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Y-Am",
     "order": 180,
     "isActive": true,
     "themeColor": null
@@ -2704,12 +2704,12 @@
     "wordOlChiki": "ᱫᱟᱠᱟ",
     "wordLatin": "Daka",
     "meaning": "Cooked Rice / Food",
-    "usage": null,
+    "usage": "ᱫᱟᱠᱟ ᱡᱚᱢ ᱢᱮ (Daka jom me – Eat your meal)",
     "category": "food",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Ka",
     "order": 181,
     "isActive": true,
     "themeColor": null
@@ -2719,12 +2719,12 @@
     "wordOlChiki": "ᱫᱟᱜ",
     "wordLatin": "Dag",
     "meaning": "Water",
-    "usage": null,
+    "usage": "ᱫᱟᱜ ᱧᱩᱭ ᱢᱮ (Dag nyuy me – Drink clean water)",
     "category": "food",
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag",
     "order": 182,
     "isActive": true,
     "themeColor": null
@@ -2739,7 +2739,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jel",
     "order": 183,
     "isActive": true,
     "themeColor": null
@@ -2754,7 +2754,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ku Jel",
     "order": 184,
     "isActive": true,
     "themeColor": null
@@ -2769,7 +2769,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Utu",
     "order": 185,
     "isActive": true,
     "themeColor": null
@@ -2784,7 +2784,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dal",
     "order": 186,
     "isActive": true,
     "themeColor": null
@@ -2799,7 +2799,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bu-Lung",
     "order": 187,
     "isActive": true,
     "themeColor": null
@@ -2814,7 +2814,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Su-Num",
     "order": 188,
     "isActive": true,
     "themeColor": null
@@ -2829,7 +2829,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Ric",
     "order": 189,
     "isActive": true,
     "themeColor": null
@@ -2844,7 +2844,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Pit-Ha",
     "order": 190,
     "isActive": true,
     "themeColor": null
@@ -2859,7 +2859,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "To-Wa",
     "order": 191,
     "isActive": true,
     "themeColor": null
@@ -2874,7 +2874,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Hi",
     "order": 192,
     "isActive": true,
     "themeColor": null
@@ -2889,7 +2889,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ghiw",
     "order": 193,
     "isActive": true,
     "themeColor": null
@@ -2904,7 +2904,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jo",
     "order": 194,
     "isActive": true,
     "themeColor": null
@@ -2919,7 +2919,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ul",
     "order": 195,
     "isActive": true,
     "themeColor": null
@@ -2934,7 +2934,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Y-Ra",
     "order": 196,
     "isActive": true,
     "themeColor": null
@@ -2949,7 +2949,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kan-Thar",
     "order": 197,
     "isActive": true,
     "themeColor": null
@@ -2964,7 +2964,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gur",
     "order": 198,
     "isActive": true,
     "themeColor": null
@@ -2979,7 +2979,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ci-Ni",
     "order": 199,
     "isActive": true,
     "themeColor": null
@@ -2994,7 +2994,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ho-Rej",
     "order": 200,
     "isActive": true,
     "themeColor": null
@@ -3009,7 +3009,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ma-Rang",
     "order": 201,
     "isActive": true,
     "themeColor": null
@@ -3024,7 +3024,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hu-Dinj",
     "order": 202,
     "isActive": true,
     "themeColor": null
@@ -3039,7 +3039,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun",
     "order": 203,
     "isActive": true,
     "themeColor": null
@@ -3054,7 +3054,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Na-Pa-Y",
     "order": 204,
     "isActive": true,
     "themeColor": null
@@ -3069,7 +3069,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ny-U-Tum",
     "order": 205,
     "isActive": true,
     "themeColor": null
@@ -3084,7 +3084,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ju-Mid",
     "order": 206,
     "isActive": true,
     "themeColor": null
@@ -3099,7 +3099,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gon-Go",
     "order": 207,
     "isActive": true,
     "themeColor": null
@@ -3114,7 +3114,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Be-Ta",
     "order": 208,
     "isActive": true,
     "themeColor": null
@@ -3129,7 +3129,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bi-Ti",
     "order": 209,
     "isActive": true,
     "themeColor": null
@@ -3144,7 +3144,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Te",
     "order": 210,
     "isActive": true,
     "themeColor": null
@@ -3159,7 +3159,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jom",
     "order": 211,
     "isActive": true,
     "themeColor": null
@@ -3174,7 +3174,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Nju",
     "order": 212,
     "isActive": true,
     "themeColor": null
@@ -3189,7 +3189,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gi-Tij",
     "order": 213,
     "isActive": true,
     "themeColor": null
@@ -3204,7 +3204,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Cha-Lag",
     "order": 214,
     "isActive": true,
     "themeColor": null
@@ -3219,7 +3219,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Par-Haw",
     "order": 215,
     "isActive": true,
     "themeColor": null
@@ -3234,7 +3234,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lan-Da",
     "order": 216,
     "isActive": true,
     "themeColor": null
@@ -3249,7 +3249,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Mang",
     "order": 217,
     "isActive": true,
     "themeColor": null
@@ -3264,7 +3264,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Sa Rong",
     "order": 218,
     "isActive": true,
     "themeColor": null
@@ -3279,7 +3279,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gu-Lap",
     "order": 219,
     "isActive": true,
     "themeColor": null
@@ -3294,7 +3294,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ben-Gad",
     "order": 220,
     "isActive": true,
     "themeColor": null
@@ -3309,7 +3309,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Chan-Do Rong",
     "order": 221,
     "isActive": true,
     "themeColor": null
@@ -3324,7 +3324,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sen-Gel Rong",
     "order": 222,
     "isActive": true,
     "themeColor": null
@@ -3339,7 +3339,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Kam Rong",
     "order": 223,
     "isActive": true,
     "themeColor": null
@@ -3354,7 +3354,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sir-Ma Rong",
     "order": 224,
     "isActive": true,
     "themeColor": null
@@ -3369,7 +3369,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med Rong",
     "order": 225,
     "isActive": true,
     "themeColor": null
@@ -3384,7 +3384,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lar",
     "order": 226,
     "isActive": true,
     "themeColor": null
@@ -3399,7 +3399,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Com-Kaw",
     "order": 227,
     "isActive": true,
     "themeColor": null
@@ -3414,7 +3414,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mi-Lon",
     "order": 228,
     "isActive": true,
     "themeColor": null
@@ -3429,7 +3429,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Khan-Di-Y-A",
     "order": 229,
     "isActive": true,
     "themeColor": null
@@ -3444,7 +3444,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kul",
     "order": 230,
     "isActive": true,
     "themeColor": null
@@ -3459,7 +3459,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bhi-Di",
     "order": 231,
     "isActive": true,
     "themeColor": null
@@ -3474,7 +3474,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Suk-Ri",
     "order": 232,
     "isActive": true,
     "themeColor": null
@@ -3489,7 +3489,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sim",
     "order": 233,
     "isActive": true,
     "themeColor": null
@@ -3504,7 +3504,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sin-Ge",
     "order": 234,
     "isActive": true,
     "themeColor": null
@@ -3519,7 +3519,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ok-To",
     "order": 235,
     "isActive": true,
     "themeColor": null
@@ -3534,7 +3534,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti-Kin",
     "order": 236,
     "isActive": true,
     "themeColor": null
@@ -3549,7 +3549,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sin-Ge Ma-Ha",
     "order": 237,
     "isActive": true,
     "themeColor": null
@@ -3564,7 +3564,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ote Ma-Ha",
     "order": 238,
     "isActive": true,
     "themeColor": null
@@ -3579,7 +3579,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Le Ma-Ha",
     "order": 239,
     "isActive": true,
     "themeColor": null
@@ -3594,7 +3594,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Ma-Ha",
     "order": 240,
     "isActive": true,
     "themeColor": null
@@ -3609,7 +3609,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sar-Di Ma-Ha",
     "order": 241,
     "isActive": true,
     "themeColor": null
@@ -3624,7 +3624,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Rum Ma-Ha",
     "order": 242,
     "isActive": true,
     "themeColor": null
@@ -3639,7 +3639,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gu-Ru Ko-Lom",
     "order": 243,
     "isActive": true,
     "themeColor": null
@@ -3654,7 +3654,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sec-Hed",
     "order": 244,
     "isActive": true,
     "themeColor": null
@@ -3669,7 +3669,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "So-Maj",
     "order": 245,
     "isActive": true,
     "themeColor": null
@@ -3684,7 +3684,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ari Cha-Li",
     "order": 246,
     "isActive": true,
     "themeColor": null
@@ -3699,7 +3699,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bi-Car",
     "order": 247,
     "isActive": true,
     "themeColor": null
@@ -3714,7 +3714,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Te Ko",
     "order": 248,
     "isActive": true,
     "themeColor": null
@@ -3729,7 +3729,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Dho-Rom",
     "order": 249,
     "isActive": true,
     "themeColor": null
@@ -3744,7 +3744,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ras-Ka",
     "order": 250,
     "isActive": true,
     "themeColor": null
@@ -3759,7 +3759,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sar-Haw Kat-Ha",
     "order": 251,
     "isActive": true,
     "themeColor": null
@@ -3774,7 +3774,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Her Than",
     "order": 252,
     "isActive": true,
     "themeColor": null
@@ -3789,7 +3789,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Ho-Pon",
     "order": 253,
     "isActive": true,
     "themeColor": null
@@ -3804,7 +3804,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Kat-Ha",
     "order": 254,
     "isActive": true,
     "themeColor": null
@@ -3819,7 +3819,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Si-Bil Ror",
     "order": 255,
     "isActive": true,
     "themeColor": null
@@ -3834,7 +3834,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Mi Ge Dho-Rom",
     "order": 256,
     "isActive": true,
     "themeColor": null
@@ -3849,7 +3849,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Som Du-Lar",
     "order": 257,
     "isActive": true,
     "themeColor": null
@@ -3864,7 +3864,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dhi-Ri",
     "order": 258,
     "isActive": true,
     "themeColor": null
@@ -3879,7 +3879,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gi-Til",
     "order": 259,
     "isActive": true,
     "themeColor": null
@@ -3894,7 +3894,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ot",
     "order": 260,
     "isActive": true,
     "themeColor": null
@@ -3909,7 +3909,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bir",
     "order": 261,
     "isActive": true,
     "themeColor": null
@@ -3924,7 +3924,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bu-Ru",
     "order": 262,
     "isActive": true,
     "themeColor": null
@@ -3939,7 +3939,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Da",
     "order": 263,
     "isActive": true,
     "themeColor": null
@@ -3954,7 +3954,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jhar-Na",
     "order": 264,
     "isActive": true,
     "themeColor": null
@@ -3969,7 +3969,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Han",
     "order": 265,
     "isActive": true,
     "themeColor": null
@@ -3984,7 +3984,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med Lu-Tur Ben-Get",
     "order": 266,
     "isActive": true,
     "themeColor": null
@@ -3999,7 +3999,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne La-De",
     "order": 267,
     "isActive": true,
     "themeColor": null
@@ -4014,7 +4014,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Ja-La",
     "order": 268,
     "isActive": true,
     "themeColor": null
@@ -4029,7 +4029,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re U-Mul Hor U-Mul",
     "order": 269,
     "isActive": true,
     "themeColor": null
@@ -4044,7 +4044,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Se-Ta Jha-Le Le-Ka",
     "order": 270,
     "isActive": true,
     "themeColor": null
@@ -4059,7 +4059,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man-Mi Ji-Wi",
     "order": 271,
     "isActive": true,
     "themeColor": null
@@ -4074,7 +4074,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man Sar-Haw",
     "order": 272,
     "isActive": true,
     "themeColor": null
@@ -4089,7 +4089,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lag-Ne",
     "order": 273,
     "isActive": true,
     "themeColor": null
@@ -4104,7 +4104,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dong",
     "order": 274,
     "isActive": true,
     "themeColor": null
@@ -4119,7 +4119,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ta-Mak",
     "order": 275,
     "isActive": true,
     "themeColor": null
@@ -4134,7 +4134,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ti-Ry-O",
     "order": 276,
     "isActive": true,
     "themeColor": null
@@ -4149,7 +4149,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sar-Jom",
     "order": 277,
     "isActive": true,
     "themeColor": null
@@ -4164,7 +4164,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mat-Kam",
     "order": 278,
     "isActive": true,
     "themeColor": null
@@ -4179,7 +4179,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Jo-Har Kat-Ha",
     "order": 279,
     "isActive": true,
     "themeColor": null
@@ -4194,7 +4194,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kul-Hi",
     "order": 280,
     "isActive": true,
     "themeColor": null
@@ -4209,7 +4209,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man-Jhi Than",
     "order": 281,
     "isActive": true,
     "themeColor": null
@@ -4224,7 +4224,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Atu Hor",
     "order": 282,
     "isActive": true,
     "themeColor": null
@@ -4239,7 +4239,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ram Bud-Hi",
     "order": 283,
     "isActive": true,
     "themeColor": null
@@ -4254,7 +4254,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Ka Utu",
     "order": 284,
     "isActive": true,
     "themeColor": null
@@ -4269,7 +4269,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Ti Chu-Y-Lu",
     "order": 285,
     "isActive": true,
     "themeColor": null
@@ -4284,7 +4284,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mu Te Hoy O-Dok",
     "order": 286,
     "isActive": true,
     "themeColor": null
@@ -4299,7 +4299,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag Re Jha-Le Ba-Y-Saw",
     "order": 287,
     "isActive": true,
     "themeColor": null
@@ -4314,7 +4314,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re Ge Ji-Wi",
     "order": 288,
     "isActive": true,
     "themeColor": null
@@ -4329,7 +4329,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Goj Hor Do Ba-Ku Ro-Ra",
     "order": 289,
     "isActive": true,
     "themeColor": null
@@ -4344,7 +4344,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Atu Hor Ge Di-Som Hor",
     "order": 290,
     "isActive": true,
     "themeColor": null
@@ -4359,7 +4359,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med Khon Dag Jo-Ro",
     "order": 291,
     "isActive": true,
     "themeColor": null
@@ -4374,7 +4374,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Ba-Rij",
     "order": 292,
     "isActive": true,
     "themeColor": null
@@ -4389,7 +4389,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-Lar Kat-Ha",
     "order": 293,
     "isActive": true,
     "themeColor": null
@@ -4404,7 +4404,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Dhon",
     "order": 294,
     "isActive": true,
     "themeColor": null
@@ -4419,7 +4419,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Som Da-Ran",
     "order": 295,
     "isActive": true,
     "themeColor": null
@@ -4434,7 +4434,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dho-Rom Ka-Mi",
     "order": 296,
     "isActive": true,
     "themeColor": null
@@ -4449,7 +4449,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Soh-Ra-E Po-Rob",
     "order": 297,
     "isActive": true,
     "themeColor": null
@@ -4464,7 +4464,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Ha Po-Rob",
     "order": 298,
     "isActive": true,
     "themeColor": null
@@ -4479,7 +4479,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "San-Ta-Li Saw-Het",
     "order": 299,
     "isActive": true,
     "themeColor": null
@@ -4494,7 +4494,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "O-Log Par-Haw",
     "order": 300,
     "isActive": true,
     "themeColor": null
@@ -4509,7 +4509,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ge-Y-An Hor",
     "order": 301,
     "isActive": true,
     "themeColor": null
@@ -4524,7 +4524,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "He-Rem Ror",
     "order": 302,
     "isActive": true,
     "themeColor": null
@@ -4539,7 +4539,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sir-Jo-Ni-Y-A",
     "order": 303,
     "isActive": true,
     "themeColor": null
@@ -4554,7 +4554,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Khel",
     "order": 304,
     "isActive": true,
     "themeColor": null
@@ -4569,7 +4569,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ror Te Lan-Da",
     "order": 305,
     "isActive": true,
     "themeColor": null
@@ -4584,7 +4584,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-Lar Jha-Le",
     "order": 306,
     "isActive": true,
     "themeColor": null
@@ -4599,7 +4599,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Sa-Mang",
     "order": 307,
     "isActive": true,
     "themeColor": null
@@ -4614,7 +4614,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Ti La-Raw",
     "order": 308,
     "isActive": true,
     "themeColor": null
@@ -4629,7 +4629,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kat-Ha Ki-Rinj",
     "order": 309,
     "isActive": true,
     "themeColor": null
@@ -4644,7 +4644,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Lo",
     "order": 310,
     "isActive": true,
     "themeColor": null
@@ -4659,7 +4659,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Ol",
     "order": 311,
     "isActive": true,
     "themeColor": null
@@ -4674,7 +4674,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med Dag",
     "order": 312,
     "isActive": true,
     "themeColor": null
@@ -4689,7 +4689,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lan-Da Te Goj",
     "order": 313,
     "isActive": true,
     "themeColor": null
@@ -4704,7 +4704,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ku-Ri Ho-Pon",
     "order": 314,
     "isActive": true,
     "themeColor": null
@@ -4719,7 +4719,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ko-Ra Ho-Pon",
     "order": 315,
     "isActive": true,
     "themeColor": null
@@ -4734,7 +4734,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Te Ku-Ri",
     "order": 316,
     "isActive": true,
     "themeColor": null
@@ -4749,7 +4749,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Te Ko-Ra",
     "order": 317,
     "isActive": true,
     "themeColor": null
@@ -4764,7 +4764,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Gu-Pu-Ti Kat-Ha",
     "order": 318,
     "isActive": true,
     "themeColor": null
@@ -4779,7 +4779,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ras-Ka Mo-Ne",
     "order": 319,
     "isActive": true,
     "themeColor": null
@@ -4794,7 +4794,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dukh Ji-Wi",
     "order": 320,
     "isActive": true,
     "themeColor": null
@@ -4809,7 +4809,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Mo-Ne",
     "order": 321,
     "isActive": true,
     "themeColor": null
@@ -4824,7 +4824,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Si-Bil Jom",
     "order": 322,
     "isActive": true,
     "themeColor": null
@@ -4839,7 +4839,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re U-Dug",
     "order": 323,
     "isActive": true,
     "themeColor": null
@@ -4854,7 +4854,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Thaw",
     "order": 324,
     "isActive": true,
     "themeColor": null
@@ -4869,7 +4869,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ror La-Na-Y",
     "order": 325,
     "isActive": true,
     "themeColor": null
@@ -4884,7 +4884,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Nam Ka-Mi",
     "order": 326,
     "isActive": true,
     "themeColor": null
@@ -4899,7 +4899,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Mo-Ne",
     "order": 327,
     "isActive": true,
     "themeColor": null
@@ -4914,7 +4914,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Med Lu-Lu",
     "order": 328,
     "isActive": true,
     "themeColor": null
@@ -4929,7 +4929,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Tur Kha-Ra",
     "order": 329,
     "isActive": true,
     "themeColor": null
@@ -4944,7 +4944,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kat-Ha Ra-Pud",
     "order": 330,
     "isActive": true,
     "themeColor": null
@@ -4959,7 +4959,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Ha-Tinj",
     "order": 331,
     "isActive": true,
     "themeColor": null
@@ -4974,7 +4974,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Jul",
     "order": 332,
     "isActive": true,
     "themeColor": null
@@ -4989,7 +4989,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lan-Da Thok",
     "order": 333,
     "isActive": true,
     "themeColor": null
@@ -5004,7 +5004,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ror Cheh-Ra",
     "order": 334,
     "isActive": true,
     "themeColor": null
@@ -5019,7 +5019,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Da-Re",
     "order": 335,
     "isActive": true,
     "themeColor": null
@@ -5034,7 +5034,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ga-Y Tol",
     "order": 336,
     "isActive": true,
     "themeColor": null
@@ -5049,7 +5049,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Kat-Ha Tol",
     "order": 337,
     "isActive": true,
     "themeColor": null
@@ -5064,7 +5064,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Ra-Ra",
     "order": 338,
     "isActive": true,
     "themeColor": null
@@ -5079,7 +5079,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Ta-Hen",
     "order": 339,
     "isActive": true,
     "themeColor": null
@@ -5094,7 +5094,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-Lar Ga-Te",
     "order": 340,
     "isActive": true,
     "themeColor": null
@@ -5109,7 +5109,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Hor",
     "order": 341,
     "isActive": true,
     "themeColor": null
@@ -5124,7 +5124,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Sar-Haw",
     "order": 342,
     "isActive": true,
     "themeColor": null
@@ -5139,7 +5139,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ror La-Du",
     "order": 343,
     "isActive": true,
     "themeColor": null
@@ -5154,7 +5154,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Kay",
     "order": 344,
     "isActive": true,
     "themeColor": null
@@ -5169,7 +5169,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Ha-Li",
     "order": 345,
     "isActive": true,
     "themeColor": null
@@ -5184,7 +5184,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ka-Mi La-Gid",
     "order": 346,
     "isActive": true,
     "themeColor": null
@@ -5199,7 +5199,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "San-Ta-Li Ror",
     "order": 347,
     "isActive": true,
     "themeColor": null
@@ -5214,7 +5214,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne U-Y-Har",
     "order": 348,
     "isActive": true,
     "themeColor": null
@@ -5229,7 +5229,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Nam Da-Ka",
     "order": 349,
     "isActive": true,
     "themeColor": null
@@ -5244,7 +5244,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Njel",
     "order": 350,
     "isActive": true,
     "themeColor": null
@@ -5259,7 +5259,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Da-Re",
     "order": 351,
     "isActive": true,
     "themeColor": null
@@ -5274,7 +5274,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re Ge Dhon",
     "order": 352,
     "isActive": true,
     "themeColor": null
@@ -5289,7 +5289,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Ror Bu-Ru Ror",
     "order": 353,
     "isActive": true,
     "themeColor": null
@@ -5304,7 +5304,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag Re Ja-Nam",
     "order": 354,
     "isActive": true,
     "themeColor": null
@@ -5319,7 +5319,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Sa Hor-Mo",
     "order": 355,
     "isActive": true,
     "themeColor": null
@@ -5334,7 +5334,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sen-Gel Ji-Wi",
     "order": 356,
     "isActive": true,
     "themeColor": null
@@ -5349,7 +5349,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hoy Le-Ka Dar",
     "order": 357,
     "isActive": true,
     "themeColor": null
@@ -5364,7 +5364,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bir U-Mul",
     "order": 358,
     "isActive": true,
     "themeColor": null
@@ -5379,7 +5379,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Re Sa-Kam",
     "order": 359,
     "isActive": true,
     "themeColor": null
@@ -5394,7 +5394,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Jha-Le",
     "order": 360,
     "isActive": true,
     "themeColor": null
@@ -5409,7 +5409,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Ser-Ma",
     "order": 361,
     "isActive": true,
     "themeColor": null
@@ -5424,7 +5424,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ku-Dum Kat-Ha",
     "order": 362,
     "isActive": true,
     "themeColor": null
@@ -5439,7 +5439,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ben-Ta Ror",
     "order": 363,
     "isActive": true,
     "themeColor": null
@@ -5454,7 +5454,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Ram Kat-Ha",
     "order": 364,
     "isActive": true,
     "themeColor": null
@@ -5469,7 +5469,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bud-Hi U-Y-Har",
     "order": 365,
     "isActive": true,
     "themeColor": null
@@ -5484,7 +5484,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Atu Ari",
     "order": 366,
     "isActive": true,
     "themeColor": null
@@ -5499,7 +5499,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ju-Mid Da-Re",
     "order": 367,
     "isActive": true,
     "themeColor": null
@@ -5514,7 +5514,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Soh-Ra-E Se-Renj",
     "order": 368,
     "isActive": true,
     "themeColor": null
@@ -5529,7 +5529,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ba-Ha Sa-Kam",
     "order": 369,
     "isActive": true,
     "themeColor": null
@@ -5544,7 +5544,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ja-Her U-Mul",
     "order": 370,
     "isActive": true,
     "themeColor": null
@@ -5559,7 +5559,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man-Jhi Bi-Car",
     "order": 371,
     "isActive": true,
     "themeColor": null
@@ -5574,7 +5574,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Dho-Rom",
     "order": 372,
     "isActive": true,
     "themeColor": null
@@ -5589,7 +5589,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sir-Jon Du-Lar",
     "order": 373,
     "isActive": true,
     "themeColor": null
@@ -5604,7 +5604,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ot Ha-Sa",
     "order": 374,
     "isActive": true,
     "themeColor": null
@@ -5619,7 +5619,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bir Jan-War",
     "order": 375,
     "isActive": true,
     "themeColor": null
@@ -5634,7 +5634,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Sa-Kam",
     "order": 376,
     "isActive": true,
     "themeColor": null
@@ -5649,7 +5649,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man-Mi Ge-Y-An",
     "order": 377,
     "isActive": true,
     "themeColor": null
@@ -5664,7 +5664,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Goj Gi-Di",
     "order": 378,
     "isActive": true,
     "themeColor": null
@@ -5679,7 +5679,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Tol",
     "order": 379,
     "isActive": true,
     "themeColor": null
@@ -5694,7 +5694,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Tha-Y",
     "order": 380,
     "isActive": true,
     "themeColor": null
@@ -5709,7 +5709,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lu-Ti Jom",
     "order": 381,
     "isActive": true,
     "themeColor": null
@@ -5724,7 +5724,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mu Te Ra-Kab",
     "order": 382,
     "isActive": true,
     "themeColor": null
@@ -5739,7 +5739,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Dag Dhi-Ri",
     "order": 383,
     "isActive": true,
     "themeColor": null
@@ -5754,7 +5754,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Bir Da-Re",
     "order": 384,
     "isActive": true,
     "themeColor": null
@@ -5769,7 +5769,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ha-Sa O-Rag",
     "order": 385,
     "isActive": true,
     "themeColor": null
@@ -5784,7 +5784,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ser-Ma I-Pil",
     "order": 386,
     "isActive": true,
     "themeColor": null
@@ -5799,7 +5799,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Nji-Da U-Mul",
     "order": 387,
     "isActive": true,
     "themeColor": null
@@ -5814,7 +5814,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sin-Ge Si-Tung",
     "order": 388,
     "isActive": true,
     "themeColor": null
@@ -5829,7 +5829,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ri-Mil Dag",
     "order": 389,
     "isActive": true,
     "themeColor": null
@@ -5844,7 +5844,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Hor Hor-Mo",
     "order": 390,
     "isActive": true,
     "themeColor": null
@@ -5859,7 +5859,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Si-Bil Sa-Ga-Y",
     "order": 391,
     "isActive": true,
     "themeColor": null
@@ -5874,7 +5874,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Mo-Ne Ke-Tej",
     "order": 392,
     "isActive": true,
     "themeColor": null
@@ -5889,7 +5889,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ji-Wi Ra-Ra",
     "order": 393,
     "isActive": true,
     "themeColor": null
@@ -5904,7 +5904,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-Lar Ga-Di",
     "order": 394,
     "isActive": true,
     "themeColor": null
@@ -5919,7 +5919,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Ri Gu-Ru",
     "order": 395,
     "isActive": true,
     "themeColor": null
@@ -5934,7 +5934,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ge-Y-An Do-Ry-A",
     "order": 396,
     "isActive": true,
     "themeColor": null
@@ -5949,7 +5949,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Lak-Char Hor",
     "order": 397,
     "isActive": true,
     "themeColor": null
@@ -5964,7 +5964,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ari Sa-Ri",
     "order": 398,
     "isActive": true,
     "themeColor": null
@@ -5979,7 +5979,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Saw-Het Ji-Wi",
     "order": 399,
     "isActive": true,
     "themeColor": null
@@ -5994,7 +5994,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sir-Jon Dho-Rom",
     "order": 400,
     "isActive": true,
     "themeColor": null
@@ -6009,7 +6009,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Di-Som Da-Re",
     "order": 401,
     "isActive": true,
     "themeColor": null
@@ -6024,7 +6024,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Sa-Gun Ny-U-Tum",
     "order": 402,
     "isActive": true,
     "themeColor": null
@@ -6039,7 +6039,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Man-Mi Dho-Rom",
     "order": 403,
     "isActive": true,
     "themeColor": null
@@ -6054,7 +6054,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "A-Mag Nju-Tum Ced",
     "order": 404,
     "isActive": true,
     "themeColor": null
@@ -6069,7 +6069,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "In-Jag Nju-Tum Do Ka-Na",
     "order": 405,
     "isActive": true,
     "themeColor": null
@@ -6084,7 +6084,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Am Oka Kho-Nem Hej Ka-Na",
     "order": 406,
     "isActive": true,
     "themeColor": null
@@ -6099,7 +6099,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "In Do Kho-Ninj Hej Ka-Na",
     "order": 407,
     "isActive": true,
     "themeColor": null
@@ -6114,7 +6114,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Am Saw Nja-Pam Ka-Te Ras-Kanj Buj-Ha-U Ke-Da",
     "order": 408,
     "isActive": true,
     "themeColor": null
@@ -6129,7 +6129,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ika Kanj Me",
     "order": 409,
     "isActive": true,
     "themeColor": null
@@ -6144,7 +6144,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Da-Y-A Ka-Te",
     "order": 410,
     "isActive": true,
     "themeColor": null
@@ -6159,7 +6159,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Adi Na-Pa-Y",
     "order": 411,
     "isActive": true,
     "themeColor": null
@@ -6174,7 +6174,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Ga-Pa Bon Nja-Pa-Ma",
     "order": 412,
     "isActive": true,
     "themeColor": null
@@ -6189,7 +6189,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Na-Pa-Y Te Ta-Hen Me",
     "order": 413,
     "isActive": true,
     "themeColor": null
@@ -6204,7 +6204,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "In Donj Cha-Lag Ka-Na",
     "order": 414,
     "isActive": true,
     "themeColor": null
@@ -6219,7 +6219,7 @@
     "imageUrl": null,
     "audioUrl": null,
     "animationUrl": null,
-    "pronunciation": null,
+    "pronunciation": "Du-La-Ar Jo-Har",
     "order": 415,
     "isActive": true,
     "themeColor": null

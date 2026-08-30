@@ -10,8 +10,6 @@ import '../../categories/presentation/providers/category_notifier.dart';
 import 'providers/lesson_notifier.dart';
 import '../../../shared/providers/content_providers.dart';
 import '../../../shared/models/content_item.dart';
-import '../../../shared/providers/purchases_provider.dart';
-import '../../../shared/widgets/paywall_bottom_sheet.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../shared/utils/localized_content.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
@@ -254,8 +252,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
     final categories = ref.watch(categoryNotifierProvider);
     final lessons = ref.watch(lessonsByCategoryProvider(widget.categoryId));
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final purchasedCategories =
-        ref.watch(purchasedCategoriesProvider).value ?? {};
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
     final category = categories.when(
@@ -428,12 +424,8 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                       ),
                                       const SizedBox(width: 8),
                                       _buildHeaderBadge(
-                                        icon: category.unlockMode == 'free'
-                                            ? Icons.stars_rounded
-                                            : Icons.workspace_premium_rounded,
-                                        label: category.unlockMode == 'free'
-                                            ? 'Free Access'
-                                            : 'Premium',
+                                        icon: Icons.stars_rounded,
+                                        label: 'Free Access',
                                       ),
                                       const SizedBox(width: 8),
                                       _buildHeaderBadge(
@@ -471,9 +463,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                     child: _buildEmptyState(isDark, category),
                   );
                 }
-
-                final isPremium = category.unlockMode != 'free';
-                final isUnlocked = purchasedCategories.contains(category.id);
 
                 const alphabetCategoryIds = {
                   'cat_alphabets_1778594017948',
@@ -542,10 +531,6 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
 
                       final lessonIndex = hasBrowseAll ? index - 1 : index;
                       final lesson = data[lessonIndex];
-                      final isLocked =
-                          isPremium &&
-                          !isUnlocked &&
-                          lessonIndex >= category.previewLessonCount;
 
                       final primaryTitle = primaryLocalizedText(
                         olChiki: lesson.titleOlChiki,
@@ -565,26 +550,11 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                         scriptMode: scriptMode,
                         isDark: isDark,
                         index: lessonIndex,
-                        isLocked: isLocked,
                         gradient: brandGradient,
                         themeColor: themeColor,
-                        showPreviewBadge:
-                            isPremium &&
-                            !isUnlocked &&
-                            lessonIndex < category.previewLessonCount,
-                        onTap: isLocked
-                            ? () {
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  backgroundColor: Colors.transparent,
-                                  builder: (context) =>
-                                      PaywallBottomSheet(category: category),
-                                );
-                              }
-                            : () {
-                                context.push('/lesson/${lesson.id}');
-                              },
+                        onTap: () {
+                          context.push('/lesson/${lesson.id}');
+                        },
                       );
 
                       final timelineItem =
@@ -594,7 +564,7 @@ class _CategoryLessonsScreenState extends ConsumerState<CategoryLessonsScreen> {
                                 isFirst: index == 0,
                                 isLast: index == totalCount - 1,
                                 isDark: isDark,
-                                isLocked: isLocked,
+                                isLocked: false,
                                 themeColor: themeColor,
                                 gradient: brandGradient,
                                 stepNodeChild: Text(
@@ -821,8 +791,6 @@ class _LessonCard extends StatelessWidget {
   final bool isDark;
   final int index;
   final VoidCallback onTap;
-  final bool isLocked;
-  final bool showPreviewBadge;
   final LinearGradient gradient;
   final Color themeColor;
 
@@ -836,8 +804,6 @@ class _LessonCard extends StatelessWidget {
     required this.onTap,
     required this.gradient,
     required this.themeColor,
-    this.isLocked = false,
-    this.showPreviewBadge = false,
   });
 
   @override
@@ -845,16 +811,10 @@ class _LessonCard extends StatelessWidget {
     final activeBgColor = isDark
         ? const Color(0xFF0F172A).withValues(alpha: 0.6)
         : Colors.white;
-    final lockedBgColor = isDark
-        ? const Color(0xFF0F172A).withValues(alpha: 0.2)
-        : const Color(0xFFF8FAFC);
 
     final activeBorderColor = isDark
         ? Colors.white.withValues(alpha: 0.08)
         : Colors.black.withValues(alpha: 0.04);
-    final lockedBorderColor = isDark
-        ? Colors.white.withValues(alpha: 0.03)
-        : Colors.black.withValues(alpha: 0.02);
 
     return PressableScale(
       onTap: onTap,
@@ -863,12 +823,10 @@ class _LessonCard extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
-            color: isLocked ? lockedBgColor : activeBgColor,
+            color: activeBgColor,
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(
-              color: isLocked ? lockedBorderColor : activeBorderColor,
-            ),
-            boxShadow: isLocked || isDark
+            border: Border.all(color: activeBorderColor),
+            boxShadow: isDark
                 ? null
                 : [
                     BoxShadow(
@@ -889,15 +847,7 @@ class _LessonCard extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        _buildLevelBadge(lesson.level, isDark),
-                        if (showPreviewBadge) ...[
-                          const SizedBox(width: 6),
-                          _buildPreviewBadge(isDark),
-                        ],
-                      ],
-                    ),
+                    Row(children: [_buildLevelBadge(lesson.level, isDark)]),
                     const SizedBox(height: 10),
                     Text(
                       primaryTitle,
@@ -905,9 +855,7 @@ class _LessonCard extends StatelessWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.w800,
                         fontFamily: primaryLocalizedFontFamily(scriptMode),
-                        color: isLocked
-                            ? (isDark ? Colors.white38 : Colors.black38)
-                            : (isDark ? Colors.white : Colors.black87),
+                        color: isDark ? Colors.white : Colors.black87,
                         letterSpacing: -0.2,
                       ),
                     ),
@@ -919,9 +867,7 @@ class _LessonCard extends StatelessWidget {
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                           fontFamily: 'OlChiki',
-                          color: isLocked
-                              ? (isDark ? Colors.white24 : Colors.black26)
-                              : (isDark ? Colors.white54 : Colors.black45),
+                          color: isDark ? Colors.white54 : Colors.black45,
                         ),
                       ),
                     ],
@@ -932,9 +878,7 @@ class _LessonCard extends StatelessWidget {
                         lesson.description!,
                         style: TextStyle(
                           fontSize: 12,
-                          color: isLocked
-                              ? (isDark ? Colors.white24 : Colors.black26)
-                              : (isDark ? Colors.white38 : Colors.black54),
+                          color: isDark ? Colors.white38 : Colors.black54,
                           height: 1.25,
                         ),
                         maxLines: 2,
@@ -948,9 +892,7 @@ class _LessonCard extends StatelessWidget {
                         Icon(
                           Icons.cloud_done_rounded,
                           size: 13,
-                          color: isLocked
-                              ? (isDark ? Colors.white24 : Colors.black26)
-                              : themeColor.withValues(alpha: 0.8),
+                          color: themeColor.withValues(alpha: 0.8),
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -958,9 +900,7 @@ class _LessonCard extends StatelessWidget {
                           style: TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.w600,
-                            color: isLocked
-                                ? (isDark ? Colors.white24 : Colors.black26)
-                                : (isDark ? Colors.white54 : Colors.black54),
+                            color: isDark ? Colors.white54 : Colors.black54,
                           ),
                         ),
                       ],
@@ -969,7 +909,7 @@ class _LessonCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 12),
-              _buildCTA(isLocked, isDark),
+              _buildCTA(isDark),
             ],
           ),
         ),
@@ -1029,65 +969,7 @@ class _LessonCard extends StatelessWidget {
     );
   }
 
-  Widget _buildPreviewBadge(bool isDark) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-      decoration: BoxDecoration(
-        color: AppColors.duoYellow.withValues(alpha: isDark ? 0.15 : 0.08),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: AppColors.duoYellow.withValues(alpha: isDark ? 0.3 : 0.15),
-        ),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          const Icon(
-            Icons.workspace_premium_rounded,
-            size: 11,
-            color: AppColors.duoYellow,
-          ),
-          const SizedBox(width: 4),
-          Text(
-            'FREE PREVIEW',
-            style: TextStyle(
-              fontSize: 10,
-              fontWeight: FontWeight.w800,
-              color: isDark ? AppColors.duoYellow : AppColors.duoYellowDark,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildCTA(bool isLocked, bool isDark) {
-    if (isLocked) {
-      return Container(
-        width: 40,
-        height: 40,
-        decoration: BoxDecoration(
-          color: isDark
-              ? Colors.white.withValues(alpha: 0.03)
-              : const Color(0xFFE2E8F0),
-          shape: BoxShape.circle,
-          border: Border.all(
-            color: isDark
-                ? Colors.white.withValues(alpha: 0.05)
-                : const Color(0xFFCBD5E1),
-          ),
-        ),
-        child: Center(
-          child: Icon(
-            Icons.lock_rounded,
-            color: isDark ? Colors.white24 : Colors.black26,
-            size: 16,
-          ),
-        ),
-      );
-    }
-
+  Widget _buildCTA(bool isDark) {
     return Container(
       width: 40,
       height: 40,

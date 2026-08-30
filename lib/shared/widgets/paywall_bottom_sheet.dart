@@ -9,7 +9,6 @@ import '../../core/logging/app_logger.dart';
 import '../../core/payments/razorpay_service.dart';
 import '../../core/payments/purchase_repository.dart';
 import '../../core/reviews/review_service.dart';
-import '../../core/reviews/review_eligibility.dart';
 import '../providers/purchases_provider.dart';
 import '../providers/app_settings_provider.dart';
 import '../../features/categories/domain/entities/category_entity.dart';
@@ -280,13 +279,11 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenHeight = MediaQuery.of(context).size.height;
 
-    // Watch settings and review eligibility
+    // Watch settings
     final settingsAsync = ref.watch(appSettingsProvider);
-    final hasReviewedAsync = ref.watch(hasUnlockedViaReviewProvider);
 
     final globalReviewEnabled =
         settingsAsync.value?['global_review_unlock_enabled'] != 'false';
-    final hasAlreadyReviewed = hasReviewedAsync.value ?? false;
 
     // Check availability
     final showReviewButton =
@@ -637,55 +634,35 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                         ],
 
                         if (showReviewButton) ...[
-                          if (showPaidButton)
-                            const Center(
-                              child: Padding(
-                                padding: EdgeInsets.symmetric(vertical: 6),
-                                child: Text(
-                                  '— OR —',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w800,
-                                    color: Colors.grey,
-                                  ),
-                                ),
-                              ),
-                            ),
                           const SizedBox(height: 10),
                           SizedBox(
                             width: double.infinity,
                             height: 56,
                             child: OutlinedButton(
-                              onPressed: (_isLoading || hasAlreadyReviewed)
+                              onPressed: _isLoading
                                   ? null
                                   : _handleReviewUnlock,
                               style: OutlinedButton.styleFrom(
-                                side: BorderSide(
-                                  color: hasAlreadyReviewed
-                                      ? Colors.grey.withValues(alpha: 0.3)
-                                      : AppColors.primary,
+                                side: const BorderSide(
+                                  color: AppColors.primary,
                                   width: 2,
                                 ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(18),
                                 ),
                               ),
-                              child: Row(
+                              child: const Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
                                   Icon(
                                     Icons.rate_review_outlined,
-                                    color: hasAlreadyReviewed
-                                        ? Colors.grey
-                                        : AppColors.primary,
+                                    color: AppColors.primary,
                                   ),
-                                  const SizedBox(width: 10),
+                                  SizedBox(width: 10),
                                   Text(
-                                    'Unlock via Play Store Review',
+                                    'Rate & Share Feedback',
                                     style: TextStyle(
-                                      color: hasAlreadyReviewed
-                                          ? Colors.grey
-                                          : AppColors.primary,
+                                      color: AppColors.primary,
                                       fontWeight: FontWeight.w800,
                                       fontSize: 15,
                                     ),
@@ -694,30 +671,6 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                               ),
                             ),
                           ),
-                          if (hasAlreadyReviewed)
-                            Padding(
-                              padding: const EdgeInsets.only(top: 8),
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  const Icon(
-                                    Icons.info_outline_rounded,
-                                    color: Colors.grey,
-                                    size: 14,
-                                  ),
-                                  const SizedBox(width: 6),
-                                  Text(
-                                    'You already unlocked a course via review.',
-                                    style: TextStyle(
-                                      fontSize: 11,
-                                      color: isDark
-                                          ? Colors.white38
-                                          : Colors.black45,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
                         ],
                       ],
                     ],

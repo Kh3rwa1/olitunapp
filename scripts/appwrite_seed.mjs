@@ -75,13 +75,22 @@ async function importCollection(name, rows) {
   console.log(`  → ${ok} added, ${skip} skipped, ${fail} failed`);
 }
 
-// ─── SEED DATA ───
+function loadJsonAsset(relativePath) {
+  try {
+    const raw = readFileSync(new URL(`../${relativePath}`, import.meta.url), 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    console.warn(`Could not load ${relativePath}: ${e.message}`);
+    return [];
+  }
+}
 
 const categories = [
   { id: 'cat_alphabet', titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ ᱟᱠᱷᱟ', titleLatin: 'Alphabet', iconName: 'alphabet', gradientPreset: 'skyBlue', order: 0, isActive: true, totalLessons: 30, description: 'Learn the Ol Chiki script letters' },
   { id: 'cat_numbers', titleOlChiki: 'ᱮᱞᱠᱷᱟ ᱠᱚ', titleLatin: 'Numbers', iconName: 'numbers', gradientPreset: 'sunset', order: 1, isActive: true, totalLessons: 10, description: 'Learn Santali numbers and counting' },
   { id: 'cat_words', titleOlChiki: 'ᱨᱚᱲ ᱠᱚ', titleLatin: 'Words', iconName: 'words', gradientPreset: 'forest', order: 2, isActive: true, totalLessons: 50, description: 'Build your Santali vocabulary' },
-  { id: 'cat_sentences', titleOlChiki: 'ᱣᱟᱠᱭ ᱠᱚ', titleLatin: 'Sentences', iconName: 'stories', gradientPreset: 'ocean', order: 3, isActive: true, totalLessons: 20, description: 'Form sentences in Santali' },
+  { id: 'cat_vocab', titleOlChiki: 'ᱥᱟᱹᱵᱟᱹᱫᱽ', titleLatin: 'Vocabulary', iconName: 'vocabulary', gradientPreset: 'mint', order: 2, isActive: true, totalLessons: 14, description: 'Build your Santali vocabulary' },
+  { id: 'cat_sentences', titleOlChiki: 'ᱣᱟᱠᱭ ᱠᱚ', titleLatin: 'Sentences', iconName: 'stories', gradientPreset: 'ocean', order: 3, isActive: true, totalLessons: 23, description: 'Form sentences, explore grammar, and read stories' },
 ];
 
 const letters = [
@@ -255,6 +264,27 @@ async function main() {
   await importCollection('letters', letters);
   await importCollection('numbers', numbers);
   await importCollection('quizzes', quizzes);
+
+  const sentences = loadJsonAsset('assets/seed/sentences.json');
+  if (sentences.length > 0) {
+    await importCollection('sentences', sentences);
+  }
+
+  const words = loadJsonAsset('assets/seed/words.json');
+  if (words.length > 0) {
+    await importCollection('words', words);
+  }
+
+  const sentenceLessons = loadJsonAsset('assets/seed/sentence_lessons.json');
+  const vocabLessons = loadJsonAsset('assets/seed/vocab_lessons.json');
+  const allLessons = [...sentenceLessons, ...vocabLessons].map(l => ({
+    ...l,
+    blocks: typeof l.blocks === 'object' ? JSON.stringify(l.blocks) : l.blocks,
+  }));
+
+  if (allLessons.length > 0) {
+    await importCollection('lessons', allLessons);
+  }
 
   console.log('\n🎉 Seed import complete!');
 }

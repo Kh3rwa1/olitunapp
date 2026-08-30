@@ -61,6 +61,14 @@ class LearningAnalyticsEvents {
   static const letterPracticed = 'letter_practiced';
   static const practiceCompleted = 'practice_completed';
 
+  // Multilingual onboarding & audio-mode funnel (Phase 1)
+  static const onboardingLanguageSelected = 'onboarding_language_selected';
+  static const teachingLanguageSelected = 'teaching_language_selected';
+  static const proficiencySelected = 'proficiency_selected';
+  static const learningGoalSelected = 'learning_goal_selected';
+  static const audioModeSelected = 'audio_mode_selected';
+  static const onboardingCompleted = 'onboarding_completed';
+
   // Ad events
   static const adImpression = 'ad_impression';
   static const adClick = 'ad_click';

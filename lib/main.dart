@@ -26,6 +26,12 @@ Locale appLocaleForLanguage(String languageCode) {
   switch (languageCode) {
     case 'sat':
       return const Locale('sat');
+    case 'hi':
+      return const Locale('hi');
+    case 'bn':
+      return const Locale('bn');
+    case 'or':
+      return const Locale('or');
     case 'en':
     default:
       return const Locale('en');

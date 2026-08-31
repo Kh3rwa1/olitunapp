@@ -68,7 +68,7 @@ void main() {
         audioUrl: 'https://cdn.example.com/legacy.mp3',
       );
 
-      final playableTrack = AudioTrack(
+      const playableTrack = AudioTrack(
         id: 't1',
         contentKind: 'word',
         contentId: 'w1',
@@ -79,7 +79,7 @@ void main() {
       );
       // copyWith cannot clear nullable fields (repo-wide `?? this.x`
       // pattern), so build the unplayable variant explicitly.
-      final unplayableTrack = AudioTrack(
+      const unplayableTrack = AudioTrack(
         id: 't2',
         contentKind: 'word',
         contentId: 'w1',
@@ -126,7 +126,7 @@ void main() {
         audioUrl: 'https://cdn.example.com/legacy.mp3',
       );
 
-      final playableTrack = AudioTrack(
+      const playableTrack = AudioTrack(
         id: 't1',
         contentKind: 'sentence',
         contentId: 's1',

@@ -4,7 +4,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/main/presentation/main_shell_screen.dart';
-import 'package:itun/shared/providers/providers.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {

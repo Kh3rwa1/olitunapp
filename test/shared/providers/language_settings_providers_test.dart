@@ -5,7 +5,9 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/shared/providers/language_settings_providers.dart';
 
-Future<ProviderContainer> _containerWith(Map<String, Object> initialPrefs) async {
+Future<ProviderContainer> _containerWith(
+  Map<String, Object> initialPrefs,
+) async {
   SharedPreferences.setMockInitialValues(initialPrefs);
   final prefs = await SharedPreferences.getInstance();
   final container = ProviderContainer(

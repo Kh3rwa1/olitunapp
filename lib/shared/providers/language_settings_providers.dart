@@ -158,8 +158,11 @@ final teachingLanguageProvider = StateProvider<String>((ref) {
 
 /// Teaching language guaranteed to be one of [kTeachingLanguages].
 final effectiveTeachingLanguageProvider = Provider<String>((ref) {
-  return _normalize(ref.watch(teachingLanguageProvider), kTeachingLanguages,
-      'en');
+  return _normalize(
+    ref.watch(teachingLanguageProvider),
+    kTeachingLanguages,
+    'en',
+  );
 });
 
 /// Self-reported Santali proficiency chosen in onboarding.
@@ -213,7 +216,9 @@ void cascadeTeachingLanguageForInterface(WidgetRef ref, String interfaceCode) {
 }
 
 void updateSantaliProficiency(WidgetRef ref, SantaliProficiency value) {
-  ref.read(sharedPreferencesProvider).setString(santaliProficiencyKey, value.name);
+  ref
+      .read(sharedPreferencesProvider)
+      .setString(santaliProficiencyKey, value.name);
   ref.read(santaliProficiencyProvider.notifier).state = value;
 }
 

@@ -28,12 +28,12 @@ class TeachingLanguageTile extends ConsumerWidget {
     final l10n = AppLocalizations.of(context)!;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final current = ref.watch(effectiveTeachingLanguageProvider);
+    final currentName = _nativeNames[current] ?? 'English';
 
     return SettingTile(
       icon: Icons.record_voice_over_rounded,
       title: l10n.teachingLanguage,
-      subtitle:
-          '${_nativeNames[current] ?? 'English'} · ${l10n.teachingLanguageSubtitle}',
+      subtitle: '$currentName · ${l10n.teachingLanguageSubtitle}',
       isDark: isDark,
       onTap: () => _showTeachingLanguageDialog(context, ref, current),
     );

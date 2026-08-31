@@ -1,0 +1,12 @@
+{
+  "name": "olitun-generate-audio",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/main.js",
+  "scripts": {
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "node-appwrite": "25.1.0"
+  }
+}

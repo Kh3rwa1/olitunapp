@@ -3,6 +3,35 @@
   "projectName": "olitun",
   "functions": [
     {
+      "$id": "generateAudio",
+      "name": "generateAudio",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 60,
+      "path": "functions/generateAudio",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write",
+        "files.read",
+        "files.write",
+        "users.read"
+      ]
+    },
+    {
       "$id": "6a007db60024418c0997",
       "name": "translator",
       "runtime": "node-22.0",

@@ -73,10 +73,7 @@ class FeatureFlags {
       ),
       audioDownloadsEnabled: _resolve('audio_downloads_enabled', settings),
       audioQuizzesEnabled: _resolve('audio_quizzes_enabled', settings),
-      sarvamGenerationEnabled: _resolve(
-        'sarvam_generation_enabled',
-        settings,
-      ),
+      sarvamGenerationEnabled: _resolve('sarvam_generation_enabled', settings),
     );
   }
 }

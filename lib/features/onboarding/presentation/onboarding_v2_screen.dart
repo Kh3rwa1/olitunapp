@@ -359,10 +359,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
     final options = <(LessonAudioMode, String)>[
       (LessonAudioMode.targetOnly, l10n.audioModeTargetOnly),
       (LessonAudioMode.bilingual, l10n.audioModeBilingual),
-      (
-        LessonAudioMode.translationOnDemand,
-        l10n.audioModeTranslationOnDemand,
-      ),
+      (LessonAudioMode.translationOnDemand, l10n.audioModeTranslationOnDemand),
     ];
 
     return _StepScaffold(
@@ -532,9 +529,7 @@ class _OptionCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
             decoration: BoxDecoration(
               color: selected
-                  ? AppColors.primary.withValues(
-                      alpha: isDark ? 0.22 : 0.10,
-                    )
+                  ? AppColors.primary.withValues(alpha: isDark ? 0.22 : 0.10)
                   : (isDark
                       ? Colors.white.withValues(alpha: 0.05)
                       : Colors.white),

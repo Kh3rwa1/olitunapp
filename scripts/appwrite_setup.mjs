@@ -988,6 +988,10 @@ const collections = [
         required: true,
         default: 'needsReview',
       },
+      // Audit stamps written by the reviewContent function (Phase 5)
+      // when an admin approves/rejects a track.
+      { type: 'string', key: 'reviewedBy', size: 100, required: false },
+      { type: 'string', key: 'reviewedAt', size: 40, required: false },
       { type: 'string', key: 'errorMessage', size: 1024, required: false },
       { type: 'string', key: 'createdAt', size: 40, required: false },
       { type: 'string', key: 'updatedAt', size: 40, required: false },

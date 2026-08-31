@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/accessibility/learning_semantics.dart';
-import '../../../../core/audio/audio_service.dart';
+import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
@@ -543,7 +543,15 @@ class _AudioBlock extends ConsumerWidget {
     return ScaleButton(
       onPressed: () {
         HapticFeedback.lightImpact();
-        ref.read(audioServiceProvider).playUrl(audioUrl);
+        ref
+            .read(playbackControllerProvider)
+            .playSingle(
+              id: audioUrl,
+              contentKind: 'lesson',
+              contentId: block.textOlChiki ?? block.textLatin ?? block.type,
+              trackType: 'instruction',
+              languageCode: 'sat',
+            );
       },
       child: Container(
         width: double.infinity,

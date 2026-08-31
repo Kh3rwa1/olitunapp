@@ -5,13 +5,13 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/audio/audio_service.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../../shared/providers/providers.dart';
 import '../../../affirmations/data/affirmation_share_service_provider.dart';
 import '../../../affirmations/presentation/widgets/affirmation_share_sheet.dart';
 import '../../../../core/audio/audio_providers.dart';
+import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 
 class TodayAffirmationCard extends ConsumerStatefulWidget {
@@ -141,16 +141,24 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
     return frame.image;
   }
 
-  Future<void> _toggleAudio(String? audioUrl) async {
+  Future<void> _toggleAudio(String? audioUrl, String affirmationId) async {
     if (audioUrl == null) return;
     HapticFeedback.lightImpact();
 
     // Truth comes from audioIsPlayingProvider (player state stream), so a
     // failed load or natural completion can never leave a stuck 'Stop'.
+    // Playback routes through the central controller (one global player).
+    final playback = ref.read(playbackControllerProvider);
     if (ref.read(audioIsPlayingProvider).value == true) {
-      await ref.read(audioServiceProvider).stop();
+      await playback.stop();
     } else {
-      await ref.read(audioServiceProvider).playUrl(audioUrl);
+      await playback.playSingle(
+        id: audioUrl,
+        contentKind: 'affirmation',
+        contentId: affirmationId,
+        trackType: 'targetNormal',
+        languageCode: 'sat',
+      );
     }
   }
 
@@ -285,7 +293,10 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                                         context,
                                       )!.affirmationListen,
                                 isDark: isDark,
-                                onTap: () => _toggleAudio(affirmation.audioUrl),
+                                onTap: () => _toggleAudio(
+                                  affirmation.audioUrl,
+                                  affirmation.id,
+                                ),
                               )
                             else
                               const SizedBox.shrink(),

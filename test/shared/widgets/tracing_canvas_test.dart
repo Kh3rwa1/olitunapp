@@ -1,14 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/widgets/tracing_canvas.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 
+/// Empty stream overrides keep the central PlaybackController idle without
+/// leaking just_audio's periodic position timer into the test binding.
 class MockAudioService extends AudioService {
   @override
   Future<void> playUrl(String url) async {}
+
+  @override
+  Future<bool> tryPlayUrl(String url) async => true;
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Stream<ProcessingState> get processingStateStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<bool> get isPlayingStream => const Stream.empty();
 }
 
 class MockAnalyticsService implements LearningAnalyticsService {

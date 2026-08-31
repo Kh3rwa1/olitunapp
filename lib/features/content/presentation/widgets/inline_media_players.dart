@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:video_player/video_player.dart';
 
-import '../../../../core/audio/audio_service.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../providers/audio_playback_providers.dart';
 import '../../../../shared/models/content_item.dart';
 
 /// Inline video playback embedded inside content detail pages.
@@ -124,8 +124,8 @@ class InlineAudioPlayer extends StatefulWidget {
 }
 
 class InlineAudioPlayerState extends State<InlineAudioPlayer> {
-  // Simple custom mini audio player using standard flutter/audioplayers or direct Ref interaction
-  // We will re-use ref.read(audioServiceProvider) to keep it lightweight!
+  // Simple custom mini audio player routed through the central
+  // PlaybackController via playbackControllerProvider.
   bool _isPlaying = false;
 
   @override
@@ -154,14 +154,19 @@ class InlineAudioPlayerState extends State<InlineAudioPlayer> {
                     style: IconButton.styleFrom(
                       backgroundColor: AppColors.primary,
                     ),
-                    onPressed: () async {
+                    onPressed: () {
+                      final playback = ref.read(playbackControllerProvider);
                       if (_isPlaying) {
-                        await ref.read(audioServiceProvider).stop();
+                        playback.stop();
                         setState(() => _isPlaying = false);
                       } else {
-                        await ref
-                            .read(audioServiceProvider)
-                            .playUrl(widget.media.url);
+                        playback.playSingle(
+                          id: widget.media.url,
+                          contentKind: 'lesson',
+                          contentId: widget.media.url,
+                          trackType: 'instruction',
+                          languageCode: 'sat',
+                        );
                         setState(() => _isPlaying = true);
                       }
                     },

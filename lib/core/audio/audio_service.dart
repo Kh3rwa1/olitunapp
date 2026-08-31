@@ -32,8 +32,24 @@ class AudioService {
   Stream<bool> get isPlayingStream =>
       _player.playerStateStream.map((state) => state.playing);
 
-  Future<void> playUrl(String url) async {
-    if (url.isEmpty) return;
+  /// Playback position, for progress display in the central controller.
+  Stream<Duration> get positionStream => _player.positionStream;
+
+  /// Total duration of the loaded source, once known.
+  Stream<Duration?> get durationStream => _player.durationStream;
+
+  /// just_audio processing state, for completion/error detection in the
+  /// central playback controller (bilingual sequencing).
+  Stream<ProcessingState> get processingStateStream =>
+      _player.processingStateStream;
+
+  /// Attempts to play [url] and reports whether playback actually started.
+  ///
+  /// Unlike [playUrl], this surfaces success/failure so the central
+  /// playback controller can show an error state (spec §11) instead of
+  /// silently swallowing failures.
+  Future<bool> tryPlayUrl(String url) async {
+    if (url.isEmpty) return false;
     try {
       _initWebCrossOrigin();
       if (_player.playing) {
@@ -47,23 +63,71 @@ class AudioService {
       );
       await _player.setVolume(1.0);
       await _player.play();
+      return true;
     } catch (e) {
       AppLogger.warning('AudioService playUrl failed: $e');
       if (kIsWeb) {
         try {
           playNativeWebAudio(url);
+          return true;
         } catch (webErr) {
           AppLogger.warning('AudioService web fallback failed: $webErr');
+          return false;
         }
       } else {
         try {
           await _player.setUrl(url);
           await _player.setVolume(1.0);
           await _player.play();
+          return true;
         } catch (retryErr) {
           AppLogger.warning('AudioService native retry failed: $retryErr');
+          return false;
         }
       }
+    }
+  }
+
+  /// Fire-and-forget playback used by lightweight call sites (glyph cards,
+  /// legacy buttons). The central [PlaybackController] uses [tryPlayUrl]
+  /// instead so it can track loading/error state.
+  Future<void> playUrl(String url) async {
+    await tryPlayUrl(url);
+  }
+
+  /// Pauses the current playback without unloading it.
+  Future<void> pause() async {
+    try {
+      await _player.pause();
+    } catch (e) {
+      AppLogger.warning('AudioService pause failed: $e');
+    }
+  }
+
+  /// Resumes paused playback. Does nothing when nothing is loaded.
+  Future<void> resume() async {
+    try {
+      await _player.play();
+    } catch (e) {
+      AppLogger.warning('AudioService resume failed: $e');
+    }
+  }
+
+  /// Seeks within the loaded source (spec §11: seek where relevant).
+  Future<void> seek(Duration position) async {
+    try {
+      await _player.seek(position);
+    } catch (e) {
+      AppLogger.warning('AudioService seek failed: $e');
+    }
+  }
+
+  /// Sets the playback speed (spec §11: playback speed).
+  Future<void> setSpeed(double speed) async {
+    try {
+      await _player.setSpeed(speed);
+    } catch (e) {
+      AppLogger.warning('AudioService setSpeed failed: $e');
     }
   }
 

@@ -7,7 +7,7 @@ import '../../../../shared/providers/providers.dart';
 import '../../../../core/presentation/animations/scale_button.dart';
 import '../../../../shared/models/content_models.dart';
 import '../../../lessons/domain/entities/lesson_entity.dart';
-import '../../../../core/audio/audio_service.dart';
+import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../../../../core/utils/text_match.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 
@@ -64,7 +64,15 @@ class LetterGridContent extends ConsumerWidget {
           onPressed: () {
             HapticFeedback.lightImpact();
             if (letter.audioUrl != null && letter.audioUrl!.isNotEmpty) {
-              ref.read(audioServiceProvider).playUrl(letter.audioUrl!);
+              ref
+                  .read(playbackControllerProvider)
+                  .playSingle(
+                    id: letter.audioUrl!,
+                    contentKind: 'letter',
+                    contentId: letter.id,
+                    trackType: 'targetNormal',
+                    languageCode: 'sat',
+                  );
             }
             context.push('/letter/$lessonId/${letter.charOlChiki}');
           },
@@ -1005,7 +1013,15 @@ class DynamicBlockGridCell extends ConsumerWidget {
           context.push(activeRoute);
         } else {
           if (block.audioUrl != null && block.audioUrl!.isNotEmpty) {
-            ref.read(audioServiceProvider).playUrl(block.audioUrl!);
+            ref
+                .read(playbackControllerProvider)
+                .playSingle(
+                  id: block.audioUrl!,
+                  contentKind: 'lesson',
+                  contentId: block.textOlChiki ?? block.textLatin ?? block.type,
+                  trackType: 'instruction',
+                  languageCode: 'sat',
+                );
           }
         }
       },

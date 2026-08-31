@@ -7,7 +7,6 @@ import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/onboarding/presentation/onboarding_v2_screen.dart';
 import 'package:itun/l10n/generated/app_localizations.dart';
-import 'package:itun/shared/providers/language_settings_providers.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -103,30 +102,31 @@ void main() {
     expect(prefs.getBool('show_onboarding'), isFalse);
   });
 
-  testWidgets('guest finish without any selection keeps safe defaults', (
-    tester,
-  ) async {
-    var finished = false;
-    final prefs = await pumpOnboarding(
-      tester,
-      onFinished: () => finished = true,
-    );
+  testWidgets(
+    'guest finish without any selection keeps safe defaults',
+    (tester) async {
+      var finished = false;
+      final prefs = await pumpOnboarding(
+        tester,
+        onFinished: () => finished = true,
+      );
 
-    for (var i = 0; i < 4; i++) {
-      await tester.tap(find.text('Continue'));
+      for (var i = 0; i < 4; i++) {
+        await tester.tap(find.text('Continue'));
+        await tester.pumpAndSettle();
+      }
+      await tester.tap(find.text('Start learning'));
       await tester.pumpAndSettle();
-    }
-    await tester.tap(find.text('Start learning'));
-    await tester.pumpAndSettle();
 
-    expect(finished, isTrue);
-    // Interface language untouched -> provider default 'en'.
-    expect(prefs.getString('app_language'), isNull);
-    // The finish path reads the new providers, which seeds migrated
-    // defaults on first read.
-    expect(prefs.getString('teaching_language'), 'en');
-    expect(prefs.getString('santali_proficiency'), 'none');
-    expect(prefs.getString('lesson_audio_mode'), 'translationOnDemand');
-    expect(prefs.getBool('show_onboarding'), isFalse);
-  });
+      expect(finished, isTrue);
+      // Interface language untouched -> provider default 'en'.
+      expect(prefs.getString('app_language'), isNull);
+      // The finish path reads the new providers, which seeds migrated
+      // defaults on first read.
+      expect(prefs.getString('teaching_language'), 'en');
+      expect(prefs.getString('santali_proficiency'), 'none');
+      expect(prefs.getString('lesson_audio_mode'), 'translationOnDemand');
+      expect(prefs.getBool('show_onboarding'), isFalse);
+    },
+  );
 }

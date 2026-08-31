@@ -11,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'widgets/settings_widgets.dart';
+import 'widgets/downloads_management_card.dart';
 import 'widgets/learning_settings_tiles.dart';
 import '../../practice/data/typing_practice_settings.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
@@ -315,6 +316,12 @@ class SettingsScreen extends ConsumerWidget {
           width: double.infinity,
           child: _buildLegalCard(context, isDark, 4),
         ),
+        // Phase 6: offline audio downloads & cache management. Renders
+        // nothing when the feature flag is off or on web (spec §27).
+        const SizedBox(
+          width: double.infinity,
+          child: DownloadsManagementCard(index: 5),
+        ),
       ],
     );
   }
@@ -419,6 +426,10 @@ class SettingsScreen extends ConsumerWidget {
         ),
         const SizedBox(height: 16),
         _buildLegalCard(context, isDark, 4),
+        const SizedBox(height: 16),
+        // Phase 6: offline audio downloads & cache management. Renders
+        // nothing when the feature flag is off or on web (spec §27).
+        const DownloadsManagementCard(index: 5),
         const SizedBox(height: 16),
         const RepaintBoundary(
           child: NativeAdWidget(placement: 'settings_native'),

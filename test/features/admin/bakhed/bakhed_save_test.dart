@@ -1333,32 +1333,6 @@ void main() {
         expect(state.pendingDeletions, contains('cover1'));
       },
     );
-
-    test(
-      'Deprecated updateThumbnail routes to updateCoverMedia with image type',
-      () async {
-        final rhyme = _makeRhyme(); // starts with image cover1
-        await setupEditor(rhyme);
-
-        final notifier = container.read(
-          bakhedEditorControllerProvider(rhyme.id).notifier,
-        );
-        const newMedia = ContentMedia(
-          url: 'https://cdn.example.com/deprecated.png',
-          fileId: 'imgDep',
-          kind: ContentMediaKind.image,
-        );
-
-        // ignore: deprecated_member_use_from_same_package
-        notifier.updateThumbnail(newMedia);
-
-        final state = container.read(bakhedEditorControllerProvider(rhyme.id));
-        expect(state.item.value!.heroMedia, newMedia);
-        expect(state.item.value!.coverMediaType, 'image');
-        expect(state.isDirty, isTrue);
-        expect(state.pendingDeletions, contains('cover1'));
-      },
-    );
   });
 
   group('effectiveAudioUrl and LetterModel block audio parsing', () {

@@ -67,6 +67,52 @@ class CategoryModel extends CategoryEntity {
     };
   }
 
+  // Convenience getters for backwards compatibility
+  String get titleEn => titleLatin;
+  String get icon => iconName ?? 'book';
+  @override
+  bool get isPremium => unlockMode != 'free';
+
+  CategoryModel copyWith({
+    String? id,
+    String? titleOlChiki,
+    String? titleLatin,
+    String? iconUrl,
+    String? iconName,
+    String? animationUrl,
+    String? gradientPreset,
+    int? order,
+    bool? isActive,
+    int? totalLessons,
+    String? description,
+    String? unlockMode,
+    int? priceInr,
+    int? previewLessonCount,
+    String? courseDescription,
+    String? courseOutcome,
+    String? courseHeroImageUrl,
+  }) {
+    return CategoryModel(
+      id: id ?? this.id,
+      titleOlChiki: titleOlChiki ?? this.titleOlChiki,
+      titleLatin: titleLatin ?? this.titleLatin,
+      iconUrl: iconUrl ?? this.iconUrl,
+      iconName: iconName ?? this.iconName,
+      animationUrl: animationUrl ?? this.animationUrl,
+      gradientPreset: gradientPreset ?? this.gradientPreset,
+      order: order ?? this.order,
+      isActive: isActive ?? this.isActive,
+      totalLessons: totalLessons ?? this.totalLessons,
+      description: description ?? this.description,
+      unlockMode: unlockMode ?? this.unlockMode,
+      priceInr: priceInr ?? this.priceInr,
+      previewLessonCount: previewLessonCount ?? this.previewLessonCount,
+      courseDescription: courseDescription ?? this.courseDescription,
+      courseOutcome: courseOutcome ?? this.courseOutcome,
+      courseHeroImageUrl: courseHeroImageUrl ?? this.courseHeroImageUrl,
+    );
+  }
+
   CategoryEntity toEntity() {
     return CategoryEntity(
       id: id,

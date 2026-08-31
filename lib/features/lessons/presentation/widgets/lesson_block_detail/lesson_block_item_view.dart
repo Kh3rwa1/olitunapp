@@ -91,8 +91,9 @@ class LessonBlockItemView extends ConsumerWidget {
             ),
             error: (err, _) => const SizedBox.shrink(),
             data: (quizzesMap) {
-              if (!quizzesMap.containsKey(quizId))
+              if (!quizzesMap.containsKey(quizId)) {
                 return const SizedBox.shrink();
+              }
               final quiz = quizzesMap[quizId]!;
               return LayoutBuilder(
                 builder: (context, constraints) => LessonBlockQuizCTA(

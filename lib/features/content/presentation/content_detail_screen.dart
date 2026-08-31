@@ -28,7 +28,7 @@ import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 import 'providers/audio_playback_providers.dart';
 import 'widgets/audio_controls_bar.dart';
 import 'widgets/inline_media_players.dart';
-import 'widgets/premium_bakhed_body.dart';
+import 'widgets/story_player_body.dart';
 
 class ContentDetailScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -115,9 +115,12 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     bool isDark,
     Color accentColor,
   ) {
-    // 0. Redirect for premium rhyme player
+    // 0. Segment-based story player for rhymes/stories. Falls back to
+    // the premium body when the multilingual-audio flag is off, the
+    // fetch errors, or the item has no `story_segments` rows — so the
+    // existing experience never regresses (spec §27).
     if (item.kind == ContentKind.rhyme) {
-      return PremiumBakhedBody(item: item, accentColor: accentColor);
+      return StoryPlayerBody(item: item, accentColor: accentColor);
     }
 
     // 1. Check if eligible for typing practice

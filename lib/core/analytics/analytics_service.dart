@@ -69,6 +69,29 @@ class LearningAnalyticsEvents {
   static const audioModeSelected = 'audio_mode_selected';
   static const onboardingCompleted = 'onboarding_completed';
 
+  // Audio playback funnel (spec §16 — multilingual audio phases)
+  static const targetAudioPlayed = 'target_audio_played';
+  static const targetSlowAudioPlayed = 'target_slow_audio_played';
+  static const translationAudioPlayed = 'translation_audio_played';
+  static const audioCompleted = 'audio_completed';
+  static const audioFailed = 'audio_failed';
+  static const audioRepeated = 'audio_repeated';
+
+  // Stories & offline (Phase 6)
+  static const storyStarted = 'story_started';
+  static const storySegmentPlayed = 'story_segment_played';
+  static const bilingualModeEnabled = 'bilingual_mode_enabled';
+  static const courseDownloadStarted = 'course_download_started';
+  static const courseDownloadCompleted = 'course_download_completed';
+  static const courseDownloadFailed = 'course_download_failed';
+  static const translationFallbackUsed = 'translation_fallback_used';
+
+  // Audio quizzes & recordings (Phase 7)
+  static const listeningQuizStarted = 'listening_quiz_started';
+  static const listeningQuizAnswered = 'listening_quiz_answered';
+  static const recordingStarted = 'recording_started';
+  static const recordingPlayedBack = 'recording_played_back';
+
   // Ad events
   static const adImpression = 'ad_impression';
   static const adClick = 'ad_click';

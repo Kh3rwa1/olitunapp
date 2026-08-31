@@ -113,8 +113,9 @@ void updateScriptMode(WidgetRef ref, String mode) {
 }
 
 void updateAppLanguage(WidgetRef ref, String languageCode) {
-  final normalized =
-      kInterfaceLanguages.contains(languageCode) ? languageCode : 'en';
+  final normalized = kInterfaceLanguages.contains(languageCode)
+      ? languageCode
+      : 'en';
   final prefs = ref.read(sharedPreferencesProvider);
   final previousLanguage = ref.read(appLanguageProvider);
 

@@ -209,8 +209,9 @@ void cascadeTeachingLanguageForInterface(WidgetRef ref, String interfaceCode) {
   final prefs = ref.read(sharedPreferencesProvider);
   final customized = prefs.getBool(teachingLanguageCustomizedKey) ?? false;
   if (customized) return;
-  final teaching =
-      kTeachingLanguages.contains(interfaceCode) ? interfaceCode : 'en';
+  final teaching = kTeachingLanguages.contains(interfaceCode)
+      ? interfaceCode
+      : 'en';
   prefs.setString(teachingLanguageKey, teaching);
   ref.read(teachingLanguageProvider.notifier).state = teaching;
 }

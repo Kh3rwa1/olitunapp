@@ -26,6 +26,9 @@ analyzer:
   exclude:
     - "flutter/**"
     - "build/**"
+    - android/**
+    - ios/**
+    - web/**
   errors:
     avoid_print: warning
     deprecated_member_use_from_same_package: ignore

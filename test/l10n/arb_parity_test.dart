@@ -122,8 +122,7 @@ void main() {
           expect(
             message.contains('{$placeholder}'),
             isTrue,
-            reason:
-                'app_$locale.arb "$key" must interpolate {$placeholder}',
+            reason: 'app_$locale.arb "$key" must interpolate {$placeholder}',
           );
         }
       }

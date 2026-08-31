@@ -153,10 +153,10 @@ void main() {
         'learning_goals': ['speakSantali', 'flyToMoon', 'readOlChiki'],
       });
 
-      expect(
-        container.read(learningGoalsProvider),
-        {LearningGoal.speakSantali, LearningGoal.readOlChiki},
-      );
+      expect(container.read(learningGoalsProvider), {
+        LearningGoal.speakSantali,
+        LearningGoal.readOlChiki,
+      });
     });
   });
 }

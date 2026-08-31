@@ -29,8 +29,7 @@ class OnboardingV2Screen extends ConsumerStatefulWidget {
   final VoidCallback? onFinished;
 
   @override
-  ConsumerState<OnboardingV2Screen> createState() =>
-      _OnboardingV2ScreenState();
+  ConsumerState<OnboardingV2Screen> createState() => _OnboardingV2ScreenState();
 }
 
 class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
@@ -57,11 +56,9 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
 
   void _trackSelection(String eventName, Map<String, dynamic> metadata) {
     unawaited(
-      ref.read(learningAnalyticsServiceProvider).track(
-        eventName,
-        source: 'onboarding_v2',
-        metadata: metadata,
-      ),
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(eventName, source: 'onboarding_v2', metadata: metadata),
     );
   }
 
@@ -104,8 +101,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
       await ref.read(appwriteAuthServiceProvider).updatePrefs({
         'interfaceLanguage': prefs.getString('app_language') ?? 'en',
         'teachingLanguage': prefs.getString(teachingLanguageKey) ?? 'en',
-        'santaliProficiency':
-            prefs.getString(santaliProficiencyKey) ?? 'none',
+        'santaliProficiency': prefs.getString(santaliProficiencyKey) ?? 'none',
         'lessonAudioMode':
             prefs.getString(lessonAudioModeKey) ?? 'translationOnDemand',
         'learningGoals':
@@ -123,8 +119,9 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor:
-          isDark ? AppColors.darkBackground : AppColors.lightBackground,
+      backgroundColor: isDark
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: SafeArea(
         child: Column(
           children: [
@@ -293,10 +290,9 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                 isDark: isDark,
                 onTap: () {
                   updateSantaliProficiency(ref, value);
-                  _trackSelection(
-                    LearningAnalyticsEvents.proficiencySelected,
-                    {'proficiency': value.name},
-                  );
+                  _trackSelection(LearningAnalyticsEvents.proficiencySelected, {
+                    'proficiency': value.name,
+                  });
                 },
               ),
             ),
@@ -339,10 +335,7 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                   toggleLearningGoal(ref, value);
                   _trackSelection(
                     LearningAnalyticsEvents.learningGoalSelected,
-                    {
-                      'goal': value.name,
-                      'selected': !selected.contains(value),
-                    },
+                    {'goal': value.name, 'selected': !selected.contains(value)},
                   );
                 },
               ),
@@ -377,10 +370,9 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
                 isDark: isDark,
                 onTap: () {
                   updateLessonAudioMode(ref, value);
-                  _trackSelection(
-                    LearningAnalyticsEvents.audioModeSelected,
-                    {'audioMode': value.name},
-                  );
+                  _trackSelection(LearningAnalyticsEvents.audioModeSelected, {
+                    'audioMode': value.name,
+                  });
                 },
               ),
             ),
@@ -531,15 +523,15 @@ class _OptionCard extends StatelessWidget {
               color: selected
                   ? AppColors.primary.withValues(alpha: isDark ? 0.22 : 0.10)
                   : (isDark
-                      ? Colors.white.withValues(alpha: 0.05)
-                      : Colors.white),
+                        ? Colors.white.withValues(alpha: 0.05)
+                        : Colors.white),
               borderRadius: BorderRadius.circular(14),
               border: Border.all(
                 color: selected
                     ? AppColors.primary
                     : (isDark
-                        ? Colors.white.withValues(alpha: 0.10)
-                        : Colors.black.withValues(alpha: 0.06)),
+                          ? Colors.white.withValues(alpha: 0.10)
+                          : Colors.black.withValues(alpha: 0.06)),
                 width: selected ? 1.6 : 1,
               ),
             ),
@@ -558,8 +550,7 @@ class _OptionCard extends StatelessWidget {
                     title,
                     style: TextStyle(
                       fontSize: 15.5,
-                      fontWeight:
-                          selected ? FontWeight.w700 : FontWeight.w500,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                       color: isDark ? Colors.white : Colors.black87,
                     ),
                   ),

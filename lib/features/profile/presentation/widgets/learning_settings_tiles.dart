@@ -85,11 +85,13 @@ class TeachingLanguageTile extends ConsumerWidget {
                   Navigator.pop(sheetContext);
                   updateTeachingLanguage(ref, code);
                   unawaited(
-                    ref.read(learningAnalyticsServiceProvider).track(
-                      LearningAnalyticsEvents.teachingLanguageSelected,
-                      source: 'settings',
-                      metadata: {'teachingLanguage': code},
-                    ),
+                    ref
+                        .read(learningAnalyticsServiceProvider)
+                        .track(
+                          LearningAnalyticsEvents.teachingLanguageSelected,
+                          source: 'settings',
+                          metadata: {'teachingLanguage': code},
+                        ),
                   );
                 },
               ),
@@ -178,11 +180,13 @@ class LessonAudioModeTile extends ConsumerWidget {
                   Navigator.pop(sheetContext);
                   updateLessonAudioMode(ref, mode);
                   unawaited(
-                    ref.read(learningAnalyticsServiceProvider).track(
-                      LearningAnalyticsEvents.audioModeSelected,
-                      source: 'settings',
-                      metadata: {'audioMode': mode.name},
-                    ),
+                    ref
+                        .read(learningAnalyticsServiceProvider)
+                        .track(
+                          LearningAnalyticsEvents.audioModeSelected,
+                          source: 'settings',
+                          metadata: {'audioMode': mode.name},
+                        ),
                   );
                 },
               ),

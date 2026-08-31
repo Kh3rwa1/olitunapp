@@ -112,17 +112,19 @@ void main() {
       );
     });
 
-    test('teaching falls back to legacy interface when stored value invalid',
-        () async {
-      final container = await _containerWith({
-        'teaching_language': 'fr',
-        'app_language': 'bn',
-      });
+    test(
+      'teaching falls back to legacy interface when stored value invalid',
+      () async {
+        final container = await _containerWith({
+          'teaching_language': 'fr',
+          'app_language': 'bn',
+        });
 
-      // 'fr' is not teachable; provider falls back to interface language.
-      expect(container.read(teachingLanguageProvider), 'bn');
-      expect(container.read(effectiveTeachingLanguageProvider), 'bn');
-    });
+        // 'fr' is not teachable; provider falls back to interface language.
+        expect(container.read(teachingLanguageProvider), 'bn');
+        expect(container.read(effectiveTeachingLanguageProvider), 'bn');
+      },
+    );
   });
 
   group('mapLegacyLearnerLevel', () {

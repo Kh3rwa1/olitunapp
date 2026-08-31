@@ -57,13 +57,11 @@ class _OnboardingV2ScreenState extends ConsumerState<OnboardingV2Screen> {
 
   void _trackSelection(String eventName, Map<String, dynamic> metadata) {
     unawaited(
-      ref
-          .read(learningAnalyticsServiceProvider)
-          .track(
-            eventName,
-            source: 'onboarding_v2',
-            metadata: metadata,
-          ),
+      ref.read(learningAnalyticsServiceProvider).track(
+        eventName,
+        source: 'onboarding_v2',
+        metadata: metadata,
+      ),
     );
   }
 

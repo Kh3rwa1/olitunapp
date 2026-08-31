@@ -289,6 +289,7 @@ class ContentBlockListSection extends StatelessWidget {
               ),
               child: ReorderableListView(
                 shrinkWrap: true,
+                // ignore: deprecated_member_use
                 onReorder: onReorderBlocks,
                 children: [
                   for (int i = 0; i < blocks.length; i++)

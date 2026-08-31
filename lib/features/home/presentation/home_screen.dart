@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:go_router/go_router.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/providers/providers.dart';
@@ -16,6 +17,7 @@ import 'widgets/today_mission_card.dart';
 import 'widgets/home_content_grid.dart';
 import 'providers/home_prefetch_provider.dart';
 import 'widgets/home_banners_carousel.dart';
+import 'widgets/learning_path_card.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
 
@@ -141,6 +143,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   RepaintBoundary(
                     child: NextBestActionCard(nextLessonId: nextLesson?.id),
                   ),
+                  // Phase 7 (spec §15): proficiency-based path card, gated on
+                  // the audio-quizzes flag so flag-off keeps home identical.
+                  if (ref.watch(featureFlagsProvider).audioQuizzesEnabled) ...[
+                    const SizedBox(height: 16),
+                    const RepaintBoundary(child: LearningPathCard()),
+                  ],
                   const SizedBox(height: 16),
                   const RepaintBoundary(
                     child: NativeAdWidget(

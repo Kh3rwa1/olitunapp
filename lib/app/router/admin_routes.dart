@@ -22,6 +22,7 @@ import '../../features/admin/presentation/analytics/admin_analytics_screen.dart'
 import '../../features/admin/presentation/gamification/admin_gamification_screen.dart';
 import '../../features/admin/presentation/bakhed/bakhed_hub_screen.dart';
 import '../../features/admin/presentation/bakhed/bakhed_editor_screen.dart';
+import '../../features/admin/presentation/review/admin_review_screen.dart';
 import 'route_names.dart';
 
 List<RouteBase> buildAdminRoutes({
@@ -174,6 +175,10 @@ List<RouteBase> buildAdminRoutes({
         adminRoute(
           path: '/admin/binti-waitlist',
           builder: (context, state) => const AdminBintiWaitlistScreen(),
+        ),
+        adminRoute(
+          path: '/admin/review',
+          builder: (context, state) => const AdminReviewScreen(),
         ),
       ],
     ),

@@ -32,6 +32,33 @@
       ]
     },
     {
+      "$id": "reviewContent",
+      "name": "reviewContent",
+      "runtime": "node-22.0",
+      "execute": [
+        "users"
+      ],
+      "events": [],
+      "schedule": "",
+      "timeout": 60,
+      "path": "functions/reviewContent",
+      "entrypoint": "src/main.js",
+      "commands": "npm install",
+      "ignore": [
+        "node_modules",
+        ".npm"
+      ],
+      "enabled": true,
+      "logging": true,
+      "scopes": [
+        "databases.read",
+        "databases.write",
+        "documents.read",
+        "documents.write",
+        "users.read"
+      ]
+    },
+    {
       "$id": "6a007db60024418c0997",
       "name": "translator",
       "runtime": "node-22.0",

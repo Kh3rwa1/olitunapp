@@ -212,6 +212,13 @@ class AdminSidebar extends ConsumerWidget {
                       onTap: () => _navigate(context, '/admin/quizzes'),
                       isCompact: isCompact,
                     ),
+                    AdminNavItem(
+                      icon: Icons.fact_check_rounded,
+                      label: 'Content Review',
+                      isSelected: location == '/admin/review',
+                      onTap: () => _navigate(context, '/admin/review'),
+                      isCompact: isCompact,
+                    ),
                   ],
                 ),
 

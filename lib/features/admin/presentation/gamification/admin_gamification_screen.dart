@@ -4,15 +4,17 @@ import 'package:appwrite/appwrite.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
 import '../../../../core/api/appwrite_db_service.dart';
-import '../../../../core/theme/admin_tokens.dart';
-import '../../../../core/theme/app_colors.dart';
 import '../widgets/admin_empty_state.dart';
 import '../widgets/admin_page_header.dart';
 import '../widgets/common/admin_modal_sheet.dart';
-import '../settings/controllers/admin_maintenance_controller.dart';
+import 'models/gamification_section.dart';
+import 'views/gamification_analytics_view.dart';
+import 'views/gamification_maintenance_view.dart';
+import 'views/gamification_overview_view.dart';
+import 'widgets/gamification_row_card.dart';
+import 'widgets/gamification_widgets.dart';
 
 class AdminGamificationScreen extends ConsumerStatefulWidget {
   const AdminGamificationScreen({super.key, required this.section});
@@ -24,217 +26,24 @@ class AdminGamificationScreen extends ConsumerStatefulWidget {
       _AdminGamificationScreenState();
 }
 
-class _GamificationSection {
-  const _GamificationSection({
-    required this.key,
-    required this.title,
-    required this.subtitle,
-    required this.collectionId,
-    required this.idField,
-    required this.icon,
-    required this.editableFields,
-    required this.defaultDraft,
-    this.readOnly = false,
-  });
-
-  final String key;
-  final String title;
-  final String subtitle;
-  final String collectionId;
-  final String idField;
-  final IconData icon;
-  final List<String> editableFields;
-  final Map<String, dynamic> defaultDraft;
-  final bool readOnly;
-}
-
-const _sections = <String, _GamificationSection>{
-  'badges': _GamificationSection(
-    key: 'badges',
-    title: 'Badges',
-    subtitle: 'Names, descriptions, icons, categories, and unlock rules.',
-    collectionId: 'badges',
-    idField: 'badgeId',
-    icon: Icons.emoji_events_rounded,
-    editableFields: [
-      'badgeId',
-      'name',
-      'description',
-      'category',
-      'icon',
-      'target',
-      'rewardStars',
-      'unlockRule',
-      'status',
-      'isActive',
-      'sortOrder',
-    ],
-    defaultDraft: {
-      'name': 'First Lesson',
-      'description': 'Complete your first Santali learning step.',
-      'category': 'learning',
-      'icon': '🏆',
-      'target': 1,
-      'rewardStars': 10,
-      'unlockRule': '{}',
-      'status': 'draft',
-      'isActive': true,
-      'sortOrder': 0,
-    },
-  ),
-  'config': _GamificationSection(
-    key: 'config',
-    title: 'Gamification Config',
-    subtitle: 'Guardrailed global limits for badges, missions, and Bakhed.',
-    collectionId: 'gamification_config',
-    idField: 'configId',
-    icon: Icons.tune_rounded,
-    editableFields: [
-      'configId',
-      'bakhedCompletionThreshold',
-      'quickWinEnabled',
-      'badgesEnabled',
-      'mistakeReviewEnabled',
-    ],
-    defaultDraft: {
-      'configId': 'default',
-      'bakhedCompletionThreshold': 80,
-      'quickWinEnabled': true,
-      'badgesEnabled': true,
-      'mistakeReviewEnabled': true,
-    },
-  ),
-  'audit_logs': _GamificationSection(
-    key: 'audit_logs',
-    title: 'Audit Logs',
-    subtitle: 'Admin changes, reward operations, and maintenance history.',
-    collectionId: 'admin_audit_logs',
-    idField: 'targetId',
-    icon: Icons.history_rounded,
-    editableFields: [],
-    defaultDraft: {},
-    readOnly: true,
-  ),
-  'learning_analytics_events': _GamificationSection(
-    key: 'learning_analytics_events',
-    title: 'Learning Analytics Events',
-    subtitle:
-        'Privacy-safe product analytics for lessons, quizzes, streaks, and missions.',
-    collectionId: 'learning_analytics_events',
-    idField: 'eventId',
-    icon: Icons.insights_rounded,
-    editableFields: [],
-    defaultDraft: {},
-    readOnly: true,
-  ),
-  'learning_analytics_daily_rollups': _GamificationSection(
-    key: 'learning_analytics_daily_rollups',
-    title: 'Learning Analytics Rollups',
-    subtitle:
-        'Nightly aggregated event totals for the admin analytics dashboard.',
-    collectionId: 'learning_analytics_daily_rollups',
-    idField: 'rollupId',
-    icon: Icons.query_stats_rounded,
-    editableFields: [],
-    defaultDraft: {},
-    readOnly: true,
-  ),
-  'bakhed_lyrics': _GamificationSection(
-    key: 'bakhed_lyrics',
-    title: 'Bakhed Lyrics',
-    subtitle: 'Timed Ol Chiki, Latin, and meaning lines for lyric mode.',
-    collectionId: 'bakhed_lyrics',
-    idField: 'bakhedId',
-    icon: Icons.lyrics_rounded,
-    editableFields: [
-      'bakhedId',
-      'lineIndex',
-      'startMs',
-      'endMs',
-      'olChiki',
-      'latin',
-      'meaning',
-    ],
-    defaultDraft: {
-      'bakhedId': 'seed_1',
-      'lineIndex': 0,
-      'startMs': 0,
-      'endMs': 0,
-      'olChiki': '',
-      'latin': '',
-      'meaning': '',
-    },
-  ),
-  'bakhed_vocabulary': _GamificationSection(
-    key: 'bakhed_vocabulary',
-    title: 'Bakhed Vocabulary',
-    subtitle: 'Words learners practice after listening to a Bakhed.',
-    collectionId: 'bakhed_vocabulary',
-    idField: 'bakhedId',
-    icon: Icons.menu_book_rounded,
-    editableFields: [
-      'bakhedId',
-      'olChiki',
-      'latin',
-      'meaning',
-      'audioFileId',
-      'sortOrder',
-    ],
-    defaultDraft: {
-      'bakhedId': 'seed_1',
-      'olChiki': '',
-      'latin': '',
-      'meaning': '',
-      'audioFileId': '',
-      'sortOrder': 0,
-    },
-  ),
-  'bakhed_notes': _GamificationSection(
-    key: 'bakhed_notes',
-    title: 'Bakhed Cultural Notes',
-    subtitle:
-        'Published cultural context, source notes, and respectful learning copy.',
-    collectionId: 'bakhed_cultural_notes',
-    idField: 'noteId',
-    icon: Icons.library_books_rounded,
-    editableFields: [
-      'noteId',
-      'bakhedId',
-      'title',
-      'body',
-      'source',
-      'isPublished',
-    ],
-    defaultDraft: {
-      'bakhedId': 'seed_1',
-      'title': 'Cultural Note',
-      'body': '',
-      'source': '',
-      'isPublished': false,
-    },
-  ),
-};
-
 class _AdminGamificationScreenState
     extends ConsumerState<AdminGamificationScreen> {
   String _search = '';
   String _status = 'all';
   int _reload = 0;
-  bool _maintenanceBusy = false;
-  String? _maintenanceMessage;
 
-  _GamificationSection? get _section => _sections[widget.section];
+  GamificationSection? get _section => gamificationSections[widget.section];
 
   @override
   Widget build(BuildContext context) {
     if (widget.section == 'overview') {
-      return _buildOverview(context);
+      return const GamificationOverviewView();
     }
     if (widget.section == 'analytics') {
-      return _buildAnalytics(context);
+      return GamificationAnalyticsView(reload: _reload);
     }
     if (widget.section == 'maintenance') {
-      return _buildMaintenance(context);
+      return const GamificationMaintenanceView();
     }
 
     final section = _section;
@@ -308,229 +117,16 @@ class _AdminGamificationScreenState
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: rows.length,
                   separatorBuilder: (_, _) => const SizedBox(height: 12),
-                  itemBuilder: (context, index) =>
-                      _buildRowCard(context, section, rows[index]),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOverview(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 860;
-    final cards = _sections.values
-        .where((section) => section.key != 'audit_logs')
-        .toList(growable: false);
-
-    return Padding(
-      padding: EdgeInsets.all(isWide ? 32 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AdminPageHeader(
-            title: 'Gamification CMS',
-            subtitle:
-                'Admin-managed copy, badges, circles, missions, rewards, config, and scoring traces.',
-            eyebrow: 'PRODUCT OPS',
-          ),
-          const SizedBox(height: 24),
-          Expanded(
-            child: GridView.builder(
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                crossAxisCount: isWide ? 3 : 1,
-                childAspectRatio: isWide ? 2.4 : 3.4,
-                crossAxisSpacing: 16,
-                mainAxisSpacing: 16,
-              ),
-              itemCount: cards.length,
-              itemBuilder: (context, index) {
-                final section = cards[index];
-                return _OverviewCard(
-                  section: section,
-                  onTap: () => context.go(_pathForSection(section.key)),
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildAnalytics(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 860;
-    return Padding(
-      padding: EdgeInsets.all(isWide ? 32 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const AdminPageHeader(
-            title: 'Learning Health Analytics',
-            subtitle:
-                'Real product signals across circles, rewards, mistakes, Bakhed, and content quality.',
-            eyebrow: 'PRODUCT OPS',
-          ),
-          const SizedBox(height: 20),
-          Expanded(
-            child: FutureBuilder<Map<String, int>>(
-              future: _loadAnalyticsMetrics(_reload),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                if (snapshot.hasError) {
-                  return Center(
-                    child: SelectableText(
-                      'Could not load analytics: ${snapshot.error}',
-                    ),
-                  );
-                }
-                final metrics = snapshot.data ?? const <String, int>{};
-                return GridView(
-                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: isWide ? 4 : 2,
-                    childAspectRatio: isWide ? 1.8 : 1.35,
-                    crossAxisSpacing: 14,
-                    mainAxisSpacing: 14,
-                  ),
-                  children: [
-                    for (final entry in metrics.entries)
-                      _OpsMetricCard(label: entry.key, value: entry.value),
-                  ],
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Future<Map<String, int>> _loadAnalyticsMetrics(int reload) async {
-    final db = ref.read(appwriteDbServiceProvider);
-    Future<int> count(String collectionId, {List<String>? queries}) async {
-      try {
-        final rows = await db.listDocuments(
-          collectionId,
-          queries: [Query.limit(500), ...?queries],
-          paginate: false,
-        );
-        return rows.length;
-      } catch (_) {
-        return 0;
-      }
-    }
-
-    final today = DateTime.now().toUtc().toIso8601String().substring(0, 10);
-    final values = await Future.wait<int>([
-      count(
-        'learning_analytics_events',
-        queries: [Query.greaterThan('occurredAt', today)],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [Query.equal('eventName', 'lesson_completed')],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [Query.equal('eventName', 'quiz_attempted')],
-      ),
-      count(
-        'learning_analytics_events',
-        queries: [Query.equal('eventName', 'streak_milestone')],
-      ),
-      count('learning_analytics_daily_rollups'),
-      count('user_badges', queries: [Query.equal('isUnlocked', true)]),
-      count('mistake_review_sessions'),
-      count('user_mistakes', queries: [Query.equal('isMastered', false)]),
-      count(
-        'bakhed_listening_progress',
-        queries: [Query.equal('completed80Percent', true)],
-      ),
-      count('bakhed_lyrics'),
-      count('bakhed_vocabulary'),
-      count(
-        'bakhed_cultural_notes',
-        queries: [Query.equal('isPublished', true)],
-      ),
-    ]);
-    return {
-      'Learning events today': values[0],
-      'Lessons completed': values[1],
-      'Quiz attempts': values[2],
-      'Streak milestones': values[3],
-      'Daily analytics rollups': values[4],
-      'Unlocked badges': values[5],
-      'Mistake reviews completed': values[6],
-      'Mistakes needing practice': values[7],
-      'Bakhed 80% completions': values[8],
-      'Bakhed lyric lines': values[9],
-      'Bakhed vocabulary words': values[10],
-      'Published cultural notes': values[11],
-    };
-  }
-
-  Widget _buildMaintenance(BuildContext context) {
-    final isWide = MediaQuery.of(context).size.width > 860;
-    return Padding(
-      padding: EdgeInsets.all(isWide ? 32 : 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          AdminPageHeader(
-            title: 'Maintenance',
-            subtitle:
-                'Backups, schema health, and production readiness checks without exposing secrets.',
-            eyebrow: 'PRODUCT OPS',
-            actions: [
-              ElevatedButton.icon(
-                onPressed: _maintenanceBusy ? null : _createContentBackup,
-                icon: const Icon(Icons.backup_rounded, size: 18),
-                label: const Text('Create backup'),
-              ),
-              IconButton(
-                tooltip: 'Refresh health',
-                onPressed: () => setState(() => _reload++),
-                icon: const Icon(Icons.refresh_rounded),
-              ),
-            ],
-          ),
-          if (_maintenanceMessage != null) ...[
-            const SizedBox(height: 12),
-            SelectableText(_maintenanceMessage!),
-          ],
-          const SizedBox(height: 20),
-          Expanded(
-            child: FutureBuilder<Map<String, bool>>(
-              future: _loadSchemaHealth(_reload),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                }
-                final rows = snapshot.data ?? const <String, bool>{};
-                return ListView.separated(
-                  itemCount: rows.length,
-                  separatorBuilder: (_, _) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
-                    final entry = rows.entries.elementAt(index);
-                    return ListTile(
-                      leading: Icon(
-                        entry.value
-                            ? Icons.check_circle_rounded
-                            : Icons.error_rounded,
-                        color: entry.value
-                            ? AppColors.success
-                            : AppColors.error,
-                      ),
-                      title: Text(entry.key),
-                      subtitle: Text(
-                        entry.value
-                            ? 'Available'
-                            : 'Missing or not readable with current admin permissions',
-                      ),
+                    final row = rows[index];
+                    return GamificationRowCard(
+                      section: section,
+                      row: row,
+                      onPreview: () => _showPreview(section, row),
+                      onEdit: () => _editRow(section, row),
+                      onPublish: () => _updateStatus(section, row, 'published'),
+                      onUnpublish: () => _updateStatus(section, row, 'draft'),
+                      onArchive: () => _updateStatus(section, row, 'archived'),
                     );
                   },
                 );
@@ -540,67 +136,6 @@ class _AdminGamificationScreenState
         ],
       ),
     );
-  }
-
-  Future<Map<String, bool>> _loadSchemaHealth(int reload) async {
-    final requiredCollections = [
-      'bravo_messages',
-      'badges',
-      'user_badges',
-      'mission_templates',
-      'reward_messages',
-      'quiz_feedback_messages',
-      'gamification_config',
-      'admin_audit_logs',
-      'learning_analytics_events',
-      'learning_analytics_daily_rollups',
-      'reward_events',
-      'user_mistakes',
-      'mistake_review_sessions',
-      'bakhed_lyrics',
-      'bakhed_vocabulary',
-      'bakhed_cultural_notes',
-      'bakhed_listening_progress',
-    ];
-    final db = ref.read(appwriteDbServiceProvider);
-    final entries = <String, bool>{};
-    for (final collection in requiredCollections) {
-      try {
-        await db.listDocuments(
-          collection,
-          queries: [Query.limit(1)],
-          paginate: false,
-        );
-        entries[collection] = true;
-      } catch (_) {
-        entries[collection] = false;
-      }
-    }
-    return entries;
-  }
-
-  Future<void> _createContentBackup() async {
-    setState(() {
-      _maintenanceBusy = true;
-      _maintenanceMessage = 'Creating backup...';
-    });
-    try {
-      final fileId = await AdminMaintenanceController(ref).backupContent();
-      setState(() {
-        _maintenanceMessage = 'Backup created: ${fileId ?? 'completed'}';
-      });
-      await _audit('backup_created', 'admin_backups', fileId ?? 'unknown', {
-        'source': 'maintenance_screen',
-      });
-    } catch (e) {
-      setState(() {
-        _maintenanceMessage = 'Backup failed: $e';
-      });
-    } finally {
-      if (mounted) {
-        setState(() => _maintenanceBusy = false);
-      }
-    }
   }
 
   Widget _buildFilters(BuildContext context) {
@@ -641,106 +176,8 @@ class _AdminGamificationScreenState
     );
   }
 
-  Widget _buildRowCard(
-    BuildContext context,
-    _GamificationSection section,
-    Map<String, dynamic> row,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    final title = _titleFor(row, section);
-    final subtitle = _subtitleFor(row);
-    final status = row['status']?.toString() ?? '';
-    final active = row['isActive'] == true;
-    final supportsStatus = section.editableFields.contains('status');
-    final supportsPublish =
-        supportsStatus || section.collectionId == 'bakhed_cultural_notes';
-
-    return Card(
-      elevation: 0,
-      color: AdminTokens.raised(isDark),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: AdminTokens.border(isDark)),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: AdminTokens.accentSoft(isDark),
-                  child: Icon(section.icon, color: AdminTokens.accent),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: AdminTokens.cardTitle(isDark)),
-                      if (subtitle.isNotEmpty)
-                        Text(
-                          subtitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AdminTokens.body(isDark),
-                        ),
-                    ],
-                  ),
-                ),
-                if (status.isNotEmpty)
-                  _StatusPill(label: status, color: _statusColor(status)),
-                if (active) ...[
-                  const SizedBox(width: 8),
-                  const _StatusPill(label: 'active', color: AppColors.success),
-                ],
-              ],
-            ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: [
-                OutlinedButton.icon(
-                  onPressed: () => _showPreview(section, row),
-                  icon: const Icon(Icons.visibility_rounded, size: 16),
-                  label: const Text('Preview'),
-                ),
-                if (!section.readOnly)
-                  OutlinedButton.icon(
-                    onPressed: () => _editRow(section, row),
-                    icon: const Icon(Icons.edit_rounded, size: 16),
-                    label: const Text('Edit'),
-                  ),
-                if (!section.readOnly && supportsPublish)
-                  OutlinedButton.icon(
-                    onPressed: () => _updateStatus(section, row, 'published'),
-                    icon: const Icon(Icons.publish_rounded, size: 16),
-                    label: const Text('Publish'),
-                  ),
-                if (!section.readOnly && supportsPublish)
-                  OutlinedButton.icon(
-                    onPressed: () => _updateStatus(section, row, 'draft'),
-                    icon: const Icon(Icons.visibility_off_rounded, size: 16),
-                    label: const Text('Unpublish'),
-                  ),
-                if (!section.readOnly && supportsStatus)
-                  OutlinedButton.icon(
-                    onPressed: () => _updateStatus(section, row, 'archived'),
-                    icon: const Icon(Icons.archive_rounded, size: 16),
-                    label: const Text('Archive'),
-                  ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
   Future<List<Map<String, dynamic>>> _loadRows(
-    _GamificationSection section,
+    GamificationSection section,
     int reload,
   ) async {
     final db = ref.read(appwriteDbServiceProvider);
@@ -772,7 +209,7 @@ class _AdminGamificationScreenState
         .toList(growable: false);
   }
 
-  Future<void> _createDraft(_GamificationSection section) async {
+  Future<void> _createDraft(GamificationSection section) async {
     final now = DateTime.now().toUtc().toIso8601String();
     final generatedId =
         '${section.key}_${DateTime.now().millisecondsSinceEpoch}';
@@ -798,7 +235,7 @@ class _AdminGamificationScreenState
   }
 
   Future<void> _updateStatus(
-    _GamificationSection section,
+    GamificationSection section,
     Map<String, dynamic> row,
     String status,
   ) async {
@@ -819,7 +256,7 @@ class _AdminGamificationScreenState
   }
 
   Future<void> _editRow(
-    _GamificationSection section,
+    GamificationSection section,
     Map<String, dynamic> row,
   ) async {
     final controllers = {
@@ -942,7 +379,7 @@ class _AdminGamificationScreenState
     }
   }
 
-  void _showPreview(_GamificationSection section, Map<String, dynamic> row) {
+  void _showPreview(GamificationSection section, Map<String, dynamic> row) {
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
@@ -953,11 +390,11 @@ class _AdminGamificationScreenState
             spacing: 16,
             runSpacing: 16,
             children: [
-              _PreviewCard(label: 'Light', row: row, dark: false),
-              _PreviewCard(label: 'Dark', row: row, dark: true),
+              GamificationPreviewCard(label: 'Light', row: row, dark: false),
+              GamificationPreviewCard(label: 'Dark', row: row, dark: true),
               SizedBox(
                 width: 360,
-                child: _PreviewCard(
+                child: GamificationPreviewCard(
                   label: 'Small Screen',
                   row: row,
                   dark: false,
@@ -970,239 +407,6 @@ class _AdminGamificationScreenState
           TextButton(
             onPressed: () => Navigator.pop(context),
             child: const Text('Close'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _titleFor(Map<String, dynamic> row, _GamificationSection section) {
-    for (final key in ['title', 'name', section.idField, 'action']) {
-      final value = row[key]?.toString();
-      if (value != null && value.trim().isNotEmpty) return value;
-    }
-    return row['id']?.toString() ?? 'Untitled';
-  }
-
-  String _subtitleFor(Map<String, dynamic> row) {
-    for (final key in [
-      'body',
-      'description',
-      'subtitle',
-      'meaning',
-      'latin',
-      'olChiki',
-      'trigger',
-      'type',
-      'sourceId',
-    ]) {
-      final value = row[key]?.toString();
-      if (value != null && value.trim().isNotEmpty) return value;
-    }
-    return '';
-  }
-
-  Color _statusColor(String status) {
-    return switch (status) {
-      'published' => AppColors.success,
-      'archived' => Colors.blueGrey,
-      'draft' => AppColors.duoOrange,
-      _ => AppColors.primary,
-    };
-  }
-
-  String _pathForSection(String key) {
-    return switch (key) {
-      'badges' => '/admin/gamification/badges',
-      'config' => '/admin/gamification/config',
-      'bakhed_lyrics' => '/admin/gamification/bakhed/lyrics',
-      'bakhed_vocabulary' => '/admin/gamification/bakhed/vocabulary',
-      'bakhed_notes' => '/admin/gamification/bakhed/cultural-notes',
-      _ => '/admin/gamification',
-    };
-  }
-}
-
-class _OverviewCard extends StatelessWidget {
-  const _OverviewCard({required this.section, required this.onTap});
-
-  final _GamificationSection section;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: AdminTokens.raised(isDark),
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: AdminTokens.border(isDark)),
-        ),
-        child: Row(
-          children: [
-            CircleAvatar(
-              backgroundColor: AdminTokens.accentSoft(isDark),
-              child: Icon(section.icon, color: AdminTokens.accent),
-            ),
-            const SizedBox(width: 14),
-            Expanded(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(section.title, style: AdminTokens.cardTitle(isDark)),
-                  const SizedBox(height: 4),
-                  Text(
-                    section.subtitle,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AdminTokens.body(isDark),
-                  ),
-                ],
-              ),
-            ),
-            const Icon(Icons.chevron_right_rounded),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _StatusPill extends StatelessWidget {
-  const _StatusPill({required this.label, required this.color});
-
-  final String label;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-      decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.12),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: Text(
-        label.toUpperCase(),
-        style: TextStyle(
-          color: color,
-          fontSize: 11,
-          fontWeight: FontWeight.w900,
-        ),
-      ),
-    );
-  }
-}
-
-class _OpsMetricCard extends StatelessWidget {
-  const _OpsMetricCard({required this.label, required this.value});
-
-  final String label;
-  final int value;
-
-  @override
-  Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: AdminTokens.raised(isDark),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AdminTokens.border(isDark)),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            value.toString(),
-            style: const TextStyle(
-              color: AdminTokens.accent,
-              fontSize: 30,
-              fontWeight: FontWeight.w900,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            label,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: AdminTokens.body(isDark),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _PreviewCard extends StatelessWidget {
-  const _PreviewCard({
-    required this.label,
-    required this.row,
-    required this.dark,
-  });
-
-  final String label;
-  final Map<String, dynamic> row;
-  final bool dark;
-
-  @override
-  Widget build(BuildContext context) {
-    final title =
-        row['title']?.toString() ??
-        row['name']?.toString() ??
-        row['rewardLabel']?.toString() ??
-        'Preview';
-    final body =
-        row['body']?.toString() ??
-        row['description']?.toString() ??
-        row['subtitle']?.toString() ??
-        'No preview copy yet.';
-    final icon = row['icon']?.toString() ?? '🌱';
-
-    return Container(
-      width: 300,
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: dark ? const Color(0xFF111827) : Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: dark ? Colors.white12 : Colors.black12),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            label,
-            style: TextStyle(
-              color: dark ? Colors.white54 : Colors.black54,
-              fontWeight: FontWeight.w800,
-              fontSize: 12,
-            ),
-          ),
-          const SizedBox(height: 12),
-          Text(icon, style: const TextStyle(fontSize: 28)),
-          const SizedBox(height: 8),
-          Text(
-            title,
-            style: TextStyle(
-              color: dark ? Colors.white : Colors.black87,
-              fontWeight: FontWeight.w900,
-              fontSize: 18,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            body,
-            style: TextStyle(
-              color: dark ? Colors.white70 : Colors.black54,
-              height: 1.35,
-            ),
           ),
         ],
       ),

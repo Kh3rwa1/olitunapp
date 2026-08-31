@@ -905,6 +905,126 @@ const collections = [
       { key: 'idx_user_file', type: 'unique', attributes: ['userId', 'bucketId', 'fileId'] },
     ],
   },
+  // ─── Multilingual / audio-first learning (Phase 2) ───
+  // Teaching-language overlay for Santali content items. One row per
+  // (contentKind, contentId, languageCode). Learners read via the
+  // default admin-write permission set (users read, admin team
+  // write); only approved rows are surfaced by app queries and
+  // mobile clients can never write or approve.
+  {
+    id: 'localized_contents',
+    name: 'Localized Contents',
+    attrs: [
+      { type: 'string', key: 'contentKind', size: 30, required: true },
+      { type: 'string', key: 'contentId', size: 100, required: true },
+      { type: 'string', key: 'languageCode', size: 10, required: true },
+      { type: 'string', key: 'meaning', size: 2048, required: false },
+      { type: 'string', key: 'explanation', size: 4096, required: false },
+      { type: 'string', key: 'hint', size: 1024, required: false },
+      { type: 'string', key: 'grammarNote', size: 2048, required: false },
+      { type: 'string', key: 'exampleTranslation', size: 2048, required: false },
+      { type: 'string', key: 'pronunciationGuide', size: 1024, required: false },
+      {
+        type: 'string',
+        key: 'reviewStatus',
+        size: 30,
+        required: true,
+        default: 'needsReview',
+      },
+      { type: 'string', key: 'reviewedBy', size: 100, required: false },
+      { type: 'string', key: 'reviewedAt', size: 40, required: false },
+      { type: 'integer', key: 'version', required: false, default: 1 },
+    ],
+    indexes: [
+      { key: 'idx_localized_content_item', type: 'key', attributes: ['contentKind', 'contentId'] },
+      { key: 'idx_localized_content_lang', type: 'key', attributes: ['contentKind', 'languageCode'] },
+      {
+        key: 'idx_localized_content_unique',
+        type: 'unique',
+        attributes: ['contentKind', 'contentId', 'languageCode'],
+      },
+    ],
+  },
+  // Audio tracks attached to content items. Santali tracks are
+  // human-recorded via the admin CMS (never synthetic); teaching-
+  // language tracks may be generated server-side with Sarvam TTS and
+  // carry provider/model/voice metadata plus a contentHash for
+  // idempotent generation. Learners read playable tracks; generation
+  // and approval happen only in admin/backend code (API keys bypass
+  // permissions server-side, clients never hold approval rights).
+  // NOTE: Appwrite skips documents with null attribute values in
+  // unique indexes, so rows without a contentHash/segmentId are not
+  // deduplicated by the index itself — the backfill/generation tools
+  // enforce the composite idempotency key by lookup.
+  {
+    id: 'audio_tracks',
+    name: 'Audio Tracks',
+    attrs: [
+      { type: 'string', key: 'contentKind', size: 30, required: true },
+      { type: 'string', key: 'contentId', size: 100, required: true },
+      { type: 'string', key: 'segmentId', size: 100, required: false },
+      { type: 'string', key: 'languageCode', size: 10, required: true },
+      { type: 'string', key: 'trackType', size: 40, required: true },
+      { type: 'string', key: 'audioUrl', size: 1024, required: false },
+      { type: 'string', key: 'storageFileId', size: 100, required: false },
+      { type: 'integer', key: 'durationMs', required: false },
+      { type: 'string', key: 'provider', size: 50, required: false },
+      { type: 'string', key: 'model', size: 100, required: false },
+      { type: 'string', key: 'voiceId', size: 100, required: false },
+      { type: 'boolean', key: 'isHumanRecorded', required: false, default: false },
+      { type: 'string', key: 'playbackRatePurpose', size: 30, required: false },
+      { type: 'string', key: 'contentHash', size: 128, required: false },
+      {
+        type: 'string',
+        key: 'generationStatus',
+        size: 30,
+        required: true,
+        default: 'notRequested',
+      },
+      {
+        type: 'string',
+        key: 'reviewStatus',
+        size: 30,
+        required: true,
+        default: 'needsReview',
+      },
+      { type: 'string', key: 'errorMessage', size: 1024, required: false },
+      { type: 'string', key: 'createdAt', size: 40, required: false },
+      { type: 'string', key: 'updatedAt', size: 40, required: false },
+    ],
+    indexes: [
+      { key: 'idx_audio_track_item', type: 'key', attributes: ['contentKind', 'contentId'] },
+      { key: 'idx_audio_track_lang', type: 'key', attributes: ['contentKind', 'languageCode'] },
+      { key: 'idx_audio_track_type', type: 'key', attributes: ['contentKind', 'trackType'] },
+      { key: 'idx_audio_track_segment', type: 'key', attributes: ['contentId', 'segmentId'] },
+      {
+        key: 'idx_audio_track_idempotency',
+        type: 'unique',
+        attributes: ['contentKind', 'contentId', 'segmentId', 'languageCode', 'trackType', 'contentHash'],
+      },
+    ],
+  },
+  // Story segments: ordered chunks of Santali story text with
+  // Romanization, translations and per-segment audio (consumed by
+  // the segment player in later phases).
+  {
+    id: 'story_segments',
+    name: 'Story Segments',
+    attrs: [
+      { type: 'string', key: 'storyId', size: 100, required: true },
+      { type: 'integer', key: 'order', required: true },
+      { type: 'string', key: 'textOlChiki', size: 4096, required: true },
+      { type: 'string', key: 'textLatin', size: 4096, required: false },
+      { type: 'string', key: 'translations', size: 16384, required: false },
+      { type: 'integer', key: 'startMs', required: false },
+      { type: 'integer', key: 'endMs', required: false },
+      { type: 'string', key: 'imageUrl', size: 1024, required: false },
+      { type: 'string', key: 'vocabularyRefs', size: 4096, required: false },
+    ],
+    indexes: [
+      { key: 'idx_story_segment_story', type: 'key', attributes: ['storyId', 'order'] },
+    ],
+  },
 ];
 
 // ─── STORAGE BUCKETS ───

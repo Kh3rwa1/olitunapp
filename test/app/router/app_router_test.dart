@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:itun/app/router/app_router.dart';
+import 'package:itun/features/main/presentation/main_shell_screen.dart';
 
 void main() {
   group('Router Guards & Redirect Invariants', () {
@@ -59,6 +60,16 @@ void main() {
         adminAccessRedirectFor(isAdmin: true, path: '/admin/categories'),
         isNull,
       );
+    });
+  });
+
+  group('StatefulShellRoute & Deep Links', () {
+    test('shellTabIndexForPath maps all main shell branches', () {
+      expect(shellTabIndexForPath('/'), 0);
+      expect(shellTabIndexForPath('/categories'), 0);
+      expect(shellTabIndexForPath('/bakhed'), 1);
+      expect(shellTabIndexForPath('/profile'), 2);
+      expect(shellTabIndexForPath('/other'), isNull);
     });
   });
 }

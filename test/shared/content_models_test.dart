@@ -6,7 +6,7 @@ import 'package:itun/shared/models/content_models.dart';
 void main() {
   group('CategoryModel', () {
     test('fromJson/toJson roundtrip', () {
-      final original = CategoryModel(
+      const original = CategoryModel(
         id: 'alphabets',
         titleOlChiki: 'ᱚᱞ ᱪᱤᱠᱤ',
         titleLatin: 'Alphabets',
@@ -33,7 +33,7 @@ void main() {
     });
 
     test('copyWith preserves unchanged fields', () {
-      final original = CategoryModel(
+      const original = CategoryModel(
         id: 'c1',
         titleOlChiki: 'ᱚ',
         titleLatin: 'Alpha',

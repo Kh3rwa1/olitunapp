@@ -11,14 +11,12 @@ We maintain strict deprecation boundaries: **never delete a legacy method or sch
 ### 1. `updateThumbnail` (Controller Method)
 *   **Location:** `lib/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart`
 *   **Rationale:** Replaced by `updateCoverMedia` as part of the Phase 2d unified cover picker layout. Video covers and image covers are now handled by a single `ContentMedia` object in the editor state.
-*   **Status:** Deprecated in Sprint 2 (Phase 2d).
-*   **Target Removal Sprint:** **Sprint 4** (Allowing full client migration across any local/cached dev panels).
+*   **Status:** **Removed** in Sprint 4 (PR 1.3).
 
 ### 2. `updateCategoryId` (Controller Method)
 *   **Location:** `lib/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart`
 *   **Rationale:** Replaced by direct object assignment or modern unified state hooks.
-*   **Status:** Deprecated in Sprint 2.
-*   **Target Removal Sprint:** **Sprint 4**.
+*   **Status:** **Removed** in Sprint 4 (PR 1.3).
 
 ### 3. Six `// TODO(orphan-bug):` Markers
 *   **Location:** `lib/features/admin/presentation/content/widgets/content_form.dart`

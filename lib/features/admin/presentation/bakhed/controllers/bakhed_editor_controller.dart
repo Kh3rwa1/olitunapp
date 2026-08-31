@@ -150,16 +150,6 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
     });
   }
 
-  @Deprecated('Use updateCategory with the string name instead')
-  void updateCategoryId(String categoryId) {
-    state.item.whenData((item) {
-      state = state.copyWith(
-        item: AsyncValue.data(item.copyWith(categoryId: categoryId)),
-        isDirty: true,
-      );
-    });
-  }
-
   void updateCategory(String? name) {
     state.item.whenData((item) {
       state = state.copyWith(
@@ -208,11 +198,6 @@ class BakhedEditorNotifier extends FamilyNotifier<BakhedEditorState, String> {
         isDirty: true,
       );
     });
-  }
-
-  @Deprecated('Use updateCoverMedia with mediaType')
-  void updateThumbnail(ContentMedia? media) {
-    updateCoverMedia(media, 'image');
   }
 
   void updateAudio(String? url, String? fileId, int? durationMs) {

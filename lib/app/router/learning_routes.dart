@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/main/presentation/main_shell_screen.dart';
 import '../../features/lessons/presentation/category_lessons_screen.dart';
 import '../../features/lessons/presentation/lesson_block_detail_screen.dart';
 import '../../features/lessons/presentation/practice/practice_screen.dart';
@@ -19,12 +18,6 @@ List<RouteBase> buildLearningRoutes({
     String? name,
     required Widget Function(BuildContext, GoRouterState) child,
   })
-  shellRoute,
-  required GoRoute Function({
-    required String path,
-    String? name,
-    required Widget Function(BuildContext, GoRouterState) child,
-  })
   drillRoute,
   required GoRoute Function({
     required String path,
@@ -34,17 +27,6 @@ List<RouteBase> buildLearningRoutes({
   modalRoute,
 }) {
   return [
-    shellRoute(
-      path: '/',
-      name: RouteNames.home,
-      child: (_, _) => const MainShellScreen(),
-    ),
-    shellRoute(
-      path: '/categories',
-      name: RouteNames.categories,
-      child: (_, _) => const MainShellScreen(),
-    ),
-    shellRoute(path: '/bakhed', child: (_, _) => const MainShellScreen()),
     drillRoute(path: '/quizzes', child: (_, _) => const QuizListScreen()),
     drillRoute(path: '/mistakes', child: (_, _) => const MistakeReviewScreen()),
     drillRoute(

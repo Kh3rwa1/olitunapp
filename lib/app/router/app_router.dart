@@ -4,14 +4,19 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import '../../features/onboarding/providers/onboarding_provider.dart';
 import '../../core/motion/page_transitions.dart';
 import '../../features/admin/providers/admin_auth_provider.dart';
-import 'admin_routes.dart';
-import 'public_routes.dart';
-import 'learning_routes.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/main/presentation/main_shell_screen.dart';
+import '../../features/onboarding/providers/onboarding_provider.dart';
+import '../../features/profile/presentation/progress_screen.dart';
+import '../../features/rhymes/presentation/rhyme_screen.dart';
 import 'account_routes.dart';
+import 'admin_routes.dart';
+import 'learning_routes.dart';
+import 'public_routes.dart';
 import 'route_guards.dart';
+import 'route_names.dart';
 
 export 'route_guards.dart';
 export 'route_names.dart';
@@ -48,22 +53,6 @@ GoRoute _peerRoute({
     redirect: redirect,
     pageBuilder: (context, state) => AppPageTransitions.fadeThrough(
       key: state.pageKey,
-      child: child(context, state),
-    ),
-  );
-}
-
-/// Shell routes share the same mounted tab scaffold.
-GoRoute _shellRoute({
-  required String path,
-  String? name,
-  required Widget Function(BuildContext, GoRouterState) child,
-}) {
-  return GoRoute(
-    path: path,
-    name: name,
-    pageBuilder: (context, state) => NoTransitionPage<void>(
-      key: const ValueKey<String>('main-shell-route'),
       child: child(context, state),
     ),
   );
@@ -161,13 +150,56 @@ final routerProvider = Provider<GoRouter>((ref) {
       return null;
     },
     routes: [
-      ...buildPublicRoutes(peerRoute: _peerRoute, modalRoute: _modalRoute),
-      ...buildLearningRoutes(
-        shellRoute: _shellRoute,
-        drillRoute: _drillRoute,
-        modalRoute: _modalRoute,
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, navigationShell) {
+          return MainShellScreen(navigationShell: navigationShell);
+        },
+        branches: [
+          // Branch 0: Learn / Home
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/',
+                name: RouteNames.home,
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: HomeScreen()),
+                routes: [
+                  GoRoute(
+                    path: 'categories',
+                    name: RouteNames.categories,
+                    pageBuilder: (context, state) =>
+                        const NoTransitionPage(child: HomeScreen()),
+                  ),
+                ],
+              ),
+            ],
+          ),
+          // Branch 1: Bakhed / Rhymes
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/bakhed',
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: RhymeScreen()),
+              ),
+            ],
+          ),
+          // Branch 2: Profile
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: '/profile',
+                name: RouteNames.profile,
+                pageBuilder: (context, state) =>
+                    const NoTransitionPage(child: ProgressScreen()),
+              ),
+            ],
+          ),
+        ],
       ),
-      ...buildAccountRoutes(shellRoute: _shellRoute, drillRoute: _drillRoute),
+      ...buildPublicRoutes(peerRoute: _peerRoute, modalRoute: _modalRoute),
+      ...buildLearningRoutes(drillRoute: _drillRoute, modalRoute: _modalRoute),
+      ...buildAccountRoutes(drillRoute: _drillRoute),
       ...buildAdminRoutes(modalRoute: _modalRoute, adminRoute: adminRoute),
     ],
   );

@@ -32,7 +32,6 @@ const GRANDFATHERED_FILES = new Set([
   'lib/features/content/presentation/widgets/story_player_body.dart',
   'lib/features/lessons/presentation/lessons_screen.dart',
   'lib/features/lessons/presentation/quiz/quiz_screen/quiz_screen.dart',
-  'lib/features/main/presentation/main_shell/main_shell_screen.dart',
   'lib/features/onboarding/presentation/onboarding_screen.dart',
   'lib/features/profile/presentation/progress_screen.dart',
   'lib/features/profile/presentation/providers/profile_providers.dart',

@@ -8,7 +8,6 @@ import 'package:flutter_markdown/flutter_markdown.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
-import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/shared/providers/content_providers.dart';
 import 'package:itun/features/home/presentation/providers/mission_providers.dart';
 import 'package:itun/shared/widgets/content_hero.dart';
@@ -26,6 +25,8 @@ import 'package:itun/core/ads/interstitial_ad_manager.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
 
+import 'providers/audio_playback_providers.dart';
+import 'widgets/audio_controls_bar.dart';
 import 'widgets/inline_media_players.dart';
 import 'widgets/premium_bakhed_body.dart';
 
@@ -228,6 +229,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                       padding: const EdgeInsets.only(bottom: 24.0),
                       child: _buildBlockRenderer(
                         context,
+                        item,
                         block,
                         accentColor,
                         isDark,
@@ -278,6 +280,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
 
   Widget _buildBlockRenderer(
     BuildContext context,
+    ContentItem item,
     ContentBlock block,
     Color accentColor,
     bool isDark,
@@ -463,8 +466,14 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                   icon: const Icon(Icons.volume_up_rounded),
                   style: IconButton.styleFrom(backgroundColor: accentColor),
                   onPressed: () => ref
-                      .read(audioServiceProvider)
-                      .playUrl(glyphBlock.audioUrl!),
+                      .read(playbackControllerProvider)
+                      .playSingle(
+                        id: glyphBlock.audioUrl!,
+                        contentKind: item.kind.name,
+                        contentId: item.id,
+                        trackType: 'targetNormal',
+                        languageCode: 'sat',
+                      ),
                 ),
               ],
             ],
@@ -550,6 +559,20 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       );
 
       if (typingState.phase == TypingPhase.idle) {
+        // Mode-aware audio bundle (targetOnly/bilingual/translationOnDemand):
+        // Phase 2 audio_tracks + localized_contents with legacy inline
+        // fields as offline-first fallback. Failure-swallowing by design.
+        final bundleAsync = ref.watch(
+          audioBundleProvider(
+            AudioBundleRequest(
+              contentKind: item.kind.name,
+              contentId: item.id,
+              legacyAudioUrl: item.effectiveAudioUrl,
+              legacyMeaning: item.subtitle ?? '',
+            ),
+          ),
+        );
+
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           decoration: BoxDecoration(
@@ -564,61 +587,55 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
           ),
           child: SafeArea(
             top: false,
-            child: Row(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                if (item.effectiveAudioUrl != null) ...[
-                  IconButton(
-                    icon: const Icon(Icons.volume_up_rounded),
-                    color: AppColors.primary,
-                    onPressed: () {
-                      ref
-                          .read(audioServiceProvider)
-                          .playUrl(item.effectiveAudioUrl!);
-                    },
-                    style: IconButton.styleFrom(
-                      backgroundColor: AppColors.primary.withOpacity(0.1),
-                      padding: const EdgeInsets.all(12),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                        side: const BorderSide(color: AppColors.primary),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                ],
-                Expanded(
-                  child: SizedBox(
-                    height: 52,
-                    child: ElevatedButton.icon(
-                      onPressed: () {
-                        ref
-                            .read(
-                              typingPracticeControllerProvider(
-                                typingPracticeArgs,
-                              ).notifier,
-                            )
-                            .startPractice();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.primary,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      icon: const Icon(
-                        Icons.keyboard_outlined,
-                        color: Colors.black,
-                      ),
-                      label: const Text(
-                        'Practice Typing',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w900,
+                // Full pedagogical controls (Santali/Slow/Meaning/Repeat/
+                // speed/progress) routed through the central controller.
+                // The bundle itself surfaces unavailable states, so the
+                // bar renders whenever the bundle resolved.
+                bundleAsync.maybeWhen(
+                  data: (bundle) => AudioControlsBar(bundle: bundle),
+                  orElse: () => const SizedBox.shrink(),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    Expanded(
+                      child: SizedBox(
+                        height: 52,
+                        child: ElevatedButton.icon(
+                          onPressed: () {
+                            ref
+                                .read(
+                                  typingPracticeControllerProvider(
+                                    typingPracticeArgs,
+                                  ).notifier,
+                                )
+                                .startPractice();
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppColors.primary,
+                            foregroundColor: Colors.black,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(16),
+                            ),
+                          ),
+                          icon: const Icon(
+                            Icons.keyboard_outlined,
+                            color: Colors.black,
+                          ),
+                          label: const Text(
+                            'Practice Typing',
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
                         ),
                       ),
                     ),
-                  ),
+                  ],
                 ),
               ],
             ),

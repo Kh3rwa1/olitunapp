@@ -6,7 +6,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/api/appwrite_db_service.dart';
-import '../../../../../../core/audio/audio_service.dart';
+import '../providers/audio_playback_providers.dart';
 import '../../../rhymes/presentation/widgets/cover_hero.dart';
 import '../../../rhymes/presentation/widgets/enchanted_visualizer.dart';
 import '../../../rhymes/presentation/providers/rhyme_audio_provider.dart';
@@ -222,7 +222,15 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       HapticFeedback.lightImpact();
                       final db = ref.read(appwriteDbServiceProvider);
                       final url = db.getFileViewUrl('audio', item.audioFileId);
-                      ref.read(audioServiceProvider).playUrl(url);
+                      ref
+                          .read(playbackControllerProvider)
+                          .playSingle(
+                            id: url,
+                            contentKind: 'rhyme',
+                            contentId: item.id,
+                            trackType: 'targetNormal',
+                            languageCode: 'sat',
+                          );
                     },
                   ),
                 ),

@@ -7,7 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../../../core/audio/audio_service.dart';
+import '../../content/presentation/providers/audio_playback_providers.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../shared/providers/providers.dart';
@@ -100,7 +100,15 @@ class _LessonBlockDetailScreenState
       _playingId = id;
     });
 
-    await ref.read(audioServiceProvider).playUrl(url);
+    await ref
+        .read(playbackControllerProvider)
+        .playSingle(
+          id: url,
+          contentKind: 'lesson',
+          contentId: id,
+          trackType: 'targetNormal',
+          languageCode: 'sat',
+        );
 
     await Future.delayed(const Duration(milliseconds: 1500));
 

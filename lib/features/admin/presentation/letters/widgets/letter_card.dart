@@ -4,7 +4,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../shared/models/content_models.dart';
-import '../../../../../core/audio/audio_service.dart';
+import '../../../../content/presentation/providers/audio_playback_providers.dart';
 import '../../widgets/admin_glass_card.dart';
 
 /// Single letter card in the admin grid.
@@ -92,8 +92,14 @@ class LetterCard extends ConsumerWidget {
                       onTap: () {
                         HapticFeedback.mediumImpact();
                         ref
-                            .read(audioServiceProvider)
-                            .playUrl(letter.audioUrl!);
+                            .read(playbackControllerProvider)
+                            .playSingle(
+                              id: letter.audioUrl!,
+                              contentKind: 'letter',
+                              contentId: letter.id,
+                              trackType: 'targetNormal',
+                              languageCode: 'sat',
+                            );
                       },
                       child: Container(
                         padding: const EdgeInsets.all(6),

@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:itun/core/audio/audio_service.dart';
+import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -331,8 +331,14 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
             if (widget.config.playAudioOnComplete &&
                 widget.config.audioOnCompleteUrl != null) {
               ref
-                  .read(audioServiceProvider)
-                  .playUrl(widget.config.audioOnCompleteUrl!);
+                  .read(playbackControllerProvider)
+                  .playSingle(
+                    id: widget.config.audioOnCompleteUrl!,
+                    contentKind: 'letter',
+                    contentId: widget.config.glyph,
+                    trackType: 'targetNormal',
+                    languageCode: 'sat',
+                  );
             }
 
             // Fire learning analytics completion event

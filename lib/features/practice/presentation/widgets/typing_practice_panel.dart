@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../../core/theme/app_colors.dart';
-import '../../../../core/audio/audio_service.dart';
+import '../../../content/presentation/providers/audio_playback_providers.dart';
 import '../providers/typing_practice_controller.dart';
 import 'ol_chiki_keyboard.dart';
 import 'typing_complete_celebration.dart';
@@ -92,7 +92,15 @@ class _TypingPracticePanelState extends ConsumerState<TypingPracticePanel>
     if (widget.onPlayAudio != null) {
       widget.onPlayAudio!();
     } else if (widget.audioUrl != null) {
-      ref.read(audioServiceProvider).playUrl(widget.audioUrl!);
+      ref
+          .read(playbackControllerProvider)
+          .playSingle(
+            id: widget.audioUrl!,
+            contentKind: widget.args.contentType,
+            contentId: widget.args.itemKey,
+            trackType: 'targetNormal',
+            languageCode: 'sat',
+          );
     }
   }
 

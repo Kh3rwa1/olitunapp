@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/features/learn/presentation/screens/content_grid_screen.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -11,9 +12,21 @@ import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/auth/presentation/providers/auth_providers.dart';
 
+/// Test double for [AudioService]. Tile playback now routes through the
+/// central PlaybackController, which subscribes to the position/duration/
+/// processing-state streams in its constructor — overriding them with empty
+/// streams avoids just_audio's periodic position timer leaking into the
+/// test binding. [tryPlayUrl] records the URL because the controller uses
+/// it (not [playUrl]) and surfaces success/failure.
 class MockAudioService extends AudioService {
   String? lastPlayedUrl;
   bool didStopAudio = false;
+
+  @override
+  Future<bool> tryPlayUrl(String url) async {
+    lastPlayedUrl = url;
+    return true;
+  }
 
   @override
   Future<void> playUrl(String url) async {
@@ -24,6 +37,18 @@ class MockAudioService extends AudioService {
   Future<void> stop() async {
     didStopAudio = true;
   }
+
+  @override
+  Stream<ProcessingState> get processingStateStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<bool> get isPlayingStream => const Stream.empty();
 }
 
 void main() {
@@ -59,6 +84,7 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           isAuthenticatedProvider.overrideWith((ref) async => false),
           currentUserProvider.overrideWith((ref) async => null),
+          audioServiceProvider.overrideWithValue(MockAudioService()),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -83,6 +109,7 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           isAuthenticatedProvider.overrideWith((ref) async => false),
           currentUserProvider.overrideWith((ref) async => null),
+          audioServiceProvider.overrideWithValue(MockAudioService()),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -112,6 +139,7 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           isAuthenticatedProvider.overrideWith((ref) async => false),
           currentUserProvider.overrideWith((ref) async => null),
+          audioServiceProvider.overrideWithValue(MockAudioService()),
           contentListProvider((ContentKind.letter, null)).overrideWith((ref) {
             callCount++;
             if (callCount == 1) {
@@ -158,6 +186,7 @@ void main() {
           sharedPreferencesProvider.overrideWithValue(prefs),
           isAuthenticatedProvider.overrideWith((ref) async => false),
           currentUserProvider.overrideWith((ref) async => null),
+          audioServiceProvider.overrideWithValue(MockAudioService()),
           contentListProvider((
             ContentKind.letter,
             null,
@@ -311,6 +340,10 @@ void main() {
     await tester.pump();
     expect(mockAudio.lastPlayedUrl, equals('https://example.com/audio/a.mp3'));
 
+    // The central PlaybackController stops any prior clip before playing,
+    // so reset the flag — the meaningful assertion is the lifecycle stop below.
+    mockAudio.didStopAudio = false;
+
     // Trigger app backgrounding
     expect(mockAudio.didStopAudio, isFalse);
     tester.binding.handleAppLifecycleStateChanged(AppLifecycleState.paused);
@@ -371,6 +404,10 @@ void main() {
     await tester.pump();
     expect(mockAudio.lastPlayedUrl, equals('https://example.com/audio/a.mp3'));
 
+    // The central PlaybackController stops any prior clip before playing,
+    // so reset the flag — the meaningful assertion is the dispose stop below.
+    mockAudio.didStopAudio = false;
+
     // Verify didStopAudio is false initially
     expect(mockAudio.didStopAudio, isFalse);
 
@@ -418,6 +455,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             isAuthenticatedProvider.overrideWith((ref) async => false),
             currentUserProvider.overrideWith((ref) async => null),
+            audioServiceProvider.overrideWithValue(MockAudioService()),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',
@@ -471,6 +509,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             isAuthenticatedProvider.overrideWith((ref) async => false),
             currentUserProvider.overrideWith((ref) async => null),
+            audioServiceProvider.overrideWithValue(MockAudioService()),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',
@@ -521,6 +560,7 @@ void main() {
             sharedPreferencesProvider.overrideWithValue(prefs),
             isAuthenticatedProvider.overrideWith((ref) async => false),
             currentUserProvider.overrideWith((ref) async => null),
+            audioServiceProvider.overrideWithValue(MockAudioService()),
             contentListProvider((
               ContentKind.letter,
               'lesson_123',

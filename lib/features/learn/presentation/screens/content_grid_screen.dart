@@ -4,7 +4,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
 import 'package:itun/shared/providers/content_providers.dart';
@@ -14,6 +13,8 @@ import 'package:itun/features/categories/presentation/providers/category_notifie
 import 'package:itun/features/categories/domain/entities/category_entity.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:itun/core/ads/widgets/banner_ad_widget.dart';
+import 'package:itun/core/audio/playback_controller.dart';
+import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 
 class ContentGridScreen extends ConsumerStatefulWidget {
   final ContentKind kind;
@@ -27,19 +28,20 @@ class ContentGridScreen extends ConsumerStatefulWidget {
 
 class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
     with WidgetsBindingObserver {
-  late final AudioService _audioService;
+  // Captured in initState because ref must not be used in dispose.
+  late final PlaybackController _playback;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _audioService = ref.read(audioServiceProvider);
+    _playback = ref.read(playbackControllerProvider);
   }
 
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    _audioService.stop();
+    _playback.stop();
     super.dispose();
   }
 
@@ -47,7 +49,7 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (state == AppLifecycleState.paused ||
         state == AppLifecycleState.inactive) {
-      _audioService.stop();
+      _playback.stop();
     }
   }
 
@@ -59,7 +61,13 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
     }
     try {
       HapticFeedback.lightImpact();
-      _audioService.playUrl(audio);
+      _playback.playSingle(
+        id: audio,
+        contentKind: item.kind.name,
+        contentId: item.id,
+        trackType: 'targetNormal',
+        languageCode: 'sat',
+      );
     } catch (e) {
       AppLogger.debug('Warning playing audio in grid tile: $e');
     }

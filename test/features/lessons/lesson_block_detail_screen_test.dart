@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mocktail/mocktail.dart';
+import 'package:just_audio/just_audio.dart' show ProcessingState;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:itun/core/storage/hive_service.dart';
 import 'package:itun/features/lessons/presentation/lesson_block_detail_screen.dart';
@@ -13,9 +14,32 @@ import 'package:itun/shared/providers/providers.dart';
 import 'package:itun/core/audio/audio_service.dart';
 import 'package:itun/features/lessons/presentation/widgets/full_bleed_hero_media.dart';
 
+/// Concrete overrides are required (not mocktail stubs) because the central
+/// PlaybackController subscribes to these streams in its constructor — an
+/// unstubbed mocktail getter would throw, and real just_audio streams would
+/// leak a periodic position timer into the test binding. Empty streams keep
+/// the controller idle until a page change triggers auto-play.
 class MockAudioService extends Mock implements AudioService {
   @override
   Future<void> playUrl(String url) async {}
+
+  @override
+  Future<bool> tryPlayUrl(String url) async => true;
+
+  @override
+  Future<void> stop() async {}
+
+  @override
+  Stream<ProcessingState> get processingStateStream => const Stream.empty();
+
+  @override
+  Stream<Duration> get positionStream => const Stream.empty();
+
+  @override
+  Stream<Duration?> get durationStream => const Stream.empty();
+
+  @override
+  Stream<bool> get isPlayingStream => const Stream.empty();
 }
 
 const svgData =

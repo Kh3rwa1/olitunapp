@@ -601,4 +601,109 @@ class AppLocalizationsEn extends AppLocalizations {
   String missionsDoneCount(int done) {
     return '$done/4 Done';
   }
+
+  @override
+  String get hindi => 'Hindi';
+
+  @override
+  String get bengali => 'Bengali';
+
+  @override
+  String get odia => 'Odia';
+
+  @override
+  String get teachingLanguage => 'Teaching Language';
+
+  @override
+  String get teachingLanguageSubtitle => 'Used for meanings and explanations';
+
+  @override
+  String get lessonAudioMode => 'Lesson Audio';
+
+  @override
+  String get lessonAudioModeSubtitle =>
+      'Choose how Santali and translation audio play';
+
+  @override
+  String get onboardingStepLanguageTitle =>
+      'Which language do you understand best?';
+
+  @override
+  String get onboardingStepProficiencyTitle => 'How much Santali do you know?';
+
+  @override
+  String get onboardingStepGoalsTitle => 'What do you want to achieve?';
+
+  @override
+  String get onboardingStepGoalsSubtitle =>
+      'Pick one or more — we\'ll personalize your path.';
+
+  @override
+  String get onboardingStepAudioTitle => 'How should lesson audio play?';
+
+  @override
+  String get onboardingStepReadyTitle => 'You\'re almost ready!';
+
+  @override
+  String get proficiencyNone => 'I don\'t know Santali';
+
+  @override
+  String get proficiencyUnderstandsSome => 'I understand some Santali';
+
+  @override
+  String get proficiencyFluentSpeaker => 'I speak Santali';
+
+  @override
+  String get proficiencyBeginnerReader => 'I can read a little Ol Chiki';
+
+  @override
+  String get proficiencyFluentReader => 'I already read Ol Chiki';
+
+  @override
+  String get goalSpeakSantali => 'Speak Santali';
+
+  @override
+  String get goalUnderstandSantali => 'Understand Santali';
+
+  @override
+  String get goalReadOlChiki => 'Read Ol Chiki';
+
+  @override
+  String get goalWriteOlChiki => 'Write Ol Chiki';
+
+  @override
+  String get goalLearnEverything => 'Learn everything';
+
+  @override
+  String get goalHelpMyChild => 'Help my child learn';
+
+  @override
+  String get goalPrepareExam => 'Prepare for school or an exam';
+
+  @override
+  String get audioModeTargetOnly => 'Santali only';
+
+  @override
+  String get audioModeBilingual => 'Santali, then my language';
+
+  @override
+  String get audioModeTranslationOnDemand =>
+      'Play translation only when I tap it';
+
+  @override
+  String get dailyGoalLabel => 'Daily goal';
+
+  @override
+  String minutesPerDay(int minutes) {
+    return '$minutes min/day';
+  }
+
+  @override
+  String get downloadStarterAudio => 'Download starter audio';
+
+  @override
+  String get downloadStarterAudioSubtitle => 'Learn offline from day one';
+
+  @override
+  String get backButton => 'Back';
 }

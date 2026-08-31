@@ -11,6 +11,7 @@ import '../../../core/presentation/layout/responsive_layout.dart';
 import '../../../shared/providers/local_settings_provider.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import 'widgets/settings_widgets.dart';
+import 'widgets/learning_settings_tiles.dart';
 import '../../practice/data/typing_practice_settings.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
@@ -193,6 +194,10 @@ class SettingsScreen extends ConsumerWidget {
                       onTap: () =>
                           _showLanguageDialog(context, ref, appLanguage),
                     ),
+                    const SizedBox(height: 10),
+                    const TeachingLanguageTile(),
+                    const SizedBox(height: 10),
+                    const LessonAudioModeTile(),
                   ],
                 ),
               ),
@@ -347,6 +352,10 @@ class SettingsScreen extends ConsumerWidget {
               isDark: isDark,
               onTap: () => _showLanguageDialog(context, ref, appLanguage),
             ),
+            const SizedBox(height: 10),
+            const TeachingLanguageTile(),
+            const SizedBox(height: 10),
+            const LessonAudioModeTile(),
           ],
         ),
         const SizedBox(height: 16),
@@ -640,6 +649,27 @@ class SettingsScreen extends ConsumerWidget {
               isDark: isDark,
             ),
             LanguageOption(
+              label: AppLocalizations.of(context)!.hindi,
+              value: 'hi',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            LanguageOption(
+              label: AppLocalizations.of(context)!.bengali,
+              value: 'bn',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            LanguageOption(
+              label: AppLocalizations.of(context)!.odia,
+              value: 'or',
+              current: current,
+              ref: ref,
+              isDark: isDark,
+            ),
+            LanguageOption(
               label: AppLocalizations.of(context)!.santali,
               value: 'sat',
               current: current,
@@ -682,6 +712,12 @@ class SettingsScreen extends ConsumerWidget {
     switch (languageCode) {
       case 'sat':
         return l10n.santali;
+      case 'hi':
+        return l10n.hindi;
+      case 'bn':
+        return l10n.bengali;
+      case 'or':
+        return l10n.odia;
       case 'en':
       default:
         return l10n.english;

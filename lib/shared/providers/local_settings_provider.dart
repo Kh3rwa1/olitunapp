@@ -3,6 +3,7 @@ import 'package:flutter/widgets.dart'
     show WidgetsBinding, WidgetsBindingObserver;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/storage/hive_service.dart';
+import 'language_settings_providers.dart';
 
 // ============== APP SETTINGS ==============
 // These are global app settings, not specific to the user profile stats.
@@ -112,13 +113,16 @@ void updateScriptMode(WidgetRef ref, String mode) {
 }
 
 void updateAppLanguage(WidgetRef ref, String languageCode) {
-  final normalized = languageCode == 'sat' ? 'sat' : 'en';
+  final normalized = kInterfaceLanguages.contains(languageCode)
+      ? languageCode
+      : 'en';
   final prefs = ref.read(sharedPreferencesProvider);
   final previousLanguage = ref.read(appLanguageProvider);
 
   prefs.setString('app_language', normalized);
   ref.read(appLanguageProvider.notifier).state = normalized;
 
+  // Santali UI implies Ol Chiki script; restore 'both' when leaving Santali.
   if (normalized == 'sat') {
     prefs.setString('script_mode', 'olchiki');
     ref.read(scriptModeProvider.notifier).state = 'olchiki';
@@ -127,6 +131,10 @@ void updateAppLanguage(WidgetRef ref, String languageCode) {
     prefs.setString('script_mode', 'both');
     ref.read(scriptModeProvider.notifier).state = 'both';
   }
+
+  // The teaching language follows the interface language until the learner
+  // customizes it explicitly (see language_settings_providers.dart).
+  cascadeTeachingLanguageForInterface(ref, normalized);
 }
 
 void updateLastOpenedLesson(WidgetRef ref, String lessonId) {

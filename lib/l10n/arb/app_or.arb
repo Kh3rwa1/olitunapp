@@ -1,0 +1,364 @@
+{
+  "@@locale": "or",
+  "helloUser": "ନମସ୍କାର, {userName}! 👋",
+  "@helloUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "readyToLearn": "ଆଜି ଶିଖିବାକୁ ପ୍ରସ୍ତୁତ?",
+  "dayStreak": "ଦିନ ଷ୍ଟ୍ରିକ୍",
+  "stars": "ତାରକା",
+  "lessons": "ପାଠ",
+  "continueLearning": "ଶିଖିବା ଜାରି ରଖନ୍ତୁ",
+  "pickUpWhereLeftOff": "ଯେଉଁଠାରେ ଛାଡ଼ିଥିଲେ ସେଠାରୁ ଆରମ୍ଭ କରନ୍ତୁ",
+  "percentComplete": "{percent}% ସମ୍ପୂର୍ଣ୍ଣ",
+  "@percentComplete": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "dailyQuiz": "ଦୈନିକ କୁଇଜ୍",
+  "practice": "ଅଭ୍ୟାସ",
+  "explore": "ଅନ୍ୱେଷଣ କରନ୍ତୁ",
+  "chooseCategory": "ଗୋଟିଏ ବର୍ଗ ବାଛନ୍ତୁ",
+  "lessonsCount": "{count}ଟି ପାଠ",
+  "@lessonsCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settings": "ସେଟିଂସ୍",
+  "customizeExperience": "ଆପଣଙ୍କ ଶିଖିବା ଅଭିଜ୍ଞତା କଷ୍ଟମାଇଜ୍ କରନ୍ତୁ",
+  "appearance": "ରୂପ",
+  "darkMode": "ଡାର୍କ ମୋଡ୍",
+  "scriptDisplay": "ଲିପି ପ୍ରଦର୍ଶନ",
+  "scriptMode": "ଲିପି ମୋଡ୍",
+  "appLanguage": "ଆପ୍ ଭାଷା",
+  "chooseLanguage": "ଭାଷା ବାଛନ୍ତୁ",
+  "english": "ଇଂରାଜୀ",
+  "languageChanged": "ଭାଷା ବଦଳାଗଲା",
+  "sound": "ଶବ୍ଦ",
+  "soundEffects": "ସାଉଣ୍ଡ ଇଫେକ୍ଟ",
+  "playSoundsForActions": "କାର୍ଯ୍ୟ ପାଇଁ ଶବ୍ଦ ବଜାନ୍ତୁ",
+  "dangerZone": "ବିପଦ କ୍ଷେତ୍ର",
+  "resetProgress": "ପ୍ରଗତି ରିସେଟ୍ କରନ୍ତୁ",
+  "clearAllLearningData": "ସମସ୍ତ ଶିଖିବା ଡାଟା ସଫା କରନ୍ତୁ",
+  "deleteAccount": "ଖାତା ବିଲୋପ କରନ୍ତୁ",
+  "deleteAccountSubtitle": "ଆପଣଙ୍କ ଖାତାକୁ ସ୍ଥାୟୀ ଭାବେ ବିଲୋପ କରନ୍ତୁ",
+  "legal": "ଆଇନଗତ",
+  "privacyPolicy": "ଗୋପନୀୟତା ନୀତି",
+  "privacyPolicySubtitle": "ଖାତା ଏବଂ ଶିଖିବା ଡାଟା କିପରି ବ୍ୟବହୃତ ହୁଏ",
+  "termsOfUse": "ବ୍ୟବହାର ସର୍ତ୍ତାବଳୀ",
+  "termsOfUseSubtitle": "ଶିକ୍ଷାର୍ଥୀ, ଖାତା ଏବଂ ବିଷୟବସ୍ତୁର ନିୟମ",
+  "chooseTheme": "ଥିମ୍ ବାଛନ୍ତୁ",
+  "systemDefault": "ସିଷ୍ଟମ୍ ଡିଫଲ୍ଟ",
+  "light": "ଲାଇଟ୍",
+  "dark": "ଡାର୍କ",
+  "olChikiOnly": "କେବଳ ଓଲଚିକି",
+  "latinOnly": "କେବଳ ଲାଟିନ୍",
+  "bothScripts": "ଉଭୟ ଲିପି",
+  "cancel": "ବାତିଲ୍",
+  "reset": "ରିସେଟ୍",
+  "resetProgressWarning": "ଏଥିରେ ଆପଣଙ୍କର ସମସ୍ତ ପ୍ରଗତି, ତାରକା ଏବଂ ଷ୍ଟ୍ରିକ୍ ମିଟିଯିବ। ଏହି କାର୍ଯ୍ୟ ପୂର୍ବବତ୍ ହୋଇପାରିବ ନାହିଁ।",
+  "deleteAccountWarning": "ଏଥିରେ ଆପଣଙ୍କ ଖାତା ଏବଂ ସମସ୍ତ ସମ୍ପୃକ୍ତ ଡାଟା ସ୍ଥାୟୀ ଭାବେ ଡିଲିଟ୍ ହୋଇଯିବ। ଏହି କାର୍ଯ୍ୟ ପୂର୍ବବତ୍ ହୋଇପାରିବ ନାହିଁ।\n\nଆପଣଙ୍କର ପ୍ରଗତି, ସେଟିଂସ୍ ଏବଂ ବ୍ୟକ୍ତିଗତ ସୂଚନା ସ୍ଥାୟୀ ଭାବେ ହଟାଯିବ।",
+  "deletePermanently": "ସ୍ଥାୟୀ ଭାବେ ବିଲୋପ କରନ୍ତୁ",
+  "failedToDeleteAccount": "ଖାତା ବିଲୋପ ବିଫଳ: {message}",
+  "@failedToDeleteAccount": {
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "signInWithEmail": "ଇମେଲ୍ ସାହାଯ୍ୟରେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ",
+  "magicCodeDescription": "ଆପଣଙ୍କ ପରିଚୟ ଯାଞ୍ଚ ପାଇଁ ଆମେ ଗୋଟିଏ ମ୍ୟାଜିକ୍ କୋଡ୍ ପଠାଇବୁ। ପାସୱାର୍ଡ ଦରକାର ନାହିଁ!",
+  "emailAddress": "ଇମେଲ୍ ଠିକଣା",
+  "emailHint": "learner@example.com",
+  "sendCode": "କୋଡ୍ ପଠାନ୍ତୁ",
+  "continueWithoutAccount": "ଖାତା ବିନା ଜାରି ରଖନ୍ତୁ",
+  "enterVerificationCode": "ଯାଞ୍ଚ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ",
+  "codeSentTo": "ଆମେ {email} କୁ ଗୋଟିଏ କୋଡ୍ ପଠାଇଛୁ",
+  "@codeSentTo": {
+    "placeholders": {
+      "email": {
+        "type": "String"
+      }
+    }
+  },
+  "verificationCode": "ଯାଞ୍ଚ କୋଡ୍",
+  "enterCodeFromEmail": "ଇମେଲ୍‌ରୁ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ",
+  "verifyAndContinue": "ଯାଞ୍ଚ କରି ଜାରି ରଖନ୍ତୁ",
+  "resendCodeIn": "{seconds} ସେକେଣ୍ଡରେ କୋଡ୍ ପୁଣି ପଠାନ୍ତୁ",
+  "@resendCodeIn": {
+    "placeholders": {
+      "seconds": {
+        "type": "int"
+      }
+    }
+  },
+  "resendCode": "କୋଡ୍ ପୁଣି ପଠାନ୍ତୁ",
+  "validEmailError": "ଦୟାକରି ଗୋଟିଏ ବৈଧ ଇମେଲ୍ ଠିକଣା ପ୍ରବେଶ କରନ୍ତୁ",
+  "enterCodeError": "ଦୟାକରି ଯାଞ୍ଚ କୋଡ୍ ପ୍ରବେଶ କରନ୍ତୁ",
+  "sessionExpired": "ସେସନ୍ ସମାପ୍ତ ହୋଇଗଲା। ଦୟାକରି କୋଡ୍ ପୁଣି ପଠାନ୍ତୁ।",
+  "errorCopiedToClipboard": "ତ୍ରୁଟି କ୍ଲିପବୋର୍ଡକୁ କପି ହେଲା",
+  "skip": "ଛାଡ଼ନ୍ତୁ",
+  "quiz": "କୁଇଜ୍",
+  "noQuestionsYet": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ପ୍ରଶ୍ନ ନାହିଁ",
+  "goBack": "ପଛକୁ ଯାଆନ୍ତୁ",
+  "continueButton": "ଜାରି ରଖନ୍ତୁ",
+  "wellDone": "ବଢ଼ିଆ!",
+  "keepPracticing": "ଅଭ୍ୟାସ ଜାରି ରଖନ୍ତୁ",
+  "youScored": "ଆପଣ {total} ରୁ {score} ସ୍କୋର କଲେ",
+  "@youScored": {
+    "placeholders": {
+      "score": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "plusStars": "+{count} ତାରକା",
+  "@plusStars": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "aboutThisLesson": "ଏହି ପାଠ ବିଷୟରେ",
+  "completeLesson": "ପାଠ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ",
+  "lettersToLearn": "ଶିଖିବାର ଅକ୍ଷରଗୁଡ଼ିକ",
+  "numbersToLearn": "ଶିଖିବାର ସଂଖ୍ୟାଗୁଡ଼ିକ",
+  "vocabulary": "ଶବ୍ଦଭଣ୍ଡାର",
+  "commonPhrases": "ସାଧାରଣ ବାକ୍ୟାଂଶ",
+  "content": "ବିଷୟବସ୍ତୁ",
+  "takeAQuiz": "କୁଇଜ୍ ନିଅନ୍ତୁ",
+  "testYourKnowledge": "ବର୍ତ୍ତମାନ ଆପଣଙ୍କ ଜ୍ଞାନ ପରୀକ୍ଷା କରନ୍ତୁ!",
+  "noLettersAvailable": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଅକ୍ଷର ଉପଲବ୍ଧ ନାହିଁ",
+  "noNumbersAvailable": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ସଂଖ୍ୟା ଉପଲବ୍ଧ ନାହିଁ",
+  "noWordsAvailable": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଶବ୍ଦ ଉପଲବ୍ଧ ନାହିଁ",
+  "noSentencesAvailable": "ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ବାକ୍ୟ ଉପଲବ୍ଧ ନାହିଁ",
+  "noLessonsAvailable": "କୌଣସି ପାଠ ଉପଲବ୍ଧ ନାହିଁ",
+  "joharUser": "ଜୋହାର, {userName}!",
+  "@joharUser": {
+    "placeholders": {
+      "userName": {
+        "type": "String"
+      }
+    }
+  },
+  "dailyProgressPercent": "ଦୈନିକ ପ୍ରଗତି: {percent}%",
+  "@dailyProgressPercent": {
+    "placeholders": {
+      "percent": {
+        "type": "int"
+      }
+    }
+  },
+  "milestones": "ମାଇଲଖୁଣ୍ଟ",
+  "learningTime": "ଶିଖିବା ସମୟ",
+  "time": "ସମୟ",
+  "resumeJourney": "ଯାତ୍ରା ଜାରି ରଖନ୍ତୁ",
+  "testYourKnowledgeTitle": "ଆପଣଙ୍କ ଜ୍ଞାନ\nପରୀକ୍ଷା କରନ୍ତୁ!",
+  "quizzesAvailable": "{count}ଟି କୁଇଜ୍ ଉପଲବ୍ଧ",
+  "@quizzesAvailable": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "start": "ଆରମ୍ଭ",
+  "discover": "ଆବିଷ୍କାର",
+  "couldNotLoadPaths": "ଶିଖିବା ବାଟ ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ",
+  "yourStats": "ଆପଣଙ୍କ ପରିସଂଖ୍ୟାନ",
+  "skillsMastery": "ଦକ୍ଷତା ଆୟତ୍ତ",
+  "quizAnalysis": "କୁଇଜ୍ ବିଶ୍ଲେଷଣ",
+  "account": "ଖାତା",
+  "editName": "ନାମ ସମ୍ପାଦନା",
+  "share": "ସେୟାର୍",
+  "comingSoon": "ଶୀଘ୍ର ଆସୁଛି!",
+  "chooseYourAvatar": "ଆପଣଙ୍କ ଅବତାର ବାଛନ୍ତୁ",
+  "backgroundColor": "ପୃଷ୍ଠଭୂମି ରଙ୍ଗ",
+  "avatarEmoji": "ଅବତାର ଇମୋଜି",
+  "rhymes": "ବାଖେଡ଼",
+  "santali": "ସାନ୍ତାଳି",
+  "unlockMagic": "କାହାଣୀ ଏବଂ ଗୀତର ଜାଦୁ ଖୋଲନ୍ତୁ",
+  "all": "ସମସ୍ତ",
+  "discoverMore": "ଅଧିକ ଆବିଷ୍କାର କରନ୍ତୁ",
+  "moreComing": "ଅଧିକ ଶୀଘ୍ର ଆସୁଛି! ✨",
+  "couldNotLoadRhymes": "ବାଖେଡ଼ ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ",
+  "checkConnection": "ଆପଣଙ୍କ ସଂଯୋଗ ଯାଞ୍ଚ କରି ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ",
+  "featured": "ବିଶେଷ",
+  "listenNow": "ବର୍ତ୍ତମାନ ଶୁଣନ୍ତୁ",
+  "pause": "ଅଟକାନ୍ତୁ",
+  "getStarted": "ଆରମ୍ଭ କରନ୍ତୁ",
+  "loading": "ଲୋଡ୍ ହେଉଛି...",
+  "error": "ତ୍ରୁଟି",
+  "retry": "ପୁଣି ଚେଷ୍ଟା",
+  "undo": "ପୂର୍ବବତ୍",
+  "clear": "ସଫା କରନ୍ତୁ",
+  "tryAgain": "ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ",
+  "replayAnimation": "ଆନିମେସନ୍ ପୁଣି ଚଲାନ୍ତୁ",
+  "sentences": "ବାକ୍ୟ",
+  "noSentencesFound": "କୌଣସି ବାକ୍ୟ ମିଳିଲା ନାହିଁ",
+  "noQuestionsFound": "କୌଣସି ପ୍ରଶ୍ନ ମିଳିଲା ନାହିଁ।",
+  "streakActiveTitle": "ସାପ୍ତାହିକ ଷ୍ଟ୍ରିକ୍ ସକ୍ରିୟ",
+  "streakIdleTitle": "ଆପଣଙ୍କ ଷ୍ଟ୍ରିକ୍ ଆରମ୍ଭ କରନ୍ତୁ",
+  "streakActiveSubtitle": "ଆପଣଙ୍କ ଜ୍ୟୋତି ବଢ଼ାଇବା ପାଇଁ ଶିଖିବା ଜାରି ରଖନ୍ତୁ!",
+  "streakIdleSubtitle": "ଆପଣଙ୍କ ଜ୍ୟୋତି ଜଳାଇବା ପାଇଁ ଯେକୌଣସି କାର୍ଯ୍ୟକଳାପ ସମ୍ପୂର୍ଣ୍ଣ କରନ୍ତୁ!",
+  "streakStartLearning": "ଶିଖିବା ଆରମ୍ଭ କରନ୍ତୁ",
+  "streakDaysBadge": "{count} ଦିନ",
+  "@streakDaysBadge": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFooterActive": "ଏହି ସପ୍ତାହରେ ଆପଣ {total} ଦିନ ମଧ୍ୟରୁ {count} ଦିନ ଅଭ୍ୟାସ କରିଛନ୍ତି। ଜାରି ରଖନ୍ତୁ!",
+  "@streakFooterActive": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "streakFooterIdle": "ଏହି ସପ୍ତାହରେ ଏପର୍ଯ୍ୟନ୍ତ କୌଣସି ଅଭ୍ୟାସ ନାହିଁ — ଆରମ୍ଭ କରିବା ପାଇଁ ଯେକୌଣସି କାର୍ଯ୍ୟକଳାପ ବାଛନ୍ତୁ!",
+  "streakWeekSemantics": "ଏହି ସପ୍ତାହ: {total} ଦିନ ମଧ୍ୟରୁ {count} ଦିନ ଅଭ୍ୟାସ କରିଛନ୍ତି",
+  "@streakWeekSemantics": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "dayDetailNoActivity": "କୌଣସି କାର୍ଯ୍ୟକଳାପ ରେକର୍ଡ ହୋଇନାହିଁ",
+  "dayDetailPracticeSession": "ଅଭ୍ୟାସ ସେସନ୍",
+  "dayDetailStreakDay": "ଷ୍ଟ୍ରିକ୍ ଦିନ",
+  "dayDetailQuiz": "କୁଇଜ୍",
+  "dayUpcoming": "ଆଗାମୀ",
+  "dayPracticed": "ଅଭ୍ୟାସ କରାଗଲା",
+  "dayNotPracticed": "ଅଭ୍ୟାସ ହୋଇନାହିଁ",
+  "milestoneLevelProgressCaption": "ସ୍ତର ପ୍ରଗତି · {from} → {to}",
+  "@milestoneLevelProgressCaption": {
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "homeDiscover": "ଆବିଷ୍କାର",
+  "homeSwipeHint": "ସ୍ୱାଇପ୍ କରନ୍ତୁ",
+  "homeExploreHint": "ଅନ୍ୱେଷଣ କରନ୍ତୁ",
+  "guestSignInCta": "ଆପଣଙ୍କ ପ୍ରଗତି ସଞ୍ଚୟ କରିବା ପାଇଁ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ",
+  "nbaBadgeStartHere": "ଏଠାରୁ ଆରମ୍ଭ",
+  "nbaTitleFirstLetters": "ଆପଣଙ୍କ ପ୍ରଥମ ଓଲଚିକି ଅକ୍ଷର ଶିଖନ୍ତୁ",
+  "nbaSubFirstLetters": "ମୌଳିକ ବର୍ଣ୍ଣମାଳାରୁ ଆରମ୍ଭ କରି ସାନ୍ତାଳି ଲେଖା ଆନଲକ୍ କରନ୍ତୁ।",
+  "nbaCtaBeginLesson": "ପାଠ ଆରମ୍ଭ କରନ୍ତୁ",
+  "nbaBadgeNextStep": "ପରବର୍ତ୍ତୀ ପଦକ୍ଷେପ",
+  "nbaTitleNumbers": "ସାନ୍ତାଳି ସଂଖ୍ୟା ଅଭ୍ୟାସ କରନ୍ତୁ",
+  "nbaSubNumbers": "ଦୈନନ୍ଦିନ ଗଣନା ଏବଂ ସଂଖ୍ୟା ଶବ୍ଦରେ ଆତ୍ମବିଶ୍ୱାସ ଗଢ଼ନ୍ତୁ।",
+  "nbaCtaPracticeNumbers": "ସଂଖ୍ୟା ଅଭ୍ୟାସ କରନ୍ତୁ",
+  "nbaBadgeMistakes": "ଅଭ୍ୟାସ ଆବଶ୍ୟକ",
+  "nbaTitleMistakes": "ଭୁଲଗୁଡ଼ିକୁ ଜ୍ଞାନରେ ପରିଣତ କରନ୍ତୁ",
+  "nbaSubMistakes": "ଆପଣଙ୍କ ପାଖରେ ସମୀକ୍ଷା ଏବଂ ଆୟତ୍ତ କରିବା ପାଇଁ {count}ଟି ପ୍ରଶ୍ନ ଅଛି।",
+  "@nbaSubMistakes": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nbaCtaReviewMistakes": "ଭୁଲଗୁଡ଼ିକୁ ସମୀକ୍ଷା କରନ୍ତୁ",
+  "nbaBadgeStreakRisk": "ଷ୍ଟ୍ରିକ୍ ବିପଦରେ",
+  "nbaTitleStreakRisk": "ଆପଣଙ୍କ ଦୈନିକ ଗତି ବଜାୟ ରଖନ୍ତୁ",
+  "nbaSubStreakRisk": "ଗୋଟିଏ ଶୀଘ୍ର କୁଇଜ୍ କିମ୍ବା ପାଠ ଆଜି ଆପଣଙ୍କ {count} ଦିନର ଷ୍ଟ୍ରିକ୍ ସୁରକ୍ଷିତ କରିବ।",
+  "@nbaSubStreakRisk": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "nbaCtaQuickReview": "ଶୀଘ୍ର ସମୀକ୍ଷା",
+  "nbaBadgeTryBakhed": "ବାଖେଡ଼ ଚେଷ୍ଟା କରନ୍ତୁ",
+  "nbaTitleTryBakhed": "ଗୋଟିଏ ସାଂସ୍କୃତିକ ଛନ୍ଦ ଶୁଣନ୍ତୁ",
+  "nbaSubTryBakhed": "30 ସେକେଣ୍ଡ ପାଇଁ ସୁନ୍ଦର ସାନ୍ତାଳି ମୌଖିକ କବିତାରେ ନିଜକୁ ବୁଡ଼ାନ୍ତୁ।",
+  "nbaCtaListenNow": "ବର୍ତ୍ତମାନ ଶୁଣନ୍ତୁ",
+  "nbaBadgeAllDone": "ସବୁ ସମ୍ପୂର୍ଣ୍ଣ",
+  "nbaTitleAllDone": "ଆପଣ ସବୁ ସମାପ୍ତ କଲେ — ଅତ୍ୟୁତ୍ତମ!",
+  "nbaSubAllDone": "ନୂଆ ପାଠ ଆସୁଛି। ଯେକୌଣସି ସମୟରେ ବାଖେଡ଼କୁ ଫେରିଯାଆନ୍ତୁ କିମ୍ବା ସମୀକ୍ଷା କରନ୍ତୁ।",
+  "nbaCtaExploreBakhed": "ବାଖେଡ଼ ଅନ୍ୱେଷଣ କରନ୍ତୁ",
+  "affirmationListen": "ଶୁଣନ୍ତୁ",
+  "affirmationStop": "ଅଟକାନ୍ତୁ",
+  "affirmationMarkRead": "ପଢ଼ାଗଲା ବୋଲି ଚିହ୍ନିତ କରନ୍ତୁ",
+  "affirmationRead": "ପଢ଼ନ୍ତୁ",
+  "todaysMissionTitle": "ଆଜିର ମିଶନ୍",
+  "missionsDoneCount": "{done}/4 ସମ୍ପନ୍ନ",
+  "@missionsDoneCount": {
+    "placeholders": {
+      "done": {
+        "type": "int"
+      }
+    }
+  },
+  "hindi": "ହିନ୍ଦୀ",
+  "bengali": "ବାଂଲା",
+  "odia": "ଓଡ଼ିଆ",
+  "teachingLanguage": "ଶିକ୍ଷା ଭାଷା",
+  "teachingLanguageSubtitle": "ଅର୍ଥ ଏବଂ ବ୍ୟାଖ୍ୟା ପାଇଁ ବ୍ୟବହୃତ",
+  "lessonAudioMode": "ପାଠ ଅଡ଼ିଓ",
+  "lessonAudioModeSubtitle": "ସାନ୍ତାଳି ଏବଂ ଅନୁବାଦ ଅଡ଼ିଓ କିପରି ଚାଲିବ ବାଛନ୍ତୁ",
+  "onboardingStepLanguageTitle": "ଆପଣ କେଉଁ ଭାଷା ସବୁଠାରୁ ଭଲ ବୁଝନ୍ତି?",
+  "onboardingStepProficiencyTitle": "ଆପଣ କେତେ ସାନ୍ତାଳି ଜାଣନ୍ତି?",
+  "onboardingStepGoalsTitle": "ଆପଣ କ'ଣ ହାସଲ କରିବାକୁ ଚାହୁଁଛନ୍ତି?",
+  "onboardingStepGoalsSubtitle": "ଗୋଟିଏ କିମ୍ବା ଅଧିକ ବାଛନ୍ତୁ — ଆମେ ଆପଣଙ୍କ ବାଟ ବ୍ୟକ୍ତିଗତ କରିବୁ।",
+  "onboardingStepAudioTitle": "ପାଠର ଅଡ଼ିଓ କିପରି ବାଜିବା ଉଚିତ?",
+  "onboardingStepReadyTitle": "ଆପଣ ପ୍ରାୟ ପ୍ରସ୍ତୁତ!",
+  "proficiencyNone": "ମୁଁ ସାନ୍ତାଳି ଜାଣିନାହିଁ",
+  "proficiencyUnderstandsSome": "ମୁଁ କିଛି ସାନ୍ତାଳି ବୁଝେ",
+  "proficiencyFluentSpeaker": "ମୁଁ ସାନ୍ତାଳି କହେ",
+  "proficiencyBeginnerReader": "ମୁଁ ଟିକେ ଓଲଚିକି ପଢ଼ିପାରେ",
+  "proficiencyFluentReader": "ମୁଁ ଓଲଚିକି ପଢ଼ିପାରେ",
+  "goalSpeakSantali": "ସାନ୍ତାଳି କହିବା",
+  "goalUnderstandSantali": "ସାନ୍ତାଳି ବୁଝିବା",
+  "goalReadOlChiki": "ଓଲଚିକି ପଢ଼ିବା",
+  "goalWriteOlChiki": "ଓଲଚିକି ଲେଖିବା",
+  "goalLearnEverything": "ସବୁ କିଛି ଶିଖିବା",
+  "goalHelpMyChild": "ମୋ ପିଲାକୁ ଶିଖେଇବାରେ ସାହାଯ୍ୟ କରିବା",
+  "goalPrepareExam": "ବିଦ୍ୟାଳୟ କିମ୍ବା ପରୀକ୍ଷା ପାଇଁ ପ୍ରସ୍ତୁତି",
+  "audioModeTargetOnly": "କେବଳ ସାନ୍ତାଳି",
+  "audioModeBilingual": "ସାନ୍ତାଳି, ତାପରେ ମୋ ଭାଷା",
+  "audioModeTranslationOnDemand": "କେବଳ ଟ୍ୟାପ୍ କଲେ ଅନୁବାଦ ବଜାନ୍ତୁ",
+  "dailyGoalLabel": "ଦୈନିକ ଲକ୍ଷ୍ୟ",
+  "minutesPerDay": "{minutes} ମିନିଟ୍/ଦିନ",
+  "@minutesPerDay": {
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "downloadStarterAudio": "ଷ୍ଟାର୍ଟର ଅଡ଼ିଓ ଡାଉନଲୋଡ୍ କରନ୍ତୁ",
+  "downloadStarterAudioSubtitle": "ପ୍ରଥମ ଦିନରୁ ଅଫଲାଇନ ଶିଖନ୍ତୁ",
+  "backButton": "ପଛକୁ"
+}

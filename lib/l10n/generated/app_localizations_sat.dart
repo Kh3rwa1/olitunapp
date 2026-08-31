@@ -442,7 +442,7 @@ class AppLocalizationsSat extends AppLocalizations {
   String get streakIdleSubtitle => 'Complete any activity to light your flame!';
 
   @override
-  String get streakStartLearning => 'Start learning';
+  String get streakStartLearning => 'ᱪᱮᱫ ᱥᱩᱨᱩ ᱢᱮ';
 
   @override
   String streakDaysBadge(int count) {
@@ -499,7 +499,7 @@ class AppLocalizationsSat extends AppLocalizations {
   String get homeExploreHint => 'EXPLORE';
 
   @override
-  String get guestSignInCta => 'Sign in to save your progress';
+  String get guestSignInCta => 'ᱟᱢᱟᱜ ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ';
 
   @override
   String get nbaBadgeStartHere => 'START HERE';
@@ -600,4 +600,110 @@ class AppLocalizationsSat extends AppLocalizations {
   String missionsDoneCount(int done) {
     return '$done/4 Done';
   }
+
+  @override
+  String get hindi => 'ᱦᱤᱱᱫᱤ';
+
+  @override
+  String get bengali => 'ᱵᱟᱝᱞᱟ';
+
+  @override
+  String get odia => 'ᱳᱰᱤᱭᱟ';
+
+  @override
+  String get teachingLanguage => 'ᱪᱮᱫ ᱵᱷᱟᱥᱟ';
+
+  @override
+  String get teachingLanguageSubtitle => 'ᱢᱮᱱᱮᱛ ᱟᱨ ᱵᱩᱡᱷᱟᱹᱣ ᱞᱟᱹᱜᱤᱫ ᱵᱮᱵᱷᱟᱨᱚᱜᱼᱟ';
+
+  @override
+  String get lessonAudioMode => 'ᱯᱟᱴ ᱥᱟᱲᱮ';
+
+  @override
+  String get lessonAudioModeSubtitle =>
+      'ᱥᱟᱱᱛᱟᱲᱤ ᱟᱨ ᱟᱱᱩᱵᱟᱫ ᱥᱟᱲᱮ ᱪᱮᱫ ᱞᱮᱠᱟ ᱡᱟᱭᱱᱟᱜ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get onboardingStepLanguageTitle =>
+      'ᱟᱢ ᱡᱟᱦᱟᱸ ᱵᱷᱟᱥᱟ ᱡᱟᱹᱥᱛᱤ ᱵᱩᱡᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ?';
+
+  @override
+  String get onboardingStepProficiencyTitle => 'ᱟᱢ ᱥᱟᱱᱛᱟᱲᱤ ᱛᱤᱥ ᱵᱟᱲᱟᱭᱟ?';
+
+  @override
+  String get onboardingStepGoalsTitle => 'ᱟᱢ ᱪᱮᱫ ᱦᱟᱥᱮᱞ ᱢᱮ ᱠᱩᱥᱤᱭᱟᱜᱼᱟ?';
+
+  @override
+  String get onboardingStepGoalsSubtitle => 'ᱢᱤᱫ ᱟᱨᱵᱟᱝ ᱰᱷᱮᱨ ᱵᱟᱪᱷᱟᱣ ᱢᱮ';
+
+  @override
+  String get onboardingStepAudioTitle => 'ᱯᱟᱴ ᱥᱟᱲᱮ ᱪᱮᱫ ᱞᱮᱠᱟ ᱛᱮ ᱡᱟᱭᱱᱟᱢ?';
+
+  @override
+  String get onboardingStepReadyTitle => 'ᱟᱢ ᱥᱩᱨᱥᱩᱯᱩᱨ ᱛᱮᱭᱟᱨ!';
+
+  @override
+  String get proficiencyNone => 'ᱤᱧ ᱥᱟᱱᱛᱟᱲᱤ ᱵᱟᱝ ᱵᱟᱲᱟᱭᱟ';
+
+  @override
+  String get proficiencyUnderstandsSome =>
+      'ᱤᱧ ᱛᱤᱱᱟᱹᱝ ᱜᱟᱱ ᱥᱟᱱᱛᱟᱲᱤ ᱵᱩᱡᱷᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ';
+
+  @override
+  String get proficiencyFluentSpeaker => 'ᱤᱧ ᱥᱟᱱᱛᱟᱲᱤ ᱨᱚᱲ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ';
+
+  @override
+  String get proficiencyBeginnerReader =>
+      'ᱤᱧ ᱛᱤᱱᱟᱹᱝ ᱜᱟᱱ ᱚᱞ ᱪᱤᱠᱤ ᱯᱟᱲᱦᱟᱣ ᱫᱟᱲᱮᱭᱟᱜᱼᱟ';
+
+  @override
+  String get proficiencyFluentReader => 'ᱤᱧ ᱚᱞ ᱪᱤᱠᱤ ᱯᱟᱲᱦᱟᱣ ᱵᱟᱲᱟᱭᱤᱧᱟ';
+
+  @override
+  String get goalSpeakSantali => 'ᱥᱟᱱᱛᱟᱲᱤ ᱨᱚᱲ';
+
+  @override
+  String get goalUnderstandSantali => 'ᱥᱟᱱᱛᱟᱲᱤ ᱵᱩᱡᱷᱟᱣ';
+
+  @override
+  String get goalReadOlChiki => 'ᱚᱞ ᱪᱤᱠᱤ ᱯᱟᱲᱦᱟᱣ';
+
+  @override
+  String get goalWriteOlChiki => 'ᱚᱞ ᱪᱤᱠᱤ ᱚᱞ';
+
+  @override
+  String get goalLearnEverything => 'ᱡᱚᱛᱚ ᱪᱮᱫ';
+
+  @override
+  String get goalHelpMyChild => 'ᱤᱧᱟᱜ ᱜᱤᱫᱽᱨᱟᱹ ᱪᱮᱫ ᱥᱟᱸᱛᱮ ᱜᱚᱲᱚ';
+
+  @override
+  String get goalPrepareExam => 'ᱤᱥᱠᱩᱞ ᱟᱨᱵᱟᱝ ᱯᱚᱨᱤᱠᱷᱤᱭᱟ ᱞᱟᱹᱜᱤᱫ ᱛᱮᱭᱟᱨ';
+
+  @override
+  String get audioModeTargetOnly => 'ᱠᱷᱟᱹᱞᱤ ᱥᱟᱱᱛᱟᱲᱤ';
+
+  @override
+  String get audioModeBilingual => 'ᱥᱟᱱᱛᱟᱲᱤ, ᱛᱟᱭᱚᱢ ᱤᱧᱟᱜ ᱵᱷᱟᱥᱟ';
+
+  @override
+  String get audioModeTranslationOnDemand => 'ᱤᱧ ᱴᱮᱯ ᱞᱮᱠᱷᱟᱱ ᱜᱮ ᱟᱱᱩᱵᱟᱫ ᱡᱟᱭᱱᱟᱢ';
+
+  @override
+  String get dailyGoalLabel => 'ᱫᱤᱱᱟᱹᱢ ᱩᱫᱩᱜ';
+
+  @override
+  String minutesPerDay(int minutes) {
+    return '$minutes ᱢᱤᱱᱤᱴ/ᱫᱤᱱ';
+  }
+
+  @override
+  String get downloadStarterAudio => 'ᱥᱩᱨᱩᱭᱟᱜ ᱥᱟᱲᱮ ᱰᱟᱣᱩᱱᱞᱳᱰ ᱢᱮ';
+
+  @override
+  String get downloadStarterAudioSubtitle =>
+      'ᱯᱩᱭᱞᱩ ᱫᱤᱱ ᱠᱷᱚᱱ ᱜᱮ ᱚᱯᱷᱞᱟᱭᱱ ᱨᱮ ᱪᱮᱫ ᱢᱮ';
+
+  @override
+  String get backButton => 'ᱛᱟᱭᱚᱢ';
 }

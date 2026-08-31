@@ -5,7 +5,10 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/intl.dart' as intl;
 
+import 'app_localizations_bn.dart';
 import 'app_localizations_en.dart';
+import 'app_localizations_hi.dart';
+import 'app_localizations_or.dart';
 import 'app_localizations_sat.dart';
 
 // ignore_for_file: type=lint
@@ -94,7 +97,10 @@ abstract class AppLocalizations {
 
   /// A list of this localizations delegate's supported locales.
   static const List<Locale> supportedLocales = <Locale>[
+    Locale('bn'),
     Locale('en'),
+    Locale('hi'),
+    Locale('or'),
     Locale('sat'),
   ];
 
@@ -1195,6 +1201,204 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'{done}/4 Done'**
   String missionsDoneCount(int done);
+
+  /// No description provided for @hindi.
+  ///
+  /// In en, this message translates to:
+  /// **'Hindi'**
+  String get hindi;
+
+  /// No description provided for @bengali.
+  ///
+  /// In en, this message translates to:
+  /// **'Bengali'**
+  String get bengali;
+
+  /// No description provided for @odia.
+  ///
+  /// In en, this message translates to:
+  /// **'Odia'**
+  String get odia;
+
+  /// No description provided for @teachingLanguage.
+  ///
+  /// In en, this message translates to:
+  /// **'Teaching Language'**
+  String get teachingLanguage;
+
+  /// No description provided for @teachingLanguageSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Used for meanings and explanations'**
+  String get teachingLanguageSubtitle;
+
+  /// No description provided for @lessonAudioMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Lesson Audio'**
+  String get lessonAudioMode;
+
+  /// No description provided for @lessonAudioModeSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose how Santali and translation audio play'**
+  String get lessonAudioModeSubtitle;
+
+  /// No description provided for @onboardingStepLanguageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Which language do you understand best?'**
+  String get onboardingStepLanguageTitle;
+
+  /// No description provided for @onboardingStepProficiencyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How much Santali do you know?'**
+  String get onboardingStepProficiencyTitle;
+
+  /// No description provided for @onboardingStepGoalsTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'What do you want to achieve?'**
+  String get onboardingStepGoalsTitle;
+
+  /// No description provided for @onboardingStepGoalsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Pick one or more — we\'ll personalize your path.'**
+  String get onboardingStepGoalsSubtitle;
+
+  /// No description provided for @onboardingStepAudioTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'How should lesson audio play?'**
+  String get onboardingStepAudioTitle;
+
+  /// No description provided for @onboardingStepReadyTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'re almost ready!'**
+  String get onboardingStepReadyTitle;
+
+  /// No description provided for @proficiencyNone.
+  ///
+  /// In en, this message translates to:
+  /// **'I don\'t know Santali'**
+  String get proficiencyNone;
+
+  /// No description provided for @proficiencyUnderstandsSome.
+  ///
+  /// In en, this message translates to:
+  /// **'I understand some Santali'**
+  String get proficiencyUnderstandsSome;
+
+  /// No description provided for @proficiencyFluentSpeaker.
+  ///
+  /// In en, this message translates to:
+  /// **'I speak Santali'**
+  String get proficiencyFluentSpeaker;
+
+  /// No description provided for @proficiencyBeginnerReader.
+  ///
+  /// In en, this message translates to:
+  /// **'I can read a little Ol Chiki'**
+  String get proficiencyBeginnerReader;
+
+  /// No description provided for @proficiencyFluentReader.
+  ///
+  /// In en, this message translates to:
+  /// **'I already read Ol Chiki'**
+  String get proficiencyFluentReader;
+
+  /// No description provided for @goalSpeakSantali.
+  ///
+  /// In en, this message translates to:
+  /// **'Speak Santali'**
+  String get goalSpeakSantali;
+
+  /// No description provided for @goalUnderstandSantali.
+  ///
+  /// In en, this message translates to:
+  /// **'Understand Santali'**
+  String get goalUnderstandSantali;
+
+  /// No description provided for @goalReadOlChiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Read Ol Chiki'**
+  String get goalReadOlChiki;
+
+  /// No description provided for @goalWriteOlChiki.
+  ///
+  /// In en, this message translates to:
+  /// **'Write Ol Chiki'**
+  String get goalWriteOlChiki;
+
+  /// No description provided for @goalLearnEverything.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn everything'**
+  String get goalLearnEverything;
+
+  /// No description provided for @goalHelpMyChild.
+  ///
+  /// In en, this message translates to:
+  /// **'Help my child learn'**
+  String get goalHelpMyChild;
+
+  /// No description provided for @goalPrepareExam.
+  ///
+  /// In en, this message translates to:
+  /// **'Prepare for school or an exam'**
+  String get goalPrepareExam;
+
+  /// No description provided for @audioModeTargetOnly.
+  ///
+  /// In en, this message translates to:
+  /// **'Santali only'**
+  String get audioModeTargetOnly;
+
+  /// No description provided for @audioModeBilingual.
+  ///
+  /// In en, this message translates to:
+  /// **'Santali, then my language'**
+  String get audioModeBilingual;
+
+  /// No description provided for @audioModeTranslationOnDemand.
+  ///
+  /// In en, this message translates to:
+  /// **'Play translation only when I tap it'**
+  String get audioModeTranslationOnDemand;
+
+  /// No description provided for @dailyGoalLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal'**
+  String get dailyGoalLabel;
+
+  /// No description provided for @minutesPerDay.
+  ///
+  /// In en, this message translates to:
+  /// **'{minutes} min/day'**
+  String minutesPerDay(int minutes);
+
+  /// No description provided for @downloadStarterAudio.
+  ///
+  /// In en, this message translates to:
+  /// **'Download starter audio'**
+  String get downloadStarterAudio;
+
+  /// No description provided for @downloadStarterAudioSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Learn offline from day one'**
+  String get downloadStarterAudioSubtitle;
+
+  /// No description provided for @backButton.
+  ///
+  /// In en, this message translates to:
+  /// **'Back'**
+  String get backButton;
 }
 
 class _AppLocalizationsDelegate
@@ -1208,7 +1412,7 @@ class _AppLocalizationsDelegate
 
   @override
   bool isSupported(Locale locale) =>
-      <String>['en', 'sat'].contains(locale.languageCode);
+      <String>['bn', 'en', 'hi', 'or', 'sat'].contains(locale.languageCode);
 
   @override
   bool shouldReload(_AppLocalizationsDelegate old) => false;
@@ -1217,8 +1421,14 @@ class _AppLocalizationsDelegate
 AppLocalizations lookupAppLocalizations(Locale locale) {
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
+    case 'bn':
+      return AppLocalizationsBn();
     case 'en':
       return AppLocalizationsEn();
+    case 'hi':
+      return AppLocalizationsHi();
+    case 'or':
+      return AppLocalizationsOr();
     case 'sat':
       return AppLocalizationsSat();
   }

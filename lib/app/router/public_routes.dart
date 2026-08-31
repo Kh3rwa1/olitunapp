@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/onboarding/presentation/splash_screen.dart';
 import '../../features/auth/presentation/welcome_screen.dart';
-import '../../features/onboarding/presentation/onboarding_screen.dart';
+import '../../features/onboarding/presentation/onboarding_gate.dart';
 import '../../features/auth/presentation/email_auth_screen.dart';
 import '../../features/legal/presentation/legal_document_screen.dart';
 import 'route_names.dart';
@@ -35,7 +35,7 @@ List<RouteBase> buildPublicRoutes({
     peerRoute(
       path: '/onboarding',
       name: RouteNames.onboarding,
-      child: (_, _) => const OnboardingScreen(),
+      child: (_, _) => const OnboardingGate(),
     ),
     modalRoute(
       path: '/login',

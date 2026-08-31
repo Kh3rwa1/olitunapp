@@ -45,11 +45,7 @@ class DynamicHtmlBlock extends StatelessWidget {
     );
   }
 
-  List<Widget> _parseHtmlBlocks(
-    String html,
-    bool isDark,
-    Color accentColor,
-  ) {
+  List<Widget> _parseHtmlBlocks(String html, bool isDark, Color accentColor) {
     final List<Widget> widgets = [];
 
     // Normalize break lines and trim

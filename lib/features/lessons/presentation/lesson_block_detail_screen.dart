@@ -12,8 +12,10 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/presentation/animations/scale_button.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../shared/utils/media_type_resolver.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../shared/models/content/quiz_model.dart';
 import '../../quiz/data/quiz_repository.dart';
+import '../../quiz/domain/listening_quiz_generator.dart';
 import '../domain/entities/lesson_entity.dart';
 import 'widgets/full_bleed_hero_media.dart';
 import '../../practice/presentation/widgets/typing_practice_panel.dart';
@@ -167,10 +169,24 @@ class _LessonBlockDetailScreenState
 
         final rawBlocks = lesson.blocks;
         final hasAuthoredQuiz = rawBlocks.any((b) => b.type == 'quiz');
+        // Phase 7: offer a listening quiz before the regular one when the
+        // audio-quizzes flag is on and the lesson has playable audio.
+        // Flag-off keeps the exact previous experience.
+        final injectListeningQuiz =
+            !hasAuthoredQuiz &&
+            ref.watch(featureFlagsProvider).audioQuizzesEnabled &&
+            ListeningQuizGenerator.canGenerate(lesson);
         final contentBlocks = hasAuthoredQuiz
             ? rawBlocks
             : [
                 ...rawBlocks,
+                if (injectListeningQuiz)
+                  LessonBlockEntity(
+                    type: 'quiz',
+                    textOlChiki: '',
+                    textLatin: '',
+                    data: {'quizId': 'listening_quiz_${lesson.id}'},
+                  ),
                 LessonBlockEntity(
                   type: 'quiz',
                   textOlChiki: '',
@@ -583,6 +599,26 @@ class _LessonBlockDetailScreenState
           '';
       if (quizId.isEmpty || _dismissedQuizBlockIndices.contains(index)) {
         return const SizedBox.shrink();
+      }
+
+      if (quizId.startsWith('listening_quiz_')) {
+        final quiz = ref.watch(listeningLessonQuizProvider(lesson));
+        if (quiz.questions.isEmpty) {
+          return const SizedBox.shrink();
+        }
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            return _buildQuizBlockCTA(
+              context,
+              quizId,
+              quiz,
+              accentColor,
+              isDark,
+              constraints.maxHeight,
+              index,
+            );
+          },
+        );
       }
 
       if (quizId.startsWith('dynamic_quiz_')) {

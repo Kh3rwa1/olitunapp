@@ -6,12 +6,16 @@ import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fpdart/fpdart.dart';
 import '../../../core/error/failures.dart';
+import '../../../core/config/feature_flags.dart';
 import '../../../shared/models/content_models.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
+import '../../../core/analytics/analytics_service.dart';
+import '../../content/presentation/providers/audio_playback_providers.dart';
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
+import 'widgets/listening_question_card.dart';
 import 'widgets/quiz_option_tile.dart';
 import 'widgets/quiz_progress_bar.dart';
 import 'widgets/quiz_question_card.dart';
@@ -32,6 +36,69 @@ class QuizScreen extends ConsumerStatefulWidget {
 class _QuizScreenState extends ConsumerState<QuizScreen> {
   bool _started = false;
 
+  /// Phase 7: spec §16 listening-quiz funnel events. Emitted alongside the
+  /// generic quiz events, only while the audio-quizzes flag is on.
+  void _trackListeningStarted(QuizModel quiz) {
+    if (!ref.read(featureFlagsProvider).audioQuizzesEnabled) return;
+    if (!quiz.id.startsWith('listening_quiz_')) return;
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.listeningQuizStarted,
+            source: 'quiz_session',
+            sourceId: quiz.id,
+            metadata: {
+              'categoryId': quiz.categoryId,
+              'title': quiz.title,
+              'questionCount': quiz.questions.length,
+            },
+          ),
+    );
+  }
+
+  void _trackListeningAnswered({
+    required QuizModel quiz,
+    required QuizQuestion question,
+    required int selectedIndex,
+    required bool isCorrect,
+  }) {
+    if (!ref.read(featureFlagsProvider).audioQuizzesEnabled) return;
+    if (question.type != 'listen_meaning') return;
+    unawaited(
+      ref
+          .read(learningAnalyticsServiceProvider)
+          .track(
+            LearningAnalyticsEvents.listeningQuizAnswered,
+            source: 'quiz_session',
+            sourceId: quiz.id,
+            metadata: {
+              'isCorrect': isCorrect,
+              'selectedIndex': selectedIndex,
+              'correctIndex': question.correctIndex,
+              'hasAudio': question.audioUrl != null,
+            },
+          ),
+    );
+  }
+
+  void _selectAnswer(int index, QuizQuestion question, QuizModel quiz) {
+    final notifier = ref.read(
+      quizSessionNotifierProvider(widget.quizId).notifier,
+    );
+    final wasAnswered = ref
+        .read(quizSessionNotifierProvider(widget.quizId))
+        .isAnswered;
+    notifier.selectAnswer(index, question, quiz);
+    if (wasAnswered) return; // selectAnswer is a no-op in that case
+    _trackListeningAnswered(
+      quiz: quiz,
+      question: question,
+      selectedIndex: index,
+      isCorrect: index == question.correctIndex,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     ref.listen<AsyncValue<Either<Failure, QuizModel>>>(
@@ -42,6 +109,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           result.fold((_) {}, (quiz) {
             if (quiz.questions.isEmpty) return;
             _started = true;
+            _trackListeningStarted(quiz);
             ref
                 .read(quizSessionNotifierProvider(widget.quizId).notifier)
                 .startQuiz(quiz);
@@ -57,6 +125,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
         result.fold((_) {}, (quiz) {
           if (quiz.questions.isEmpty) return;
           _started = true;
+          _trackListeningStarted(quiz);
           WidgetsBinding.instance.addPostFrameCallback((_) {
             if (!mounted) return;
             ref
@@ -130,7 +199,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
           );
           final question = notifier.displayedQuestion(quiz);
           final totalQs = quiz.questions.length;
-          final isFillBlank = question.type == 'fill_blank';
+          final audioQuizzesEnabled = ref
+              .watch(featureFlagsProvider)
+              .audioQuizzesEnabled;
+          final isListeningQuestion =
+              audioQuizzesEnabled &&
+              question.type == 'listen_meaning' &&
+              question.audioUrl != null;
+          final isFillBlank =
+              !isListeningQuestion && question.type == 'fill_blank';
           final correctOptionOlChiki =
               question.correctIndex >= 0 &&
                   question.correctIndex < question.optionsOlChiki.length
@@ -143,6 +220,39 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               : correctOptionOlChiki;
 
           Widget buildQuestionArea() {
+            if (isListeningQuestion) {
+              final playback = ref.watch(playbackStateProvider);
+              final playbackState = playback.valueOrNull;
+              final isPlayingThisAudio =
+                  playbackState?.isPlaying == true &&
+                  playbackState?.current?.id == question.audioUrl;
+              final isLoadingThisAudio =
+                  playbackState?.isLoading == true &&
+                  playbackState?.current?.id == question.audioUrl;
+              return ListeningQuestionCard(
+                question: question,
+                isPlaying: isPlayingThisAudio,
+                isLoading: isLoadingThisAudio,
+                playbackError: playbackState?.error,
+                onPlayTap: () {
+                  unawaited(
+                    ref
+                        .read(playbackControllerProvider)
+                        .playSingle(
+                          id: question.audioUrl!,
+                          contentKind: 'lesson',
+                          contentId: widget.quizId,
+                          trackType: 'targetNormal',
+                          languageCode: 'sat',
+                        ),
+                  );
+                },
+                onStopTap: () {
+                  unawaited(ref.read(playbackControllerProvider).stop());
+                },
+              );
+            }
+
             if (!isFillBlank) {
               return QuizQuestionCard(question: question);
             }
@@ -165,7 +275,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
                     question: question,
                     isSelected: state.selectedAnswer == index,
                     isAnswered: state.isAnswered,
-                    onTap: () => notifier.selectAnswer(index, question, quiz),
+                    onTap: () => _selectAnswer(index, question, quiz),
                   ),
                 ),
               );

@@ -48,7 +48,7 @@ class LessonBlockItemView extends ConsumerWidget {
           block.data?['quizId'] as String? ??
           block.data?['quizRefId'] as String? ??
           '';
-      if (quizId.isEmpty || isDismissedQuiz) {
+      if (quizId.isEmpty) {
         return const SizedBox.shrink();
       }
 
@@ -63,6 +63,7 @@ class LessonBlockItemView extends ConsumerWidget {
             isDark: isDark,
             maxHeight: constraints.maxHeight,
             onDismiss: onDismissQuiz,
+            isDismissed: isDismissedQuiz,
           ),
         );
       }
@@ -77,6 +78,7 @@ class LessonBlockItemView extends ConsumerWidget {
             isDark: isDark,
             maxHeight: constraints.maxHeight,
             onDismiss: onDismissQuiz,
+            isDismissed: isDismissedQuiz,
           ),
         );
       }
@@ -104,6 +106,7 @@ class LessonBlockItemView extends ConsumerWidget {
                   isDark: isDark,
                   maxHeight: constraints.maxHeight,
                   onDismiss: onDismissQuiz,
+                  isDismissed: isDismissedQuiz,
                 ),
               );
             },

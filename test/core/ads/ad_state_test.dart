@@ -61,9 +61,7 @@ void main() {
     test('AdStateNotifier records impressions and errors accurately', () {
       final container = ProviderContainer(
         overrides: [
-          purchasedCategoriesProvider.overrideWith(
-            (ref) async => <String>{},
-          ),
+          purchasedCategoriesProvider.overrideWith((ref) async => <String>{}),
         ],
       );
       addTearDown(container.dispose);

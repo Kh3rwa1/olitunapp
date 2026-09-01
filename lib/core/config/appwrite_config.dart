@@ -1,23 +1,27 @@
 /// Centralized Appwrite configuration.
 ///
-/// Required build flags — the app will throw a StateError on startup if
-/// either of these is missing. There are no hardcoded fallbacks.
+/// Configured with production defaults so release builds and testing environments
+/// are wired up out-of-the-box. Can be overridden via --dart-define flags:
 ///
 ///   --dart-define=APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1
 ///   --dart-define=APPWRITE_PROJECT_ID=[your-project-id]
-///
-/// Optional:
-///   --dart-define=ADMIN_TEAM_ID=admins         (default: "admins")
+///   --dart-define=ADMIN_TEAM_ID=admins
 ///   --dart-define=TRANSLATE_URL=[appwrite-fn-url]
-///   --dart-define=SENTRY_DSN=[sentry-dsn]
 class AppwriteConfig {
   AppwriteConfig._();
 
+  static const String _defaultEndpoint = 'https://sgp.cloud.appwrite.io/v1';
+  static const String _defaultProjectId = '699495910038e39622c5';
+  static const String _defaultTranslateUrl =
+      'https://sgp.cloud.appwrite.io/v1/functions/6a007db60024418c0997/executions';
+
   static const String _envEndpoint = String.fromEnvironment(
     'APPWRITE_ENDPOINT',
+    defaultValue: _defaultEndpoint,
   );
   static const String _envProjectId = String.fromEnvironment(
     'APPWRITE_PROJECT_ID',
+    defaultValue: _defaultProjectId,
   );
 
   /// Resolved endpoint — never empty after [validate].
@@ -39,7 +43,10 @@ class AppwriteConfig {
   static const String razorpayKeyId = String.fromEnvironment('RAZORPAY_KEY_ID');
 
   /// Translate Appwrite Function URL.
-  static const String translateUrl = String.fromEnvironment('TRANSLATE_URL');
+  static const String translateUrl = String.fromEnvironment(
+    'TRANSLATE_URL',
+    defaultValue: _defaultTranslateUrl,
+  );
 
   /// Validates required config. Call once at app startup, before any
   /// Appwrite client is constructed. Throws [StateError] with an actionable

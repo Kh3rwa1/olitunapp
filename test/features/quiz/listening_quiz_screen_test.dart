@@ -127,6 +127,9 @@ void main() {
     ),
     mistakeProvider.overrideWith(() => MockMistakeNotifier([])),
     learningAnalyticsServiceProvider.overrideWithValue(analyticsService),
+    playbackControllerProvider.overrideWithValue(
+      PlaybackController(audioService: audioService),
+    ),
   ];
 
   void setPortraitSurface(WidgetTester tester) {

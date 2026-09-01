@@ -179,6 +179,9 @@ class LessonBlockModel extends LessonBlockEntity {
     required super.type,
     super.textOlChiki,
     super.textLatin,
+    super.textBengali,
+    super.textHindi,
+    super.textOdia,
     super.imageUrl,
     super.audioUrl,
     super.data,
@@ -191,6 +194,11 @@ class LessonBlockModel extends LessonBlockEntity {
         json['textOlChiki'] as String? ?? json['text_ol_chiki'] as String?;
     final rawLatin =
         json['textLatin'] as String? ?? json['text_latin'] as String?;
+    final rawBengali =
+        json['textBengali'] as String? ?? json['text_bengali'] as String?;
+    final rawHindi =
+        json['textHindi'] as String? ?? json['text_hindi'] as String?;
+    final rawOdia = json['textOdia'] as String? ?? json['text_odia'] as String?;
 
     String? resolvedOlChiki = rawOlChiki;
     String? resolvedLatin = rawLatin;
@@ -206,6 +214,9 @@ class LessonBlockModel extends LessonBlockEntity {
       type: json['type'] as String? ?? 'text',
       textOlChiki: resolvedOlChiki,
       textLatin: resolvedLatin,
+      textBengali: rawBengali,
+      textHindi: rawHindi,
+      textOdia: rawOdia,
       imageUrl: json['imageUrl'] as String? ?? json['image_url'] as String?,
       audioUrl: json['audioUrl'] as String? ?? json['audio_url'] as String?,
       data: parsedData,
@@ -217,6 +228,9 @@ class LessonBlockModel extends LessonBlockEntity {
       'type': type,
       'textOlChiki': textOlChiki,
       'textLatin': textLatin,
+      'textBengali': textBengali,
+      'textHindi': textHindi,
+      'textOdia': textOdia,
       'imageUrl': imageUrl,
       'audioUrl': audioUrl,
       'data': data,
@@ -228,6 +242,9 @@ class LessonBlockModel extends LessonBlockEntity {
       type: type,
       textOlChiki: textOlChiki,
       textLatin: textLatin,
+      textBengali: textBengali,
+      textHindi: textHindi,
+      textOdia: textOdia,
       imageUrl: imageUrl,
       audioUrl: audioUrl,
       data: data,
@@ -239,6 +256,9 @@ class LessonBlockModel extends LessonBlockEntity {
       type: entity.type,
       textOlChiki: entity.textOlChiki,
       textLatin: entity.textLatin,
+      textBengali: entity.textBengali,
+      textHindi: entity.textHindi,
+      textOdia: entity.textOdia,
       imageUrl: entity.imageUrl,
       audioUrl: entity.audioUrl,
       data: entity.data,

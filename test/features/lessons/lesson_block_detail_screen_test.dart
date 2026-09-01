@@ -277,8 +277,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify first page renders details
-      expect(find.text('At (at)'), findsOneWidget);
-      expect(find.text('AT (AT)'), findsOneWidget);
+      expect(find.text('At'), findsNWidgets(2));
+      expect(find.text('LISTEN'), findsOneWidget);
       expect(find.text('Pronunciation'), findsOneWidget);
       expect(find.text('at'), findsOneWidget);
 
@@ -290,8 +290,8 @@ void main() {
       await tester.pumpAndSettle();
 
       // Verify second page renders details
-      expect(find.text('Ot (ot)'), findsOneWidget);
-      expect(find.text('OT (OT)'), findsOneWidget);
+      expect(find.text('Ot'), findsNWidgets(2));
+      expect(find.text('LISTEN'), findsOneWidget);
       expect(find.text('ot'), findsOneWidget);
     },
   );
@@ -347,7 +347,8 @@ void main() {
 
       // Verify first page renders image visual media details
       expect(find.byType(FullBleedHeroMedia), findsOneWidget);
-      expect(find.text('Image Block'), findsNWidgets(2));
+      expect(find.text('Image Block'), findsNWidgets(3));
+      expect(find.text('LISTEN'), findsOneWidget);
 
       // Swipe to second page (SVG block)
       final pageViewFinder = find.byType(PageView);
@@ -356,7 +357,8 @@ void main() {
 
       // Verify second page renders SVG visual media details
       expect(find.byType(FullBleedHeroMedia), findsOneWidget);
-      expect(find.text('SVG Block'), findsNWidgets(2));
+      expect(find.text('SVG Block'), findsNWidgets(3));
+      expect(find.text('LISTEN'), findsOneWidget);
     },
   );
 }

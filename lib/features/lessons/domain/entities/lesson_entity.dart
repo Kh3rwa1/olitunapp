@@ -75,6 +75,9 @@ class LessonBlockEntity extends Equatable {
   final String type;
   final String? textOlChiki;
   final String? textLatin;
+  final String? textBengali;
+  final String? textHindi;
+  final String? textOdia;
   final String? imageUrl;
   final String? audioUrl;
   final Map<String, dynamic>? data;
@@ -83,6 +86,9 @@ class LessonBlockEntity extends Equatable {
     required this.type,
     this.textOlChiki,
     this.textLatin,
+    this.textBengali,
+    this.textHindi,
+    this.textOdia,
     this.imageUrl,
     this.audioUrl,
     this.data,
@@ -93,6 +99,9 @@ class LessonBlockEntity extends Equatable {
     type,
     textOlChiki,
     textLatin,
+    textBengali,
+    textHindi,
+    textOdia,
     imageUrl,
     audioUrl,
     data,

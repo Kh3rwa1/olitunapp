@@ -38,6 +38,10 @@ class SentenceListContent extends ConsumerWidget {
 
     final layoutMode = ref.watch(lessonLayoutModeProvider);
 
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+    final isOlChikiOnly = scriptMode == 'olchiki';
+
     if (layoutMode == LessonLayoutMode.grid) {
       return GridView.builder(
         shrinkWrap: true,
@@ -51,6 +55,11 @@ class SentenceListContent extends ConsumerWidget {
         itemCount: sentences.length,
         itemBuilder: (context, index) {
           final sentence = sentences[index];
+          final transliteration = sentence.localizedTransliteration(
+            teachingLanguage,
+          );
+          final meaning = sentence.localizedMeaning(teachingLanguage);
+
           return ScaleButton(
             onPressed: () {
               HapticFeedback.lightImpact();
@@ -81,33 +90,40 @@ class SentenceListContent extends ConsumerWidget {
                           overflow: TextOverflow.ellipsis,
                           textAlign: TextAlign.center,
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          sentence.sentenceLatin,
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                            color: isDark ? Colors.white70 : Colors.black87,
-                            letterSpacing: 0.5,
+                        if (!isOlChikiOnly) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            transliteration.isNotEmpty
+                                ? transliteration
+                                : sentence.sentenceLatin,
+                            style: TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white70 : Colors.black87,
+                              letterSpacing: 0.5,
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          sentence.meaning,
-                          style: TextStyle(
-                            fontSize: 11,
-                            color: isDark ? Colors.white54 : Colors.black54,
+                        ],
+                        if (meaning.isNotEmpty && !isOlChikiOnly) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            meaning,
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: isDark ? Colors.white54 : Colors.black54,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          textAlign: TextAlign.center,
-                        ),
+                        ],
                       ],
                     ),
                   ),
+
                   Positioned(
                     top: 0,
                     right: 0,
@@ -133,94 +149,104 @@ class SentenceListContent extends ConsumerWidget {
     }
 
     return Column(
-      children: sentences
-          .map(
-            (sentence) => Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: ScaleButton(
-                onPressed: () {
-                  HapticFeedback.lightImpact();
-                  context.push('/sentence/$lessonId/${sentence.id}');
-                },
-                child: Container(
-                  padding: const EdgeInsets.all(20),
-                  decoration: contentCardDecoration(isDark),
-                  child: Row(
-                    children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              sentence.sentenceOlChiki,
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.w900,
-                                color: AppColors.primary,
-                                height: 1.3,
-                              ),
-                            ),
-                            const SizedBox(height: 6),
-                            Text(
-                              sentence.sentenceLatin,
-                              style: TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: isDark ? Colors.white70 : Colors.black54,
-                                fontStyle: FontStyle.italic,
-                              ),
-                            ),
-                            if (sentence.pronunciation != null &&
-                                sentence.pronunciation!.isNotEmpty) ...[
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 8,
-                                  vertical: 3,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary.withValues(
-                                    alpha: isDark ? 0.2 : 0.08,
-                                  ),
-                                  borderRadius: BorderRadius.circular(6),
-                                  border: Border.all(
-                                    color: AppColors.primary.withValues(
-                                      alpha: isDark ? 0.35 : 0.2,
-                                    ),
-                                  ),
-                                ),
-                                child: Text(
-                                  'Pronunciation: ${sentence.pronunciation}',
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w600,
-                                    color: AppColors.primary,
-                                    letterSpacing: 0.2,
-                                  ),
-                                ),
-                              ),
-                            ],
-                            const SizedBox(height: 10),
-                            Text(
-                              sentence.meaning,
-                              style: TextStyle(
-                                fontSize: 15,
-                                color: isDark ? Colors.white : Colors.black87,
-                                letterSpacing: 0.3,
-                              ),
-                            ),
-                          ],
+      children: sentences.map((sentence) {
+        final transliteration = sentence.localizedTransliteration(
+          teachingLanguage,
+        );
+        final meaning = sentence.localizedMeaning(teachingLanguage);
+
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 16),
+          child: ScaleButton(
+            onPressed: () {
+              HapticFeedback.lightImpact();
+              context.push('/sentence/$lessonId/${sentence.id}');
+            },
+            child: Container(
+              padding: const EdgeInsets.all(20),
+              decoration: contentCardDecoration(isDark),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          sentence.sentenceOlChiki,
+                          style: const TextStyle(
+                            fontSize: 22,
+                            fontWeight: FontWeight.w900,
+                            color: AppColors.primary,
+                            height: 1.3,
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 12),
-                      const ContentNavArrow(),
-                    ],
+                        if (!isOlChikiOnly) ...[
+                          const SizedBox(height: 6),
+                          Text(
+                            transliteration.isNotEmpty
+                                ? transliteration
+                                : sentence.sentenceLatin,
+                            style: TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: isDark ? Colors.white70 : Colors.black54,
+                              fontStyle: FontStyle.italic,
+                            ),
+                          ),
+                        ],
+                        if (sentence.pronunciation != null &&
+                            sentence.pronunciation!.isNotEmpty &&
+                            !isOlChikiOnly) ...[
+                          const SizedBox(height: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.primary.withValues(
+                                alpha: isDark ? 0.2 : 0.08,
+                              ),
+                              borderRadius: BorderRadius.circular(6),
+                              border: Border.all(
+                                color: AppColors.primary.withValues(
+                                  alpha: isDark ? 0.35 : 0.2,
+                                ),
+                              ),
+                            ),
+                            child: Text(
+                              'Pronunciation: ${sentence.pronunciation}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.primary,
+                                letterSpacing: 0.2,
+                              ),
+                            ),
+                          ),
+                        ],
+                        if (meaning.isNotEmpty && !isOlChikiOnly) ...[
+                          const SizedBox(height: 10),
+                          Text(
+                            meaning,
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: isDark ? Colors.white : Colors.black87,
+                              letterSpacing: 0.3,
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
                   ),
-                ),
+                  const SizedBox(width: 12),
+                  const ContentNavArrow(),
+                ],
               ),
             ),
-          )
-          .toList(),
+          ),
+        );
+      }).toList(),
     );
   }
 

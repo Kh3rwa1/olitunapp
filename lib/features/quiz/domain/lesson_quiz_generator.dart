@@ -74,6 +74,7 @@ class LessonQuizGenerator {
           optionsOlChiki: options,
           optionsLatin: options,
           correctIndex: correctIndex,
+          audioUrl: block.audioUrl,
         ),
       );
     }

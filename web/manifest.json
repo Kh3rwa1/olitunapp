@@ -7,16 +7,19 @@
     "id": "/",
     "display": "standalone",
     "display_override": [
+        "window-controls-overlay",
         "standalone",
         "minimal-ui"
     ],
     "background_color": "#0A0E14",
     "theme_color": "#10B981",
-    "orientation": "portrait-primary",
+    "orientation": "any",
     "prefer_related_applications": false,
     "categories": [
         "education",
-        "books"
+        "books",
+        "productivity",
+        "utilities"
     ],
     "lang": "en",
     "dir": "ltr",
@@ -24,12 +27,14 @@
         {
             "src": "icons/Icon-192.png",
             "sizes": "192x192",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-512.png",
             "sizes": "512x512",
-            "type": "image/png"
+            "type": "image/png",
+            "purpose": "any"
         },
         {
             "src": "icons/Icon-maskable-192.png",
@@ -72,6 +77,19 @@
             ]
         },
         {
+            "name": "Affirmations",
+            "short_name": "Quotes",
+            "description": "Daily Santali affirmations and inspiration.",
+            "url": "/#/affirmations",
+            "icons": [
+                {
+                    "src": "icons/Icon-192.png",
+                    "sizes": "192x192",
+                    "type": "image/png"
+                }
+            ]
+        },
+        {
             "name": "Profile",
             "short_name": "Profile",
             "description": "Review progress, badges, and settings.",
@@ -100,5 +118,15 @@
             "form_factor": "wide",
             "label": "Olitun welcome screen on desktop"
         }
-    ]
+    ],
+    "launch_handler": {
+        "client_mode": [
+            "navigate-existing",
+            "auto"
+        ]
+    },
+    "handle_links": "preferred",
+    "edge_side_panel": {
+        "preferred_width": 400
+    }
 }

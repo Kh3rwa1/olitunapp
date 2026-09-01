@@ -2,94 +2,150 @@
 <html lang="en">
 
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
   <meta content="IE=Edge" http-equiv="X-UA-Compatible">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 
-  <!-- SEO & PWA Meta -->
+  <!-- SEO & Primary Meta -->
+  <title>Olitun - Learn Santali & Ol Chiki</title>
   <meta name="application-name" content="Olitun">
   <meta name="description"
-    content="Olitun is a Santali and Ol Chiki learning coach with lessons, Bakhed listening, quizzes, mistake review, and gentle daily progress.">
-  <meta name="theme-color" content="#10B981">
+    content="Olitun is a warm, interactive Santali and Ol Chiki learning coach featuring lessons, Bakhed listening, daily quizzes, mistake review, and structured progress.">
+  <meta name="keywords" content="Olitun, Santali, Ol Chiki, Learn Santali, Santhali, tribal language, language learning, Indic, Ol Ciki">
+  <meta name="author" content="Olitun">
   <meta name="color-scheme" content="dark light">
   <meta name="format-detection" content="telephone=no">
 
-  <!-- Open Graph -->
-  <meta property="og:title" content="Olitun - Learn Ol Chiki">
+  <!-- Dynamic Theme Color for Browser Chrome -->
+  <meta name="theme-color" media="(prefers-color-scheme: light)" content="#10B981">
+  <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0A0E14">
+
+  <!-- Open Graph / Social Sharing -->
+  <meta property="og:title" content="Olitun - Learn Santali and Ol Chiki">
+  <meta property="og:site_name" content="Olitun">
   <meta property="og:description"
     content="A warm Santali learning coach for Ol Chiki lessons, Bakhed listening, quizzes, and daily practice.">
   <meta property="og:type" content="website">
   <meta property="og:url" content="https://olitunapp.appwrite.network/">
   <meta property="og:image" content="https://olitunapp.appwrite.network/screenshots/welcome-wide.png">
-  <meta name="twitter:card" content="summary_large_image">
+  <meta property="og:image:width" content="1440">
+  <meta property="og:image:height" content="900">
+  <meta property="og:locale" content="en_US">
+  <meta property="og:locale:alternate" content="sat_IN">
 
-  <!-- iOS PWA Meta -->
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Olitun - Learn Santali and Ol Chiki">
+  <meta name="twitter:description"
+    content="A warm Santali learning coach for Ol Chiki lessons, Bakhed listening, quizzes, and daily practice.">
+  <meta name="twitter:image" content="https://olitunapp.appwrite.network/screenshots/welcome-wide.png">
+
+  <!-- iOS / iPadOS PWA Meta -->
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Olitun">
-  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon.png">
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" href="favicon.png" />
-
-  <title>Olitun - Learn Ol Chiki</title>
+  <!-- Favicon & Manifest -->
+  <link rel="icon" type="image/png" href="favicon.png">
   <link rel="manifest" href="manifest.json">
+
+  <!-- Performance & Preconnects -->
   <link rel="preconnect" href="https://sgp.cloud.appwrite.io" crossorigin>
   <link rel="dns-prefetch" href="https://sgp.cloud.appwrite.io">
   <link rel="preload" href="flutter_bootstrap.js" as="script">
-  <link rel="preload" href="main.dart.js" as="script">
 
-  <!-- Preload critical fonts -->
   <style>
-    /* Splash screen styling while Flutter loads */
-    body {
-      margin: 0;
-      background: linear-gradient(135deg, #fbfffd 0%, #eef8f3 46%, #d9fae9 100%);
-      overflow: hidden;
+    :root {
+      --brand-primary: #10B981;
+      --brand-glow: rgba(16, 185, 129, 0.24);
+      --bg-light-start: #fbfffd;
+      --bg-light-mid: #eef8f3;
+      --bg-light-end: #d9fae9;
+      --text-light-title: #111827;
+      --text-light-sub: #374151;
+      --card-light-bg: rgba(255, 255, 255, 0.92);
+      --card-light-border: rgba(226, 232, 240, 0.85);
+
+      --bg-dark-start: #0A0E14;
+      --bg-dark-end: #111827;
+      --text-dark-title: #F9FAFB;
+      --text-dark-sub: #E5E7EB;
+      --card-dark-bg: rgba(31, 41, 55, 0.88);
+      --card-dark-border: rgba(55, 65, 81, 0.8);
     }
 
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg-light-start);
+      overflow: hidden;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Noto Sans', sans-serif;
+    }
+
+    /* Light Mode Splash */
     #loading-indicator {
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
+      inset: 0;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       gap: clamp(16px, 3vh, 24px);
       padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
-      box-sizing: border-box;
       background:
-        radial-gradient(circle at 50% 18%, rgba(16, 185, 129, 0.24), transparent 34%),
-        linear-gradient(135deg, #fbfffd 0%, #eef8f3 46%, #d9fae9 100%);
+        radial-gradient(circle at 50% 18%, var(--brand-glow), transparent 34%),
+        linear-gradient(135deg, var(--bg-light-start) 0%, var(--bg-light-mid) 46%, var(--bg-light-end) 100%);
       z-index: 9999;
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      color: #111827;
-      transition: opacity 0.4s ease;
+      color: var(--text-light-title);
+      transition: opacity 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Dark Mode Splash */
+    @media (prefers-color-scheme: dark) {
+      body {
+        background: var(--bg-dark-start);
+      }
+
+      #loading-indicator {
+        background:
+          radial-gradient(circle at 50% 18%, rgba(16, 185, 129, 0.18), transparent 38%),
+          linear-gradient(180deg, var(--bg-dark-start) 0%, var(--bg-dark-end) 100%);
+        color: var(--text-dark-title);
+      }
+
+      #loading-indicator p {
+        color: var(--text-dark-sub) !important;
+      }
+
+      .loading-card {
+        background: var(--card-dark-bg) !important;
+        border-color: var(--card-dark-border) !important;
+        color: var(--text-dark-title) !important;
+        box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35) !important;
+      }
+
+      .loading-card span {
+        color: #9CA3AF !important;
+      }
+
+      .loading-note {
+        color: #9CA3AF !important;
+      }
     }
 
     .loading-brand {
       display: grid;
       justify-items: center;
       gap: 14px;
+      text-align: center;
     }
 
     #loading-indicator .brand-mark {
@@ -98,12 +154,22 @@
       border-radius: 30px;
       background: #39e58a;
       box-shadow:
-        0 26px 70px rgba(16, 185, 129, 0.24),
+        0 26px 70px var(--brand-glow),
         0 0 0 8px rgba(255, 255, 255, 0.78),
         inset 0 1px 0 rgba(255, 255, 255, 0.24);
       display: grid;
       place-items: center;
       overflow: hidden;
+      user-select: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      #loading-indicator .brand-mark {
+        box-shadow:
+          0 26px 70px var(--brand-glow),
+          0 0 0 8px rgba(31, 41, 55, 0.8),
+          inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      }
     }
 
     #loading-indicator .brand-mark img {
@@ -115,17 +181,17 @@
     #loading-indicator h1 {
       margin: 0;
       color: #35dd80;
-      font-size: clamp(46px, 9vw, 76px);
+      font-size: clamp(44px, 9vw, 72px);
       font-weight: 900;
       line-height: 0.95;
-      letter-spacing: 0;
+      letter-spacing: -0.5px;
     }
 
     #loading-indicator p {
-      margin: -4px 0 10px;
+      margin: -2px 0 8px;
       font-size: clamp(17px, 3.8vw, 24px);
       font-weight: 700;
-      color: #374151;
+      color: var(--text-light-sub);
     }
 
     .loading-features {
@@ -138,39 +204,40 @@
     .loading-card {
       min-height: clamp(94px, 14vw, 112px);
       border-radius: 22px;
-      background: rgba(255, 255, 255, 0.9);
-      border: 1px solid rgba(226, 232, 240, 0.82);
+      background: var(--card-light-bg);
+      border: 1px solid var(--card-light-border);
       box-shadow: 0 18px 45px rgba(15, 23, 42, 0.07);
       display: grid;
       place-items: center;
       text-align: center;
       font-weight: 800;
       padding: 14px 10px;
-      box-sizing: border-box;
-      color: #111827;
+      color: var(--text-light-title);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
     }
 
     .loading-card strong {
       display: block;
       font-size: clamp(14px, 2.8vw, 18px);
-      line-height: 1.1;
+      line-height: 1.15;
     }
 
     .loading-card span {
       display: block;
-      margin-top: 8px;
-      color: #9ca3af;
+      margin-top: 6px;
+      color: #6B7280;
       font-size: clamp(11px, 2.2vw, 13px);
-      font-weight: 700;
+      font-weight: 600;
       line-height: 1.25;
     }
 
     .loading-bar {
       width: min(100%, 720px);
-      height: 12px;
+      height: 10px;
       border-radius: 999px;
       background: #35d675;
-      box-shadow: 0 18px 46px rgba(16, 185, 129, 0.24);
+      box-shadow: 0 14px 38px var(--brand-glow);
       position: relative;
       overflow: hidden;
     }
@@ -180,8 +247,8 @@
       position: absolute;
       inset: 0;
       width: 42%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.28), transparent);
-      animation: shimmer 1.1s ease-in-out infinite;
+      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.35), transparent);
+      animation: shimmer 1.2s ease-in-out infinite;
     }
 
     @keyframes shimmer {
@@ -193,20 +260,32 @@
       }
     }
 
+    .loading-note {
+      margin: -6px 0 0;
+      color: #6b7280;
+      font-size: 13px;
+      font-weight: 600;
+      text-align: center;
+    }
+
+    .loading-fallback-reload {
+      display: none;
+      margin-top: 4px;
+      font-size: 13px;
+      color: var(--brand-primary);
+      text-decoration: underline;
+      cursor: pointer;
+      background: none;
+      border: none;
+      font-weight: 700;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       #loading-indicator,
       .loading-bar::after {
         transition: none;
         animation: none;
       }
-    }
-
-    .loading-note {
-      margin: -8px 0 0;
-      color: #6b7280;
-      font-size: 13px;
-      font-weight: 700;
-      text-align: center;
     }
 
     @media (max-width: 760px) {
@@ -234,26 +313,91 @@
       }
     }
 
-    /* Offline indicator */
+    /* Live Offline Indicator Pill */
     #offline-indicator {
       display: none;
       position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      background: #EF4444;
-      color: #fff;
-      text-align: center;
-      padding: 6px;
+      top: max(12px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1F2937;
+      color: #F9FAFB;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+      border-radius: 999px;
+      padding: 8px 18px;
       font-size: 13px;
-      font-family: -apple-system, sans-serif;
+      font-weight: 600;
       z-index: 100000;
+      align-items: center;
+      gap: 8px;
+      pointer-events: none;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -10px);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /* PWA Live Update Toast */
+    #pwa-update-toast {
+      display: none;
+      position: fixed;
+      bottom: max(20px, env(safe-area-inset-bottom));
+      right: 20px;
+      background: #111827;
+      color: #F9FAFB;
+      border: 1px solid #374151;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.4);
+      border-radius: 16px;
+      padding: 12px 18px;
+      z-index: 100000;
+      align-items: center;
+      gap: 14px;
+      font-size: 14px;
+      font-weight: 600;
+      animation: toastSlideUp 0.35s ease-out;
+    }
+
+    @keyframes toastSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(16px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #pwa-update-toast button {
+      background: var(--brand-primary);
+      color: #FFFFFF;
+      border: none;
+      border-radius: 8px;
+      padding: 7px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      min-height: 36px;
+      transition: opacity 0.2s;
+    }
+
+    #pwa-update-toast button:hover {
+      opacity: 0.9;
     }
   </style>
 </head>
 
 <body>
-  <!-- Loading indicator shown while Flutter initializes -->
+  <!-- Accessible Loading status while Flutter initializes -->
   <div id="loading-indicator" role="status" aria-live="polite" aria-label="Loading Olitun">
     <div class="loading-brand">
       <div class="brand-mark">
@@ -269,31 +413,87 @@
     </div>
     <div class="loading-bar" aria-hidden="true"></div>
     <div class="loading-note" aria-hidden="true">Preparing your learning path</div>
+    <button class="loading-fallback-reload" id="loading-reload-btn" type="button" aria-label="Reload application">
+      Taking longer than usual? Tap to reload
+    </button>
   </div>
 
-  <!-- Offline indicator -->
-  <div id="offline-indicator">You are offline. Some features may be unavailable.</div>
+  <!-- Live Offline Banner -->
+  <div id="offline-indicator" role="status" aria-live="polite">
+    <span>📡</span>
+    <span>Offline Mode — Cached lessons and quizzes are ready</span>
+  </div>
+
+  <!-- Live PWA Update Toast -->
+  <div id="pwa-update-toast" role="alert" aria-live="assertive">
+    <span>✨ New update available!</span>
+    <button id="pwa-update-btn" type="button">Update</button>
+  </div>
 
   <script src="flutter_bootstrap.js" async></script>
   <script src="pwa_install.js" defer></script>
 
   <script>
-    // Remove loading indicator when Flutter is ready
+    // Remove loading indicator cleanly when Flutter first frame renders
     window.addEventListener('flutter-first-frame', function() {
       var loader = document.getElementById('loading-indicator');
       if (loader) {
         loader.style.opacity = '0';
-        setTimeout(function() { loader.remove(); }, 400);
+        setTimeout(function() { loader.remove(); }, 350);
       }
     });
 
-    // Offline/Online detection
-    window.addEventListener('offline', function() {
-      document.getElementById('offline-indicator').style.display = 'block';
-    });
-    window.addEventListener('online', function() {
-      document.getElementById('offline-indicator').style.display = 'none';
-    });
+    // Safety fallback: if app takes >8s to boot, show reload button
+    setTimeout(function() {
+      var reloadBtn = document.getElementById('loading-reload-btn');
+      if (reloadBtn && document.getElementById('loading-indicator')) {
+        reloadBtn.style.display = 'inline-block';
+        reloadBtn.addEventListener('click', function() {
+          window.location.reload();
+        });
+      }
+    }, 8000);
+
+    // Live Offline / Online Detection
+    function updateOnlineStatus() {
+      var indicator = document.getElementById('offline-indicator');
+      if (!indicator) return;
+      if (navigator.onLine === false) {
+        indicator.style.display = 'flex';
+      } else {
+        indicator.style.display = 'none';
+      }
+    }
+    window.addEventListener('offline', updateOnlineStatus);
+    window.addEventListener('online', updateOnlineStatus);
+    if (!navigator.onLine) updateOnlineStatus();
+
+    // Service Worker Update Listener
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', function() {
+        // Automatically reload when new service worker takes control if requested
+      });
+
+      navigator.serviceWorker.ready.then(function(registration) {
+        registration.addEventListener('updatefound', function() {
+          var newWorker = registration.installing;
+          if (!newWorker) return;
+          newWorker.addEventListener('statechange', function() {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              var updateToast = document.getElementById('pwa-update-toast');
+              var updateBtn = document.getElementById('pwa-update-btn');
+              if (updateToast && updateBtn) {
+                updateToast.style.display = 'flex';
+                updateBtn.onclick = function() {
+                  newWorker.postMessage({ action: 'skipWaiting' });
+                  window.location.reload();
+                };
+              }
+            }
+          });
+        });
+      });
+    }
   </script>
 </body>
 

@@ -5,7 +5,7 @@ import 'ol_chiki_char_maps.dart';
 /// Resolved localized presentation of an Ol Chiki learning item.
 @immutable
 class LocalizedItemDisplay {
-  /// The primary script glyph / target text (Ol Chiki).
+  /// The primary script glyph / target text (Ol Chiki) in center.
   final String scriptText;
 
   /// Transliterated pronunciation guide in the user's script (Bengali, Devanagari, Odia, Latin).
@@ -14,10 +14,10 @@ class LocalizedItemDisplay {
   /// Meaning / explanation translated to the learner's chosen language (Bengali, Hindi, Odia, English).
   final String meaning;
 
-  /// Combined subtitle for cards (e.g. "মনে খেল – মনের খেলা" or "Baba – Father").
+  /// Subtitle shown under the Ol Chiki card (strictly the pronunciation guide transliteration).
   final String subtitle;
 
-  /// Clean hero title (without repetitive clutter or leaked foreign text).
+  /// Hero title shown at the top (strictly the translated Meaning in the user's language).
   final String title;
 
   /// Action button label (e.g. "শুনুন" / "सुनें" / "ଶୁଣନ୍ତୁ" / "LISTEN").
@@ -144,13 +144,9 @@ class OlChikiMultilingualHelper {
     final lower = cleaned.toLowerCase();
 
     // 1. Direct dictionary match
-    const dict = IndicTranslationsDictionary.translations;
-    if (dict.containsKey(lower)) {
-      final transMap = dict[lower]!;
-      if (transMap.containsKey(targetLang) &&
-          transMap[targetLang]!.isNotEmpty) {
-        return transMap[targetLang]!;
-      }
+    final direct = IndicTranslationsDictionary.lookup(lower, targetLang);
+    if (direct != null && direct.isNotEmpty) {
+      return direct;
     }
 
     // 2. Slash-separated composite meanings (e.g. "Mind game / Flirting" -> "মনের খেলা / প্রেমভাব")
@@ -172,18 +168,6 @@ class OlChikiMultilingualHelper {
         return translatedParts.join(' / ');
       } else if (translatedParts.isNotEmpty) {
         return translatedParts.first;
-      }
-    }
-
-    // 3. Prefix / Substring matching for phrases
-    for (final entry in dict.entries) {
-      if (lower == entry.key ||
-          lower.startsWith('${entry.key} ') ||
-          lower.contains(entry.key)) {
-        if (entry.value.containsKey(targetLang) &&
-            entry.value[targetLang]!.isNotEmpty) {
-          if (lower == entry.key) return entry.value[targetLang]!;
-        }
       }
     }
 
@@ -214,24 +198,19 @@ class OlChikiMultilingualHelper {
 
     // Lookup known single words if no separator
     final lower = trimmed.toLowerCase();
-    const dict = IndicTranslationsDictionary.translations;
-    if (dict.containsKey(lower)) {
-      final meaning =
-          dict[lower]?['en'] ??
-          (trimmed[0].toUpperCase() + trimmed.substring(1));
-      return (phoneticLatin: trimmed, meaningEnglish: meaning);
+    final direct = IndicTranslationsDictionary.lookup(lower, 'en');
+    if (direct != null && direct.isNotEmpty) {
+      return (phoneticLatin: trimmed, meaningEnglish: direct);
     }
 
     return (phoneticLatin: trimmed, meaningEnglish: '');
   }
 
-  /// Master resolver that computes the presentation details for any lesson block, word, or sentence
-  /// according to the learner's active [teachingLanguage] ('bn', 'hi', 'or', 'en', 'sat')
-  /// and [scriptMode] ('both', 'olchiki', 'latin').
+  /// Master resolver that computes the 3-section layout for any lesson block, word, or sentence:
   ///
-  /// Zero-English Leakage Invariant:
-  /// When [teachingLanguage] is 'bn', 'hi', 'or', or 'sat', no English text will ever appear
-  /// in the title or subtitle.
+  /// - Top Section ([LocalizedItemDisplay.title]): Meaning in user's language (Bengali, Hindi, Odia, English).
+  /// - Middle Section ([LocalizedItemDisplay.scriptText]): Target Ol Chiki text.
+  /// - Bottom Section ([LocalizedItemDisplay.subtitle]): Pronunciation guide transliterated into user's script, centered.
   static LocalizedItemDisplay resolveBlockDisplay({
     String? textOlChiki,
     String? textLatin,
@@ -255,7 +234,7 @@ class OlChikiMultilingualHelper {
         ? parsed.phoneticLatin
         : latin;
 
-    // 2. Resolve Transliteration according to teaching language
+    // 2. Resolve Transliteration (Pronunciation Guide in learner's script)
     String transliteration;
     switch (teachingLanguage) {
       case 'bn':
@@ -288,7 +267,7 @@ class OlChikiMultilingualHelper {
         break;
     }
 
-    // 3. Resolve Localized Meaning (Strictly Native, Zero Leakage)
+    // 3. Resolve Localized Meaning (User's language definition)
     final String localizedMeaning;
     if (teachingLanguage == 'sat') {
       localizedMeaning = '';
@@ -298,28 +277,23 @@ class OlChikiMultilingualHelper {
       localizedMeaning = translateMeaning(englishMeaning, teachingLanguage);
     }
 
-    // 4. Construct Subtitle
-    String subtitle;
+    // 4. Bottom Section Subtitle: strictly the clean pronunciation transliteration
+    final String subtitle;
     if (scriptMode == 'olchiki' || teachingLanguage == 'sat') {
       subtitle = '';
-    } else if (transliteration.isNotEmpty && localizedMeaning.isNotEmpty) {
-      subtitle = '$transliteration – $localizedMeaning';
-    } else if (transliteration.isNotEmpty) {
-      subtitle = transliteration;
     } else {
-      subtitle = localizedMeaning;
+      subtitle = transliteration;
     }
 
-    // 5. Construct Clean Title (Hero/Header)
+    // 5. Top Section Title: strictly the Meaning in the user's language!
     final String title;
     if (teachingLanguage == 'sat') {
       title = olChiki.isNotEmpty ? olChiki : romanizedSantali;
     } else if (localizedMeaning.isNotEmpty) {
       title = localizedMeaning;
-    } else if (transliteration.isNotEmpty) {
-      title = transliteration;
     } else {
-      title = olChiki;
+      // If meaning not translated, fallback to romanized Santali, never duplicating the Indic transliteration
+      title = romanizedSantali.isNotEmpty ? romanizedSantali : olChiki;
     }
 
     // 6. Action Button CTA text

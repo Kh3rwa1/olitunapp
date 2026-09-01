@@ -81,7 +81,7 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/lessons/presentation/widgets/category_lessons/category_lesson_card.dart": 1,
   "lib/features/lessons/presentation/widgets/category_lessons/category_lessons_timeline.dart": 3,
   "lib/features/lessons/presentation/widgets/dynamic_blocks/dynamic_html_block.dart": 3,
-  "lib/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_card_content.dart": 2,
+  "lib/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_card_content.dart": 1,
   "lib/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_hero_header.dart": 1,
   "lib/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_item_view.dart": 2,
   "lib/features/lessons/presentation/widgets/lesson_block_detail/lesson_block_quiz_cta.dart": 3,

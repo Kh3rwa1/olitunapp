@@ -1,9 +1,12 @@
-/// Comprehensive Indic translations dictionary covering Bengali (`bn`),
+import 'indic_translations_lessons.dart';
+import 'indic_translations_stories.dart';
+
+/// Aggregated Indic translations dictionary covering Bengali (`bn`),
 /// Hindi (`hi`), Odia (`or`), and English (`en`) for Santali learning content.
 class IndicTranslationsDictionary {
   const IndicTranslationsDictionary._();
 
-  static const Map<String, Map<String, String>> translations = {
+  static const Map<String, Map<String, String>> _vocabulary = {
     // Cultural Phrases & Wisdom
     'going on the cultural path is the honor of the santal people.': {
       'bn': 'সংস্কৃতির পথে চলা সাঁওতাল জাতির গৌরব।',
@@ -150,121 +153,6 @@ class IndicTranslationsDictionary {
     },
     'yes': {'bn': 'হ্যাঁ', 'hi': 'हाँ', 'or': 'ହଁ', 'en': 'Yes'},
     'no': {'bn': 'না', 'hi': 'नहीं', 'or': 'ନାହିଁ', 'en': 'No'},
-    'what is your name?': {
-      'bn': 'তোমার নাম কী?',
-      'hi': 'तुम्हारा नाम क्या है?',
-      'or': 'ତୁମର ନାମ କ’ଣ?',
-      'en': 'What is your name?',
-    },
-    'what is your name': {
-      'bn': 'তোমার নাম কী?',
-      'hi': 'तुम्हारा नाम क्या है?',
-      'or': 'ତୁମର ନାମ କ’ଣ?',
-      'en': 'What is your name',
-    },
-    'my name is': {
-      'bn': 'আমার নাম',
-      'hi': 'मेरा नाम है',
-      'or': 'ମୋର ନାମ',
-      'en': 'My name is',
-    },
-    'my name is santhal': {
-      'bn': 'আমার নাম সাঁওতাল',
-      'hi': 'मेरा नाम संताल है',
-      'or': 'ମୋର ନାମ ସାନ୍ତାଳ',
-      'en': 'My name is Santhal',
-    },
-    'where are you going?': {
-      'bn': 'তুমি কোথায় যাচ্ছো?',
-      'hi': 'तुम कहाँ जा रहे हो?',
-      'or': 'ତୁମେ କୁଆଡ଼େ ଯାଉଛ?',
-      'en': 'Where are you going?',
-    },
-    'where are you going': {
-      'bn': 'তুমি কোথায় যাচ্ছো?',
-      'hi': 'तुम कहाँ जा रहे हो?',
-      'or': 'ତୁମେ କୁଆଡ଼େ ଯାଉଛ?',
-      'en': 'Where are you going',
-    },
-    'where do you live?': {
-      'bn': 'তুমি কোথায় থাকো?',
-      'hi': 'तुम कहाँ रहते हो?',
-      'or': 'ତୁମେ କେଉଁଠି ରହୁଛ?',
-      'en': 'Where do you live?',
-    },
-    'where do you live': {
-      'bn': 'তুমি কোথায় থাকো?',
-      'hi': 'तुम कहाँ रहते हो?',
-      'or': 'ତୁମେ କେଉଁଠି ରହୁଛ?',
-      'en': 'Where do you live',
-    },
-    'i live here': {
-      'bn': 'আমি এখানে থাকি',
-      'hi': 'मैं यहाँ रहता हूँ',
-      'or': 'ମୁଁ ଏଠାରେ ରହେ',
-      'en': 'I live here',
-    },
-    'i am hungry': {
-      'bn': 'আমার খিদে পেয়েছে',
-      'hi': 'मुझे भूख लगी है',
-      'or': 'ମୋତେ ଭୋକ ଲାଗୁଛି',
-      'en': 'I am hungry',
-    },
-    'i am thirsty': {
-      'bn': 'আমার তেষ্টা পেয়েছে',
-      'hi': 'मुझे प्यास लगी है',
-      'or': 'ମୋତେ ଶୋଷ ଲାଗୁଛି',
-      'en': 'I am thirsty',
-    },
-    'how are you?': {
-      'bn': 'তুমি কেমন আছো?',
-      'hi': 'आप कैसे हैं?',
-      'or': 'ତୁମେ କେମିତି ଅଛ?',
-      'en': 'How are you?',
-    },
-    'how are you': {
-      'bn': 'তুমি কেমন আছো?',
-      'hi': 'आप कैसे हैं?',
-      'or': 'ତୁମେ କେମିତି ଅଛ?',
-      'en': 'How are you',
-    },
-    'i am fine': {
-      'bn': 'আমি ভালো আছি',
-      'hi': 'मैं ठीक हूँ',
-      'or': 'ମୁଁ ଭଲ ଅଛି',
-      'en': 'I am fine',
-    },
-    'come here': {
-      'bn': 'এখানে এসো',
-      'hi': 'यहाँ आओ',
-      'or': 'ଏଠାକୁ ଆସ',
-      'en': 'Come here',
-    },
-    'go there': {
-      'bn': 'সেখানে যাও',
-      'hi': 'वहाँ जाओ',
-      'or': 'ସେଠାକୁ ଯାଅ',
-      'en': 'Go there',
-    },
-    'sit down': {'bn': 'বসো', 'hi': 'बैठो', 'or': 'ବସ', 'en': 'Sit down'},
-    'stand up': {
-      'bn': 'দাঁড়াও',
-      'hi': 'खड़े हो जाओ',
-      'or': 'ଠିଆ ହୁଅ',
-      'en': 'Stand up',
-    },
-    'eat food': {
-      'bn': 'খাবার খাও',
-      'hi': 'खाना खाओ',
-      'or': 'ଖାଦ୍ୟ ଖାଅ',
-      'en': 'Eat food',
-    },
-    'drink water': {
-      'bn': 'জল পান করো',
-      'hi': 'पानी पियो',
-      'or': 'ପାଣି ପିଅ',
-      'en': 'Drink water',
-    },
 
     // Nature, Daily Objects & Animals
     'water': {'bn': 'জল', 'hi': 'पानी', 'or': 'ପାଣି', 'en': 'Water'},
@@ -279,7 +167,7 @@ class IndicTranslationsDictionary {
     'star': {'bn': 'তারা', 'hi': 'तारा', 'or': 'ତାରା', 'en': 'Star'},
     'sky': {'bn': 'আকাশ', 'hi': 'आकाश', 'or': 'ଆକାଶ', 'en': 'Sky'},
     'earth': {'bn': 'পৃথিবী', 'hi': 'धरती', 'or': 'ପୃଥିବୀ', 'en': 'Earth'},
-    'river': {'bn': 'নদী', 'hi': 'नदी', 'or': 'ନଦୀ', 'en': 'River'},
+    'river': {'bn': 'নদী', 'hi': 'নদী', 'or': 'ନଦୀ', 'en': 'River'},
     'mountain': {
       'bn': 'পাহাড়',
       'hi': 'पहाड़',
@@ -366,8 +254,26 @@ class IndicTranslationsDictionary {
     },
     'six': {'bn': 'ছয় (৬)', 'hi': 'छह (६)', 'or': 'ଛଅ (୬)', 'en': 'Six'},
     'seven': {'bn': 'সাত (৭)', 'hi': 'सात (७)', 'or': 'ସାତ (୭)', 'en': 'Seven'},
-    'eight': {'bn': 'আট (৮)', 'hi': 'आठ (८)', 'or': 'ଆଠ (୮)', 'en': 'Eight'},
+    'eight': {'bn': 'আট (৮)', 'hi': 'আठ (८)', 'or': 'ଆଠ (୮)', 'en': 'Eight'},
     'nine': {'bn': 'নয় (৯)', 'hi': 'नौ (९)', 'or': 'ନଅ (୯)', 'en': 'Nine'},
     'ten': {'bn': 'দশ (১০)', 'hi': 'दस (१०)', 'or': 'ଦଶ (୧୦)', 'en': 'Ten'},
   };
+
+  /// Lookup translation from aggregated datasets.
+  static String? lookup(String key, String targetLang) {
+    final lower = key.toLowerCase().trim();
+    if (_vocabulary.containsKey(lower) &&
+        _vocabulary[lower]!.containsKey(targetLang)) {
+      return _vocabulary[lower]![targetLang];
+    }
+    if (IndicTranslationsStories.translations.containsKey(lower) &&
+        IndicTranslationsStories.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsStories.translations[lower]![targetLang];
+    }
+    if (IndicTranslationsLessons.translations.containsKey(lower) &&
+        IndicTranslationsLessons.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsLessons.translations[lower]![targetLang];
+    }
+    return null;
+  }
 }

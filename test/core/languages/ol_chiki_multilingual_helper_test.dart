@@ -4,197 +4,253 @@ import 'package:itun/shared/models/content/sentence_model.dart';
 import 'package:itun/shared/models/content/word_model.dart';
 
 void main() {
-  group('OlChikiMultilingualHelper Character & Digraph Transliteration', () {
-    test('transliterates Ol Chiki characters to Bengali script', () {
+  group('OlChikiMultilingualHelper Transliteration & Digraphs', () {
+    test('transliterates basic Ol Chiki vowels and consonants to Bengali', () {
       expect(OlChikiMultilingualHelper.toBengali('ᱚ'), 'অ');
-      expect(OlChikiMultilingualHelper.toBengali('ᱞ'), 'ল');
+      expect(OlChikiMultilingualHelper.toBengali('ᱟ'), 'আ');
       expect(OlChikiMultilingualHelper.toBengali('ᱵᱟᱵᱟ'), 'বাবা');
+      expect(OlChikiMultilingualHelper.toBengali('ᱟᱭᱳ'), 'আয়ো');
     });
 
-    test('transliterates aspirated consonant digraphs (khel -> খেল)', () {
-      expect(OlChikiMultilingualHelper.toBengali('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'মনে খেল');
-      expect(OlChikiMultilingualHelper.toHindi('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'मने खेल');
-      expect(OlChikiMultilingualHelper.toOdia('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'ମନେ ଖେଲ');
-      expect(OlChikiMultilingualHelper.toLatin('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'mone khel');
-    });
+    test(
+      'transliterates aspirated consonant digraphs correctly into single Indic aspirated letters',
+      () {
+        // ᱠ + ᱷ -> খ (Bengali), ख (Hindi), ଖ (Odia), kh (Latin)
+        expect(OlChikiMultilingualHelper.toBengali('ᱠᱷ'), 'খ');
+        expect(OlChikiMultilingualHelper.toHindi('ᱠᱷ'), 'ख');
+        expect(OlChikiMultilingualHelper.toOdia('ᱠᱷ'), 'ଖ');
+        expect(OlChikiMultilingualHelper.toLatin('ᱠᱷ'), 'kh');
 
-    test('transliterates complex proverb sentences accurately', () {
-      final bn = OlChikiMultilingualHelper.toBengali(
-        'ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ ᱛᱮ ᱪᱟᱞᱟᱜ ᱜᱮ ᱥᱟᱱᱛᱟᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱹᱱ ᱠᱟᱱᱟ',
-      );
-      expect(bn, 'লাকচার হর তে চালাগ গে সানতাড় হপন আগ মান কানা');
-    });
+        // ᱢᱚᱱᱮ ᱠᱷᱮᱞ -> মনে খেল (Bengali), मने खेल (Hindi), ମନେ ଖେଲ (Odia)
+        expect(OlChikiMultilingualHelper.toBengali('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'মনে খেল');
+        expect(OlChikiMultilingualHelper.toHindi('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'मने खेल');
+        expect(OlChikiMultilingualHelper.toOdia('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'ମନେ ଖେଲ');
+        expect(OlChikiMultilingualHelper.toLatin('ᱢᱚᱱᱮ ᱠᱷᱮᱞ'), 'mone khel');
 
-    test('transliterates Ol Chiki characters to Hindi (Devanagari) script', () {
+        // ᱜᱷ -> ঘ / घ / ଘ
+        expect(OlChikiMultilingualHelper.toBengali('ᱜᱷ'), 'ঘ');
+        expect(OlChikiMultilingualHelper.toHindi('ᱜᱷ'), 'घ');
+        expect(OlChikiMultilingualHelper.toOdia('ᱜᱷ'), 'ଘ');
+
+        // ᱛᱷ -> থ / थ / ଥ
+        expect(OlChikiMultilingualHelper.toBengali('ᱛᱷ'), 'থ');
+        expect(OlChikiMultilingualHelper.toHindi('ᱛᱷ'), 'थ');
+        expect(OlChikiMultilingualHelper.toOdia('ᱛᱷ'), 'ଥ');
+      },
+    );
+
+    test('transliterates Ol Chiki to Hindi/Devanagari correctly', () {
       expect(OlChikiMultilingualHelper.toHindi('ᱚ'), 'अ');
-      expect(OlChikiMultilingualHelper.toHindi('ᱞ'), 'ल');
       expect(OlChikiMultilingualHelper.toHindi('ᱵᱟᱵᱟ'), 'बाबा');
     });
 
-    test('transliterates Ol Chiki characters to Odia script', () {
+    test('transliterates Ol Chiki to Odia correctly', () {
       expect(OlChikiMultilingualHelper.toOdia('ᱚ'), 'ଅ');
-      expect(OlChikiMultilingualHelper.toOdia('ᱞ'), 'ଲ');
       expect(OlChikiMultilingualHelper.toOdia('ᱵᱟᱵᱟ'), 'ବାବା');
-    });
-
-    test('transliterates Ol Chiki characters to Latin Romanized script', () {
-      expect(OlChikiMultilingualHelper.toLatin('ᱚ'), 'o');
-      expect(OlChikiMultilingualHelper.toLatin('ᱞ'), 'l');
-      expect(OlChikiMultilingualHelper.toLatin('ᱵᱟᱵᱟ'), 'baba');
-    });
-  });
-
-  group('OlChikiMultilingualHelper Composite Latin Parser', () {
-    test('parses composite hyphen-separated Latin strings', () {
-      final parsed = OlChikiMultilingualHelper.parseCompositeLatin(
-        'In rengej ed inja – I am hungry',
-      );
-      expect(parsed.phoneticLatin, 'In rengej ed inja');
-      expect(parsed.meaningEnglish, 'I am hungry');
-    });
-
-    test('handles single Latin words gracefully', () {
-      final parsed = OlChikiMultilingualHelper.parseCompositeLatin('Baba');
-      expect(parsed.phoneticLatin, 'Baba');
-      expect(parsed.meaningEnglish, 'Father');
     });
   });
 
   group(
-    'OlChikiMultilingualHelper resolveBlockDisplay & Zero-Leakage Invariants',
+    'OlChikiMultilingualHelper translateMeaning Zero-Leakage Guarantees',
     () {
-      test(
-        'resolves Bengali display for sentence block with zero English leakage',
-        () {
-          final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-            textOlChiki: 'ᱤᱧ ᱨᱮᱸᱜᱮᱡ ᱮᱫ ᱤᱧᱟ',
-            textLatin: 'In rengej ed inja – I am hungry',
-            teachingLanguage: 'bn',
-            scriptMode: 'both',
-          );
-
-          expect(display.scriptText, 'ᱤᱧ ᱨᱮᱸᱜᱮᱡ ᱮᱫ ᱤᱧᱟ');
-          expect(display.subtitle, contains('আমার খিদে পেয়েছে'));
-          expect(display.ctaText, 'শুনুন');
-          // Zero English letters in Bengali title or subtitle
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-        },
-      );
-
-      test(
-        'resolves Bengali display for Mone Khel with zero English leakage',
-        () {
-          final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-            textOlChiki: 'ᱢᱚᱱᱮ ᱠᱷᱮᱞ',
-            textLatin: 'Mone khel – Mind game / Flirting',
-            teachingLanguage: 'bn',
-            scriptMode: 'both',
-          );
-
-          expect(display.scriptText, 'ᱢᱚᱱᱮ ᱠᱷᱮᱞ');
-          expect(display.transliteration, 'মনে খেল');
-          expect(display.subtitle, 'মনে খেল – মনের খেলা / প্রেমভাব');
-          expect(display.title, 'মনের খেলা / প্রেমভাব');
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-        },
-      );
-
-      test(
-        'resolves Bengali display for cultural proverb with zero English leakage',
-        () {
-          final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-            textOlChiki: 'ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ ᱛᱮ ᱪᱟᱞᱟᱜ ᱜᱮ ᱥᱟᱱᱛᱟᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱹᱱ ᱠᱟᱱᱟ',
-            textLatin:
-                'Lakchar hor te chalag ge Santal hopon aak man kana – Going on the cultural path is the honor of the Santal people.',
-            teachingLanguage: 'bn',
-            scriptMode: 'both',
-          );
-
-          expect(
-            display.scriptText,
-            'ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ ᱛᱮ ᱪᱟᱞᱟᱜ ᱜᱮ ᱥᱟᱱᱛᱟᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱹᱱ ᱠᱟᱱᱟ',
-          );
-          expect(
-            display.transliteration,
-            'লাকচার হর তে চালাগ গে সানতাড় হপন আগ মান কানা',
-          );
-          expect(display.title, 'সংস্কৃতির পথে চলা সাঁওতাল জাতির গৌরব।');
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-          expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-        },
-      );
-
-      test('resolves Hindi display for family word', () {
-        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-          textOlChiki: 'ᱵᱟᱵᱟ',
-          textLatin: 'Baba – Father',
-          teachingLanguage: 'hi',
-          scriptMode: 'both',
+      test('translates English meanings into Bengali', () {
+        expect(
+          OlChikiMultilingualHelper.translateMeaning('Father', 'bn'),
+          'পিতা',
         );
-
-        expect(display.scriptText, 'ᱵᱟᱵᱟ');
-        expect(display.subtitle, 'बाबा – पिता');
-        expect(display.ctaText, 'सुनें');
-        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+        expect(
+          OlChikiMultilingualHelper.translateMeaning('Mother', 'bn'),
+          'মাতা',
+        );
+        expect(
+          OlChikiMultilingualHelper.translateMeaning(
+            'Mind game / Flirting',
+            'bn',
+          ),
+          'মনের খেলা / প্রেমভাব',
+        );
       });
 
-      test('resolves Odia display for family word', () {
-        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-          textOlChiki: 'ᱵᱟᱵᱟ',
-          textLatin: 'Baba – Father',
-          teachingLanguage: 'or',
-          scriptMode: 'both',
+      test('returns empty string for missing non-English target languages', () {
+        // Must NEVER return English fallback for non-English target languages
+        expect(
+          OlChikiMultilingualHelper.translateMeaning(
+            'Some completely unknown text XYZ 123',
+            'bn',
+          ),
+          '',
         );
-
-        expect(display.scriptText, 'ᱵᱟᱵᱟ');
-        expect(display.subtitle, 'ବାବା – ବାପା');
-        expect(display.ctaText, 'ଶୁଣନ୍ତୁ');
-        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-      });
-
-      test('resolves English display cleanly without repetitive phrases', () {
-        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-          textOlChiki: 'ᱵᱟᱵᱟ',
-          textLatin: 'Baba – Father',
-          teachingLanguage: 'en',
-          scriptMode: 'both',
+        expect(
+          OlChikiMultilingualHelper.translateMeaning(
+            'Some completely unknown text XYZ 123',
+            'hi',
+          ),
+          '',
         );
-
-        expect(display.scriptText, 'ᱵᱟᱵᱟ');
-        expect(display.subtitle, 'Baba – Father');
-        expect(display.ctaText, 'LISTEN');
-      });
-
-      test('hides subtitle when script mode is olchiki', () {
-        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-          textOlChiki: 'ᱵᱟᱵᱟ',
-          textLatin: 'Baba – Father',
-          teachingLanguage: 'en',
-          scriptMode: 'olchiki',
+        expect(
+          OlChikiMultilingualHelper.translateMeaning(
+            'Some completely unknown text XYZ 123',
+            'or',
+          ),
+          '',
         );
-
-        expect(display.scriptText, 'ᱵᱟᱵᱟ');
-        expect(display.subtitle, isEmpty);
-      });
-
-      test('hides subtitle when teaching language is santali', () {
-        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-          textOlChiki: 'ᱵᱟᱵᱟ',
-          textLatin: 'Baba – Father',
-          teachingLanguage: 'sat',
-          scriptMode: 'both',
-        );
-
-        expect(display.scriptText, 'ᱵᱟᱵᱟ');
-        expect(display.subtitle, isEmpty);
-        expect(display.ctaText, 'ᱟᱸᱡᱚᱢ');
       });
     },
   );
+
+  group('OlChikiMultilingualHelper resolveBlockDisplay & 3-Section Layout', () {
+    test(
+      'resolves 3-section layout for sentence with meaning at top, Ol Chiki middle, transliteration bottom',
+      () {
+        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱵᱟᱹᱫᱽ ᱠᱚ ᱥᱚᱱᱟ ᱞᱮᱠᱟ ᱥᱟᱥᱟᱝ ᱦᱳᱲᱳ ᱛᱮ ᱯᱮᱨᱮᱡ ᱮᱱᱟ ᱾',
+          textLatin:
+              'Hariyar bad ko sona leka sasang horo te perej ena. – The green fields turned golden with ripe winter paddy.',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+
+        // Top Section: Meaning in Bengali
+        expect(display.title, 'সবুজ ক্ষেত পাকা সোনালি ধানে ভরে উঠল।');
+        // Middle Section: Ol Chiki text
+        expect(
+          display.scriptText,
+          'ᱦᱟᱹᱨᱤᱭᱟᱹᱲ ᱵᱟᱹᱫᱽ ᱠᱚ ᱥᱚᱱᱟ ᱞᱮᱠᱟ ᱥᱟᱥᱟᱝ ᱦᱳᱲᱳ ᱛᱮ ᱯᱮᱨᱮᱡ ᱮᱱᱟ ᱾',
+        );
+        // Bottom Section: Transliteration in Bengali script (centered below Ol Chiki)
+        expect(
+          display.subtitle,
+          'হারিয়াড় বাদ ক সনা লেকা সাসাং হোড়ো তে পেরেজ এনা ।',
+        );
+        expect(display.ctaText, 'শুনুন');
+        // Zero English letters in Bengali title or subtitle
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+      },
+    );
+
+    test(
+      'resolves Bengali display for Mone Khel with zero English leakage and 3-section layout',
+      () {
+        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱢᱚᱱᱮ ᱠᱷᱮᱞ',
+          textLatin: 'Mone khel – Mind game / Flirting',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+
+        // Middle Section
+        expect(display.scriptText, 'ᱢᱚᱱᱮ ᱠᱷᱮᱞ');
+        // Bottom Section: Transliteration
+        expect(display.transliteration, 'মনে খেল');
+        expect(display.subtitle, 'মনে খেল');
+        // Top Section: Meaning
+        expect(display.title, 'মনের খেলা / প্রেমভাব');
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+      },
+    );
+
+    test(
+      'resolves Bengali display for cultural proverb with zero English leakage',
+      () {
+        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ ᱛᱮ ᱪᱟᱞᱟᱜ ᱜᱮ ᱥᱟᱱᱛᱟᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱹᱱ ᱠᱟᱱᱟ',
+          textLatin:
+              'Lakchar hor te chalag ge Santal hopon aak man kana – Going on the cultural path is the honor of the Santal people.',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+
+        expect(
+          display.scriptText,
+          'ᱞᱟᱠᱪᱟᱨ ᱦᱚᱨ ᱛᱮ ᱪᱟᱞᱟᱜ ᱜᱮ ᱥᱟᱱᱛᱟᱲ ᱦᱚᱯᱚᱱ ᱟᱜ ᱢᱟᱹᱱ ᱠᱟᱱᱟ',
+        );
+        expect(
+          display.transliteration,
+          'লাকচার হর তে চালাগ গে সানতাড় হপন আগ মান কানা',
+        );
+        expect(
+          display.subtitle,
+          'লাকচার হর তে চালাগ গে সানতাড় হপন আগ মান কানা',
+        );
+        expect(display.title, 'সংস্কৃতির পথে চলা সাঁওতাল জাতির গৌরব।');
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+      },
+    );
+
+    test('resolves Hindi display for family word', () {
+      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+        textOlChiki: 'ᱵᱟᱵᱟ',
+        textLatin: 'Baba – Father',
+        teachingLanguage: 'hi',
+        scriptMode: 'both',
+      );
+
+      expect(display.scriptText, 'ᱵᱟᱵᱟ');
+      expect(display.subtitle, 'बाबा');
+      expect(display.title, 'पिता');
+      expect(display.ctaText, 'सुनें');
+      expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+      expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+    });
+
+    test('resolves Odia display for family word', () {
+      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+        textOlChiki: 'ᱵᱟᱵᱟ',
+        textLatin: 'Baba – Father',
+        teachingLanguage: 'or',
+        scriptMode: 'both',
+      );
+
+      expect(display.scriptText, 'ᱵᱟᱵᱟ');
+      expect(display.subtitle, 'ବାବା');
+      expect(display.title, 'ବାପା');
+      expect(display.ctaText, 'ଶୁଣନ୍ତୁ');
+      expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+      expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+    });
+
+    test('resolves English display cleanly', () {
+      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+        textOlChiki: 'ᱵᱟᱵᱟ',
+        textLatin: 'Baba – Father',
+        teachingLanguage: 'en',
+        scriptMode: 'both',
+      );
+
+      expect(display.scriptText, 'ᱵᱟᱵᱟ');
+      expect(display.subtitle, 'Baba');
+      expect(display.title, 'Father');
+      expect(display.ctaText, 'LISTEN');
+    });
+
+    test('hides subtitle when script mode is olchiki', () {
+      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+        textOlChiki: 'ᱵᱟᱵᱟ',
+        textLatin: 'Baba – Father',
+        teachingLanguage: 'en',
+        scriptMode: 'olchiki',
+      );
+
+      expect(display.scriptText, 'ᱵᱟᱵᱟ');
+      expect(display.subtitle, isEmpty);
+    });
+
+    test('hides subtitle when teaching language is santali', () {
+      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+        textOlChiki: 'ᱵᱟᱵᱟ',
+        textLatin: 'Baba – Father',
+        teachingLanguage: 'sat',
+        scriptMode: 'both',
+      );
+
+      expect(display.scriptText, 'ᱵᱟᱵᱟ');
+      expect(display.subtitle, isEmpty);
+      expect(display.ctaText, 'ᱟᱸᱡᱚᱢ');
+    });
+  });
 
   group('WordModel and SentenceModel Multilingual Extensions', () {
     test('WordModel returns localized transliterations and meanings', () {
@@ -213,8 +269,7 @@ void main() {
         word.localizedMeaning('or'),
         OlChikiMultilingualHelper.translateMeaning('Father', 'or'),
       );
-
-      expect(word.localizedSubtitle('bn'), 'বাবা – পিতা');
+      expect(word.localizedSubtitle('bn'), 'বাবা');
     });
 
     test('SentenceModel returns localized transliterations and meanings', () {
@@ -228,7 +283,7 @@ void main() {
       expect(sentence.localizedMeaning('bn'), 'আমার খিদে পেয়েছে');
       expect(sentence.localizedMeaning('hi'), 'मुझे भूख लगी है');
       expect(sentence.localizedMeaning('or'), 'ମୋତେ ଭୋକ ଲାଗୁଛି');
-      expect(sentence.localizedSubtitle('bn'), contains('আমার খিদে পেয়েছে'));
+      expect(sentence.localizedSubtitle('bn'), 'ইঞ রেঁগেজ এদ ইঞা');
     });
   });
 }

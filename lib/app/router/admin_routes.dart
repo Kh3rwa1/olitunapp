@@ -23,6 +23,7 @@ import '../../features/admin/presentation/gamification/admin_gamification_screen
 import '../../features/admin/presentation/bakhed/bakhed_hub_screen.dart';
 import '../../features/admin/presentation/bakhed/bakhed_editor_screen.dart';
 import '../../features/admin/presentation/review/admin_review_screen.dart';
+import '../../features/admin/presentation/translations/admin_translations_screen.dart';
 import 'route_names.dart';
 
 List<RouteBase> buildAdminRoutes({
@@ -52,6 +53,10 @@ List<RouteBase> buildAdminRoutes({
           path: '/admin',
           name: RouteNames.admin,
           builder: (context, state) => const AdminDashboardScreen(),
+        ),
+        adminRoute(
+          path: '/admin/translations',
+          builder: (context, state) => const AdminTranslationsScreen(),
         ),
         adminRoute(
           path: '/admin/categories',

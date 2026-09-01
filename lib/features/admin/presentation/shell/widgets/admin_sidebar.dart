@@ -62,11 +62,19 @@ class AdminSidebar extends ConsumerWidget {
                   persistenceKey: 'content',
                   isCompact: isCompact,
                   hasActiveChild:
+                      location == '/admin/translations' ||
                       location == '/admin/categories' ||
                       location == '/admin/affirmations' ||
                       location == '/admin/banners' ||
                       location == '/admin/lessons',
                   children: [
+                    AdminNavItem(
+                      icon: Icons.translate_rounded,
+                      label: 'Languages & Translations',
+                      isSelected: location == '/admin/translations',
+                      onTap: () => _navigate(context, '/admin/translations'),
+                      isCompact: isCompact,
+                    ),
                     AdminNavItem(
                       icon: Icons.category_rounded,
                       label: 'Categories',

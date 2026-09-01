@@ -266,32 +266,32 @@ class IndicTranslationsDictionary {
     final lower = key.toLowerCase().trim();
     if (lower.isEmpty) return null;
 
-    // 1. Direct vocabulary
+    // 1. Direct curated vocabulary
     if (_vocabulary.containsKey(lower) &&
         _vocabulary[lower]!.containsKey(targetLang)) {
       return _vocabulary[lower]![targetLang];
     }
-    // 2. Sentences dataset
+    // 2. Curated Lessons dataset
+    if (IndicTranslationsLessons.translations.containsKey(lower) &&
+        IndicTranslationsLessons.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsLessons.translations[lower]![targetLang];
+    }
+    // 3. Curated Stories dataset
+    if (IndicTranslationsStories.translations.containsKey(lower) &&
+        IndicTranslationsStories.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsStories.translations[lower]![targetLang];
+    }
+    // 4. Words dataset
+    if (IndicTranslationsWords.translations.containsKey(lower) &&
+        IndicTranslationsWords.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsWords.translations[lower]![targetLang];
+    }
+    // 5. Sentences dataset
     if (IndicTranslationsSentences.translations.containsKey(lower) &&
         IndicTranslationsSentences.translations[lower]!.containsKey(
           targetLang,
         )) {
       return IndicTranslationsSentences.translations[lower]![targetLang];
-    }
-    // 3. Words dataset
-    if (IndicTranslationsWords.translations.containsKey(lower) &&
-        IndicTranslationsWords.translations[lower]!.containsKey(targetLang)) {
-      return IndicTranslationsWords.translations[lower]![targetLang];
-    }
-    // 4. Lessons dataset
-    if (IndicTranslationsLessons.translations.containsKey(lower) &&
-        IndicTranslationsLessons.translations[lower]!.containsKey(targetLang)) {
-      return IndicTranslationsLessons.translations[lower]![targetLang];
-    }
-    // 5. Stories dataset
-    if (IndicTranslationsStories.translations.containsKey(lower) &&
-        IndicTranslationsStories.translations[lower]!.containsKey(targetLang)) {
-      return IndicTranslationsStories.translations[lower]![targetLang];
     }
 
     // 6. Fuzzy match: Strip trailing punctuation (?, ., !, ,)

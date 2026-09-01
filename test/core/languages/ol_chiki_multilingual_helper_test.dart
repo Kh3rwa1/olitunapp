@@ -356,6 +356,67 @@ void main() {
         expect(displayEn.subtitle, 'In do kamiyedanj');
       },
     );
+
+    test(
+      'resolves tree shade resting sentence across Bengali, Hindi, Odia, and English with zero English leakage',
+      () {
+        // Bengali mode
+        final displayBn = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱫᱟᱨᱮ ᱩᱢᱩᱞ ᱨᱮ ᱫᱩᱲᱩᱵ ᱠᱟᱛᱮ ᱩᱱᱠᱩ ᱠᱚ ᱡᱤᱨᱟᱹᱣ ᱠᱟᱱᱟ',
+          textLatin: 'Dare umul re durub kate unku ko jiraw kana',
+          explicitMeaning: "Sitting under the tree's shade, they are resting.",
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+        expect(displayBn.title, isNotEmpty);
+        expect(
+          displayBn.title,
+          isNot("Sitting under the tree's shade, they are resting."),
+        );
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayBn.title), isFalse);
+        expect(
+          displayBn.scriptText,
+          'ᱫᱟᱨᱮ ᱩᱢᱩᱞ ᱨᱮ ᱫᱩᱲᱩᱵ ᱠᱟᱛᱮ ᱩᱱᱠᱩ ᱠᱚ ᱡᱤᱨᱟᱹᱣ ᱠᱟᱱᱟ',
+        );
+        expect(
+          displayBn.subtitle,
+          'দারে উমুল রে দুড়ুব কাতে উনকু ক জিরাওয় কানা',
+        );
+        expect(displayBn.ctaText, 'শুনুন');
+
+        // Hindi mode
+        final displayHi = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱫᱟᱨᱮ ᱩᱢᱩᱞ ᱨᱮ ᱫᱩᱲᱩᱵ ᱠᱟᱛᱮ ᱩᱱᱠᱩ ᱠᱚ ᱡᱤᱨᱟᱹᱣ ᱠᱟᱱᱟ',
+          textLatin: 'Dare umul re durub kate unku ko jiraw kana',
+          explicitMeaning: "Sitting under the tree's shade, they are resting.",
+          teachingLanguage: 'hi',
+          scriptMode: 'both',
+        );
+        expect(displayHi.title, isNotEmpty);
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayHi.title), isFalse);
+        expect(
+          displayHi.subtitle,
+          'दारे उमुल रे दुड़ुब काते उनकु क जिराव काना',
+        );
+        expect(displayHi.ctaText, 'सुनें');
+
+        // Odia mode
+        final displayOr = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱫᱟᱨᱮ ᱩᱢᱩᱞ ᱨᱮ ᱫᱩᱲᱩᱵ ᱠᱟᱛᱮ ᱩᱱᱠᱩ ᱠᱚ ᱡᱤᱨᱟᱹᱣ ᱠᱟᱱᱟ',
+          textLatin: 'Dare umul re durub kate unku ko jiraw kana',
+          explicitMeaning: "Sitting under the tree's shade, they are resting.",
+          teachingLanguage: 'or',
+          scriptMode: 'both',
+        );
+        expect(displayOr.title, isNotEmpty);
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayOr.title), isFalse);
+        expect(
+          displayOr.subtitle,
+          'ଦାରେ ଉମୁଲ ରେ ଦୁଡ଼ୁବ କାତେ ଉନକୁ କ ଜିରାୱ କାନା',
+        );
+        expect(displayOr.ctaText, 'ଶୁଣନ୍ତୁ');
+      },
+    );
   });
 
   group('WordModel and SentenceModel Multilingual Extensions', () {

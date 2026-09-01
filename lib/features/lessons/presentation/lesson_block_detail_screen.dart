@@ -288,9 +288,7 @@ class _LessonBlockDetailScreenState
                         playingId: _playingId,
                         onPlayAudio: _playAudio,
                         onDismissQuiz: () {
-                          setState(
-                            () => _dismissedQuizBlockIndices.add(index),
-                          );
+                          setState(() => _dismissedQuizBlockIndices.add(index));
                           if (index < contentBlocks.length - 1) {
                             _pageController.nextPage(
                               duration: const Duration(milliseconds: 300),

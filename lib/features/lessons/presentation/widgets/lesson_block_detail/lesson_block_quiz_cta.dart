@@ -74,7 +74,9 @@ class LessonBlockQuizCTA extends StatelessWidget {
                   const SizedBox(height: 24),
                   // Title / Prompt
                   Text(
-                    isDismissed ? 'Lesson Completed!' : 'Ready to test yourself?',
+                    isDismissed
+                        ? 'Lesson Completed!'
+                        : 'Ready to test yourself?',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 24,

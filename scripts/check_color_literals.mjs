@@ -63,7 +63,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/admin/presentation/widgets/content_form/content_block_edit_dialog.dart": 1,
   "lib/features/admin/presentation/widgets/content_form/content_block_list_section.dart": 6,
   "lib/features/admin/presentation/widgets/content_form/content_form_card.dart": 4,
-  "lib/features/admin/presentation/widgets/content_form/content_form_identity_section.dart": 5,
   "lib/features/admin/presentation/widgets/dashboard_kpi_widgets.dart": 4,
   "lib/features/admin/presentation/words/widgets/word_card.dart": 3,
   "lib/features/affirmations/presentation/widgets/affirmation_share_sheet.dart": 1,

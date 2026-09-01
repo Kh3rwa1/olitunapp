@@ -8,6 +8,7 @@ import '../../../../../../shared/utils/media_type_resolver.dart';
 import '../../../../../../shared/providers/providers.dart';
 import '../../../../../lessons/domain/entities/lesson_entity.dart';
 import '../../../widgets/admin_form_widgets.dart';
+import '../../../widgets/multilingual_preview_box.dart';
 
 /// One sheet to rule them all. Replaces AddBlockSheet + per-type EditBlockSheet
 /// variants. The block "type" is inferred from what the user actually fills in,
@@ -253,6 +254,15 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                     controller: _latinCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
+                  if (_olChikiCtrl.text.isNotEmpty || _latinCtrl.text.isNotEmpty) ...[
+                    const SizedBox(height: 16),
+                    MultilingualPreviewBox(
+                      textOlChiki: _olChikiCtrl.text,
+                      textLatin: _latinCtrl.text,
+                      explicitPronunciation: _pronCtrl.text,
+                      isDark: isDark,
+                    ),
+                  ],
 
                   const SizedBox(height: 28),
 

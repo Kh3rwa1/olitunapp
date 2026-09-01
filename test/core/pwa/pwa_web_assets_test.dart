@@ -42,8 +42,12 @@ void main() {
       final shortcuts = (manifest['shortcuts'] as List).cast<Map>();
       expect(
         shortcuts.map((item) => item['name']),
-        containsAll(['Learn', 'Bakhed', 'Profile']),
+        containsAll(['Learn', 'Bakhed', 'Affirmations', 'Profile']),
       );
+
+      final displayOverride = (manifest['display_override'] as List)
+          .cast<String>();
+      expect(displayOverride, contains('window-controls-overlay'));
     });
 
     test('manifest screenshots are real wide and narrow app captures', () {
@@ -84,6 +88,8 @@ void main() {
       expect(html, contains('apple-touch-icon'));
       expect(html, contains('role="status"'));
       expect(html, contains('prefers-reduced-motion'));
+      expect(html, contains('prefers-color-scheme: dark'));
+      expect(html, contains('pwa-update-toast'));
       expect(html, contains('screenshots/welcome-wide.png'));
     });
 
@@ -96,6 +102,7 @@ void main() {
       expect(script, contains('aria-label'));
       expect(script, contains('min-height:44px'));
       expect(script, contains('safe-area-inset-bottom'));
+      expect(script, contains('pwa-installable'));
     });
   });
 }

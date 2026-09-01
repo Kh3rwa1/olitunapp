@@ -147,10 +147,10 @@ class IndicTranslationsWords {
       'or': 'ଗାଁ / ଗ୍ରାମ',
       'en': 'Village',
     },
-    'house': {'bn': 'ঘর / বাড়ি', 'hi': 'घर / मकान', 'or': 'ଘର', 'en': 'House'},
+    'house': {'bn': 'ঘর / বাড়ি', 'hi': 'ঘর / বাড়ি', 'or': 'ଘର', 'en': 'House'},
     'road': {
       'bn': 'পথ / রাস্তা',
-      'hi': 'रास्ता / सड़क',
+      'hi': 'রাস্তা / সড়ক',
       'or': 'ରାସ୍ତା / ବାଟ',
       'en': 'Road',
     },
@@ -258,7 +258,7 @@ class IndicTranslationsWords {
     },
     'night': {
       'bn': 'রাত / রাত্রি',
-      'hi': 'रात / रात्रि',
+      'hi': 'রাত / रात्रि',
       'or': 'ରାତି / ରାତ୍ରି',
       'en': 'Night',
     },

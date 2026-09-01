@@ -34,7 +34,7 @@ const sentenceTranslations = {
   "where is he/she?": { bn: "সে কোথায় আছে?", hi: "वह कहाँ है?", or: "ସେ କେଉଁଠି ଅଛି?", en: "Where is he/she?" },
   "he/she is at home": { bn: "সে বাড়িতে আছে", hi: "वह घर पर है", or: "ସେ ଘରେ ଅଛି", en: "He/she is at home" },
   "do you see me?": { bn: "তুমি কি আমাকে দেখতে পাচ্ছ?", hi: "क्या तुम मुझे देख रहे हो?", or: "ତୁମେ ମୋତେ ଦେଖୁଛ କି?", en: "Do you see me?" },
-  "i am hungry": { bn: "আমার খিদে পেয়েছে", hi: "मुझे भूख लगी है", or: "ମୋତେ ଭୋକ ଲାଗୁଛି", en: "I am hungry" },
+  "i am hungry": { bn: "আমার খিদে পেয়েছে", hi: "मुझे भूख लगी है", or: "ମୋତେ ଭୋକ ଲାଗୁଛି", en: "I am hungry" },
   "please eat food": { bn: "দয়া করে খাবার খাও", hi: "कृपया खाना खाओ", or: "ଦୟାକରି ଖାଦ୍ୟ ଖାଅ", en: "Please eat food" },
   "please drink water": { bn: "দয়া করে জল খাও", hi: "कृपया पानी पियो", or: "ଦୟାକରି ପାଣି ପିଅ", en: "Please drink water" },
   "i am studying": { bn: "আমি পড়াশোনা করছি", hi: "मैं पढ़ाई कर रहा हूँ", or: "ମୁଁ ପଢ଼ୁଛି", en: "I am studying" },
@@ -179,8 +179,8 @@ const wordTranslations = {
   "mountain": { bn: "পাহাড় / পর্বত", hi: "पहाड़ / पर्वत", or: "ପାହାଡ଼ / ପର୍ବତ", en: "Mountain" },
   "stone": { bn: "পাথর", hi: "पत्थर", or: "ପଥର", en: "Stone" },
   "village": { bn: "গ্রাম / গাঁ", hi: "गाँव / ग्राम", or: "ଗାଁ / ଗ୍ରାମ", en: "Village" },
-  "house": { bn: "ঘর / বাড়ি", hi: "घर / मकान", or: "ଘର", en: "House" },
-  "road": { bn: "পথ / রাস্তা", hi: "रास्ता / सड़क", or: "ରାସ୍ତା / ବାଟ", en: "Road" },
+  "house": { bn: "ঘর / বাড়ি", hi: "ঘর / বাড়ি", or: "ଘର", en: "House" },
+  "road": { bn: "পথ / রাস্তা", hi: "রাস্তা / সড়ক", or: "ରାସ୍ତା / ବାଟ", en: "Road" },
   "bird": { bn: "পাখি", hi: "चिड़िया / पक्षी", or: "ଚଢ଼େଇ / ପକ୍ଷୀ", en: "Bird" },
   "dog": { bn: "কুকুর", hi: "कुत्ता", or: "କୁକୁର", en: "Dog" },
   "cat": { bn: "বিড়াল", hi: "बिल्ली", or: "ବିଲେଇ", en: "Cat" },
@@ -210,35 +210,63 @@ const wordTranslations = {
   "work": { bn: "কাজ / কর্ম", hi: "काम / कार्य", or: "କାମ / କାର୍ଯ୍ୟ", en: "Work" },
   "time": { bn: "সময় / কাল", hi: "समय / काल", or: "ସମୟ / କାଳ", en: "Time" },
   "day": { bn: "দিন / দিবস", hi: "दिन / दिवस", or: "ଦିନ / ଦିବସ", en: "Day" },
-  "night": { bn: "রাত / রাত্রি", hi: "रात / रात्रि", or: "ରାତି / ରାତ୍ରି", en: "Night" },
+  "night": { bn: "রাত / রাত্রি", hi: "রাত / रात्रि", or: "ରାତି / ରାତ୍ରି", en: "Night" },
   "today": { bn: "আজ / অদ্য", hi: "आज", or: "ଆଜି", en: "Today" },
   "tomorrow": { bn: "আগামীকাল", hi: "कल (आने वाला)", or: "ଆସନ୍ତାକାଲି", en: "Tomorrow" },
   "yesterday": { bn: "গতকাল", hi: "कल (बीता हुआ)", or: "ଗତକାଲି", en: "Yesterday" }
 };
 
-// 3. Generate clean Dart files
+// 3. Generate clean Dart files under 600 lines
 function generateSentencesDart() {
-  const lines = [
-    "/// Auto-generated comprehensive sentence translations for Bengali, Hindi, Odia, and English.",
-    "class IndicTranslationsSentences {",
-    "  const IndicTranslationsSentences._();",
-    "",
-    "  static const Map<String, Map<String, String>> translations = {"
-  ];
+  const entries = Object.entries(sentenceTranslations);
+  const mid = Math.ceil(entries.length / 2);
+  const part1Entries = entries.slice(0, mid);
+  const part2Entries = entries.slice(mid);
 
-  for (const [key, val] of Object.entries(sentenceTranslations)) {
-    const escapedKey = key.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const bn = (val.bn || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const hi = (val.hi || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const or = (val.or || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    const en = (val.en || key).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
-    lines.push(`    '${escapedKey}': {'bn': '${bn}', 'hi': '${hi}', 'or': '${or}', 'en': '${en}'},`);
+  function createPart(className, list) {
+    const lines = [
+      `/// Auto-generated sentence translations chunk for Indic languages.`,
+      `class ${className} {`,
+      `  const ${className}._();`,
+      ``,
+      `  static const Map<String, Map<String, String>> translations = {`
+    ];
+
+    for (const [key, val] of list) {
+      const escapedKey = key.replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      const bn = (val.bn || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      const hi = (val.hi || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      const or = (val.or || "").replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      const en = (val.en || key).replace(/\\/g, "\\\\").replace(/'/g, "\\'");
+      lines.push(`    '${escapedKey}': {'bn': '${bn}', 'hi': '${hi}', 'or': '${or}', 'en': '${en}'},`);
+    }
+
+    lines.push(`  };`);
+    lines.push(`}`);
+    lines.push(``);
+    return lines.join("\n");
   }
 
-  lines.push("  };");
-  lines.push("}");
-  lines.push("");
-  return lines.join("\n");
+  fs.writeFileSync("lib/core/languages/indic_translations_sentences_part1.dart", createPart("IndicTranslationsSentencesPart1", part1Entries));
+  fs.writeFileSync("lib/core/languages/indic_translations_sentences_part2.dart", createPart("IndicTranslationsSentencesPart2", part2Entries));
+
+  const aggregator = [
+    `import 'indic_translations_sentences_part1.dart';`,
+    `import 'indic_translations_sentences_part2.dart';`,
+    ``,
+    `/// Auto-generated aggregated sentence translations for Bengali, Hindi, Odia, and English.`,
+    `class IndicTranslationsSentences {`,
+    `  const IndicTranslationsSentences._();`,
+    ``,
+    `  static const Map<String, Map<String, String>> translations = {`,
+    `    ...IndicTranslationsSentencesPart1.translations,`,
+    `    ...IndicTranslationsSentencesPart2.translations,`,
+    `  };`,
+    `}`,
+    ``
+  ].join("\n");
+
+  fs.writeFileSync("lib/core/languages/indic_translations_sentences.dart", aggregator);
 }
 
 function generateWordsDart() {
@@ -265,6 +293,6 @@ function generateWordsDart() {
   return lines.join("\n");
 }
 
-fs.writeFileSync("lib/core/languages/indic_translations_sentences.dart", generateSentencesDart());
+generateSentencesDart();
 fs.writeFileSync("lib/core/languages/indic_translations_words.dart", generateWordsDart());
-console.log("Successfully generated indic_translations_sentences.dart and indic_translations_words.dart");
+console.log("Successfully generated modular translation dictionaries under 600 lines.");

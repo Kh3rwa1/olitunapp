@@ -303,6 +303,59 @@ void main() {
       expect(display.subtitle, isEmpty);
       expect(display.ctaText, 'ᱟᱸᱡᱚᱢ');
     });
+
+    test(
+      'I am working sentence block correctly resolves meaning across bn, hi, or, en without Roman leakage in title',
+      () {
+        // Bengali
+        final displayBn = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ',
+          textLatin: 'In do kamiyedanj',
+          explicitMeaning: 'I am working',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
+        expect(displayBn.scriptText, 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ');
+        expect(displayBn.title, 'আমি কাজ করছি');
+        expect(displayBn.subtitle, 'ইঞ দ কামিয়েদাঞ');
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayBn.title), isFalse);
+
+        // Hindi
+        final displayHi = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ',
+          textLatin: 'In do kamiyedanj',
+          explicitMeaning: 'I am working',
+          teachingLanguage: 'hi',
+          scriptMode: 'both',
+        );
+        expect(displayHi.title, 'मैं काम कर रहा हूँ');
+        expect(displayHi.subtitle, 'इञ द कामियेदाञ');
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayHi.title), isFalse);
+
+        // Odia
+        final displayOr = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ',
+          textLatin: 'In do kamiyedanj',
+          explicitMeaning: 'I am working',
+          teachingLanguage: 'or',
+          scriptMode: 'both',
+        );
+        expect(displayOr.title, 'ମୁଁ କାମ କରୁଛି');
+        expect(displayOr.subtitle, 'ଇଞ ଦ କାମିୟେଦାଞ');
+        expect(RegExp(r'[A-Za-z]').hasMatch(displayOr.title), isFalse);
+
+        // English
+        final displayEn = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱤᱧ ᱫᱚ ᱠᱟᱹᱢᱤᱭᱮᱫᱟᱧ',
+          textLatin: 'In do kamiyedanj',
+          explicitMeaning: 'I am working',
+          teachingLanguage: 'en',
+          scriptMode: 'both',
+        );
+        expect(displayEn.title, 'I am working');
+        expect(displayEn.subtitle, 'In do kamiyedanj');
+      },
+    );
   });
 
   group('WordModel and SentenceModel Multilingual Extensions', () {

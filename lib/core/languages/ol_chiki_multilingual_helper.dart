@@ -304,6 +304,17 @@ class OlChikiMultilingualHelper {
         ? parsed.phoneticLatin
         : (latin.isNotEmpty ? latin : toLatin(olChiki));
 
+    // If English meaning wasn't parsed from composite text, lookup by romanized text in dictionary
+    if (englishMeaning.isEmpty && romanizedSantali.isNotEmpty) {
+      final dictMeaning = IndicTranslationsDictionary.lookup(
+        romanizedSantali,
+        'en',
+      );
+      if (dictMeaning != null && dictMeaning.isNotEmpty) {
+        englishMeaning = dictMeaning;
+      }
+    }
+
     // 2. Resolve Transliteration (Pronunciation Guide in learner's script)
     String transliteration;
     switch (teachingLanguage) {
@@ -338,13 +349,25 @@ class OlChikiMultilingualHelper {
     }
 
     // 3. Resolve Localized Meaning (User's language definition)
-    final String localizedMeaning;
+    String localizedMeaning;
     if (teachingLanguage == 'sat') {
       localizedMeaning = '';
     } else if (teachingLanguage == 'en') {
-      localizedMeaning = englishMeaning;
+      localizedMeaning = englishMeaning.isNotEmpty
+          ? englishMeaning
+          : romanizedSantali;
     } else {
       localizedMeaning = translateMeaning(englishMeaning, teachingLanguage);
+      // If meaning lookup failed by English meaning, fallback to lookup by Santali romanization
+      if (localizedMeaning.isEmpty && romanizedSantali.isNotEmpty) {
+        final directIndic = IndicTranslationsDictionary.lookup(
+          romanizedSantali,
+          teachingLanguage,
+        );
+        if (directIndic != null && directIndic.isNotEmpty) {
+          localizedMeaning = directIndic;
+        }
+      }
     }
 
     // 4. Bottom Section Subtitle: strictly the clean pronunciation transliteration
@@ -361,8 +384,9 @@ class OlChikiMultilingualHelper {
       title = olChiki.isNotEmpty ? olChiki : romanizedSantali;
     } else if (localizedMeaning.isNotEmpty) {
       title = localizedMeaning;
+    } else if (englishMeaning.isNotEmpty) {
+      title = englishMeaning;
     } else {
-      // If meaning not translated, fallback to romanized Santali, never duplicating the Indic transliteration
       title = romanizedSantali.isNotEmpty ? romanizedSantali : olChiki;
     }
 

@@ -1,5 +1,7 @@
 import 'indic_translations_lessons.dart';
+import 'indic_translations_sentences.dart';
 import 'indic_translations_stories.dart';
+import 'indic_translations_words.dart';
 
 /// Aggregated Indic translations dictionary covering Bengali (`bn`),
 /// Hindi (`hi`), Odia (`or`), and English (`en`) for Santali learning content.
@@ -262,18 +264,51 @@ class IndicTranslationsDictionary {
   /// Lookup translation from aggregated datasets.
   static String? lookup(String key, String targetLang) {
     final lower = key.toLowerCase().trim();
+    if (lower.isEmpty) return null;
+
+    // 1. Direct vocabulary
     if (_vocabulary.containsKey(lower) &&
         _vocabulary[lower]!.containsKey(targetLang)) {
       return _vocabulary[lower]![targetLang];
     }
-    if (IndicTranslationsStories.translations.containsKey(lower) &&
-        IndicTranslationsStories.translations[lower]!.containsKey(targetLang)) {
-      return IndicTranslationsStories.translations[lower]![targetLang];
+    // 2. Sentences dataset
+    if (IndicTranslationsSentences.translations.containsKey(lower) &&
+        IndicTranslationsSentences.translations[lower]!.containsKey(
+          targetLang,
+        )) {
+      return IndicTranslationsSentences.translations[lower]![targetLang];
     }
+    // 3. Words dataset
+    if (IndicTranslationsWords.translations.containsKey(lower) &&
+        IndicTranslationsWords.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsWords.translations[lower]![targetLang];
+    }
+    // 4. Lessons dataset
     if (IndicTranslationsLessons.translations.containsKey(lower) &&
         IndicTranslationsLessons.translations[lower]!.containsKey(targetLang)) {
       return IndicTranslationsLessons.translations[lower]![targetLang];
     }
+    // 5. Stories dataset
+    if (IndicTranslationsStories.translations.containsKey(lower) &&
+        IndicTranslationsStories.translations[lower]!.containsKey(targetLang)) {
+      return IndicTranslationsStories.translations[lower]![targetLang];
+    }
+
+    // 6. Fuzzy match: Strip trailing punctuation (?, ., !, ,)
+    if (lower.endsWith('?') ||
+        lower.endsWith('.') ||
+        lower.endsWith('!') ||
+        lower.endsWith(',')) {
+      final stripped = lower.substring(0, lower.length - 1).trim();
+      final sub = lookup(stripped, targetLang);
+      if (sub != null && sub.isNotEmpty) {
+        if (lower.endsWith('?') && !sub.endsWith('?') && !sub.endsWith('？')) {
+          return '$sub?';
+        }
+        return sub;
+      }
+    }
+
     return null;
   }
 }

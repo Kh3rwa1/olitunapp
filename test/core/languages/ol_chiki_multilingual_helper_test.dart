@@ -238,37 +238,43 @@ void main() {
       expect(display.subtitle, isEmpty);
     });
 
-    test('resolves contaminated Ol Chiki and descriptive textLatin in Bengali', () {
-      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-        textOlChiki: 'ᱪᱮᱫ - Ched (What?)',
-        textLatin: 'Ched – Used to ask about things, objects, or actions',
-        teachingLanguage: 'bn',
-        scriptMode: 'both',
-      );
+    test(
+      'resolves contaminated Ol Chiki and descriptive textLatin in Bengali',
+      () {
+        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱪᱮᱫ - Ched (What?)',
+          textLatin: 'Ched – Used to ask about things, objects, or actions',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
 
-      expect(display.scriptText, 'ᱪᱮᱫ');
-      expect(display.title, 'কী?');
-      expect(display.subtitle, 'চেদ');
-      expect(display.ctaText, 'শুনুন');
-      expect(RegExp(r'[A-Za-z]').hasMatch(display.scriptText), isFalse);
-      expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-      expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-    });
+        expect(display.scriptText, 'ᱪᱮᱫ');
+        expect(display.title, 'কী?');
+        expect(display.subtitle, 'চেদ');
+        expect(display.ctaText, 'শুনুন');
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.scriptText), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+      },
+    );
 
-    test('resolves contaminated pronouns in Bengali without leaking English', () {
-      final display = OlChikiMultilingualHelper.resolveBlockDisplay(
-        textOlChiki: 'ᱤᱧ - Iny (I / Me)',
-        textLatin: 'Iny – First person singular: I or Me',
-        teachingLanguage: 'bn',
-        scriptMode: 'both',
-      );
+    test(
+      'resolves contaminated pronouns in Bengali without leaking English',
+      () {
+        final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+          textOlChiki: 'ᱤᱧ - Iny (I / Me)',
+          textLatin: 'Iny – First person singular: I or Me',
+          teachingLanguage: 'bn',
+          scriptMode: 'both',
+        );
 
-      expect(display.scriptText, 'ᱤᱧ');
-      expect(display.title, 'আমি / আমাকে');
-      expect(display.subtitle, 'ইঞ');
-      expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
-      expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
-    });
+        expect(display.scriptText, 'ᱤᱧ');
+        expect(display.title, 'আমি / আমাকে');
+        expect(display.subtitle, 'ইঞ');
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.title), isFalse);
+        expect(RegExp(r'[A-Za-z]').hasMatch(display.subtitle), isFalse);
+      },
+    );
 
     test('resolves sentence lessons with composite textLatin in Bengali', () {
       final display = OlChikiMultilingualHelper.resolveBlockDisplay(

@@ -4,90 +4,35 @@ class IndicTranslationsLessons {
 
   static const Map<String, Map<String, String>> translations = {
     // Grammar: Question Words & Particles
-    'what?': {
-      'bn': 'কী?',
-      'hi': 'क्या?',
-      'or': 'କଣ?',
-      'en': 'What?',
-    },
-    'what': {
-      'bn': 'কী',
-      'hi': 'क्या',
-      'or': 'କଣ',
-      'en': 'What',
-    },
-    'who?': {
-      'bn': 'কে?',
-      'hi': 'कौन?',
-      'or': 'କିଏ?',
-      'en': 'Who?',
-    },
-    'who': {
-      'bn': 'কে',
-      'hi': 'कौन',
-      'or': 'କିଏ',
-      'en': 'Who',
-    },
+    'what?': {'bn': 'কী?', 'hi': 'क्या?', 'or': 'କଣ?', 'en': 'What?'},
+    'what': {'bn': 'কী', 'hi': 'क्या', 'or': 'କଣ', 'en': 'What'},
+    'who?': {'bn': 'কে?', 'hi': 'कौन?', 'or': 'କିଏ?', 'en': 'Who?'},
+    'who': {'bn': 'কে', 'hi': 'कौन', 'or': 'କିଏ', 'en': 'Who'},
     'which / where?': {
       'bn': 'কোনটি / কোথায়?',
       'hi': 'कौन सा / कहाँ?',
       'or': 'କେଉଁଟି / କେଉଁଠି?',
       'en': 'Which / Where?',
     },
-    'which': {
-      'bn': 'কোনটি',
-      'hi': 'कौन सा',
-      'or': 'କେଉଁଟି',
-      'en': 'Which',
-    },
-    'where?': {
-      'bn': 'কোথায়?',
-      'hi': 'कहाँ?',
-      'or': 'କେଉଁଠି?',
-      'en': 'Where?',
-    },
-    'where': {
-      'bn': 'কোথায়',
-      'hi': 'कहाँ',
-      'or': 'କେଉଁଠି',
-      'en': 'Where',
-    },
-    'when?': {
-      'bn': 'কখন?',
-      'hi': 'कब?',
-      'or': 'କେବେ?',
-      'en': 'When?',
-    },
-    'when': {
-      'bn': 'কখন',
-      'hi': 'कब',
-      'or': 'କେବେ',
-      'en': 'When',
-    },
+    'which': {'bn': 'কোনটি', 'hi': 'कौन सा', 'or': 'କେଉଁଟି', 'en': 'Which'},
+    'where?': {'bn': 'কোথায়?', 'hi': 'कहाँ?', 'or': 'କେଉଁଠି?', 'en': 'Where?'},
+    'where': {'bn': 'কোথায়', 'hi': 'कहाँ', 'or': 'କେଉଁଠି', 'en': 'Where'},
+    'when?': {'bn': 'কখন?', 'hi': 'कब?', 'or': 'କେବେ?', 'en': 'When?'},
+    'when': {'bn': 'কখন', 'hi': 'कब', 'or': 'କେବେ', 'en': 'When'},
     'how?': {
       'bn': 'কেমন / কীভাবে?',
       'hi': 'कैसे?',
       'or': 'କିପରି?',
       'en': 'How?',
     },
-    'how': {
-      'bn': 'কেমন / কীভাবে',
-      'hi': 'कैसे',
-      'or': 'କିପରି',
-      'en': 'How',
-    },
+    'how': {'bn': 'কেমন / কীভাবে', 'hi': 'कैसे', 'or': 'କିପରି', 'en': 'How'},
     'in / at / on': {
       'bn': 'মধ্যে / তে / এ (স্থানবাচক)',
       'hi': 'में / पर (स्थानवाचक)',
       'or': 'ରେ / ଠାରେ (ସ୍ଥାନବାଚକ)',
       'en': 'in / at / on',
     },
-    'from': {
-      'bn': 'থেকে / হতে',
-      'hi': 'से',
-      'or': 'ଠାରୁ / ରୁ',
-      'en': 'from',
-    },
+    'from': {'bn': 'থেকে / হতে', 'hi': 'से', 'or': 'ଠାରୁ / ରୁ', 'en': 'from'},
 
     // Grammar: Pronouns
     'i / me': {
@@ -132,12 +77,7 @@ class IndicTranslationsLessons {
       'or': 'ସେମାନେ',
       'en': 'They',
     },
-    'my / mine': {
-      'bn': 'আমার',
-      'hi': 'मेरा',
-      'or': 'ମୋର',
-      'en': 'My / Mine',
-    },
+    'my / mine': {'bn': 'আমার', 'hi': 'मेरा', 'or': 'ମୋର', 'en': 'My / Mine'},
     'our (inclusive)': {
       'bn': 'আমাদের (সবার)',
       'hi': 'हमारा (सबका)',
@@ -162,24 +102,9 @@ class IndicTranslationsLessons {
       'or': 'ପିଲାମାନେ',
       'en': 'Children',
     },
-    'and': {
-      'bn': 'এবং / আর',
-      'hi': 'और',
-      'or': 'ଏବଂ',
-      'en': 'And',
-    },
-    'but': {
-      'bn': 'কিন্তু',
-      'hi': 'लेकिन',
-      'or': 'କିନ୍ତୁ',
-      'en': 'But',
-    },
-    'because': {
-      'bn': 'কারণ',
-      'hi': 'क्योंकि',
-      'or': 'କାରଣ',
-      'en': 'Because',
-    },
+    'and': {'bn': 'এবং / আর', 'hi': 'और', 'or': 'ଏବଂ', 'en': 'And'},
+    'but': {'bn': 'কিন্তু', 'hi': 'लेकिन', 'or': 'କିନ୍ତୁ', 'en': 'But'},
+    'because': {'bn': 'কারণ', 'hi': 'क्योंकि', 'or': 'କାରଣ', 'en': 'Because'},
     'i am reading': {
       'bn': 'আমি পড়ছি',
       'hi': 'मैं पढ़ रहा हूँ',

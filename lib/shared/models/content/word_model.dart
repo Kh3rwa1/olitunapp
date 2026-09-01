@@ -74,7 +74,14 @@ class WordModel {
   }
 
   String localizedMeaning(String lang) {
-    return OlChikiMultilingualHelper.translateMeaning(meaning, lang);
+    if (lang == 'sat') return '';
+    if (lang == 'en') return meaning.isNotEmpty ? meaning : wordLatin;
+    final translated = OlChikiMultilingualHelper.translateMeaning(
+      meaning,
+      lang,
+    );
+    if (translated.isNotEmpty) return translated;
+    return OlChikiMultilingualHelper.translateMeaning(wordLatin, lang);
   }
 
   String localizedSubtitle(String lang, [String scriptMode = 'both']) {

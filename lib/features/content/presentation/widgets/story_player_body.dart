@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:itun/core/theme/app_typography.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/analytics/analytics_service.dart';
 import '../../../../core/audio/playback_controller.dart';
@@ -523,7 +523,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
                   ),
                   child: Text(
                     '${index + 1}',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 12,
                       color: isActive ? AppColors.primary : Colors.white54,
                       fontWeight: FontWeight.w600,
@@ -553,7 +553,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
             if (showOl)
               Text(
                 segment.textOlChiki,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 22,
                   height: 1.5,
                   color: isActive ? Colors.white : Colors.white70,
@@ -564,7 +564,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
               const SizedBox(height: 6),
               Text(
                 segment.textLatin!,
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 15,
                   height: 1.5,
                   color: isActive ? Colors.white60 : Colors.white38,
@@ -583,7 +583,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
                 ),
                 child: Text(
                   segment.translationFor(teachingLanguage),
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 14,
                     height: 1.5,
                     color: Colors.white54,
@@ -608,7 +608,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
                       ),
                       label: Text(
                         'word',
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 12,
                           color: AppColors.primaryLight,
                         ),
@@ -654,7 +654,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
                   playback.error!,
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 12,
                     color: Colors.redAccent,
                   ),
@@ -734,7 +734,7 @@ class _StoryPlayerBodyState extends ConsumerState<StoryPlayerBody> {
                   .cancelStoryDownload(widget.item.id),
               child: Text(
                 'cancel',
-                style: GoogleFonts.inter(fontSize: 10, color: Colors.white38),
+                style: AppTypography.inter(fontSize: 10, color: Colors.white38),
               ),
             ),
           ],
@@ -794,7 +794,7 @@ class _ControlButton extends StatelessWidget {
         ),
         Text(
           label,
-          style: GoogleFonts.inter(
+          style: AppTypography.inter(
             fontSize: 10,
             color: enabled ? Colors.white54 : Colors.white24,
           ),

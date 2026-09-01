@@ -165,7 +165,7 @@ class _AdminBintiWaitlistScreenState
     final cardStyle = TextStyle(
       fontSize: 24,
       fontWeight: FontWeight.w800,
-      fontFamily: 'Poppins',
+      fontFamily: 'Inter',
       color: isDark ? Colors.white : Colors.black87,
     );
 
@@ -327,7 +327,7 @@ class _AdminBintiWaitlistScreenState
           flex: 2,
           cellBuilder: (item) => Text(
             item.phoneNumber,
-            style: const TextStyle(fontFamily: 'Poppins', fontSize: 12),
+            style: const TextStyle(fontFamily: 'Inter', fontSize: 12),
           ),
         ),
         AdminColumn<WaitlistModel>(
@@ -384,7 +384,7 @@ class _AdminBintiWaitlistScreenState
             }
             return Text(
               '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+              style: const TextStyle(fontSize: 12, fontFamily: 'Inter'),
             );
           },
         ),
@@ -620,7 +620,7 @@ class _WaitlistDetailsSheetState extends ConsumerState<_WaitlistDetailsSheet> {
                       fontSize: 20,
                       fontWeight: FontWeight.w800,
                       color: isDark ? Colors.white : Colors.black87,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                     ),
                   ),
                 ],

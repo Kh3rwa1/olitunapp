@@ -165,7 +165,7 @@ class _NavBarItem extends StatelessWidget {
               Text(
                 item.label,
                 style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: AppColors.primary,

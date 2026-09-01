@@ -1,9 +1,9 @@
 import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/logging/app_logger.dart';
 import '../../../../shared/models/content_models.dart';
@@ -68,7 +68,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
               color: Colors.white.withValues(alpha: 0.7),
               fontSize: 26,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
             );
             final textSpan = TextSpan(text: 'Olitun 🪶', style: watermarkStyle);
             final textPainter = TextPainter(
@@ -239,7 +239,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                             const SizedBox(width: 6),
                             Text(
                               "TODAY'S WISDOM",
-                              style: GoogleFonts.inter(
+                              style: AppTypography.inter(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: 1.6,
@@ -258,10 +258,7 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
                             affirmation.olChikiText,
                             style: TextStyle(
                               fontFamily: 'OlChiki',
-                              fontFamilyFallback: const [
-                                'Poppins',
-                                'sans-serif',
-                              ],
+                              fontFamilyFallback: const ['Inter', 'sans-serif'],
                               fontSize: 32,
                               fontWeight: FontWeight.bold,
                               color: textColor,
@@ -379,7 +376,7 @@ class _ActionButton extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 10,
                 fontWeight: FontWeight.w600,
                 color: onTap == null

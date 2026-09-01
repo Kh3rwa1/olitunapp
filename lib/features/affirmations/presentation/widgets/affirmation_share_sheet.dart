@@ -206,7 +206,7 @@ class _AffirmationShareSheetState extends ConsumerState<AffirmationShareSheet> {
                 Text(
                   'Share Wisdom Card',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white : Colors.black87,

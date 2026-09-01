@@ -348,7 +348,7 @@ class _AdminAffirmationFormState extends ConsumerState<AdminAffirmationForm> {
                             '${_publishedAt.year}-${_publishedAt.month.toString().padLeft(2, '0')}-${_publishedAt.day.toString().padLeft(2, '0')}',
                             style: const TextStyle(
                               fontSize: 16,
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontWeight: FontWeight.bold,
                             ),
                           ),

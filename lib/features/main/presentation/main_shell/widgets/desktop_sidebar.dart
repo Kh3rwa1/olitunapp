@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/providers/providers.dart';
 
 class DesktopSidebar extends ConsumerWidget {
@@ -64,7 +63,7 @@ class DesktopSidebar extends ConsumerWidget {
                 const SizedBox(width: 12),
                 Text(
                   'Olitun',
-                  style: GoogleFonts.fredoka(
+                  style: AppTypography.inter(
                     fontSize: 24,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white : Colors.black87,
@@ -127,7 +126,7 @@ class DesktopSidebar extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       isCurrentlyDark ? 'Dark' : 'Light',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 13,
                         fontWeight: FontWeight.w500,
                         color: isDark ? Colors.white60 : Colors.black54,
@@ -236,7 +235,7 @@ class _SidebarNavItemState extends State<SidebarNavItem> {
                     const SizedBox(width: 14),
                     Text(
                       widget.label,
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 15,
                         fontWeight: isActive
                             ? FontWeight.w700

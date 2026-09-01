@@ -341,7 +341,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                         focusNode: _focusNode,
                         autofocus: true,
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 15,
                           fontWeight: FontWeight.w500,
                           color: AdminTokens.textPrimary(isDark),
@@ -350,7 +350,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                           hintText:
                               'Search actions, content, or jump to route…',
                           hintStyle: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 14,
                             color: AdminTokens.textMuted(isDark),
                           ),
@@ -374,7 +374,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                       child: Text(
                         'ESC to close',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 10,
                           fontWeight: FontWeight.w600,
                           color: AdminTokens.textMuted(isDark),
@@ -401,7 +401,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                             Text(
                               'No matching results found',
                               style: TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 fontSize: 13,
                                 color: AdminTokens.textMuted(isDark),
                               ),
@@ -473,7 +473,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                             Text(
                                               item.title,
                                               style: TextStyle(
-                                                fontFamily: 'Poppins',
+                                                fontFamily: 'Inter',
                                                 fontSize: 13,
                                                 fontWeight: FontWeight.w600,
                                                 color: AdminTokens.textPrimary(
@@ -486,7 +486,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                               Text(
                                                 item.subtitle,
                                                 style: TextStyle(
-                                                  fontFamily: 'Poppins',
+                                                  fontFamily: 'Inter',
                                                   fontSize: 11,
                                                   color: AdminTokens.textMuted(
                                                     isDark,
@@ -517,7 +517,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                                         child: Text(
                                           item.category,
                                           style: TextStyle(
-                                            fontFamily: 'Poppins',
+                                            fontFamily: 'Inter',
                                             fontSize: 9.5,
                                             fontWeight: FontWeight.w600,
                                             color: AdminTokens.textSecondary(
@@ -564,7 +564,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                     Text(
                       'Navigate with ↑ ↓',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 10,
                         color: AdminTokens.textMuted(isDark),
                       ),
@@ -573,7 +573,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                     Text(
                       'Select with ↵',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 10,
                         color: AdminTokens.textMuted(isDark),
                       ),
@@ -582,7 +582,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
                     Text(
                       '${_filteredItems.length} matching actions',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 10,
                         fontWeight: FontWeight.w600,
                         color: AdminTokens.textMuted(isDark),

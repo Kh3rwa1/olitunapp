@@ -296,7 +296,7 @@ class _AdminDataTableState<T> extends State<AdminDataTable<T>> {
                 child: Text(
                   '${_currentPage + 1} / $_totalPages',
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: AppColors.primary,

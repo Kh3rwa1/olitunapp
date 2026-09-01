@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../providers/profile_providers.dart';
 import '../../domain/entities/user_stats_entity.dart';
@@ -250,7 +250,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                   children: [
                                     Text(
                                       'NEXT MILESTONE',
-                                      style: GoogleFonts.inter(
+                                      style: AppTypography.inter(
                                         fontSize: 10,
                                         fontWeight: FontWeight.w800,
                                         letterSpacing: 1.2,
@@ -260,7 +260,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                     const SizedBox(height: 2),
                                     Text(
                                       'Road to $nextLevelName',
-                                      style: GoogleFonts.poppins(
+                                      style: AppTypography.inter(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w800,
                                         color: isDark
@@ -274,7 +274,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                       // card's course-wide Overall Progress.
                                       'Level progress · '
                                       '${UserStatsEntity.levelThresholds[levelIndex]} → $nextLevelName',
-                                      style: GoogleFonts.inter(
+                                      style: AppTypography.inter(
                                         fontSize: 10.5,
                                         fontWeight: FontWeight.w500,
                                         color: isDark
@@ -343,7 +343,7 @@ class NextMilestoneCard extends ConsumerWidget {
                               const SizedBox(width: 10),
                               Text(
                                 '${(levelProgress * 100).round()}%',
-                                style: GoogleFonts.poppins(
+                                style: AppTypography.inter(
                                   fontSize: 12,
                                   fontWeight: FontWeight.w800,
                                   color: AppColors.primary,
@@ -370,7 +370,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                     child: Text(
                                       req,
                                       style: TextStyle(
-                                        fontFamily: 'Poppins',
+                                        fontFamily: 'Inter',
                                         fontSize: 12,
                                         fontWeight: FontWeight.w500,
                                         color: isDark
@@ -443,7 +443,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                         children: [
                                           Text(
                                             'Closest Badge Achievement',
-                                            style: GoogleFonts.inter(
+                                            style: AppTypography.inter(
                                               fontSize: 9,
                                               fontWeight: FontWeight.w800,
                                               color: isDark
@@ -455,7 +455,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                           const SizedBox(height: 2),
                                           Text(
                                             'Unlock the ${badge.name} Badge',
-                                            style: GoogleFonts.poppins(
+                                            style: AppTypography.inter(
                                               fontSize: 12,
                                               fontWeight: FontWeight.w700,
                                               color: isDark
@@ -479,7 +479,7 @@ class NextMilestoneCard extends ConsumerWidget {
                                       ),
                                       child: Text(
                                         '${(badge.ratio * 100).round()}%',
-                                        style: GoogleFonts.poppins(
+                                        style: AppTypography.inter(
                                           fontSize: 10,
                                           fontWeight: FontWeight.w800,
                                           color: badge.color,

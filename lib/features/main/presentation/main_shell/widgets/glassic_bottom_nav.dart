@@ -2,9 +2,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/widgets/minimum_tap_target.dart';
 
 class GlassicBottomNav extends StatelessWidget {
@@ -124,7 +123,7 @@ class GlassicBottomNav extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: GoogleFonts.fredoka(
+              style: AppTypography.inter(
                 fontSize: 11,
                 fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
                 color: isSelected

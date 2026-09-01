@@ -11,15 +11,11 @@ import 'tolerant_local_file_comparator.dart';
 /// renders identically on every platform (local macOS, Linux CI) instead of
 /// falling back to the placeholder test font.
 const Map<String, List<String>> _kTestFontAssets = <String, List<String>>{
-  'Poppins': <String>[
-    'fonts/Poppins-Regular.ttf',
-    'fonts/Poppins-SemiBold.ttf',
-    'fonts/Poppins-Bold.ttf',
-  ],
-  // Material's default family; mapped to a bundled font for deterministic
+  'Inter': <String>['assets/fonts/Inter-Variable.ttf'],
+  // Material's default family; mapped to bundled font for deterministic
   // glyph metrics across hosts.
-  'Roboto': <String>['fonts/Poppins-Regular.ttf'],
-  'OlChiki': <String>['fonts/OlChiki.ttf'],
+  'Roboto': <String>['assets/fonts/Inter-Variable.ttf'],
+  'OlChiki': <String>['assets/fonts/OlChiki.ttf'],
 };
 
 Future<void> _loadTestFonts() async {

@@ -189,7 +189,7 @@ class SlidingSegmentController extends StatelessWidget {
                         child: AnimatedDefaultTextStyle(
                           duration: const Duration(milliseconds: 200),
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 12,
                             fontWeight: isSelected
                                 ? FontWeight.w700

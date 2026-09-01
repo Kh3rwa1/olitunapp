@@ -20,7 +20,7 @@ class AppTheme {
         onSecondary: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.lightBackground,
-      fontFamily: 'Poppins',
+      fontFamily: 'Inter',
       fontFamilyFallback: ['OlChiki'],
 
       // AppBar Theme
@@ -31,7 +31,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.dark,
         iconTheme: IconThemeData(color: AppColors.textPrimaryLight),
         titleTextStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w600,
@@ -63,7 +63,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -81,7 +81,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -94,7 +94,7 @@ class AppTheme {
         style: TextButton.styleFrom(
           foregroundColor: AppColors.primary,
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 14,
             fontWeight: FontWeight.w600,
@@ -127,7 +127,7 @@ class AppTheme {
           vertical: 18,
         ),
         hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           color: AppColors.textTertiaryLight,
         ),
@@ -141,13 +141,13 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         selectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w500,
@@ -174,7 +174,7 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.charcoal,
         contentTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: Colors.white,
@@ -195,14 +195,14 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         elevation: 0,
         titleTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimaryLight,
         ),
         contentTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: AppColors.textSecondaryLight,
@@ -217,7 +217,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: BorderSide.none,
         labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -234,7 +234,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -267,7 +267,7 @@ class AppTheme {
         onError: Colors.white,
       ),
       scaffoldBackgroundColor: AppColors.darkBackground,
-      fontFamily: 'Poppins',
+      fontFamily: 'Inter',
       fontFamilyFallback: ['OlChiki'],
 
       // AppBar Theme
@@ -278,7 +278,7 @@ class AppTheme {
         systemOverlayStyle: SystemUiOverlayStyle.light,
         iconTheme: IconThemeData(color: AppColors.textPrimaryDark),
         titleTextStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w600,
@@ -310,7 +310,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -328,7 +328,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -361,7 +361,7 @@ class AppTheme {
           vertical: 18,
         ),
         hintStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           color: AppColors.textTertiaryDark,
         ),
@@ -375,13 +375,13 @@ class AppTheme {
         type: BottomNavigationBarType.fixed,
         elevation: 0,
         selectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
         ),
         unselectedLabelStyle: TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w500,
@@ -400,7 +400,7 @@ class AppTheme {
         behavior: SnackBarBehavior.floating,
         backgroundColor: AppColors.softBlack,
         contentTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: Colors.white,
@@ -421,14 +421,14 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
         elevation: 0,
         titleTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 20,
           fontWeight: FontWeight.w700,
           color: AppColors.textPrimaryDark,
         ),
         contentTextStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 14,
           color: AppColors.textSecondaryDark,
@@ -443,7 +443,7 @@ class AppTheme {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         side: BorderSide.none,
         labelStyle: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontFamilyFallback: ['OlChiki'],
           fontSize: 12,
           fontWeight: FontWeight.w600,
@@ -460,7 +460,7 @@ class AppTheme {
             borderRadius: BorderRadius.circular(16),
           ),
           textStyle: const TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontFamilyFallback: ['OlChiki'],
             fontSize: 16,
             fontWeight: FontWeight.w600,
@@ -481,7 +481,7 @@ class AppTheme {
     return TextTheme(
       // Display styles
       displayLarge: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 57,
         fontWeight: FontWeight.w700,
@@ -489,7 +489,7 @@ class AppTheme {
         letterSpacing: -0.5,
       ),
       displayMedium: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 45,
         fontWeight: FontWeight.w600,
@@ -497,7 +497,7 @@ class AppTheme {
         letterSpacing: -0.5,
       ),
       displaySmall: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 36,
         fontWeight: FontWeight.w600,
@@ -506,21 +506,21 @@ class AppTheme {
 
       // Headline styles
       headlineLarge: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 32,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       headlineMedium: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 28,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       headlineSmall: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 24,
         fontWeight: FontWeight.w600,
@@ -529,21 +529,21 @@ class AppTheme {
 
       // Title styles
       titleLarge: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 22,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       titleMedium: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 18,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       titleSmall: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 16,
         fontWeight: FontWeight.w600,
@@ -552,21 +552,21 @@ class AppTheme {
 
       // Body styles
       bodyLarge: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 16,
         fontWeight: FontWeight.w400,
         color: primary,
       ),
       bodyMedium: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 14,
         fontWeight: FontWeight.w400,
         color: secondary,
       ),
       bodySmall: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 12,
         fontWeight: FontWeight.w400,
@@ -575,21 +575,21 @@ class AppTheme {
 
       // Label styles
       labelLarge: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 14,
         fontWeight: FontWeight.w600,
         color: primary,
       ),
       labelMedium: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 12,
         fontWeight: FontWeight.w600,
         color: secondary,
       ),
       labelSmall: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontFamilyFallback: ['OlChiki'],
         fontSize: 11,
         fontWeight: FontWeight.w500,

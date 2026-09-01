@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
@@ -94,7 +94,7 @@ class StatsGrid extends StatelessWidget {
                   children: [
                     AnimatedCounter(
                       value: streak,
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 28,
                         fontWeight: FontWeight.w900,
                         color: isDark ? Colors.white : Colors.black,
@@ -102,7 +102,7 @@ class StatsGrid extends StatelessWidget {
                     ),
                     Text(
                       'DAY STREAK',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
@@ -218,7 +218,7 @@ class StatPill extends StatelessWidget {
             AnimatedCounter(
               value: data.numericValue!,
               suffix: data.suffix,
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: isDark ? Colors.white : Colors.black,
@@ -227,7 +227,7 @@ class StatPill extends StatelessWidget {
           else
             Text(
               data.value,
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 18,
                 fontWeight: FontWeight.w900,
                 color: isDark ? Colors.white : Colors.black,
@@ -236,7 +236,7 @@ class StatPill extends StatelessWidget {
           const SizedBox(height: 2),
           Text(
             data.label.toUpperCase(),
-            style: GoogleFonts.inter(
+            style: AppTypography.inter(
               fontSize: 8,
               fontWeight: FontWeight.w800,
               letterSpacing: 0.5,
@@ -321,7 +321,7 @@ class SkillProgressCard extends StatelessWidget {
                   ),
                   Text(
                     '${(value * 100).toInt()}%',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w900,
                       color: isDark ? Colors.white70 : Colors.black87,
@@ -334,7 +334,7 @@ class SkillProgressCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppTypography.inter(
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: isDark ? Colors.white38 : Colors.black38,

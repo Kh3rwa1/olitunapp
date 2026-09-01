@@ -120,7 +120,7 @@ class DashboardHeader extends ConsumerWidget {
                       Text(
                         'Seed data',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 13.5,
                           fontWeight: FontWeight.w800,
                           color: Colors.white,

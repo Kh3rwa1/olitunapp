@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/storage/hive_service.dart';
 import '../../auth/presentation/providers/auth_providers.dart';
@@ -58,7 +58,7 @@ class SettingsScreen extends ConsumerWidget {
               const SizedBox(width: 8),
               Text(
                 l10n.settings,
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 28,
                   fontWeight: FontWeight.w900,
                   letterSpacing: -0.5,
@@ -72,7 +72,7 @@ class SettingsScreen extends ConsumerWidget {
             padding: const EdgeInsets.only(left: 56),
             child: Text(
               l10n.customizeExperience,
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 14,
                 color: isDark ? Colors.white38 : Colors.black38,
               ),
@@ -142,7 +142,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         title: Text(
           l10n.settings,
-          style: GoogleFonts.inter(
+          style: AppTypography.inter(
             fontWeight: FontWeight.w900,
             color: isDark ? Colors.white : Colors.black,
           ),

@@ -67,7 +67,7 @@ void main() {
     group('typography', () {
       test('display has Poppins family', () {
         final style = AdminTokens.display(false);
-        expect(style.fontFamily, 'Poppins');
+        expect(style.fontFamily, 'Inter');
         expect(style.fontWeight, FontWeight.w800);
       });
 

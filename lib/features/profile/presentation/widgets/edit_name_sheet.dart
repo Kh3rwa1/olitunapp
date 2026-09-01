@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -72,7 +72,7 @@ class _EditNameSheetState extends State<EditNameSheet> {
           const SizedBox(height: 24),
           Text(
             'Edit Your Name',
-            style: GoogleFonts.inter(
+            style: AppTypography.inter(
               fontSize: 20,
               fontWeight: FontWeight.w800,
               color: isDark ? Colors.white : Colors.black,
@@ -89,7 +89,7 @@ class _EditNameSheetState extends State<EditNameSheet> {
               autofocus: true,
               textCapitalization: TextCapitalization.words,
               onSubmitted: (_) => _onSave(),
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 16,
                 color: isDark ? Colors.white : Colors.black,
               ),
@@ -129,7 +129,7 @@ class _EditNameSheetState extends State<EditNameSheet> {
               ),
               child: Text(
                 'Save',
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 16,
                   fontWeight: FontWeight.w700,
                 ),

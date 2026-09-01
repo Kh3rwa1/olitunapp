@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../quiz/presentation/providers/mistake_provider.dart';
@@ -88,7 +88,7 @@ class MistakeReviewCard extends ConsumerWidget {
                   const SizedBox(width: 12),
                   Text(
                     'MISTAKE REVIEW',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
                       color: isDark
@@ -111,7 +111,7 @@ class MistakeReviewCard extends ConsumerWidget {
                     ),
                     child: Text(
                       'Takes 2 min',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                         color: isDark
@@ -125,7 +125,7 @@ class MistakeReviewCard extends ConsumerWidget {
               const SizedBox(height: 14),
               Text(
                 '$count word${count > 1 ? 's' : ''} need${count > 1 ? '' : 's'} practice',
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.w900,
                   color: isDark ? Colors.white : Colors.black87,
@@ -134,7 +134,7 @@ class MistakeReviewCard extends ConsumerWidget {
               const SizedBox(height: 6),
               Text(
                 '“Mistakes are just lessons asking for a second chance.”',
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 12,
                   fontStyle: FontStyle.italic,
                   fontWeight: FontWeight.w500,
@@ -147,7 +147,7 @@ class MistakeReviewCard extends ConsumerWidget {
                 children: [
                   Text(
                     ctaLabel,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w900,
                       color: isDark

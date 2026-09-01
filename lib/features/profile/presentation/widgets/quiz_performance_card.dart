@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 
 // ═══════════════ QUIZ PERFORMANCE CARD ═══════════════
@@ -47,7 +47,7 @@ class QuizPerformanceCard extends StatelessWidget {
                   children: [
                     Text(
                       'Assessment Score',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         color: Colors.white70,
                         fontWeight: FontWeight.w600,
                         fontSize: 12,
@@ -59,7 +59,7 @@ class QuizPerformanceCard extends StatelessWidget {
                       children: [
                         Text(
                           '$accuracy%',
-                          style: GoogleFonts.inter(
+                          style: AppTypography.inter(
                             color: Colors.white,
                             fontSize: 30,
                             fontWeight: FontWeight.w900,
@@ -69,7 +69,7 @@ class QuizPerformanceCard extends StatelessWidget {
                           padding: const EdgeInsets.only(bottom: 5, left: 4),
                           child: Text(
                             'Avg',
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               color: Colors.white60,
                               fontSize: 11,
                             ),
@@ -116,7 +116,7 @@ class _QuizMiniStat extends StatelessWidget {
         children: [
           Text(
             value,
-            style: GoogleFonts.inter(
+            style: AppTypography.inter(
               color: Colors.white,
               fontWeight: FontWeight.w900,
               fontSize: 15,
@@ -124,7 +124,7 @@ class _QuizMiniStat extends StatelessWidget {
           ),
           Text(
             label,
-            style: GoogleFonts.inter(
+            style: AppTypography.inter(
               color: Colors.white70,
               fontSize: 9,
               fontWeight: FontWeight.w600,

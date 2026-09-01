@@ -159,7 +159,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
                     Text(
                       'Search or type a command...',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 11.5,
                         color: AdminTokens.textMuted(widget.isDark),
                         fontWeight: FontWeight.w600,
@@ -185,7 +185,7 @@ class _AdminTopBarState extends State<AdminTopBar> {
                       child: Text(
                         '⌘K',
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 9.5,
                           fontWeight: FontWeight.w700,
                           color: AdminTokens.textSecondary(widget.isDark),

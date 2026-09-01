@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
-
 import '../../../../../core/presentation/layout/responsive_layout.dart';
 import '../../../../../core/theme/app_colors.dart';
+import '../../../../../core/theme/app_typography.dart';
 import '../../../../../shared/providers/providers.dart';
 
 class DesktopRightPanel extends ConsumerWidget {
@@ -53,7 +52,7 @@ class DesktopRightPanel extends ConsumerWidget {
                     backgroundColor: AppColors.primary.withValues(alpha: 0.15),
                     child: Text(
                       userName.isNotEmpty ? userName[0].toUpperCase() : 'L',
-                      style: GoogleFonts.fredoka(
+                      style: AppTypography.inter(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
                         color: AppColors.primary,
@@ -63,7 +62,7 @@ class DesktopRightPanel extends ConsumerWidget {
                   const SizedBox(height: 12),
                   Text(
                     userName,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : Colors.black87,
@@ -72,7 +71,7 @@ class DesktopRightPanel extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     'Santali Learner',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 12,
                       color: isDark ? Colors.white38 : Colors.black38,
                     ),
@@ -86,7 +85,7 @@ class DesktopRightPanel extends ConsumerWidget {
             // Stats Section
             Text(
               'YOUR STATS',
-              style: GoogleFonts.inter(
+              style: AppTypography.inter(
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.2,
@@ -157,7 +156,7 @@ class DesktopRightPanel extends ConsumerWidget {
                       const SizedBox(width: 8),
                       Text(
                         'Daily Goal',
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: isDark ? Colors.white : Colors.black87,
@@ -182,7 +181,7 @@ class DesktopRightPanel extends ConsumerWidget {
                   const SizedBox(height: 10),
                   Text(
                     '${lessonsCompleted % 3}/3 lessons today',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 12,
                       color: isDark ? Colors.white38 : Colors.black38,
                     ),
@@ -268,7 +267,7 @@ class _RightPanelStatState extends State<RightPanelStat> {
                 children: [
                   Text(
                     widget.value,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
                       color: widget.isDark ? Colors.white : Colors.black87,
@@ -276,7 +275,7 @@ class _RightPanelStatState extends State<RightPanelStat> {
                   ),
                   Text(
                     widget.label,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
                       color: widget.isDark ? Colors.white38 : Colors.black38,

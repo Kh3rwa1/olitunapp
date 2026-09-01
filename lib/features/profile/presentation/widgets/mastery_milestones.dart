@@ -1,9 +1,9 @@
 import 'dart:async';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/widgets/bento_grid.dart';
@@ -126,7 +126,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
                         const Text(
                           'Milestone Achievements',
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.2,
@@ -138,7 +138,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
                         Text(
                           'Unlock traditional and modern mastery badges',
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             color: isDark ? Colors.white38 : Colors.black38,
@@ -166,7 +166,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
                     child: const Text(
                       'CULTURE & FOLK',
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 8.5,
                         fontWeight: FontWeight.w800,
                         color: AppColors.primary,
@@ -402,7 +402,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
           // Title (editable or static)
           Text(
             data.title,
-            style: GoogleFonts.poppins(
+            style: AppTypography.inter(
               fontSize: 12,
               fontWeight: FontWeight.w800,
               letterSpacing: -0.2,
@@ -419,7 +419,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
           Text(
             data.subtitle,
             style: TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontSize: 9,
               fontWeight: FontWeight.w500,
               color: isDark ? Colors.white38 : Colors.black38,
@@ -460,7 +460,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
               const SizedBox(height: 4),
               Text(
                 data.progressLabel,
-                style: GoogleFonts.poppins(
+                style: AppTypography.inter(
                   fontSize: 8.5,
                   fontWeight: FontWeight.w700,
                   color: data.color.withValues(alpha: 0.85),

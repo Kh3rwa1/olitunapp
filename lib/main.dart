@@ -4,7 +4,6 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:just_audio_background/just_audio_background.dart';
@@ -102,11 +101,6 @@ Future<void> main() async {
           AppLogger.debug('Non-essential AdService init failed: $e');
         }
 
-        // All Google Fonts families (Inter, Fredoka, Poppins) are bundled in
-        // the app. Forbid runtime fetching: eliminates first-paint font
-        // downloads (jank + flash-of-fallback-font) and makes the app fully
-        // offline-deterministic.
-        GoogleFonts.config.allowRuntimeFetching = false;
         runApp(
           ProviderScope(
             overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],

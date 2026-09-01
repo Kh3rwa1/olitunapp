@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/gamification_content_provider.dart';
 import '../../domain/entities/user_stats_entity.dart';
@@ -276,7 +276,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                 // Badge Name
                 Text(
                   badge.name,
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 22,
                     fontWeight: FontWeight.w900,
                     color: widget.isDark ? Colors.white : Colors.black,
@@ -286,7 +286,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                 // Badge Category
                 Text(
                   badge.category,
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 9,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.2,
@@ -297,7 +297,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                 // Badge Description
                 Text(
                   badge.description,
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 13,
                     fontWeight: FontWeight.w500,
                     color: widget.isDark ? Colors.white70 : Colors.black54,
@@ -326,7 +326,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                   const SizedBox(height: 8),
                   Text(
                     'Progress: ${badge.currentProgress}/${badge.targetProgress}',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: widget.isDark ? Colors.white38 : Colors.black38,
@@ -344,7 +344,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                       const SizedBox(width: 6),
                       Text(
                         badge.rewardStars > 0 ? 'REWARDED' : 'UNLOCKED',
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 12,
                           fontWeight: FontWeight.w900,
                           color: Colors.green,
@@ -357,7 +357,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                     const SizedBox(height: 8),
                     Text(
                       '+${badge.rewardStars} stars',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         color: widget.isDark ? Colors.white54 : Colors.black45,
@@ -383,7 +383,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                     ),
                     child: Text(
                       'Awesome',
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w700,
                         color: widget.isDark ? Colors.white : Colors.black87,
@@ -454,7 +454,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                   ),
                   child: Text(
                     cat,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 10,
                       fontWeight: FontWeight.w800,
                       letterSpacing: 0.5,
@@ -540,7 +540,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                           padding: const EdgeInsets.symmetric(horizontal: 4),
                           child: Text(
                             badge.name,
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
                               color: badge.isUnlocked
@@ -568,7 +568,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                               const SizedBox(width: 2),
                               Text(
                                 badge.rewardStars > 0 ? 'REWARDED' : 'UNLOCKED',
-                                style: GoogleFonts.inter(
+                                style: AppTypography.inter(
                                   fontSize: 7,
                                   fontWeight: FontWeight.w900,
                                   color: Colors.green,
@@ -579,7 +579,7 @@ class _BadgesGridWidgetState extends ConsumerState<BadgesGridWidget> {
                         else
                           Text(
                             'LOCKED (${badge.currentProgress}/${badge.targetProgress})',
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               fontSize: 7,
                               fontWeight: FontWeight.w800,
                               color: widget.isDark

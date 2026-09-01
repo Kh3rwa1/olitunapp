@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
@@ -273,7 +273,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                           const SizedBox(width: 6),
                           Text(
                             'Bakhed Audio',
-                            style: GoogleFonts.fredoka(
+                            style: AppTypography.inter(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: _currentTab == 0
@@ -302,7 +302,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                           const SizedBox(width: 6),
                           Text(
                             'Binti Guru',
-                            style: GoogleFonts.fredoka(
+                            style: AppTypography.inter(
                               fontSize: 14,
                               fontWeight: FontWeight.w600,
                               color: _currentTab == 1
@@ -340,7 +340,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
               children: [
                 Text(
                       eyebrow,
-                      style: GoogleFonts.fredoka(
+                      style: AppTypography.inter(
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         letterSpacing: 3,
@@ -363,7 +363,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       style:
                           (scriptMode == 'olchiki'
                                   ? const TextStyle(fontFamily: 'OlChiki')
-                                  : GoogleFonts.fredoka())
+                                  : AppTypography.inter())
                               .copyWith(
                                 fontSize: 48,
                                 fontWeight: FontWeight.w700,
@@ -385,7 +385,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
         const SizedBox(height: 16),
         Text(
               'Unlock the magic of stories & songs',
-              style: GoogleFonts.fredoka(
+              style: AppTypography.inter(
                 fontSize: 16,
                 color: isDark ? Colors.white54 : Colors.black45,
               ),
@@ -559,7 +559,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
       children: [
         Text(
           'DISCOVER MORE',
-          style: GoogleFonts.fredoka(
+          style: AppTypography.inter(
             fontSize: 12,
             fontWeight: FontWeight.w700,
             letterSpacing: 2.5,
@@ -638,7 +638,7 @@ class _RhymeScreenState extends ConsumerState<RhymeScreen>
                       child: Text(
                         "That's everything here — new Bakhed coming soon!",
                         textAlign: TextAlign.center,
-                        style: GoogleFonts.fredoka(
+                        style: AppTypography.inter(
                           fontSize: 15,
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white54 : Colors.black45,
@@ -790,7 +790,7 @@ class _BakhedPreparingAnimation extends ConsumerWidget {
               Text(
                 'Bakhed are being prepared',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 22,
                   fontWeight: FontWeight.w800,
                   color: isDark ? Colors.white : AppColors.primaryDark,
@@ -800,7 +800,7 @@ class _BakhedPreparingAnimation extends ConsumerWidget {
               Text(
                 'New listening stories will appear here after publishing.',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 15,
                   height: 1.35,
                   color: isDark ? Colors.white60 : Colors.black54,

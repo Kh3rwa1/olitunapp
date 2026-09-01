@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/api/ai_service.dart';
 import '../../../../core/motion/motion.dart';
@@ -94,7 +94,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
         ),
         title: Text(
           'AI Translator',
-          style: GoogleFonts.fredoka(
+          style: AppTypography.inter(
             fontSize: 20,
             fontWeight: FontWeight.w700,
             color: isDark ? Colors.white : Colors.black,
@@ -117,7 +117,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                   const SizedBox(height: 40),
                   Text(
                     'Speak With\nConfidence',
-                    style: GoogleFonts.fredoka(
+                    style: AppTypography.inter(
                       fontSize: 44,
                       fontWeight: FontWeight.w900,
                       height: 1.1,
@@ -150,7 +150,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         maxLength: AiConfig.maxTranslationChars,
                         maxLengthEnforcement: MaxLengthEnforcement.enforced,
                         maxLines: null,
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 24,
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white : Colors.black,
@@ -158,7 +158,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                         cursorColor: AppColors.primary,
                         decoration: InputDecoration(
                           hintText: 'Type anything in English...',
-                          hintStyle: GoogleFonts.inter(
+                          hintStyle: AppTypography.inter(
                             color: (isDark ? Colors.white : Colors.black)
                                 .withValues(alpha: 0.3),
                             fontSize: 24,
@@ -212,7 +212,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                             _isError
                                 ? 'TRANSLATION ERROR'
                                 : 'SANTALI (OL CHIKI)',
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               color: _isError
                                   ? Colors.redAccent
                                   : AppColors.primary,
@@ -225,7 +225,7 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                           Text(
                             _result,
                             style: _isError
-                                ? GoogleFonts.inter(
+                                ? AppTypography.inter(
                                     fontSize: 20,
                                     fontWeight: FontWeight.w600,
                                     color: isDark ? Colors.white : Colors.black,

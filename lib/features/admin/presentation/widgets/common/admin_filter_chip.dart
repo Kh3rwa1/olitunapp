@@ -50,7 +50,7 @@ class AdminFilterChip extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontSize: 12.5,
                   fontWeight: FontWeight.w600,
                   letterSpacing: 0.2,

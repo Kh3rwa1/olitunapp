@@ -1,9 +1,9 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
@@ -105,7 +105,7 @@ class StreakCalendar extends ConsumerWidget {
                               ? l10n.streakActiveTitle
                               : l10n.streakIdleTitle,
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 16,
                             fontWeight: FontWeight.w800,
                             letterSpacing: -0.2,
@@ -119,7 +119,7 @@ class StreakCalendar extends ConsumerWidget {
                               ? l10n.streakActiveSubtitle
                               : l10n.streakIdleSubtitle,
                           style: TextStyle(
-                            fontFamily: 'Poppins',
+                            fontFamily: 'Inter',
                             fontSize: 11,
                             fontWeight: FontWeight.w500,
                             // Bumped from black38/white38 for WCAG AA contrast.
@@ -218,7 +218,7 @@ class StreakCalendar extends ConsumerWidget {
                                 Text(
                                   _weekdayLetter(day.weekday),
                                   style: TextStyle(
-                                    fontFamily: 'Poppins',
+                                    fontFamily: 'Inter',
                                     fontSize: 10.5,
                                     fontWeight: isToday
                                         ? FontWeight.w800
@@ -295,7 +295,7 @@ class StreakCalendar extends ConsumerWidget {
                                         : Text(
                                             '${day.day}',
                                             style: TextStyle(
-                                              fontFamily: 'Poppins',
+                                              fontFamily: 'Inter',
                                               fontSize: 11,
                                               fontWeight: isToday
                                                   ? FontWeight.w800
@@ -357,7 +357,7 @@ class StreakCalendar extends ConsumerWidget {
                               )
                             : l10n.streakFooterIdle,
                         style: TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
                           color: isDark ? Colors.white60 : Colors.black54,
@@ -415,7 +415,7 @@ class StreakCalendar extends ConsumerWidget {
               Text(
                 '${_fullDayName(day.weekday)}, ${_monthName(day.month)} ${day.day}',
                 style: TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontSize: 16,
                   fontWeight: FontWeight.w800,
                   color: isDark ? Colors.white : Colors.black87,
@@ -434,7 +434,7 @@ class StreakCalendar extends ConsumerWidget {
                     Text(
                       l10n.dayDetailNoActivity,
                       style: TextStyle(
-                        fontFamily: 'Poppins',
+                        fontFamily: 'Inter',
                         fontSize: 13,
                         color: isDark ? Colors.white60 : Colors.black54,
                       ),
@@ -457,7 +457,7 @@ class StreakCalendar extends ConsumerWidget {
                           child: Text(
                             activity,
                             style: TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 13,
                               color: isDark ? Colors.white70 : Colors.black87,
                             ),
@@ -578,7 +578,7 @@ class _StreakBadge extends StatelessWidget {
           ],
           Text(
             AppLocalizations.of(context)!.streakDaysBadge(count),
-            style: GoogleFonts.poppins(
+            style: AppTypography.inter(
               fontSize: 11,
               fontWeight: FontWeight.w900,
               color: active

@@ -31,6 +31,8 @@ jobs:
         run: node scripts/check_typography.mjs
       - name: Enforce Color Token Gate
         run: node scripts/check_color_literals.mjs
+      - name: Enforce Localization Key Parity Gate
+        run: node scripts/check_l10n_parity.mjs
       - name: Verify Version Consistency
         run: dart run tool/verify_version_consistency.dart
       - name: Audit Immutable GitHub Action SHA Pinning

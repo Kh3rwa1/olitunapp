@@ -430,175 +430,176 @@ class AppLocalizationsSat extends AppLocalizations {
   String get noQuestionsFound => 'ᱠᱩᱫᱪᱷᱤ ᱵᱟ ᱥᱮᱫᱟᱮᱱᱟ';
 
   @override
-  String get streakActiveTitle => 'Weekly Streak Active';
+  String get streakActiveTitle => 'ᱦᱟᱯᱛᱟᱠᱤᱭᱟᱹ ᱥᱴᱨᱤᱠ ᱪᱟᱹᱞᱩ ᱟᱠᱟᱱᱟ';
 
   @override
-  String get streakIdleTitle => 'Start Your Streak';
+  String get streakIdleTitle => 'ᱟᱢᱟᱜ ᱥᱴᱨᱤᱠ ᱮᱦᱚᱵ ᱢᱮ';
 
   @override
-  String get streakActiveSubtitle => 'Keep learning to grow your flame!';
+  String get streakActiveSubtitle =>
+      'ᱥᱮᱸᱜᱮᱞ ᱡᱩᱞ ᱤᱫᱤ ᱞᱟᱹᱜᱤᱫ ᱪᱮᱫᱚᱜ ᱛᱮᱜᱮ ᱛᱟᱦᱮᱸᱱ ᱢᱮ!';
 
   @override
-  String get streakIdleSubtitle => 'Complete any activity to light your flame!';
+  String get streakIdleSubtitle => 'ᱥᱮᱸᱜᱮᱞ ᱡᱩᱞ ᱞᱟᱹᱜᱤᱫ ᱡᱟᱦᱟᱸᱱ ᱠᱟᱹᱢᱤ ᱯᱩᱨᱟᱹᱣ ᱢᱮ!';
 
   @override
   String get streakStartLearning => 'ᱪᱮᱫ ᱥᱩᱨᱩ ᱢᱮ';
 
   @override
   String streakDaysBadge(int count) {
-    return '$count DAYS';
+    return '$count ᱢᱟᱦᱟᱸ';
   }
 
   @override
   String streakFooterActive(int count, int total) {
-    return 'You practiced $count of $total days this week. Keep it up!';
+    return 'ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ ᱨᱮ $total ᱢᱟᱦᱟᱸ ᱠᱷᱚᱱ $count ᱢᱟᱦᱟᱸ ᱮᱢ ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱫᱟ᱾ ᱪᱟᱞᱟᱣ ᱤᱫᱤ ᱢᱮ!';
   }
 
   @override
   String get streakFooterIdle =>
-      'No practice yet this week — pick any activity to begin!';
+      'ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ ᱨᱮ ᱟᱹᱣᱨᱤᱢ ᱟᱵᱷᱭᱟᱥᱟ — ᱮᱦᱚᱵ ᱞᱟᱹᱜᱤᱫ ᱡᱟᱦᱟᱸᱱ ᱠᱟᱹᱢᱤ ᱵᱟᱪᱷᱟᱣ ᱢᱮ!';
 
   @override
   String streakWeekSemantics(int count, int total) {
-    return 'This week: practiced $count of $total days';
+    return 'ᱱᱚᱣᱟ ᱦᱟᱯᱛᱟ: $total ᱢᱟᱦᱟᱸ ᱠᱷᱚᱱ $count ᱢᱟᱦᱟᱸ ᱟᱵᱷᱭᱟᱥ ᱦᱩᱭ ᱟᱠᱟᱱᱟ';
   }
 
   @override
-  String get dayDetailNoActivity => 'No activity recorded';
+  String get dayDetailNoActivity => 'ᱪᱮᱫ ᱦᱚᱸ ᱵᱟᱝ ᱠᱟᱹᱢᱤ ᱟᱠᱟᱱᱟ';
 
   @override
-  String get dayDetailPracticeSession => 'Practice session';
+  String get dayDetailPracticeSession => 'ᱟᱵᱷᱭᱟᱥ ᱥᱮᱥᱚᱱ';
 
   @override
-  String get dayDetailStreakDay => 'Streak day';
+  String get dayDetailStreakDay => 'ᱥᱴᱨᱤᱠ ᱢᱟᱦᱟᱸ';
 
   @override
-  String get dayDetailQuiz => 'Quiz';
+  String get dayDetailQuiz => 'ᱠᱩᱭᱤᱡᱽ';
 
   @override
-  String get dayUpcoming => 'upcoming';
+  String get dayUpcoming => 'ᱦᱤᱡᱩᱜ ᱠᱟᱱ';
 
   @override
-  String get dayPracticed => 'practiced';
+  String get dayPracticed => 'ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱱ';
 
   @override
-  String get dayNotPracticed => 'not practiced';
+  String get dayNotPracticed => 'ᱵᱟᱝ ᱟᱵᱷᱭᱟᱥ ᱟᱠᱟᱱ';
 
   @override
   String milestoneLevelProgressCaption(String from, String to) {
-    return 'Level progress · $from → $to';
+    return 'ᱛᱷᱚᱠ ᱞᱟᱦᱟᱱᱛᱤ · $from → $to';
   }
 
   @override
-  String get homeDiscover => 'DISCOVER';
+  String get homeDiscover => 'ᱥᱮᱸᱫᱽᱨᱟᱭ ᱢᱮ';
 
   @override
-  String get homeSwipeHint => 'SWIPE';
+  String get homeSwipeHint => 'ᱜᱷᱟᱹᱥᱤᱲ ᱢᱮ';
 
   @override
-  String get homeExploreHint => 'EXPLORE';
+  String get homeExploreHint => 'ᱯᱟᱱᱛᱷᱟᱭ ᱢᱮ';
 
   @override
   String get guestSignInCta => 'ᱟᱢᱟᱜ ᱯᱨᱟᱜᱟᱛᱤ ᱡᱚᱜᱟᱣ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱭᱤᱱ ᱤᱱ ᱢᱮ';
 
   @override
-  String get nbaBadgeStartHere => 'START HERE';
+  String get nbaBadgeStartHere => 'ᱱᱚᱸᱰᱮ ᱠᱷᱚᱱ ᱮᱦᱚᱵ ᱢᱮ';
 
   @override
-  String get nbaTitleFirstLetters => 'Learn your first Ol Chiki letters';
+  String get nbaTitleFirstLetters => 'ᱯᱩᱭᱞᱩ ᱚᱞ ᱪᱤᱠᱤ ᱟᱠᱷᱚᱨ ᱠᱚ ᱪᱮᱫᱚᱜ ᱢᱮ';
 
   @override
   String get nbaSubFirstLetters =>
-      'Begin with the basic alphabet and unlock Santali writing.';
+      'ᱢᱩᱬᱩᱛ ᱟᱠᱷᱚᱨ ᱠᱷᱚᱱ ᱮᱦᱚᱵ ᱠᱟᱛᱮ ᱥᱟᱱᱛᱟᱲᱤ ᱚᱞ ᱠᱚ ᱡᱷᱤᱡ ᱢᱮ᱾';
 
   @override
-  String get nbaCtaBeginLesson => 'Begin Lesson';
+  String get nbaCtaBeginLesson => 'ᱯᱟᱴ ᱮᱦᱚᱵ ᱢᱮ';
 
   @override
-  String get nbaBadgeNextStep => 'NEXT STEP';
+  String get nbaBadgeNextStep => 'ᱫᱚᱥᱟᱨ ᱛᱟᱦᱟᱠ';
 
   @override
-  String get nbaTitleNumbers => 'Practice Santali numbers';
+  String get nbaTitleNumbers => 'ᱥᱟᱱᱛᱟᱲᱤ ᱮᱞᱠᱷᱟ ᱟᱵᱷᱭᱟᱥ ᱢᱮ';
 
   @override
   String get nbaSubNumbers =>
-      'Build confidence with everyday counting and number words.';
+      'ᱫᱤᱱᱟᱹᱢ ᱞᱮᱠᱷᱟ ᱟᱨ ᱮᱞᱠᱷᱟ ᱟᱹᱲᱟᱹ ᱠᱚ ᱥᱟᱶ ᱯᱟᱹᱛᱭᱟᱹᱣ ᱵᱮᱱᱟᱣ ᱢᱮ᱾';
 
   @override
-  String get nbaCtaPracticeNumbers => 'Practice Numbers';
+  String get nbaCtaPracticeNumbers => 'ᱮᱞᱠᱷᱟ ᱟᱵᱷᱭᱟᱥ ᱢᱮ';
 
   @override
-  String get nbaBadgeMistakes => 'PRACTICE NEEDED';
+  String get nbaBadgeMistakes => 'ᱟᱵᱷᱭᱟᱥ ᱞᱟᱹᱠᱛᱤ';
 
   @override
-  String get nbaTitleMistakes => 'Transform mistakes into wisdom';
+  String get nbaTitleMistakes => 'ᱵᱷᱩᱞ ᱠᱷᱚᱱ ᱜᱮᱭᱟᱱ ᱵᱮᱱᱟᱣ ᱢᱮ';
 
   @override
   String nbaSubMistakes(int count) {
-    return 'You have $count question(s) to review and master.';
+    return 'ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱟᱨ ᱥᱮᱬᱟ ᱞᱟᱹᱜᱤᱫ $count ᱴᱤ ᱠᱩᱠᱞᱤ ᱢᱮᱱᱟᱜᱼᱟ᱾';
   }
 
   @override
-  String get nbaCtaReviewMistakes => 'Review Mistakes';
+  String get nbaCtaReviewMistakes => 'ᱵᱷᱩᱞ ᱠᱚ ᱧᱮᱞ ᱨᱩᱣᱟᱹᱲ ᱢᱮ';
 
   @override
-  String get nbaBadgeStreakRisk => 'STREAK RISK';
+  String get nbaBadgeStreakRisk => 'ᱥᱴᱨᱤᱠ ᱟᱫᱚᱜ ᱠᱷᱟᱛᱨᱟ';
 
   @override
-  String get nbaTitleStreakRisk => 'Keep your daily momentum';
+  String get nbaTitleStreakRisk => 'ᱫᱤᱱᱟᱹᱢ ᱞᱟᱦᱟᱱᱛᱤ ᱫᱚᱦᱚᱭ ᱢᱮ';
 
   @override
   String nbaSubStreakRisk(int count) {
-    return 'One quick quiz or lesson will secure your $count day streak today.';
+    return 'ᱢᱤᱫᱴᱟᱝ ᱦᱩᱰᱤᱧ ᱠᱩᱭᱤᱡᱽ ᱥᱮ ᱯᱟᱴ ᱛᱮ ᱛᱮᱦᱮᱧ ᱟᱢᱟᱜ $count ᱢᱟᱦᱟᱸ ᱨᱮᱱᱟᱜ ᱥᱴᱨᱤᱠ ᱵᱟᱧᱪᱟᱣ ᱢᱮ᱾';
   }
 
   @override
-  String get nbaCtaQuickReview => 'Quick Review';
+  String get nbaCtaQuickReview => 'ᱞᱚᱜᱚᱱ ᱧᱮᱞ ᱨᱩᱣᱟᱹᱲ';
 
   @override
-  String get nbaBadgeTryBakhed => 'TRY BAKHED';
+  String get nbaBadgeTryBakhed => 'ᱵᱟᱠᱷᱮᱬ ᱟᱸᱡᱚᱢ ᱢᱮ';
 
   @override
-  String get nbaTitleTryBakhed => 'Listen to a cultural rhyme';
+  String get nbaTitleTryBakhed => 'ᱞᱟᱠᱪᱟᱨ ᱚᱱᱚᱬᱦᱮ ᱟᱸᱡᱚᱢ ᱢᱮ';
 
   @override
   String get nbaSubTryBakhed =>
-      'Immerse yourself in beautiful Santali oral poetry for 30s.';
+      '᱓᱐ ᱴᱤᱯᱤᱲ ᱞᱟᱹᱜᱤᱫ ᱥᱟᱱᱛᱟᱲᱤ ᱥᱮᱨᱣᱟ ᱨᱟᱹᱥ ᱨᱮ ᱵᱚᱞᱚᱱ ᱢᱮ᱾';
 
   @override
-  String get nbaCtaListenNow => 'Listen Now';
+  String get nbaCtaListenNow => 'ᱱᱤᱛᱚᱜ ᱟᱸᱡᱚᱢ ᱢᱮ';
 
   @override
-  String get nbaBadgeAllDone => 'ALL COMPLETE';
+  String get nbaBadgeAllDone => 'ᱡᱚᱛᱚ ᱯᱩᱨᱟᱹᱣ ᱮᱱᱟ';
 
   @override
-  String get nbaTitleAllDone => 'You finished everything — brilliant!';
+  String get nbaTitleAllDone => 'ᱟᱢ ᱡᱚᱛᱚ ᱮᱢ ᱪᱟᱵᱟ ᱠᱮᱫᱟ — ᱟᱹᱰᱤ ᱱᱟᱯᱟᱭ!';
 
   @override
   String get nbaSubAllDone =>
-      'New lessons are on the way. Revisit Bakhed or review anytime.';
+      'ᱱᱟᱣᱟ ᱯᱟᱴ ᱠᱚ ᱦᱤᱡᱩᱜ ᱠᱟᱱᱟ᱾ ᱵᱟᱠᱷᱮᱬ ᱥᱮ ᱟᱵᱷᱭᱟᱥ ᱫᱚᱦᱲᱟ ᱧᱮᱞ ᱢᱮ᱾';
 
   @override
-  String get nbaCtaExploreBakhed => 'Explore Bakhed';
+  String get nbaCtaExploreBakhed => 'ᱵᱟᱠᱷᱮᱬ ᱯᱟᱱᱛᱷᱟᱭ ᱢᱮ';
 
   @override
-  String get affirmationListen => 'Listen';
+  String get affirmationListen => 'ᱟᱸᱡᱚᱢ ᱢᱮ';
 
   @override
-  String get affirmationStop => 'Stop';
+  String get affirmationStop => 'ᱛᱷᱟᱢᱵᱷᱟᱣ ᱢᱮ';
 
   @override
-  String get affirmationMarkRead => 'Mark Read';
+  String get affirmationMarkRead => 'ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ ᱪᱤᱱᱦᱟᱹᱭ ᱢᱮ';
 
   @override
-  String get affirmationRead => 'Read';
+  String get affirmationRead => 'ᱯᱟᱲᱦᱟᱣ ᱮᱱᱟ';
 
   @override
-  String get todaysMissionTitle => 'Today\'s Mission';
+  String get todaysMissionTitle => 'ᱛᱮᱦᱮᱧᱟᱜ ᱠᱟᱹᱢᱤ';
 
   @override
   String missionsDoneCount(int done) {
-    return '$done/4 Done';
+    return '$done/4 ᱯᱩᱨᱟᱹᱣ';
   }
 
   @override

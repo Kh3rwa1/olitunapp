@@ -10,6 +10,7 @@ class CircleIconButton extends StatefulWidget {
   final Color? color;
   final Color? backgroundColor;
   final bool showBorder;
+  final String? semanticLabel;
 
   const CircleIconButton({
     super.key,
@@ -19,6 +20,7 @@ class CircleIconButton extends StatefulWidget {
     this.color,
     this.backgroundColor,
     this.showBorder = true,
+    this.semanticLabel,
   });
 
   @override
@@ -53,45 +55,58 @@ class _CircleIconButtonState extends State<CircleIconButton>
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        HapticFeedback.lightImpact();
-        widget.onPressed();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(scale: _scaleAnimation.value, child: child);
-        },
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.size / 3),
-            color:
-                widget.backgroundColor ??
-                (isDark
-                    ? Colors.white.withValues(alpha: 0.08)
-                    : Colors.black.withValues(alpha: 0.04)),
-            border: widget.showBorder
-                ? Border.all(
-                    color: isDark
-                        ? Colors.white.withValues(alpha: 0.06)
-                        : Colors.black.withValues(alpha: 0.04),
-                  )
-                : null,
-          ),
-          child: Icon(
-            widget.icon,
-            size: widget.size * 0.45,
-            color:
-                widget.color ??
-                (isDark
-                    ? AppColors.textSecondaryDark
-                    : AppColors.textSecondaryLight),
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTapDown: (_) => _controller.forward(),
+          onTapUp: (_) {
+            _controller.reverse();
+            HapticFeedback.lightImpact();
+            widget.onPressed();
+          },
+          onTapCancel: () => _controller.reverse(),
+          child: Center(
+            child: AnimatedBuilder(
+              animation: _scaleAnimation,
+              builder: (context, child) {
+                return Transform.scale(
+                  scale: _scaleAnimation.value,
+                  child: child,
+                );
+              },
+              child: Container(
+                width: widget.size,
+                height: widget.size,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(widget.size / 3),
+                  color:
+                      widget.backgroundColor ??
+                      (isDark
+                          ? Colors.white.withValues(alpha: 0.08)
+                          : Colors.black.withValues(alpha: 0.04)),
+                  border: widget.showBorder
+                      ? Border.all(
+                          color: isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : Colors.black.withValues(alpha: 0.04),
+                        )
+                      : null,
+                ),
+                child: Icon(
+                  widget.icon,
+                  size: widget.size * 0.45,
+                  color:
+                      widget.color ??
+                      (isDark
+                          ? AppColors.textSecondaryDark
+                          : AppColors.textSecondaryLight),
+                ),
+              ),
+            ),
           ),
         ),
       ),
@@ -105,6 +120,7 @@ class PremiumFAB extends StatefulWidget {
   final VoidCallback onPressed;
   final Gradient? gradient;
   final double size;
+  final String? semanticLabel;
 
   const PremiumFAB({
     super.key,
@@ -112,6 +128,7 @@ class PremiumFAB extends StatefulWidget {
     required this.onPressed,
     this.gradient,
     this.size = 64,
+    this.semanticLabel,
   });
 
   @override
@@ -144,60 +161,64 @@ class _PremiumFABState extends State<PremiumFAB>
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTapDown: (_) => _controller.forward(),
-      onTapUp: (_) {
-        _controller.reverse();
-        HapticFeedback.mediumImpact();
-        widget.onPressed();
-      },
-      onTapCancel: () => _controller.reverse(),
-      child: AnimatedBuilder(
-        animation: _scaleAnimation,
-        builder: (context, child) {
-          return Transform.scale(scale: _scaleAnimation.value, child: child);
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: GestureDetector(
+        onTapDown: (_) => _controller.forward(),
+        onTapUp: (_) {
+          _controller.reverse();
+          HapticFeedback.mediumImpact();
+          widget.onPressed();
         },
-        child: Container(
-          width: widget.size,
-          height: widget.size,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(widget.size / 3),
-            gradient: widget.gradient ?? AppColors.heroGradient,
-            boxShadow: AppColors.buttonShadow,
-          ),
-          child: Stack(
-            children: [
-              // Gloss
-              Positioned(
-                top: 0,
-                left: 0,
-                right: 0,
-                height: widget.size / 2,
-                child: Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(widget.size / 3),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.white.withValues(alpha: 0.2),
-                        Colors.white.withValues(alpha: 0),
-                      ],
+        onTapCancel: () => _controller.reverse(),
+        child: AnimatedBuilder(
+          animation: _scaleAnimation,
+          builder: (context, child) {
+            return Transform.scale(scale: _scaleAnimation.value, child: child);
+          },
+          child: Container(
+            width: widget.size,
+            height: widget.size,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(widget.size / 3),
+              gradient: widget.gradient ?? AppColors.heroGradient,
+              boxShadow: AppColors.buttonShadow,
+            ),
+            child: Stack(
+              children: [
+                // Gloss
+                Positioned(
+                  top: 0,
+                  left: 0,
+                  right: 0,
+                  height: widget.size / 2,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(widget.size / 3),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topCenter,
+                        end: Alignment.bottomCenter,
+                        colors: [
+                          Colors.white.withValues(alpha: 0.2),
+                          Colors.white.withValues(alpha: 0),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              // Icon
-              Center(
-                child: Icon(
-                  widget.icon,
-                  color: Colors.white,
-                  size: widget.size * 0.4,
+                // Icon
+                Center(
+                  child: Icon(
+                    widget.icon,
+                    color: Colors.white,
+                    size: widget.size * 0.4,
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

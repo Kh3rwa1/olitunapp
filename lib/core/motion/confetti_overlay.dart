@@ -67,12 +67,14 @@ class _ConfettiBurstState extends ConsumerState<ConfettiBurst>
     if (RespectMotion.of(context) || reduceVisualEffects) {
       return const SizedBox.shrink();
     }
-    return IgnorePointer(
-      child: AnimatedBuilder(
-        animation: _ctl,
-        builder: (_, _) => CustomPaint(
-          painter: _ConfettiPainter(t: _ctl.value, particles: _particles),
-          size: Size.infinite,
+    return ExcludeSemantics(
+      child: IgnorePointer(
+        child: AnimatedBuilder(
+          animation: _ctl,
+          builder: (_, _) => CustomPaint(
+            painter: _ConfettiPainter(t: _ctl.value, particles: _particles),
+            size: Size.infinite,
+          ),
         ),
       ),
     );

@@ -44,61 +44,68 @@ class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>
 
     return Stack(
       children: [
-        // Base Gradient
-        Container(
-          decoration: BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: isDark
-                  ? [
-                      AppColors.ambientIndigoDark,
-                      AppColors.ambientDeepPurpleDark,
-                    ]
-                  : [
-                      AppColors.ambientLightBlueTop,
-                      AppColors.ambientLightBlueBottom,
-                    ],
-            ),
+        // Exclude decorative animated background from accessibility tree
+        ExcludeSemantics(
+          child: Stack(
+            children: [
+              // Base Gradient
+              Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: isDark
+                        ? [
+                            AppColors.ambientIndigoDark,
+                            AppColors.ambientDeepPurpleDark,
+                          ]
+                        : [
+                            AppColors.ambientLightBlueTop,
+                            AppColors.ambientLightBlueBottom,
+                          ],
+                  ),
+                ),
+              ),
+
+              // Animated Blobs
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return CustomPaint(
+                    size: Size.infinite,
+                    painter: _BlobPainter(
+                      animationValue: _controller.value,
+                      isDark: isDark,
+                    ),
+                  );
+                },
+              ),
+
+              // Floating Musical Notes
+              AnimatedBuilder(
+                animation: _controller,
+                builder: (context, child) {
+                  return CustomPaint(
+                    size: Size.infinite,
+                    painter: _FloatingNotesPainter(
+                      animationValue: _controller.value,
+                      isDark: isDark,
+                    ),
+                  );
+                },
+              ),
+
+              // Subtle Grid Overlay
+              if (!isDark)
+                Positioned.fill(
+                  child: Opacity(
+                    opacity: 0.03,
+                    child: CustomPaint(painter: _GridPainter()),
+                  ),
+                ),
+            ],
           ),
         ),
-
-        // Animated Blobs
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return CustomPaint(
-              size: Size.infinite,
-              painter: _BlobPainter(
-                animationValue: _controller.value,
-                isDark: isDark,
-              ),
-            );
-          },
-        ),
-
-        // Floating Musical Notes
-        AnimatedBuilder(
-          animation: _controller,
-          builder: (context, child) {
-            return CustomPaint(
-              size: Size.infinite,
-              painter: _FloatingNotesPainter(
-                animationValue: _controller.value,
-                isDark: isDark,
-              ),
-            );
-          },
-        ),
-
-        // Subtle Grid Overlay
-        if (!isDark)
-          Positioned.fill(
-            child: Opacity(
-              opacity: 0.03,
-              child: CustomPaint(painter: _GridPainter()),
-            ),
-          ),
 
         // Foreground content
         widget.child,

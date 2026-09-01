@@ -1,12 +1,15 @@
-// ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/shared/models/content_item.dart';
+import 'package:itun/shared/providers/language_settings_providers.dart';
+import 'package:itun/shared/providers/local_settings_provider.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/shared/widgets/lottie_display.dart';
 import 'package:itun/shared/widgets/animated_svg_display.dart';
 
-class ContentHero extends StatefulWidget {
+class ContentHero extends ConsumerStatefulWidget {
   final ContentItem item;
   final Color accentColor;
   final VoidCallback? onBackPressed;
@@ -19,10 +22,10 @@ class ContentHero extends StatefulWidget {
   });
 
   @override
-  State<ContentHero> createState() => _ContentHeroState();
+  ConsumerState<ContentHero> createState() => _ContentHeroState();
 }
 
-class _ContentHeroState extends State<ContentHero> {
+class _ContentHeroState extends ConsumerState<ContentHero> {
   VideoPlayerController? _videoController;
   bool _isVideoPlaying = false;
   bool _videoInitialized = false;
@@ -72,9 +75,36 @@ class _ContentHeroState extends State<ContentHero> {
   @override
   Widget build(BuildContext context) {
     final media = widget.item.heroMedia;
-    final String watermark = widget.item.title.isNotEmpty
-        ? widget.item.title[0].toUpperCase()
-        : 'O';
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+
+    final isWordOrSentence = widget.item.kind == ContentKind.word ||
+        widget.item.kind == ContentKind.sentence;
+
+    final display = isWordOrSentence
+        ? OlChikiMultilingualHelper.resolveBlockDisplay(
+            textOlChiki: widget.item.olChiki ?? widget.item.titleOlChiki,
+            textLatin: widget.item.title,
+            explicitMeaning: widget.item.subtitle,
+            teachingLanguage: teachingLanguage,
+            scriptMode: scriptMode,
+          )
+        : null;
+
+    final String olChikiText = display?.scriptText ??
+        widget.item.titleOlChiki ??
+        widget.item.olChiki ??
+        '';
+    final String titleText = display?.title ?? widget.item.title;
+    final String? subtitleText = display != null
+        ? (display.subtitle.isNotEmpty ? display.subtitle : null)
+        : widget.item.subtitle;
+
+    final String watermark = olChikiText.isNotEmpty
+        ? olChikiText
+        : (widget.item.title.isNotEmpty
+            ? widget.item.title[0].toUpperCase()
+            : 'O');
 
     return SizedBox(
       height: 320,
@@ -105,7 +135,7 @@ class _ContentHeroState extends State<ContentHero> {
             child: Opacity(
               opacity: 0.12,
               child: Text(
-                widget.item.olChiki ?? watermark,
+                watermark,
                 style: const TextStyle(
                   fontSize: 240,
                   fontWeight: FontWeight.w900,
@@ -126,9 +156,9 @@ class _ContentHeroState extends State<ContentHero> {
               decoration: BoxDecoration(
                 gradient: LinearGradient(
                   colors: [
-                    Colors.black.withOpacity(0.4),
-                    Colors.black.withOpacity(0.0),
-                    Colors.black.withOpacity(0.55),
+                    Colors.black.withValues(alpha: 0.4),
+                    Colors.black.withValues(alpha: 0.0),
+                    Colors.black.withValues(alpha: 0.55),
                   ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
@@ -146,10 +176,9 @@ class _ContentHeroState extends State<ContentHero> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                if (widget.item.olChiki != null ||
-                    widget.item.titleOlChiki != null) ...[
+                if (olChikiText.isNotEmpty) ...[
                   Text(
-                    widget.item.titleOlChiki ?? widget.item.olChiki!,
+                    olChikiText,
                     style: const TextStyle(
                       fontSize: 24,
                       fontWeight: FontWeight.bold,
@@ -160,7 +189,7 @@ class _ContentHeroState extends State<ContentHero> {
                   const SizedBox(height: 4),
                 ],
                 Text(
-                  widget.item.title,
+                  titleText,
                   style: const TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.bold,
@@ -168,15 +197,14 @@ class _ContentHeroState extends State<ContentHero> {
                     letterSpacing: -0.5,
                   ),
                 ),
-                if (widget.item.subtitle != null &&
-                    widget.item.subtitle!.isNotEmpty) ...[
+                if (subtitleText != null && subtitleText.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    widget.item.subtitle!,
+                    subtitleText,
                     style: TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w500,
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white.withValues(alpha: 0.85),
                     ),
                   ),
                 ],
@@ -191,10 +219,10 @@ class _ContentHeroState extends State<ContentHero> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.18),
+                          color: Colors.white.withValues(alpha: 0.18),
                           borderRadius: BorderRadius.circular(12),
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.15),
+                            color: Colors.white.withValues(alpha: 0.15),
                             width: 0.5,
                           ),
                         ),
@@ -220,7 +248,7 @@ class _ContentHeroState extends State<ContentHero> {
             top: 48,
             child: Container(
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.3),
+                color: Colors.black.withValues(alpha: 0.3),
                 shape: BoxShape.circle,
               ),
               child: IconButton(
@@ -313,7 +341,7 @@ class _ContentHeroState extends State<ContentHero> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: Colors.black.withOpacity(0.4),
+                color: Colors.black.withValues(alpha: 0.4),
                 shape: BoxShape.circle,
               ),
               child: IconButton(

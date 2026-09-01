@@ -107,7 +107,8 @@ class VocabularyListContent extends ConsumerWidget {
                         ],
                         if (word.pronunciation != null &&
                             word.pronunciation!.isNotEmpty &&
-                            !isOlChikiOnly) ...[
+                            !isOlChikiOnly &&
+                            teachingLanguage == 'en') ...[
                           const SizedBox(height: 2),
                           Text(
                             '[${word.pronunciation}]',
@@ -209,7 +210,8 @@ class VocabularyListContent extends ConsumerWidget {
                                 ),
                               ),
                               if (word.pronunciation != null &&
-                                  word.pronunciation!.isNotEmpty) ...[
+                                  word.pronunciation!.isNotEmpty &&
+                                  teachingLanguage == 'en') ...[
                                 const SizedBox(width: 8),
                                 Container(
                                   padding: const EdgeInsets.symmetric(

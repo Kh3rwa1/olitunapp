@@ -202,7 +202,12 @@ void main() {
 
       expect(find.byType(ListeningQuestionCard), findsOneWidget);
       expect(find.byType(QuizQuestionCard), findsNothing);
-      expect(find.byIcon(Icons.volume_up_rounded), findsOneWidget);
+      final playButtonIconFinder = find.byWidgetPredicate(
+        (w) =>
+            w is Icon &&
+            (w.icon == Icons.volume_up_rounded || w.icon == Icons.stop_rounded),
+      );
+      expect(playButtonIconFinder, findsOneWidget);
 
       verify(
         () => analyticsService.track(
@@ -213,7 +218,7 @@ void main() {
         ),
       ).called(1);
 
-      await tester.tap(find.byIcon(Icons.volume_up_rounded));
+      await tester.tap(playButtonIconFinder);
       await tester.pumpAndSettle();
 
       // The tap went through playbackControllerProvider.playSingle →

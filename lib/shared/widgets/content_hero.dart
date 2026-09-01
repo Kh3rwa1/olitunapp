@@ -78,7 +78,8 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
     final scriptMode = ref.watch(effectiveScriptModeProvider);
 
-    final isWordOrSentence = widget.item.kind == ContentKind.word ||
+    final isWordOrSentence =
+        widget.item.kind == ContentKind.word ||
         widget.item.kind == ContentKind.sentence;
 
     final display = isWordOrSentence
@@ -91,7 +92,8 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
           )
         : null;
 
-    final String olChikiText = display?.scriptText ??
+    final String olChikiText =
+        display?.scriptText ??
         widget.item.titleOlChiki ??
         widget.item.olChiki ??
         '';
@@ -103,8 +105,8 @@ class _ContentHeroState extends ConsumerState<ContentHero> {
     final String watermark = olChikiText.isNotEmpty
         ? olChikiText
         : (widget.item.title.isNotEmpty
-            ? widget.item.title[0].toUpperCase()
-            : 'O');
+              ? widget.item.title[0].toUpperCase()
+              : 'O');
 
     return SizedBox(
       height: 320,

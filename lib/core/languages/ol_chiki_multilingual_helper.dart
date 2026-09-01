@@ -357,15 +357,19 @@ class OlChikiMultilingualHelper {
           ? englishMeaning
           : romanizedSantali;
     } else {
-      localizedMeaning = translateMeaning(englishMeaning, teachingLanguage);
-      // If meaning lookup failed by English meaning, fallback to lookup by Santali romanization
-      if (localizedMeaning.isEmpty && romanizedSantali.isNotEmpty) {
-        final directIndic = IndicTranslationsDictionary.lookup(
-          romanizedSantali,
-          teachingLanguage,
-        );
-        if (directIndic != null && directIndic.isNotEmpty) {
-          localizedMeaning = directIndic;
+      if (_isMatchingScript(englishMeaning, teachingLanguage)) {
+        localizedMeaning = englishMeaning;
+      } else {
+        localizedMeaning = translateMeaning(englishMeaning, teachingLanguage);
+        // If meaning lookup failed by English meaning, fallback to lookup by Santali romanization
+        if (localizedMeaning.isEmpty && romanizedSantali.isNotEmpty) {
+          final directIndic = IndicTranslationsDictionary.lookup(
+            romanizedSantali,
+            teachingLanguage,
+          );
+          if (directIndic != null && directIndic.isNotEmpty) {
+            localizedMeaning = directIndic;
+          }
         }
       }
     }
@@ -384,10 +388,13 @@ class OlChikiMultilingualHelper {
       title = olChiki.isNotEmpty ? olChiki : romanizedSantali;
     } else if (localizedMeaning.isNotEmpty) {
       title = localizedMeaning;
-    } else if (englishMeaning.isNotEmpty) {
-      title = englishMeaning;
+    } else if (teachingLanguage == 'en') {
+      title = englishMeaning.isNotEmpty ? englishMeaning : romanizedSantali;
     } else {
-      title = romanizedSantali.isNotEmpty ? romanizedSantali : olChiki;
+      // Strict non-English isolation: NEVER leak raw English in non-English modes!
+      title = transliteration.isNotEmpty
+          ? transliteration
+          : (olChiki.isNotEmpty ? olChiki : romanizedSantali);
     }
 
     // 6. Action Button CTA text
@@ -419,5 +426,20 @@ class OlChikiMultilingualHelper {
       title: title,
       ctaText: ctaText,
     );
+  }
+
+  static bool _isMatchingScript(String text, String lang) {
+    if (text.isEmpty) return false;
+    final runes = text.runes;
+    switch (lang) {
+      case 'bn':
+        return runes.any((r) => r >= 0x0980 && r <= 0x09FF);
+      case 'hi':
+        return runes.any((r) => r >= 0x0900 && r <= 0x097F);
+      case 'or':
+        return runes.any((r) => r >= 0x0B00 && r <= 0x0B7F);
+      default:
+        return false;
+    }
   }
 }

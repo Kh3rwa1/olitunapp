@@ -64,7 +64,9 @@ class LessonBlockCardContent extends ConsumerWidget {
       textBengali: block.textBengali,
       textHindi: block.textHindi,
       textOdia: block.textOdia,
-      explicitMeaning: block.data?['meaning'] as String?,
+      explicitMeaning:
+          block.data?['meaning_$teachingLanguage'] as String? ??
+          block.data?['meaning'] as String?,
       explicitPronunciation: block.data?['pronunciation'] as String?,
       teachingLanguage: teachingLanguage,
       scriptMode: scriptMode,

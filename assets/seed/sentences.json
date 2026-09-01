@@ -12,7 +12,10 @@
     "pronunciation": "A-maag nyu-tum ched?",
     "order": 1,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তোমার নাম কি?",
+    "meaning_hi": "आपका क्या नाम है?",
+    "meaning_or": "ତୁମର ନାମ କଣ?"
   },
   {
     "id": "s2",
@@ -27,7 +30,10 @@
     "pronunciation": "In-jaag nyu-tum do San-thal",
     "order": 2,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার নাম সাঁওতাল",
+    "meaning_hi": "मेरा नाम संथाल है",
+    "meaning_or": "ମୋର ନାମ ସନ୍ଥାଲ"
   },
   {
     "id": "s3",
@@ -42,7 +48,10 @@
     "pronunciation": "Am do o-ka-tem cha-lag ka-na?",
     "order": 3,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কোথায় যাচ্ছেন?",
+    "meaning_hi": "आप कहां जा रहे हैं?",
+    "meaning_or": "ଆପଣ କେଉଁଠାକୁ ଯାଉଛନ୍ତି?"
   },
   {
     "id": "s4",
@@ -57,7 +66,10 @@
     "pronunciation": "Am do o-ka-rem ta-hen-a?",
     "order": 4,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কোথায় থাকেন?",
+    "meaning_hi": "आप कहाँ रहते हैं?",
+    "meaning_or": "ଆପଣ କେଉଁଠାରେ ରୁହନ୍ତି?"
   },
   {
     "id": "s5",
@@ -72,7 +84,10 @@
     "pronunciation": "In do non-denj ta-hen-a",
     "order": 5,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি এখানে থাকি",
+    "meaning_hi": "मैं यहाँ रहता हूं",
+    "meaning_or": "ମୁଁ ଏଠାରେ ରହେ"
   },
   {
     "id": "s6",
@@ -87,7 +102,10 @@
     "pronunciation": "Am o-koy ka-nam?",
     "order": 6,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তুমি কে?",
+    "meaning_hi": "आप कौन हैं?",
+    "meaning_or": "ତୁମେ କିଏ?"
   },
   {
     "id": "s7",
@@ -102,7 +120,10 @@
     "pronunciation": "In do mid che-te-di-ya ka-nanj",
     "order": 7,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি একজন ছাত্র",
+    "meaning_hi": "मैं पढ़ता हूं",
+    "meaning_or": "ମୁଁ ଜଣେ ଛାତ୍ର"
   },
   {
     "id": "s8",
@@ -117,7 +138,10 @@
     "pronunciation": "No-wa ched ka-na?",
     "order": 8,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা কি?",
+    "meaning_hi": "यह क्या है?",
+    "meaning_or": "ଏହା କ’ଣ?"
   },
   {
     "id": "s9",
@@ -132,7 +156,10 @@
     "pronunciation": "O-na do mid pu-thi ka-na",
     "order": 9,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ওটা একটা বই",
+    "meaning_hi": "वह एक किताब है",
+    "meaning_or": "ତାହା ଏକ ପୁସ୍ତକ |"
   },
   {
     "id": "s10",
@@ -147,7 +174,10 @@
     "pronunciation": "Am San-ta-ri em ror da-rey-ag-a?",
     "order": 10,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সাঁওতালি বলতে পারো?",
+    "meaning_hi": "क्या आप संताली बोल सकते हैं?",
+    "meaning_or": "ଆପଣ ସାନ୍ତାଳୀ କହିପାରିବେ କି?"
   },
   {
     "id": "s11",
@@ -162,7 +192,10 @@
     "pronunciation": "Hẽ, inj kaj-kaj inj ror da-rey-ag-a",
     "order": 11,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "হ্যাঁ, আমি একটু কথা বলতে পারি",
+    "meaning_hi": "हाँ, मैं थोड़ा-थोड़ा बोल सकता हूँ",
+    "meaning_or": "ହଁ, ମୁଁ ଟିକିଏ କହିପାରେ |"
   },
   {
     "id": "s12",
@@ -177,7 +210,10 @@
     "pronunciation": "Nuy do i-nij ga-te ka-nay",
     "order": 12,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই আমার বন্ধু",
+    "meaning_hi": "यह मेरा दोस्त है",
+    "meaning_or": "ଏହା ମୋର ବନ୍ଧୁ |"
   },
   {
     "id": "s13",
@@ -192,7 +228,10 @@
     "pronunciation": "A-maag u-mer ti-nag?",
     "order": 13,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তোমার বয়স কত?",
+    "meaning_hi": "आपकी आयु कितनी है?",
+    "meaning_or": "ତୁମର ବୟସ କେତେ?"
   },
   {
     "id": "s14",
@@ -207,7 +246,10 @@
     "pronunciation": "In-jaag u-mer do bar-gel ser-ma",
     "order": 14,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার বয়স বিশ বছর",
+    "meaning_hi": "मैं बीस साल का हूं",
+    "meaning_or": "ମୋର କୋଡ଼ିଏ ବର୍ଷ ବୟସ |"
   },
   {
     "id": "s15",
@@ -222,7 +264,10 @@
     "pronunciation": "Am o-ka kho-nem hej a-ka-na?",
     "order": 15,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কোথা থেকে এসেছেন?",
+    "meaning_hi": "आप कहाँ से हैं?",
+    "meaning_or": "ଆପଣ କେଉଁଠାରୁ ଆସିଛନ୍ତି?"
   },
   {
     "id": "s16",
@@ -237,7 +282,10 @@
     "pronunciation": "In do Jhar-khond kho-ninj hej a-ka-na",
     "order": 16,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি ঝাড়খণ্ড থেকে এসেছি",
+    "meaning_hi": "मैं झारखंड से हूं",
+    "meaning_or": "ମୁଁ h ାଡଖଣ୍ଡର"
   },
   {
     "id": "s17",
@@ -252,7 +300,10 @@
     "pronunciation": "No-wa do in-jaag o-rag ka-na",
     "order": 17,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা আমার বাড়ি",
+    "meaning_hi": "यह मेरा घर है",
+    "meaning_or": "ଏହା ମୋର ଘର"
   },
   {
     "id": "s18",
@@ -267,7 +318,10 @@
     "pronunciation": "Am o-ka-rem ka-mi-ya?",
     "order": 18,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কোথায় কাজ করেন?",
+    "meaning_hi": "आप कहां काम करते हैं?",
+    "meaning_or": "ଆପଣ କେଉଁଠାରେ କାମ କରନ୍ତି?"
   },
   {
     "id": "s19",
@@ -282,7 +336,10 @@
     "pronunciation": "In do i-tun as-ra renj ka-mi-ya",
     "order": 19,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি একটি স্কুলে কাজ করি",
+    "meaning_hi": "मैं एक स्कूल में काम करता हूँ",
+    "meaning_or": "ମୁଁ ଏକ ବିଦ୍ୟାଳୟରେ କାମ କରେ |"
   },
   {
     "id": "s20",
@@ -297,7 +354,10 @@
     "pronunciation": "Am ched em ku-si-yag-a?",
     "order": 20,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কি পছন্দ করেন?",
+    "meaning_hi": "आपको क्या पसंद है?",
+    "meaning_or": "ଆପଣ କ’ଣ ପସନ୍ଦ କରନ୍ତି?"
   },
   {
     "id": "s21",
@@ -312,7 +372,10 @@
     "pronunciation": "In ren-gej ed in-ja",
     "order": 21,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি ক্ষুধার্ত",
+    "meaning_hi": "मुझे भूख लगी है",
+    "meaning_or": "ମୁଁ ଭୋକିଲା ଅଛି"
   },
   {
     "id": "s22",
@@ -327,7 +390,10 @@
     "pronunciation": "Da-ka jom me",
     "order": 22,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে খাবার খান",
+    "meaning_hi": "कृपया खाना खायें",
+    "meaning_or": "ଦୟାକରି ଖାଦ୍ୟ ଖାଆନ୍ତୁ |"
   },
   {
     "id": "s23",
@@ -342,7 +408,10 @@
     "pronunciation": "Dag nyu me",
     "order": 23,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে জল পান করুন",
+    "meaning_hi": "कृपया पानी पियें",
+    "meaning_or": "ଦୟାକରି ପାଣି ପିଅନ୍ତୁ |"
   },
   {
     "id": "s24",
@@ -357,7 +426,10 @@
     "pronunciation": "In par-haag ka-nanj",
     "order": 24,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি পড়াশোনা করছি",
+    "meaning_hi": "अध्ययन कर रहा हूँ",
+    "meaning_or": "ମୁଁ ଅଧ୍ୟୟନ କରୁଛି"
   },
   {
     "id": "s25",
@@ -372,7 +444,10 @@
     "pronunciation": "Am ched em chi-kay-e-da?",
     "order": 25,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কি করছেন?",
+    "meaning_hi": "आप क्या कर रहे हो?",
+    "meaning_or": "ତୁମେ କଣ କରୁଛ?"
   },
   {
     "id": "s26",
@@ -387,7 +462,10 @@
     "pronunciation": "In do ka-mi-yed-anj",
     "order": 26,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি কাজ করছি",
+    "meaning_hi": "मैं काम कर रहा हूँ",
+    "meaning_or": "ମୁଁ କାମ କରୁଛି"
   },
   {
     "id": "s27",
@@ -402,7 +480,10 @@
     "pronunciation": "De-la bon cha-lag-a",
     "order": 27,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "চল যাই",
+    "meaning_hi": "चल दर",
+    "meaning_or": "ଚାଲ ଯିବା |"
   },
   {
     "id": "s28",
@@ -417,7 +498,10 @@
     "pronunciation": "Ha-jug me non-de",
     "order": 28,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এখানে আসুন",
+    "meaning_hi": "यहाँ आओ",
+    "meaning_or": "ଏଠାକୁ ଆସ |"
   },
   {
     "id": "s29",
@@ -432,7 +516,10 @@
     "pronunciation": "In donj ja-pid la-gid",
     "order": 29,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি ঘুমাতে যাচ্ছি",
+    "meaning_hi": "मैं सोने जा रहा हूँ",
+    "meaning_or": "ମୁଁ ଶୋଇବାକୁ ଯାଉଛି"
   },
   {
     "id": "s30",
@@ -447,7 +534,10 @@
     "pronunciation": "Te-henj dom a-di bi-ji ge-ya?",
     "order": 30,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তুমি কি আজ খুব ব্যস্ত?",
+    "meaning_hi": "क्या आप आज बहुत व्यस्त हैं?",
+    "meaning_or": "ଆପଣ ଆଜି ବହୁତ ବ୍ୟସ୍ତ ଅଛନ୍ତି କି?"
   },
   {
     "id": "s31",
@@ -462,7 +552,10 @@
     "pronunciation": "In do banj bi-ji ge-ya",
     "order": 31,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি ব্যস্ত নই",
+    "meaning_hi": "मैं व्यस्त नहीं हूँ",
+    "meaning_or": "ମୁଁ ବ୍ୟସ୍ତ ନୁହେଁ"
   },
   {
     "id": "s32",
@@ -477,7 +570,10 @@
     "pronunciation": "Da-ya ka-te na-se tan-ginj me",
     "order": 32,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার জন্য একটু অপেক্ষা করুন",
+    "meaning_hi": "कृपया मेरे लिए थोड़ा इंतजार करें",
+    "meaning_or": "ଦୟାକରି ମୋ ପାଇଁ ଟିକିଏ ଅପେକ୍ଷା କର |"
   },
   {
     "id": "s33",
@@ -492,7 +588,10 @@
     "pronunciation": "Am se-renj em ku-si-yag-a?",
     "order": 33,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কি গান গাইতে পছন্দ করেন?",
+    "meaning_hi": "तुम्हें गायन पसंद है?",
+    "meaning_or": "ଆପଣ ଗୀତ ଗାଇବାକୁ ପସନ୍ଦ କରନ୍ତି କି?"
   },
   {
     "id": "s34",
@@ -507,7 +606,10 @@
     "pronunciation": "Hẽ, inj se-renj a-dinj ku-si-yag-a",
     "order": 34,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "হ্যাঁ, আমি গান গাইতে খুব পছন্দ করি",
+    "meaning_hi": "हां, मुझे गाना बहुत पसंद है",
+    "meaning_or": "ହଁ, ମୁଁ ବହୁତ ଗୀତ ଗାଇବାକୁ ପସନ୍ଦ କରେ |"
   },
   {
     "id": "s35",
@@ -522,7 +624,10 @@
     "pronunciation": "Ched kho-bor?",
     "order": 35,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "খবর কি?",
+    "meaning_hi": "खबर क्या है?",
+    "meaning_or": "ଖବର କ’ଣ?"
   },
   {
     "id": "s36",
@@ -537,7 +642,10 @@
     "pronunciation": "Jho-to-wag na-pay ge-ya",
     "order": 36,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সবকিছু ঠিক আছে",
+    "meaning_hi": "और सब ठीक है न",
+    "meaning_or": "ସବୁକିଛି ଠିକ ଅଛି |"
   },
   {
     "id": "s37",
@@ -552,7 +660,10 @@
     "pronunciation": "Am tis em ru-wa-ra?",
     "order": 37,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কবে ফিরবেন?",
+    "meaning_hi": "तुम कब लौटोगे?",
+    "meaning_or": "ତୁମେ କେବେ ଫେରିବ?"
   },
   {
     "id": "s38",
@@ -567,7 +678,10 @@
     "pronunciation": "In do ga-panj ru-wa-ra",
     "order": 38,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি আগামীকাল ফিরব",
+    "meaning_hi": "मैं कल वापस आऊंगा",
+    "meaning_or": "ମୁଁ ଆସନ୍ତାକାଲି ଫେରିବି"
   },
   {
     "id": "s39",
@@ -582,7 +696,10 @@
     "pronunciation": "De-la bon da-ka bon jom-a",
     "order": 39,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "চলো, খাবার খাই",
+    "meaning_hi": "आओ खाना खायें",
+    "meaning_or": "ଆସ, ଖାଦ୍ୟ ଖାଇବା |"
   },
   {
     "id": "s40",
@@ -597,7 +714,10 @@
     "pronunciation": "A-di ras-kanj bu-jhaw ked-a",
     "order": 40,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি খুব খুশি মনে",
+    "meaning_hi": "मुझे बहुत ख़ुशी हुई",
+    "meaning_or": "ମୁଁ ବହୁତ ଖୁସି ଅନୁଭବ କଲି |"
   },
   {
     "id": "s41",
@@ -612,7 +732,10 @@
     "pronunciation": "Am che-le-ka me-na-ma?",
     "order": 41,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "হ্যালো, কেমন আছেন?",
+    "meaning_hi": "नमस्ते, आप कैसे हैं?",
+    "meaning_or": "ନମସ୍କାର, ଆପଣ କେମିତି ଅଛନ୍ତି?"
   },
   {
     "id": "s42",
@@ -627,7 +750,10 @@
     "pronunciation": "In na-pay ge me-nan-ja",
     "order": 42,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি ভালো আছি",
+    "meaning_hi": "मैं ठीक हूँ",
+    "meaning_or": "ମୁଁ ଭଲ ଅଛି"
   },
   {
     "id": "s43",
@@ -642,7 +768,10 @@
     "pronunciation": "Sa-gun se-tag",
     "order": 43,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শুভ সকাল",
+    "meaning_hi": "शुभ प्रभात",
+    "meaning_or": "ଶୁଭ ସକାଳ"
   },
   {
     "id": "s44",
@@ -657,7 +786,10 @@
     "pronunciation": "Sa-gun nyi-da",
     "order": 44,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শুভ রাত্রি",
+    "meaning_hi": "शुभ रात्रि",
+    "meaning_or": "ଶୁଭ ରାତ୍ରି |"
   },
   {
     "id": "s45",
@@ -672,7 +804,10 @@
     "pronunciation": "I-ka kanj me",
     "order": 45,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "মাফ করবেন/দুঃখিত",
+    "meaning_hi": "क्षमा करें / क्षमा करें",
+    "meaning_or": "କ୍ଷମା କରିବେ / ଦୁ Sorry ଖିତ"
   },
   {
     "id": "s46",
@@ -687,7 +822,10 @@
     "pronunciation": "Na-pay te ta-hen me",
     "order": 46,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "যত্ন নিন",
+    "meaning_hi": "अपना ध्यान रखना",
+    "meaning_or": "ଯତ୍ନ ନିଅ |"
   },
   {
     "id": "s47",
@@ -702,7 +840,10 @@
     "pronunciation": "Da-ya ka-te du-rub me",
     "order": 47,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে বসুন",
+    "meaning_hi": "कृपया बैठ जाओ",
+    "meaning_or": "ଦୟାକରି ବସନ୍ତୁ |"
   },
   {
     "id": "s48",
@@ -717,7 +858,10 @@
     "pronunciation": "A-di a-di sar-haw",
     "order": 48,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনাকে অনেক ধন্যবাদ",
+    "meaning_hi": "आपका बहुत-बहुत धन्यवाद",
+    "meaning_or": "ଆପଣଙ୍କୁ ବହୁତ ଧନ୍ୟବାଦ"
   },
   {
     "id": "s49",
@@ -732,7 +876,10 @@
     "pronunciation": "Jo-har ge ma-rang ba-ba",
     "order": 49,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শুভেচ্ছা, শ্রদ্ধেয় চাচা",
+    "meaning_hi": "नमस्कार, आदरणीय चाचा जी",
+    "meaning_or": "ନମସ୍କାର, ସମ୍ମାନିତ ମାମୁଁ |"
   },
   {
     "id": "s50",
@@ -747,7 +894,10 @@
     "pronunciation": "Jo-har ge ma-rang a-yo",
     "order": 50,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শুভেচ্ছা, শ্রদ্ধেয় খালা",
+    "meaning_hi": "नमस्कार, आदरणीय चाची जी",
+    "meaning_or": "ନମସ୍କାର, ସମ୍ମାନିତ ମାଉସୀ |"
   },
   {
     "id": "s51",
@@ -762,7 +912,10 @@
     "pronunciation": "Am saw nya-pam ka-te a-di ras-kanj bu-jhaw ked-a",
     "order": 51,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার সাথে দেখা করে ভালো লাগলো",
+    "meaning_hi": "आपसे मिलकर अच्छा लगा",
+    "meaning_or": "ତୁମକୁ ଭେଟି ଭଲ ଲାଗିଲା |"
   },
   {
     "id": "s52",
@@ -777,7 +930,10 @@
     "pronunciation": "No-wa do in-jaag ku-si ka-na",
     "order": 52,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা আমার আনন্দ",
+    "meaning_hi": "यह मेरा सौभाग्य है",
+    "meaning_or": "ଏହା ମୋର ଆନନ୍ଦ"
   },
   {
     "id": "s53",
@@ -792,7 +948,10 @@
     "pronunciation": "Da-ya ka-te no-wa e-manj me",
     "order": 53,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে আমাকে এটি দিন",
+    "meaning_hi": "कृपया मुझे यह दीजिए",
+    "meaning_or": "ଦୟାକରି ମୋତେ ଏହା ଦିଅନ୍ତୁ |"
   },
   {
     "id": "s54",
@@ -807,7 +966,10 @@
     "pronunciation": "Jo-har, ma to-be in-jinj se-nog ka-na",
     "order": 54,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বিদায়, আমি এখন চলে যাচ্ছি",
+    "meaning_hi": "अलविदा, मैं अब जा रहा हूँ",
+    "meaning_or": "ବିଦାୟ, ମୁଁ ବର୍ତ୍ତମାନ ଯାଉଛି"
   },
   {
     "id": "s55",
@@ -822,7 +984,10 @@
     "pronunciation": "Da-ya ka-te na-se an-jom me",
     "order": 55,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "অনুগ্রহ করে এক মুহূর্ত শুনুন",
+    "meaning_hi": "कृपया एक पल के लिए सुनें",
+    "meaning_or": "ଦୟାକରି କିଛି ସମୟ ପାଇଁ ଶୁଣନ୍ତୁ |"
   },
   {
     "id": "s56",
@@ -837,7 +1002,10 @@
     "pronunciation": "A-lom chin-ta-ya, jho-to-wag thik ge-ya",
     "order": 56,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "চিন্তা করবেন না, সবকিছু ঠিক আছে",
+    "meaning_hi": "चिंता मत करो, सब कुछ ठीक है",
+    "meaning_or": "ବ୍ୟସ୍ତ ହୁଅନ୍ତୁ ନାହିଁ, ସବୁକିଛି ଠିକ ଅଛି |"
   },
   {
     "id": "s57",
@@ -852,7 +1020,10 @@
     "pronunciation": "A-maag din sa-gun kog ma!",
     "order": 57,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার দিন ভালো কাটুক!",
+    "meaning_hi": "आपका दिन शुभ हो!",
+    "meaning_or": "ଦିନଟି ଭଲରେ କଟିବ!"
   },
   {
     "id": "s58",
@@ -867,7 +1038,10 @@
     "pronunciation": "A-maag go-ro la-gid sar-haw",
     "order": 58,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার সাহায্যের জন্য আপনাকে ধন্যবাদ",
+    "meaning_hi": "आपकी मदद के लिए आपको धन्यवाद",
+    "meaning_or": "ଆପଣଙ୍କର ସାହାଯ୍ୟ ପାଇଁ ଧନ୍ୟବାଦ |"
   },
   {
     "id": "s59",
@@ -882,7 +1056,10 @@
     "pronunciation": "Jo-har, ga-pa bon nya-pam-a",
     "order": 59,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বিদায়, আগামীকাল দেখা হবে",
+    "meaning_hi": "अलविदा कल मिलेंगे",
+    "meaning_or": "ବିଦାୟ, ଆସନ୍ତାକାଲି ଦେଖା ହେବ |"
   },
   {
     "id": "s60",
@@ -897,7 +1074,10 @@
     "pronunciation": "Da-ya ka-te inj i-ka kanj me",
     "order": 60,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে আমাকে ক্ষমা করুন",
+    "meaning_hi": "कृपया मुझे माफ़ करें",
+    "meaning_or": "ଦୟାକରି ମୋତେ କ୍ଷମା କର |"
   },
   {
     "id": "s61",
@@ -912,7 +1092,10 @@
     "pronunciation": "Te-henj do a-di na-pay din ka-na",
     "order": 61,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ একটি সুন্দর দিন",
+    "meaning_hi": "अाज का दिन सुंदर दिन है",
+    "meaning_or": "ଆଜି ଏକ ସୁନ୍ଦର ଦିନ |"
   },
   {
     "id": "s62",
@@ -927,7 +1110,10 @@
     "pronunciation": "No-wa do ti-nag dam ka-na?",
     "order": 62,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা কত?",
+    "meaning_hi": "यह कितने का है?",
+    "meaning_or": "ଏହା କେତେ?"
   },
   {
     "id": "s63",
@@ -942,7 +1128,10 @@
     "pronunciation": "Dag e ja-ri-ye-da",
     "order": 63,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বৃষ্টি হচ্ছে",
+    "meaning_hi": "बरस गया बादल का पानी",
+    "meaning_or": "ବର୍ଷା ହେଉଛି"
   },
   {
     "id": "s64",
@@ -957,7 +1146,10 @@
     "pronunciation": "Te-henj do a-di si-tung ka-na",
     "order": 64,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ খুব গরম",
+    "meaning_hi": "आज बहुत गर्मी है",
+    "meaning_or": "ଆଜି ବହୁତ ଗରମ |"
   },
   {
     "id": "s65",
@@ -972,7 +1164,10 @@
     "pronunciation": "Ti-nag ba-jaw e-na?",
     "order": 65,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কয়টা বাজে?",
+    "meaning_hi": "ये वक़्त क्या है?",
+    "meaning_or": "ଏହା କେତେ ସମୟ?"
   },
   {
     "id": "s66",
@@ -987,7 +1182,10 @@
     "pronunciation": "Ni-tog do ey-ay ba-jaw ka-na",
     "order": 66,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এখন সাতটা বাজে",
+    "meaning_hi": "अभी सात बजे हैं",
+    "meaning_or": "ବର୍ତ୍ତମାନ ସାତଟା |"
   },
   {
     "id": "s67",
@@ -1002,7 +1200,10 @@
     "pronunciation": "Te-henj do a-di ra-bang ka-na",
     "order": 67,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ খুব ঠান্ডা",
+    "meaning_hi": "आज बहुत सर्दी है",
+    "meaning_or": "ଆଜି ବହୁତ ଥଣ୍ଡା |"
   },
   {
     "id": "s68",
@@ -1017,7 +1218,10 @@
     "pronunciation": "Te-henj do hoy ed-ay",
     "order": 68,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ বাতাস বইছে",
+    "meaning_hi": "आज तेज़ हवा है",
+    "meaning_or": "ଆଜି ପବନ ହେଉଛି |"
   },
   {
     "id": "s69",
@@ -1032,7 +1236,10 @@
     "pronunciation": "Ri-mil ed-ay ser-ma re",
     "order": 69,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আকাশ মেঘলা",
+    "meaning_hi": "आसमान में बादल छाए हुए हैं",
+    "meaning_or": "ଆକାଶ ମେଘୁଆ ଅଟେ"
   },
   {
     "id": "s70",
@@ -1047,7 +1254,10 @@
     "pronunciation": "Ga-pa dag e ja-ri-ya se?",
     "order": 70,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাল কি বৃষ্টি হবে?",
+    "meaning_hi": "क्या कल वर्षा होगी?",
+    "meaning_or": "ଆସନ୍ତାକାଲି ବର୍ଷା ହେବ କି?"
   },
   {
     "id": "s71",
@@ -1062,7 +1272,10 @@
     "pronunciation": "Si-tung ri-tu do in-jaag ku-si ri-tu ka-na",
     "order": 71,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রীষ্ম আমার প্রিয় ঋতু",
+    "meaning_hi": "गर्मी मेरा पसंदीदा मौसम है",
+    "meaning_or": "ଗ୍ରୀଷ୍ମ ହେଉଛି ମୋର ପ୍ରିୟ season ତୁ |"
   },
   {
     "id": "s72",
@@ -1077,7 +1290,10 @@
     "pronunciation": "Ra-bang ri-tu re a-di ra-bang-a",
     "order": 72,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শীতকালে খুব ঠান্ডা পড়ে",
+    "meaning_hi": "सर्दियों में बहुत ठंड होती है",
+    "meaning_or": "ଶୀତଦିନେ ଏହା ବହୁତ ଥଣ୍ଡା |"
   },
   {
     "id": "s73",
@@ -1092,7 +1308,10 @@
     "pronunciation": "Te-henj do o-ka ma-ha ka-na?",
     "order": 73,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ কোন দিন?",
+    "meaning_hi": "आज कोन सा दिन हे?",
+    "meaning_or": "ଆଜି କେଉଁ ଦିନ?"
   },
   {
     "id": "s74",
@@ -1107,7 +1326,10 @@
     "pronunciation": "Te-henj do Sin-ge ma-ha ka-na",
     "order": 74,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ রবিবার",
+    "meaning_hi": "आज रविवार हे",
+    "meaning_or": "ଆଜି ରବିବାର |"
   },
   {
     "id": "s75",
@@ -1122,7 +1344,10 @@
     "pronunciation": "Ni-tog se-tag ka-na",
     "order": 75,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এখন সকাল হয়েছে",
+    "meaning_hi": "अब सुबह हो गई है",
+    "meaning_or": "ବର୍ତ୍ତମାନ ସକାଳ ହୋଇଗଲାଣି |"
   },
   {
     "id": "s76",
@@ -1137,7 +1362,10 @@
     "pronunciation": "A-yub be-ra a-di na-pay ge-ya",
     "order": 76,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সন্ধ্যার সময়টা খুবই মনোরম",
+    "meaning_hi": "शाम का समय बहुत सुहावना होता है",
+    "meaning_or": "ସନ୍ଧ୍ୟା ସମୟ ଅତ୍ୟନ୍ତ ଆନନ୍ଦଦାୟକ ଅଟେ |"
   },
   {
     "id": "s77",
@@ -1152,7 +1380,10 @@
     "pronunciation": "Nyi-da be-ra i-pil ko ju-lug-a",
     "order": 77,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "রাতে তারা জ্বলে",
+    "meaning_hi": "रात में तारे चमकते हैं",
+    "meaning_or": "ତାରାମାନେ ରାତିରେ ଉଜ୍ଜ୍ୱଳ ହୁଅନ୍ତି |"
   },
   {
     "id": "s78",
@@ -1167,7 +1398,10 @@
     "pronunciation": "No-wa ser-ma a-di lo-gon pa-rom e-na",
     "order": 78,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই বছরটা খুব দ্রুত কেটে গেল",
+    "meaning_hi": "ये साल बहुत जल्दी बीत गया",
+    "meaning_or": "ଏହି ବର୍ଷ ବହୁତ ଶୀଘ୍ର ଗଲା |"
   },
   {
     "id": "s79",
@@ -1182,7 +1416,10 @@
     "pronunciation": "Ga-pa se-tag a-lang lang nya-pam-a",
     "order": 79,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাল সকালে দেখা হবে",
+    "meaning_hi": "हम कल सुबह मिलेंगे",
+    "meaning_or": "ଆସନ୍ତାକାଲି ସକାଳେ ଆମେ ଭେଟିବା |"
   },
   {
     "id": "s80",
@@ -1197,7 +1434,10 @@
     "pronunciation": "Te-henj do a-di lo-lo ge-ya",
     "order": 80,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ খুব গরম",
+    "meaning_hi": "आज बहुत गर्मी है",
+    "meaning_or": "ଆଜି ବହୁତ ଗରମ |"
   },
   {
     "id": "s81",
@@ -1212,7 +1452,10 @@
     "pronunciation": "No-Wa Re-Yag Dam Ti-Nag?",
     "order": 81,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই খরচ কত?",
+    "meaning_hi": "इस की कीमत क्या होगी?",
+    "meaning_or": "ଏହାର ମୂଲ୍ୟ କେତେ?"
   },
   {
     "id": "s82",
@@ -1227,7 +1470,10 @@
     "pronunciation": "Iny No-Wany Ha-Ta-Wa",
     "order": 82,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি এটা কিনব",
+    "meaning_hi": "मैं इसे खरीदूंगा",
+    "meaning_or": "ମୁଁ ଏହାକୁ କିଣିବି"
   },
   {
     "id": "s83",
@@ -1242,7 +1488,10 @@
     "pronunciation": "Te-Heny Hat Me-Nag-A?",
     "order": 83,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ কি সাপ্তাহিক বাজার আছে?",
+    "meaning_hi": "क्या आज साप्ताहिक बाज़ार है?",
+    "meaning_or": "ଆଜି ଏକ ସାପ୍ତାହିକ ବଜାର ଅଛି କି?"
   },
   {
     "id": "s84",
@@ -1257,7 +1506,10 @@
     "pronunciation": "No-Wa Do A-Di Na-Pay Jo Ka-Na",
     "order": 84,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটি খুবই ভালো ফল",
+    "meaning_hi": "यह बहुत अच्छा फल है",
+    "meaning_or": "ଏହା ବହୁତ ଭଲ ଫଳ ​​|"
   },
   {
     "id": "s85",
@@ -1272,7 +1524,10 @@
     "pronunciation": "Da-Ya-Ka-Te Kaj Dam Kom Me",
     "order": 85,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে দামটা একটু কমিয়ে দিন",
+    "meaning_hi": "कृपया कीमत थोड़ी कम करें",
+    "meaning_or": "ଦୟାକରି ମୂଲ୍ୟ ଟିକେ କମ କରନ୍ତୁ |"
   },
   {
     "id": "s86",
@@ -1287,7 +1542,10 @@
     "pronunciation": "Rel Te-Son O-Ka Sed?",
     "order": 86,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ট্রেন স্টেশন কোন দিকে?",
+    "meaning_hi": "रेलवे स्टेशन किस तरफ है?",
+    "meaning_or": "ରେଳ ଷ୍ଟେସନ କେଉଁ ପଥରେ ଅଛି?"
   },
   {
     "id": "s87",
@@ -1302,7 +1560,10 @@
     "pronunciation": "Len-Ga Sed A-Cu-Rog Me",
     "order": 87,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাম দিকে ঘুরুন",
+    "meaning_hi": "बाईं ओर मुड़ें",
+    "meaning_or": "ବାମକୁ ବୁଲନ୍ତୁ |"
   },
   {
     "id": "s88",
@@ -1317,7 +1578,10 @@
     "pronunciation": "Jo-Jom Sed Ta-Ram Me",
     "order": 88,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ডান দিকে হাঁটা",
+    "meaning_hi": "दाहिनी ओर चलें",
+    "meaning_or": "ଡାହାଣ ପାର୍ଶ୍ୱକୁ ଚାଲନ୍ତୁ |"
   },
   {
     "id": "s89",
@@ -1332,7 +1596,10 @@
     "pronunciation": "Soj-He Cha-Lag Me",
     "order": 89,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সোজা এগিয়ে যান",
+    "meaning_hi": "आगे सीधे बढ़ो",
+    "meaning_or": "ସିଧା ଆଗକୁ ଯାଅ |"
   },
   {
     "id": "s90",
@@ -1347,7 +1614,10 @@
     "pronunciation": "A-Tu Do Ti-Nag San-Gin-Ya?",
     "order": 90,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রাম কতদূর?",
+    "meaning_hi": "गाँव कितनी दूर है?",
+    "meaning_or": "ଗାଁ କେତେ ଦୂର?"
   },
   {
     "id": "s91",
@@ -1362,7 +1632,10 @@
     "pronunciation": "Am Ti-Sem Hi-Jug-A?",
     "order": 91,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কবে আসবে?",
+    "meaning_hi": "आप कब आओगें?",
+    "meaning_or": "ତୁମେ କେବେ ଆସିବ?"
   },
   {
     "id": "s92",
@@ -1377,7 +1650,10 @@
     "pronunciation": "No-Wa Do Ched Ka-Na?",
     "order": 92,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা কি?",
+    "meaning_hi": "यह क्या है?",
+    "meaning_or": "ଏହା କ’ଣ?"
   },
   {
     "id": "s93",
@@ -1392,7 +1668,10 @@
     "pronunciation": "O-Na Do O-Ko-Yag Ka-Na?",
     "order": 93,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এটা কার?",
+    "meaning_hi": "वह किसका है?",
+    "meaning_or": "ସେ କିଏ?"
   },
   {
     "id": "s94",
@@ -1407,7 +1686,10 @@
     "pronunciation": "Am Ched-La-Gid-Em Rag-E-Da?",
     "order": 94,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তুমি কাঁদছ কেন?",
+    "meaning_hi": "क्यों रो रही हो?",
+    "meaning_or": "ତୁମେ କାହିଁକି କାନ୍ଦୁଛ?"
   },
   {
     "id": "s95",
@@ -1422,7 +1704,10 @@
     "pronunciation": "No-Wa Ka-Mi Ci-Le-Ka-Te Hu-Yug-A?",
     "order": 95,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কিভাবে এই কাজ করা হবে?",
+    "meaning_hi": "कैसे होगा ये काम?",
+    "meaning_or": "ଏହି କାର୍ଯ୍ୟ କିପରି କରାଯିବ?"
   },
   {
     "id": "s96",
@@ -1437,7 +1722,10 @@
     "pronunciation": "Iny Do Po-Thiny Par-Haw E-Da",
     "order": 96,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি একটা বই পড়ছি",
+    "meaning_hi": "मैं एक किताब पढ़ रहा हूं",
+    "meaning_or": "ମୁଁ ଏକ ବହି ପ reading ୁଛି"
   },
   {
     "id": "s97",
@@ -1452,7 +1740,10 @@
     "pronunciation": "Gid-Ra Ko As-Ra Ko Cha-Lag Ka-Na",
     "order": 97,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শিশুরা স্কুলে যাচ্ছে",
+    "meaning_hi": "बच्चे स्कूल जा रहे हैं",
+    "meaning_or": "ପିଲାମାନେ ବିଦ୍ୟାଳୟକୁ ଯାଉଛନ୍ତି |"
   },
   {
     "id": "s98",
@@ -1467,7 +1758,10 @@
     "pronunciation": "Ma-Cet Do Ol Ched Ed Bo-Nay",
     "order": 98,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শিক্ষক আমাদের লিখতে শেখাচ্ছেন",
+    "meaning_hi": "शिक्षक हमें लिखना सिखा रहे हैं",
+    "meaning_or": "ଶିକ୍ଷକ ଆମକୁ ଲେଖିବାକୁ ଶିଖାଉଛନ୍ତି |"
   },
   {
     "id": "s99",
@@ -1482,7 +1776,10 @@
     "pronunciation": "Da-Ka Jom Me",
     "order": 99,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার খাবার খান",
+    "meaning_hi": "अपना खाना खाओ",
+    "meaning_or": "ତୁମର ଭୋଜନ ଖାଅ |"
   },
   {
     "id": "s100",
@@ -1497,7 +1794,10 @@
     "pronunciation": "Dag Nyuy Me",
     "order": 100,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "পানি পান করুন",
+    "meaning_hi": "पानी प",
+    "meaning_or": "ପାଣି ପିଅନ୍ତୁ |"
   },
   {
     "id": "s101",
@@ -1512,7 +1812,10 @@
     "pronunciation": "In-Yag Lac Ha-Sunj Ka-Na",
     "order": 101,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার পেট ব্যাথা করছে",
+    "meaning_hi": "मेरे पेट में दर्द हो रहा है",
+    "meaning_or": "ମୋର ପେଟ ଯନ୍ତ୍ରଣା ହେଉଛି |"
   },
   {
     "id": "s102",
@@ -1527,7 +1830,10 @@
     "pronunciation": "Da-Ya-Ka-Te Ran I-Many Me",
     "order": 102,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে আমাকে ওষুধ দিন",
+    "meaning_hi": "कृपया मुझे दवा दीजिए",
+    "meaning_or": "ଦୟାକରି ମୋତେ medicine ଷଧ ଦିଅ |"
   },
   {
     "id": "s103",
@@ -1542,7 +1848,10 @@
     "pronunciation": "Te-Heny Do A-Di Si-Tung Ka-Na",
     "order": 103,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ খুব গরম এবং রোদ",
+    "meaning_hi": "आज बहुत गर्मी और धूप है",
+    "meaning_or": "ଆଜି ବହୁତ ଗରମ ଏବଂ ଖରାଦିନ |"
   },
   {
     "id": "s104",
@@ -1557,7 +1866,10 @@
     "pronunciation": "Dag E Ja-Ri E-Da",
     "order": 104,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বৃষ্টি হচ্ছে",
+    "meaning_hi": "बरस गया बादल का पानी",
+    "meaning_or": "ବର୍ଷା ହେଉଛି"
   },
   {
     "id": "s105",
@@ -1572,7 +1884,10 @@
     "pronunciation": "Hoy Hi-Sid A-Di Na-Pay Si-Bil Ka-Na",
     "order": 105,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাতাস মিষ্টি এবং সতেজ অনুভব করে",
+    "meaning_hi": "हवा मीठी और ताजगी भरी लगती है",
+    "meaning_or": "ପବନ ମଧୁର ଏବଂ ସତେଜ ଅନୁଭବ କରେ |"
   },
   {
     "id": "s106",
@@ -1587,7 +1902,10 @@
     "pronunciation": "Iny-ij boy-ha do chas ka-mi re ku-ru-mu-tu e-day",
     "order": 106,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার ভাই কৃষিকাজে কঠোর পরিশ্রম করছে।",
+    "meaning_hi": "मेरा भाई खेती में कड़ी मेहनत कर रहा है।",
+    "meaning_or": "ମୋ ଭାଇ ଚାଷ କ୍ଷେତ୍ରରେ କଠିନ ପରିଶ୍ରମ କରୁଛନ୍ତି |"
   },
   {
     "id": "s107",
@@ -1602,7 +1920,10 @@
     "pronunciation": "Ma-cet do gid-ra ko na-pay te ched a-ko ka-nay",
     "order": 107,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শিক্ষক শিশুদের ভালোভাবে পড়াচ্ছেন।",
+    "meaning_hi": "शिक्षक बच्चों को अच्छे से पढ़ा रहे हैं.",
+    "meaning_or": "ଶିକ୍ଷକ ପିଲାମାନଙ୍କୁ ଭଲ ଶିକ୍ଷା ଦେଉଛନ୍ତି |"
   },
   {
     "id": "s108",
@@ -1617,7 +1938,10 @@
     "pronunciation": "Dak-tar do ru-wa hor ran e e-may ka-nay",
     "order": 108,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ডাক্তার অসুস্থ ব্যক্তিকে ওষুধ দিচ্ছেন।",
+    "meaning_hi": "डॉक्टर बीमार व्यक्ति को दवा दे रहा है.",
+    "meaning_or": "ଡାକ୍ତର ଅସୁସ୍ଥ ବ୍ୟକ୍ତିଙ୍କୁ medicine ଷଧ ଦେଉଛନ୍ତି।"
   },
   {
     "id": "s109",
@@ -1632,7 +1956,10 @@
     "pronunciation": "A-le do bad re ho-ro le ro-hoy e-da",
     "order": 109,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমরা মাঠে ধান রোপণ করছি।",
+    "meaning_hi": "हम खेत में धान लगा रहे हैं.",
+    "meaning_or": "ଆମେ କ୍ଷେତରେ ଧାନ ରୋପଣ କରୁଛୁ |"
   },
   {
     "id": "s110",
@@ -1647,7 +1974,10 @@
     "pronunciation": "U-ni do o-phish re kom-pyu-tar e cha-law e-da",
     "order": 110,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তিনি অফিসে কম্পিউটার পরিচালনা করছেন।",
+    "meaning_hi": "वह कार्यालय में कम्प्यूटर चला रहा है।",
+    "meaning_or": "ସେ ଅଫିସରେ କମ୍ପ୍ୟୁଟର ଚଳାଉଛନ୍ତି |"
   },
   {
     "id": "s111",
@@ -1662,7 +1992,10 @@
     "pronunciation": "Ka-mi mu-cad ka-te o-rag iny ru-wa-ra",
     "order": 111,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাজ শেষ করে বাসায় ফিরবো।",
+    "meaning_hi": "काम ख़त्म करके मैं घर लौट आऊंगा.",
+    "meaning_or": "କାମ ସରିବା ପରେ ମୁଁ ଘରକୁ ଫେରିବି |"
   },
   {
     "id": "s112",
@@ -1677,7 +2010,10 @@
     "pronunciation": "Am do ched ka-mi am ku-si-yag-a",
     "order": 112,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কি ধরনের কাজ পছন্দ করেন?",
+    "meaning_hi": "आपको किस तरह का काम पसंद है?",
+    "meaning_or": "ଆପଣ କେଉଁ ପ୍ରକାର କାମ ପସନ୍ଦ କରନ୍ତି?"
   },
   {
     "id": "s113",
@@ -1692,7 +2028,10 @@
     "pronunciation": "Un-ku do da-re ko ro-hoy e-da",
     "order": 113,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তারা গাছ লাগাচ্ছে।",
+    "meaning_hi": "वे पेड़ लगा रहे हैं.",
+    "meaning_or": "ସେମାନେ ବୃକ୍ଷ ରୋପଣ କରୁଛନ୍ତି।"
   },
   {
     "id": "s114",
@@ -1707,7 +2046,10 @@
     "pronunciation": "Iny-ij ga-te do be-par e cha-law e-da",
     "order": 114,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার বন্ধু ব্যবসা চালায়।",
+    "meaning_hi": "मेरा दोस्त एक व्यवसाय चलाता है.",
+    "meaning_or": "ମୋ ସାଙ୍ଗ ଏକ ବ୍ୟବସାୟ ଚଳାନ୍ତି |"
   },
   {
     "id": "s115",
@@ -1722,7 +2064,10 @@
     "pronunciation": "Ol par-haw ka-te ma-rang hor be-nawg me",
     "order": 115,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ভালোভাবে পড়াশুনা করে একজন মহান ব্যক্তি হয়ে উঠুন।",
+    "meaning_hi": "अच्छे से पढ़ाई करो और एक महान इंसान बनो।",
+    "meaning_or": "ଭଲ ଅଧ୍ୟୟନ କର ଏବଂ ଜଣେ ମହାନ ବ୍ୟକ୍ତି ହୁଅ |"
   },
   {
     "id": "s116",
@@ -1737,7 +2082,10 @@
     "pronunciation": "Lug-ri si-lay ka-mi ho a-di na-pay ka-mi ka-na",
     "order": 116,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাপড় সেলাই করাও খুব ভালো কাজ।",
+    "meaning_hi": "कपड़े सिलना भी बहुत अच्छा काम है.",
+    "meaning_or": "ପୋଷାକ ସଜାଇବା ମଧ୍ୟ ବହୁତ ଭଲ କାମ |"
   },
   {
     "id": "s117",
@@ -1752,7 +2100,10 @@
     "pronunciation": "Ka-mi re a-lom kur-hi-yag-a",
     "order": 117,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাজে অলস হবেন না।",
+    "meaning_hi": "काम में आलस्य न करें.",
+    "meaning_or": "କାର୍ଯ୍ୟରେ ଅଳସୁଆ ହୁଅନ୍ତୁ ନାହିଁ |"
   },
   {
     "id": "s118",
@@ -1767,7 +2118,10 @@
     "pronunciation": "Sa-nam hor mid te ka-mi le-khan al-gag-a",
     "order": 118,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সবাই একসাথে কাজ করলে কাজটা সহজ হয়ে যায়।",
+    "meaning_hi": "जब सब मिलकर काम करते हैं तो यह आसान हो जाता है।'",
+    "meaning_or": "ଯେତେବେଳେ ସମସ୍ତେ ଏକାଠି କାମ କରନ୍ତି, ଏହା ସହଜ ହୋଇଯାଏ |"
   },
   {
     "id": "s119",
@@ -1782,7 +2136,10 @@
     "pronunciation": "Gay gu-pi hor do bir sed e cha-law a-ka-na",
     "order": 119,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গোপাল বনের দিকে চলে গেছে।",
+    "meaning_hi": "चरवाहा जंगल की ओर चला गया है।",
+    "meaning_or": "ଗା cow ଗୋରୁ ଜଙ୍ଗଲ ଆଡକୁ ଗଲା।"
   },
   {
     "id": "s120",
@@ -1797,7 +2154,10 @@
     "pronunciation": "Te-heny do a-le-yag ka-mi cha-ba e-na",
     "order": 120,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ আমাদের কাজ শেষ।",
+    "meaning_hi": "आज हमारा काम ख़त्म हो गया.",
+    "meaning_or": "ଆଜି ଆମର କାର୍ଯ୍ୟ ସମାପ୍ତ ହୋଇଛି |"
   },
   {
     "id": "s121",
@@ -1812,7 +2172,10 @@
     "pronunciation": "Se-tag re iny do be-red ka-te da-ran iny cha-lag-a",
     "order": 121,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সকালে ঘুম থেকে উঠে হাঁটতে যাই।",
+    "meaning_hi": "सुबह उठकर मैं टहलने जाता हूं।",
+    "meaning_or": "ସକାଳେ ମୁଁ ଉଠି ବୁଲିବାକୁ ଯାଏ |"
   },
   {
     "id": "s122",
@@ -1827,7 +2190,10 @@
     "pronunciation": "Ni-tog do ti-nag ba-jaw a-ka-na",
     "order": 122,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এখন কয়টা বাজে?",
+    "meaning_hi": "अब समय क्या है?",
+    "meaning_or": "ବର୍ତ୍ତମାନ ସମୟ କେତେ?"
   },
   {
     "id": "s123",
@@ -1842,7 +2208,10 @@
     "pronunciation": "Ti-kin ok-to re a-di lo-lo buj-ha-ug-a",
     "order": 123,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দুপুরের দিকে খুব গরম লাগে।",
+    "meaning_hi": "दोपहर के समय बहुत गर्मी महसूस होती है।",
+    "meaning_or": "ମଧ୍ୟାହ୍ନ ସମୟରେ ଏହା ବହୁତ ଗରମ ଅନୁଭବ କରେ |"
   },
   {
     "id": "s124",
@@ -1857,7 +2226,10 @@
     "pronunciation": "A-yub be-ra gid-ra ko e-nej ka-na",
     "order": 124,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সন্ধ্যায় শিশুরা খেলছে।",
+    "meaning_hi": "शाम को बच्चे खेल रहे थे.",
+    "meaning_or": "ସନ୍ଧ୍ୟାରେ ପିଲାମାନେ ଖେଳୁଛନ୍ତି |"
   },
   {
     "id": "s125",
@@ -1872,7 +2244,10 @@
     "pronunciation": "Ga-pa do Sin-ge ma-ha ka-na",
     "order": 125,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আগামীকাল রবিবার।",
+    "meaning_hi": "कल इतवार है।",
+    "meaning_or": "ଆସନ୍ତାକାଲି ରବିବାର |"
   },
   {
     "id": "s126",
@@ -1887,7 +2262,10 @@
     "pronunciation": "Ho-la do a-di jur dag ke-day",
     "order": 126,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গতকাল প্রবল বৃষ্টি হয়েছে।",
+    "meaning_hi": "कल भारी बारिश हुई.",
+    "meaning_or": "ଗତକାଲି ପ୍ରବଳ ବର୍ଷା ହୋଇଥିଲା।"
   },
   {
     "id": "s127",
@@ -1902,7 +2280,10 @@
     "pronunciation": "Iny do nyi-da gel ta-rang reny ja-pi-da",
     "order": 127,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "রাত দশটায় ঘুমাই।",
+    "meaning_hi": "मैं रात को दस बजे सोता हूं.",
+    "meaning_or": "ମୁଁ ରାତି ଦଶଟା ବେଳେ ଶୋଇଥାଏ |"
   },
   {
     "id": "s128",
@@ -1917,7 +2298,10 @@
     "pronunciation": "No-wa hap-ta re a-le a-tu le cha-lag-a",
     "order": 128,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই সপ্তাহে আমরা গ্রামে যাব।",
+    "meaning_hi": "इस सप्ताह हम गांव जायेंगे.",
+    "meaning_or": "ଏହି ସପ୍ତାହରେ ଆମେ ଗାଁକୁ ଯିବା |"
   },
   {
     "id": "s129",
@@ -1932,7 +2316,10 @@
     "pronunciation": "Can-do mu-cad re iny do ta-kany nya-ma",
     "order": 129,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "মাস শেষে টাকা পাব।",
+    "meaning_hi": "महीने के अंत में मुझे पैसे मिलेंगे.",
+    "meaning_or": "ମାସ ଶେଷରେ ମୁଁ ଟଙ୍କା ପାଇବି |"
   },
   {
     "id": "s130",
@@ -1947,7 +2334,10 @@
     "pronunciation": "Ser-ma pu-raw re na-wa ser-ma hi-jug-a",
     "order": 130,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বছর শেষ হলে নতুন বছর আসে।",
+    "meaning_hi": "जब साल पूरा होता है तो नया साल आता है.",
+    "meaning_or": "ଯେତେବେଳେ ବର୍ଷ ସମାପ୍ତ ହୁଏ, ଏକ ନୂତନ ବର୍ଷ ଆସେ |"
   },
   {
     "id": "s131",
@@ -1962,7 +2352,10 @@
     "pronunciation": "Di-nam hi-log ol ched me",
     "order": 131,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "প্রতিদিন লেখার অভ্যাস করুন।",
+    "meaning_hi": "प्रतिदिन लिखने का अभ्यास करें।",
+    "meaning_or": "ପ୍ରତିଦିନ ଲେଖିବା ଅଭ୍ୟାସ କରନ୍ତୁ |"
   },
   {
     "id": "s132",
@@ -1977,7 +2370,10 @@
     "pronunciation": "Ok-to do a-di da-man ge-ya",
     "order": 132,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সময় খুবই মূল্যবান।",
+    "meaning_hi": "समय बहुत कीमती है.",
+    "meaning_or": "ସମୟ ଅତ୍ୟନ୍ତ ମୂଲ୍ୟବାନ |"
   },
   {
     "id": "s133",
@@ -1992,7 +2388,10 @@
     "pronunciation": "Ti-ri-yo ra-ha an-jom te nyi-da pa-ro-mog-a",
     "order": 133,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাঁশির সুর শুনে রাত কেটে যায়।",
+    "meaning_hi": "बांसुरी की धुन सुनते-सुनते रात बीत जाती है।",
+    "meaning_or": "ବଂଶୀ ମେଲୋଡି ଶୁଣି ରାତି ଅତିବାହିତ ହୁଏ |"
   },
   {
     "id": "s134",
@@ -2007,7 +2406,10 @@
     "pronunciation": "Lo-gon hi-jug me, bi-lo-mog ka-na",
     "order": 134,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তাড়াতাড়ি আয়, দেরি হয়ে যাচ্ছে।",
+    "meaning_hi": "जल्दी आओ, देर हो रही है.",
+    "meaning_or": "ଶୀଘ୍ର ଆସ, ବିଳମ୍ବ ହେଉଛି |"
   },
   {
     "id": "s135",
@@ -2022,7 +2424,10 @@
     "pronunciation": "Am do tis em cha-lag-a",
     "order": 135,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কখন প্রস্থান করবেন?",
+    "meaning_hi": "आप कब प्रस्थान करेंगे?",
+    "meaning_or": "ଆପଣ କେବେ ଯିବେ?"
   },
   {
     "id": "s136",
@@ -2037,7 +2442,10 @@
     "pronunciation": "A-yo do man-di da-ka ar u-tuy i-sin ke-da",
     "order": 136,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "মা সিদ্ধ ভাত আর তরকারি রান্না করতেন।",
+    "meaning_hi": "माँ ने उबले चावल और करी पकायी।",
+    "meaning_or": "ମା ସି iled ା ଚାଉଳ ଏବଂ ତରକାରୀ ରାନ୍ଧିଲେ |"
   },
   {
     "id": "s137",
@@ -2052,7 +2460,10 @@
     "pronunciation": "Soh-ray re a-le do pit-ha le be-na-wa",
     "order": 137,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সোহরাই উৎসবে আমরা ঐতিহ্যবাহী চালের পিঠা তৈরি করি।",
+    "meaning_hi": "सोहराई त्योहार के दौरान हम पारंपरिक चावल केक तैयार करते हैं।",
+    "meaning_or": "ସୋହରାଇ ପର୍ବ ସମୟରେ ଆମେ ପାରମ୍ପାରିକ ଚାଉଳ କେକ୍ ପ୍ରସ୍ତୁତ କରୁ |"
   },
   {
     "id": "s138",
@@ -2067,7 +2478,10 @@
     "pronunciation": "No-wa u-tu do a-di si-bil ge-ya",
     "order": 138,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই তরকারি খুবই সুস্বাদু।",
+    "meaning_hi": "यह करी बहुत स्वादिष्ट होती है.",
+    "meaning_or": "ଏହି ତରକାରୀ ବହୁତ ସ୍ୱାଦିଷ୍ଟ |"
   },
   {
     "id": "s139",
@@ -2082,7 +2496,10 @@
     "pronunciation": "Da-ka re bu-lung tho-ra em me",
     "order": 139,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "খাবারে সামান্য লবণ দিন।",
+    "meaning_hi": "खाने में थोड़ा नमक डालें.",
+    "meaning_or": "ଖାଦ୍ୟରେ ଅଳ୍ପ ଲୁଣ ପକାନ୍ତୁ |"
   },
   {
     "id": "s140",
@@ -2097,7 +2514,10 @@
     "pronunciation": "Iny do sa-kam u-tu a-diny ku-si-yag-a",
     "order": 140,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি শাক-সবুজ সবজির তরকারি খুব পছন্দ করি।",
+    "meaning_hi": "मुझे पत्तेदार हरी सब्जियों की सब्जी बहुत पसंद है.",
+    "meaning_or": "ମୁଁ ପତ୍ରଯୁକ୍ତ ସବୁଜ ପନିପରିବା ତରକାରୀକୁ ବହୁତ ପସନ୍ଦ କରେ |"
   },
   {
     "id": "s141",
@@ -2112,7 +2532,10 @@
     "pronunciation": "Sa-pha dag nyu le-khan hor-mo na-pay ta-he-na",
     "order": 141,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বিশুদ্ধ পানি পান করলে শরীর সুস্থ থাকে।",
+    "meaning_hi": "साफ पानी पीने से शरीर स्वस्थ रहता है।",
+    "meaning_or": "ବିଶୁଦ୍ଧ ପାଣି ପିଇବା ଶରୀରକୁ ସୁସ୍ଥ ରଖେ |"
   },
   {
     "id": "s142",
@@ -2127,7 +2550,10 @@
     "pronunciation": "Jom ma-rang re ti a-rub me",
     "order": 142,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "খাওয়ার আগে হাত ধুয়ে নিন।",
+    "meaning_hi": "खाने से पहले अपने हाथ धो।",
+    "meaning_or": "ଖାଇବା ପୂର୍ବରୁ ହାତ ଧୋଇ ଦିଅନ୍ତୁ |"
   },
   {
     "id": "s143",
@@ -2142,7 +2568,10 @@
     "pronunciation": "No-wa jo do a-di he-rem ge-ya",
     "order": 143,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই ফলটি খুবই মিষ্টি।",
+    "meaning_hi": "यह फल बहुत मीठा होता है.",
+    "meaning_or": "ଏହି ଫଳ ବହୁତ ମିଠା ଅଟେ |"
   },
   {
     "id": "s144",
@@ -2157,7 +2586,10 @@
     "pronunciation": "Caw-le ar dal ha-taw me",
     "order": 144,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "চাল-ডাল কিনুন।",
+    "meaning_hi": "चावल और दाल खरीदें.",
+    "meaning_or": "ଚାଉଳ ଏବଂ ମସୁର କିଣନ୍ତୁ |"
   },
   {
     "id": "s145",
@@ -2172,7 +2604,10 @@
     "pronunciation": "Ul jo do si-tung din re bi-lig-a",
     "order": 145,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রীষ্মের মৌসুমে আমের ফল পাকে।",
+    "meaning_hi": "आम का फल गर्मी के मौसम में पकता है।",
+    "meaning_or": "ଆମ୍ବ ଫଳ ଗ୍ରୀଷ୍ମ .ତୁରେ ପାଚିଯାଏ |"
   },
   {
     "id": "s146",
@@ -2187,7 +2622,10 @@
     "pronunciation": "Am ched em jo-ma",
     "order": 146,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কি খাবে?",
+    "meaning_hi": "आप क्या खाएंगे?",
+    "meaning_or": "ତୁମେ କ’ଣ ଖାଇବ?"
   },
   {
     "id": "s147",
@@ -2202,7 +2640,10 @@
     "pronunciation": "Iny do cha-hany nyu-ya",
     "order": 147,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি চা খাব।",
+    "meaning_hi": "मैं चाय पीऊंगा.",
+    "meaning_or": "ମୁଁ ଚା ପିଇବି |"
   },
   {
     "id": "s148",
@@ -2217,7 +2658,10 @@
     "pronunciation": "Gay to-wa do hor-mo la-gid bes ge-ya",
     "order": 148,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গরুর দুধ স্বাস্থ্যের জন্য ভালো।",
+    "meaning_hi": "गाय का दूध स्वास्थ्य के लिए अच्छा होता है।",
+    "meaning_or": "ଗା milk କ୍ଷୀର ସ୍ୱାସ୍ଥ୍ୟ ପାଇଁ ଭଲ ଅଟେ |"
   },
   {
     "id": "s149",
@@ -2232,7 +2676,10 @@
     "pronunciation": "Da-ka jom ka-te tha-ri sa-phay me",
     "order": 149,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "খাবার খাওয়ার পর প্লেট পরিষ্কার করুন।",
+    "meaning_hi": "खाना खाने के बाद थाली साफ करें.",
+    "meaning_or": "ଖାଦ୍ୟ ଖାଇବା ପରେ ଥାଳି ସଫା କରନ୍ତୁ |"
   },
   {
     "id": "s150",
@@ -2247,7 +2694,10 @@
     "pronunciation": "Sa-nam ko mid then du-rub ka-te bon jo-ma",
     "order": 150,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আসুন আমরা সবাই এক জায়গায় বসে খাই।",
+    "meaning_hi": "चलो हम सब एक जगह एक साथ बैठ कर खाना खायें.",
+    "meaning_or": "ଆସନ୍ତୁ ସମସ୍ତେ ଗୋଟିଏ ସ୍ଥାନରେ ବସି ଖାଇବା |"
   },
   {
     "id": "s151",
@@ -2262,7 +2712,10 @@
     "pronunciation": "Bir re a-di gan jib ji-ya-li ko ta-he-na",
     "order": 151,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "অনেক প্রাণী বনে বাস করে।",
+    "meaning_hi": "जंगल में बहुत से जानवर रहते हैं।",
+    "meaning_or": "ଅନେକ ପଶୁ ଜଙ୍ଗଲରେ ରୁହନ୍ତି |"
   },
   {
     "id": "s152",
@@ -2277,7 +2730,10 @@
     "pronunciation": "Ce-ne ko da-re dar re ko se-reny e-da",
     "order": 152,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গাছের ডালে পাখিরা গান গায়।",
+    "meaning_hi": "पक्षी पेड़ों की शाखाओं पर चहचहा रहे हैं।",
+    "meaning_or": "ବୃକ୍ଷ ଶାଖା ଉପରେ ପକ୍ଷୀମାନେ ଗୀତ ଗାଉଛନ୍ତି |"
   },
   {
     "id": "s153",
@@ -2292,7 +2748,10 @@
     "pronunciation": "Kul do bir ri-nij ra-ja ka-nay",
     "order": 153,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাঘ জঙ্গলের রাজা।",
+    "meaning_hi": "बाघ जंगल का राजा है.",
+    "meaning_or": "ବାଘଟି ଜଙ୍ଗଲର ରାଜା।"
   },
   {
     "id": "s154",
@@ -2307,7 +2766,10 @@
     "pronunciation": "Ha-ti do a-di ma-rang jan-wa ka-nay",
     "order": 154,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "হাতি একটি খুব বিশাল প্রাণী।",
+    "meaning_hi": "हाथी बहुत विशाल जानवर है.",
+    "meaning_or": "ହାତୀଟି ଏକ ବିରାଟ ପଶୁ।"
   },
   {
     "id": "s155",
@@ -2322,7 +2784,10 @@
     "pronunciation": "Ga-da re nir-mor dag lin-gin ka-na",
     "order": 155,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "নদীতে বইছে বিশুদ্ধ স্বচ্ছ পানি।",
+    "meaning_hi": "नदी में निर्मल निर्मल जल बह रहा है।",
+    "meaning_or": "ନଦୀରେ ଶୁଦ୍ଧ ସ୍ୱଚ୍ଛ ଜଳ ପ୍ରବାହିତ ହେଉଛି।"
   },
   {
     "id": "s156",
@@ -2337,7 +2802,10 @@
     "pronunciation": "Bu-ru cot re ri-mil nye-log ka-na",
     "order": 156,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "পাহাড়ের চূড়ায় মেঘ দেখা যাচ্ছে।",
+    "meaning_hi": "पर्वत शिखर पर बादल दिखाई दे रहे हैं।",
+    "meaning_or": "ପର୍ବତ ଶିଖର ଉପରେ ମେଘ ଦୃଶ୍ୟମାନ ହୁଏ |"
   },
   {
     "id": "s157",
@@ -2352,7 +2820,10 @@
     "pronunciation": "Sar-jom da-re re ba-ha phu-taw a-ka-na",
     "order": 157,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শাল গাছে শাল ফুল ফুটেছে।",
+    "meaning_hi": "साल के पेड़ पर साल के फूल खिल गये हैं।",
+    "meaning_or": "ସାଲ ଗଛରେ ସାଲ ଫୁଲ ଫୁଟିଲା |"
   },
   {
     "id": "s158",
@@ -2367,7 +2838,10 @@
     "pronunciation": "Se-ta do o-rag e dug e-da",
     "order": 158,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কুকুর ঘর পাহারা দেয়।",
+    "meaning_hi": "कुत्ता घर की रखवाली करता है.",
+    "meaning_or": "କୁକୁର ଘର ଜଗିଥାଏ।"
   },
   {
     "id": "s159",
@@ -2382,7 +2856,10 @@
     "pronunciation": "Pu-si do to-wa nyuy e-da",
     "order": 159,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বিড়াল দুধ খাচ্ছে।",
+    "meaning_hi": "बिल्ली दूध पी रही है.",
+    "meaning_or": "ବିଲେଇ କ୍ଷୀର ପିଉଛି।"
   },
   {
     "id": "s160",
@@ -2397,7 +2874,10 @@
     "pronunciation": "Bir do dhar-ti re-yag ha-ri-yar lug-ri ka-na",
     "order": 160,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "অরণ্য পৃথিবী মাতার সবুজ পোশাক।",
+    "meaning_hi": "जंगल धरती माता का हरा वस्त्र है।",
+    "meaning_or": "ଜଙ୍ଗଲ ହେଉଛି ମାତା ପୃଥିବୀର ସବୁଜ ବସ୍ତ୍ର |"
   },
   {
     "id": "s161",
@@ -2412,7 +2892,10 @@
     "pronunciation": "Da-re sa-kam ko hoy te hi-lawg ka-na",
     "order": 161,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাতাসে গাছের পাতা উড়ছে।",
+    "meaning_hi": "पेड़ के पत्ते हवा में लहरा रहे हैं.",
+    "meaning_or": "ଗଛର ପତ୍ର ପବନରେ ut ୁଲୁଛି |"
   },
   {
     "id": "s162",
@@ -2427,7 +2910,10 @@
     "pronunciation": "Ma-rag ce-ne do ras-ka te e-nej e-day",
     "order": 162,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ময়ূর আনন্দে নাচছে।",
+    "meaning_hi": "मोर खुशी से नाच रहा है.",
+    "meaning_or": "ମୟୂର ଆନନ୍ଦରେ ନାଚୁଛି |"
   },
   {
     "id": "s163",
@@ -2442,7 +2928,10 @@
     "pronunciation": "Ga-da re ha-ku ko pay-rag ka-na",
     "order": 163,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "নদীতে মাছ সাঁতার কাটছে।",
+    "meaning_hi": "नदी में मछलियाँ तैर रही हैं।",
+    "meaning_or": "ମତ୍ସ୍ୟମାନେ ନଦୀରେ ଗାଧୋଉଛନ୍ତି।"
   },
   {
     "id": "s164",
@@ -2457,7 +2946,10 @@
     "pronunciation": "Sim san-di do se-tag re rag e-day",
     "order": 164,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সকালে মোরগ ডাকে।",
+    "meaning_hi": "सुबह-सुबह मुर्गा बांग देता है।",
+    "meaning_or": "କୁକୁଡ଼ା ସକାଳେ କାଉ।"
   },
   {
     "id": "s165",
@@ -2472,7 +2964,10 @@
     "pronunciation": "Da-re a-lo-pe mag-a, ji-wi do-hoy pe",
     "order": 165,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গাছ কাটবেন না, জীবন রক্ষা করুন।",
+    "meaning_hi": "पेड़ मत काटो, जीवन बचाओ।",
+    "meaning_or": "ଗଛ କାଟନ୍ତୁ ନାହିଁ, ଜୀବନ ରକ୍ଷା କରନ୍ତୁ |"
   },
   {
     "id": "s166",
@@ -2487,7 +2982,10 @@
     "pronunciation": "Te-heny iny do a-di ras-kany buj-haw e-da",
     "order": 166,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ আমি খুব খুশি অনুভব করছি।",
+    "meaning_hi": "आज मुझे बहुत ख़ुशी महसूस हो रही है.",
+    "meaning_or": "ଆଜି ମୁଁ ବହୁତ ଖୁସି ଅନୁଭବ କରୁଛି |"
   },
   {
     "id": "s167",
@@ -2502,7 +3000,10 @@
     "pronunciation": "A-mag ka-tha an-jom te a-di na-pay iny ay-kaw ke-da",
     "order": 167,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার কথাগুলো শুনে খুব ভালো লাগলো।",
+    "meaning_hi": "आपकी बातें सुनकर मुझे बहुत अच्छा लगा.",
+    "meaning_or": "ମୁଁ ତୁମର କଥା ଶୁଣି ବହୁତ ଆନନ୍ଦ ଅନୁଭବ କଲି |"
   },
   {
     "id": "s168",
@@ -2517,7 +3018,10 @@
     "pronunciation": "A-lom cin-tag-a, sa-na-mag thi-kog-a",
     "order": 168,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "চিন্তা করবেন না, সব ঠিক হয়ে যাবে।",
+    "meaning_hi": "चिंता मत करो सब ठीक हो जाएगा।",
+    "meaning_or": "ବ୍ୟସ୍ତ ହୁଅନ୍ତୁ ନାହିଁ, ସବୁକିଛି ଠିକ ହୋଇଯିବ |"
   },
   {
     "id": "s169",
@@ -2532,7 +3036,10 @@
     "pronunciation": "Ka-mi te iny do lan-ga e-nany",
     "order": 169,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কাজ করে ক্লান্ত হয়ে পড়লাম।",
+    "meaning_hi": "मैं काम करते-करते थक गया।",
+    "meaning_or": "ମୁଁ କାମ କରି କ୍ଳାନ୍ତ ହୋଇଗଲି |"
   },
   {
     "id": "s170",
@@ -2547,7 +3054,10 @@
     "pronunciation": "Gid-ra do khe-lond re a-di ku-si me-na-ya",
     "order": 170,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শিশুটি খেলে খুব খুশি হয়।",
+    "meaning_hi": "बच्चा खेलने में बहुत प्रसन्न होता है.",
+    "meaning_or": "ପିଲା ଖେଳିବାରେ ବହୁତ ଖୁସି |"
   },
   {
     "id": "s171",
@@ -2562,7 +3072,10 @@
     "pronunciation": "A-mag med re med dag ce-dag",
     "order": 171,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তোমার চোখে জল কেন?",
+    "meaning_hi": "आपकी आंखों में आंसू क्यों हैं?",
+    "meaning_or": "ତୁମ ଆଖିରେ ଲୁହ କାହିଁକି?"
   },
   {
     "id": "s172",
@@ -2577,7 +3090,10 @@
     "pronunciation": "Mo-ne ke-tej ka-te la-hag me",
     "order": 172,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সাহসী চিত্তে এগিয়ে যান।",
+    "meaning_hi": "साहसी हृदय से आगे बढ़ें।",
+    "meaning_or": "ସାହସୀ ହୃଦୟ ସହିତ ଆଗକୁ ବ .ନ୍ତୁ |"
   },
   {
     "id": "s173",
@@ -2592,7 +3108,10 @@
     "pronunciation": "A-lom ki-ta-ug-a, da-ya do-hoy me",
     "order": 173,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "রাগ করো না, করুণা করো।",
+    "meaning_hi": "क्रोध मत करो, करुणा रखो।",
+    "meaning_or": "କ୍ରୋଧ କର ନାହିଁ, ଦୟା କର।"
   },
   {
     "id": "s174",
@@ -2607,7 +3126,10 @@
     "pronunciation": "A-le do am nyel te a-di ras-ka le nyam ke-da",
     "order": 174,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনাকে দেখে আমরা খুব আনন্দ অনুভব করেছি।",
+    "meaning_hi": "आपको देखकर हमें बहुत खुशी हुई.",
+    "meaning_or": "ତୁମକୁ ଦେଖି ଆମେ ବହୁତ ଖୁସି ଅନୁଭବ କଲୁ |"
   },
   {
     "id": "s175",
@@ -2622,7 +3144,10 @@
     "pronunciation": "Sa-ri ka-tha ror le-khan mo-ne sa-pha ta-he-na",
     "order": 175,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সত্য কথা বলা মনকে পরিষ্কার রাখে।",
+    "meaning_hi": "सत्य बोलने से मन साफ ​​रहता है।",
+    "meaning_or": "ସତ୍ୟ କହିବା ମନକୁ ସ୍ପଷ୍ଟ ରଖେ |"
   },
   {
     "id": "s176",
@@ -2637,7 +3162,10 @@
     "pronunciation": "Am do ce-dag em bo-to-rog ka-na",
     "order": 176,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ভয় লাগছে কেন?",
+    "meaning_hi": "तुम्हें डर क्यों लग रहा है?",
+    "meaning_or": "ତୁମେ କାହିଁକି ଭୟ କରୁଛ?"
   },
   {
     "id": "s177",
@@ -2652,7 +3180,10 @@
     "pronunciation": "San-ta-li par-si te ror do a-di go-rob re-yag ka-tha ka-na",
     "order": 177,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সাঁওতালি ভাষায় কথা বলা খুবই গর্বের বিষয়।",
+    "meaning_hi": "संताली भाषा में बोलना बहुत गर्व की बात है।",
+    "meaning_or": "ସାନ୍ତାଳୀ ଭାଷାରେ କହିବା ଅତ୍ୟନ୍ତ ଗର୍ବର ବିଷୟ |"
   },
   {
     "id": "s178",
@@ -2667,7 +3198,10 @@
     "pronunciation": "Iny do am re pat-yaw me-nag tin-ya",
     "order": 178,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তোমার প্রতি আমার আস্থা ও বিশ্বাস আছে।",
+    "meaning_hi": "मुझे आप पर भरोसा और विश्वास है.",
+    "meaning_or": "ମୋର ତୁମ ଉପରେ ବିଶ୍ୱାସ ଓ ବିଶ୍ୱାସ ଅଛି |"
   },
   {
     "id": "s179",
@@ -2682,7 +3216,10 @@
     "pronunciation": "Mo-ne re sukh ta-hen ma",
     "order": 179,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার হৃদয়ে শান্তি থাকুক।",
+    "meaning_hi": "आपके दिल में शांति हो.",
+    "meaning_or": "ତୁମର ହୃଦୟରେ ଶାନ୍ତି ହେଉ।"
   },
   {
     "id": "s180",
@@ -2697,7 +3234,10 @@
     "pronunciation": "Ras-ka te ji-yon khan-daw me",
     "order": 180,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আনন্দের সাথে আপনার জীবন কাটান।",
+    "meaning_hi": "अपना जीवन आनंद से जियो.",
+    "meaning_or": "ନିଜ ଜୀବନକୁ ଆନନ୍ଦରେ ବଞ୍ଚାନ୍ତୁ |"
   },
   {
     "id": "s181",
@@ -2712,7 +3252,10 @@
     "pronunciation": "Jo-har gom-ke, de-la bhit-ri te hi-jug bin",
     "order": 181,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "অভিবাদন স্যার, ভিতরে আসুন.",
+    "meaning_hi": "नमस्ते सर, कृपया अंदर आइए।",
+    "meaning_or": "ନମସ୍କାର ସାର୍, ଦୟାକରି ଭିତରକୁ ଆସନ୍ତୁ |"
   },
   {
     "id": "s182",
@@ -2727,7 +3270,10 @@
     "pronunciation": "Ma du-rub bin, dag nyu bin",
     "order": 182,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে বসুন এবং জল পান করুন।",
+    "meaning_hi": "कृपया बैठ जाएं और पानी पी लें।",
+    "meaning_or": "ଦୟାକରି ଗୋଟିଏ ଆସନ ନେଇ ପାଣି ପିଅନ୍ତୁ |"
   },
   {
     "id": "s183",
@@ -2742,7 +3288,10 @@
     "pronunciation": "A-di a-di sar-haw a-mag da-ya la-gid",
     "order": 183,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার দয়ার জন্য আপনাকে অনেক ধন্যবাদ.",
+    "meaning_hi": "आपके सहयोग के लिए आपका बहुत धन्यवाद।",
+    "meaning_or": "ତୁମର ଦୟା ପାଇଁ ବହୁତ ଧନ୍ୟବାଦ |"
   },
   {
     "id": "s184",
@@ -2757,7 +3306,10 @@
     "pronunciation": "Iny i-ka kany me, bi-lom e-nany",
     "order": 184,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমাকে ক্ষমা করুন, আমি দেরি করেছি।",
+    "meaning_hi": "कृपया मुझे माफ कर दीजिए, मुझे देर हो गई।",
+    "meaning_or": "ଦୟାକରି ମୋତେ କ୍ଷମା କର, ମୁଁ ବିଳମ୍ବ କଲି |"
   },
   {
     "id": "s185",
@@ -2772,7 +3324,10 @@
     "pronunciation": "Da-ya ka-te ar mid dhaw lay me",
     "order": 185,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দয়া করে আরেকবার বলুন।",
+    "meaning_hi": "कृपया इसे एक बार और कहें।",
+    "meaning_or": "ଦୟାକରି ତାହା ଆଉ ଥରେ କୁହନ୍ତୁ |"
   },
   {
     "id": "s186",
@@ -2787,7 +3342,10 @@
     "pronunciation": "A-mag nyu-tum ched ka-na",
     "order": 186,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তোমার নাম কি?",
+    "meaning_hi": "आपका क्या नाम है?",
+    "meaning_or": "ତୁମର ନାମ କଣ?"
   },
   {
     "id": "s187",
@@ -2802,7 +3360,10 @@
     "pronunciation": "Iny-ag nyu-tum do San-thal ka-na",
     "order": 187,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার নাম সাঁওতাল।",
+    "meaning_hi": "मेरा नाम संथाल है.",
+    "meaning_or": "ମୋର ନାମ ସନ୍ଥାଲ |"
   },
   {
     "id": "s188",
@@ -2817,7 +3378,10 @@
     "pronunciation": "Am o-ka khon em hej a-ka-na",
     "order": 188,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কোথা থেকে এসেছেন?",
+    "meaning_hi": "आप कहां से आए हैं?",
+    "meaning_or": "ଆପଣ କେଉଁଠାରୁ ଆସିଛନ୍ତି?"
   },
   {
     "id": "s189",
@@ -2832,7 +3396,10 @@
     "pronunciation": "Iny do Dum-ka kho-niny hej a-ka-na",
     "order": 189,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমি দুমকা থেকে এসেছি।",
+    "meaning_hi": "मैं दुमका से आया हूं.",
+    "meaning_or": "ମୁଁ ଡୁମକା ଠାରୁ ଆସିଛି"
   },
   {
     "id": "s190",
@@ -2847,7 +3414,10 @@
     "pronunciation": "A-pe o-rag re sa-nam ko bes ge-ya to",
     "order": 190,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার বাড়ির সবাই ভালো আছেন তো?",
+    "meaning_hi": "क्या आपके घर पर सब लोग ठीक हैं?",
+    "meaning_or": "ସମସ୍ତେ ଆପଣଙ୍କ ଘରେ ଭଲ ଅଛନ୍ତି କି?"
   },
   {
     "id": "s191",
@@ -2862,7 +3432,10 @@
     "pronunciation": "Hoy, a-le o-rag re sa-nam ko na-pay ge me-nag le-ya",
     "order": 191,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "হ্যাঁ, আমাদের বাড়ির সবাই ভালো করছে।",
+    "meaning_hi": "हाँ, हमारे घर में सभी लोग अच्छा कर रहे हैं।",
+    "meaning_or": "ହଁ, ଆମ ଘରେ ସମସ୍ତେ ଭଲ କାମ କରୁଛନ୍ତି |"
   },
   {
     "id": "s192",
@@ -2877,7 +3450,10 @@
     "pronunciation": "To-be iny cha-law len-ge, Jo-har",
     "order": 192,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তারপর আমি আমার ছুটি নেব, বিদায়।",
+    "meaning_hi": "फिर मैं विदा लूँगा, विदा।",
+    "meaning_or": "ତା’ପରେ ମୁଁ ମୋର ଛୁଟି ନେବି, ବିଦାୟ |"
   },
   {
     "id": "s193",
@@ -2892,7 +3468,10 @@
     "pronunciation": "Na-pay te se-nog me, ar-ho hi-jug me",
     "order": 193,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "নিরাপদে যান এবং আবার দেখুন।",
+    "meaning_hi": "सुरक्षित रूप से जाएं और दोबारा आएं.",
+    "meaning_or": "ନିରାପଦରେ ଯାଆନ୍ତୁ ଏବଂ ପୁନର୍ବାର ପରିଦର୍ଶନ କରନ୍ତୁ |"
   },
   {
     "id": "s194",
@@ -2907,7 +3486,10 @@
     "pronunciation": "Go-ro lak-ti khan lay any me",
     "order": 194,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি সাহায্যের প্রয়োজন হলে, আমাকে জানান.",
+    "meaning_hi": "अगर आपको मदद चाहिए तो मुझे बताएं.",
+    "meaning_or": "ଯଦି ତୁମର ସାହାଯ୍ୟ ଦରକାର, ମୋତେ ଜଣାନ୍ତୁ |"
   },
   {
     "id": "s195",
@@ -2922,7 +3504,10 @@
     "pronunciation": "Sa-gun hor, na-pay te se-te-rog me",
     "order": 195,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বন ভ্রমণ, নিরাপদে পৌঁছান।",
+    "meaning_hi": "बॉन यात्रा, सुरक्षित पहुंचें।",
+    "meaning_or": "ବୋନ ଯାତ୍ରା, ନିରାପଦରେ ପହଞ୍ଚନ୍ତୁ |"
   },
   {
     "id": "s196",
@@ -2937,7 +3522,10 @@
     "pronunciation": "Iny-ag bo-hog ha-sunj ka-na",
     "order": 196,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার মাথা ব্যাথা করছে।",
+    "meaning_hi": "मेरा सिर दर्द कर रहा है.",
+    "meaning_or": "ମୋର ମୁଣ୍ଡ ବିନ୍ଧୁଛି।"
   },
   {
     "id": "s197",
@@ -2952,7 +3540,10 @@
     "pronunciation": "U-ni do ru-wa te gi-tij a-ka-na",
     "order": 197,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "জ্বরের কারণে তিনি শুয়ে আছেন।",
+    "meaning_hi": "वह बुखार के कारण लेटे हुए हैं.",
+    "meaning_or": "ଜ୍ୱର ଯୋଗୁଁ ସେ ଶୋଇଛନ୍ତି।"
   },
   {
     "id": "s198",
@@ -2967,7 +3558,10 @@
     "pronunciation": "Ok-to re ran jom me",
     "order": 198,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সময়মতো ওষুধ খান।",
+    "meaning_hi": "अपनी दवा समय पर लें.",
+    "meaning_or": "ତୁମର medicine ଷଧକୁ ଠିକ୍ ସମୟରେ ନିଅ |"
   },
   {
     "id": "s199",
@@ -2982,7 +3576,10 @@
     "pronunciation": "Lo-lo dag te u-mug me",
     "order": 199,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গরম পানি দিয়ে গোসল করুন।",
+    "meaning_hi": "गर्म पानी से स्नान करें.",
+    "meaning_or": "ଉଷୁମ ପାଣିରେ ସ୍ନାନ କରନ୍ତୁ |"
   },
   {
     "id": "s200",
@@ -2997,7 +3594,10 @@
     "pronunciation": "Hor-mo re da-re do-hoy la-gid jom nyu bes do-hoy me",
     "order": 200,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শরীরে শক্তি ধরে রাখতে ভালো পুষ্টি বজায় রাখুন।",
+    "meaning_hi": "शरीर में ताकत बनाए रखने के लिए अच्छा पोषण बनाए रखें।",
+    "meaning_or": "ଶରୀରରେ ଶକ୍ତି ରଖିବା ପାଇଁ ଭଲ ପୁଷ୍ଟିକର ଖାଦ୍ୟ ବଜାୟ ରଖନ୍ତୁ |"
   },
   {
     "id": "s201",
@@ -3012,7 +3612,10 @@
     "pronunciation": "Med re ched chong bo-lo a-ka-na",
     "order": 201,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার চোখে কিছু ঢুকেছে।",
+    "meaning_hi": "मेरी आंख में कुछ घुस गया है.",
+    "meaning_or": "ମୋ ଆଖିରେ କିଛି ପ୍ରବେଶ କରିଛି |"
   },
   {
     "id": "s202",
@@ -3027,7 +3630,10 @@
     "pronunciation": "Dak-tar then de-khawg cha-lag me",
     "order": 202,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ডাক্তারের সাথে পরামর্শ করতে যান।",
+    "meaning_hi": "डॉक्टर से सलाह लेने जायें.",
+    "meaning_or": "ଡାକ୍ତରଙ୍କ ପରାମର୍ଶ ପାଇଁ ଯାଆନ୍ତୁ |"
   },
   {
     "id": "s203",
@@ -3042,7 +3648,10 @@
     "pronunciation": "Jan-ga re ka-tij ka-tha ta-he-na",
     "order": 203,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার পায়ে হালকা কাঁটা আছে।",
+    "meaning_hi": "मेरे पैर में हल्का सा कांटा चुभ गया है.",
+    "meaning_or": "ମୋ ପାଦରେ ସାମାନ୍ୟ କଣ୍ଟା ଅଛି |"
   },
   {
     "id": "s204",
@@ -3057,7 +3666,10 @@
     "pronunciation": "Di-nam hi-log kas-rat me",
     "order": 204,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "প্রতিদিন ব্যায়াম করুন।",
+    "meaning_hi": "हर दिन व्यायाम।",
+    "meaning_or": "ପ୍ରତିଦିନ ବ୍ୟାୟାମ କରନ୍ତୁ |"
   },
   {
     "id": "s205",
@@ -3072,7 +3684,10 @@
     "pronunciation": "Ji-rawg me, lo-gon em be-sog-a",
     "order": 205,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বিশ্রাম নিন, তাড়াতাড়ি সুস্থ হয়ে উঠবেন।",
+    "meaning_hi": "आराम करो, तुम जल्द ही ठीक हो जाओगे.",
+    "meaning_or": "ବିଶ୍ରାମ ନିଅ, ତୁମେ ଶୀଘ୍ର ସୁସ୍ଥ ହେବ |"
   },
   {
     "id": "s206",
@@ -3087,7 +3702,10 @@
     "pronunciation": "Da-ta di-nam hi-log sa-phay me",
     "order": 206,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "প্রতিদিন আপনার দাঁত ব্রাশ করুন এবং পরিষ্কার করুন।",
+    "meaning_hi": "अपने दांतों को रोजाना ब्रश और साफ करें।",
+    "meaning_or": "ପ୍ରତିଦିନ ଦାନ୍ତ ଘଷନ୍ତୁ ଏବଂ ସଫା କରନ୍ତୁ |"
   },
   {
     "id": "s207",
@@ -3102,7 +3720,10 @@
     "pronunciation": "Ni-tog do bes geny ay-kaw e-da",
     "order": 207,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এখন আমি বেশ ভালো বোধ করছি।",
+    "meaning_hi": "अब मैं काफी अच्छा महसूस कर रहा हूं.",
+    "meaning_or": "ବର୍ତ୍ତମାନ ମୁଁ ବହୁତ ଭଲ ଅନୁଭବ କରୁଛି |"
   },
   {
     "id": "s208",
@@ -3117,7 +3738,10 @@
     "pronunciation": "Dag a-di jur te-tang a-ka-din-ya",
     "order": 208,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমার খুব পানির পিপাসা লাগছে।",
+    "meaning_hi": "मुझे पानी की बहुत प्यास लग रही है.",
+    "meaning_or": "ମୁଁ ପାଣି ପାଇଁ ବହୁତ ତୃଷାର୍ତ୍ତ ଅନୁଭବ କରୁଛି |"
   },
   {
     "id": "s209",
@@ -3132,7 +3756,10 @@
     "pronunciation": "Ren-gej a-ka-din-ya, da-ka iny jo-ma",
     "order": 209,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ক্ষুধা লাগছে, খাবার খাবো।",
+    "meaning_hi": "मुझे भूख लग रही है, मैं खाना खाऊंगा.",
+    "meaning_or": "ମୁଁ ଭୋକିଲା ଅନୁଭବ କରୁଛି, ମୁଁ ଖାଦ୍ୟ ଖାଇବି |"
   },
   {
     "id": "s210",
@@ -3147,7 +3774,10 @@
     "pronunciation": "Hor-mo re ru-wa ba-nug-a, na-pay ge me-nan-ya",
     "order": 210,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শরীরে জ্বর নেই, ভালো আছি।",
+    "meaning_hi": "शरीर में बुखार नहीं है, मैं ठीक हूं.",
+    "meaning_or": "ଶରୀରରେ ଜ୍ୱର ନାହିଁ, ମୁଁ ଭଲ ଅଛି |"
   },
   {
     "id": "s211",
@@ -3162,7 +3792,10 @@
     "pronunciation": "A-le a-tu re Man-jhi ha-ram do bi-car e-day",
     "order": 211,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমাদের গ্রামে গ্রামের প্রধান (মাঞ্জি হারাম) পরিষদের সভায় নেতৃত্ব দেন।",
+    "meaning_hi": "हमारे गांव में ग्राम प्रधान (मांझी हरम) परिषद की बैठक का नेतृत्व करते हैं।",
+    "meaning_or": "ଆମ ଗାଁରେ ଗ୍ରାମ ମୁଖିଆ (ମ ji ୍ଜି ହରାମ) ପରିଷଦ ସଭାର ନେତୃତ୍ୱ ନେଉଛନ୍ତି |"
   },
   {
     "id": "s212",
@@ -3177,7 +3810,10 @@
     "pronunciation": "Akh-ra re Ta-mak ar Tum-dak rug ka-na",
     "order": 212,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "নাচের ময়দানে তমক আর তুমডাক ঢোল পিটাচ্ছে।",
+    "meaning_hi": "नाच के मैदान में तमक और तुमदक ढोल बज रहे हैं।",
+    "meaning_or": "ଡ୍ୟାନ୍ସ ପଡିଆରେ ତମାକ ଏବଂ ତୁମଡକ ଡ୍ରମ୍ ବାଜୁଛି |"
   },
   {
     "id": "s213",
@@ -3192,7 +3828,10 @@
     "pronunciation": "Ku-ri ko do Lag-re e-nej re ko se-led a-ka-na",
     "order": 213,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "লাগরে নাচে নারীরাও যোগ দিয়েছেন।",
+    "meaning_hi": "महिलाएं सुंदर लाग्रे नृत्य में शामिल हो गई हैं।",
+    "meaning_or": "ମହିଳାମାନେ ଅନୁଗୁଳ ଲାଗ୍ରେ ନୃତ୍ୟରେ ଯୋଗ ଦେଇଛନ୍ତି |"
   },
   {
     "id": "s214",
@@ -3207,7 +3846,10 @@
     "pronunciation": "Ja-her Than re bon-ga bu-ru hu-yug ka-na",
     "order": 214,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "জাহের থান গ্রোভে পবিত্র পূজা অনুষ্ঠিত হচ্ছে।",
+    "meaning_hi": "जाहेर थान ग्रोव में पवित्र पूजा हो रही है।",
+    "meaning_or": "ଜାହେର ଥାନରେ ପବିତ୍ର ପୂଜାପାଠ ହେଉଛି |"
   },
   {
     "id": "s215",
@@ -3222,7 +3864,10 @@
     "pronunciation": "Soh-ray Po-rob do San-thal ko-wag ma-rang po-rob ka-na",
     "order": 215,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সোহরাই উৎসব সাঁওতাল সম্প্রদায়ের সবচেয়ে বড় ফসল কাটার উৎসব।",
+    "meaning_hi": "सोहराय त्यौहार संथाल लोगों का सबसे भव्य फसल उत्सव है।",
+    "meaning_or": "ସୋହରାଇ ପର୍ବ ହେଉଛି ସାନ୍ତାଳ ଲୋକଙ୍କ ସବୁଠାରୁ ବଡ ଅମଳ ଉତ୍ସବ |"
   },
   {
     "id": "s216",
@@ -3237,7 +3882,10 @@
     "pronunciation": "Ba-ha Po-rob re Sar-jom ba-ha ko ha-tin-ya",
     "order": 216,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাহা উৎসবের সময়, পবিত্র সাল ফুল বিতরণ করা হয়।",
+    "meaning_hi": "बहा उत्सव के दौरान, पवित्र साल के फूल वितरित किए जाते हैं।",
+    "meaning_or": "ବାହା ପର୍ବରେ ପବିତ୍ର ସାଲ ଫୁଲ ବଣ୍ଟନ କରାଯାଏ |"
   },
   {
     "id": "s217",
@@ -3252,7 +3900,10 @@
     "pronunciation": "A-tu rin sa-nam hor mid mo-ne te ta-hen pe",
     "order": 217,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রামের সকল মানুষ যেন একতা নিয়ে বেঁচে থাকে।",
+    "meaning_hi": "गांव के सभी लोग मिलजुल कर रहें.",
+    "meaning_or": "ଗାଁର ସମସ୍ତ ଲୋକ ଏକତାର ସହିତ ବଞ୍ଚନ୍ତୁ।"
   },
   {
     "id": "s218",
@@ -3267,7 +3918,10 @@
     "pronunciation": "Kul-hi dha-re te o-rag ko co-rok sa-jaw a-ka-na",
     "order": 218,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রামের রাস্তার পাশের বাড়িগুলো সুন্দর করে সাজানো।",
+    "meaning_hi": "गाँव की सड़क के किनारे के घरों को खूबसूरती से सजाया गया है।",
+    "meaning_or": "ଗାଁ ରାସ୍ତାରେ ଥିବା ଘରଗୁଡିକ ସୁନ୍ଦର ଭାବରେ ସଜାଯାଇଛି |"
   },
   {
     "id": "s219",
@@ -3282,7 +3936,10 @@
     "pronunciation": "Pan-dit Rag-hu-nath Mur-mu do Ol Chi-ki sir-jaw ke-da",
     "order": 219,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গুরু গোমকে পণ্ডিত রঘুনাথ মুর্মু ওল চিকি লিপি তৈরি করেন।",
+    "meaning_hi": "गुरु गोमके पंडित रघुनाथ मुर्मू ने ओल चिकी लिपि का निर्माण किया।",
+    "meaning_or": "ଗୁରୁ ଗୋମକେ ପଣ୍ଡିତ ରଘୁନାଥ ମୁର୍ମୁ ଅଲ ଚିକି ସ୍କ୍ରିପ୍ଟ ତିଆରି କରିଥିଲେ।"
   },
   {
     "id": "s220",
@@ -3297,7 +3954,10 @@
     "pronunciation": "Ap-na-rag saw-hed ar lak-char ban-chaw do-hoy me",
     "order": 220,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমাদের দেশীয় সাহিত্য ও সংস্কৃতিকে সংরক্ষণ ও লালন করুন।",
+    "meaning_hi": "अपने मूल साहित्य एवं संस्कृति का संरक्षण एवं संरक्षण करें।",
+    "meaning_or": "ଆମର ମୂଳ ସାହିତ୍ୟ ଏବଂ ସଂସ୍କୃତିର ସଂରକ୍ଷଣ ଏବଂ ସମ୍ମାନ କର |"
   },
   {
     "id": "s221",
@@ -3312,7 +3972,10 @@
     "pronunciation": "Ti-ri-yo a-rang te bir di-som an-do-rog ka-na",
     "order": 221,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাঁশের বাঁশির মধুর কণ্ঠে প্রতিধ্বনিত হয় বনভূমি।",
+    "meaning_hi": "बांस की बांसुरी की मधुर ध्वनि से वनभूमि गूँज उठती है।",
+    "meaning_or": "ଜଙ୍ଗଲ ଜମି ବାଉଁଶ ବଂଶୀର ମଧୁର ସ୍ୱର ସହିତ ପ୍ରତିଧ୍ୱନିତ ହୁଏ |"
   },
   {
     "id": "s222",
@@ -3327,7 +3990,10 @@
     "pronunciation": "Ba-nam re-yag ra-ha a-di na-pay an-jo-mog-a",
     "order": 222,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "তার বানামের সুর খুব মিষ্টি শোনায়।",
+    "meaning_hi": "तार वाले बाणम की धुन बहुत मधुर लगती है।",
+    "meaning_or": "ଷ୍ଟ୍ରିଙ୍ଗ୍ ବାନାମର ମେଲୋଡି ବହୁତ ମିଠା ଲାଗୁଛି |"
   },
   {
     "id": "s223",
@@ -3342,7 +4008,10 @@
     "pronunciation": "Hap-ram ko-wag up-des ma-naw me",
     "order": 223,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "প্রবীণদের জ্ঞান এবং শিক্ষাকে সম্মান করুন।",
+    "meaning_hi": "बड़ों की बुद्धि और शिक्षाओं का सम्मान करें।",
+    "meaning_or": "ପ୍ରାଚୀନମାନଙ୍କର ଜ୍ଞାନ ଏବଂ ଶିକ୍ଷାକୁ ସମ୍ମାନ ଦିଅ |"
   },
   {
     "id": "s224",
@@ -3357,7 +4026,10 @@
     "pronunciation": "Da-sae da-ran re ko-ra ko Bu-wang ko ru-ya",
     "order": 224,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "দশের সময়, যুবকরা ঐতিহ্যবাহী বুওয়াং যন্ত্র বাজায়।",
+    "meaning_hi": "दसाए के दौरान, युवा पारंपरिक बुवांग वाद्ययंत्र बजाते हैं।",
+    "meaning_or": "ଦାସ ସମୟରେ ଯୁବକମାନେ ପାରମ୍ପାରିକ ବୁୱାଙ୍ଗ ବାଦ୍ୟଯନ୍ତ୍ର ବଜାନ୍ତି |"
   },
   {
     "id": "s225",
@@ -3372,7 +4044,10 @@
     "pronunciation": "San-thal saw-ta do sa-ri ar su-luk re tha-pon a-ka-na",
     "order": 225,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সাঁওতাল সমাজ সত্য ও শান্তিপূর্ণ সম্প্রীতির উপর প্রতিষ্ঠিত।",
+    "meaning_hi": "संताल समाज सत्य और शांतिपूर्ण सद्भाव पर आधारित है।",
+    "meaning_or": "ସାନ୍ତାଳ ସମାଜ ସତ୍ୟ ଏବଂ ଶାନ୍ତିପୂର୍ଣ୍ଣ ସମନ୍ୱୟ ଉପରେ ପ୍ରତିଷ୍ଠିତ |"
   },
   {
     "id": "s226",
@@ -3387,7 +4062,10 @@
     "pronunciation": "Iny do bas ga-ri te ba-jar iny cha-lag-a",
     "order": 226,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বাসে করে শহরে যাবো।",
+    "meaning_hi": "मैं बस से शहर की यात्रा करूंगा।",
+    "meaning_or": "ମୁଁ ବସ୍ ଯୋଗେ ସହରକୁ ଯାତ୍ରା କରିବି |"
   },
   {
     "id": "s227",
@@ -3402,7 +4080,10 @@
     "pronunciation": "Rel ga-ri do se-tag e-yay ta-rang re cha-lag-a",
     "order": 227,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সকাল সাতটায় ট্রেন ছাড়ে।",
+    "meaning_hi": "ट्रेन सुबह सात बजे रवाना होती है.",
+    "meaning_or": "ଟ୍ରେନ୍ ସକାଳ ସାତଟାରେ ଛାଡିଥାଏ |"
   },
   {
     "id": "s228",
@@ -3417,7 +4098,10 @@
     "pronunciation": "Ti-kit o-ka re ko e-mog ka-na",
     "order": 228,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "কোথায় টিকিট দেওয়া হচ্ছে?",
+    "meaning_hi": "टिकट कहां जारी किए जा रहे हैं?",
+    "meaning_or": "ଟିକେଟ୍ କେଉଁଠାରେ ଦିଆଯାଉଛି?"
   },
   {
     "id": "s229",
@@ -3432,7 +4116,10 @@
     "pronunciation": "Sa-man ko sa-jaw ka-te do-hoy me",
     "order": 229,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "প্যাক করুন এবং লাগেজ প্রস্তুত রাখুন।",
+    "meaning_hi": "सामान पैक करके तैयार रखें.",
+    "meaning_or": "ଲଗେଜ୍ ପ୍ୟାକ୍ କରି ରଖ |"
   },
   {
     "id": "s230",
@@ -3447,7 +4134,10 @@
     "pronunciation": "No-wa hor do o-ka sed cha-law a-ka-na",
     "order": 230,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই রাস্তা কোথায় নিয়ে যায়?",
+    "meaning_hi": "यह सड़क कहाँ तक जाती है?",
+    "meaning_or": "ଏହି ରାସ୍ତା କୁଆଡେ ଯାଏ?"
   },
   {
     "id": "s231",
@@ -3462,7 +4152,10 @@
     "pronunciation": "No-wa hor do Ran-chi sed cha-law a-ka-na",
     "order": 231,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "এই রাস্তা রাঁচির দিকে গেছে।",
+    "meaning_hi": "यह सड़क रांची की ओर जाती है.",
+    "meaning_or": "ଏହି ରାସ୍ତା ରାଞ୍ଚି ଆଡକୁ ଯାଏ |"
   },
   {
     "id": "s232",
@@ -3477,7 +4170,10 @@
     "pronunciation": "Ga-ri do bay bay te cha-law me",
     "order": 232,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "ধীরে এবং সাবধানে গাড়ি চালান।",
+    "meaning_hi": "वाहन धीरे और सावधानी से चलाएं।",
+    "meaning_or": "ଗାଡିକୁ ଧୀରେ ଧୀରେ ଏବଂ ଯତ୍ନର ସହିତ ଚଲାନ୍ତୁ |"
   },
   {
     "id": "s233",
@@ -3492,7 +4188,10 @@
     "pronunciation": "A-le do say-kel te is-kul le cha-lag-a",
     "order": 233,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আমরা সাইকেলে করে স্কুলে যাই।",
+    "meaning_hi": "हम साइकिल से स्कूल जाते हैं.",
+    "meaning_or": "ଆମେ ସାଇକେଲ ଯୋଗେ ସ୍କୁଲ ଯିବା |"
   },
   {
     "id": "s234",
@@ -3507,7 +4206,10 @@
     "pronunciation": "Hor do a-di ji-liny ge-ya",
     "order": 234,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "রাস্তা অনেক লম্বা।",
+    "meaning_hi": "रास्ता बहुत लम्बा है.",
+    "meaning_or": "ରାସ୍ତାଟି ବହୁତ ଲମ୍ବା ଅଟେ |"
   },
   {
     "id": "s235",
@@ -3522,7 +4224,10 @@
     "pronunciation": "Ta-ram ka-te cha-lag do hor-mo la-gid bes ge-ya",
     "order": 235,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "পায়ে হাঁটা শারীরিক স্বাস্থ্যের জন্য ভালো।",
+    "meaning_hi": "पैदल चलना शारीरिक स्वास्थ्य के लिए अच्छा है।",
+    "meaning_or": "ପାଦରେ ଚାଲିବା ଶାରୀରିକ ସ୍ୱାସ୍ଥ୍ୟ ପାଇଁ ଭଲ ଅଟେ |"
   },
   {
     "id": "s236",
@@ -3537,7 +4242,10 @@
     "pronunciation": "Am do ti-rem se-te-rog-a",
     "order": 236,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনি কোন সময়ে পৌঁছাবেন?",
+    "meaning_hi": "आप कितने बजे पहुंचेंगे?",
+    "meaning_or": "ଆପଣ କେଉଁ ସମୟରେ ପହଞ୍ଚିବେ?"
   },
   {
     "id": "s237",
@@ -3552,7 +4260,10 @@
     "pronunciation": "Iny do a-yub teny se-te-rog-a",
     "order": 237,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সন্ধ্যার মধ্যে পৌঁছে যাবো।",
+    "meaning_hi": "मैं शाम तक पहुंच जाऊंगा.",
+    "meaning_or": "ମୁଁ ସନ୍ଧ୍ୟା ସୁଦ୍ଧା ପହଞ୍ଚିବି |"
   },
   {
     "id": "s238",
@@ -3567,7 +4278,10 @@
     "pronunciation": "Hor re sab-dhan te ta-hen me",
     "order": 238,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "রাস্তায় সতর্ক ও নিরাপদ থাকুন।",
+    "meaning_hi": "सड़क पर सतर्क और सुरक्षित रहें।",
+    "meaning_or": "ରାସ୍ତାରେ ସତର୍କ ରୁହନ୍ତୁ |"
   },
   {
     "id": "s239",
@@ -3582,7 +4296,10 @@
     "pronunciation": "Ga-ri tin-gu a-ka-na, de-jog me",
     "order": 239,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গাড়ি থেমে গেছে, দয়া করে বোর্ডে উঠুন।",
+    "meaning_hi": "गाड़ी रुक गई है, चढ़ जाओ.",
+    "meaning_or": "ଗାଡି ଅଟକି ଯାଇଛି, ଦୟାକରି ବୋର୍ଡ କରନ୍ତୁ |"
   },
   {
     "id": "s240",
@@ -3597,7 +4314,10 @@
     "pronunciation": "Sa-gun hor ta-hen tam ma",
     "order": 240,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আপনার যাত্রা শুভ ও নিরাপদ হোক।",
+    "meaning_hi": "आपकी यात्रा मंगलमय और सुरक्षित हो।",
+    "meaning_or": "ତୁମର ଯାତ୍ରା ଆଶୀର୍ବାଦ ଏବଂ ନିରାପଦ ହେଉ |"
   },
   {
     "id": "s241",
@@ -3612,7 +4332,10 @@
     "pronunciation": "Ja-pud din re bad ko dag te pe-re-jog-a",
     "order": 241,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বর্ষা মৌসুমে মাঠগুলো পানিতে ভরে যায়।",
+    "meaning_hi": "मानसून के मौसम में खेतों में पानी भर जाता है।",
+    "meaning_or": "ମ so ସୁମୀ ସମୟରେ କ୍ଷେତରେ ପାଣି ଭରିଯାଏ |"
   },
   {
     "id": "s242",
@@ -3627,7 +4350,10 @@
     "pronunciation": "Ra-bang din re a-le do lo-lo lug-ri le ho-ro-ga",
     "order": 242,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "শীত মৌসুমে আমরা গরম কাপড় পরি।",
+    "meaning_hi": "सर्दी के मौसम में हम गर्म कपड़े पहनते हैं।",
+    "meaning_or": "ଶୀତ season ତୁରେ ଆମେ ଗରମ ପୋଷାକ ପିନ୍ଧୁ |"
   },
   {
     "id": "s243",
@@ -3642,7 +4368,10 @@
     "pronunciation": "Ni-ron din re dhar-ti do co-rok nye-log-a",
     "order": 243,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বসন্ত ঋতুতে, পৃথিবী প্রাণবন্ত এবং কমনীয় দেখায়।",
+    "meaning_hi": "वसंत ऋतु में धरती जीवंत और मनमोहक लगती है।",
+    "meaning_or": "ବସନ୍ତ season ତୁରେ ପୃଥିବୀ ଜୀବନ୍ତ ଏବଂ ଆକର୍ଷଣୀୟ ଦେଖାଯାଏ |"
   },
   {
     "id": "s244",
@@ -3657,7 +4386,10 @@
     "pronunciation": "Si-tung din re dag a-di lak-tig-a",
     "order": 244,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "গ্রীষ্ম ঋতুতে, জল অপরিহার্য।",
+    "meaning_hi": "गर्मी के मौसम में पानी बेहद जरूरी है.",
+    "meaning_or": "ଗ୍ରୀଷ୍ମ season ତୁରେ ଜଳ ଜରୁରୀ ଅଟେ |"
   },
   {
     "id": "s245",
@@ -3672,7 +4404,10 @@
     "pronunciation": "Te-heny do ri-mil a-ka-day, dag da-re-yag-a",
     "order": 245,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "আজ মেঘলা, বৃষ্টি হতে পারে।",
+    "meaning_hi": "आज बादल छाए हुए हैं, बारिश हो सकती है.",
+    "meaning_or": "ଆଜି ମେଘୁଆ, ବର୍ଷା ହୋଇପାରେ |"
   },
   {
     "id": "s246",
@@ -3687,7 +4422,10 @@
     "pronunciation": "Hoy bar-du hi-jug ka-na, o-rag bo-lon pe",
     "order": 246,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "একটা ঘূর্ণিঝড়/ঝড় আসছে, ঘরের ভিতর ঢুকো।",
+    "meaning_hi": "बवंडर/तूफान आने वाला है, घर के अंदर हो जाओ।",
+    "meaning_or": "ଘୂର୍ଣ୍ଣିବାତ୍ୟା / storm ଡ ଆସୁଛି, ଘର ଭିତରକୁ ଯାଅ |"
   },
   {
     "id": "s247",
@@ -3702,7 +4440,10 @@
     "pronunciation": "Se-tag re si-sir dag nyu-rug ka-na",
     "order": 247,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সকালে শিশির ফোঁটা পড়ছে।",
+    "meaning_hi": "सुबह ओस की बूंदें गिर रही हैं.",
+    "meaning_or": "ସକାଳେ କାକର ବୁନ୍ଦା ପଡୁଛି।"
   },
   {
     "id": "s248",
@@ -3717,7 +4458,10 @@
     "pronunciation": "Sin-gi Can-do ra-kab te dhar-ti mar-sal e-na",
     "order": 248,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সূর্যোদয়ের সাথে সাথে সমগ্র পৃথিবী আলোয় আলোকিত হয়।",
+    "meaning_hi": "सूर्योदय के साथ ही पूरी धरती रोशनी से जगमगा उठती है।",
+    "meaning_or": "ସୂର୍ଯ୍ୟୋଦୟ ସହିତ ସମଗ୍ର ପୃଥିବୀ ଆଲୋକରେ ଆଲୋକିତ ହୁଏ |"
   },
   {
     "id": "s249",
@@ -3732,7 +4476,10 @@
     "pronunciation": "Dag ja-ri mu-cad e-na, ser-ma sa-pha e-na",
     "order": 249,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "বৃষ্টি থেমে গেছে, আকাশ পরিষ্কার।",
+    "meaning_hi": "बारिश की बौछारें बंद हो गई हैं, आसमान साफ ​​है।",
+    "meaning_or": "ବର୍ଷା shower ଡ଼ ବନ୍ଦ ହୋଇଯାଇଛି, ଆକାଶ ସ୍ୱଚ୍ଛ |"
   },
   {
     "id": "s250",
@@ -3747,6 +4494,9 @@
     "pronunciation": "Sa-nam man-mi Sa-ri Dho-rom te su-luk re ko ta-hen ma",
     "order": 250,
     "isActive": true,
-    "themeColor": null
+    "themeColor": null,
+    "meaning_bn": "সমস্ত মানবতা সত্য ও শান্তিপূর্ণ সম্প্রীতিতে বাস করুক।",
+    "meaning_hi": "समस्त मानवता सत्य और शांतिपूर्ण सद्भाव में रहे।",
+    "meaning_or": "ସମସ୍ତ ମାନବିକତା ସତ୍ୟ ଏବଂ ଶାନ୍ତିପୂର୍ଣ୍ଣ ସ harmony ହାର୍ଦ୍ଦ୍ୟରେ ବାସ କରନ୍ତୁ।"
   }
 ]

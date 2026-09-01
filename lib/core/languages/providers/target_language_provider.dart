@@ -1,0 +1,46 @@
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+
+import '../language_registry.dart';
+import '../models/language_manifest.dart';
+
+const kTargetLanguagePrefKey = 'selected_target_language';
+const kDefaultTargetLanguage = 'sat';
+
+final targetLanguageCodeProvider =
+    StateNotifierProvider<TargetLanguageNotifier, String>((ref) {
+      return TargetLanguageNotifier();
+    });
+
+final activeLanguageManifestProvider = Provider<LanguageManifest>((ref) {
+  final code = ref.watch(targetLanguageCodeProvider);
+  return LanguageRegistry.findByCode(code);
+});
+
+class TargetLanguageNotifier extends StateNotifier<String> {
+  TargetLanguageNotifier() : super(kDefaultTargetLanguage) {
+    _loadFromStorage();
+  }
+
+  Future<void> _loadFromStorage() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final savedCode = prefs.getString(kTargetLanguagePrefKey);
+      if (savedCode != null && savedCode.isNotEmpty) {
+        state = savedCode;
+      }
+    } catch (_) {
+      // Fall back to default
+    }
+  }
+
+  Future<void> selectLanguage(String code) async {
+    state = code;
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(kTargetLanguagePrefKey, code);
+    } catch (_) {
+      // Ignore storage write failure
+    }
+  }
+}

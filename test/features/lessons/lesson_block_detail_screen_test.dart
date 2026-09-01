@@ -279,8 +279,7 @@ void main() {
       // Verify first page renders details
       expect(find.text('At'), findsNWidgets(2));
       expect(find.text('LISTEN'), findsOneWidget);
-      expect(find.text('Pronunciation'), findsOneWidget);
-      expect(find.text('at'), findsOneWidget);
+      expect(find.text('TAP TO HEAR'), findsOneWidget);
 
       // Slide/Swipe to the second page
       final pageViewFinder = find.byType(PageView);
@@ -292,7 +291,8 @@ void main() {
       // Verify second page renders details
       expect(find.text('Ot'), findsNWidgets(2));
       expect(find.text('LISTEN'), findsOneWidget);
-      expect(find.text('ot'), findsOneWidget);
+
+      await tester.pump(const Duration(seconds: 2));
     },
   );
 

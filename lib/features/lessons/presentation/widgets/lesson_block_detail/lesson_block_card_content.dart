@@ -1,5 +1,4 @@
 import 'dart:io' show Platform;
-import 'dart:ui';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
@@ -13,10 +12,10 @@ import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
 import 'package:itun/shared/providers/providers.dart';
 import '../lesson_block_widgets.dart';
-import 'lesson_block_glass_card.dart';
 
-/// Interactive content card section displaying characters, audio playback,
-/// pronunciation notes, typing triggers, and native ads.
+/// Interactive content card section displaying target Ol Chiki characters,
+/// centered pronunciation transliteration guide, audio playback,
+/// typing triggers, and native ads.
 class LessonBlockCardContent extends ConsumerWidget {
   const LessonBlockCardContent({
     super.key,
@@ -45,6 +44,15 @@ class LessonBlockCardContent extends ConsumerWidget {
   final TypingPracticeArgs? typingPracticeArgs;
   final bool isEligibleForTyping;
 
+  double _resolveFontSize(String text) {
+    final length = text.trim().length;
+    if (length <= 2) return 64;
+    if (length <= 6) return 44;
+    if (length <= 20) return 32;
+    if (length <= 50) return 24;
+    return 20;
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
@@ -62,15 +70,19 @@ class LessonBlockCardContent extends ConsumerWidget {
       scriptMode: scriptMode,
     );
 
-    final textOlChiki = block.textOlChiki ?? '';
-    final textLatin = block.textLatin ?? '';
-    final pron = block.data?['pronunciation'] as String?;
-    final cardText = textOlChiki.isNotEmpty ? textOlChiki : display.scriptText;
-    final isLongText = cardText.length > 6 || cardText.contains(' ');
+    final cleanOlChiki = display.scriptText.isNotEmpty
+        ? display.scriptText
+        : OlChikiMultilingualHelper.sanitizeOlChiki(block.textOlChiki ?? '');
+    final fallbackLatin = block.textLatin ?? '';
+    final targetScriptText = cleanOlChiki.isNotEmpty
+        ? cleanOlChiki
+        : (fallbackLatin.isNotEmpty ? fallbackLatin : lesson.titleLatin);
+
     final buttonText = display.ctaText;
     final blockAudioId =
         '${block.textOlChiki ?? block.textLatin ?? block.type}_$index';
     final isThisPlaying = isAudioPlaying && playingId == blockAudioId;
+    final isTest = !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
 
     return Container(
       width: double.infinity,
@@ -78,377 +90,134 @@ class LessonBlockCardContent extends ConsumerWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const SizedBox(height: 32),
-          // Large character card with entrance & optional loop breathing animation
+          const SizedBox(height: 24),
+          // Interactive target text card with audio playback
           ScaleButton(
             onPressed: block.audioUrl != null && block.audioUrl!.isNotEmpty
                 ? () => onPlayAudio(block.audioUrl!, blockAudioId)
                 : null,
             child: () {
-              final isTest =
-                  !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
-              Widget content;
-              if (isLongText || cardText.contains('\n')) {
-                final isMultiLine =
-                    cardText.contains('\n') || cardText.length > 60;
-
-                content = Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 28,
-                    vertical: 16,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      if (textOlChiki.isNotEmpty)
-                        Text(
-                          textOlChiki,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isMultiLine ? 24 : 32,
-                            fontWeight: FontWeight.w900,
-                            color: isDark ? Colors.white : accentColor,
-                            fontFamily: 'OlChiki',
-                            height: 1.35,
-                            shadows: [
-                              Shadow(
-                                color: isDark
-                                    ? Colors.black.withValues(alpha: 0.3)
-                                    : accentColor.withValues(alpha: 0.15),
-                                offset: const Offset(0, 2),
-                                blurRadius: 4,
-                              ),
-                            ],
-                          ),
-                        ),
-                      if (display.subtitle.isNotEmpty) ...[
-                        const SizedBox(height: 12),
-                        Text(
-                          display.subtitle,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isMultiLine ? 16 : 18,
-                            fontWeight: FontWeight.w600,
+              Widget cardBody = Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 28,
+                  vertical: 16,
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // 1. Target Ol Chiki Script Text
+                    Text(
+                      targetScriptText,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontSize: _resolveFontSize(targetScriptText),
+                        fontWeight: FontWeight.w900,
+                        color: isDark ? Colors.white : accentColor,
+                        fontFamily: cleanOlChiki.isNotEmpty ? 'OlChiki' : null,
+                        height: 1.3,
+                        shadows: [
+                          Shadow(
                             color: isDark
-                                ? Colors.white70
-                                : AppColors.textSecondaryLight,
-                            height: 1.35,
+                                ? Colors.black.withValues(alpha: 0.3)
+                                : accentColor.withValues(alpha: 0.15),
+                            offset: const Offset(0, 2),
+                            blurRadius: 4,
                           ),
-                        ),
-                      ],
-                      if (textOlChiki.isEmpty &&
-                          display.subtitle.isEmpty &&
-                          textLatin.isNotEmpty)
-                        Text(
-                          textLatin,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: isMultiLine ? 17 : 26,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : accentColor,
-                            height: 1.35,
-                          ),
-                        ),
-                      if (textOlChiki.isEmpty && textLatin.isEmpty)
-                        Text(
-                          lesson.titleLatin,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.w800,
-                            color: isDark ? Colors.white : accentColor,
-                          ),
-                        ),
+                        ],
+                      ),
+                    ),
 
-                      if (block.audioUrl != null &&
-                          block.audioUrl!.isNotEmpty) ...[
-                        const SizedBox(height: 16),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 6,
-                          ),
-                          decoration: BoxDecoration(
+                    // 2. Subtitle Pronunciation Transliteration in user's script
+                    if (display.subtitle.isNotEmpty) ...[
+                      const SizedBox(height: 12),
+                      Text(
+                        display.subtitle,
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                          color: isDark
+                              ? Colors.white70
+                              : AppColors.textSecondaryLight,
+                          height: 1.35,
+                        ),
+                      ),
+                    ],
+
+                    // 3. Audio indicator pill
+                    if (block.audioUrl != null &&
+                        block.audioUrl!.isNotEmpty) ...[
+                      const SizedBox(height: 16),
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: (isDark
+                              ? Colors.white.withValues(alpha: 0.06)
+                              : accentColor.withValues(alpha: 0.06)),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
                             color: (isDark
-                                ? Colors.white.withValues(alpha: 0.06)
-                                : accentColor.withValues(alpha: 0.06)),
-                            borderRadius: BorderRadius.circular(14),
-                            border: Border.all(
-                              color: (isDark
-                                  ? Colors.white.withValues(alpha: 0.1)
-                                  : accentColor.withValues(alpha: 0.1)),
-                            ),
+                                ? Colors.white.withValues(alpha: 0.1)
+                                : accentColor.withValues(alpha: 0.1)),
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                Icons.volume_up_rounded,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              Icons.volume_up_rounded,
+                              color: isDark ? Colors.white70 : accentColor,
+                              size: 14,
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              'TAP TO HEAR',
+                              style: TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
                                 color: isDark ? Colors.white70 : accentColor,
-                                size: 14,
-                              ),
-                              const SizedBox(width: 6),
-                              Text(
-                                'TAP TO HEAR',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  fontWeight: FontWeight.w800,
-                                  color: isDark ? Colors.white70 : accentColor,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ],
-                  ),
-                );
-              } else {
-                content = Container(
-                  width: 210,
-                  height: 210,
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(36),
-                  ),
-                  child: Stack(
-                    alignment: Alignment.center,
-                    children: [
-                      // Outer Glow Ring
-                      Positioned.fill(
-                        child: Container(
-                          decoration: BoxDecoration(
-                            borderRadius: BorderRadius.circular(36),
-                            border: Border.all(
-                              color: (isDark
-                                  ? Colors.white.withValues(alpha: 0.05)
-                                  : accentColor.withValues(alpha: 0.15)),
-                              width: 2.0,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: accentColor.withValues(
-                                  alpha: isDark ? 0.15 : 0.2,
-                                ),
-                                blurRadius: 28,
-                                offset: const Offset(0, 10),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Glass body
-                      Positioned.fill(
-                        child: ClipRRect(
-                          borderRadius: BorderRadius.circular(36),
-                          child: BackdropFilter(
-                            filter: ImageFilter.blur(sigmaX: 16, sigmaY: 16),
-                            child: Container(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: isDark
-                                      ? [
-                                          Colors.white.withValues(alpha: 0.06),
-                                          Colors.white.withValues(alpha: 0.02),
-                                        ]
-                                      : [
-                                          Colors.white.withValues(alpha: 0.8),
-                                          Colors.white.withValues(alpha: 0.45),
-                                        ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(36),
-                                border: Border.all(
-                                  color: isDark
-                                      ? Colors.white.withValues(alpha: 0.1)
-                                      : Colors.white.withValues(alpha: 0.6),
-                                  width: 1.5,
-                                ),
-                              ),
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  // Subtle Watermark
-                                  CustomPaint(
-                                    size: const Size(210, 210),
-                                    painter: LessonBlockWatermarkPainter(
-                                      text: textOlChiki.isNotEmpty
-                                          ? textOlChiki
-                                          : textLatin,
-                                      style: TextStyle(
-                                        fontSize: 160,
-                                        fontWeight: FontWeight.w900,
-                                        color:
-                                            (isDark
-                                                    ? Colors.white
-                                                    : accentColor)
-                                                .withValues(alpha: 0.04),
-                                      ),
-                                    ),
-                                  ),
-                                  // Main Character Text
-                                  Text(
-                                    textOlChiki.isNotEmpty
-                                        ? textOlChiki
-                                        : textLatin,
-                                    style: TextStyle(
-                                      fontSize:
-                                          (textOlChiki.isNotEmpty
-                                                      ? textOlChiki
-                                                      : textLatin)
-                                                  .length <
-                                              3
-                                          ? 84
-                                          : 44,
-                                      fontWeight: FontWeight.w900,
-                                      color: isDark
-                                          ? Colors.white
-                                          : accentColor,
-                                      shadows: [
-                                        Shadow(
-                                          color: isDark
-                                              ? Colors.black.withValues(
-                                                  alpha: 0.3,
-                                                )
-                                              : accentColor.withValues(
-                                                  alpha: 0.15,
-                                                ),
-                                          offset: const Offset(0, 3),
-                                          blurRadius: 6,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Pulsing speaker icon
-                                  Positioned(
-                                    top: 16,
-                                    right: 16,
-                                    child: Container(
-                                      padding: const EdgeInsets.all(6),
-                                      decoration: BoxDecoration(
-                                        color: (isDark
-                                            ? Colors.white.withValues(
-                                                alpha: 0.08,
-                                              )
-                                            : accentColor.withValues(
-                                                alpha: 0.08,
-                                              )),
-                                        shape: BoxShape.circle,
-                                        border: Border.all(
-                                          color: (isDark
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.12,
-                                                )
-                                              : accentColor.withValues(
-                                                  alpha: 0.12,
-                                                )),
-                                        ),
-                                      ),
-                                      child: Icon(
-                                        Icons.volume_up_rounded,
-                                        color: isDark
-                                            ? Colors.white70
-                                            : accentColor,
-                                        size: 14,
-                                      ),
-                                    ),
-                                  ),
-                                  // Tap to Hear Badge
-                                  Positioned(
-                                    bottom: 16,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 14,
-                                        vertical: 5,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: (isDark
-                                            ? Colors.white.withValues(
-                                                alpha: 0.06,
-                                              )
-                                            : accentColor.withValues(
-                                                alpha: 0.06,
-                                              )),
-                                        borderRadius: BorderRadius.circular(14),
-                                        border: Border.all(
-                                          color: (isDark
-                                              ? Colors.white.withValues(
-                                                  alpha: 0.1,
-                                                )
-                                              : accentColor.withValues(
-                                                  alpha: 0.1,
-                                                )),
-                                        ),
-                                      ),
-                                      child: Text(
-                                        'TAP TO HEAR',
-                                        style: TextStyle(
-                                          fontSize: 9,
-                                          fontWeight: FontWeight.w800,
-                                          color: isDark
-                                              ? Colors.white70
-                                              : accentColor,
-                                          letterSpacing: 1.2,
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                ],
+                                letterSpacing: 1.2,
                               ),
                             ),
-                          ),
+                          ],
                         ),
                       ),
                     ],
-                  ),
-                );
-              }
+                  ],
+                ),
+              );
 
-              content = content
+              cardBody = cardBody
                   .animate()
                   .fade(duration: const Duration(milliseconds: 500))
                   .slide(
-                    begin: const Offset(0, 0.1),
+                    begin: const Offset(0, 0.08),
                     end: Offset.zero,
                     duration: const Duration(milliseconds: 500),
                     curve: Curves.easeOutCubic,
                   );
 
               if (!isTest) {
-                content = content
+                cardBody = cardBody
                     .animate(
                       onPlay: (controller) => controller.repeat(reverse: true),
                     )
                     .scale(
                       begin: const Offset(1.0, 1.0),
-                      end: const Offset(1.04, 1.04),
+                      end: const Offset(1.03, 1.03),
                       duration: const Duration(milliseconds: 2400),
                       curve: Curves.easeInOut,
                     );
               }
-              return content;
+              return cardBody;
             }(),
           ),
-          if (!isLongText && display.subtitle.isNotEmpty) ...[
-            const SizedBox(height: 18),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(
-                display.subtitle,
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w700,
-                  color: isDark ? Colors.white70 : AppColors.charcoal,
-                  height: 1.3,
-                ),
-              ),
-            ),
-          ],
           const SizedBox(height: 24),
-          // Tactile 3D Action Button
+
+          // Tactile 3D Action Button (Typing practice or Listen)
           Container(
             constraints: const BoxConstraints(maxWidth: 320),
             padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -478,7 +247,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: Colors.black,
-                              letterSpacing: 1.5,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
@@ -494,6 +263,13 @@ class LessonBlockCardContent extends ConsumerWidget {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Icon(
+                          isThisPlaying
+                              ? Icons.graphic_eq_rounded
+                              : Icons.volume_up_rounded,
+                          color: Colors.white,
+                        ),
+                        const SizedBox(width: 12),
                         Flexible(
                           child: Text(
                             buttonText,
@@ -503,95 +279,22 @@ class LessonBlockCardContent extends ConsumerWidget {
                               fontSize: 16,
                               fontWeight: FontWeight.w900,
                               color: Colors.white,
-                              letterSpacing: 1.5,
+                              letterSpacing: 0.5,
                             ),
                           ),
                         ),
-
-                        if (block.audioUrl != null &&
-                            block.audioUrl!.isNotEmpty) ...[
-                          const SizedBox(width: 12),
-                          SoundWaveIndicator(
-                            color: Colors.white,
-                            isPlaying: isThisPlaying,
-                          ),
-                        ],
                       ],
                     ),
                   ),
           ),
-          if (pron != null && pron.isNotEmpty) ...[
-            const SizedBox(height: 32),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: LessonBlockGlassCard(
-                themeColor: accentColor,
-                isDark: isDark,
-                radius: 20,
-                padding: 18,
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 4,
-                      height: 52,
-                      decoration: BoxDecoration(
-                        color: accentColor,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
-                    const SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              Icon(
-                                Icons.hearing_rounded,
-                                color: isDark ? Colors.white70 : accentColor,
-                                size: 18,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Pronunciation',
-                                style: TextStyle(
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w900,
-                                  color: isDark ? Colors.white70 : accentColor,
-                                  letterSpacing: 1.5,
-                                ),
-                              ),
-                            ],
-                          ),
-                          const SizedBox(height: 8),
-                          Text(
-                            pron,
-                            style: TextStyle(
-                              fontSize: 15,
-                              fontWeight: FontWeight.w600,
-                              height: 1.4,
-                              color: isDark
-                                  ? Colors.white.withValues(alpha: 0.9)
-                                  : const Color(0xFF1A202C),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
+          const SizedBox(height: 20),
+
+          // Native ad
+          if (index % 3 == 0)
+            const Padding(
+              padding: EdgeInsets.symmetric(horizontal: 24),
+              child: NativeAdWidget(placement: 'lesson_block_card'),
             ),
-          ],
-          const SizedBox(height: 24),
-          const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 20),
-            child: RepaintBoundary(
-              child: NativeAdWidget(placement: 'lesson_block_native'),
-            ),
-          ),
-          const SizedBox(height: 100),
         ],
       ),
     );

@@ -39,13 +39,35 @@ class LocalizedItemDisplay {
 class OlChikiMultilingualHelper {
   const OlChikiMultilingualHelper._();
 
+  /// Cleans any foreign Latin annotations, dashes, or parenthetical descriptions
+  /// from a contaminated Ol Chiki string (e.g. "ᱪᱮᱫ - Ched (What?)" -> "ᱪᱮᱫ").
+  static String sanitizeOlChiki(String raw) {
+    final trimmed = raw.trim();
+    if (trimmed.isEmpty) return '';
+
+    // If string has both Ol Chiki runes and Latin characters
+    if (trimmed.runes.any((r) => r >= 0x1C50 && r <= 0x1C7F) &&
+        RegExp(r'[a-zA-Z]').hasMatch(trimmed)) {
+      final match = RegExp(r'^([\u1C50-\u1C7F\s\-–\.]+)').firstMatch(trimmed);
+      if (match != null && match.group(1)!.trim().isNotEmpty) {
+        return match
+            .group(1)!
+            .trim()
+            .replaceAll(RegExp(r'[\-–—:\s]+$'), '')
+            .trim();
+      }
+    }
+    return trimmed;
+  }
+
   /// Transliterates Ol Chiki text into [targetLang] script ('bn', 'hi', 'or', 'en')
   /// with intelligent Brahmic matras and multi-character aspirated digraph support.
   static String transliterateOlChiki(String olChikiText, String targetLang) {
-    if (olChikiText.isEmpty) return '';
+    final cleanText = sanitizeOlChiki(olChikiText);
+    if (cleanText.isEmpty) return '';
 
     final lang = targetLang.toLowerCase();
-    if (lang == 'sat') return olChikiText;
+    if (lang == 'sat') return cleanText;
 
     final Map<String, String> digraphMap;
     final Map<String, String> charMap;
@@ -79,7 +101,7 @@ class OlChikiMultilingualHelper {
         break;
     }
 
-    final runesList = olChikiText.runes.toList();
+    final runesList = cleanText.runes.toList();
     final buffer = StringBuffer();
     bool prevWasConsonant = false;
 
@@ -175,7 +197,7 @@ class OlChikiMultilingualHelper {
     return '';
   }
 
-  /// Splits a composite string like "Baba – Father" or "Mone khel – Mind game / Flirting"
+  /// Splits a composite string like "Baba – Father" or "Ched – Used to ask about things"
   /// into Romanized Santali + English Meaning parts.
   static ({String phoneticLatin, String meaningEnglish}) parseCompositeLatin(
     String rawLatin,
@@ -190,10 +212,48 @@ class OlChikiMultilingualHelper {
         final parts = trimmed.split(sep);
         if (parts.length >= 2) {
           final romanized = parts[0].trim();
-          final meaning = parts.sublist(1).join(sep).trim();
+          var meaning = parts.sublist(1).join(sep).trim();
+
+          // Clean grammatical descriptions to concise terms
+          final lowerMeaning = meaning.toLowerCase();
+          if (lowerMeaning.startsWith('used to ask about things') ||
+              lowerMeaning.startsWith('ask about things')) {
+            meaning = 'What?';
+          } else if (lowerMeaning.startsWith('used to ask about people')) {
+            meaning = 'Who?';
+          } else if (lowerMeaning.startsWith('used to ask about places')) {
+            meaning = 'Which / Where?';
+          } else if (lowerMeaning.startsWith('used to ask about time')) {
+            meaning = 'When?';
+          } else if (lowerMeaning.startsWith('used to ask about condition')) {
+            meaning = 'How?';
+          } else if (lowerMeaning.startsWith('first person singular')) {
+            meaning = 'I / Me';
+          } else if (lowerMeaning.startsWith('second person singular')) {
+            meaning = 'You';
+          } else if (lowerMeaning.startsWith('third person singular')) {
+            meaning = 'He / She';
+          } else if (lowerMeaning.startsWith('we (including the listener)')) {
+            meaning = 'We all (inclusive)';
+          } else if (lowerMeaning.startsWith('we (excluding the listener)')) {
+            meaning = 'We (exclusive)';
+          } else if (lowerMeaning.startsWith('second person plural')) {
+            meaning = 'You all';
+          } else if (lowerMeaning.startsWith('third person plural')) {
+            meaning = 'They';
+          }
+
           return (phoneticLatin: romanized, meaningEnglish: meaning);
         }
       }
+    }
+
+    // Check for parenthesized meaning: e.g. "Iny (I / Me)" or "Ched (What?)"
+    final parenMatch = RegExp(r'^([^(]+)\s*\(([^)]+)\)$').firstMatch(trimmed);
+    if (parenMatch != null) {
+      final romanized = parenMatch.group(1)!.trim();
+      final meaning = parenMatch.group(2)!.trim();
+      return (phoneticLatin: romanized, meaningEnglish: meaning);
     }
 
     // Lookup known single words if no separator
@@ -222,17 +282,27 @@ class OlChikiMultilingualHelper {
     required String teachingLanguage,
     required String scriptMode,
   }) {
-    final olChiki = (textOlChiki ?? '').trim();
+    final rawOlChiki = (textOlChiki ?? '').trim();
+    final olChiki = sanitizeOlChiki(rawOlChiki);
     final latin = (textLatin ?? '').trim();
 
     // 1. Separate Romanized Santali and English Meaning from composite textLatin
     final parsed = parseCompositeLatin(latin);
-    final englishMeaning = (explicitMeaning?.trim().isNotEmpty == true)
+    var englishMeaning = (explicitMeaning?.trim().isNotEmpty == true)
         ? explicitMeaning!.trim()
         : parsed.meaningEnglish;
+
+    // Check if rawOlChiki contained a parenthesized meaning like "ᱪᱮᱫ - Ched (What?)"
+    if (englishMeaning.isEmpty && rawOlChiki.contains('(')) {
+      final parenMatch = RegExp(r'\(([^)]+)\)').firstMatch(rawOlChiki);
+      if (parenMatch != null) {
+        englishMeaning = parenMatch.group(1)!.trim();
+      }
+    }
+
     final romanizedSantali = parsed.phoneticLatin.isNotEmpty
         ? parsed.phoneticLatin
-        : latin;
+        : (latin.isNotEmpty ? latin : toLatin(olChiki));
 
     // 2. Resolve Transliteration (Pronunciation Guide in learner's script)
     String transliteration;

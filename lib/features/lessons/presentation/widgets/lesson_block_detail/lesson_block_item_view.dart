@@ -153,16 +153,13 @@ class LessonBlockItemView extends ConsumerWidget {
       scriptMode: scriptMode,
     );
 
-    final textOlChiki = block.textOlChiki ?? '';
-    final glyph = textOlChiki.trim().isNotEmpty
-        ? textOlChiki.trim().characters.first
-        : (display.scriptText.trim().isNotEmpty
-              ? display.scriptText.trim().characters.first
-              : '');
+    final cleanScript = display.scriptText.trim();
+    final glyph = (cleanScript.isNotEmpty && cleanScript.length <= 4)
+        ? cleanScript.characters.first
+        : '';
 
-    final cardText = textOlChiki.isNotEmpty ? textOlChiki : display.scriptText;
-    final isLongText = cardText.length > 6 || cardText.contains(' ');
     final displayText = display.title;
+    final isLongText = displayText.length > 18 || displayText.contains('\n');
 
     return LayoutBuilder(
       builder: (context, constraints) {

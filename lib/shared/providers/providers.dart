@@ -6,7 +6,9 @@ library;
 /// continue to work because this file re-exports everything.
 
 export 'app_settings_provider.dart';
+export 'language_settings_providers.dart';
 export '../../features/auth/presentation/providers/auth_providers.dart';
+
 export 'local_settings_provider.dart';
 export '../../features/profile/presentation/providers/profile_providers.dart';
 export '../../features/categories/presentation/providers/category_notifier.dart';

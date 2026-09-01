@@ -74,8 +74,10 @@ class LessonQuizGenerator {
           optionsOlChiki: options,
           optionsLatin: options,
           correctIndex: correctIndex,
+          audioUrl: block.audioUrl,
         ),
       );
+
     }
 
     // Fallback: If no interactive blocks could be extracted, generate a lesson-title question

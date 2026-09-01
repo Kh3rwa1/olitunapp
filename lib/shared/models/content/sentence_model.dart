@@ -1,3 +1,5 @@
+import '../../../core/languages/ol_chiki_multilingual_helper.dart';
+
 // ============== SENTENCE MODEL ==============
 class SentenceModel {
   final String id;
@@ -65,4 +67,25 @@ class SentenceModel {
       'themeColor': themeColor,
     };
   }
+
+  String localizedTransliteration(String lang) {
+    if (lang == 'sat') return sentenceOlChiki;
+    return OlChikiMultilingualHelper.transliterateOlChiki(sentenceOlChiki, lang);
+  }
+
+  String localizedMeaning(String lang) {
+    return OlChikiMultilingualHelper.translateMeaning(meaning, lang);
+  }
+
+  String localizedSubtitle(String lang, [String scriptMode = 'both']) {
+    return OlChikiMultilingualHelper.resolveBlockDisplay(
+      textOlChiki: sentenceOlChiki,
+      textLatin: sentenceLatin,
+      explicitMeaning: meaning,
+      explicitPronunciation: pronunciation,
+      teachingLanguage: lang,
+      scriptMode: scriptMode,
+    ).subtitle;
+  }
 }
+

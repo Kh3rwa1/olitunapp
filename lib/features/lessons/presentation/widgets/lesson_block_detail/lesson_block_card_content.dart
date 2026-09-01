@@ -6,10 +6,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'package:itun/core/ads/widgets/native_ad_widget.dart';
+import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/core/presentation/animations/scale_button.dart';
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
+import 'package:itun/shared/providers/providers.dart';
 import '../lesson_block_widgets.dart';
 import 'lesson_block_glass_card.dart';
 
@@ -45,13 +47,27 @@ class LessonBlockCardContent extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
+
+    final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+      textOlChiki: block.textOlChiki,
+      textLatin: block.textLatin,
+      textBengali: block.textBengali,
+      textHindi: block.textHindi,
+      textOdia: block.textOdia,
+      explicitMeaning: block.data?['meaning'] as String?,
+      explicitPronunciation: block.data?['pronunciation'] as String?,
+      teachingLanguage: teachingLanguage,
+      scriptMode: scriptMode,
+    );
+
     final textOlChiki = block.textOlChiki ?? '';
     final textLatin = block.textLatin ?? '';
     final pron = block.data?['pronunciation'] as String?;
-    final cardText = textOlChiki.isNotEmpty ? textOlChiki : textLatin;
+    final cardText = textOlChiki.isNotEmpty ? textOlChiki : display.scriptText;
     final isLongText = cardText.length > 6 || cardText.contains(' ');
-    final isButtonLong = displayText.length > 15;
-    final buttonText = isButtonLong ? 'LISTEN' : displayText.toUpperCase();
+    final buttonText = display.ctaText;
     final blockAudioId =
         '${block.textOlChiki ?? block.textLatin ?? block.type}_$index';
     final isThisPlaying = isAudioPlaying && playingId == blockAudioId;
@@ -72,11 +88,10 @@ class LessonBlockCardContent extends ConsumerWidget {
               final isTest =
                   !kIsWeb && Platform.environment.containsKey('FLUTTER_TEST');
               Widget content;
-              if (isLongText ||
-                  (textOlChiki.isNotEmpty && textLatin.isNotEmpty) ||
-                  cardText.contains('\n')) {
+              if (isLongText || cardText.contains('\n')) {
                 final isMultiLine =
                     cardText.contains('\n') || cardText.length > 60;
+
                 content = Padding(
                   padding: const EdgeInsets.symmetric(
                     horizontal: 28,
@@ -106,12 +121,10 @@ class LessonBlockCardContent extends ConsumerWidget {
                             ],
                           ),
                         ),
-                      if (textOlChiki.isNotEmpty &&
-                          textLatin.isNotEmpty &&
-                          textLatin != textOlChiki) ...[
+                      if (display.subtitle.isNotEmpty) ...[
                         const SizedBox(height: 12),
                         Text(
-                          textLatin,
+                          display.subtitle,
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: isMultiLine ? 16 : 18,
@@ -123,7 +136,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                           ),
                         ),
                       ],
-                      if (textOlChiki.isEmpty && textLatin.isNotEmpty)
+                      if (textOlChiki.isEmpty && display.subtitle.isEmpty && textLatin.isNotEmpty)
                         Text(
                           textLatin,
                           textAlign: TextAlign.center,
@@ -144,6 +157,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                             color: isDark ? Colors.white : accentColor,
                           ),
                         ),
+
                       if (block.audioUrl != null &&
                           block.audioUrl!.isNotEmpty) ...[
                         const SizedBox(height: 16),
@@ -415,7 +429,23 @@ class LessonBlockCardContent extends ConsumerWidget {
               return content;
             }(),
           ),
-          const SizedBox(height: 32),
+          if (!isLongText && display.subtitle.isNotEmpty) ...[
+            const SizedBox(height: 18),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Text(
+                display.subtitle,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? Colors.white70 : const Color(0xFF334155),
+                  height: 1.3,
+                ),
+              ),
+            ),
+          ],
+          const SizedBox(height: 24),
           // Tactile 3D Action Button
           Container(
             constraints: const BoxConstraints(maxWidth: 320),
@@ -464,9 +494,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                       children: [
                         Flexible(
                           child: Text(
-                            buttonText.length > 15
-                                ? 'LISTEN'
-                                : buttonText.toUpperCase(),
+                            buttonText,
                             overflow: TextOverflow.ellipsis,
                             maxLines: 1,
                             style: const TextStyle(
@@ -477,6 +505,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                             ),
                           ),
                         ),
+
                         if (block.audioUrl != null &&
                             block.audioUrl!.isNotEmpty) ...[
                           const SizedBox(width: 12),

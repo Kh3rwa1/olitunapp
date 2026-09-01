@@ -12,7 +12,9 @@ import '../../../core/theme/app_colors.dart';
 import '../../../l10n/generated/app_localizations.dart';
 import '../../../shared/widgets/state_widgets.dart';
 import '../../../core/analytics/analytics_service.dart';
+import '../../../shared/providers/providers.dart';
 import '../../content/presentation/providers/audio_playback_providers.dart';
+
 import '../data/quiz_repository.dart';
 import 'providers/quiz_session_notifier.dart';
 import 'widgets/listening_question_card.dart';
@@ -99,8 +101,41 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     );
   }
 
+  void _playQuestionAudioIfAvailable(QuizQuestion question) {
+    final soundEnabled = ref.read(soundEnabledProvider);
+    if (!soundEnabled) return;
+    final audioUrl = question.audioUrl;
+    if (audioUrl != null && audioUrl.trim().isNotEmpty) {
+      unawaited(
+        ref.read(playbackControllerProvider).playSingle(
+              id: audioUrl,
+              contentKind: 'quiz_question',
+              contentId: widget.quizId,
+              trackType: 'targetNormal',
+              languageCode: 'sat',
+            ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
+    ref.listen<QuizSessionState>(
+      quizSessionNotifierProvider(widget.quizId),
+      (prev, next) {
+        if (next.currentQuestion != prev?.currentQuestion &&
+            !next.isQuizComplete) {
+          final quiz = ref
+              .read(quizResultProvider(widget.quizId))
+              .valueOrNull
+              ?.toNullable();
+          if (quiz != null && next.currentQuestion < quiz.questions.length) {
+            _playQuestionAudioIfAvailable(quiz.questions[next.currentQuestion]);
+          }
+        }
+      },
+    );
+
     ref.listen<AsyncValue<Either<Failure, QuizModel>>>(
       quizResultProvider(widget.quizId),
       (prev, next) {
@@ -113,6 +148,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ref
                 .read(quizSessionNotifierProvider(widget.quizId).notifier)
                 .startQuiz(quiz);
+            if (quiz.questions.isNotEmpty) {
+              _playQuestionAudioIfAvailable(quiz.questions.first);
+            }
           });
         });
       },
@@ -131,11 +169,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             ref
                 .read(quizSessionNotifierProvider(widget.quizId).notifier)
                 .startQuiz(quiz);
+            if (quiz.questions.isNotEmpty) {
+              _playQuestionAudioIfAvailable(quiz.questions.first);
+            }
           });
         });
       });
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
+
 
     return quizAsync.when(
       loading: () => const Scaffold(
@@ -254,7 +296,43 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             }
 
             if (!isFillBlank) {
-              return QuizQuestionCard(question: question);
+              final playback = ref.watch(playbackStateProvider);
+              final playbackState = playback.valueOrNull;
+              final hasAudio = question.audioUrl != null &&
+                  question.audioUrl!.trim().isNotEmpty;
+              final isPlayingThisAudio = hasAudio &&
+                  playbackState?.isPlaying == true &&
+                  playbackState?.current?.id == question.audioUrl;
+              final isLoadingThisAudio = hasAudio &&
+                  playbackState?.isLoading == true &&
+                  playbackState?.current?.id == question.audioUrl;
+
+              return QuizQuestionCard(
+                question: question,
+                isPlaying: isPlayingThisAudio,
+                isLoading: isLoadingThisAudio,
+                onPlayAudio: hasAudio
+                    ? () {
+                        if (isPlayingThisAudio) {
+                          unawaited(
+                            ref.read(playbackControllerProvider).stop(),
+                          );
+                        } else {
+                          unawaited(
+                            ref
+                                .read(playbackControllerProvider)
+                                .playSingle(
+                                  id: question.audioUrl!,
+                                  contentKind: 'quiz_question',
+                                  contentId: widget.quizId,
+                                  trackType: 'targetNormal',
+                                  languageCode: 'sat',
+                                ),
+                          );
+                        }
+                      }
+                    : null,
+              );
             }
 
             return FillBlankQuestionCard(
@@ -263,6 +341,7 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               isAnswered: state.isAnswered,
             );
           }
+
 
           Widget buildOptionsArea() {
             if (!isFillBlank) {

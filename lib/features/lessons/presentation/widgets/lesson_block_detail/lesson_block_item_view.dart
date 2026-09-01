@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import 'package:itun/core/languages/ol_chiki_multilingual_helper.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/practice/data/typing_practice_settings.dart';
 import 'package:itun/features/practice/presentation/providers/typing_practice_controller.dart';
@@ -10,6 +11,7 @@ import 'package:itun/shared/providers/providers.dart';
 import 'lesson_block_card_content.dart';
 import 'lesson_block_hero_header.dart';
 import 'lesson_block_quiz_cta.dart';
+
 
 /// Single item view within the lesson block PageView.
 class LessonBlockItemView extends ConsumerWidget {
@@ -134,21 +136,32 @@ class LessonBlockItemView extends ConsumerWidget {
         ? ref.watch(typingPracticeControllerProvider(typingPracticeArgs))
         : null;
 
-    final textOlChiki = block.textOlChiki ?? '';
-    final textLatin = block.textLatin ?? '';
-    final pron = block.data?['pronunciation'] as String?;
-    final displayText = pron != null && pron.isNotEmpty
-        ? '$textLatin ($pron)'
-        : textLatin;
+    final teachingLanguage = ref.watch(effectiveTeachingLanguageProvider);
+    final scriptMode = ref.watch(effectiveScriptModeProvider);
 
+    final display = OlChikiMultilingualHelper.resolveBlockDisplay(
+      textOlChiki: block.textOlChiki,
+      textLatin: block.textLatin,
+      textBengali: block.textBengali,
+      textHindi: block.textHindi,
+      textOdia: block.textOdia,
+      explicitMeaning: block.data?['meaning'] as String?,
+      explicitPronunciation: block.data?['pronunciation'] as String?,
+      teachingLanguage: teachingLanguage,
+      scriptMode: scriptMode,
+    );
+
+    final textOlChiki = block.textOlChiki ?? '';
     final glyph = textOlChiki.trim().isNotEmpty
         ? textOlChiki.trim().characters.first
-        : (textLatin.trim().isNotEmpty
-              ? textLatin.trim().characters.first
+        : (display.scriptText.trim().isNotEmpty
+              ? display.scriptText.trim().characters.first
               : '');
 
-    final cardText = textOlChiki.isNotEmpty ? textOlChiki : textLatin;
+    final cardText = textOlChiki.isNotEmpty ? textOlChiki : display.scriptText;
     final isLongText = cardText.length > 6 || cardText.contains(' ');
+    final displayText = display.title;
+
 
     return LayoutBuilder(
       builder: (context, constraints) {

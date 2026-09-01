@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/lessons/domain/entities/lesson_entity.dart';
 import 'package:itun/features/lessons/presentation/widgets/full_bleed_hero_media.dart';
 import 'package:itun/shared/utils/media_type_resolver.dart';
@@ -37,17 +38,7 @@ class LessonBlockHeroHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final titleTextColor = (animationUrl != null)
         ? Colors.white
-        : (isDark ? Colors.white : const Color(0xFF1E293B));
-
-    final badgeBgColor = (animationUrl != null)
-        ? Colors.white.withValues(alpha: 0.15)
-        : (isDark
-              ? Colors.white.withValues(alpha: 0.1)
-              : accentColor.withValues(alpha: 0.08));
-
-    final badgeTextColor = (animationUrl != null)
-        ? Colors.white
-        : (isDark ? Colors.white70 : accentColor);
+        : (isDark ? Colors.white : AppColors.textPrimaryLight);
 
     return Container(
       height: topHeight,
@@ -98,24 +89,13 @@ class LessonBlockHeroHeader extends StatelessWidget {
                         isLottieMedia(animationUrl!))
                     ? animationUrl
                     : null,
-                imageUrl: animationUrl,
-                isSvg:
-                    block.type == 'svg' ||
-                    (block.data?['mediaType'] as String?) == 'svg',
-                fallback: Center(
-                  child: Icon(
-                    block.type == 'video' ||
-                            (block.data?['mediaType'] as String?) == 'video'
-                        ? Icons.videocam_rounded
-                        : (block.type == 'lottie' ||
-                                  (block.data?['mediaType'] as String?) ==
-                                      'lottie'
-                              ? Icons.animation_rounded
-                              : Icons.image_rounded),
-                    size: 64,
-                    color: Colors.white.withValues(alpha: 0.35),
-                  ),
-                ),
+                imageUrl:
+                    (block.type != 'lottie' &&
+                        (block.data?['mediaType'] as String?) != 'lottie' &&
+                        !isLottieMedia(animationUrl!))
+                    ? animationUrl
+                    : null,
+                fallback: const SizedBox.shrink(),
               ),
             ),
             // Dark elegant gradient overlay for text readability + blending bottom edge
@@ -139,59 +119,27 @@ class LessonBlockHeroHeader extends StatelessWidget {
               ),
             ),
           ],
-          // Title Overlay Text
+          // Title Overlay Text (Clean without unwanted debug "TEXT" badges)
           Positioned(
             left: 24,
             bottom: 12,
             right: 24,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 5,
-                  ),
-                  decoration: BoxDecoration(
-                    color: badgeBgColor,
-                    borderRadius: BorderRadius.circular(8),
-                    border: animationUrl != null
-                        ? null
-                        : Border.all(
-                            color: badgeTextColor.withValues(alpha: 0.15),
-                          ),
-                  ),
-                  child: Text(
-                    (block.data?['mediaType'] as String? ?? block.type)
-                        .toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w900,
-                      color: badgeTextColor,
-                      letterSpacing: 1.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  displayText,
-                  style: TextStyle(
-                    fontSize: isLongText ? 20 : 32,
-                    fontWeight: FontWeight.w900,
-                    color: titleTextColor,
-                    shadows: animationUrl != null
-                        ? [
-                            const Shadow(
-                              color: Colors.black38,
-                              offset: Offset(0, 2),
-                              blurRadius: 4,
-                            ),
-                          ]
-                        : null,
-                  ),
-                ),
-              ],
+            child: Text(
+              displayText,
+              style: TextStyle(
+                fontSize: isLongText ? 20 : 32,
+                fontWeight: FontWeight.w900,
+                color: titleTextColor,
+                shadows: animationUrl != null
+                    ? [
+                        const Shadow(
+                          color: Colors.black38,
+                          offset: Offset(0, 2),
+                          blurRadius: 4,
+                        ),
+                      ]
+                    : null,
+              ),
             ),
           ),
         ],

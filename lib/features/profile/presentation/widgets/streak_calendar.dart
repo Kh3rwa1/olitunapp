@@ -9,8 +9,11 @@ import '../../../../core/theme/app_colors.dart';
 import '../../../../l10n/generated/app_localizations.dart';
 import '../../../../shared/providers/quizzes_provider.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
+import '../../../../shared/widgets/sharing/share_card_payload.dart';
+import '../../../../shared/widgets/sharing/social_share_modal.dart';
 import '../../domain/entities/user_stats_entity.dart';
 import '../../domain/streak_week_logic.dart';
+import 'streak/streak_day_sheet.dart';
 
 class StreakCalendar extends ConsumerWidget {
   final UserStatsEntity stats;
@@ -382,103 +385,14 @@ class StreakCalendar extends ConsumerWidget {
   /// breakdown of what happened that day.
   void _showDayDetails(BuildContext context, WidgetRef ref, DateTime day) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final l10n = AppLocalizations.of(context)!;
-    final key = StreakWeekLogic.dateKey(day);
-
-    // Real quiz titles when the catalogue is loaded; prettified id fallback.
     final quizTitles = ref.watch(quizzesByIdProvider).valueOrNull ?? const {};
-
-    final activities = <String>[
-      for (final result in stats.quizHistory.values)
-        if (StreakWeekLogic.dateKey(
-              DateTime.parse(result.completedAt).toLocal(),
-            ) ==
-            key)
-          '${l10n.dayDetailQuiz} · '
-              '${quizTitles[result.quizId]?.title ?? _prettyQuizId(result.quizId)}',
-      if (stats.practiceDates.contains(key)) l10n.dayDetailPracticeSession,
-      if (stats.lastActiveDate == key && stats.currentStreak > 0)
-        l10n.dayDetailStreakDay,
-    ];
-
-    showModalBottomSheet<void>(
-      context: context,
-      backgroundColor: isDark ? const Color(0xFF161616) : Colors.white,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (sheetContext) => SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                '${_fullDayName(day.weekday)}, ${_monthName(day.month)} ${day.day}',
-                style: TextStyle(
-                  fontFamily: 'Inter',
-                  fontSize: 16,
-                  fontWeight: FontWeight.w800,
-                  color: isDark ? Colors.white : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 12),
-              if (activities.isEmpty)
-                Row(
-                  children: [
-                    Icon(
-                      Icons.nights_stay_outlined,
-                      size: 16,
-                      color: isDark ? Colors.white38 : Colors.black38,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      l10n.dayDetailNoActivity,
-                      style: TextStyle(
-                        fontFamily: 'Inter',
-                        fontSize: 13,
-                        color: isDark ? Colors.white60 : Colors.black54,
-                      ),
-                    ),
-                  ],
-                )
-              else
-                for (final activity in activities)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
-                    child: Row(
-                      children: [
-                        const Icon(
-                          Icons.check_circle_rounded,
-                          size: 16,
-                          color: AppColors.accentOchre,
-                        ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Text(
-                            activity,
-                            style: TextStyle(
-                              fontFamily: 'Inter',
-                              fontSize: 13,
-                              color: isDark ? Colors.white70 : Colors.black87,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-            ],
-          ),
-        ),
-      ),
+    StreakDaySheet.show(
+      context,
+      day: day,
+      stats: stats,
+      quizTitles: quizTitles,
+      isDark: isDark,
     );
-  }
-
-  String _prettyQuizId(String id) {
-    final cleaned = id.replaceAll(RegExp(r'^quiz_'), '').replaceAll('_', ' ');
-    if (cleaned.isEmpty) return 'Quiz';
-    return cleaned[0].toUpperCase() + cleaned.substring(1);
   }
 
   int _daysElapsed(List<DateTime> week, DateTime today) {
@@ -549,47 +463,63 @@ class _StreakBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = count > 0;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-      decoration: BoxDecoration(
-        gradient: active
-            ? const LinearGradient(
-                colors: [AppColors.accentOchre, AppColors.accentGold],
-              )
+    return Semantics(
+      button: active,
+      label: active ? 'Share Streak' : null,
+      child: GestureDetector(
+        onTap: active
+            ? () {
+                SocialShareModal.show(
+                  context,
+                  payload: ShareCardPayload.streakMilestone(streakDays: count),
+                );
+              }
             : null,
-        color: active
-            ? null
-            : (isDark ? Colors.white10 : Colors.black.withValues(alpha: 0.05)),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: active
-            ? [
-                BoxShadow(
-                  color: AppColors.accentOchre.withValues(alpha: 0.3),
-                  blurRadius: 8,
-                  offset: const Offset(0, 4),
-                ),
-              ]
-            : [],
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          if (active) ...[
-            const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
-            const SizedBox(width: 4),
-          ],
-          Text(
-            AppLocalizations.of(context)!.streakDaysBadge(count),
-            style: AppTypography.inter(
-              fontSize: 11,
-              fontWeight: FontWeight.w900,
-              color: active
-                  ? Colors.white
-                  : (isDark ? Colors.white54 : Colors.black45),
-              letterSpacing: 0.5,
-            ),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+          decoration: BoxDecoration(
+            gradient: active
+                ? const LinearGradient(
+                    colors: [AppColors.accentOchre, AppColors.accentGold],
+                  )
+                : null,
+            color: active
+                ? null
+                : (isDark
+                      ? Colors.white10
+                      : Colors.black.withValues(alpha: 0.05)),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: active
+                ? [
+                    BoxShadow(
+                      color: AppColors.accentOchre.withValues(alpha: 0.3),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [],
           ),
-        ],
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (active) ...[
+                const Icon(Icons.bolt_rounded, color: Colors.white, size: 14),
+                const SizedBox(width: 4),
+              ],
+              Text(
+                AppLocalizations.of(context)!.streakDaysBadge(count),
+                style: AppTypography.inter(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w900,
+                  color: active
+                      ? Colors.white
+                      : (isDark ? Colors.white54 : Colors.black45),
+                  letterSpacing: 0.5,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

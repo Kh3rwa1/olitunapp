@@ -16,6 +16,8 @@ import '../../../../core/ads/interstitial_ad_manager.dart';
 import '../../../../core/ads/rewarded_ad_manager.dart';
 import '../../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../../core/ads/widgets/banner_ad_widget.dart';
+import '../../../../shared/widgets/sharing/share_card_payload.dart';
+import '../../../../shared/widgets/sharing/social_share_modal.dart';
 
 bool get _isTesting {
   try {
@@ -669,6 +671,50 @@ class QuizCompleteScreen extends ConsumerWidget {
                           );
                         },
                       ),
+                      if (isPassing) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(bottom: 10),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: 48,
+                            child: OutlinedButton.icon(
+                              onPressed: () {
+                                SocialShareModal.show(
+                                  context,
+                                  payload: ShareCardPayload.quizResult(
+                                    score: score,
+                                    total: totalQuestions,
+                                    percentage: percentage,
+                                    stars: totalStars,
+                                  ),
+                                );
+                              },
+                              icon: const Icon(
+                                Icons.share_rounded,
+                                color: AppColors.primary,
+                                size: 18,
+                              ),
+                              label: const Text(
+                                'Share Achievement',
+                                style: TextStyle(
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                              style: OutlinedButton.styleFrom(
+                                side: const BorderSide(
+                                  color: AppColors.primary,
+                                  width: 1.5,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
                       SizedBox(
                         width: double.infinity,
                         height: 54,

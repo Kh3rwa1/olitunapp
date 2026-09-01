@@ -1,19 +1,24 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_animate/flutter_animate.dart';
-import 'package:cached_network_image/cached_network_image.dart';
 
-import '../../core/theme/app_colors.dart';
-import '../../core/logging/app_logger.dart';
-import '../../core/payments/razorpay_service.dart';
-import '../../core/payments/purchase_repository.dart';
-import '../../core/reviews/review_service.dart';
-import '../providers/purchases_provider.dart';
-import '../providers/app_settings_provider.dart';
-import '../../features/categories/domain/entities/category_entity.dart';
-import '../../features/auth/presentation/providers/auth_providers.dart';
 import '../../core/ads/widgets/native_ad_widget.dart';
+import '../../core/logging/app_logger.dart';
+import '../../core/payments/purchase_repository.dart';
+import '../../core/payments/razorpay_service.dart';
+import '../../core/reviews/review_service.dart';
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
+import '../../core/theme/app_typography.dart';
+import '../../features/auth/presentation/providers/auth_providers.dart';
+import '../../features/categories/domain/entities/category_entity.dart';
+import '../providers/app_settings_provider.dart';
+import '../providers/purchases_provider.dart';
+import 'paywall/paywall_action_section.dart';
+import 'paywall/paywall_course_details.dart';
+import 'paywall/paywall_header.dart';
+import 'paywall/paywall_success_dialog.dart';
+import 'paywall/paywall_value_props.dart';
 
 class PaywallBottomSheet extends ConsumerStatefulWidget {
   final CategoryEntity category;
@@ -36,6 +41,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
   }
 
   Future<void> _handlePayment() async {
+    HapticFeedback.mediumImpact();
     final user = ref.read(currentUserProvider).value;
     if (user == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -95,6 +101,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
         if (verifyResult['ok'] == true) {
           ref.invalidate(purchasedCategoriesProvider);
+          HapticFeedback.heavyImpact();
           _showSuccessOverlay('Course successfully unlocked!');
         } else {
           _showError(verifyResult['message'] ?? 'Payment verification failed');
@@ -115,6 +122,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
   }
 
   Future<void> _handleReviewUnlock() async {
+    HapticFeedback.selectionClick();
     setState(() {
       _isLoading = true;
       _statusMessage = 'Opening Play Store...';
@@ -154,100 +162,11 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
       _statusMessage = null;
     });
 
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return Dialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
-          elevation: 0,
-          backgroundColor: Colors.transparent,
-          child: Container(
-            padding: const EdgeInsets.all(28),
-            decoration: BoxDecoration(
-              color: Theme.of(context).brightness == Brightness.dark
-                  ? AppColors.quizDarkCard
-                  : Colors.white,
-              borderRadius: BorderRadius.circular(24),
-              border: Border.all(
-                color: AppColors.primary.withValues(alpha: 0.2),
-              ),
-              boxShadow: const [
-                BoxShadow(
-                  color: Colors.black26,
-                  blurRadius: 20,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.12),
-                    shape: BoxShape.circle,
-                  ),
-                  child: const Icon(
-                    Icons.check_circle_rounded,
-                    color: Colors.green,
-                    size: 48,
-                  ),
-                ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
-                const SizedBox(height: 24),
-                const Text(
-                  'Maran Jauhar! 🎉',
-                  style: TextStyle(
-                    fontSize: 22,
-                    fontWeight: FontWeight.w800,
-                    letterSpacing: 0.5,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Text(
-                  message,
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Theme.of(context).brightness == Brightness.dark
-                        ? Colors.white70
-                        : Colors.black54,
-                  ),
-                ),
-                const SizedBox(height: 28),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.of(context).pop(); // pop dialog
-                      Navigator.of(this.context).pop(); // pop bottom sheet
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.primary,
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                    ),
-                    child: const Text(
-                      'Start Learning',
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+    PaywallSuccessDialog.show(
+      context,
+      message: message,
+      onStartLearning: () {
+        Navigator.of(context).pop(); // pop bottom sheet
       },
     );
   }
@@ -263,7 +182,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
         content: Row(
           children: [
             const Icon(Icons.error_outline_rounded, color: Colors.white),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSpacing.sm),
             Expanded(child: Text(errorMsg)),
           ],
         ),
@@ -281,11 +200,9 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
 
     // Watch settings
     final settingsAsync = ref.watch(appSettingsProvider);
-
     final globalReviewEnabled =
         settingsAsync.value?['global_review_unlock_enabled'] != 'false';
 
-    // Check availability
     final showReviewButton =
         globalReviewEnabled &&
         (widget.category.unlockMode == 'review_only' ||
@@ -314,371 +231,33 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Custom Drag Handle Indicator
-                Center(
-                  child: Container(
-                    margin: const EdgeInsets.only(top: 14, bottom: 20),
-                    width: 48,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: isDark ? Colors.white24 : Colors.black12,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                  ),
-                ),
-
-                // Hero Area
+                PaywallHeader(category: widget.category, isDark: isDark),
+                const SizedBox(height: AppSpacing.lg),
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(24),
-                    child: Container(
-                      height: 180,
-                      width: double.infinity,
-                      decoration: BoxDecoration(
-                        gradient: isDark
-                            ? const LinearGradient(
-                                colors: [
-                                  AppColors.mistakeCardDarkTop,
-                                  AppColors.mistakeCardDarkBottom,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              )
-                            : const LinearGradient(
-                                colors: [
-                                  AppColors.mistakeCardLightTop,
-                                  AppColors.mistakeCardLightBottom,
-                                ],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                        border: Border.all(
-                          color: isDark
-                              ? Colors.white10
-                              : Colors.black.withValues(alpha: 0.04),
-                        ),
-                      ),
-                      child: Stack(
-                        children: [
-                          if (widget.category.courseHeroImageUrl != null &&
-                              widget.category.courseHeroImageUrl!.isNotEmpty)
-                            CachedNetworkImage(
-                              imageUrl: widget.category.courseHeroImageUrl!,
-                              fit: BoxFit.cover,
-                              width: double.infinity,
-                              height: double.infinity,
-                              placeholder: (context, url) => Container(
-                                color: Colors.black12,
-                                child: const Center(
-                                  child: CircularProgressIndicator(),
-                                ),
-                              ),
-                              errorWidget: (context, url, error) =>
-                                  const SizedBox(),
-                            ),
-                          Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [
-                                  Colors.black.withValues(alpha: 0.7),
-                                  Colors.black.withValues(alpha: 0.2),
-                                ],
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                              ),
-                            ),
-                          ),
-                          Positioned(
-                            bottom: 20,
-                            left: 20,
-                            right: 20,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Row(
-                                  children: [
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 10,
-                                        vertical: 4,
-                                      ),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(8),
-                                      ),
-                                      child: const Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          Icon(
-                                            Icons.workspace_premium_rounded,
-                                            color: Colors.white,
-                                            size: 14,
-                                          ),
-                                          SizedBox(width: 4),
-                                          Text(
-                                            'PREMIUM COURSE',
-                                            style: TextStyle(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.w900,
-                                              color: Colors.white,
-                                              letterSpacing: 0.5,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                const SizedBox(height: 10),
-                                Text(
-                                  widget.category.titleLatin,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    fontWeight: FontWeight.w900,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                                if (widget
-                                    .category
-                                    .titleOlChiki
-                                    .isNotEmpty) ...[
-                                  const SizedBox(height: 2),
-                                  Text(
-                                    widget.category.titleOlChiki,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontFamily: 'OlChiki',
-                                      color: Colors.white70,
-                                    ),
-                                  ),
-                                ],
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.xxl,
                   ),
-                ),
-
-                const SizedBox(height: 24),
-
-                // Description & Outcome List
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      if (widget.category.courseDescription != null &&
-                          widget.category.courseDescription!
-                              .trim()
-                              .isNotEmpty) ...[
-                        Text(
-                          'About this course',
-                          style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w800,
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.87)
-                                : Colors.black87,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          widget.category.courseDescription!,
-                          style: TextStyle(
-                            fontSize: 13,
-                            height: 1.5,
-                            color: isDark ? Colors.white54 : Colors.black54,
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                      ],
-
-                      if (widget.category.courseOutcome != null &&
-                          widget.category.courseOutcome!.trim().isNotEmpty) ...[
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: isDark
-                                ? Colors.white.withValues(alpha: 0.03)
-                                : AppColors.primary.withValues(alpha: 0.04),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: isDark
-                                  ? Colors.white10
-                                  : AppColors.primary.withValues(alpha: 0.08),
-                            ),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Icon(
-                                    Icons.insights_rounded,
-                                    color: AppColors.primary,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Text(
-                                    'Course Outcome',
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.w800,
-                                      color: isDark
-                                          ? Colors.white
-                                          : Colors.black87,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 10),
-                              Text(
-                                widget.category.courseOutcome!,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  height: 1.4,
-                                  color: isDark
-                                      ? Colors.white60
-                                      : Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-
-                      // Value Props List
-                      _buildValuePropRow(
-                        context,
-                        Icons.verified_user_outlined,
-                        'Get verified full access',
-                        'Unlock all lessons, interactive quizzes, and offline media.',
+                      PaywallCourseDetails(
+                        category: widget.category,
+                        isDark: isDark,
                       ),
-                      const SizedBox(height: 14),
-                      _buildValuePropRow(
-                        context,
-                        Icons.mobile_friendly_rounded,
-                        'Learn at your own pace',
-                        'Enjoy lifetime access with no renewals or monthly subscriptions.',
-                      ),
-
-                      const SizedBox(height: 24),
+                      PaywallValueProps(isDark: isDark),
+                      const SizedBox(height: AppSpacing.lg),
                       const RepaintBoundary(
                         child: NativeAdWidget(placement: 'paywall_native'),
                       ),
-                      const SizedBox(height: 24),
-
-                      // Platform limitations block
-                      if (kIsWeb)
-                        Container(
-                          padding: const EdgeInsets.all(16),
-                          width: double.infinity,
-                          decoration: BoxDecoration(
-                            color: Colors.amber.withValues(alpha: 0.12),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.amber.withValues(alpha: 0.3),
-                            ),
-                          ),
-                          child: const Column(
-                            children: [
-                              Icon(
-                                Icons.warning_amber_rounded,
-                                color: Colors.amber,
-                                size: 36,
-                              ),
-                              SizedBox(height: 10),
-                              Text(
-                                'Monetization restricted on Web',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 14,
-                                ),
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                'Razorpay checkouts and App Store reviews are only supported on the Olitun Mobile Application. Please load this on Android/iOS to unlock.',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.black54,
-                                ),
-                              ),
-                            ],
-                          ),
-                        )
-                      else ...[
-                        // CTAs Area
-                        if (showPaidButton) ...[
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: _isLoading ? null : _handlePayment,
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: AppColors.primary,
-                                foregroundColor: Colors.white,
-                                elevation: 0,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                              child: Text(
-                                'Unlock Course (₹${widget.category.priceInr})',
-                                style: const TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 14),
-                        ],
-
-                        if (showReviewButton) ...[
-                          const SizedBox(height: 10),
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: OutlinedButton(
-                              onPressed: _isLoading
-                                  ? null
-                                  : _handleReviewUnlock,
-                              style: OutlinedButton.styleFrom(
-                                side: const BorderSide(
-                                  color: AppColors.primary,
-                                  width: 2,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(18),
-                                ),
-                              ),
-                              child: const Row(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Icon(
-                                    Icons.rate_review_outlined,
-                                    color: AppColors.primary,
-                                  ),
-                                  SizedBox(width: 10),
-                                  Text(
-                                    'Rate & Share Feedback',
-                                    style: TextStyle(
-                                      color: AppColors.primary,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 15,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                      const SizedBox(height: AppSpacing.lg),
+                      PaywallActionSection(
+                        category: widget.category,
+                        isLoading: _isLoading,
+                        showPaidButton: showPaidButton,
+                        showReviewButton: showReviewButton,
+                        onPayPressed: _handlePayment,
+                        onReviewPressed: _handleReviewUnlock,
+                      ),
                     ],
                   ),
                 ),
@@ -702,11 +281,10 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                           AppColors.primary,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppSpacing.lg),
                       Text(
                         _statusMessage ?? 'Processing...',
-                        style: TextStyle(
-                          fontSize: 16,
+                        style: AppTypography.titleMedium.copyWith(
                           fontWeight: FontWeight.bold,
                           color: isDark ? Colors.white : Colors.black87,
                         ),
@@ -718,54 +296,6 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
             ),
         ],
       ),
-    );
-  }
-
-  Widget _buildValuePropRow(
-    BuildContext context,
-    IconData icon,
-    String title,
-    String subtitle,
-  ) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: AppColors.primary.withValues(alpha: 0.08),
-            shape: BoxShape.circle,
-          ),
-          child: Icon(icon, color: AppColors.primary, size: 20),
-        ),
-        const SizedBox(width: 14),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                title,
-                style: TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isDark
-                      ? Colors.white.withValues(alpha: 0.87)
-                      : Colors.black87,
-                ),
-              ),
-              const SizedBox(height: 2),
-              Text(
-                subtitle,
-                style: TextStyle(
-                  fontSize: 12,
-                  color: isDark ? Colors.white30 : Colors.black38,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

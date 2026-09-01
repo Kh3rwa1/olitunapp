@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:itun/core/ads/ad_state.dart';
+import 'package:itun/shared/providers/purchases_provider.dart';
 
 void main() {
   group('AdState and AdStateNotifier Tests', () {
@@ -58,7 +59,11 @@ void main() {
     });
 
     test('AdStateNotifier records impressions and errors accurately', () {
-      final container = ProviderContainer();
+      final container = ProviderContainer(
+        overrides: [
+          purchasedCategoriesProvider.overrideWith((ref) async => <String>{}),
+        ],
+      );
       addTearDown(container.dispose);
 
       final notifier = container.read(adStateProvider.notifier);

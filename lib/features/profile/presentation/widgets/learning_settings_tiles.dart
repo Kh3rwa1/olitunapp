@@ -49,7 +49,7 @@ class TeachingLanguageTile extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),
@@ -144,7 +144,7 @@ class LessonAudioModeTile extends ConsumerWidget {
 
     showModalBottomSheet(
       context: context,
-      backgroundColor: isDark ? const Color(0xFF161B22) : Colors.white,
+      backgroundColor: isDark ? AppColors.darkSurface : Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
       ),

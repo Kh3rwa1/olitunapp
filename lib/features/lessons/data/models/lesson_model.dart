@@ -198,8 +198,7 @@ class LessonBlockModel extends LessonBlockEntity {
         json['textBengali'] as String? ?? json['text_bengali'] as String?;
     final rawHindi =
         json['textHindi'] as String? ?? json['text_hindi'] as String?;
-    final rawOdia =
-        json['textOdia'] as String? ?? json['text_odia'] as String?;
+    final rawOdia = json['textOdia'] as String? ?? json['text_odia'] as String?;
 
     String? resolvedOlChiki = rawOlChiki;
     String? resolvedLatin = rawLatin;
@@ -266,4 +265,3 @@ class LessonBlockModel extends LessonBlockEntity {
     );
   }
 }
-

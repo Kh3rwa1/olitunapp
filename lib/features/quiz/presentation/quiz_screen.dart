@@ -107,7 +107,9 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
     final audioUrl = question.audioUrl;
     if (audioUrl != null && audioUrl.trim().isNotEmpty) {
       unawaited(
-        ref.read(playbackControllerProvider).playSingle(
+        ref
+            .read(playbackControllerProvider)
+            .playSingle(
               id: audioUrl,
               contentKind: 'quiz_question',
               contentId: widget.quizId,
@@ -120,21 +122,21 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<QuizSessionState>(
-      quizSessionNotifierProvider(widget.quizId),
-      (prev, next) {
-        if (next.currentQuestion != prev?.currentQuestion &&
-            !next.isQuizComplete) {
-          final quiz = ref
-              .read(quizResultProvider(widget.quizId))
-              .valueOrNull
-              ?.toNullable();
-          if (quiz != null && next.currentQuestion < quiz.questions.length) {
-            _playQuestionAudioIfAvailable(quiz.questions[next.currentQuestion]);
-          }
+    ref.listen<QuizSessionState>(quizSessionNotifierProvider(widget.quizId), (
+      prev,
+      next,
+    ) {
+      if (next.currentQuestion != prev?.currentQuestion &&
+          !next.isQuizComplete) {
+        final quiz = ref
+            .read(quizResultProvider(widget.quizId))
+            .valueOrNull
+            ?.toNullable();
+        if (quiz != null && next.currentQuestion < quiz.questions.length) {
+          _playQuestionAudioIfAvailable(quiz.questions[next.currentQuestion]);
         }
-      },
-    );
+      }
+    });
 
     ref.listen<AsyncValue<Either<Failure, QuizModel>>>(
       quizResultProvider(widget.quizId),
@@ -177,7 +179,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
       });
     }
     final isDark = Theme.of(context).brightness == Brightness.dark;
-
 
     return quizAsync.when(
       loading: () => const Scaffold(
@@ -298,12 +299,15 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
             if (!isFillBlank) {
               final playback = ref.watch(playbackStateProvider);
               final playbackState = playback.valueOrNull;
-              final hasAudio = question.audioUrl != null &&
+              final hasAudio =
+                  question.audioUrl != null &&
                   question.audioUrl!.trim().isNotEmpty;
-              final isPlayingThisAudio = hasAudio &&
+              final isPlayingThisAudio =
+                  hasAudio &&
                   playbackState?.isPlaying == true &&
                   playbackState?.current?.id == question.audioUrl;
-              final isLoadingThisAudio = hasAudio &&
+              final isLoadingThisAudio =
+                  hasAudio &&
                   playbackState?.isLoading == true &&
                   playbackState?.current?.id == question.audioUrl;
 
@@ -341,7 +345,6 @@ class _QuizScreenState extends ConsumerState<QuizScreen> {
               isAnswered: state.isAnswered,
             );
           }
-
 
           Widget buildOptionsArea() {
             if (!isFillBlank) {

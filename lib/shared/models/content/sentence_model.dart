@@ -70,7 +70,10 @@ class SentenceModel {
 
   String localizedTransliteration(String lang) {
     if (lang == 'sat') return sentenceOlChiki;
-    return OlChikiMultilingualHelper.transliterateOlChiki(sentenceOlChiki, lang);
+    return OlChikiMultilingualHelper.transliterateOlChiki(
+      sentenceOlChiki,
+      lang,
+    );
   }
 
   String localizedMeaning(String lang) {
@@ -88,4 +91,3 @@ class SentenceModel {
     ).subtitle;
   }
 }
-

@@ -107,4 +107,3 @@ class LessonBlockEntity extends Equatable {
     data,
   ];
 }
-

@@ -138,7 +138,10 @@ void main() {
       expect(word.localizedTransliteration('hi'), 'बाबा');
       expect(word.localizedTransliteration('or'), 'ବାବା');
       expect(word.localizedMeaning('bn'), 'পিতা');
-      expect(word.localizedMeaning('or'), OlChikiMultilingualHelper.translateMeaning('Father', 'or'));
+      expect(
+        word.localizedMeaning('or'),
+        OlChikiMultilingualHelper.translateMeaning('Father', 'or'),
+      );
 
       expect(word.localizedSubtitle('bn'), 'বাবা – পিতা');
     });
@@ -158,4 +161,3 @@ void main() {
     });
   });
 }
-

@@ -136,7 +136,9 @@ class LessonBlockCardContent extends ConsumerWidget {
                           ),
                         ),
                       ],
-                      if (textOlChiki.isEmpty && display.subtitle.isEmpty && textLatin.isNotEmpty)
+                      if (textOlChiki.isEmpty &&
+                          display.subtitle.isEmpty &&
+                          textLatin.isNotEmpty)
                         Text(
                           textLatin,
                           textAlign: TextAlign.center,

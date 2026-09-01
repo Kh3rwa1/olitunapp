@@ -12,7 +12,6 @@ import 'lesson_block_card_content.dart';
 import 'lesson_block_hero_header.dart';
 import 'lesson_block_quiz_cta.dart';
 
-
 /// Single item view within the lesson block PageView.
 class LessonBlockItemView extends ConsumerWidget {
   const LessonBlockItemView({
@@ -161,7 +160,6 @@ class LessonBlockItemView extends ConsumerWidget {
     final cardText = textOlChiki.isNotEmpty ? textOlChiki : display.scriptText;
     final isLongText = cardText.length > 6 || cardText.contains(' ');
     final displayText = display.title;
-
 
     return LayoutBuilder(
       builder: (context, constraints) {

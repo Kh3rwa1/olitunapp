@@ -1,5 +1,5 @@
-import 'package:characters/characters.dart';
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
+
 
 /// Resolved localized presentation of an Ol Chiki learning item.
 @immutable
@@ -115,14 +115,32 @@ class OlChikiMultilingualHelper {
   };
 
   static const Set<String> _consonants = {
-    'ᱛ', 'ᱜ', 'ᱝ', 'ᱞ', 'ᱠ', 'ᱡ', 'ᱢ', 'ᱣ', 'ᱥ', 'ᱦ',
-    'ᱧ', 'ᱨ', 'ᱪ', 'ᱫ', 'ᱬ', 'ᱭ', 'ᱯ', 'ᱰ', 'ᱱ', 'ᱲ',
-    'ᱴ', 'ᱵ', 'ᱶ',
+    'ᱛ',
+    'ᱜ',
+    'ᱝ',
+    'ᱞ',
+    'ᱠ',
+    'ᱡ',
+    'ᱢ',
+    'ᱣ',
+    'ᱥ',
+    'ᱦ',
+    'ᱧ',
+    'ᱨ',
+    'ᱪ',
+    'ᱫ',
+    'ᱬ',
+    'ᱭ',
+    'ᱯ',
+    'ᱰ',
+    'ᱱ',
+    'ᱲ',
+    'ᱴ',
+    'ᱵ',
+    'ᱶ',
   };
 
-  static const Set<String> _vowels = {
-    'ᱚ', 'ᱟ', 'ᱤ', 'ᱩ', 'ᱮ', 'ᱳ',
-  };
+  static const Set<String> _vowels = {'ᱚ', 'ᱟ', 'ᱤ', 'ᱩ', 'ᱮ', 'ᱳ'};
 
   static const Map<String, String> _bengaliMatra = {
     'ᱚ': '',
@@ -163,12 +181,42 @@ class OlChikiMultilingualHelper {
     'ayo': {'bn': 'মাতা', 'hi': 'माता', 'or': 'ମାଆ', 'en': 'Mother'},
     'brother': {'bn': 'ভাই', 'hi': 'भाई', 'or': 'ଭାଇ', 'en': 'Brother'},
     'sister': {'bn': 'বোন', 'hi': 'बहन', 'or': 'ଭଉଣୀ', 'en': 'Sister'},
-    'elder brother': {'bn': 'দাদা', 'hi': 'बड़ा भाई', 'or': 'ବଡ଼ ଭାଇ', 'en': 'Elder brother'},
-    'younger brother': {'bn': 'ছোট ভাই', 'hi': 'छोटा भाई', 'or': 'ସାନ ଭାଇ', 'en': 'Younger brother'},
-    'elder sister': {'bn': 'দিদি', 'hi': 'बड़ी बहन', 'or': 'ବଡ଼ ଭଉଣୀ', 'en': 'Elder sister'},
-    'younger sister': {'bn': 'ছোট বোন', 'hi': 'छोटी बहन', 'or': 'ସାନ ଭଉଣୀ', 'en': 'Younger sister'},
-    'grandfather': {'bn': 'দাদু', 'hi': 'दादा', 'or': 'ଜେଜେବାପା', 'en': 'Grandfather'},
-    'grandmother': {'bn': 'ঠাকুমা', 'hi': 'दादी', 'or': 'ଜେଜେମାଆ', 'en': 'Grandmother'},
+    'elder brother': {
+      'bn': 'দাদা',
+      'hi': 'बड़ा भाई',
+      'or': 'ବଡ଼ ଭାଇ',
+      'en': 'Elder brother',
+    },
+    'younger brother': {
+      'bn': 'ছোট ভাই',
+      'hi': 'छोटा भाई',
+      'or': 'ସାନ ଭାଇ',
+      'en': 'Younger brother',
+    },
+    'elder sister': {
+      'bn': 'দিদি',
+      'hi': 'बड़ी बहन',
+      'or': 'ବଡ଼ ଭଉଣୀ',
+      'en': 'Elder sister',
+    },
+    'younger sister': {
+      'bn': 'ছোট বোন',
+      'hi': 'छोटी बहन',
+      'or': 'ସାନ ଭଉଣୀ',
+      'en': 'Younger sister',
+    },
+    'grandfather': {
+      'bn': 'দাদু',
+      'hi': 'दादा',
+      'or': 'ଜେଜେବାପା',
+      'en': 'Grandfather',
+    },
+    'grandmother': {
+      'bn': 'ঠাকুমা',
+      'hi': 'दादी',
+      'or': 'ଜେଜେମାଆ',
+      'en': 'Grandmother',
+    },
     'friend': {'bn': 'বন্ধু', 'hi': 'दोस्त', 'or': 'ସାଙ୍ଗ', 'en': 'Friend'},
     'child': {'bn': 'শিশু', 'hi': 'बच्चा', 'or': 'ପିଲା', 'en': 'Child'},
     'boy': {'bn': 'ছেলে', 'hi': 'लड़का', 'or': 'ପୁଅ', 'en': 'Boy'},
@@ -177,20 +225,48 @@ class OlChikiMultilingualHelper {
     'woman': {'bn': 'মহিলা', 'hi': 'महिला', 'or': 'ମହିଳା', 'en': 'Woman'},
 
     // Greetings & Common Phrases
-    'hello': {'bn': 'নমস্কার / জোহার', 'hi': 'नमस्ते / जोहार', 'or': 'ନମସ୍କାର / ଜୋହାର'},
+    'hello': {
+      'bn': 'নমস্কার / জোহার',
+      'hi': 'नमस्ते / जोहार',
+      'or': 'ନମସ୍କାର / ଜୋହାର',
+    },
     'greetings': {'bn': 'জোহার', 'hi': 'जोहार', 'or': 'ଜୋହାର'},
     'thank you': {'bn': 'ধন্যবাদ', 'hi': 'धन्यवाद', 'or': 'ଧନ୍ୟବାଦ'},
     'welcome': {'bn': 'স্বাগতম', 'hi': 'स्वागत है', 'or': 'ସ୍ୱାଗତ'},
     'goodbye': {'bn': 'বিদায়', 'hi': 'अलविदा', 'or': 'ବିଦାୟ'},
     'yes': {'bn': 'হ্যাঁ', 'hi': 'हाँ', 'or': 'ହଁ'},
     'no': {'bn': 'না', 'hi': 'नहीं', 'or': 'ନାହିଁ'},
-    'what is your name?': {'bn': 'তোমার নাম কী?', 'hi': 'तुम्हारा नाम क्या है?', 'or': 'ତୁମର ନାମ କ’ଣ?'},
+    'what is your name?': {
+      'bn': 'তোমার নাম কী?',
+      'hi': 'तुम्हारा नाम क्या है?',
+      'or': 'ତୁମର ନାମ କ’ଣ?',
+    },
     'my name is': {'bn': 'আমার নাম', 'hi': 'मेरा नाम है', 'or': 'ମୋର ନାମ'},
-    'where are you going?': {'bn': 'তুমি কোথায় যাচ্ছো?', 'hi': 'तुम कहाँ जा रहे हो?', 'or': 'ତୁମେ କୁଆଡ଼େ ଯାଉଛ?'},
-    'i am hungry': {'bn': 'আমার খিদে পেয়েছে', 'hi': 'मुझे भूख लगी है', 'or': 'ମୋତେ ଭୋକ ଲାଗୁଛି'},
-    'i am thirsty': {'bn': 'আমার তেষ্টা পেয়েছে', 'hi': 'मुझे प्यास लगी है', 'or': 'ମୋତେ ଶୋଷ ଲାଗୁଛି'},
-    'how are you?': {'bn': 'তুমি কেমন আছো?', 'hi': 'आप कैसे हैं?', 'or': 'ତୁମେ କେମିତି ଅଛ?'},
-    'i am fine': {'bn': 'আমি ভালো আছি', 'hi': 'मैं ठीक हूँ', 'or': 'ମୁଁ ଭଲ ଅଛି'},
+    'where are you going?': {
+      'bn': 'তুমি কোথায় যাচ্ছো?',
+      'hi': 'तुम कहाँ जा रहे हो?',
+      'or': 'ତୁମେ କୁଆଡ଼େ ଯାଉଛ?',
+    },
+    'i am hungry': {
+      'bn': 'আমার খিদে পেয়েছে',
+      'hi': 'मुझे भूख लगी है',
+      'or': 'ମୋତେ ଭୋକ ଲାଗୁଛି',
+    },
+    'i am thirsty': {
+      'bn': 'আমার তেষ্টা পেয়েছে',
+      'hi': 'मुझे प्यास लगी है',
+      'or': 'ମୋତେ ଶୋଷ ଲାଗୁଛି',
+    },
+    'how are you?': {
+      'bn': 'তুমি কেমন আছো?',
+      'hi': 'आप कैसे हैं?',
+      'or': 'ତୁମେ କେମିତି ଅଛ?',
+    },
+    'i am fine': {
+      'bn': 'আমি ভালো আছি',
+      'hi': 'मैं ठीक हूँ',
+      'or': 'ମୁଁ ଭଲ ଅଛି',
+    },
     'come here': {'bn': 'এখানে এসো', 'hi': 'यहाँ आओ', 'or': 'ଏଠାକୁ ଆସ'},
     'go there': {'bn': 'সেখানে যাও', 'hi': 'वहाँ जाओ', 'or': 'ସେଠାକୁ ଯାଅ'},
     'sit down': {'bn': 'বসো', 'hi': 'बैठो', 'or': 'ବସ'},
@@ -319,10 +395,14 @@ class OlChikiMultilingualHelper {
     return buffer.toString();
   }
 
-  static String toBengali(String olChikiText) => transliterateOlChiki(olChikiText, 'bn');
-  static String toHindi(String olChikiText) => transliterateOlChiki(olChikiText, 'hi');
-  static String toOdia(String olChikiText) => transliterateOlChiki(olChikiText, 'or');
-  static String toLatin(String olChikiText) => transliterateOlChiki(olChikiText, 'en');
+  static String toBengali(String olChikiText) =>
+      transliterateOlChiki(olChikiText, 'bn');
+  static String toHindi(String olChikiText) =>
+      transliterateOlChiki(olChikiText, 'hi');
+  static String toOdia(String olChikiText) =>
+      transliterateOlChiki(olChikiText, 'or');
+  static String toLatin(String olChikiText) =>
+      transliterateOlChiki(olChikiText, 'en');
 
   /// Translates an English meaning into the learner's chosen [targetLang].
   static String translateMeaning(String englishMeaning, String targetLang) {
@@ -339,7 +419,9 @@ class OlChikiMultilingualHelper {
 
     // Partial / prefix match for sentences or phrases
     for (final entry in _glossTranslations.entries) {
-      if (lower == entry.key || lower.startsWith('${entry.key} ') || lower.contains(entry.key)) {
+      if (lower == entry.key ||
+          lower.startsWith('${entry.key} ') ||
+          lower.contains(entry.key)) {
         if (entry.value.containsKey(targetLang)) {
           if (lower == entry.key) return entry.value[targetLang]!;
         }
@@ -352,7 +434,9 @@ class OlChikiMultilingualHelper {
 
   /// Splits a composite string like "Baba – Father" or "In rengej ed inja – I am hungry"
   /// into Romanized Santali + English Meaning parts.
-  static ({String phoneticLatin, String meaningEnglish}) parseCompositeLatin(String rawLatin) {
+  static ({String phoneticLatin, String meaningEnglish}) parseCompositeLatin(
+    String rawLatin,
+  ) {
     final trimmed = rawLatin.trim();
     if (trimmed.isEmpty) return (phoneticLatin: '', meaningEnglish: '');
 
@@ -372,7 +456,8 @@ class OlChikiMultilingualHelper {
     // Lookup known single words if no separator
     final lower = trimmed.toLowerCase();
     if (_glossTranslations.containsKey(lower)) {
-      final meaning = _glossTranslations[lower]?['en'] ??
+      final meaning =
+          _glossTranslations[lower]?['en'] ??
           (trimmed[0].toUpperCase() + trimmed.substring(1));
       return (phoneticLatin: trimmed, meaningEnglish: meaning);
     }
@@ -402,8 +487,9 @@ class OlChikiMultilingualHelper {
     final englishMeaning = (explicitMeaning?.trim().isNotEmpty == true)
         ? explicitMeaning!.trim()
         : parsed.meaningEnglish;
-    final romanizedSantali =
-        parsed.phoneticLatin.isNotEmpty ? parsed.phoneticLatin : latin;
+    final romanizedSantali = parsed.phoneticLatin.isNotEmpty
+        ? parsed.phoneticLatin
+        : latin;
 
     // 2. Resolve Transliteration according to teaching language
     String transliteration;
@@ -411,17 +497,23 @@ class OlChikiMultilingualHelper {
       case 'bn':
         transliteration = (textBengali != null && textBengali.trim().isNotEmpty)
             ? textBengali.trim()
-            : (olChiki.isNotEmpty ? transliterateOlChiki(olChiki, 'bn') : romanizedSantali);
+            : (olChiki.isNotEmpty
+                  ? transliterateOlChiki(olChiki, 'bn')
+                  : romanizedSantali);
         break;
       case 'hi':
         transliteration = (textHindi != null && textHindi.trim().isNotEmpty)
             ? textHindi.trim()
-            : (olChiki.isNotEmpty ? transliterateOlChiki(olChiki, 'hi') : romanizedSantali);
+            : (olChiki.isNotEmpty
+                  ? transliterateOlChiki(olChiki, 'hi')
+                  : romanizedSantali);
         break;
       case 'or':
         transliteration = (textOdia != null && textOdia.trim().isNotEmpty)
             ? textOdia.trim()
-            : (olChiki.isNotEmpty ? transliterateOlChiki(olChiki, 'or') : romanizedSantali);
+            : (olChiki.isNotEmpty
+                  ? transliterateOlChiki(olChiki, 'or')
+                  : romanizedSantali);
         break;
       case 'sat':
         transliteration = '';

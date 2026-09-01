@@ -214,4 +214,39 @@ class CrashReporting {
       ),
     );
   }
+
+  /// Record a UI user interaction breadcrumb.
+  static void addUIBreadcrumb({
+    required String element,
+    required String action,
+  }) {
+    if (!isEnabled) return;
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        type: 'user',
+        category: 'ui',
+        message: '$action on $element',
+        level: SentryLevel.info,
+        data: {'element': element, 'action': action},
+      ),
+    );
+  }
+
+  /// Record an audio event breadcrumb.
+  static void addAudioBreadcrumb({
+    required String action,
+    String? trackId,
+    String? error,
+  }) {
+    if (!isEnabled) return;
+    Sentry.addBreadcrumb(
+      Breadcrumb(
+        type: 'audio',
+        category: 'audio',
+        message: error != null ? '$action: $error' : action,
+        level: error != null ? SentryLevel.error : SentryLevel.info,
+        data: {'action': action, 'trackId': ?trackId, 'error': ?error},
+      ),
+    );
+  }
 }

@@ -14,6 +14,7 @@ import 'widgets/settings_widgets.dart';
 import 'widgets/downloads_management_card.dart';
 import 'widgets/learning_settings_tiles.dart';
 import 'widgets/target_language_tile.dart';
+import 'widgets/diagnostics_tile.dart';
 import '../../practice/data/typing_practice_settings.dart';
 import '../../../core/ads/widgets/native_ad_widget.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
@@ -500,6 +501,8 @@ class SettingsScreen extends ConsumerWidget {
           isDark: isDark,
           onTap: () => context.go('/admin'),
         ),
+        const SizedBox(height: 10),
+        const DiagnosticsTile(),
       ],
     );
   }

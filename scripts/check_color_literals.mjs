@@ -91,7 +91,6 @@ const GRANDFATHERED_COUNTS = {
   "lib/features/profile/presentation/progress_screen.dart": 2,
   "lib/features/profile/presentation/widgets/mastery_chart.dart": 2,
   "lib/features/profile/presentation/widgets/next_milestone_card.dart": 4,
-  "lib/features/profile/presentation/widgets/stats_widgets.dart": 1,
   "lib/features/profile/presentation/widgets/streak_calendar.dart": 3,
   "lib/features/quiz/presentation/mistake_review_screen.dart": 1,
   "lib/features/quiz/presentation/widgets/quiz_complete_screen.dart": 3,

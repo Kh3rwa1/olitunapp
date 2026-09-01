@@ -10,6 +10,7 @@ import 'package:just_audio_background/just_audio_background.dart';
 import 'app/router/app_router.dart';
 import 'app/router/url_strategy.dart';
 import 'core/config/appwrite_config.dart';
+import 'core/observability/app_observability.dart';
 import 'core/observability/crash_reporting.dart';
 import 'core/storage/hive_service.dart';
 import 'core/theme/app_theme.dart';
@@ -104,7 +105,7 @@ Future<void> main() async {
         runApp(
           ProviderScope(
             overrides: [sharedPreferencesProvider.overrideWithValue(prefs)],
-            observers: const [DailyMissionsObserver()],
+            observers: const [DailyMissionsObserver(), AppProviderObserver()],
             child: const OlitunApp(),
           ),
         );

@@ -374,7 +374,7 @@ class SkillsGrid extends StatelessWidget {
       SkillData('Alphabet', stats.alphabetProgress, AppColors.brandBlue),
       SkillData('Numbers', stats.numbersProgress, AppColors.accentOchre),
       SkillData('Words', stats.vocabularyProgress, AppColors.accentForest),
-      SkillData('Sentences', stats.sentencesProgress, const Color(0xFF10B981)),
+      SkillData('Sentences', stats.sentencesProgress, AppColors.success),
       SkillData('Bakhed', stats.rhymesProgress, AppColors.primary),
     ];
 

@@ -11,7 +11,7 @@ import { createHash, randomUUID } from 'crypto';
 
 function readProjectIdFromConfig() {
   try {
-    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    const raw = readFileSync(new URL('../appwrite.json', import.meta.url), 'utf8');
     return JSON.parse(raw).projectId || '';
   } catch (_) {
     return '';
@@ -27,7 +27,7 @@ const SHEET_URL = process.env.GOOGLE_SHEET_CSV_URL ||
   'https://docs.google.com/spreadsheets/d/1zJXlcPzXtWxHyvpifqnA832HR2L5DCTX8RmnfypBxOk/gviz/tq?tqx=out:csv';
 
 if (!PROJECT_ID) {
-  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.config.json projectId');
+  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.json projectId');
   process.exit(1);
 }
 

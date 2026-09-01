@@ -8,6 +8,7 @@ import '../../../../../core/theme/app_colors.dart';
 import '../../../../categories/domain/entities/category_entity.dart';
 import '../../../../categories/presentation/providers/category_notifier.dart';
 import '../../widgets/admin_form_widgets.dart';
+import 'category_option_pickers.dart';
 
 class CategoryFormSheet extends ConsumerStatefulWidget {
   final CategoryEntity? category;
@@ -372,34 +373,34 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _GradientOption(
+                      CategoryGradientOption(
                         gradient: AppColors.skyBlueGradient,
                         label: 'Blue',
                         isSelected: _selectedGradient == 'skyBlue',
                         onTap: () =>
                             setState(() => _selectedGradient = 'skyBlue'),
                       ),
-                      _GradientOption(
+                      CategoryGradientOption(
                         gradient: AppColors.peachGradient,
                         label: 'Peach',
                         isSelected: _selectedGradient == 'peach',
                         onTap: () =>
                             setState(() => _selectedGradient = 'peach'),
                       ),
-                      _GradientOption(
+                      CategoryGradientOption(
                         gradient: AppColors.mintGradient,
                         label: 'Mint',
                         isSelected: _selectedGradient == 'mint',
                         onTap: () => setState(() => _selectedGradient = 'mint'),
                       ),
-                      _GradientOption(
+                      CategoryGradientOption(
                         gradient: AppColors.sunsetGradient,
                         label: 'Sunset',
                         isSelected: _selectedGradient == 'sunset',
                         onTap: () =>
                             setState(() => _selectedGradient = 'sunset'),
                       ),
-                      _GradientOption(
+                      CategoryGradientOption(
                         gradient: AppColors.purpleGradient,
                         label: 'Purple',
                         isSelected: _selectedGradient == 'purple',
@@ -425,28 +426,28 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                     spacing: 12,
                     runSpacing: 12,
                     children: [
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.abc_rounded,
                         label: 'ABC',
                         isSelected: _selectedIcon == 'alphabet',
                         onTap: () => setState(() => _selectedIcon = 'alphabet'),
                         isDark: isDark,
                       ),
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.pin_rounded,
                         label: 'Numbers',
                         isSelected: _selectedIcon == 'numbers',
                         onTap: () => setState(() => _selectedIcon = 'numbers'),
                         isDark: isDark,
                       ),
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.text_fields_rounded,
                         label: 'Words',
                         isSelected: _selectedIcon == 'words',
                         onTap: () => setState(() => _selectedIcon = 'words'),
                         isDark: isDark,
                       ),
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.format_quote_rounded,
                         label: 'Sentences',
                         isSelected: _selectedIcon == 'sentences',
@@ -454,7 +455,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                             setState(() => _selectedIcon = 'sentences'),
                         isDark: isDark,
                       ),
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.calculate_rounded,
                         label: 'Math',
                         isSelected: _selectedIcon == 'arithmetic',
@@ -462,7 +463,7 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                             setState(() => _selectedIcon = 'arithmetic'),
                         isDark: isDark,
                       ),
-                      _IconOption(
+                      CategoryIconOption(
                         icon: Icons.auto_stories_rounded,
                         label: 'Stories',
                         isSelected: _selectedIcon == 'stories',
@@ -506,122 +507,6 @@ class _CategoryFormSheetState extends ConsumerState<CategoryFormSheet> {
                   ),
                 ],
               ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _GradientOption extends StatelessWidget {
-  final LinearGradient gradient;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-
-  const _GradientOption({
-    required this.gradient,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              gradient: gradient,
-              shape: BoxShape.circle,
-              border: isSelected
-                  ? Border.all(color: Colors.white, width: 3)
-                  : null,
-              boxShadow: isSelected
-                  ? [
-                      BoxShadow(
-                        color: gradient.colors.first.withValues(alpha: 0.5),
-                        blurRadius: 10,
-                        spreadRadius: 2,
-                      ),
-                    ]
-                  : null,
-            ),
-            child: isSelected
-                ? const Icon(Icons.check_rounded, color: Colors.white)
-                : null,
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _IconOption extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final bool isSelected;
-  final VoidCallback onTap;
-  final bool isDark;
-
-  const _IconOption({
-    required this.icon,
-    required this.label,
-    required this.isSelected,
-    required this.onTap,
-    required this.isDark,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Column(
-        children: [
-          AnimatedContainer(
-            duration: const Duration(milliseconds: 200),
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: isSelected
-                  ? AppColors.primary
-                  : AdminTokens.sunken(isDark),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isSelected
-                    ? AppColors.primary
-                    : AdminTokens.border(isDark),
-              ),
-            ),
-            child: Icon(
-              icon,
-              color: isSelected
-                  ? Colors.white
-                  : isDark
-                  ? Colors.white54
-                  : Colors.black54,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            label,
-            style: TextStyle(
-              fontSize: 12,
-              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
             ),
           ),
         ],

@@ -12,7 +12,7 @@ import { join } from 'path';
 
 function readProjectIdFromConfig() {
   try {
-    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    const raw = readFileSync(new URL('../appwrite.json', import.meta.url), 'utf8');
     return JSON.parse(raw).projectId || '';
   } catch (_) {
     return '';
@@ -25,7 +25,7 @@ const API_KEY = process.env.APPWRITE_API_KEY;
 const DATABASE_ID = 'olitun_db';
 
 if (!PROJECT_ID) {
-  console.error('❌ Error: Set APPWRITE_PROJECT_ID or specify projectId in appwrite.config.json');
+  console.error('❌ Error: Set APPWRITE_PROJECT_ID or specify projectId in appwrite.json');
   process.exit(1);
 }
 

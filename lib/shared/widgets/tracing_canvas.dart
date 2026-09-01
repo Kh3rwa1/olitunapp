@@ -108,7 +108,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.06),
+            color: Colors.black.withValues(alpha: 0.06),
             blurRadius: 16,
             offset: const Offset(0, 8),
           ),
@@ -163,7 +163,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                           vertical: 6,
                         ),
                         decoration: BoxDecoration(
-                          color: widget.accentColor.withOpacity(0.12),
+                          color: widget.accentColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
@@ -512,7 +512,7 @@ class _TracingPainter extends CustomPainter {
 
     final dashPaint = Paint()
       ..color = (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-          .withOpacity(0.5)
+          .withValues(alpha: 0.5)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
 
@@ -530,9 +530,9 @@ class _TracingPainter extends CustomPainter {
 
       final paint = Paint()
         ..color = isCurrent
-            ? accentColor.withOpacity(0.18)
+            ? accentColor.withValues(alpha: 0.18)
             : (isDark ? AppColors.darkBorder : AppColors.lightBorder)
-                  .withOpacity(0.5)
+                  .withValues(alpha: 0.5)
         ..strokeWidth = config.strokeWidth
         ..style = PaintingStyle.stroke
         ..strokeCap = StrokeCap.round
@@ -553,7 +553,7 @@ class _TracingPainter extends CustomPainter {
         canvas.drawCircle(
           start,
           config.strokeWidth / 1.6,
-          Paint()..color = accentColor.withOpacity(0.35),
+          Paint()..color = accentColor.withValues(alpha: 0.35),
         );
         canvas.drawCircle(start, 6.0, Paint()..color = accentColor);
       }
@@ -583,7 +583,7 @@ class _TracingPainter extends CustomPainter {
     if (currentRawPoints.length < 2) return;
 
     final paint = Paint()
-      ..color = accentColor.withOpacity(0.7)
+      ..color = accentColor.withValues(alpha: 0.7)
       ..strokeWidth = config.strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round
@@ -607,7 +607,7 @@ class _TracingPainter extends CustomPainter {
     }
 
     final paint = Paint()
-      ..color = accentColor.withOpacity(0.75)
+      ..color = accentColor.withValues(alpha: 0.75)
       ..strokeWidth = config.strokeWidth
       ..style = PaintingStyle.stroke
       ..strokeCap = StrokeCap.round

@@ -2,7 +2,7 @@ import { readFileSync } from 'fs';
 
 function readProjectIdFromConfig() {
   try {
-    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    const raw = readFileSync(new URL('../appwrite.json', import.meta.url), 'utf8');
     return JSON.parse(raw).projectId || '';
   } catch (_) {
     return '';

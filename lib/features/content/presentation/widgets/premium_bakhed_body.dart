@@ -87,9 +87,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
           margin: const EdgeInsets.only(bottom: 20.0),
           padding: const EdgeInsets.all(20.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -121,7 +121,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                   p: TextStyle(
                     fontSize: 14,
                     height: 1.5,
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withValues(alpha: 0.7),
                   ),
                 ),
               ),
@@ -168,9 +168,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
           margin: const EdgeInsets.only(bottom: 16.0),
           padding: const EdgeInsets.all(16.0),
           decoration: BoxDecoration(
-            color: Colors.white.withOpacity(0.03),
+            color: Colors.white.withValues(alpha: 0.03),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: Colors.white.withOpacity(0.06)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.06)),
           ),
           child: Row(
             children: [
@@ -212,9 +212,9 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               if (item.audioFileId.isNotEmpty)
                 Container(
                   decoration: BoxDecoration(
-                    color: accentColor.withOpacity(0.1),
+                    color: accentColor.withValues(alpha: 0.1),
                     shape: BoxShape.circle,
-                    border: Border.all(color: accentColor.withOpacity(0.2)),
+                    border: Border.all(color: accentColor.withValues(alpha: 0.2)),
                   ),
                   child: IconButton(
                     icon: Icon(Icons.volume_up_rounded, color: accentColor),
@@ -357,11 +357,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
                 color: isActive
-                    ? Colors.white.withOpacity(0.03)
+                    ? Colors.white.withValues(alpha: 0.03)
                     : Colors.transparent,
                 borderRadius: BorderRadius.circular(16),
                 border: isActive
-                    ? Border.all(color: Colors.white.withOpacity(0.05))
+                    ? Border.all(color: Colors.white.withValues(alpha: 0.05))
                     : null,
               ),
               child: Column(
@@ -441,11 +441,11 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
       child: Container(
         decoration: BoxDecoration(
           color: isSelected
-              ? Colors.white.withOpacity(0.08)
+              ? Colors.white.withValues(alpha: 0.08)
               : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
           border: isSelected
-              ? Border.all(color: Colors.white.withOpacity(0.12))
+              ? Border.all(color: Colors.white.withValues(alpha: 0.12))
               : null,
         ),
         child: Row(
@@ -527,7 +527,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                   height: 350,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: accentColor.withOpacity(0.12),
+                    color: accentColor.withValues(alpha: 0.12),
                   ),
                 ),
               ),
@@ -548,10 +548,10 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     children: [
                       Container(
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.06),
+                          color: Colors.white.withValues(alpha: 0.06),
                           shape: BoxShape.circle,
                           border: Border.all(
-                            color: Colors.white.withOpacity(0.1),
+                            color: Colors.white.withValues(alpha: 0.1),
                           ),
                         ),
                         child: IconButton(
@@ -613,12 +613,12 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(28),
                         border: Border.all(
-                          color: Colors.white.withOpacity(0.08),
+                          color: Colors.white.withValues(alpha: 0.08),
                           width: 1.5,
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: accentColor.withOpacity(0.18),
+                            color: accentColor.withValues(alpha: 0.18),
                             blurRadius: 36,
                             spreadRadius: -4,
                           ),
@@ -652,7 +652,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                                 enabled: isPlaying,
                                 child: EnchantedVisualizer(
                                   isPlaying: isPlaying,
-                                  color: Colors.white.withOpacity(0.25),
+                                  color: Colors.white.withValues(alpha: 0.25),
                                   height: 80,
                                 ),
                               ),
@@ -672,10 +672,10 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                   child: SliderTheme(
                     data: SliderThemeData(
                       activeTrackColor: accentColor,
-                      inactiveTrackColor: Colors.white.withOpacity(0.12),
+                      inactiveTrackColor: Colors.white.withValues(alpha: 0.12),
                       thumbColor: Colors.white,
                       trackHeight: 4,
-                      overlayColor: accentColor.withOpacity(0.16),
+                      overlayColor: accentColor.withValues(alpha: 0.16),
                       thumbShape: const RoundSliderThumbShape(
                         enabledThumbRadius: 6,
                       ),
@@ -739,7 +739,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       IconButton(
                         icon: Icon(
                           Icons.replay_10_rounded,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           size: 30,
                         ),
                         onPressed: () {
@@ -775,7 +775,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                             shape: BoxShape.circle,
                             boxShadow: [
                               BoxShadow(
-                                color: accentColor.withOpacity(0.35),
+                                color: accentColor.withValues(alpha: 0.35),
                                 blurRadius: 24,
                                 spreadRadius: 1,
                               ),
@@ -795,7 +795,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       IconButton(
                         icon: Icon(
                           Icons.forward_10_rounded,
-                          color: Colors.white.withOpacity(0.8),
+                          color: Colors.white.withValues(alpha: 0.8),
                           size: 30,
                         ),
                         onPressed: () {
@@ -821,7 +821,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     height: 52,
                     padding: const EdgeInsets.all(4),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.04),
+                      color: Colors.white.withValues(alpha: 0.04),
                       borderRadius: BorderRadius.circular(16),
                       border: Border.all(color: Colors.white12),
                     ),
@@ -859,13 +859,13 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                 Expanded(
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.02),
+                      color: Colors.white.withValues(alpha: 0.02),
                       borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(32),
                         topRight: Radius.circular(32),
                       ),
                       border: Border(
-                        top: BorderSide(color: Colors.white.withOpacity(0.06)),
+                        top: BorderSide(color: Colors.white.withValues(alpha: 0.06)),
                       ),
                     ),
                     child: learningContentAsync.when(

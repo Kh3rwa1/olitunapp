@@ -8,7 +8,7 @@ import { readFileSync } from 'fs';
 
 function readProjectIdFromConfig() {
   try {
-    const raw = readFileSync(new URL('../appwrite.config.json', import.meta.url), 'utf8');
+    const raw = readFileSync(new URL('../appwrite.json', import.meta.url), 'utf8');
     return JSON.parse(raw).projectId || '';
   } catch (_) {
     return '';
@@ -28,7 +28,7 @@ const ADMIN_TEAM_ID = process.env.ADMIN_TEAM_ID || 'admins';
 const ADMIN_TEAM_NAME = 'Olitun Admins';
 
 if (!PROJECT_ID) {
-  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.config.json projectId');
+  console.error('❌ Set APPWRITE_PROJECT_ID or appwrite.json projectId');
   process.exit(1);
 }
 

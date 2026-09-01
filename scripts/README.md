@@ -29,7 +29,7 @@ All Appwrite scripts read:
 
 ```bash
 APPWRITE_ENDPOINT=https://sgp.cloud.appwrite.io/v1 # optional, defaults to Appwrite Singapore
-APPWRITE_PROJECT_ID=<project-id>                  # optional if appwrite.config.json has projectId
+APPWRITE_PROJECT_ID=<project-id>                  # optional if appwrite.json has projectId
 APPWRITE_API_KEY=<server-api-key>                 # required
 ADMIN_TEAM_ID=admins                              # optional, setup only
 ```

@@ -1,3 +1,8 @@
+// DEV-ONLY static file server for local preview of build/web.
+// Not used in production (Vercel serves build/web with CSP headers from
+// vercel.json). The permissive CORS header below is intentional for local
+// development and must never be deployed as a public-facing server.
+
 const http = require('http');
 const fs = require('fs');
 const path = require('path');

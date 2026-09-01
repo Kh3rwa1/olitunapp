@@ -14,14 +14,10 @@ const PERMANENT_EXEMPTIONS = new Set([
 // As each file is refactored below 600 lines, remove it from this list.
 // If a grandfathered file drops below 600 lines, the script will require its removal to ratchet down.
 const GRANDFATHERED_FILES = new Set([
-  'lib/features/admin/presentation/analytics/admin_analytics_screen.dart',
   'lib/features/admin/presentation/bakhed/bakhed_hub_screen.dart',
   'lib/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart',
-  'lib/features/admin/presentation/bakhed/widgets/bakhed_lyrics_tab.dart',
   'lib/features/admin/presentation/binti_waitlist/admin_binti_waitlist_screen.dart',
-  'lib/features/admin/presentation/categories/widgets/category_form_sheet.dart',
   'lib/features/admin/presentation/lessons/content/widgets/edit_block_sheet.dart',
-  'lib/features/admin/presentation/lessons/content/widgets/lesson_block_card.dart',
   'lib/features/admin/presentation/lessons/content/widgets/universal_block_sheet.dart',
   'lib/features/admin/presentation/review/admin_review_screen.dart',
   'lib/features/admin/presentation/settings/admin_settings_screen.dart',
@@ -36,7 +32,6 @@ const GRANDFATHERED_FILES = new Set([
   'lib/features/profile/presentation/providers/profile_providers.dart',
   'lib/features/profile/presentation/settings_screen.dart',
   'lib/features/quiz/presentation/quiz_list_screen.dart',
-  'lib/features/quiz/presentation/quiz_screen.dart',
   'lib/features/quiz/presentation/widgets/quiz_complete_screen.dart',
   'lib/features/rhymes/presentation/rhyme_screen.dart',
   'lib/shared/repositories/content_repository.dart',

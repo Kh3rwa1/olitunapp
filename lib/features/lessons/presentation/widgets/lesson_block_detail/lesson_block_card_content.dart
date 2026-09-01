@@ -131,7 +131,7 @@ class LessonBlockCardContent extends ConsumerWidget {
                             fontWeight: FontWeight.w600,
                             color: isDark
                                 ? Colors.white70
-                                : const Color(0xFF475569),
+                                : AppColors.textSecondaryLight,
                             height: 1.35,
                           ),
                         ),

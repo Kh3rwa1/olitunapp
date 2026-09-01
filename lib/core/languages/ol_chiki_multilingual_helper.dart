@@ -1,6 +1,5 @@
 import 'package:flutter/widgets.dart';
 
-
 /// Resolved localized presentation of an Ol Chiki learning item.
 @immutable
 class LocalizedItemDisplay {

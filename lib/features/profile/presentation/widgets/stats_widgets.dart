@@ -66,12 +66,14 @@ class StatsGrid extends StatelessWidget {
             padding: const EdgeInsets.all(20),
             gradient: LinearGradient(
               colors: [
-                AppColors.duoOrange.withValues(alpha: isDark ? 0.15 : 0.08),
-                AppColors.duoOrange.withValues(alpha: isDark ? 0.05 : 0.02),
+                AppColors.accentOchre.withValues(alpha: isDark ? 0.15 : 0.08),
+                AppColors.accentOchre.withValues(alpha: isDark ? 0.05 : 0.02),
               ],
             ),
             border: Border.all(
-              color: AppColors.duoOrange.withValues(alpha: isDark ? 0.2 : 0.12),
+              color: AppColors.accentOchre.withValues(
+                alpha: isDark ? 0.2 : 0.12,
+              ),
             ),
             child: Row(
               children: [
@@ -79,12 +81,12 @@ class StatsGrid extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: AppColors.duoOrange.withValues(alpha: 0.15),
+                    color: AppColors.accentOchre.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(16),
                   ),
                   child: const Icon(
                     Icons.local_fire_department_rounded,
-                    color: AppColors.duoOrange,
+                    color: AppColors.accentOchre,
                     size: 28,
                   ),
                 ),
@@ -106,7 +108,7 @@ class StatsGrid extends StatelessWidget {
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 1,
-                        color: AppColors.duoOrange,
+                        color: AppColors.accentOchre,
                       ),
                     ),
                   ],
@@ -127,7 +129,7 @@ class StatsGrid extends StatelessWidget {
                     Icons.star_rounded,
                     stars,
                     'Stars',
-                    AppColors.duoYellow,
+                    AppColors.accentGold,
                   ),
                   isDark: isDark,
                   delay: 80,
@@ -143,7 +145,7 @@ class StatsGrid extends StatelessWidget {
                     Icons.quiz_rounded,
                     quizzesCompleted,
                     'Quizzes',
-                    AppColors.duoBlue,
+                    AppColors.brandBlue,
                   ),
                   isDark: isDark,
                   delay: 160,
@@ -369,9 +371,9 @@ class SkillsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final skills = [
-      SkillData('Alphabet', stats.alphabetProgress, AppColors.duoBlue),
-      SkillData('Numbers', stats.numbersProgress, AppColors.duoOrange),
-      SkillData('Words', stats.vocabularyProgress, AppColors.duoGreen),
+      SkillData('Alphabet', stats.alphabetProgress, AppColors.brandBlue),
+      SkillData('Numbers', stats.numbersProgress, AppColors.accentOchre),
+      SkillData('Words', stats.vocabularyProgress, AppColors.accentForest),
       SkillData('Sentences', stats.sentencesProgress, const Color(0xFF10B981)),
       SkillData('Bakhed', stats.rhymesProgress, AppColors.primary),
     ];

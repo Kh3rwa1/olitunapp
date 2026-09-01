@@ -242,10 +242,10 @@ class AppErrorState extends ConsumerWidget {
     final errorIconWidget = Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.duoRed.withValues(alpha: 0.1),
+        color: AppColors.accentTerracotta.withValues(alpha: 0.1),
         shape: BoxShape.circle,
       ),
-      child: Icon(icon, size: 40, color: AppColors.duoRed),
+      child: Icon(icon, size: 40, color: AppColors.accentTerracotta),
     );
 
     return Center(
@@ -348,7 +348,7 @@ class OfflineStatusBanner extends ConsumerWidget {
         final bool showProgress;
 
         if (isOffline) {
-          backgroundColor = AppColors.duoRed.withValues(alpha: 0.9);
+          backgroundColor = AppColors.accentTerracotta.withValues(alpha: 0.9);
           iconData = Icons.cloud_off_rounded;
           text = isSynced
               ? 'Offline mode. Showing cached content.'
@@ -368,14 +368,14 @@ class OfflineStatusBanner extends ConsumerWidget {
             onButtonTap = null;
             showProgress = true;
           } else if (syncStatus == SyncStatus.success) {
-            backgroundColor = AppColors.duoGreen.withValues(alpha: 0.9);
+            backgroundColor = AppColors.accentForest.withValues(alpha: 0.9);
             iconData = Icons.cloud_done_rounded;
             text = 'Progress synced!';
             buttonText = null;
             onButtonTap = null;
             showProgress = false;
           } else if (syncStatus == SyncStatus.error) {
-            backgroundColor = AppColors.duoRed.withValues(alpha: 0.9);
+            backgroundColor = AppColors.accentTerracotta.withValues(alpha: 0.9);
             iconData = Icons.sync_problem_rounded;
             text = 'Failed to sync progress.';
             buttonText = 'RETRY';

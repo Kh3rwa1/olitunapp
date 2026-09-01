@@ -70,7 +70,7 @@ class AdminLoginBackground extends StatelessWidget {
             duration: 18.seconds,
           ),
           _blob(
-            color: AppColors.duoBlue.withValues(alpha: isDark ? 0.12 : 0.08),
+            color: AppColors.brandBlue.withValues(alpha: isDark ? 0.12 : 0.08),
             bottom: -100,
             right: -50,
             size: 360,

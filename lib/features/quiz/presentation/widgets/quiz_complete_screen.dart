@@ -476,10 +476,10 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                             // 3. Stars Bento
                             buildBentoCard(
-                              backgroundColor: AppColors.duoYellow.withValues(
+                              backgroundColor: AppColors.accentGold.withValues(
                                 alpha: 0.10,
                               ),
-                              borderColor: AppColors.duoYellow.withValues(
+                              borderColor: AppColors.accentGold.withValues(
                                 alpha: 0.20,
                               ),
                               child: Column(
@@ -487,7 +487,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                 children: [
                                   const Icon(
                                     Icons.star_rounded,
-                                    color: AppColors.duoYellow,
+                                    color: AppColors.accentGold,
                                     size: 24,
                                   ),
                                   const SizedBox(height: 6),
@@ -507,7 +507,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
-                                      color: AppColors.duoYellowDark,
+                                      color: AppColors.accentGoldDark,
                                     ),
                                   ),
                                 ],
@@ -516,10 +516,10 @@ class QuizCompleteScreen extends ConsumerWidget {
 
                             // 4. Streak Bento
                             buildBentoCard(
-                              backgroundColor: AppColors.duoOrange.withValues(
+                              backgroundColor: AppColors.accentOchre.withValues(
                                 alpha: 0.10,
                               ),
-                              borderColor: AppColors.duoOrange.withValues(
+                              borderColor: AppColors.accentOchre.withValues(
                                 alpha: 0.20,
                               ),
                               child: Column(
@@ -527,7 +527,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                 children: [
                                   const Icon(
                                     Icons.local_fire_department_rounded,
-                                    color: AppColors.duoOrange,
+                                    color: AppColors.accentOchre,
                                     size: 24,
                                   ),
                                   const SizedBox(height: 6),
@@ -547,7 +547,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                     style: const TextStyle(
                                       fontSize: 18,
                                       fontWeight: FontWeight.w900,
-                                      color: AppColors.duoOrangeDark,
+                                      color: AppColors.accentOchreDark,
                                     ),
                                   ),
                                 ],
@@ -637,7 +637,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                 },
                                 icon: const Icon(
                                   Icons.stars_rounded,
-                                  color: AppColors.duoYellowDark,
+                                  color: AppColors.accentGoldDark,
                                   size: 22,
                                 ),
                                 label: const FittedBox(
@@ -647,7 +647,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                     style: TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.duoYellowDark,
+                                      color: AppColors.accentGoldDark,
                                     ),
                                   ),
                                 ),
@@ -657,7 +657,7 @@ class QuizCompleteScreen extends ConsumerWidget {
                                     vertical: 10,
                                   ),
                                   side: const BorderSide(
-                                    color: AppColors.duoYellow,
+                                    color: AppColors.accentGold,
                                     width: 1.5,
                                   ),
                                   shape: RoundedRectangleBorder(

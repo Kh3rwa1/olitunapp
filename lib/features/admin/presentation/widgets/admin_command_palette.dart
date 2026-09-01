@@ -79,7 +79,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.settings_rounded,
         path: '/admin/settings',
-        color: AppColors.duoYellow,
+        color: AppColors.accentGold,
       ),
       CommandItem(
         title: 'Purchases & Revenue',
@@ -87,7 +87,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.shopping_bag_rounded,
         path: '/admin/purchases',
-        color: AppColors.duoGreen,
+        color: AppColors.accentForest,
       ),
       CommandItem(
         title: 'Platform Analytics',
@@ -95,7 +95,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.analytics_rounded,
         path: '/admin/analytics',
-        color: AppColors.duoBlue,
+        color: AppColors.brandBlue,
       ),
       CommandItem(
         title: 'Daily Affirmations',
@@ -103,7 +103,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.auto_awesome_rounded,
         path: '/admin/affirmations',
-        color: AppColors.duoOrange,
+        color: AppColors.accentOchre,
       ),
       CommandItem(
         title: 'Maintenance Controls',
@@ -111,7 +111,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.build_rounded,
         path: '/admin/maintenance',
-        color: AppColors.duoOrange,
+        color: AppColors.accentOchre,
       ),
       CommandItem(
         title: 'Access Management',
@@ -119,7 +119,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
         category: 'Navigation',
         icon: Icons.vpn_key_rounded,
         path: '/admin/access',
-        color: AppColors.duoPurple,
+        color: AppColors.accentPurple,
       ),
     ];
 
@@ -140,7 +140,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           category: 'Category',
           icon: Icons.category_rounded,
           path: '/admin/categories',
-          color: AppColors.duoGreen,
+          color: AppColors.accentForest,
         ),
       );
     }
@@ -153,7 +153,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           category: 'Lesson',
           icon: Icons.school_rounded,
           path: '/admin/lessons/content/${lesson.id}',
-          color: AppColors.duoBlue,
+          color: AppColors.brandBlue,
         ),
       );
     }
@@ -166,7 +166,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           category: 'Vocabulary',
           icon: Icons.menu_book_rounded,
           path: '/admin/words',
-          color: AppColors.duoYellow,
+          color: AppColors.accentGold,
         ),
       );
     }
@@ -180,7 +180,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           category: 'Quiz',
           icon: Icons.quiz_rounded,
           path: '/admin/quizzes',
-          color: AppColors.duoPurple,
+          color: AppColors.accentPurple,
         ),
       );
     }
@@ -195,7 +195,7 @@ class _AdminCommandPaletteState extends ConsumerState<AdminCommandPalette> {
           category: 'Alphabet',
           icon: Icons.text_fields_rounded,
           path: '/admin/letters',
-          color: AppColors.duoOrange,
+          color: AppColors.accentOchre,
         ),
       );
     }

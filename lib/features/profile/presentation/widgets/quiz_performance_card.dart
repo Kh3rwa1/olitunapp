@@ -25,14 +25,14 @@ class QuizPerformanceCard extends StatelessWidget {
           padding: const EdgeInsets.all(22),
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.duoBlue, AppColors.duoBlueDark],
+              colors: [AppColors.brandBlue, AppColors.brandBlueDark],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             boxShadow: [
               BoxShadow(
-                color: AppColors.duoBlue.withValues(alpha: 0.25),
+                color: AppColors.brandBlue.withValues(alpha: 0.25),
                 blurRadius: 20,
                 offset: const Offset(0, 8),
               ),

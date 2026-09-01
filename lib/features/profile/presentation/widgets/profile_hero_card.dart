@@ -34,9 +34,9 @@ class ProfileHeroCard extends StatelessWidget {
   Color _getLevelColor() {
     const colors = [
       AppColors.xpNeutral, // Beginner — grey
-      AppColors.duoBlue, // Intermediate — blue
-      AppColors.duoOrange, // Advanced — orange
-      AppColors.duoYellow, // Master — gold
+      AppColors.brandBlue, // Intermediate — blue
+      AppColors.accentOchre, // Advanced — orange
+      AppColors.accentGold, // Master — gold
     ];
     return colors[levelIndex.clamp(0, 3)];
   }

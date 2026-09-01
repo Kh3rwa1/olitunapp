@@ -50,11 +50,11 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
       widget.rhyme.heroMedia != null && widget.rhyme.heroMedia!.url.isNotEmpty;
 
   static const List<Color> _palette = [
-    AppColors.duoBlue,
-    AppColors.duoGreen,
-    AppColors.duoOrange,
-    AppColors.duoRed,
-    AppColors.duoYellow,
+    AppColors.brandBlue,
+    AppColors.accentForest,
+    AppColors.accentOchre,
+    AppColors.accentTerracotta,
+    AppColors.accentGold,
     AppColors.primary,
   ];
 

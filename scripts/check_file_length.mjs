@@ -14,7 +14,6 @@ const PERMANENT_EXEMPTIONS = new Set([
 // As each file is refactored below 600 lines, remove it from this list.
 // If a grandfathered file drops below 600 lines, the script will require its removal to ratchet down.
 const GRANDFATHERED_FILES = new Set([
-  'lib/core/theme/app_theme.dart',
   'lib/features/admin/presentation/analytics/admin_analytics_screen.dart',
   'lib/features/admin/presentation/bakhed/bakhed_hub_screen.dart',
   'lib/features/admin/presentation/bakhed/controllers/bakhed_editor_controller.dart',

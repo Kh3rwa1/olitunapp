@@ -62,7 +62,7 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubNumbers;
       ctaText = l10n.nbaCtaPracticeNumbers;
       icon = Icons.pin_rounded;
-      color = AppColors.duoBlue;
+      color = AppColors.brandBlue;
       onTap = () {
         context.push('/number/standalone/all');
       };
@@ -72,7 +72,7 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubMistakes(mistakes.length);
       ctaText = l10n.nbaCtaReviewMistakes;
       icon = Icons.psychology_rounded;
-      color = AppColors.duoOrange;
+      color = AppColors.accentOchre;
       onTap = () {
         context.push('/mistakes');
       };
@@ -84,7 +84,7 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubStreakRisk(streak);
       ctaText = l10n.nbaCtaQuickReview;
       icon = Icons.local_fire_department_rounded;
-      color = AppColors.duoOrange;
+      color = AppColors.accentOchre;
       onTap = () {
         context.push('/quizzes');
       };
@@ -94,7 +94,7 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubTryBakhed;
       ctaText = l10n.nbaCtaListenNow;
       icon = Icons.music_note_rounded;
-      color = AppColors.duoBlue;
+      color = AppColors.brandBlue;
       onTap = () {
         context.push('/bakhed');
       };
@@ -108,7 +108,7 @@ class NextBestActionCard extends ConsumerWidget {
       subtitle = l10n.nbaSubAllDone;
       ctaText = l10n.nbaCtaExploreBakhed;
       icon = Icons.celebration_rounded;
-      color = AppColors.duoYellow;
+      color = AppColors.accentGold;
       onTap = () {
         context.push('/bakhed');
       };

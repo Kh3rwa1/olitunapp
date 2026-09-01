@@ -41,7 +41,7 @@ class DownloadsManagementCard extends ConsumerWidget {
     return SettingsCard(
       title: 'Downloads',
       icon: Icons.download_rounded,
-      color: AppColors.duoBlue,
+      color: AppColors.brandBlue,
       index: index,
       children: [
         SettingTile(
@@ -85,7 +85,9 @@ class DownloadsManagementCard extends ConsumerWidget {
           ),
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            style: TextButton.styleFrom(foregroundColor: AppColors.duoRed),
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.accentTerracotta,
+            ),
             child: const Text('Delete'),
           ),
         ],

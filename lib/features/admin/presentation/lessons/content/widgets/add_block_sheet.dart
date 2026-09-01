@@ -94,7 +94,7 @@ class AddBlockSheet extends StatelessWidget {
                 context: context,
                 icon: Icons.image_rounded,
                 label: 'Image',
-                color: AppColors.duoBlue,
+                color: AppColors.brandBlue,
                 type: 'image',
               ),
               _buildTypeOption(

@@ -55,7 +55,7 @@ class GamificationRowCard extends StatelessWidget {
     return switch (status) {
       'published' => AppColors.success,
       'archived' => Colors.blueGrey,
-      'draft' => AppColors.duoOrange,
+      'draft' => AppColors.accentOchre,
       _ => AppColors.primary,
     };
   }

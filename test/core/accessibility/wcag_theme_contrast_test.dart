@@ -52,6 +52,66 @@ void main() {
       },
     );
 
+    test(
+      'Santali terracotta accent passes normal text contrast on light surface',
+      () {
+        const foreground = AppColors.santaliTerracotta; // #8B3A3A
+        const background = AppColors.lightSurface; // #FFFFFF
+        final ratio = WcagAudit.contrastRatio(foreground, background);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(WcagAudit.normalTextContrast),
+          reason:
+              'Santali terracotta text ($ratio:1) on white must meet ≥ 4.5:1',
+        );
+      },
+    );
+
+    test(
+      'Santali Sal green accent passes normal text contrast on light surface',
+      () {
+        const foreground = AppColors.santaliSalGreen; // #1B4D3E
+        const background = AppColors.lightSurface; // #FFFFFF
+        final ratio = WcagAudit.contrastRatio(foreground, background);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(WcagAudit.normalTextContrast),
+          reason:
+              'Santali Sal green text ($ratio:1) on white must meet ≥ 4.5:1',
+        );
+      },
+    );
+
+    test(
+      'Santali Night Sky accent passes normal text contrast on light surface',
+      () {
+        const foreground = AppColors.santaliNightSky; // #1E2A44
+        const background = AppColors.lightSurface; // #FFFFFF
+        final ratio = WcagAudit.contrastRatio(foreground, background);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(WcagAudit.normalTextContrast),
+          reason:
+              'Santali Night sky text ($ratio:1) on white must meet ≥ 4.5:1',
+        );
+      },
+    );
+
+    test(
+      'Santali Ochre accent passes large text / UI component contrast on dark surface',
+      () {
+        const foreground = AppColors.santaliOchre; // #D99B26
+        const background = AppColors.darkBackground; // #000000
+        final ratio = WcagAudit.contrastRatio(foreground, background);
+        expect(
+          ratio,
+          greaterThanOrEqualTo(WcagAudit.largeTextContrast),
+          reason:
+              'Santali ochre on dark background ($ratio:1) must meet large text / component contrast ≥ 3.0:1',
+        );
+      },
+    );
+
     test('minimum tap target helper enforces 48x48 logical pixels', () {
       expect(WcagAudit.hasMinimumTapTarget(const Size(48, 48)), isTrue);
       expect(WcagAudit.hasMinimumTapTarget(const Size(44, 44)), isFalse);

@@ -559,7 +559,7 @@ class _QuizSessionHud extends StatelessWidget {
               child: _HudChip(
                 icon: Icons.favorite_rounded,
                 label: '${state.hearts}',
-                accent: AppColors.duoRed,
+                accent: AppColors.accentTerracotta,
                 isDark: isDark,
               ),
             ),
@@ -569,7 +569,7 @@ class _QuizSessionHud extends StatelessWidget {
                 child: _HudChip(
                   icon: Icons.local_fire_department_rounded,
                   label: '${state.comboStreak}',
-                  accent: AppColors.duoOrange,
+                  accent: AppColors.accentOchre,
                   isDark: isDark,
                 ),
               ),
@@ -578,7 +578,7 @@ class _QuizSessionHud extends StatelessWidget {
                 child: _HudChip(
                   icon: Icons.bolt_rounded,
                   label: 'x${state.comboMultiplier}',
-                  accent: AppColors.duoYellow,
+                  accent: AppColors.accentGold,
                   isDark: isDark,
                 ),
               ),

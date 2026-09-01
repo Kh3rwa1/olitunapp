@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:video_player/video_player.dart';
 import 'package:itun/core/storage/media_uploader.dart';
@@ -249,9 +250,11 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
         Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+            color: isDark
+                ? AppColors.darkSurfaceElevated
+                : AppColors.lightBackground,
             border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
             borderRadius: BorderRadius.circular(16),
           ),
@@ -330,7 +333,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                             icon: const Icon(Icons.cached_rounded, size: 18),
                             label: const Text('Change'),
                             style: TextButton.styleFrom(
-                              foregroundColor: const Color(0xFF3B82F6),
+                              foregroundColor: AppColors.duoBlue,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -362,13 +365,13 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                             _getIconForKind(widget.kind),
                             size: 44,
                             color: isDark
-                                ? const Color(0xFF475569)
-                                : const Color(0xFF94A3B8),
+                                ? AppColors.textSecondaryLight
+                                : AppColors.textTertiaryLight,
                           ),
                           const SizedBox(height: 12),
                           if (_isUploading)
                             const CircularProgressIndicator(
-                              color: Color(0xFF10B981),
+                              color: AppColors.primary,
                             )
                           else
                             ElevatedButton.icon(
@@ -378,7 +381,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                                 'Upload ${widget.kind.name.toUpperCase()}',
                               ),
                               style: ElevatedButton.styleFrom(
-                                backgroundColor: const Color(0xFF10B981),
+                                backgroundColor: AppColors.primary,
                                 foregroundColor: Colors.white,
                                 elevation: 0,
                                 shape: RoundedRectangleBorder(
@@ -450,7 +453,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.animation_rounded, color: Color(0xFF10B981)),
+              Icon(Icons.animation_rounded, color: AppColors.primary),
               SizedBox(width: 8),
               Text(
                 'Lottie Animation uploaded successfully',
@@ -469,7 +472,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
               width: double.infinity,
               color: Colors.black12,
               child: const Center(
-                child: CircularProgressIndicator(color: Color(0xFF3B82F6)),
+                child: CircularProgressIndicator(color: AppColors.duoBlue),
               ),
             ),
           );
@@ -535,7 +538,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                             controller,
                             allowScrubbing: true,
                             colors: const VideoProgressColors(
-                              playedColor: Color(0xFF3B82F6),
+                              playedColor: AppColors.duoBlue,
                               bufferedColor: Colors.white24,
                               backgroundColor: Colors.white12,
                             ),
@@ -565,7 +568,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
           child: const Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(Icons.audiotrack_rounded, color: Color(0xFFF59E0B)),
+              Icon(Icons.audiotrack_rounded, color: AppColors.warning),
               SizedBox(width: 8),
               Text(
                 'Audio track uploaded successfully',

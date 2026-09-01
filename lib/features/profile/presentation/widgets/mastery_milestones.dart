@@ -74,7 +74,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
         title: 'Communicator',
         subtitle: 'Learn for 10+ minutes',
         icon: Icons.record_voice_over_rounded,
-        color: const Color(0xFF00E5FF),
+        color: AppColors.accentCyan,
         isUnlocked: stats.totalLearningMinutes >= 10,
         currentProgress: stats.totalLearningMinutes.toDouble(),
         targetProgress: 10.0,
@@ -97,7 +97,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
     return Container(
           width: double.infinity,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF121212) : Colors.white,
+            color: isDark ? AppColors.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isDark
@@ -305,10 +305,12 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
     Widget medallionCard = Container(
       decoration: BoxDecoration(
         color: data.isUnlocked
-            ? (isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF8F9FA))
+            ? (isDark
+                  ? AppColors.darkSurfaceElevated
+                  : AppColors.lightBackground)
             : (isDark
-                  ? Color.lerp(const Color(0xFF151515), data.color, 0.04)
-                  : Color.lerp(const Color(0xFFFCFCFC), data.color, 0.05)),
+                  ? Color.lerp(AppColors.softBlack, data.color, 0.04)
+                  : Color.lerp(Colors.white, data.color, 0.05)),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: data.isUnlocked
@@ -495,11 +497,11 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
             child: ConfettiBurst(
               particleCount: 28,
               colors: [
-                Color(0xFF1EE088), // Logo primary green
-                Color(0xFFFF9600), // Duo Orange
-                Color(0xFFFFC800), // Duo Yellow
-                Color(0xFF1CB0F6), // Duo Blue
-                Color(0xFF00C767), // Darker green
+                AppColors.primary,
+                AppColors.duoOrange,
+                AppColors.duoYellow,
+                AppColors.duoBlue,
+                AppColors.primaryDark,
               ],
             ),
           ),

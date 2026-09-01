@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../theme/app_colors.dart';
 import 'motion_tokens.dart';
 import '../../shared/providers/local_settings_provider.dart';
 
@@ -12,11 +13,11 @@ class ConfettiBurst extends ConsumerStatefulWidget {
     this.particleCount = 36,
     this.duration = const Duration(milliseconds: 1600),
     this.colors = const [
-      Color(0xFF7C5CFF),
-      Color(0xFFFF7AC6),
-      Color(0xFFFFC857),
-      Color(0xFF34D399),
-      Color(0xFF60A5FA),
+      AppColors.accentPurple,
+      AppColors.accentPink,
+      AppColors.duoYellow,
+      AppColors.primary,
+      AppColors.duoBlue,
     ],
   });
 

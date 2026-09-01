@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/features/admin/data/tracing_templates.dart';
 import 'package:itun/features/admin/presentation/widgets/admin_media_field.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -151,8 +152,8 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                 decoration: BoxDecoration(
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF475569)
-                        : const Color(0xFFCBD5E1),
+                        ? AppColors.textSecondaryLight
+                        : AppColors.lightBorder,
                   ),
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -162,7 +163,9 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                     Text(
                       'Load Template',
                       style: TextStyle(
-                        color: isDark ? Colors.white : const Color(0xFF1E293B),
+                        color: isDark
+                            ? Colors.white
+                            : AppColors.darkSurfaceElevated,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
                       ),
@@ -179,7 +182,9 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
 
         // Sliders & Setup Controls
         Card(
-          color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+          color: isDark
+              ? AppColors.darkSurfaceElevated
+              : AppColors.lightBackground,
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
           ),
@@ -203,7 +208,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                         min: 5.0,
                         max: 25.0,
                         divisions: 20,
-                        activeColor: const Color(0xFF10B981),
+                        activeColor: AppColors.primary,
                         onChanged: (val) {
                           setState(() => _strokeWidth = val);
                           _notifyChanges();
@@ -229,7 +234,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                         value: _tolerance,
                         min: 0.1,
                         divisions: 18,
-                        activeColor: const Color(0xFF3B82F6),
+                        activeColor: AppColors.duoBlue,
                         onChanged: (val) {
                           setState(() => _tolerance = val);
                           _notifyChanges();
@@ -259,7 +264,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                         min: 1.0,
                         max: 5.0,
                         divisions: 4,
-                        activeColor: const Color(0xFFF59E0B),
+                        activeColor: AppColors.warning,
                         onChanged: (val) {
                           setState(() => _requiredCompletions = val.toInt());
                           _notifyChanges();
@@ -310,9 +315,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
             height: 150,
             decoration: BoxDecoration(
               border: Border.all(
-                color: isDark
-                    ? const Color(0xFF334155)
-                    : const Color(0xFFE2E8F0),
+                color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
               ),
               borderRadius: BorderRadius.circular(12),
             ),
@@ -333,7 +336,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                   ListTile(
                     key: Key(_strokes[idx].id),
                     leading: CircleAvatar(
-                      backgroundColor: const Color(0xFF10B981),
+                      backgroundColor: AppColors.primary,
                       child: Text(
                         '${idx + 1}',
                         style: const TextStyle(color: Colors.white),
@@ -373,7 +376,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
         if (_isDrawingCustom) ...[
           Container(
             decoration: BoxDecoration(
-              border: Border.all(color: const Color(0xFF10B981), width: 2.0),
+              border: Border.all(color: AppColors.primary, width: 2.0),
               borderRadius: BorderRadius.circular(16),
             ),
             child: Column(
@@ -402,12 +405,12 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                     width: 300,
                     height: 300,
                     color: isDark
-                        ? const Color(0xFF0F172A)
-                        : const Color(0xFFF1F5F9),
+                        ? AppColors.softBlack
+                        : AppColors.lightSurfaceVariant,
                     child: CustomPaint(
                       painter: _DrawStrokePainter(
                         points: _drawnRawPoints,
-                        color: const Color(0xFF10B981),
+                        color: AppColors.primary,
                         strokeWidth: _strokeWidth,
                       ),
                     ),
@@ -421,7 +424,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                       ElevatedButton(
                         onPressed: _addCustomStroke,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF10B981),
+                          backgroundColor: AppColors.primary,
                         ),
                         child: const Text(
                           'Save Stroke',
@@ -462,7 +465,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
         AdminMediaField(
           label: 'Completion Audio Success celebration',
           icon: Icons.audiotrack_rounded,
-          accent: const Color(0xFF10B981),
+          accent: AppColors.primary,
           currentUrl: _audioOnCompleteUrl,
           uploadFolder: 'tracing-success-audio',
           fileType: FileType.audio,

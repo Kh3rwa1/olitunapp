@@ -1,6 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../../../../core/theme/app_colors.dart';
+import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/providers/providers.dart';
 
 class WhimsicalBackground extends ConsumerStatefulWidget {
@@ -21,12 +23,8 @@ class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>
     super.initState();
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 20),
-    );
-    final reduceEffects = ref.read(reduceVisualEffectsProvider);
-    if (!reduceEffects) {
-      _controller.repeat();
-    }
+      duration: const Duration(seconds: 12),
+    )..repeat();
   }
 
   @override
@@ -37,13 +35,10 @@ class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>
 
   @override
   Widget build(BuildContext context) {
-    ref.listen<bool>(reduceVisualEffectsProvider, (previous, next) {
-      if (next) {
-        _controller.stop();
-      } else {
-        _controller.repeat();
-      }
-    });
+    final reduceEffects = ref.watch(reduceVisualEffectsProvider);
+    if (reduceEffects) {
+      return widget.child;
+    }
 
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -56,8 +51,14 @@ class _WhimsicalBackgroundState extends ConsumerState<WhimsicalBackground>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? [const Color(0xFF0F172A), const Color(0xFF1E1B4B)]
-                  : [const Color(0xFFF8FAFC), const Color(0xFFEFF6FF)],
+                  ? [
+                      AppColors.ambientIndigoDark,
+                      AppColors.ambientDeepPurpleDark,
+                    ]
+                  : [
+                      AppColors.ambientLightBlueTop,
+                      AppColors.ambientLightBlueBottom,
+                    ],
             ),
           ),
         ),
@@ -121,8 +122,8 @@ class _BlobPainter extends CustomPainter {
 
     // Blob 1: Deep Blue / Soft Blue
     paint.color = (isDark
-        ? const Color(0xFF3B82F6).withValues(alpha: 0.12)
-        : const Color(0xFF60A5FA).withValues(alpha: 0.08));
+        ? AppColors.ambientBlueOrb.withValues(alpha: 0.12)
+        : AppColors.ambientBlueOrbLight.withValues(alpha: 0.08));
     canvas.drawCircle(
       Offset(
         size.width * 0.2 + math.sin(angle) * 70,
@@ -134,8 +135,8 @@ class _BlobPainter extends CustomPainter {
 
     // Blob 2: Indigo / Light Indigo
     paint.color = (isDark
-        ? const Color(0xFF6366F1).withValues(alpha: 0.1)
-        : const Color(0xFF818CF8).withValues(alpha: 0.06));
+        ? AppColors.ambientIndigoOrb.withValues(alpha: 0.1)
+        : AppColors.ambientIndigoOrbLight.withValues(alpha: 0.06));
     canvas.drawCircle(
       Offset(
         size.width * 0.8 + math.cos(angle * 0.7) * 60,
@@ -147,8 +148,8 @@ class _BlobPainter extends CustomPainter {
 
     // Blob 3: Violet / Soft Lavender
     paint.color = (isDark
-        ? const Color(0xFF8B5CF6).withValues(alpha: 0.1)
-        : const Color(0xFFA78BFA).withValues(alpha: 0.07));
+        ? AppColors.ambientPurpleOrb.withValues(alpha: 0.1)
+        : AppColors.ambientPurpleOrbLight.withValues(alpha: 0.07));
     canvas.drawCircle(
       Offset(
         size.width * 0.4 + math.sin(angle * 1.3) * 90,
@@ -192,8 +193,11 @@ class _FloatingNotesPainter extends CustomPainter {
         text: _notes[i % _notes.length],
         style: TextStyle(
           fontSize: 14 + (i % 4) * 4,
-          color: (isDark ? const Color(0xFF818CF8) : const Color(0xFF6366F1))
-              .withValues(alpha: opacity),
+          color:
+              (isDark
+                      ? AppColors.ambientIndigoOrbLight
+                      : AppColors.ambientIndigoOrb)
+                  .withValues(alpha: opacity),
         ),
       );
       textPainter.layout();

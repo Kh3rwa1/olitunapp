@@ -49,20 +49,36 @@ class _QuizFeedbackPanelState extends State<QuizFeedbackPanel> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final backgroundColor = widget.isCorrect
-        ? (isDark ? const Color(0xFF0F2E1E) : const Color(0xFFE8FDF0))
-        : (isDark ? const Color(0xFF3B1E1E) : const Color(0xFFFDE8E8));
+        ? (isDark
+              ? AppColors.quizFeedbackSuccessDarkBg
+              : AppColors.quizFeedbackSuccessLightBg)
+        : (isDark
+              ? AppColors.quizFeedbackErrorDarkBg
+              : AppColors.quizFeedbackErrorLightBg);
 
     final borderColor = widget.isCorrect
-        ? (isDark ? const Color(0xFF1B5E20) : const Color(0xFFB9F6CA))
-        : (isDark ? const Color(0xFF7F1D1D) : const Color(0xFFFFCDD2));
+        ? (isDark
+              ? AppColors.quizFeedbackSuccessDarkBorder
+              : AppColors.quizFeedbackSuccessLightBorder)
+        : (isDark
+              ? AppColors.quizFeedbackErrorDarkBorder
+              : AppColors.quizFeedbackErrorLightBorder);
 
     final textColor = widget.isCorrect
-        ? (isDark ? const Color(0xFF5DFFA8) : const Color(0xFF1B5E20))
-        : (isDark ? const Color(0xFFFF5252) : const Color(0xFFB71C1C));
+        ? (isDark
+              ? AppColors.quizFeedbackSuccessDarkFg
+              : AppColors.quizFeedbackSuccessLightFg)
+        : (isDark
+              ? AppColors.quizFeedbackErrorDarkFg
+              : AppColors.quizFeedbackErrorLightFg);
 
     final iconColor = widget.isCorrect
-        ? (isDark ? const Color(0xFF1EE088) : const Color(0xFF2E7D32))
-        : (isDark ? const Color(0xFFFF5252) : const Color(0xFFC62828));
+        ? (isDark
+              ? AppColors.quizFeedbackSuccessDarkIcon
+              : AppColors.quizFeedbackSuccessLightIcon)
+        : (isDark
+              ? AppColors.quizFeedbackErrorDarkIcon
+              : AppColors.quizFeedbackErrorLightIcon);
 
     final titleText = widget.isCorrect
         ? (isDark ? 'Sange! (Correct)' : 'Correct!')

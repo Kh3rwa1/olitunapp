@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -40,18 +41,21 @@ class MistakeReviewCard extends ConsumerWidget {
             gradient: LinearGradient(
               colors: isDark
                   ? [
-                      const Color(0xFF2C1B1B).withValues(alpha: 0.8),
-                      const Color(0xFF1F1212).withValues(alpha: 0.6),
+                      AppColors.mistakeCardDarkTop.withValues(alpha: 0.8),
+                      AppColors.mistakeCardDarkBottom.withValues(alpha: 0.6),
                     ]
-                  : [const Color(0xFFFFF5F5), const Color(0xFFFFF0F0)],
+                  : [
+                      AppColors.mistakeCardLightTop,
+                      AppColors.mistakeCardLightBottom,
+                    ],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(
               color: isDark
-                  ? const Color(0xFF4A2525).withValues(alpha: 0.5)
-                  : const Color(0xFFFCA5A5).withValues(alpha: 0.4),
+                  ? AppColors.mistakeCardDarkBorder.withValues(alpha: 0.5)
+                  : AppColors.mistakeCardLightBorder.withValues(alpha: 0.4),
               width: 1.5,
             ),
             boxShadow: [
@@ -73,14 +77,14 @@ class MistakeReviewCard extends ConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF4A2525).withValues(alpha: 0.3)
-                          : const Color(0xFFFEE2E2),
+                          ? AppColors.mistakeBadgeDarkBg.withValues(alpha: 0.3)
+                          : AppColors.mistakeBadgeLightBg,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       Icons.healing_rounded,
                       color: isDark
-                          ? const Color(0xFFFCA5A5)
+                          ? AppColors.mistakeBadgeDarkFg
                           : Colors.red.shade600,
                       size: 20,
                     ),
@@ -92,7 +96,7 @@ class MistakeReviewCard extends ConsumerWidget {
                       fontSize: 11,
                       fontWeight: FontWeight.w900,
                       color: isDark
-                          ? const Color(0xFFFCA5A5)
+                          ? AppColors.mistakeBadgeDarkFg
                           : Colors.red.shade700,
                       letterSpacing: 1.2,
                     ),
@@ -105,8 +109,8 @@ class MistakeReviewCard extends ConsumerWidget {
                     ),
                     decoration: BoxDecoration(
                       color: isDark
-                          ? const Color(0xFF4A2525).withValues(alpha: 0.5)
-                          : const Color(0xFFFEE2E2),
+                          ? AppColors.mistakeBadgeDarkBg.withValues(alpha: 0.5)
+                          : AppColors.mistakeBadgeLightBg,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -115,7 +119,7 @@ class MistakeReviewCard extends ConsumerWidget {
                         fontSize: 9,
                         fontWeight: FontWeight.w800,
                         color: isDark
-                            ? const Color(0xFFFCA5A5)
+                            ? AppColors.mistakeBadgeDarkFg
                             : Colors.red.shade700,
                       ),
                     ),
@@ -151,7 +155,7 @@ class MistakeReviewCard extends ConsumerWidget {
                       fontSize: 13,
                       fontWeight: FontWeight.w900,
                       color: isDark
-                          ? const Color(0xFFFCA5A5)
+                          ? AppColors.mistakeBadgeDarkFg
                           : Colors.red.shade700,
                     ),
                   ),
@@ -159,7 +163,7 @@ class MistakeReviewCard extends ConsumerWidget {
                   Icon(
                     Icons.arrow_forward_rounded,
                     color: isDark
-                        ? const Color(0xFFFCA5A5)
+                        ? AppColors.mistakeBadgeDarkFg
                         : Colors.red.shade700,
                     size: 16,
                   ),

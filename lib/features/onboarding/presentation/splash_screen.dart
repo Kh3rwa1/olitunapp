@@ -46,15 +46,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? [
-                        const Color(0xFF030712), // Deepest dark slate/black
-                        const Color(0xFF0F172A), // Slate Navy
-                        const Color(
-                          0xFF052014,
-                        ), // Subtle dark emerald hint matching brand green
+                        AppColors.darkBackground, // Deepest dark slate/black
+                        AppColors.softBlack, // Slate Navy
+                        AppColors
+                            .quizFeedbackSuccessDarkBg, // Subtle dark emerald hint matching brand green
                       ]
                     : [
-                        const Color(0xFFF8FAF9), // Pristine light grey
-                        const Color(0xFFE2F3EC), // Premium soft mint light hint
+                        AppColors.lightBackground, // Pristine light grey
+                        AppColors
+                            .quizLightSuccessSurface, // Premium soft mint light hint
                         Colors.white,
                       ],
                 stops: const [0.0, 0.5, 1.0],
@@ -123,7 +123,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                                   color:
                                       (isDark
                                               ? Colors.white
-                                              : const Color(0xFF00C767))
+                                              : AppColors.primaryDark)
                                           .withValues(
                                             alpha: isDark ? 0.05 : 0.04,
                                           ),
@@ -243,7 +243,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
                               colors: isDark
                                   ? [Colors.white, AppColors.primaryLight]
                                   : [
-                                      const Color(0xFF0F172A),
+                                      AppColors.textPrimaryLight,
                                       AppColors.primaryDark,
                                     ],
                               begin: Alignment.topLeft,

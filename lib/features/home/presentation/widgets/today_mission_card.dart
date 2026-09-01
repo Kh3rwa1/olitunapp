@@ -98,7 +98,9 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                   width: double.infinity,
                   padding: const EdgeInsets.all(20),
                   decoration: BoxDecoration(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.white,
+                    color: isDark
+                        ? AppColors.darkSurfaceElevated
+                        : Colors.white,
                     borderRadius: BorderRadius.circular(24),
                     border: Border.all(
                       color: isDark ? Colors.white10 : Colors.black12,
@@ -145,7 +147,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                                   fontWeight: FontWeight.bold,
                                   color: isDark
                                       ? Colors.white
-                                      : const Color(0xFF0F172A),
+                                      : AppColors.textPrimaryLight,
                                 ),
                               ),
                             ],
@@ -253,7 +255,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                               colors: isDark
                                   ? [
                                       AppColors.primary.withValues(alpha: 0.15),
-                                      const Color(0xFF1E293B),
+                                      AppColors.darkSurfaceElevated,
                                     ]
                                   : [
                                       AppColors.primary.withValues(alpha: 0.08),
@@ -284,7 +286,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                                       fontWeight: FontWeight.w900,
                                       color: isDark
                                           ? Colors.white
-                                          : const Color(0xFF0F172A),
+                                          : AppColors.textPrimaryLight,
                                     ),
                                   ),
                                 ],
@@ -384,7 +386,7 @@ class _TodayMissionCardState extends ConsumerState<TodayMissionCard> {
                   decoration: completed ? TextDecoration.lineThrough : null,
                   color: completed
                       ? (isDark ? Colors.white60 : Colors.black54)
-                      : (isDark ? Colors.white : const Color(0xFF334155)),
+                      : (isDark ? Colors.white : AppColors.darkBorder),
                 ),
               ),
             ),

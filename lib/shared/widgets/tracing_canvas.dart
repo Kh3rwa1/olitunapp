@@ -6,6 +6,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:itun/features/content/presentation/providers/audio_playback_providers.dart';
 import 'package:itun/core/analytics/analytics_service.dart';
 import 'package:itun/core/motion/confetti_overlay.dart';
+import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
 
 class TracingCanvas extends ConsumerStatefulWidget {
@@ -17,7 +18,7 @@ class TracingCanvas extends ConsumerStatefulWidget {
     super.key,
     required this.config,
     this.onCompleted,
-    this.accentColor = const Color(0xFF10B981), // Emerald default
+    this.accentColor = AppColors.primary,
   });
 
   @override
@@ -103,7 +104,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
     return Container(
       margin: const EdgeInsets.symmetric(vertical: 16),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        color: isDark ? AppColors.darkSurfaceElevated : Colors.white,
         borderRadius: BorderRadius.circular(24),
         boxShadow: [
           BoxShadow(
@@ -113,7 +114,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
           ),
         ],
         border: Border.all(
-          color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+          color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
           width: 1.5,
         ),
       ),
@@ -140,7 +141,7 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
-                                    : const Color(0xFF1E293B),
+                                    : AppColors.textPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 2),
@@ -149,8 +150,8 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                               style: TextStyle(
                                 fontSize: 12,
                                 color: isDark
-                                    ? const Color(0xFF94A3B8)
-                                    : const Color(0xFF64748B),
+                                    ? AppColors.textTertiaryDark
+                                    : AppColors.textTertiaryLight,
                               ),
                             ),
                           ],
@@ -248,8 +249,8 @@ class _TracingCanvasState extends ConsumerState<TracingCanvas>
                         tooltip: 'Reset',
                         style: IconButton.styleFrom(
                           foregroundColor: isDark
-                              ? const Color(0xFF94A3B8)
-                              : const Color(0xFF64748B),
+                              ? AppColors.textTertiaryDark
+                              : AppColors.textTertiaryLight,
                         ),
                       ),
                     ],
@@ -494,7 +495,7 @@ class _TracingPainter extends CustomPainter {
 
   void _paintGuideLayout(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0)
+      ..color = isDark ? AppColors.darkBorder : AppColors.lightBorder
       ..strokeWidth = 1.0
       ..style = PaintingStyle.stroke;
 
@@ -510,7 +511,7 @@ class _TracingPainter extends CustomPainter {
     path.lineTo(size.width / 2, size.height);
 
     final dashPaint = Paint()
-      ..color = (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+      ..color = (isDark ? AppColors.darkBorder : AppColors.lightBorder)
           .withOpacity(0.5)
       ..strokeWidth = 1.5
       ..style = PaintingStyle.stroke;
@@ -530,7 +531,7 @@ class _TracingPainter extends CustomPainter {
       final paint = Paint()
         ..color = isCurrent
             ? accentColor.withOpacity(0.18)
-            : (isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0))
+            : (isDark ? AppColors.darkBorder : AppColors.lightBorder)
                   .withOpacity(0.5)
         ..strokeWidth = config.strokeWidth
         ..style = PaintingStyle.stroke

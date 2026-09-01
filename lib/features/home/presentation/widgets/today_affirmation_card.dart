@@ -176,12 +176,15 @@ class _TodayAffirmationCardState extends ConsumerState<TodayAffirmationCard> {
 
         final backgroundGradient = isDark
             ? const LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E293B)],
+                colors: [AppColors.softBlack, AppColors.darkSurfaceElevated],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               )
             : const LinearGradient(
-                colors: [Color(0xFFFDF8F5), Color(0xFFF5EBE6)],
+                colors: [
+                  AppColors.lightBackground,
+                  AppColors.lightSurfaceVariant,
+                ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               );

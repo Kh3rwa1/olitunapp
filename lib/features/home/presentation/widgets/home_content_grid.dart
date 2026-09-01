@@ -6,6 +6,7 @@ import '../../../../shared/utils/localized_content.dart';
 import '../../../../shared/widgets/bento_grid.dart';
 import '../../../categories/domain/entities/category_entity.dart';
 import '../../../../core/motion/motion.dart';
+import '../../../../core/theme/app_colors.dart';
 
 // ═══════════════════════════════════════════════════════════
 // BENTO CONTENT GRID — AI Translate + Category cards
@@ -23,11 +24,11 @@ class HomeContentGrid extends StatelessWidget {
   });
 
   static const _categoryGradients = [
-    [Color(0xFF6366F1), Color(0xFF4F46E5)],
-    [Color(0xFFF59E0B), Color(0xFFD97706)],
-    [Color(0xFF10B981), Color(0xFF059669)],
-    [Color(0xFFEF4444), Color(0xFFDC2626)],
-    [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
+    [AppColors.accentPurple, AppColors.duoPurple],
+    [AppColors.duoOrange, AppColors.duoOrangeDark],
+    [AppColors.primary, AppColors.primaryDark],
+    [AppColors.duoRed, AppColors.duoRedDark],
+    [AppColors.duoPurple, AppColors.accentPurple],
   ];
 
   Widget _buildAITranslateCard(BuildContext context) {
@@ -37,7 +38,7 @@ class HomeContentGrid extends StatelessWidget {
         onTap: () => context.push('/translate'),
         child: BentoCell(
           gradient: const LinearGradient(
-            colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+            colors: [AppColors.accentPurple, AppColors.duoPurple],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

@@ -33,10 +33,10 @@ class ProfileHeroCard extends StatelessWidget {
 
   Color _getLevelColor() {
     const colors = [
-      Color(0xFF9E9E9E), // Beginner — grey
-      Color(0xFF1CB0F6), // Intermediate — blue
-      Color(0xFFFF9600), // Advanced — orange
-      Color(0xFFFFD700), // Master — gold
+      AppColors.xpNeutral, // Beginner — grey
+      AppColors.duoBlue, // Intermediate — blue
+      AppColors.duoOrange, // Advanced — orange
+      AppColors.duoYellow, // Master — gold
     ];
     return colors[levelIndex.clamp(0, 3)];
   }
@@ -147,7 +147,7 @@ class ProfileHeroCard extends StatelessWidget {
                           shape: BoxShape.circle,
                           border: Border.all(
                             color: isDark
-                                ? const Color(0xFF161B22)
+                                ? AppColors.darkSurfaceElevated
                                 : Colors.white,
                             width: 2,
                           ),

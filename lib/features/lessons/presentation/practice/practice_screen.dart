@@ -136,12 +136,18 @@ class _PracticeScreenState extends ConsumerState<PracticeScreen> {
         decoration: BoxDecoration(
           gradient: isDark
               ? const LinearGradient(
-                  colors: [Color(0xFF070A12), Color(0xFF101A2B)],
+                  colors: [
+                    AppColors.translatorDarkBg,
+                    AppColors.translatorDarkMid,
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 )
               : const LinearGradient(
-                  colors: [Color(0xFFF5FAFF), Color(0xFFEAF4FF)],
+                  colors: [
+                    AppColors.translatorLightCardA,
+                    AppColors.translatorLightCardC,
+                  ],
                   begin: Alignment.topCenter,
                   end: Alignment.bottomCenter,
                 ),
@@ -315,14 +321,14 @@ class _XpBadge extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [Color(0xFF41D1FF), Color(0xFF4F5CFF)],
+          colors: [AppColors.accentCyan, AppColors.accentPurple],
         ),
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: const Color(
-              0xFF4F5CFF,
-            ).withValues(alpha: isDark ? 0.35 : 0.22),
+            color: AppColors.accentPurple.withValues(
+              alpha: isDark ? 0.35 : 0.22,
+            ),
             blurRadius: 12,
             offset: const Offset(0, 6),
           ),
@@ -418,7 +424,7 @@ class _SegmentButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: active
               ? const LinearGradient(
-                  colors: [Color(0xFF6E7DFF), Color(0xFF41D1FF)],
+                  colors: [AppColors.duoPurple, AppColors.accentCyan],
                 )
               : null,
           color: active ? null : Colors.transparent,

@@ -101,8 +101,11 @@ class WelcomeScreen extends ConsumerWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: isDark
-                  ? [const Color(0xFF0A0E14), const Color(0xFF161B22)]
-                  : [Colors.white, const Color(0xFFF0FDF4)],
+                  ? [
+                      AppColors.quizDarkBackground,
+                      AppColors.darkSurfaceElevated,
+                    ]
+                  : [Colors.white, AppColors.quizLightSuccessSurface],
             ),
           ),
         ),
@@ -438,7 +441,7 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
                 style: TextStyle(
                   fontSize: 17,
                   fontWeight: FontWeight.w700,
-                  color: Color(0xFF3C4043),
+                  color: AppColors.textSecondaryLight,
                   letterSpacing: 0.2,
                 ),
               ),

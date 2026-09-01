@@ -25,14 +25,14 @@ class ShellAmbientBackground extends StatelessWidget {
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? const [
-                        Color(0xFF0A0E1A),
-                        Color(0xFF121A2B),
-                        Color(0xFF1E2A44),
+                        AppColors.translatorDarkBg,
+                        AppColors.translatorDarkMid,
+                        AppColors.translatorDarkLight,
                       ]
                     : const [
-                        Color(0xFFF3F8FF),
-                        Color(0xFFF8FAFF),
-                        Color(0xFFE8F0FF),
+                        AppColors.translatorLightCardA,
+                        AppColors.translatorLightCardB,
+                        AppColors.translatorLightCardC,
                       ],
               ),
             ),

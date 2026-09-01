@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../../../../core/theme/app_colors.dart';
 import 'ol_chiki_glyph_guide.dart';
 import 'practice_guide.dart';
 import '../../data/ol_chiki_strokes.dart';
@@ -223,9 +224,7 @@ class _TracingViewState extends State<TracingView>
                         width: boardSize,
                         height: boardSize,
                         decoration: BoxDecoration(
-                          color: isDark
-                              ? const Color(0xFF111A28)
-                              : Colors.white,
+                          color: isDark ? AppColors.quizDarkCard : Colors.white,
                           borderRadius: BorderRadius.circular(26),
                           border: Border.all(
                             color: isDark
@@ -244,9 +243,9 @@ class _TracingViewState extends State<TracingView>
                                           .withValues(
                                             alpha: isDark ? 0.20 : 0.13,
                                           ),
-                                  outlineColor: const Color(
-                                    0xFF35C7B5,
-                                  ).withValues(alpha: 0.24),
+                                  outlineColor: AppColors.primary.withValues(
+                                    alpha: 0.24,
+                                  ),
                                 ),
                               ),
                             ),
@@ -284,7 +283,7 @@ class _TracingViewState extends State<TracingView>
                                 child: CustomPaint(
                                   painter: TracingPainter(
                                     points: List<Offset?>.unmodifiable(_points),
-                                    color: const Color(0xFF35C7B5),
+                                    color: AppColors.primary,
                                   ),
                                 ),
                               ),
@@ -304,18 +303,18 @@ class _TracingViewState extends State<TracingView>
                                         height: 32,
                                         decoration: BoxDecoration(
                                           shape: BoxShape.circle,
-                                          color: const Color(
-                                            0xFF35C7B5,
-                                          ).withValues(alpha: 0.3),
+                                          color: AppColors.primary.withValues(
+                                            alpha: 0.3,
+                                          ),
                                           border: Border.all(
-                                            color: const Color(0xFF35C7B5),
+                                            color: AppColors.primary,
                                             width: 3,
                                           ),
                                         ),
                                         child: const Center(
                                           child: Icon(
                                             Icons.touch_app_rounded,
-                                            color: Color(0xFF35C7B5),
+                                            color: AppColors.primary,
                                             size: 16,
                                           ),
                                         ),
@@ -348,7 +347,7 @@ class _TracingViewState extends State<TracingView>
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: _showCelebration
-                      ? const Color(0xFF35C7B5)
+                      ? AppColors.primary
                       : (isDark ? Colors.white70 : Colors.black54),
                 ),
               ),
@@ -363,8 +362,8 @@ class _TracingViewState extends State<TracingView>
                       : Colors.black12,
                   valueColor: AlwaysStoppedAnimation<Color>(
                     _showCelebration
-                        ? const Color(0xFF4CAF50)
-                        : const Color(0xFF35C7B5),
+                        ? AppColors.quizCorrect
+                        : AppColors.primary,
                   ),
                 ),
               ),
@@ -382,7 +381,7 @@ class _TracingViewState extends State<TracingView>
                         label: const Text('Undo'),
                         style: FilledButton.styleFrom(
                           backgroundColor: isDark
-                              ? const Color(0xFF1E293B)
+                              ? AppColors.darkSurfaceElevated
                               : Colors.grey.shade200,
                           foregroundColor: isDark
                               ? Colors.white70
@@ -397,7 +396,7 @@ class _TracingViewState extends State<TracingView>
                     label: Text(_showCelebration ? 'Try Again' : 'Clear'),
                     style: FilledButton.styleFrom(
                       backgroundColor: isDark
-                          ? const Color(0xFF1E293B)
+                          ? AppColors.darkSurfaceElevated
                           : Colors.grey.shade100,
                       foregroundColor: isDark ? Colors.white70 : Colors.black87,
                     ),
@@ -454,7 +453,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
           scale: _scaleAnimation.value,
           child: Container(
             decoration: BoxDecoration(
-              color: const Color(0xFF35C7B5).withValues(alpha: 0.15),
+              color: AppColors.primary.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(26),
             ),
             child: Column(
@@ -467,7 +466,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
                   style: TextStyle(
                     fontSize: 28,
                     fontWeight: FontWeight.w900,
-                    color: Color(0xFF35C7B5),
+                    color: AppColors.primary,
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -476,7 +475,7 @@ class _CelebrationOverlayState extends State<_CelebrationOverlay>
                   style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.w700,
-                    color: const Color(0xFF35C7B5).withValues(alpha: 0.8),
+                    color: AppColors.primary.withValues(alpha: 0.8),
                   ),
                 ),
               ],

@@ -69,7 +69,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     const accentColor = AppColors.primary; // Olitun signature emerald green
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       body: detailAsync.when(
         data: (item) => _buildContentBody(context, item, isDark, accentColor),
         loading: () => const Center(
@@ -149,7 +149,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     if (isEligible && typingState != null && typingPracticeArgs != null) {
       if (typingState.phase != TypingPhase.idle) {
         return Scaffold(
-          backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+          backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.transparent,
             elevation: 0,
@@ -204,7 +204,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     }
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+      backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
       bottomNavigationBar: const BannerAdWidget(
         placement: 'content_detail_bottom',
       ),
@@ -297,17 +297,17 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
             p: TextStyle(
               fontSize: 16,
               height: 1.5,
-              color: isDark ? const Color(0xFFE2E8F0) : const Color(0xFF334155),
+              color: isDark ? AppColors.lightBorder : AppColors.darkBorder,
             ),
             h1: TextStyle(
               fontSize: 22,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white : const Color(0xFF1E293B),
+              color: isDark ? Colors.white : AppColors.darkSurfaceElevated,
             ),
             h2: TextStyle(
               fontSize: 18,
               fontWeight: FontWeight.bold,
-              color: isDark ? Colors.white70 : const Color(0xFF334155),
+              color: isDark ? Colors.white70 : AppColors.darkBorder,
             ),
           ),
         );
@@ -325,8 +325,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 placeholder: (context, url) => Container(
                   height: 200,
                   color: isDark
-                      ? const Color(0xFF1E293B)
-                      : const Color(0xFFF1F5F9),
+                      ? AppColors.darkSurfaceElevated
+                      : AppColors.lightSurfaceVariant,
                   child: const Center(child: CircularProgressIndicator()),
                 ),
                 errorWidget: (context, url, error) =>
@@ -341,8 +341,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 style: TextStyle(
                   fontSize: 13,
                   color: isDark
-                      ? const Color(0xFF94A3B8)
-                      : const Color(0xFF64748B),
+                      ? AppColors.textTertiaryDark
+                      : AppColors.textTertiaryLight,
                   fontStyle: FontStyle.italic,
                 ),
               ),
@@ -437,10 +437,12 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         return Container(
           padding: const EdgeInsets.all(24),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC),
+            color: isDark
+                ? AppColors.darkSurfaceElevated
+                : AppColors.lightBackground,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: isDark ? const Color(0xFF334155) : const Color(0xFFE2E8F0),
+              color: isDark ? AppColors.darkBorder : AppColors.lightBorder,
             ),
           ),
           child: Column(
@@ -460,7 +462,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                 style: TextStyle(
                   fontSize: 20,
                   fontWeight: FontWeight.w600,
-                  color: isDark ? Colors.white : const Color(0xFF1E293B),
+                  color: isDark ? Colors.white : AppColors.darkSurfaceElevated,
                 ),
               ),
               if (glyphBlock.audioUrl != null) ...[
@@ -508,7 +510,9 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
                   style: TextStyle(
                     fontSize: 14,
                     height: 1.4,
-                    color: isDark ? Colors.white70 : const Color(0xFF1E293B),
+                    color: isDark
+                        ? Colors.white70
+                        : AppColors.darkSurfaceElevated,
                   ),
                 ),
               ),
@@ -579,7 +583,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         return Container(
           padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
           decoration: BoxDecoration(
-            color: (isDark ? const Color(0xFF0F141C) : Colors.white)
+            color: (isDark ? AppColors.quizDarkCardAlt : Colors.white)
                 .withOpacity(0.85),
             border: Border(
               top: BorderSide(
@@ -652,7 +656,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
     return Container(
       padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
       decoration: BoxDecoration(
-        color: (isDark ? const Color(0xFF0F141C) : Colors.white).withOpacity(
+        color: (isDark ? AppColors.quizDarkCardAlt : Colors.white).withOpacity(
           0.85,
         ),
         border: Border(
@@ -675,8 +679,8 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
               backgroundColor: accentColor,
               foregroundColor: Colors.white,
               disabledBackgroundColor: isDark
-                  ? const Color(0xFF334155)
-                  : const Color(0xFFE2E8F0),
+                  ? AppColors.darkBorder
+                  : AppColors.lightBorder,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16),
               ),
@@ -761,7 +765,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
         return Container(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF0F141C) : Colors.white,
+            color: isDark ? AppColors.quizDarkCardAlt : Colors.white,
             borderRadius: const BorderRadius.only(
               topLeft: Radius.circular(32),
               topRight: Radius.circular(32),
@@ -887,13 +891,13 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
   Color _getCalloutColor(CalloutVariant variant) {
     switch (variant) {
       case CalloutVariant.tip:
-        return const Color(0xFF10B981); // Green
+        return AppColors.primary; // Green
       case CalloutVariant.warning:
-        return const Color(0xFFEF4444); // Red
+        return AppColors.error; // Red
       case CalloutVariant.note:
-        return const Color(0xFF3B82F6); // Blue
+        return AppColors.duoBlue; // Blue
       case CalloutVariant.success:
-        return const Color(0xFFF59E0B); // Amber
+        return AppColors.warning; // Amber
     }
   }
 

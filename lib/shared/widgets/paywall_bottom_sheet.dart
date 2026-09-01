@@ -168,7 +168,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
             padding: const EdgeInsets.all(28),
             decoration: BoxDecoration(
               color: Theme.of(context).brightness == Brightness.dark
-                  ? const Color(0xFF141A24)
+                  ? AppColors.quizDarkCard
                   : Colors.white,
               borderRadius: BorderRadius.circular(24),
               border: Border.all(
@@ -298,7 +298,7 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
     return Container(
       constraints: BoxConstraints(maxHeight: screenHeight * 0.9),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF0C1017) : Colors.white,
+        color: isDark ? AppColors.darkBackground : Colors.white,
         borderRadius: const BorderRadius.only(
           topLeft: Radius.circular(32),
           topRight: Radius.circular(32),
@@ -338,12 +338,18 @@ class _PaywallBottomSheetState extends ConsumerState<PaywallBottomSheet> {
                       decoration: BoxDecoration(
                         gradient: isDark
                             ? const LinearGradient(
-                                colors: [Color(0xFF2E1A1A), Color(0xFF140D0D)],
+                                colors: [
+                                  AppColors.mistakeCardDarkTop,
+                                  AppColors.mistakeCardDarkBottom,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               )
                             : const LinearGradient(
-                                colors: [Color(0xFFFFF0F0), Color(0xFFFFE0E0)],
+                                colors: [
+                                  AppColors.mistakeCardLightTop,
+                                  AppColors.mistakeCardLightBottom,
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),

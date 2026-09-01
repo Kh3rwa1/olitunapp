@@ -97,7 +97,62 @@ class AppColors {
       badgeQuiz = C(0xFFFFC107),
       badgeTracing = C(0xFF3F51B5),
       badgeTyping = C(0xFF00BCD4),
-      badgeLesson = C(0xFF607D8B);
+      badgeLesson = C(0xFF607D8B),
+      // Quiz feedback semantic tokens
+      quizFeedbackSuccessDarkBg = C(
+        0xFF0F2E1E,
+      ),
+      quizFeedbackSuccessLightBg = C(0xFFE8FDF0),
+      quizFeedbackErrorDarkBg = C(0xFF3B1E1E),
+      quizFeedbackErrorLightBg = C(0xFFFDE8E8),
+      quizFeedbackSuccessDarkBorder = C(0xFF1B5E20),
+      quizFeedbackSuccessLightBorder = C(0xFFB9F6CA),
+      quizFeedbackErrorDarkBorder = C(0xFF7F1D1D),
+      quizFeedbackErrorLightBorder = C(0xFFFFCDD2),
+      quizFeedbackSuccessDarkFg = C(0xFF5DFFA8),
+      quizFeedbackSuccessLightFg = C(0xFF1B5E20),
+      quizFeedbackErrorDarkFg = C(0xFFFF5252),
+      quizFeedbackErrorLightFg = C(0xFFB71C1C),
+      quizFeedbackSuccessDarkIcon = C(0xFF1EE088),
+      quizFeedbackSuccessLightIcon = C(0xFF2E7D32),
+      quizFeedbackErrorDarkIcon = C(0xFFFF5252),
+      quizFeedbackErrorLightIcon = C(0xFFC62828),
+      // Mistake review card tokens
+      mistakeCardDarkTop = C(
+        0xFF2C1B1B,
+      ),
+      mistakeCardDarkBottom = C(0xFF1F1212),
+      mistakeCardLightTop = C(0xFFFFF5F5),
+      mistakeCardLightBottom = C(0xFFFFF0F0),
+      mistakeCardDarkBorder = C(0xFF4A2525),
+      mistakeCardLightBorder = C(0xFFFCA5A5),
+      mistakeBadgeDarkBg = C(0xFF4A2525),
+      mistakeBadgeLightBg = C(0xFFFEE2E2),
+      mistakeBadgeDarkFg = C(0xFFFCA5A5),
+      // Ambient background & orb tokens
+      ambientIndigoDark = C(
+        0xFF0F172A,
+      ),
+      ambientDeepPurpleDark = C(0xFF1E1B4B),
+      ambientLightBlueTop = C(0xFFF8FAFC),
+      ambientLightBlueBottom = C(0xFFEFF6FF),
+      ambientBlueOrb = C(0xFF3B82F6),
+      ambientBlueOrbLight = C(0xFF60A5FA),
+      ambientIndigoOrb = C(0xFF6366F1),
+      ambientIndigoOrbLight = C(0xFF818CF8),
+      ambientPurpleOrb = C(0xFF8B5CF6),
+      ambientPurpleOrbLight = C(0xFFA78BFA),
+      // Translator surface tokens
+      translatorDarkBg = C(
+        0xFF0A0E1A,
+      ),
+      translatorDarkMid = C(0xFF121A2B),
+      translatorDarkLight = C(0xFF1E2A44),
+      translatorLightBg = C(0xFFF5F7FA),
+      translatorLightCardA = C(0xFFF3F8FF),
+      translatorLightCardB = C(0xFFF8FAFF),
+      translatorLightCardC = C(0xFFE8F0FF),
+      xpNeutral = C(0xFF9E9E9E);
 
   static const categoryGradients = [
     premiumGreen,

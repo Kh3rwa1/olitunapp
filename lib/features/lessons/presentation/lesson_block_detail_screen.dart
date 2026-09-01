@@ -158,11 +158,11 @@ class _LessonBlockDetailScreenState
 
     return lessonsAsync.when(
       loading: () => Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
         body: const Center(child: CircularProgressIndicator()),
       ),
       error: (error, stack) => Scaffold(
-        backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+        backgroundColor: isDark ? AppColors.quizDarkBackground : Colors.white,
         body: DetailLoadErrorBlock(
           title: 'Could not load lesson details',
           isDark: isDark,
@@ -175,7 +175,9 @@ class _LessonBlockDetailScreenState
             .firstOrNull;
         if (lesson == null) {
           return Scaffold(
-            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+            backgroundColor: isDark
+                ? AppColors.quizDarkBackground
+                : Colors.white,
             body: DetailLoadErrorBlock(
               title: 'Lesson not found',
               isDark: isDark,
@@ -211,7 +213,9 @@ class _LessonBlockDetailScreenState
 
         if (contentBlocks.isEmpty) {
           return Scaffold(
-            backgroundColor: isDark ? const Color(0xFF0A0E14) : Colors.white,
+            backgroundColor: isDark
+                ? AppColors.quizDarkBackground
+                : Colors.white,
             body: DetailLoadErrorBlock(
               title: 'No content blocks in this lesson',
               isDark: isDark,
@@ -231,9 +235,9 @@ class _LessonBlockDetailScreenState
         final bgGradient = isDark
             ? LinearGradient(
                 colors: [
-                  const Color(0xFF080B12),
+                  AppColors.translatorDarkBg,
                   blockThemeColor.withValues(alpha: 0.08),
-                  const Color(0xFF0D121F),
+                  AppColors.translatorDarkMid,
                 ],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
@@ -241,7 +245,7 @@ class _LessonBlockDetailScreenState
             : LinearGradient(
                 colors: [
                   blockThemeColor.withValues(alpha: 0.05),
-                  const Color(0xFFF3F5F9),
+                  AppColors.translatorLightBg,
                   Colors.white,
                 ],
                 begin: Alignment.topLeft,

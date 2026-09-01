@@ -71,8 +71,8 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0A0E1A)
-          : const Color(0xFFF5F7FA),
+          ? AppColors.translatorDarkBg
+          : AppColors.translatorLightBg,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -283,14 +283,14 @@ class _AiTranslatorScreenState extends ConsumerState<AiTranslatorScreen> {
                 end: Alignment.bottomRight,
                 colors: isDark
                     ? const [
-                        Color(0xFF0A0E1A),
-                        Color(0xFF121A2B),
-                        Color(0xFF1E2A44),
+                        AppColors.translatorDarkBg,
+                        AppColors.translatorDarkMid,
+                        AppColors.translatorDarkLight,
                       ]
                     : const [
-                        Color(0xFFF3F8FF),
-                        Color(0xFFF8FAFF),
-                        Color(0xFFE8F0FF),
+                        AppColors.translatorLightCardA,
+                        AppColors.translatorLightCardB,
+                        AppColors.translatorLightCardC,
                       ],
               ),
             ),

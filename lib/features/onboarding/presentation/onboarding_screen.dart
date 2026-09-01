@@ -105,8 +105,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
 
     return Scaffold(
       backgroundColor: isDark
-          ? const Color(0xFF0B0F19)
-          : const Color(0xFFF8FAFC),
+          ? AppColors.darkBackground
+          : AppColors.lightBackground,
       body: Stack(
         children: [
           // 2. Dark/Light Overlay Gradient
@@ -118,14 +118,14 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                   end: Alignment.bottomCenter,
                   colors: isDark
                       ? [
-                          const Color(0xFF0B0F19).withValues(alpha: 0.3),
-                          const Color(0xFF0B0F19).withValues(alpha: 0.8),
-                          const Color(0xFF0B0F19),
+                          AppColors.darkBackground.withValues(alpha: 0.3),
+                          AppColors.darkBackground.withValues(alpha: 0.8),
+                          AppColors.darkBackground,
                         ]
                       : [
-                          const Color(0xFFF8FAFC).withValues(alpha: 0.6),
-                          const Color(0xFFF8FAFC).withValues(alpha: 0.9),
-                          const Color(0xFFF8FAFC),
+                          AppColors.lightBackground.withValues(alpha: 0.6),
+                          AppColors.lightBackground.withValues(alpha: 0.9),
+                          AppColors.lightBackground,
                         ],
                   stops: const [0.0, 0.4, 1.0],
                 ),
@@ -247,8 +247,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       decoration: BoxDecoration(
                         gradient: LinearGradient(
                           colors: isDark
-                              ? [AppColors.primary, const Color(0xFF10B981)]
-                              : [AppColors.primary, const Color(0xFF047857)],
+                              ? [AppColors.primary, AppColors.primaryDark]
+                              : [AppColors.primary, AppColors.brandTextLight],
                         ),
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
@@ -295,8 +295,8 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: isDark
-                    ? [const Color(0xFF1E293B), const Color(0xFF0F172A)]
-                    : [Colors.white, const Color(0xFFE2E8F0)],
+                    ? [AppColors.darkSurfaceElevated, AppColors.softBlack]
+                    : [Colors.white, AppColors.lightBorder],
               ),
               borderRadius: BorderRadius.circular(32),
               boxShadow: [
@@ -326,7 +326,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
               fontSize: 28,
               fontWeight: FontWeight.w800,
               height: 1.25,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 16),
@@ -336,7 +336,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontSize: 15,
               height: 1.5,
-              color: isDark ? Colors.white70 : const Color(0xFF475569),
+              color: isDark ? Colors.white70 : AppColors.textSecondaryLight,
             ),
           ),
           const SizedBox(height: 40),
@@ -384,7 +384,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 8),
@@ -392,7 +392,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'We will tailor your learning path accordingly.',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+              color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 24),
@@ -416,7 +416,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ? (isDark
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : AppColors.primary.withValues(alpha: 0.10))
-                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        : (isDark
+                              ? AppColors.darkSurfaceElevated
+                              : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
@@ -462,7 +464,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
-                                    : const Color(0xFF0F172A),
+                                    : AppColors.textPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -472,7 +474,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontSize: 13,
                                 color: isDark
                                     ? Colors.white60
-                                    : const Color(0xFF64748B),
+                                    : AppColors.textTertiaryLight,
                               ),
                             ),
                           ],
@@ -522,7 +524,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 8),
@@ -530,7 +532,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Choose your preferred script display. You can change this anytime.',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+              color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 24),
@@ -554,7 +556,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ? (isDark
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : AppColors.primary.withValues(alpha: 0.10))
-                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        : (isDark
+                              ? AppColors.darkSurfaceElevated
+                              : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
@@ -600,7 +604,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
-                                    : const Color(0xFF0F172A),
+                                    : AppColors.textPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -610,7 +614,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontSize: 13,
                                 color: isDark
                                     ? Colors.white60
-                                    : const Color(0xFF64748B),
+                                    : AppColors.textTertiaryLight,
                               ),
                             ),
                           ],
@@ -666,7 +670,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 8),
@@ -674,7 +678,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Setting a small daily goal helps build a continuous learning streak.',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+              color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 24),
@@ -698,7 +702,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ? (isDark
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : AppColors.primary.withValues(alpha: 0.10))
-                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        : (isDark
+                              ? AppColors.darkSurfaceElevated
+                              : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
@@ -744,7 +750,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontWeight: FontWeight.bold,
                                 color: isDark
                                     ? Colors.white
-                                    : const Color(0xFF0F172A),
+                                    : AppColors.textPrimaryLight,
                               ),
                             ),
                             const SizedBox(height: 4),
@@ -754,7 +760,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 fontSize: 13,
                                 color: isDark
                                     ? Colors.white60
-                                    : const Color(0xFF64748B),
+                                    : AppColors.textTertiaryLight,
                               ),
                             ),
                           ],
@@ -785,7 +791,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             style: TextStyle(
               fontSize: 24,
               fontWeight: FontWeight.w800,
-              color: isDark ? Colors.white : const Color(0xFF0F172A),
+              color: isDark ? Colors.white : AppColors.textPrimaryLight,
             ),
           ),
           const SizedBox(height: 8),
@@ -793,7 +799,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             'Select all that apply to personalize your learning experience.',
             style: TextStyle(
               fontSize: 14,
-              color: isDark ? Colors.white60 : const Color(0xFF64748B),
+              color: isDark ? Colors.white60 : AppColors.textTertiaryLight,
             ),
           ),
           const SizedBox(height: 24),
@@ -821,7 +827,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                         ? (isDark
                               ? AppColors.primary.withValues(alpha: 0.15)
                               : AppColors.primary.withValues(alpha: 0.10))
-                        : (isDark ? const Color(0xFF1E293B) : Colors.white),
+                        : (isDark
+                              ? AppColors.darkSurfaceElevated
+                              : Colors.white),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
                       color: isSelected
@@ -864,7 +872,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             fontWeight: FontWeight.bold,
                             color: isDark
                                 ? Colors.white
-                                : const Color(0xFF0F172A),
+                                : AppColors.textPrimaryLight,
                           ),
                         ),
                       ),

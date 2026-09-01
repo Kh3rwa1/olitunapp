@@ -176,7 +176,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: SettingsCard(
                   title: AppLocalizations.of(context)!.appearance,
                   icon: Icons.palette_rounded,
-                  color: AppColors.duoOrange,
+                  color: AppColors.accentOchre,
                   index: 0,
                   children: [
                     SettingTile(
@@ -207,7 +207,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: SettingsCard(
                   title: AppLocalizations.of(context)!.scriptDisplay,
                   icon: Icons.translate_rounded,
-                  color: AppColors.duoBlue,
+                  color: AppColors.brandBlue,
                   index: 1,
                   children: [
                     SettingTile(
@@ -282,7 +282,7 @@ class SettingsScreen extends ConsumerWidget {
                 child: SettingsCard(
                   title: AppLocalizations.of(context)!.dangerZone,
                   icon: Icons.warning_rounded,
-                  color: AppColors.duoRed,
+                  color: AppColors.accentTerracotta,
                   index: 3,
                   children: [
                     SettingTile(
@@ -341,7 +341,7 @@ class SettingsScreen extends ConsumerWidget {
         SettingsCard(
           title: AppLocalizations.of(context)!.appearance,
           icon: Icons.palette_rounded,
-          color: AppColors.duoOrange,
+          color: AppColors.accentOchre,
           index: 0,
           children: [
             SettingTile(
@@ -369,7 +369,7 @@ class SettingsScreen extends ConsumerWidget {
         SettingsCard(
           title: AppLocalizations.of(context)!.scriptDisplay,
           icon: Icons.translate_rounded,
-          color: AppColors.duoBlue,
+          color: AppColors.brandBlue,
           index: 1,
           children: [
             SettingTile(
@@ -438,7 +438,7 @@ class SettingsScreen extends ConsumerWidget {
         SettingsCard(
           title: AppLocalizations.of(context)!.dangerZone,
           icon: Icons.warning_rounded,
-          color: AppColors.duoRed,
+          color: AppColors.accentTerracotta,
           index: 3,
           children: [
             SettingTile(
@@ -469,7 +469,7 @@ class SettingsScreen extends ConsumerWidget {
     return SettingsCard(
       title: l10n.legal,
       icon: Icons.verified_user_rounded,
-      color: AppColors.duoGreen,
+      color: AppColors.accentForest,
       index: index,
       children: [
         SettingTile(

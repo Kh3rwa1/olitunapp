@@ -201,8 +201,8 @@ class QuizListScreen extends ConsumerWidget {
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2,
                     color: isDark
-                        ? AppColors.duoOrange.withValues(alpha: 0.8)
-                        : AppColors.duoOrangeDark,
+                        ? AppColors.accentOchre.withValues(alpha: 0.8)
+                        : AppColors.accentOchreDark,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -227,7 +227,7 @@ class QuizListScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(16),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.duoOrange.withValues(alpha: 0.3),
+                  color: AppColors.accentOchre.withValues(alpha: 0.3),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -257,7 +257,7 @@ class QuizListScreen extends ConsumerWidget {
               borderRadius: BorderRadius.circular(28),
               boxShadow: [
                 BoxShadow(
-                  color: AppColors.duoOrange.withValues(alpha: 0.3),
+                  color: AppColors.accentOchre.withValues(alpha: 0.3),
                   blurRadius: 30,
                   offset: const Offset(0, 10),
                 ),
@@ -371,13 +371,13 @@ class _HeroQuizCard extends ConsumerWidget {
       gradient: const LinearGradient(
         begin: Alignment.topLeft,
         end: Alignment.bottomRight,
-        colors: [AppColors.duoOrange, AppColors.duoOrangeDark],
+        colors: [AppColors.accentOchre, AppColors.accentOchreDark],
       ),
       borderRadius: 32,
       border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
       boxShadow: [
         BoxShadow(
-          color: AppColors.duoOrange.withValues(alpha: 0.35),
+          color: AppColors.accentOchre.withValues(alpha: 0.35),
           blurRadius: 30,
           offset: const Offset(0, 12),
           spreadRadius: -4,
@@ -503,14 +503,14 @@ class _HeroQuizCard extends ConsumerWidget {
                       children: [
                         Icon(
                           Icons.play_arrow_rounded,
-                          color: AppColors.duoOrangeDark,
+                          color: AppColors.accentOchreDark,
                           size: 20,
                         ),
                         SizedBox(width: 8),
                         Text(
                           'START QUIZ',
                           style: TextStyle(
-                            color: AppColors.duoOrangeDark,
+                            color: AppColors.accentOchreDark,
                             fontWeight: FontWeight.w900,
                             fontSize: 14,
                             letterSpacing: 0.5,
@@ -527,7 +527,7 @@ class _HeroQuizCard extends ConsumerWidget {
                   .shimmer(
                     delay: 2.seconds,
                     duration: 1500.ms,
-                    color: AppColors.duoOrange.withValues(alpha: 0.3),
+                    color: AppColors.accentOchre.withValues(alpha: 0.3),
                   ),
             ],
           ),

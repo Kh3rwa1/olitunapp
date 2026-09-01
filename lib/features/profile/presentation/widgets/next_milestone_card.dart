@@ -130,7 +130,7 @@ class NextMilestoneCard extends ConsumerWidget {
             ratio: (stats.completedLessons.length / 3.0).clamp(0.0, 1.0),
             targetText:
                 'Complete 3 lessons (${stats.completedLessons.length}/3)',
-            color: AppColors.duoOrange,
+            color: AppColors.accentOchre,
           ),
           _BadgeProgress(
             name: kherwalName,
@@ -138,14 +138,14 @@ class NextMilestoneCard extends ConsumerWidget {
             ratio: (stats.overallProgress / 0.40).clamp(0.0, 1.0),
             targetText:
                 'Reach 40% overall progress (${(stats.overallProgress * 100).round()}%/40%)',
-            color: AppColors.duoYellow,
+            color: AppColors.accentGold,
           ),
           _BadgeProgress(
             name: 'Daily Voyager',
             icon: Icons.rocket_launch_rounded,
             ratio: (stats.currentStreak / 3.0).clamp(0.0, 1.0),
             targetText: 'Maintain a 3-day streak (${stats.currentStreak}/3)',
-            color: AppColors.duoBlue,
+            color: AppColors.brandBlue,
           ),
           _BadgeProgress(
             name: 'Communicator',
@@ -160,7 +160,7 @@ class NextMilestoneCard extends ConsumerWidget {
             icon: Icons.star_rounded,
             ratio: (stats.totalStars / 50.0).clamp(0.0, 1.0),
             targetText: 'Earn 50 stars (${stats.totalStars}/50)',
-            color: AppColors.duoYellow,
+            color: AppColors.accentGold,
           ),
         ];
 

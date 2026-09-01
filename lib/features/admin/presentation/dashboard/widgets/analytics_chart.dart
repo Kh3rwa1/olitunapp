@@ -90,7 +90,7 @@ class AnalyticsChart extends StatelessWidget {
       activeBars.add(
         _series(
           vocabulary.map((e) => e.toDouble()).toList(),
-          color: AppColors.duoBlue,
+          color: AppColors.brandBlue,
           fillTop: 0.10,
           barWidth: 3,
         ),
@@ -176,7 +176,7 @@ class AnalyticsChart extends StatelessWidget {
               final label = isLessonsLine ? 'Lessons' : 'Vocabulary';
               final color = isLessonsLine
                   ? AppColors.primary
-                  : AppColors.duoBlue;
+                  : AppColors.brandBlue;
               return LineTooltipItem(
                 '$label: ${s.y.toInt()}',
                 TextStyle(

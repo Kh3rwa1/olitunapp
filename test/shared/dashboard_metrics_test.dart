@@ -10,7 +10,7 @@ void main() {
         title: 'New lesson added',
         subtitle: 'Vowels Introduction',
         icon: Icons.school_rounded,
-        color: AppColors.duoBlue,
+        color: AppColors.brandBlue,
         timestamp: DateTime(2026, 5, 4, 10, 30),
         isUpdate: false,
       );
@@ -25,7 +25,7 @@ void main() {
         title: 'New word added',
         subtitle: 'hello',
         icon: Icons.menu_book_rounded,
-        color: AppColors.duoYellow,
+        color: AppColors.accentGold,
         timestamp: DateTime.now(),
         isUpdate: false,
       );
@@ -34,7 +34,7 @@ void main() {
         title: 'Word updated',
         subtitle: 'hello',
         icon: Icons.menu_book_rounded,
-        color: AppColors.duoYellow,
+        color: AppColors.accentGold,
         timestamp: DateTime.now(),
         isUpdate: true,
       );

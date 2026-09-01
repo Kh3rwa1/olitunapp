@@ -151,5 +151,24 @@ void main() {
       expect(AppColors.translatorLightCardB, isA<Color>());
       expect(AppColors.translatorLightCardC, isA<Color>());
     });
+
+    test(
+      'Santali cultural palette and semantic accents are valid and distinct',
+      () {
+        expect(AppColors.santaliTerracotta, isA<Color>());
+        expect(AppColors.santaliOchre, isA<Color>());
+        expect(AppColors.santaliSalGreen, isA<Color>());
+        expect(AppColors.santaliNightSky, isA<Color>());
+        expect(AppColors.santaliEarthBlack, isA<Color>());
+        expect(AppColors.santaliClayWhite, isA<Color>());
+
+        expect(AppColors.brandBlue, isA<Color>());
+        expect(AppColors.accentForest, isA<Color>());
+        expect(AppColors.accentOchre, isA<Color>());
+        expect(AppColors.accentTerracotta, isA<Color>());
+        expect(AppColors.accentGold, isA<Color>());
+        expect(AppColors.accentPurple, isA<Color>());
+      },
+    );
   });
 }

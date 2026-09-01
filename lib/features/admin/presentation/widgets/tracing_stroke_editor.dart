@@ -234,7 +234,7 @@ class _TracingStrokeEditorState extends State<TracingStrokeEditor> {
                         value: _tolerance,
                         min: 0.1,
                         divisions: 18,
-                        activeColor: AppColors.duoBlue,
+                        activeColor: AppColors.brandBlue,
                         onChanged: (val) {
                           setState(() => _tolerance = val);
                           _notifyChanges();

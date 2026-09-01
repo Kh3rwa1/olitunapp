@@ -895,7 +895,7 @@ class _ContentDetailScreenState extends ConsumerState<ContentDetailScreen> {
       case CalloutVariant.warning:
         return AppColors.error; // Red
       case CalloutVariant.note:
-        return AppColors.duoBlue; // Blue
+        return AppColors.brandBlue; // Blue
       case CalloutVariant.success:
         return AppColors.warning; // Amber
     }

@@ -333,7 +333,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                             icon: const Icon(Icons.cached_rounded, size: 18),
                             label: const Text('Change'),
                             style: TextButton.styleFrom(
-                              foregroundColor: AppColors.duoBlue,
+                              foregroundColor: AppColors.brandBlue,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -472,7 +472,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
               width: double.infinity,
               color: Colors.black12,
               child: const Center(
-                child: CircularProgressIndicator(color: AppColors.duoBlue),
+                child: CircularProgressIndicator(color: AppColors.brandBlue),
               ),
             ),
           );
@@ -538,7 +538,7 @@ class _MediaPickerFieldState extends ConsumerState<MediaPickerField> {
                             controller,
                             allowScrubbing: true,
                             colors: const VideoProgressColors(
-                              playedColor: AppColors.duoBlue,
+                              playedColor: AppColors.brandBlue,
                               bufferedColor: Colors.white24,
                               backgroundColor: Colors.white12,
                             ),

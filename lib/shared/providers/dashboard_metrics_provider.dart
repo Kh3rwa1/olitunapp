@@ -93,7 +93,7 @@ final List<_CollectionSpec> _activitySpecs = [
     id: 'lessons',
     singular: 'Lesson',
     icon: Icons.school_rounded,
-    color: AppColors.duoBlue,
+    color: AppColors.brandBlue,
     subtitle: (r) => _firstNonEmpty([
       r['titleLatin'] as String?,
       r['titleOlChiki'] as String?,
@@ -103,7 +103,7 @@ final List<_CollectionSpec> _activitySpecs = [
     id: 'categories',
     singular: 'Category',
     icon: Icons.category_rounded,
-    color: AppColors.duoGreen,
+    color: AppColors.accentForest,
     subtitle: (r) => _firstNonEmpty([
       r['titleLatin'] as String?,
       r['titleOlChiki'] as String?,
@@ -113,7 +113,7 @@ final List<_CollectionSpec> _activitySpecs = [
     id: 'words',
     singular: 'Word',
     icon: Icons.menu_book_rounded,
-    color: AppColors.duoYellow,
+    color: AppColors.accentGold,
     subtitle: (r) => _firstNonEmpty([
       r['wordLatin'] as String?,
       r['wordOlChiki'] as String?,
@@ -124,7 +124,7 @@ final List<_CollectionSpec> _activitySpecs = [
     id: 'letters',
     singular: 'Letter',
     icon: Icons.text_fields_rounded,
-    color: AppColors.duoOrange,
+    color: AppColors.accentOchre,
     subtitle: (r) => _firstNonEmpty([
       r['transliterationLatin'] as String?,
       r['charOlChiki'] as String?,
@@ -148,7 +148,7 @@ final List<_CollectionSpec> _activitySpecs = [
     id: 'banners',
     singular: 'Banner',
     icon: Icons.featured_play_list_rounded,
-    color: AppColors.duoPurple,
+    color: AppColors.accentPurple,
     subtitle: (r) => _firstNonEmpty([
       r['title'] as String?,
       r['subtitle'] as String?,

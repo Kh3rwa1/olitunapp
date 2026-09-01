@@ -15,9 +15,9 @@ class ConfettiBurst extends ConsumerStatefulWidget {
     this.colors = const [
       AppColors.accentPurple,
       AppColors.accentPink,
-      AppColors.duoYellow,
+      AppColors.accentGold,
       AppColors.primary,
-      AppColors.duoBlue,
+      AppColors.brandBlue,
     ],
   });
 

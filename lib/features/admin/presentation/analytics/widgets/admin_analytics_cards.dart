@@ -295,9 +295,9 @@ class PlatformSplitCard extends StatelessWidget {
     final total = entries.fold<int>(0, (sum, entry) => sum + entry.value);
     final colors = [
       AdminTokens.accent,
-      AppColors.duoBlue,
+      AppColors.brandBlue,
       AppColors.warning,
-      AppColors.duoPurple,
+      AppColors.accentPurple,
       AppColors.accentPink,
     ];
 
@@ -520,7 +520,7 @@ class TopEventsCard extends StatelessWidget {
                       barRods: [
                         BarChartRodData(
                           toY: entries[i].value.toDouble(),
-                          color: AppColors.duoBlue,
+                          color: AppColors.brandBlue,
                           width: 18,
                           borderRadius: BorderRadius.circular(6),
                         ),

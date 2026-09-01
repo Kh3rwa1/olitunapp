@@ -41,7 +41,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
         title: kudumName,
         subtitle: 'Complete 3+ lessons',
         icon: Icons.psychology_rounded,
-        color: AppColors.duoOrange,
+        color: AppColors.accentOchre,
         isUnlocked: stats.completedLessons.length >= 3,
         currentProgress: stats.completedLessons.length.toDouble(),
         targetProgress: 3.0,
@@ -52,7 +52,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
         title: kherwalName,
         subtitle: 'Reach 40%+ progress',
         icon: Icons.spa_rounded,
-        color: AppColors.duoYellow,
+        color: AppColors.accentGold,
         isUnlocked: stats.overallProgress >= 0.4,
         currentProgress: stats.overallProgress,
         targetProgress: 0.4,
@@ -63,7 +63,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
         title: 'Daily Voyager',
         subtitle: 'Active 3+ day streak',
         icon: Icons.rocket_launch_rounded,
-        color: AppColors.duoBlue,
+        color: AppColors.brandBlue,
         isUnlocked: stats.currentStreak >= 3,
         currentProgress: stats.currentStreak.toDouble(),
         targetProgress: 3.0,
@@ -85,7 +85,7 @@ class MasteryMilestonesCard extends ConsumerWidget {
         title: 'Star Gazer',
         subtitle: 'Earn 50+ stars',
         icon: Icons.star_rounded,
-        color: AppColors.duoYellow,
+        color: AppColors.accentGold,
         isUnlocked: stats.totalStars >= 50,
         currentProgress: stats.totalStars.toDouble(),
         targetProgress: 50.0,
@@ -262,7 +262,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12),
           ),
-          backgroundColor: AppColors.duoOrange,
+          backgroundColor: AppColors.accentOchre,
         ),
       );
       return;
@@ -388,7 +388,7 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
                   child: Container(
                     padding: const EdgeInsets.all(3),
                     decoration: const BoxDecoration(
-                      color: AppColors.duoOrange,
+                      color: AppColors.accentOchre,
                       shape: BoxShape.circle,
                     ),
                     child: const Icon(
@@ -498,9 +498,9 @@ class _MilestoneMedallionState extends State<_MilestoneMedallion> {
               particleCount: 28,
               colors: [
                 AppColors.primary,
-                AppColors.duoOrange,
-                AppColors.duoYellow,
-                AppColors.duoBlue,
+                AppColors.accentOchre,
+                AppColors.accentGold,
+                AppColors.brandBlue,
                 AppColors.primaryDark,
               ],
             ),

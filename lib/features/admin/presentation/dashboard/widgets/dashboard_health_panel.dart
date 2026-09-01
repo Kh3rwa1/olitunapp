@@ -104,7 +104,7 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
                   label: 'WS TUNNELS',
                   value: '$_sockets',
                   icon: Icons.lan_rounded,
-                  color: AppColors.duoBlue,
+                  color: AppColors.brandBlue,
                 ),
               ),
             ],

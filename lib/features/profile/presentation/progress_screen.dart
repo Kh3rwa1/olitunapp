@@ -505,7 +505,7 @@ class ProgressScreen extends ConsumerWidget {
           child: _BentoActionCard(
             icon: Icons.edit_rounded,
             label: 'Edit Name',
-            color: AppColors.duoBlue,
+            color: AppColors.brandBlue,
             isDark: isDark,
             onTap: () {
               final name = ref.read(userNameProvider);
@@ -528,7 +528,7 @@ class ProgressScreen extends ConsumerWidget {
           child: _BentoActionCard(
             icon: Icons.settings_rounded,
             label: 'Settings',
-            color: AppColors.duoOrange,
+            color: AppColors.accentOchre,
             isDark: isDark,
             onTap: () {
               context.push('/settings');

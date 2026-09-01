@@ -424,7 +424,7 @@ class _SegmentButton extends StatelessWidget {
         decoration: BoxDecoration(
           gradient: active
               ? const LinearGradient(
-                  colors: [AppColors.duoPurple, AppColors.accentCyan],
+                  colors: [AppColors.accentPurple, AppColors.accentCyan],
                 )
               : null,
           color: active ? null : Colors.transparent,

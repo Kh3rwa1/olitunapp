@@ -43,7 +43,7 @@ class LessonBlockCard extends StatelessWidget {
         break;
       case 'image':
         icon = Icons.image_rounded;
-        color = AppColors.duoBlue;
+        color = AppColors.brandBlue;
         title = 'Image Block';
         break;
       case 'svg':

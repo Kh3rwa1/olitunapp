@@ -24,11 +24,11 @@ class HomeContentGrid extends StatelessWidget {
   });
 
   static const _categoryGradients = [
-    [AppColors.accentPurple, AppColors.duoPurple],
-    [AppColors.duoOrange, AppColors.duoOrangeDark],
+    [AppColors.accentPurple, AppColors.accentPurple],
+    [AppColors.accentOchre, AppColors.accentOchreDark],
     [AppColors.primary, AppColors.primaryDark],
-    [AppColors.duoRed, AppColors.duoRedDark],
-    [AppColors.duoPurple, AppColors.accentPurple],
+    [AppColors.accentTerracotta, AppColors.accentTerracottaDark],
+    [AppColors.accentPurple, AppColors.accentPurple],
   ];
 
   Widget _buildAITranslateCard(BuildContext context) {
@@ -38,7 +38,7 @@ class HomeContentGrid extends StatelessWidget {
         onTap: () => context.push('/translate'),
         child: BentoCell(
           gradient: const LinearGradient(
-            colors: [AppColors.accentPurple, AppColors.duoPurple],
+            colors: [AppColors.accentPurple, AppColors.accentPurple],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),

@@ -502,7 +502,7 @@ class _EditBlockSheetState extends ConsumerState<EditBlockSheet> {
         break;
       case 'image':
         icon = Icons.image_rounded;
-        iconColor = AppColors.duoBlue;
+        iconColor = AppColors.brandBlue;
         typeLabel = 'Image Block';
         break;
       case 'svg':

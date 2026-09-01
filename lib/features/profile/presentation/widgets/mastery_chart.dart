@@ -217,7 +217,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                     vertical: 1,
                                   ),
                                   decoration: BoxDecoration(
-                                    color: AppColors.duoOrange.withValues(
+                                    color: AppColors.accentOchre.withValues(
                                       alpha: 0.15,
                                     ),
                                     borderRadius: BorderRadius.circular(4),
@@ -228,7 +228,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                       fontFamily: 'Inter',
                                       fontSize: 7,
                                       fontWeight: FontWeight.w800,
-                                      color: AppColors.duoOrange,
+                                      color: AppColors.accentOchre,
                                     ),
                                   ),
                                 ),

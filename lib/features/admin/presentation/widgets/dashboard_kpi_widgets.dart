@@ -95,7 +95,7 @@ class DashboardHeroMetric extends StatelessWidget {
                       ? Icons.trending_up_rounded
                       : Icons.trending_down_rounded,
                   '${weekDelta! >= 0 ? '+' : ''}${weekDelta!.toStringAsFixed(0)}% wk',
-                  weekDelta! >= 0 ? AppColors.primary : AppColors.duoOrange,
+                  weekDelta! >= 0 ? AppColors.primary : AppColors.accentOchre,
                 ),
                 const SizedBox(width: 8),
               ],

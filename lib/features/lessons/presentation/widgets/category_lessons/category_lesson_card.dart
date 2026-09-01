@@ -146,18 +146,18 @@ class CategoryLessonCard extends StatelessWidget {
 
     switch (level.toLowerCase()) {
       case 'advanced':
-        badgeColor = AppColors.duoRed;
+        badgeColor = AppColors.accentTerracotta;
         label = 'Advanced';
         icon = Icons.whatshot_rounded;
         break;
       case 'intermediate':
-        badgeColor = AppColors.duoOrange;
+        badgeColor = AppColors.accentOchre;
         label = 'Intermediate';
         icon = Icons.bolt_rounded;
         break;
       case 'beginner':
       default:
-        badgeColor = AppColors.duoGreen;
+        badgeColor = AppColors.accentForest;
         label = 'Beginner';
         icon = Icons.star_rounded;
         break;

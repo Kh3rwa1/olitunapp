@@ -62,7 +62,7 @@ class StreakCalendar extends ConsumerWidget {
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
                       color: isActive
-                          ? AppColors.duoOrange.withValues(alpha: 0.15)
+                          ? AppColors.accentOchre.withValues(alpha: 0.15)
                           : (isDark
                                 ? Colors.white.withValues(alpha: 0.06)
                                 : Colors.black.withValues(alpha: 0.04)),
@@ -71,7 +71,7 @@ class StreakCalendar extends ConsumerWidget {
                     child: isActive
                         ? const Icon(
                                 Icons.local_fire_department_rounded,
-                                color: AppColors.duoOrange,
+                                color: AppColors.accentOchre,
                                 size: 20,
                               )
                               .animate(
@@ -188,7 +188,7 @@ class StreakCalendar extends ConsumerWidget {
                             padding: const EdgeInsets.symmetric(vertical: 12),
                             decoration: BoxDecoration(
                               color: isActiveDay
-                                  ? AppColors.duoOrange.withValues(
+                                  ? AppColors.accentOchre.withValues(
                                       alpha: isDark ? 0.12 : 0.08,
                                     )
                                   : (isToday && !isFuture
@@ -203,7 +203,9 @@ class StreakCalendar extends ConsumerWidget {
                               borderRadius: BorderRadius.circular(16),
                               border: Border.all(
                                 color: isActiveDay
-                                    ? AppColors.duoOrange.withValues(alpha: 0.4)
+                                    ? AppColors.accentOchre.withValues(
+                                        alpha: 0.4,
+                                      )
                                     : (isToday && !isFuture
                                           ? (isDark
                                                 ? Colors.white30
@@ -258,7 +260,7 @@ class StreakCalendar extends ConsumerWidget {
                                     boxShadow: isActiveDay
                                         ? [
                                             BoxShadow(
-                                              color: AppColors.duoOrange
+                                              color: AppColors.accentOchre
                                                   .withValues(alpha: 0.35),
                                               blurRadius: 8,
                                               spreadRadius: 1,
@@ -271,7 +273,7 @@ class StreakCalendar extends ConsumerWidget {
                                         ? const Icon(
                                                 Icons
                                                     .local_fire_department_rounded,
-                                                color: AppColors.duoOrange,
+                                                color: AppColors.accentOchre,
                                                 size: 20,
                                               )
                                               .animate(
@@ -344,7 +346,7 @@ class StreakCalendar extends ConsumerWidget {
                   children: [
                     const Icon(
                       Icons.stars_rounded,
-                      color: AppColors.duoYellow,
+                      color: AppColors.accentGold,
                       size: 14,
                     ),
                     const SizedBox(width: 6),
@@ -450,7 +452,7 @@ class StreakCalendar extends ConsumerWidget {
                         const Icon(
                           Icons.check_circle_rounded,
                           size: 16,
-                          color: AppColors.duoOrange,
+                          color: AppColors.accentOchre,
                         ),
                         const SizedBox(width: 8),
                         Expanded(
@@ -489,7 +491,7 @@ class StreakCalendar extends ConsumerWidget {
     required bool isToday,
     required bool isFuture,
   }) {
-    if (isActive) return AppColors.duoOrange;
+    if (isActive) return AppColors.accentOchre;
     if (isFuture) return isDark ? Colors.white24 : Colors.black26;
     if (isToday) return isDark ? Colors.white : Colors.black87;
     return isDark ? Colors.white54 : Colors.black45;
@@ -552,7 +554,7 @@ class _StreakBadge extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: active
             ? const LinearGradient(
-                colors: [AppColors.duoOrange, AppColors.duoYellow],
+                colors: [AppColors.accentOchre, AppColors.accentGold],
               )
             : null,
         color: active
@@ -562,7 +564,7 @@ class _StreakBadge extends StatelessWidget {
         boxShadow: active
             ? [
                 BoxShadow(
-                  color: AppColors.duoOrange.withValues(alpha: 0.3),
+                  color: AppColors.accentOchre.withValues(alpha: 0.3),
                   blurRadius: 8,
                   offset: const Offset(0, 4),
                 ),

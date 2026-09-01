@@ -29,7 +29,9 @@ class AdminDangerZoneSection extends StatelessWidget {
               Text(
                 'Reset Database & Seeding',
                 style: AdminTokens.bodyStrong(isDark).copyWith(
-                  color: isDark ? AppColors.error : AppColors.duoRedDark,
+                  color: isDark
+                      ? AppColors.error
+                      : AppColors.accentTerracottaDark,
                 ),
               ),
               const SizedBox(height: 4),

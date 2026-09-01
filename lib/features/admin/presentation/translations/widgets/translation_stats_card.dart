@@ -22,7 +22,9 @@ class TranslationStatsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pct = totalCount > 0 ? (translatedCount / totalCount * 100).round() : 100;
+    final pct = totalCount > 0
+        ? (translatedCount / totalCount * 100).round()
+        : 100;
     final isComplete = pct >= 95;
 
     return Container(
@@ -43,10 +45,7 @@ class TranslationStatsCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             alignment: Alignment.center,
-            child: Text(
-              langFlag,
-              style: const TextStyle(fontSize: 22),
-            ),
+            child: Text(langFlag, style: const TextStyle(fontSize: 22)),
           ),
           const SizedBox(width: 16),
           Expanded(
@@ -71,8 +70,11 @@ class TranslationStatsCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: (isComplete ? AppColors.accentForest : AppColors.accentOchre)
-                            .withValues(alpha: 0.15),
+                        color:
+                            (isComplete
+                                    ? AppColors.accentForest
+                                    : AppColors.accentOchre)
+                                .withValues(alpha: 0.15),
                         borderRadius: BorderRadius.circular(10),
                       ),
                       child: Text(
@@ -81,7 +83,9 @@ class TranslationStatsCard extends StatelessWidget {
                           fontFamily: 'Inter',
                           fontSize: 11,
                           fontWeight: FontWeight.w700,
-                          color: isComplete ? AppColors.accentForest : AppColors.accentOchre,
+                          color: isComplete
+                              ? AppColors.accentForest
+                              : AppColors.accentOchre,
                         ),
                       ),
                     ),
@@ -91,7 +95,9 @@ class TranslationStatsCard extends StatelessWidget {
                 ClipRRect(
                   borderRadius: BorderRadius.circular(4),
                   child: LinearProgressIndicator(
-                    value: totalCount > 0 ? (translatedCount / totalCount).clamp(0.0, 1.0) : 1.0,
+                    value: totalCount > 0
+                        ? (translatedCount / totalCount).clamp(0.0, 1.0)
+                        : 1.0,
                     backgroundColor: AdminTokens.sunken(isDark),
                     valueColor: AlwaysStoppedAnimation<Color>(
                       isComplete ? AppColors.primary : AppColors.accentOchre,

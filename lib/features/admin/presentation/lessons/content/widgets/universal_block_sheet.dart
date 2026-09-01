@@ -254,7 +254,8 @@ class _UniversalBlockSheetState extends ConsumerState<UniversalBlockSheet> {
                     controller: _latinCtrl,
                     onChanged: (_) => setState(() {}),
                   ),
-                  if (_olChikiCtrl.text.isNotEmpty || _latinCtrl.text.isNotEmpty) ...[
+                  if (_olChikiCtrl.text.isNotEmpty ||
+                      _latinCtrl.text.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     MultilingualPreviewBox(
                       textOlChiki: _olChikiCtrl.text,

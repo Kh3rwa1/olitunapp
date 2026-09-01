@@ -197,7 +197,9 @@ class _TranslationEditDialogState extends State<TranslationEditDialog> {
                               'Pronunciation Guide (${widget.activeLang.toUpperCase()})',
                           helperText:
                               'Rendered in bottom section of learner screens',
-                          prefixIcon: const Icon(Icons.record_voice_over_rounded),
+                          prefixIcon: const Icon(
+                            Icons.record_voice_over_rounded,
+                          ),
                         ),
                       ),
                       const SizedBox(height: 20),
@@ -234,7 +236,9 @@ class _TranslationEditDialogState extends State<TranslationEditDialog> {
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Translation verified and active in dictionary'),
+                          content: Text(
+                            'Translation verified and active in dictionary',
+                          ),
                           behavior: SnackBarBehavior.floating,
                           backgroundColor: AppColors.primary,
                         ),
@@ -247,7 +251,9 @@ class _TranslationEditDialogState extends State<TranslationEditDialog> {
                       backgroundColor: AppColors.primary,
                       foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusSm,
+                        ),
                       ),
                     ),
                   ),

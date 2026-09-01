@@ -162,8 +162,8 @@ class ContentFormIdentitySection extends StatelessWidget {
                   DropdownButtonFormField<String>(
                     initialValue:
                         categories.any((c) => c.id == selectedCategoryId)
-                            ? selectedCategoryId
-                            : null,
+                        ? selectedCategoryId
+                        : null,
                     items: categories.map((c) {
                       return DropdownMenuItem(
                         value: c.id,
@@ -217,7 +217,9 @@ class ContentFormIdentitySection extends StatelessWidget {
               if (_supportsOrder) ...[
                 TextFormField(
                   controller: orderController,
-                  decoration: const InputDecoration(labelText: 'Sort Order Index'),
+                  decoration: const InputDecoration(
+                    labelText: 'Sort Order Index',
+                  ),
                   keyboardType: TextInputType.number,
                 ),
                 const SizedBox(height: 16),
@@ -277,7 +279,9 @@ class ContentFormIdentitySection extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AdminTokens.sunken(isDark),
-                        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusSm,
+                        ),
                         border: Border.all(color: AdminTokens.border(isDark)),
                       ),
                       child: Column(
@@ -312,7 +316,9 @@ class ContentFormIdentitySection extends StatelessWidget {
                       padding: const EdgeInsets.all(12),
                       decoration: BoxDecoration(
                         color: AdminTokens.sunken(isDark),
-                        borderRadius: BorderRadius.circular(AdminTokens.radiusSm),
+                        borderRadius: BorderRadius.circular(
+                          AdminTokens.radiusSm,
+                        ),
                         border: Border.all(color: AdminTokens.border(isDark)),
                       ),
                       child: Column(

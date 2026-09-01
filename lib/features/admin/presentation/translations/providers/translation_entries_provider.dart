@@ -53,10 +53,9 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
           kind: TranslationKind.lesson,
           textOlChiki: l.titleOlChiki,
           textLatin: l.titleLatin,
-          englishMeaning:
-              (l.description != null && l.description!.isNotEmpty)
-                  ? l.description!
-                  : l.titleLatin,
+          englishMeaning: (l.description != null && l.description!.isNotEmpty)
+              ? l.description!
+              : l.titleLatin,
           category: l.categoryId,
         ),
       );
@@ -110,7 +109,9 @@ final translationEntriesProvider = Provider<List<TranslationEntry>>((ref) {
           kind: TranslationKind.rhyme,
           textOlChiki: r.titleOlChiki,
           textLatin: r.titleLatin,
-          englishMeaning: r.contentLatin.isNotEmpty ? r.contentLatin : r.titleLatin,
+          englishMeaning: r.contentLatin.isNotEmpty
+              ? r.contentLatin
+              : r.titleLatin,
           category: r.category ?? r.categoryId,
           audioUrl: r.audioUrl,
         ),

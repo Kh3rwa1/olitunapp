@@ -87,14 +87,21 @@ class _AdminTranslationsScreenState
               // Interactive Data Table
               AdminDataTable<TranslationEntry>(
                 items: filteredByKind,
-                searchHint: 'Search Ol Chiki, Latin, English, or translated meaning…',
+                searchHint:
+                    'Search Ol Chiki, Latin, English, or translated meaning…',
                 searchPredicate: (entry, query) {
                   final q = query.toLowerCase();
                   return entry.textOlChiki.toLowerCase().contains(q) ||
                       entry.textLatin.toLowerCase().contains(q) ||
                       entry.englishMeaning.toLowerCase().contains(q) ||
-                      entry.meaningFor(_selectedLang).toLowerCase().contains(q) ||
-                      entry.transliterationFor(_selectedLang).toLowerCase().contains(q);
+                      entry
+                          .meaningFor(_selectedLang)
+                          .toLowerCase()
+                          .contains(q) ||
+                      entry
+                          .transliterationFor(_selectedLang)
+                          .toLowerCase()
+                          .contains(q);
                 },
                 columns: [
                   AdminColumn<TranslationEntry>(
@@ -149,7 +156,9 @@ class _AdminTranslationsScreenState
                     label: 'English Base',
                     flex: 2,
                     cellBuilder: (entry) => Text(
-                      entry.englishMeaning.isNotEmpty ? entry.englishMeaning : '—',
+                      entry.englishMeaning.isNotEmpty
+                          ? entry.englishMeaning
+                          : '—',
                       style: TextStyle(
                         fontFamily: 'Inter',
                         fontSize: 13,
@@ -158,7 +167,8 @@ class _AdminTranslationsScreenState
                     ),
                   ),
                   AdminColumn<TranslationEntry>(
-                    label: '${currentLangInfo["label"]!.split(" ").first} Meaning',
+                    label:
+                        '${currentLangInfo["label"]!.split(" ").first} Meaning',
                     flex: 3,
                     cellBuilder: (entry) {
                       final m = entry.meaningFor(_selectedLang);
@@ -191,7 +201,8 @@ class _AdminTranslationsScreenState
                     },
                   ),
                   AdminColumn<TranslationEntry>(
-                    label: '${currentLangInfo["label"]!.split(" ").first} Pronunciation',
+                    label:
+                        '${currentLangInfo["label"]!.split(" ").first} Pronunciation',
                     flex: 2,
                     cellBuilder: (entry) => Text(
                       entry.transliterationFor(_selectedLang),
@@ -245,7 +256,10 @@ class _AdminTranslationsScreenState
               padding: const EdgeInsets.symmetric(horizontal: 4),
               child: ChoiceChip(
                 showCheckmark: false,
-                avatar: Text(lang['flag']!, style: const TextStyle(fontSize: 13)),
+                avatar: Text(
+                  lang['flag']!,
+                  style: const TextStyle(fontSize: 13),
+                ),
                 label: Text(
                   lang['label']!,
                   style: TextStyle(
@@ -258,7 +272,8 @@ class _AdminTranslationsScreenState
                   ),
                 ),
                 selected: isSelected,
-                onSelected: (_) => setState(() => _selectedLang = lang['code']!),
+                onSelected: (_) =>
+                    setState(() => _selectedLang = lang['code']!),
                 selectedColor: AppColors.primary,
                 backgroundColor: Colors.transparent,
                 side: BorderSide.none,

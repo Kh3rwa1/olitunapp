@@ -41,7 +41,6 @@ const GRANDFATHERED_FILES = new Set([
   'lib/features/quiz/presentation/widgets/quiz_complete_screen.dart',
   'lib/features/rhymes/presentation/rhyme_screen.dart',
   'lib/shared/repositories/content_repository.dart',
-  'lib/shared/widgets/paywall_bottom_sheet.dart',
   'lib/shared/widgets/tracing_canvas.dart',
 ]);
 

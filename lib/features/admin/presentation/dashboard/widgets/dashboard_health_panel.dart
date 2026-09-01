@@ -178,7 +178,7 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
         Text(
           service,
           style: TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontSize: 11.5,
             fontWeight: FontWeight.w600,
             color: AdminTokens.textSecondary(widget.isDark),
@@ -198,7 +198,7 @@ class _DashboardHealthPanelState extends State<DashboardHealthPanel> {
             Text(
               status,
               style: const TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontSize: 11,
                 fontWeight: FontWeight.w700,
                 color: AppColors.primary,

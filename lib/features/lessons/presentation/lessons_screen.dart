@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
 import '../../../core/presentation/layout/responsive_layout.dart';
@@ -79,7 +79,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                             children: [
                               Text(
                                 'LEARNING PATHS',
-                                style: GoogleFonts.inter(
+                                style: AppTypography.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w800,
                                   letterSpacing: 2,
@@ -91,7 +91,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                               const SizedBox(height: 4),
                               Text(
                                 'Choose Your Journey',
-                                style: GoogleFonts.inter(
+                                style: AppTypography.inter(
                                   fontSize: 26,
                                   fontWeight: FontWeight.w900,
                                   letterSpacing: -0.8,
@@ -147,7 +147,7 @@ class _LessonsScreenState extends ConsumerState<LessonsScreen> {
                     if (data.length > 1) ...[
                       Text(
                         'MORE PATHS',
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 11,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 1.5,

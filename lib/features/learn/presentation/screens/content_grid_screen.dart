@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:itun/core/theme/app_colors.dart';
 import 'package:itun/shared/models/content_item.dart';
@@ -118,7 +118,7 @@ class _ContentGridScreenState extends ConsumerState<ContentGridScreen>
         ),
         title: Text(
           appBarTitle,
-          style: GoogleFonts.fredoka(
+          style: AppTypography.inter(
             fontSize: 20,
             fontWeight: FontWeight.bold,
             color: isDark ? Colors.white : Colors.black87,
@@ -240,7 +240,7 @@ class _ContentGridTile extends ConsumerWidget {
                   const SizedBox(height: 4),
                   Text(
                     item.title,
-                    style: GoogleFonts.fredoka(
+                    style: AppTypography.inter(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white60 : Colors.black54,

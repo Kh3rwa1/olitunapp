@@ -360,7 +360,7 @@ class HeatmapCell extends StatelessWidget {
         child: Text(
           '${(value * 100).round()}%',
           style: TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontSize: 11,
             fontWeight: FontWeight.w700,
             color: value > 0.48

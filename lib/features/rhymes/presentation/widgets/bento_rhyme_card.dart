@@ -1,9 +1,9 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
@@ -252,7 +252,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                   if (widget.rhyme.tags.isNotEmpty)
                     Text(
                           widget.rhyme.tags.first.toUpperCase(),
-                          style: GoogleFonts.fredoka(
+                          style: AppTypography.inter(
                             fontSize: 9,
                             fontWeight: FontWeight.w700,
                             color: _hasCover
@@ -272,7 +272,7 @@ class _BentoRhymeCardState extends ConsumerState<BentoRhymeCard>
                         style:
                             (scriptMode == 'olchiki'
                                     ? const TextStyle(fontFamily: 'OlChiki')
-                                    : GoogleFonts.fredoka())
+                                    : AppTypography.inter())
                                 .copyWith(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w700,

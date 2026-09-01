@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/widgets/bento_grid.dart';
@@ -46,7 +46,7 @@ class SettingsCard extends StatelessWidget {
                 const SizedBox(width: 12),
                 Text(
                   title.toUpperCase(),
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.5,

@@ -118,7 +118,7 @@ class AnalyticsChart extends StatelessWidget {
                 child: Text(
                   value.toInt().toString(),
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     color: axisColor,
                     fontSize: 10,
                     fontWeight: FontWeight.w600,
@@ -144,7 +144,7 @@ class AnalyticsChart extends StatelessWidget {
                   child: Text(
                     dayLabels[i],
                     style: TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                       color: axisColor,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -180,7 +180,7 @@ class AnalyticsChart extends StatelessWidget {
               return LineTooltipItem(
                 '$label: ${s.y.toInt()}',
                 TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontWeight: FontWeight.w700,
                   fontSize: 12,
                   color: color,

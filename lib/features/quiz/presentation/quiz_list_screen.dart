@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../shared/providers/providers.dart';
@@ -105,7 +105,7 @@ class QuizListScreen extends ConsumerWidget {
 
                             Text(
                                   'MORE QUIZZES',
-                                  style: GoogleFonts.inter(
+                                  style: AppTypography.inter(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w800,
                                     letterSpacing: 1.5,
@@ -196,7 +196,7 @@ class QuizListScreen extends ConsumerWidget {
               children: [
                 Text(
                   'CHALLENGE YOURSELF',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 2,
@@ -208,7 +208,7 @@ class QuizListScreen extends ConsumerWidget {
                 const SizedBox(height: 4),
                 Text(
                   'Choose a Quiz',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 26,
                     fontWeight: FontWeight.w900,
                     letterSpacing: -0.8,

@@ -202,7 +202,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                     ? 'Friday'
                                     : 'Saturday',
                                 style: TextStyle(
-                                  fontFamily: 'Poppins',
+                                  fontFamily: 'Inter',
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
                                   color: isDark
@@ -225,7 +225,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                   child: const Text(
                                     'DEMO',
                                     style: TextStyle(
-                                      fontFamily: 'Poppins',
+                                      fontFamily: 'Inter',
                                       fontSize: 7,
                                       fontWeight: FontWeight.w800,
                                       color: AppColors.duoOrange,
@@ -238,7 +238,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                           Text(
                             'Accuracy: ${(pt.accuracy * 100).round()}%',
                             style: const TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 11,
                               fontWeight: FontWeight.w800,
                               color: AppColors.primary,
@@ -250,7 +250,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                 ? 'Sample progress'
                                 : '${pt.quizCount} Quizzes taken',
                             style: TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 9,
                               fontWeight: FontWeight.w500,
                               color: isDark ? Colors.white38 : Colors.black38,
@@ -299,7 +299,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                             const Text(
                               'Mastery Progression',
                               style: TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 fontSize: 16,
                                 fontWeight: FontWeight.w800,
                                 letterSpacing: -0.2,
@@ -313,7 +313,7 @@ class _MasteryTimelineChartState extends ConsumerState<MasteryTimelineChart>
                                   ? 'Weekly accuracy tracking'
                                   : 'Take quizzes to see your progress',
                               style: TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
                                 color: isDark ? Colors.white38 : Colors.black38,
@@ -425,7 +425,7 @@ class MasteryChartPainter extends CustomPainter {
             color: isDark ? Colors.white38 : Colors.black38,
             fontSize: 9,
             fontWeight: FontWeight.w600,
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -524,7 +524,7 @@ class MasteryChartPainter extends CustomPainter {
                 : (isDark ? Colors.white38 : Colors.black45),
             fontSize: 10,
             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
           ),
         ),
         textDirection: TextDirection.ltr,

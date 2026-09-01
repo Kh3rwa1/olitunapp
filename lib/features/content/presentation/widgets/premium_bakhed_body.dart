@@ -1,8 +1,8 @@
 // ignore_for_file: deprecated_member_use
 import 'dart:math' as math;
 import 'dart:ui';
+import 'package:itun/core/theme/app_typography.dart';
 
-import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_markdown/flutter_markdown.dart';
 import '../../../../../core/theme/app_colors.dart';
 import '../../../../../../core/api/appwrite_db_service.dart';
@@ -72,7 +72,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
       return Center(
         child: Text(
           'Cultural notes are being prepared.',
-          style: GoogleFonts.fredoka(color: Colors.white38, fontSize: 15),
+          style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
     }
@@ -105,7 +105,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                   Expanded(
                     child: Text(
                       note.title,
-                      style: GoogleFonts.fredoka(
+                      style: AppTypography.inter(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -131,7 +131,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                 const SizedBox(height: 4),
                 Text(
                   'Source: ${note.source}',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 11,
                     color: Colors.white38,
                     fontStyle: FontStyle.italic,
@@ -153,7 +153,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
       return Center(
         child: Text(
           'No vocabulary items defined.',
-          style: GoogleFonts.fredoka(color: Colors.white38, fontSize: 15),
+          style: AppTypography.inter(color: Colors.white38, fontSize: 15),
         ),
       );
     }
@@ -190,7 +190,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     const SizedBox(height: 4),
                     Text(
                       item.latin,
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                         color: Colors.white,
@@ -200,7 +200,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                       const SizedBox(height: 4),
                       Text(
                         item.meaning,
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 13,
                           color: Colors.white60,
                         ),
@@ -254,7 +254,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
         return Center(
           child: Text(
             'Lyrics are being added.',
-            style: GoogleFonts.fredoka(color: Colors.white38, fontSize: 15),
+            style: AppTypography.inter(color: Colors.white38, fontSize: 15),
           ),
         );
       }
@@ -283,7 +283,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                 ],
                 Text(
                   block.textLatin ?? block.markdown,
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 16,
                     height: 1.5,
                     color: Colors.white70,
@@ -379,7 +379,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                   const SizedBox(height: 6),
                   Text(
                     line.latin,
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: isActive ? 16 : 15,
                       fontWeight: isActive ? FontWeight.w600 : FontWeight.w500,
                       color: Colors.white70,
@@ -389,7 +389,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     const SizedBox(height: 4),
                     Text(
                       line.meaning,
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 13,
                         color: Colors.white38,
                         fontStyle: FontStyle.italic,
@@ -459,7 +459,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
             const SizedBox(width: 6),
             Text(
               label,
-              style: GoogleFonts.fredoka(
+              style: AppTypography.inter(
                 fontSize: 13,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.w500,
                 color: isSelected ? Colors.white : Colors.white38,
@@ -575,7 +575,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                               item.title,
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: GoogleFonts.fredoka(
+                              style: AppTypography.inter(
                                 fontSize: 20,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -588,7 +588,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                                 item.subtitle!,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: GoogleFonts.inter(
+                                style: AppTypography.inter(
                                   fontSize: 13,
                                   color: Colors.white60,
                                   fontWeight: FontWeight.w500,
@@ -705,7 +705,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                     children: [
                       Text(
                         _formatDuration(Duration(milliseconds: positionMs)),
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 12,
                           color: Colors.white60,
                           fontWeight: FontWeight.w500,
@@ -717,7 +717,7 @@ class _PremiumBakhedBodyState extends ConsumerState<PremiumBakhedBody> {
                                 Duration(milliseconds: durationMs),
                               )
                             : (isPlaying ? '--:--' : '00:00'),
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 12,
                           color: Colors.white60,
                           fontWeight: FontWeight.w500,

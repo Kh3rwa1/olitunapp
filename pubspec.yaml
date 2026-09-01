@@ -24,7 +24,6 @@ dependencies:
   hive_flutter: ^1.1.0
 
   # UI & Animations
-  google_fonts: ^8.1.0
   flutter_animate: ^4.5.2
   shimmer: ^3.0.0
   cached_network_image: ^3.4.1
@@ -99,17 +98,6 @@ flutter:
     - family: Inter
       fonts:
         - asset: assets/fonts/Inter-Variable.ttf
-    - family: Fredoka
-      fonts:
-        - asset: assets/fonts/Fredoka-Variable.ttf
-    - family: Poppins
-      fonts:
-        - asset: fonts/Poppins-Regular.ttf
-          weight: 400
-        - asset: fonts/Poppins-SemiBold.ttf
-          weight: 600
-        - asset: fonts/Poppins-Bold.ttf
-          weight: 700
     - family: OlChiki
       fonts:
-        - asset: fonts/OlChiki.ttf
+        - asset: assets/fonts/OlChiki.ttf

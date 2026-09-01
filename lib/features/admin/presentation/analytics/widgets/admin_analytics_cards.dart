@@ -261,7 +261,7 @@ class DauTrendCard extends StatelessWidget {
                       return LineTooltipItem(
                         '$date\n${spot.y.toInt()} active',
                         TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           color: AdminTokens.textPrimary(isDark),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,
@@ -546,7 +546,7 @@ class TopEventsCard extends StatelessWidget {
                       return BarTooltipItem(
                         '${entry.key.replaceAll('_', ' ')}\n${entry.value} events',
                         TextStyle(
-                          fontFamily: 'Poppins',
+                          fontFamily: 'Inter',
                           color: AdminTokens.textPrimary(isDark),
                           fontSize: 12,
                           fontWeight: FontWeight.w700,

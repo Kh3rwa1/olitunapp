@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../../../core/ads/widgets/banner_ad_widget.dart';
@@ -38,7 +38,7 @@ class LegalDocumentScreen extends StatelessWidget {
         ),
         title: Text(
           document.title,
-          style: GoogleFonts.inter(
+          style: AppTypography.inter(
             fontWeight: FontWeight.w900,
             color: isDark ? Colors.white : Colors.black,
           ),
@@ -56,7 +56,7 @@ class LegalDocumentScreen extends StatelessWidget {
                   children: [
                     Text(
                       document.updated,
-                      style: GoogleFonts.inter(
+                      style: AppTypography.inter(
                         fontSize: 13,
                         color: isDark ? Colors.white54 : Colors.black54,
                       ),
@@ -65,7 +65,7 @@ class LegalDocumentScreen extends StatelessWidget {
                     for (final section in document.sections) ...[
                       Text(
                         section.title,
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           fontSize: 18,
                           fontWeight: FontWeight.w800,
                           color: isDark ? Colors.white : Colors.black,
@@ -74,7 +74,7 @@ class LegalDocumentScreen extends StatelessWidget {
                       const SizedBox(height: 8),
                       Text(
                         section.body,
-                        style: GoogleFonts.inter(
+                        style: AppTypography.inter(
                           height: 1.55,
                           fontSize: 15,
                           color: isDark ? Colors.white70 : Colors.black87,

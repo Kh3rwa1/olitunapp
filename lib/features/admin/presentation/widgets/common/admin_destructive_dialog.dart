@@ -410,7 +410,7 @@ class _AdminDestructiveDialogState extends State<AdminDestructiveDialog> {
                           : Text(
                               widget.confirmButtonLabel,
                               style: const TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                               ),

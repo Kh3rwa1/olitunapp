@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:share_plus/share_plus.dart';
 import '../../../core/motion/motion.dart';
 import '../../../core/theme/app_colors.dart';
@@ -87,7 +87,7 @@ class ProgressScreen extends ConsumerWidget {
                   automaticallyImplyLeading: false,
                   title: Text(
                     'Profile',
-                    style: GoogleFonts.fredoka(
+                    style: AppTypography.inter(
                       fontSize: 24,
                       fontWeight: FontWeight.w700,
                       color: isDark ? Colors.white : Colors.black87,
@@ -233,7 +233,7 @@ class ProgressScreen extends ConsumerWidget {
   Widget _buildSectionHeader(String title, bool isDark) {
     return Text(
       title,
-      style: GoogleFonts.inter(
+      style: AppTypography.inter(
         fontSize: 11,
         fontWeight: FontWeight.w800,
         letterSpacing: 1.5,
@@ -279,7 +279,7 @@ class ProgressScreen extends ConsumerWidget {
                 const SizedBox(height: 12),
                 Text(
                   'No bookings found',
-                  style: GoogleFonts.fredoka(
+                  style: AppTypography.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white70 : Colors.black87,
@@ -673,7 +673,7 @@ class ProgressScreen extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Text(
                   'Choose Your Avatar',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 20,
                     fontWeight: FontWeight.w800,
                     color: isDark ? Colors.white : Colors.black,
@@ -684,7 +684,7 @@ class ProgressScreen extends ConsumerWidget {
                 // Color palette
                 Text(
                   'Background Color',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white38 : Colors.black38,
@@ -737,7 +737,7 @@ class ProgressScreen extends ConsumerWidget {
                 // Emoji grid
                 Text(
                   'Avatar Emoji',
-                  style: GoogleFonts.inter(
+                  style: AppTypography.inter(
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
                     color: isDark ? Colors.white38 : Colors.black38,
@@ -938,7 +938,7 @@ class _BentoActionCard extends StatelessWidget {
               const SizedBox(height: 10),
               Text(
                 label,
-                style: GoogleFonts.inter(
+                style: AppTypography.inter(
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                   color: isDark ? Colors.white70 : Colors.black87,

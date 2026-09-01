@@ -756,7 +756,7 @@ class _AdminNavItemState extends State<AdminNavItem> {
                             widget.label,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              fontFamily: 'Poppins',
+                              fontFamily: 'Inter',
                               fontSize: 13.5,
                               fontWeight: selected
                                   ? FontWeight.w700

@@ -96,7 +96,7 @@ Future<bool?> showAdminConfirmDialog({
                             child: Text(
                               confirmLabel,
                               style: const TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 color: Colors.white,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,

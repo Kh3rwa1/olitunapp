@@ -159,7 +159,7 @@ class _AdminWipeConfirmationDialogState
                             Text(
                               'WIPE ALL & RE-SEED',
                               style: TextStyle(
-                                fontFamily: 'Poppins',
+                                fontFamily: 'Inter',
                                 color: Colors.white,
                                 fontSize: 14,
                                 fontWeight: FontWeight.w700,

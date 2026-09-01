@@ -55,7 +55,7 @@ class _AdminAffirmationsScreenState
                 child: Text(
                   message,
                   style: const TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
@@ -84,7 +84,7 @@ class _AdminAffirmationsScreenState
               Expanded(
                 child: Text(
                   'Failed to sync from Google Sheet: $e',
-                  style: const TextStyle(fontFamily: 'Poppins'),
+                  style: const TextStyle(fontFamily: 'Inter'),
                 ),
               ),
             ],
@@ -166,7 +166,7 @@ class _AdminAffirmationsScreenState
             Text(
               'Google Sheet Auto-Sync',
               style: TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontSize: 15,
                 fontWeight: FontWeight.w700,
                 color: AdminTokens.textPrimary(isDark),
@@ -200,7 +200,7 @@ class _AdminAffirmationsScreenState
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppColors.primary,
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                     ),
                   ),
                 ],
@@ -212,7 +212,7 @@ class _AdminAffirmationsScreenState
         Text(
           'Fetches the latest (last) row automatically from the connected spreadsheet and updates the daily affirmation.',
           style: TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontSize: 12,
             color: AdminTokens.textSecondary(isDark),
           ),
@@ -247,7 +247,7 @@ class _AdminAffirmationsScreenState
       label: Text(
         _isSyncing ? 'Syncing...' : 'Sync from Sheet Now',
         style: const TextStyle(
-          fontFamily: 'Poppins',
+          fontFamily: 'Inter',
           fontWeight: FontWeight.w700,
           fontSize: 13,
         ),
@@ -397,7 +397,7 @@ class _AdminAffirmationsScreenState
           cellBuilder: (item) => Text(
             item.order.toString(),
             style: const TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontWeight: FontWeight.bold,
             ),
           ),
@@ -411,7 +411,7 @@ class _AdminAffirmationsScreenState
             if (dt == null) return const Text('—');
             return Text(
               '${dt.year}-${dt.month.toString().padLeft(2, '0')}-${dt.day.toString().padLeft(2, '0')}',
-              style: const TextStyle(fontSize: 12, fontFamily: 'Poppins'),
+              style: const TextStyle(fontSize: 12, fontFamily: 'Inter'),
             );
           },
         ),

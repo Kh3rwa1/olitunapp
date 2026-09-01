@@ -1,8 +1,8 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 
 /// Animated music icon with layered glow rings for the rhyme header.
@@ -177,7 +177,7 @@ class _AnimatedFilterChipState extends State<AnimatedFilterChip>
           ),
           child: AnimatedDefaultTextStyle(
             duration: const Duration(milliseconds: 300),
-            style: GoogleFonts.fredoka(
+            style: AppTypography.inter(
               fontSize: widget.small ? 12 : 14,
               fontWeight: widget.isSelected ? FontWeight.w700 : FontWeight.w600,
               color: widget.isSelected

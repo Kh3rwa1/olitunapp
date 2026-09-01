@@ -60,7 +60,7 @@ class AdminPrimaryButton extends StatelessWidget {
                     label,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                       color: isEnabled ? Colors.white : Colors.white70,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -136,7 +136,7 @@ class AdminSecondaryButton extends StatelessWidget {
                     label,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                       color: color,
                       fontSize: 14,
                       fontWeight: FontWeight.w600,

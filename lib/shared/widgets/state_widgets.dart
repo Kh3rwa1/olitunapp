@@ -1,11 +1,11 @@
 import 'dart:io' show Platform;
 import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import '../../core/network/network_info.dart';
 import '../../core/theme/app_colors.dart';
@@ -100,7 +100,7 @@ class AppLoadingState extends ConsumerWidget {
                 const SizedBox(height: 24),
                 Text(
                   message ?? 'Johar... Loading',
-                  style: GoogleFonts.fredoka(
+                  style: AppTypography.inter(
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     color: isDark ? Colors.white70 : AppColors.primaryDark,
@@ -172,7 +172,7 @@ class AppEmptyState extends ConsumerWidget {
               Text(
                 title,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : AppColors.primaryDark,
@@ -182,7 +182,7 @@ class AppEmptyState extends ConsumerWidget {
               Text(
                 description,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 14,
                   color: isDark ? Colors.white60 : Colors.black54,
                   height: 1.3,
@@ -206,7 +206,7 @@ class AppEmptyState extends ConsumerWidget {
                   ),
                   child: Text(
                     buttonText!.toUpperCase(),
-                    style: GoogleFonts.fredoka(
+                    style: AppTypography.inter(
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.2,
                     ),
@@ -270,7 +270,7 @@ class AppErrorState extends ConsumerWidget {
               Text(
                 'Etom Badiyena! (Something went wrong)',
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: isDark ? Colors.white : AppColors.primaryDark,
@@ -280,7 +280,7 @@ class AppErrorState extends ConsumerWidget {
               Text(
                 message,
                 textAlign: TextAlign.center,
-                style: GoogleFonts.fredoka(
+                style: AppTypography.inter(
                   fontSize: 14,
                   color: isDark ? Colors.white60 : Colors.black54,
                   height: 1.3,
@@ -295,7 +295,7 @@ class AppErrorState extends ConsumerWidget {
                 icon: const Icon(Icons.refresh_rounded, size: 20),
                 label: Text(
                   'RETRY',
-                  style: GoogleFonts.fredoka(
+                  style: AppTypography.inter(
                     fontWeight: FontWeight.bold,
                     letterSpacing: 1.2,
                   ),
@@ -434,7 +434,7 @@ class OfflineStatusBanner extends ConsumerWidget {
                   Expanded(
                     child: Text(
                       text,
-                      style: GoogleFonts.fredoka(
+                      style: AppTypography.inter(
                         color: Colors.white,
                         fontSize: 13,
                         fontWeight: FontWeight.w600,
@@ -456,7 +456,7 @@ class OfflineStatusBanner extends ConsumerWidget {
                         ),
                         child: Text(
                           buttonText,
-                          style: GoogleFonts.fredoka(
+                          style: AppTypography.inter(
                             color: Colors.white,
                             fontSize: 11,
                             fontWeight: FontWeight.bold,

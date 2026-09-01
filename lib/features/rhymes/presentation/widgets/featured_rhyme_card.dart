@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 import '../../../../core/theme/app_colors.dart';
 import '../../../../shared/providers/local_settings_provider.dart';
 import '../../../../shared/utils/localized_content.dart';
@@ -178,7 +178,7 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
                                             ? const TextStyle(
                                                 fontFamily: 'OlChiki',
                                               )
-                                            : GoogleFonts.fredoka())
+                                            : AppTypography.inter())
                                         .copyWith(
                                           fontSize: 28,
                                           fontWeight: FontWeight.w700,
@@ -315,7 +315,7 @@ class _FeaturedRhymeCardState extends ConsumerState<FeaturedRhymeCard>
       ),
       child: Text(
         text,
-        style: GoogleFonts.fredoka(
+        style: AppTypography.inter(
           color: Colors.white,
           fontSize: 10,
           fontWeight: FontWeight.bold,

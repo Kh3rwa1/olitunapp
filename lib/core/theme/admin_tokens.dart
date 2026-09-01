@@ -152,7 +152,7 @@ class AdminTokens {
   // ============== TYPOGRAPHY ==============
   // A real type scale — use these instead of ad-hoc fontSize / fontWeight.
   static TextStyle display(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 40,
     height: 1.05,
     fontWeight: FontWeight.w800,
@@ -161,7 +161,7 @@ class AdminTokens {
   );
 
   static TextStyle pageTitle(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 30,
     height: 1.1,
     fontWeight: FontWeight.w800,
@@ -170,7 +170,7 @@ class AdminTokens {
   );
 
   static TextStyle sectionTitle(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 20,
     height: 1.2,
     fontWeight: FontWeight.w700,
@@ -179,7 +179,7 @@ class AdminTokens {
   );
 
   static TextStyle cardTitle(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 16,
     height: 1.3,
     fontWeight: FontWeight.w700,
@@ -187,7 +187,7 @@ class AdminTokens {
   );
 
   static TextStyle body(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 14,
     height: 1.45,
     fontWeight: FontWeight.w500,
@@ -195,7 +195,7 @@ class AdminTokens {
   );
 
   static TextStyle bodyStrong(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 14,
     height: 1.45,
     fontWeight: FontWeight.w600,
@@ -203,7 +203,7 @@ class AdminTokens {
   );
 
   static TextStyle label(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 12,
     height: 1.3,
     fontWeight: FontWeight.w600,
@@ -211,7 +211,7 @@ class AdminTokens {
   );
 
   static TextStyle eyebrow(bool isDark, {Color? color}) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 11,
     height: 1.2,
     fontWeight: FontWeight.w700,
@@ -220,7 +220,7 @@ class AdminTokens {
   );
 
   static TextStyle metric(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 36,
     height: 1.0,
     fontWeight: FontWeight.w800,
@@ -230,7 +230,7 @@ class AdminTokens {
   );
 
   static TextStyle metricSmall(bool isDark) => TextStyle(
-    fontFamily: 'Poppins',
+    fontFamily: 'Inter',
     fontSize: 22,
     height: 1.0,
     fontWeight: FontWeight.w800,

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
+import 'package:itun/core/theme/app_typography.dart';
 import '../../../../core/motion/motion.dart';
 import '../../../../core/theme/app_colors.dart';
 
@@ -128,7 +128,7 @@ class ProfileHeroCard extends StatelessWidget {
                                 userName.isNotEmpty
                                     ? userName[0].toUpperCase()
                                     : 'L',
-                                style: GoogleFonts.fredoka(
+                                style: AppTypography.inter(
                                   fontSize: 28,
                                   fontWeight: FontWeight.w700,
                                   color: Colors.white,
@@ -174,7 +174,7 @@ class ProfileHeroCard extends StatelessWidget {
                         Flexible(
                           child: Text(
                             userName,
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               fontSize: 22,
                               fontWeight: FontWeight.w800,
                               color: isDark ? Colors.white : Colors.black,
@@ -228,7 +228,7 @@ class ProfileHeroCard extends StatelessWidget {
                               const SizedBox(width: 4),
                               Text(
                                 level,
-                                style: GoogleFonts.inter(
+                                style: AppTypography.inter(
                                   fontSize: 11,
                                   fontWeight: FontWeight.w700,
                                   color: _getLevelColor(),
@@ -242,7 +242,7 @@ class ProfileHeroCard extends StatelessWidget {
                         if (memberSince != null)
                           Text(
                             'Since ${_formatDate(memberSince!)}',
-                            style: GoogleFonts.inter(
+                            style: AppTypography.inter(
                               fontSize: 11,
                               color: isDark ? Colors.white30 : Colors.black38,
                             ),
@@ -266,7 +266,7 @@ class ProfileHeroCard extends StatelessWidget {
                 children: [
                   Text(
                     'Overall Progress',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w600,
                       color: isDark ? Colors.white54 : Colors.black45,
@@ -274,7 +274,7 @@ class ProfileHeroCard extends StatelessWidget {
                   ),
                   Text(
                     '${(overallProgress * 100).toInt()}%',
-                    style: GoogleFonts.inter(
+                    style: AppTypography.inter(
                       fontSize: 12,
                       fontWeight: FontWeight.w800,
                       color: AppColors.primary,

@@ -61,7 +61,7 @@ class DashboardHeroMetric extends StatelessWidget {
                 Text(
                   'TOTAL CONTENT',
                   style: TextStyle(
-                    fontFamily: 'Poppins',
+                    fontFamily: 'Inter',
                     fontSize: 10,
                     fontWeight: FontWeight.w800,
                     letterSpacing: 1.4,
@@ -126,7 +126,7 @@ class DashboardHeroMetric extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontSize: 11,
               fontWeight: FontWeight.w700,
               color: c,

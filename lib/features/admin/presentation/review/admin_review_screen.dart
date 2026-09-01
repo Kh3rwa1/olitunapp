@@ -109,7 +109,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
               child: Text(
                 message,
                 style: const TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -216,7 +216,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
               Text(
                 label,
                 style: TextStyle(
-                  fontFamily: 'Poppins',
+                  fontFamily: 'Inter',
                   fontSize: 13,
                   fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
                   color: selected
@@ -250,7 +250,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
             label: Text(
               'Approve selected (${selectedIds.length})',
               style: const TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 fontSize: 12.5,
@@ -268,7 +268,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
             label: Text(
               'Reject selected (${selectedIds.length})',
               style: const TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
                 fontSize: 12.5,
@@ -286,7 +286,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
             label: Text(
               'Clear',
               style: TextStyle(
-                fontFamily: 'Poppins',
+                fontFamily: 'Inter',
                 fontSize: 12.5,
                 color: AdminTokens.textPrimary(isDark),
               ),
@@ -306,7 +306,7 @@ class _AdminReviewScreenState extends ConsumerState<AdminReviewScreen> {
         label: Text(
           label,
           style: TextStyle(
-            fontFamily: 'Poppins',
+            fontFamily: 'Inter',
             fontSize: 12.5,
             fontWeight: selected ? FontWeight.w700 : FontWeight.w500,
             color: selected ? Colors.white : AdminTokens.textSecondary(isDark),
@@ -571,7 +571,7 @@ class _ReviewCard extends StatelessWidget {
                   Text(
                     title,
                     style: TextStyle(
-                      fontFamily: 'Poppins',
+                      fontFamily: 'Inter',
                       fontSize: 13.5,
                       fontWeight: FontWeight.w700,
                       color: AdminTokens.textPrimary(isDark),
@@ -664,7 +664,7 @@ class _LocalizedMeta extends StatelessWidget {
     return Text(
       parts.isEmpty ? '—' : parts.join('  ·  '),
       style: TextStyle(
-        fontFamily: 'Poppins',
+        fontFamily: 'Inter',
         fontSize: 12,
         color: AdminTokens.textSecondary(isDark),
       ),
@@ -710,7 +710,7 @@ class _MetaBadge extends StatelessWidget {
           Text(
             label,
             style: TextStyle(
-              fontFamily: 'Poppins',
+              fontFamily: 'Inter',
               fontSize: 11,
               fontWeight: FontWeight.w600,
               color: isDark

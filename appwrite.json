@@ -751,7 +751,14 @@
         "test_output.txt",
         "deployment.tar.gz",
         "build_web_v7.zip",
-        "build_web_v8.zip"
+        "build_web_v8.zip",
+        "node_modules",
+        ".DS_Store",
+        ".replit",
+        "server.js",
+        "vercel.json",
+        "database",
+        "docs"
       ],
       "fallbackFile": "index.html"
     }

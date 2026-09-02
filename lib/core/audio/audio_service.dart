@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:itun/core/logging/app_logger.dart';
 import 'package:just_audio/just_audio.dart';
@@ -12,8 +14,17 @@ final audioServiceProvider = Provider((ref) => AudioService());
 class AudioService {
   final AudioPlayer _player = AudioPlayer();
 
+  /// Grace period after a clip finishes before the media session is
+  /// released. Must comfortably exceed the playback controller's
+  /// interClipPause (700ms) so bilingual chains are untouched.
+  @visibleForTesting
+  static Duration mediaSessionReleaseDelay = const Duration(seconds: 2);
+
+  StreamSubscription<ProcessingState>? _sessionReleaseSub;
+
   AudioService() {
     _initWebCrossOrigin();
+    _initMediaSessionRelease();
   }
 
   void _initWebCrossOrigin() {
@@ -23,6 +34,36 @@ class AudioService {
       } catch (e) {
         AppLogger.warning('AudioService: failed to set web cross-origin: $e');
       }
+    }
+  }
+
+  /// Dismisses the Android media notification shortly after a clip ends.
+  ///
+  /// just_audio_background keeps the media session alive for as long as a
+  /// source is loaded — a 5-second pronunciation clip otherwise left a
+  /// stuck "Pronunciation" notification in the shade indefinitely. When the
+  /// player stops, it broadcasts processingState=idle, which makes
+  /// audio_service remove the notification.
+  ///
+  /// The delay + state guard keeps bilingual sequencing (which auto-advances
+  /// ~700ms after completion) and fresh play requests untouched.
+  void _initMediaSessionRelease() {
+    _sessionReleaseSub = _player.processingStateStream.listen((state) {
+      if (state != ProcessingState.completed) return;
+      unawaited(_releaseMediaSession());
+    });
+  }
+
+  Future<void> _releaseMediaSession() async {
+    await Future<void>.delayed(mediaSessionReleaseDelay);
+    // A follow-up clip (bilingual chain) or a new play request may have
+    // started during the grace period — leave those alone.
+    if (_player.processingState != ProcessingState.completed) return;
+    try {
+      await _player.stop();
+      AppLogger.debug('AudioService: media session released after completion');
+    } catch (e) {
+      AppLogger.warning('AudioService: media session release failed: $e');
     }
   }
 
@@ -149,6 +190,7 @@ class AudioService {
   }
 
   void dispose() {
+    unawaited(_sessionReleaseSub?.cancel());
     if (kIsWeb) {
       try {
         stopNativeWebAudio();
